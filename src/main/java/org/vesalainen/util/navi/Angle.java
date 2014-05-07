@@ -1,0 +1,366 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.vesalainen.util.navi;
+
+
+/**
+ *
+ * @author tkv
+ */
+public class Angle extends Scalar
+{
+    public static final Angle Right = new Degree(90);
+    public static final Angle Straight = new Degree(180);
+    public static final Angle North = new Degree(0);
+    public static final Angle East = new Degree(90);
+    public static final Angle South = new Degree(180);
+    public static final Angle West = new Degree(270);
+    public static final Angle NE = new Degree(45);
+    public static final Angle SE = new Degree(135);
+    public static final Angle NW = new Degree(315);
+    public static final Angle SW = new Degree(225);
+    public static final double FULL_CIRCLE = 2*Math.PI;
+    /**
+     * Creates a Angle class
+     * @param value Angle in radians
+     */
+    public Angle(double radians)
+    {
+        super(normalizeToFullAngle(radians), ScalarType.ANGLE);
+    }
+    /**
+     * Creates a Angle class
+     * @param x Param x in rectangular coordinates
+     * @param y Param y in rectangular coordinates
+     * @see java.lang.Math.atan2
+     */
+    public Angle(double x, double y)
+    {
+        super(normalizeToFullAngle(Math.atan2(y, x)), ScalarType.ANGLE);
+    }
+
+    public Angle()
+    {
+        super(ScalarType.ANGLE);
+    }
+    /**
+     * 
+     * @return In radians
+     */
+    public double getRadians()
+    {
+        return _value;
+    }
+    /**
+     * The angle in degrees
+     * @return
+     */
+    public double getDegree()
+    {
+        return Math.toDegrees(_value);
+    }
+    /**
+     * The right angle. Meaning this angle minus 90 degrees
+     * @return
+     */
+    public Angle rightAngle()
+    {
+        return add(Angle.Right, false);
+    }
+    
+    /**
+     * The "left" angle. Meaning this angle plus 90 degrees
+     * @return
+     */
+    public Angle leftAngle()
+    {
+        return add(Angle.Right);
+    }
+    
+    /**
+     * The straight angle. Meaning this angle plus 180 degrees
+     * @return
+     */
+    public Angle straightAngle()
+    {
+        return add(Angle.Straight);
+    }
+    /**
+     * 
+     * @return Returns the angle so that angles greater than 180 degrees are changed
+     * to be under 180. New angle in 360 - old
+     */
+    public Angle halfAngle()
+    {
+        return new Angle(normalizeToHalfAngle(_value));
+    }
+    
+    /**
+     * Add angle clockwise.
+     * @param angle
+     * @return Returns a new Angle 
+     */
+    public Angle add(Angle angle)
+    {
+        return add(angle, true);
+    }
+    
+    /**
+     * Add angle clockwise or counter clockwice.
+     * @param angle
+     * @return Returns a new Angle 
+     */
+    public Angle add(Angle angle, boolean clockwice)
+    {
+        if (clockwice)
+        {
+            return new Angle(normalizeToFullAngle(_value + angle._value));
+        }
+        else
+        {
+            return new Angle(normalizeToFullAngle(_value - angle._value));
+        }
+    }
+    /**
+     * Turn angle clockwise or counter clockwice. If < 180 turns
+     * clockwice. If >= 180 turns counter clockwice 360 - angle
+     * @param angle
+     * @return Returns a new Angle 
+     */
+    public Angle turn(Angle angle)
+    {
+        if (angle.getRadians() < Math.PI)
+        {
+            return add(angle, true);
+        }
+        else
+        {
+            return add(angle.toHalfAngle(), false);
+        }
+    }
+    /**
+     * @param Angle 
+     * @return Angle normalized between 0 - 180 degrees
+     */
+    public Angle toHalfAngle()
+    {
+        return new Angle(normalizeToHalfAngle(_value));
+    }
+    /**
+     * Sector is less than 180 degrees delimited by start and end
+     * @param start
+     * @param end
+     * @return If this is between start - end
+     */
+    public final boolean inSector(Angle start, Angle end)
+    {
+        if (start.clockwise(end))
+        {
+            return !clockwise(start) && clockwise(end);
+        }
+        else
+        {
+            return clockwise(start) && !clockwise(end);
+        }
+    }
+
+    public static final Angle average(Angle... angles)
+    {
+        double sin = 0;
+        double cos = 0;
+        for (Angle angle : angles)
+        {
+            sin += angle.sin();
+            cos += angle.cos();
+        }
+        return new Angle(cos, sin);
+    }
+    /**
+     * The difference between two angles
+     * @param a1
+     * @param a2
+     * @return New Angle representing the difference
+     */
+    public static final Angle difference(Angle a1, Angle a2)
+    {
+        return new Angle(normalizeToHalfAngle(angleDiff(a1._value, a2._value)));
+    }
+
+    public boolean equals(Angle angle, double maxDifference)
+    {
+        return angleDiff(_value, angle._value) < maxDifference;
+    }
+    /**
+     * 10 is clockwise from 340
+     * @param angle
+     * @return true if angle is clockwise from this angle
+     */
+    public final boolean clockwise(Angle angle)
+    {
+        return angleDiff(_value, angle._value) >= 0;
+    }
+    /**
+     * 10 is clockwise from 340
+     * @param angle1
+     * @param angle2
+     * @return true if angle2 is clockwise from angle1
+     */
+    public static final boolean clockwise(Angle angle1, Angle angle2)
+    {
+        return angleDiff(angle1._value, angle2._value) >= 0;
+    }
+
+    /**
+     * 
+     * @return acos
+     * @see java.lang.Math.acos
+     */
+    public final double acos()
+    {
+        return Math.acos(_value);
+    }
+    /**
+     * 
+     * @return asin
+     * @see java.lang.Math.asin
+     */
+    public final double asin()
+    {
+        return Math.asin(_value);
+    }
+    
+    /**
+     * 
+     * @return atan
+     * @see java.lang.Math.atan
+     */
+    public double atan()
+    {
+        return Math.atan(_value);
+    }
+    
+    /**
+     * 
+     * @return cos
+     * @see java.lang.Math.cos
+     */
+    public double cos()
+    {
+        return Math.cos(_value);
+    }
+    
+    /**
+     * 
+     * @return cosh
+     * @see java.lang.Math.cosh
+     */
+    public double cosh()
+    {
+        return Math.cosh(_value);
+    }
+    
+    /**
+     * 
+     * @return sin
+     * @see java.lang.Math.sin
+     */
+    public double sin()
+    {
+        return Math.sin(_value);
+    }
+    
+    /**
+     * 
+     * @return sinh
+     * @see java.lang.Math.sinh
+     */
+    public double sinh()
+    {
+        return Math.sinh(_value);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return Math.round(getDegree())+"\u00B0";
+    }
+    
+    /**
+     * @param Angle in radians
+     * @return Angle normalized between 0 - 180 degrees
+     */
+    public static final double normalizeToHalfAngle(double angle)
+    {
+        angle = normalizeToFullAngle(angle);
+        if (angle > Math.PI)
+        {
+            return FULL_CIRCLE - angle;
+        }
+        assert angle >= 0 && angle <= Math.PI;
+        return angle;
+    }
+    
+    /**
+     * @param Angle in radians
+     * @return Angle normalized between 0 - 360 degrees
+     */
+    public  static final double normalizeToFullAngle(double angle)
+    {
+        if (angle > FULL_CIRCLE)
+        {
+            angle -= FULL_CIRCLE;
+        }
+        if (angle < 0)
+        {
+            angle = FULL_CIRCLE + angle;
+        }
+        assert angle >= 0 && angle <= 2*Math.PI;
+        return angle;
+    }
+    /**
+     * Convert full angle to signed angle -180 - 180. 340 -> -20
+     * @param angle
+     * @return
+     */
+    public  static final double signed(double angle)
+    {
+        angle = normalizeToFullAngle(angle);
+        if (angle > Math.PI)
+        {
+            return angle - FULL_CIRCLE;
+        }
+        else
+        {
+            return angle;
+        }
+    }
+    /**
+     * @param anAngle1 in radians
+     * @param anAngle2 in radians
+     * @return Angle difference normalized between 0 - PI radians. If anAngle2 is right to anAngle1 returns + signed
+     */
+    public static final double angleDiff(double anAngle1, double anAngle2)
+    {
+        double angle;
+        anAngle1 = normalizeToFullAngle(anAngle1);
+        anAngle2 = normalizeToFullAngle(anAngle2);
+        angle = anAngle2 - anAngle1;
+        angle = normalizeToFullAngle(angle);
+        return signed(angle);
+    }
+
+    public static void main(String... args)
+    {
+        try
+        {
+            Angle aa = new Degree(10);
+            System.err.println(aa.inSector(new Degree(340), new Degree(180)));
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+}
