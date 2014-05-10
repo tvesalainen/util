@@ -20,8 +20,6 @@ package org.vesalainen.util.concurrent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * UnparallelWorkflow creates a workflow using several threads. Only single
@@ -33,7 +31,10 @@ public abstract class UnparallelWorkflow<K>
 {
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
-
+    /**
+     * Constructs a new workflow. Current thread is named to start.
+     * @param start Name of current thread.
+     */
     public UnparallelWorkflow(K start)
     {
         this.semaphoreMap = new HashMap<>();
@@ -47,7 +48,7 @@ public abstract class UnparallelWorkflow<K>
      * Switch executing thread. 
      * @param to Next executing
      */
-    public void switchThread(K to)
+    public void switchTo(K to)
     {
         try
         {

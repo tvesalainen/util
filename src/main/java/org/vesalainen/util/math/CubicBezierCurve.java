@@ -4,7 +4,6 @@
  */
 package org.vesalainen.util.math;
 
-import org.vesalainen.math.Point;
 import java.io.Serializable;
 
 

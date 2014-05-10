@@ -55,7 +55,7 @@ public class UnparallelWorkflowTest
     }
 
     /**
-     * Test of switchThread method, of class UnparallelWorkflow.
+     * Test of switchTo method, of class UnparallelWorkflow.
      */
     @org.junit.Test
     public void testSwitchThread()
@@ -63,9 +63,9 @@ public class UnparallelWorkflowTest
         System.out.println("switchThread");
         UnparallelWorkflowImpl instance = new UnparallelWorkflowImpl(0);
         assertEquals(1, instance.getThreadCount());
-        instance.switchThread(5);
+        instance.switchTo(5);
         assertEquals(6, instance.getThreadCount());
-        instance.switchThread(5);
+        instance.switchTo(5);
         assertEquals(6, instance.getThreadCount());
         instance.kill(4);
         assertEquals(5, instance.getThreadCount());
@@ -101,7 +101,7 @@ public class UnparallelWorkflowTest
         {
             while (true)
             {
-                wf.switchThread(number-1);
+                wf.switchTo(number-1);
             }
         }
         
