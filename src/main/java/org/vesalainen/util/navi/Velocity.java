@@ -1,13 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2011 Timo Vesalainen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.util.navi;
 
-import org.vesalainen.util.navi.ScalarType;
-import org.vesalainen.util.navi.Scalar;
-import org.vesalainen.util.navi.Knots;
-import org.vesalainen.util.navi.Distance;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +54,7 @@ public class Velocity extends Scalar
      */
     public Distance getDistance(TimeSpan timeSpan)
     {
-        return new Distance(_value*timeSpan.getSeconds());
+        return new Distance(value*timeSpan.getSeconds());
     }
     /**
      * Returns the time span taken to move the distance
@@ -55,7 +63,7 @@ public class Velocity extends Scalar
      */
     public TimeSpan getTimeSpan(Distance distance)
     {
-        return new TimeSpan((long)(1000*distance.getMeters()/_value), TimeUnit.MILLISECONDS);
+        return new TimeSpan((long)(1000*distance.getMeters()/value), TimeUnit.MILLISECONDS);
     }
     /**
      * Returns the time we are there if we started at start
@@ -71,17 +79,17 @@ public class Velocity extends Scalar
     
     public double getMetersInSecond()
     {
-        return _value;
+        return value;
     }
 
     public double getKiloMetersInHour()
     {
-        return TimeUnit.HOURS.toSeconds(1)*_value/Distance.KILO;
+        return TimeUnit.HOURS.toSeconds(1)*value/Distance.KILO;
     }
 
     public double getKnots()
     {
-        return TimeUnit.HOURS.toSeconds(1)*_value/Distance.NM_IN_METERS;
+        return TimeUnit.HOURS.toSeconds(1)*value/Distance.NM_IN_METERS;
     }
 
     @Override

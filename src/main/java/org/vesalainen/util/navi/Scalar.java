@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2011 Timo Vesalainen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.util.navi;
 
@@ -12,7 +24,7 @@ import java.io.Serializable;
  */
 public class Scalar implements Comparable<Scalar>, Serializable
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     public static final Scalar NaN = new Scalar(Double.NaN, ScalarType.UNKNOWN);
     /**
      * The maximum amount two scalars can differ to be equal
@@ -22,10 +34,10 @@ public class Scalar implements Comparable<Scalar>, Serializable
     protected static final double NM_IN_METERS = 1852;
     protected static final double FEET_IN_METERS = 0.3048;
     
-    protected double _value;
+    protected double value;
     protected ScalarType type;
     
-    protected Scalar()
+    private Scalar()
     {
     }
 
@@ -36,7 +48,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
     
     protected Scalar(double value, ScalarType type)
     {
-        _value = value;
+        this.value = value;
         this.type = type;
     }
 
@@ -46,7 +58,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        _value = scalar._value;
+        value = scalar.value;
     }
     
     public void copy(Scalar scalar)
@@ -55,12 +67,12 @@ public class Scalar implements Comparable<Scalar>, Serializable
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        _value = scalar._value;
+        value = scalar.value;
     }
 
     public boolean isNan()
     {
-        return Double.isNaN(_value);
+        return Double.isNaN(value);
     }
     
     public boolean equals(Scalar scalar, double maxDifference)
@@ -69,7 +81,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        return Math.abs(_value - scalar._value) < maxDifference;
+        return Math.abs(value - scalar.value) < maxDifference;
     }
     /**
      * This method returns true even when the value of two objects 
@@ -93,17 +105,18 @@ public class Scalar implements Comparable<Scalar>, Serializable
     public int hashCode()
     {
         int hash = 7;
-        hash = 13 * hash + (int) (Double.doubleToLongBits(this._value) ^ (Double.doubleToLongBits(this._value) >>> 32));
+        hash = 13 * hash + (int) (Double.doubleToLongBits(this.value) ^ (Double.doubleToLongBits(this.value) >>> 32));
         return hash;
     }
     
+    @Override
     public int compareTo(Scalar o)
     {
         if (!type.equals(o.type))
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        return Double.compare(_value, o._value);
+        return Double.compare(value, o.value);
     }
     /**
      * Add x to this
@@ -111,7 +124,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      */
     public void add(double x)
     {
-        _value += x;
+        value += x;
     }
     /**
      * Add o value to this
@@ -123,7 +136,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        _value += o._value;
+        value += o.value;
     }
     /**
      * Subtract x from this
@@ -131,7 +144,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      */
     public void subtract(double x)
     {
-        _value -= x;
+        value -= x;
     }
     /**
      * Subtract o value from this
@@ -143,7 +156,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         {
             throw new UnsupportedOperationException("Action with wrong kind of class");
         }
-        _value -= o._value;
+        value -= o.value;
     }
     /**
      * Multiply with x
@@ -151,14 +164,14 @@ public class Scalar implements Comparable<Scalar>, Serializable
      */
     public void mul(double x)
     {
-        _value *= x;
+        value *= x;
     }
     /**
      * Add 1 to value
      */
     public void plusPlus()
     {
-        _value++;
+        value++;
     }
     /**
      * True if this > o
@@ -199,12 +212,12 @@ public class Scalar implements Comparable<Scalar>, Serializable
     @Override
     public String toString()
     {
-        return String.valueOf(_value);
+        return String.valueOf(value);
     }
 
     public double getValue()
     {
-        return _value;
+        return value;
     }
     
 }

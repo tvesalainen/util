@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Timo Vesalainen
+ * Copyright (C) 2014 Timo Vesalainen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,18 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util.navi;
 
-import org.vesalainen.util.navi.Distance;
+package org.vesalainen.util.navi;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen
  */
-public class Feet extends Distance
+public class DegreesPerMinute extends RateOfTurn
 {
-    public Feet(double feet)
+
+    public DegreesPerMinute(double degreesPerMinute)
     {
-        super(feet*FEET_IN_METERS);
+        super(Math.toRadians(degreesPerMinute)/60);
     }
+    
 }

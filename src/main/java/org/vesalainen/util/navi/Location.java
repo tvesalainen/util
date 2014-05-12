@@ -1,9 +1,19 @@
 /*
- * Location.java
+ * Copyright (C) 2011 Timo Vesalainen
  *
- * Created on 28. marraskuuta 2004, 11:34
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.vesalainen.util.navi;
 
 import java.awt.geom.Point2D;
@@ -172,6 +182,7 @@ public class Location extends Point2D.Double
     /**
      * @param bearing
      * @param distance
+     * @return 
      */
     public Location move(Angle bearing, Distance distance)
     {
@@ -435,19 +446,33 @@ public class Location extends Point2D.Double
         return (PI2 + grad) % PI2;
     }
 
-    public static void main(String[] args)
+    public Location move(
+            Angle bearing, 
+            Velocity velocity, 
+            RateOfTurn rateOfTurn, 
+            TimeSpan timeSpan)
     {
-        try
-        {
-            Location pb = new Location("61N25E");
-            Location sb = new Location(60,25);
-            Location cu = new Location(60,25);
-            System.err.println(Location.distanceToStartLine(cu, pb, sb));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        Location loc = copy();
+        loc.moveIt(bearing, velocity, rateOfTurn, timeSpan);
+        return loc;
     }
-    
+    private void moveIt(
+            Angle bearing, 
+            Velocity velocity, 
+            RateOfTurn rateOfTurn, 
+            TimeSpan timeSpan)
+    {
+        if (rateOfTurn.getValue() == 0)
+        {
+            throw new IllegalArgumentException("rateOfTurn cannot be 0");
+        }
+        TimeSpan timeForFullCircle = rateOfTurn.getTimeForFullCircle();
+        Distance radius = rateOfTurn.getRadius(velocity);
+        Angle toCenter = bearing.add(Angle.Right, rateOfTurn.isRight());
+        moveIt(toCenter, radius);
+        Angle straightAngle = toCenter.straightAngle();
+        Angle circleAngle = new Angle(2*Math.PI*timeSpan.getMillis()/timeForFullCircle.getMillis());
+        Angle backToCircle = straightAngle.add(circleAngle, rateOfTurn.isRight());
+        moveIt(backToCircle, radius);
+    }
 }

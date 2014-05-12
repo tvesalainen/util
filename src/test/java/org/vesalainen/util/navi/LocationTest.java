@@ -358,4 +358,72 @@ public class LocationTest
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testRateOfTurnMove1()
+    {
+        System.out.println("rateOfTurnMove1");
+        Velocity velocity = new Knots(1);
+        RateOfTurn instance = new DegreesPerMinute(6);
+        Location loc = new Location();
+        Angle bearing = new Angle();
+        TimeSpan timeSpan = new TimeSpan(30, TimeUnit.MINUTES);
+        Location moved = loc.move(bearing, velocity, instance, timeSpan);
+        Distance expResult = new Miles(2/Math.PI);
+        Distance result = moved.distance(loc);
+        assertEquals(expResult, result);
+        Angle bearing1 = loc.bearing(moved);
+        assertEquals(new Degree(90), bearing1);
+    }
+
+    @Test
+    public void testRateOfTurnMove2()
+    {
+        System.out.println("rateOfTurnMove2");
+        Velocity velocity = new Knots(1);
+        RateOfTurn instance = new DegreesPerMinute(-6);
+        Location loc = new Location();
+        Angle bearing = new Angle();
+        TimeSpan timeSpan = new TimeSpan(30, TimeUnit.MINUTES);
+        Location moved = loc.move(bearing, velocity, instance, timeSpan);
+        Distance expResult = new Miles(2/Math.PI);
+        Distance result = moved.distance(loc);
+        assertEquals(expResult, result);
+        Angle bearing1 = loc.bearing(moved);
+        assertEquals(new Degree(270), bearing1);
+    }
+
+    @Test
+    public void testRateOfTurnMove3()
+    {
+        System.out.println("rateOfTurnMove3");
+        Velocity velocity = new Knots(1);
+        RateOfTurn instance = new DegreesPerMinute(6);
+        Location loc = new Location();
+        Angle bearing = new Angle();
+        TimeSpan timeSpan = new TimeSpan(15, TimeUnit.MINUTES);
+        Location moved = loc.move(bearing, velocity, instance, timeSpan);
+        Distance expResult = new Miles(Math.hypot(1/Math.PI, 1/Math.PI));
+        Distance result = moved.distance(loc);
+        assertEquals(expResult, result);
+        Angle bearing1 = loc.bearing(moved);
+        assertEquals(new Degree(45), bearing1);
+    }
+
+    @Test
+    public void testRateOfTurnMove4()
+    {
+        System.out.println("rateOfTurnMove4");
+        Velocity velocity = new Knots(1);
+        RateOfTurn instance = new DegreesPerMinute(-6);
+        Location loc = new Location();
+        Angle bearing = new Angle();
+        TimeSpan timeSpan = new TimeSpan(15, TimeUnit.MINUTES);
+        Location moved = loc.move(bearing, velocity, instance, timeSpan);
+        Distance expResult = new Miles(Math.hypot(1/Math.PI, 1/Math.PI));
+        Distance result = moved.distance(loc);
+        assertEquals(expResult, result);
+        Angle bearing1 = loc.bearing(moved);
+        assertEquals(new Degree(315), bearing1);
+    }
+
 }

@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2011 Timo Vesalainen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.util.navi;
 
@@ -51,7 +63,7 @@ public class Angle extends Scalar
      */
     public double getRadians()
     {
-        return _value;
+        return value;
     }
     /**
      * The angle in degrees
@@ -59,7 +71,7 @@ public class Angle extends Scalar
      */
     public double getDegree()
     {
-        return Math.toDegrees(_value);
+        return Math.toDegrees(value);
     }
     /**
      * The right angle. Meaning this angle minus 90 degrees
@@ -94,7 +106,7 @@ public class Angle extends Scalar
      */
     public Angle halfAngle()
     {
-        return new Angle(normalizeToHalfAngle(_value));
+        return new Angle(normalizeToHalfAngle(value));
     }
     
     /**
@@ -116,11 +128,11 @@ public class Angle extends Scalar
     {
         if (clockwice)
         {
-            return new Angle(normalizeToFullAngle(_value + angle._value));
+            return new Angle(normalizeToFullAngle(value + angle.value));
         }
         else
         {
-            return new Angle(normalizeToFullAngle(_value - angle._value));
+            return new Angle(normalizeToFullAngle(value - angle.value));
         }
     }
     /**
@@ -146,7 +158,7 @@ public class Angle extends Scalar
      */
     public Angle toHalfAngle()
     {
-        return new Angle(normalizeToHalfAngle(_value));
+        return new Angle(normalizeToHalfAngle(value));
     }
     /**
      * Sector is less than 180 degrees delimited by start and end
@@ -185,12 +197,12 @@ public class Angle extends Scalar
      */
     public static final Angle difference(Angle a1, Angle a2)
     {
-        return new Angle(normalizeToHalfAngle(angleDiff(a1._value, a2._value)));
+        return new Angle(normalizeToHalfAngle(angleDiff(a1.value, a2.value)));
     }
 
     public boolean equals(Angle angle, double maxDifference)
     {
-        return angleDiff(_value, angle._value) < maxDifference;
+        return angleDiff(value, angle.value) < maxDifference;
     }
     /**
      * 10 is clockwise from 340
@@ -199,7 +211,7 @@ public class Angle extends Scalar
      */
     public final boolean clockwise(Angle angle)
     {
-        return angleDiff(_value, angle._value) >= 0;
+        return angleDiff(value, angle.value) >= 0;
     }
     /**
      * 10 is clockwise from 340
@@ -209,7 +221,7 @@ public class Angle extends Scalar
      */
     public static final boolean clockwise(Angle angle1, Angle angle2)
     {
-        return angleDiff(angle1._value, angle2._value) >= 0;
+        return angleDiff(angle1.value, angle2.value) >= 0;
     }
 
     /**
@@ -219,7 +231,7 @@ public class Angle extends Scalar
      */
     public final double acos()
     {
-        return Math.acos(_value);
+        return Math.acos(value);
     }
     /**
      * 
@@ -228,7 +240,7 @@ public class Angle extends Scalar
      */
     public final double asin()
     {
-        return Math.asin(_value);
+        return Math.asin(value);
     }
     
     /**
@@ -238,7 +250,7 @@ public class Angle extends Scalar
      */
     public double atan()
     {
-        return Math.atan(_value);
+        return Math.atan(value);
     }
     
     /**
@@ -248,7 +260,7 @@ public class Angle extends Scalar
      */
     public double cos()
     {
-        return Math.cos(_value);
+        return Math.cos(value);
     }
     
     /**
@@ -258,7 +270,7 @@ public class Angle extends Scalar
      */
     public double cosh()
     {
-        return Math.cosh(_value);
+        return Math.cosh(value);
     }
     
     /**
@@ -268,7 +280,7 @@ public class Angle extends Scalar
      */
     public double sin()
     {
-        return Math.sin(_value);
+        return Math.sin(value);
     }
     
     /**
@@ -278,7 +290,7 @@ public class Angle extends Scalar
      */
     public double sinh()
     {
-        return Math.sinh(_value);
+        return Math.sinh(value);
     }
     
     @Override

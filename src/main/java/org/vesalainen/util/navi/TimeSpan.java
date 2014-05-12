@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2011 Timo Vesalainen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.util.navi;
 
@@ -29,7 +41,7 @@ public class TimeSpan extends Scalar
             int h = Integer.parseInt(mm.group(2));
             int m = Integer.parseInt(mm.group(3));
             int s = Integer.parseInt(mm.group(4));
-            _value = d*24*60*60*1000 + h*60*60*1000 + m*60*1000 + s*1000;
+            value = d*24*60*60*1000 + h*60*60*1000 + m*60*1000 + s*1000;
         }
         else
         {
@@ -68,22 +80,22 @@ public class TimeSpan extends Scalar
 
     public Date addDate(Date from)
     {
-        return new Date(from.getTime() + (long)_value);
+        return new Date(from.getTime() + (long)value);
     }
     
     public long getMillis()
     {
-        return (long) _value;
+        return (long) value;
     }
     
     public double getSeconds()
     {
-        return _value / 1000;
+        return value / 1000;
     }
 
     public long get(TimeUnit unit)
     {
-        return unit.convert((long)_value, TimeUnit.MILLISECONDS);
+        return unit.convert((long)value, TimeUnit.MILLISECONDS);
     }
     
     @Override

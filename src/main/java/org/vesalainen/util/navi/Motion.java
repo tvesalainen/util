@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2011 Timo Vesalainen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.util.navi;
 
@@ -11,31 +23,31 @@ import java.io.Serializable;
  * 
  * @author tkv
  */
-public class Motion implements Comparable<Scalar>, Serializable
+public class Motion implements Serializable
 {
-    private static final long serialVersionUID = 1L;
-    private Velocity _speed;
-    private Angle _angle;
+    private static final long serialVersionUID = 2L;
+    private Velocity speed;
+    private Angle angle;
 
     public Motion()
     {
-        _speed = new Velocity();
-        _angle = new Angle();
+        speed = new Velocity();
+        angle = new Angle();
     }
     
     public Motion(Velocity speed, Angle angle)
     {
-        _speed = speed;
-        _angle = angle;
+        this.speed = speed;
+        this.angle = angle;
     }
     
     public Motion(Velocity speed, Angle angle, boolean relative)
     {
-        _speed = speed;
-        _angle = angle;
+        this.speed = speed;
+        this.angle = angle;
         if (relative)
         {
-            _angle = _angle.halfAngle();
+            this.angle = this.angle.halfAngle();
         }
     }
     
@@ -60,13 +72,13 @@ public class Motion implements Comparable<Scalar>, Serializable
         setXY(m1.getX()+m2.getX(), m1.getY()+m2.getY());
         if (relative)
         {
-            _angle = _angle.halfAngle();
+            angle = angle.halfAngle();
         }
     }
     
     public Motion turn(Angle angle, boolean clockwice)
     {
-        return new Motion(_speed, _angle.add(angle, clockwice));
+        return new Motion(speed, this.angle.add(angle, clockwice));
     }
     /**
      *
@@ -80,18 +92,18 @@ public class Motion implements Comparable<Scalar>, Serializable
     
     protected void setXY(double x, double y)
     {
-        _speed = new Velocity(Math.sqrt(x*x+y*y));
-        _angle = new Angle(x, y);
+        speed = new Velocity(Math.sqrt(x*x+y*y));
+        angle = new Angle(x, y);
     }
     
     protected double getX()
     {
-        return cos()*_speed.getValue();
+        return cos()*speed.getValue();
     }
     
     protected double getY()
     {
-        return sin()*_speed.getValue();
+        return sin()*speed.getValue();
     }
     /**
      * Creates a counter motion. Speed component stays the same but angle component
@@ -100,7 +112,7 @@ public class Motion implements Comparable<Scalar>, Serializable
      */
     public Motion getCounter()
     {
-        return new Motion(_speed, _angle.straightAngle());
+        return new Motion(speed, angle.straightAngle());
     }
     
     /**
@@ -110,17 +122,17 @@ public class Motion implements Comparable<Scalar>, Serializable
      */
     public Motion getRelative()
     {
-        return new Motion(_speed, _angle.halfAngle());
+        return new Motion(speed, angle.halfAngle());
     }
     
     public Velocity getSpeed()
     {
-        return _speed;
+        return speed;
     }
 
     public Angle getAngle()
     {
-        return _angle;
+        return angle;
     }
     
     /**
@@ -129,27 +141,27 @@ public class Motion implements Comparable<Scalar>, Serializable
      */
     public double getRadians()
     {
-        return _angle.getRadians();
+        return angle.getRadians();
     }
     
     public double getDegree()
     {
-        return _angle.getDegree();
+        return angle.getDegree();
     }
     
     public double getMetersInSecond()
     {
-        return _speed.getMetersInSecond();
+        return speed.getMetersInSecond();
     }
 
     public double getKiloMetersInHour()
     {
-        return _speed.getKiloMetersInHour();
+        return speed.getKiloMetersInHour();
     }
 
     public double getKnots()
     {
-        return _speed.getKnots();
+        return speed.getKnots();
     }
 
     /**
@@ -159,7 +171,7 @@ public class Motion implements Comparable<Scalar>, Serializable
      */
     public double cos()
     {
-        return _angle.cos();
+        return angle.cos();
     }
     
     /**
@@ -169,7 +181,7 @@ public class Motion implements Comparable<Scalar>, Serializable
      */
     public double sin()
     {
-        return _angle.sin();
+        return angle.sin();
     }
     
     @Override
@@ -178,7 +190,7 @@ public class Motion implements Comparable<Scalar>, Serializable
         if (ob instanceof Motion)
         {
             Motion wind = (Motion) ob;
-            return _speed.equals(wind._speed) && _angle.equals(wind._angle);
+            return speed.equals(wind.speed) && angle.equals(wind.angle);
         }
         return false;
     }
@@ -187,40 +199,25 @@ public class Motion implements Comparable<Scalar>, Serializable
     public int hashCode()
     {
         int hash = 7;
-        hash = 71 * hash + (this._speed != null ? this._speed.hashCode() : 0);
-        hash = 71 * hash + (this._angle != null ? this._angle.hashCode() : 0);
+        hash = 71 * hash + (this.speed != null ? this.speed.hashCode() : 0);
+        hash = 71 * hash + (this.angle != null ? this.angle.hashCode() : 0);
         return hash;
     }
 
     @Override
     public String toString()
     {
-        return _speed+" "+_angle;
-    }
-
-    public int compareTo(Scalar o)
-    {
-        if (o instanceof Velocity)
-        {
-            Velocity vv = (Velocity) o;
-            return Double.compare(_speed._value, vv._value);
-        }
-        if (o instanceof Angle)
-        {
-            Angle aa = (Angle) o;
-            return Double.compare(_angle._value, aa._value);
-        }
-        throw new UnsupportedOperationException("compareTo not possible with "+o.getClass().getName());
+        return speed+" "+angle;
     }
 
     public void setSpeed(Velocity speed)
     {
-        this._speed = speed;
+        this.speed = speed;
     }
 
     public void setAngle(Angle angle)
     {
-        this._angle = angle;
+        this.angle = angle;
     }
 
 }
