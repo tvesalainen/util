@@ -363,16 +363,4 @@ public class Angle extends Scalar
         return signed(angle);
     }
 
-    public static void main(String... args)
-    {
-        try
-        {
-            Angle aa = new Degree(10);
-            System.err.println(aa.inSector(new Degree(340), new Degree(180)));
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-    }
 }

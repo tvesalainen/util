@@ -445,7 +445,27 @@ public class Location extends Point2D.Double
     {
         return (PI2 + grad) % PI2;
     }
-
+    /**
+     * Move location to where it would be after moving at velocity, rateOfTurn
+     * for timeSpan when starting bearing was bearing.
+     * @param motion
+     * @param rateOfTurn
+     * @param timeSpan
+     * @return 
+     */
+    public Location move(Motion motion, RateOfTurn rateOfTurn, TimeSpan timeSpan)
+    {
+        return move(motion.getAngle(), motion.getSpeed(), rateOfTurn, timeSpan);
+    }
+    /**
+     * Move location to where it would be after moving at velocity, rateOfTurn
+     * for timeSpan when starting bearing was bearing.
+     * @param bearing
+     * @param velocity
+     * @param rateOfTurn
+     * @param timeSpan
+     * @return 
+     */
     public Location move(
             Angle bearing, 
             Velocity velocity, 
@@ -464,15 +484,18 @@ public class Location extends Point2D.Double
     {
         if (rateOfTurn.getValue() == 0)
         {
-            throw new IllegalArgumentException("rateOfTurn cannot be 0");
+            moveIt(bearing, velocity, timeSpan);
         }
-        TimeSpan timeForFullCircle = rateOfTurn.getTimeForFullCircle();
-        Distance radius = rateOfTurn.getRadius(velocity);
-        Angle toCenter = bearing.add(Angle.Right, rateOfTurn.isRight());
-        moveIt(toCenter, radius);
-        Angle straightAngle = toCenter.straightAngle();
-        Angle circleAngle = new Angle(2*Math.PI*timeSpan.getMillis()/timeForFullCircle.getMillis());
-        Angle backToCircle = straightAngle.add(circleAngle, rateOfTurn.isRight());
-        moveIt(backToCircle, radius);
+        else
+        {
+            TimeSpan timeForFullCircle = rateOfTurn.getTimeForFullCircle();
+            Distance radius = rateOfTurn.getRadius(velocity);
+            Angle toCenter = bearing.add(Angle.Right, rateOfTurn.isRight());
+            moveIt(toCenter, radius);
+            Angle straightAngle = toCenter.straightAngle();
+            Angle circleAngle = new Angle(2*Math.PI*timeSpan.getMillis()/timeForFullCircle.getMillis());
+            Angle backToCircle = straightAngle.add(circleAngle, rateOfTurn.isRight());
+            moveIt(backToCircle, radius);
+        }
     }
 }
