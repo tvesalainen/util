@@ -73,7 +73,7 @@ public class AverageAngle
 
     public Angle getRange()
     {
-        return new Angle(angleRange.range());
+        return new Angle(angleRange.getRange());
     }
 
     public Angle getMax()
@@ -93,8 +93,8 @@ public class AverageAngle
 
     public void reset()
     {
-        sin.reset();
-        cos.reset();
+        sin.clear();
+        cos.clear();
         count = 0;
         deviationSquare = 0;
     }

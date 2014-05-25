@@ -70,9 +70,9 @@ public class AverageMotion
 
     public void reset()
     {
-        x.reset();
-        y.reset();
-        speed.reset();
+        x.clear();
+        y.clear();
+        speed.clear();
         angle.reset();
         count = 0;
     }

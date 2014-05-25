@@ -16,10 +16,9 @@
  */
 package org.vesalainen.util.navi;
 
-import java.util.Random;
-
 /**
- *
+ * Average class is a simple utility to count some statistic values.
+ * 
  * @author tkv
  */
 public class Average
@@ -51,7 +50,10 @@ public class Average
         max = Math.max(a1.max, a2.max);
         min = Math.min(a1.min, a2.min);
     }
-    
+    /**
+     * Add a new values.
+     * @param value 
+     */
     public void add(double... value)
     {
         for (double v : value)
@@ -59,6 +61,10 @@ public class Average
             add(v);
         }
     }
+    /**
+     * Add a new value.
+     * @param value 
+     */
     public void add(double value)
     {
         max = Math.max(max, value);
@@ -74,33 +80,50 @@ public class Average
         }
         count++;
     }
-
+    /**
+     * Returns average of added values.
+     * @return 
+     */
     public double getAverage()
     {
         return average;
     }
-
+    /**
+     * Returns standard deviation of values.
+     * @return 
+     */
     public double getDeviation()
     {
         return Math.sqrt(deviationSquare);
     }
-
+    /**
+     * Returns the greatest of the values.
+     * @return 
+     */
     public double getMax()
     {
         return max;
     }
-
+    /**
+     * Returns the smallest value.
+     * @return 
+     */
     public double getMin()
     {
         return min;
     }
-
-    public double range()
+    /**
+     * Returns getMax() - getMin()
+     * @return 
+     */
+    public double getRange()
     {
         return max-min;
     }
-
-    public void reset()
+    /**
+     * Clears the added values.
+     */
+    public void clear()
     {
         count = 0;
         average = 0;
@@ -115,28 +138,4 @@ public class Average
         return Double.toString(average);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args)
-    {
-        try
-        {
-            Average aa = new Average();
-            double v = 0;
-            double s = 0;
-            for (int ii=0;ii<10;ii++)
-            {
-                v += 1;
-                System.err.println(v);
-                s+=v;
-                aa.add(v);
-            }
-            System.err.println(s+" "+v+" "+aa.getAverage());
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-    }
 }

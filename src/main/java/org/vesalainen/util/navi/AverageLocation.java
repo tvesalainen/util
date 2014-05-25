@@ -69,8 +69,8 @@ public class AverageLocation
 
     public void reset()
     {
-        x.reset();
-        y.reset();
+        x.clear();
+        y.clear();
         count = 0;
     }
 
