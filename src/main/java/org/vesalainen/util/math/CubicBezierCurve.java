@@ -43,8 +43,8 @@ public class CubicBezierCurve implements Serializable
     }
     /**
      * Creates a CubicBezierCurve
+     * @param start index
      * @param controlPoints 4 control points starting at start
-     * @param Start index
      */
     public CubicBezierCurve(int start, Point... controlPoints)
     {

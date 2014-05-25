@@ -16,9 +16,13 @@
  */
 package org.vesalainen.util.navi;
 
+import java.util.Random;
+
 /**
  * Average class is a simple utility to count some statistic values.
  * 
+ * <p> Implementation doesn't store the values. Because of this the calculated
+ * values are not accurate.
  * @author tkv
  */
 public class Average
@@ -32,7 +36,10 @@ public class Average
     public Average()
     {
     }
-
+    /**
+     * Copies
+     * @param a 
+     */
     public Average(Average a)
     {
         average = a.average;
@@ -41,7 +48,11 @@ public class Average
         max = a.max;
         min = a.min;
     }
-
+    /**
+     * Creates new Average by combining a1 and a2.
+     * @param a1
+     * @param a2 
+     */
     public Average(Average a1, Average a2)
     {
         count = a1.count + a2.count;
@@ -49,6 +60,36 @@ public class Average
         deviationSquare = (a1.count*a1.deviationSquare+a2.count*a2.deviationSquare)/count;
         max = Math.max(a1.max, a2.max);
         min = Math.min(a1.min, a2.min);
+    }
+    /**
+     * Creates a random Average
+     * @param min Minimum
+     * @param max Maximum
+     * @param count Random count
+     */
+    public Average(double min, double max, int count)
+    {
+        this(min, max, count, System.currentTimeMillis());
+    }
+    /**
+     * Creates a random Average
+     * @param min Minimum
+     * @param max Maximum
+     * @param count Random count
+     * @param seed Seed for Random
+     */
+    public Average(double min, double max, int count, long seed)
+    {
+        if (max < min)
+        {
+            throw new IllegalArgumentException(max+" < "+min);
+        }
+        double range = max - min;
+        Random rand = new Random(seed);
+        for (int ii=0;ii<count;ii++)
+        {
+            add(min+range*rand.nextDouble());
+        }
     }
     /**
      * Add a new values.

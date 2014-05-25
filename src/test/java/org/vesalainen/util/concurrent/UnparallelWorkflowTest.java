@@ -17,11 +17,14 @@
 
 package org.vesalainen.util.concurrent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  *
@@ -57,7 +60,7 @@ public class UnparallelWorkflowTest
     /**
      * Test of switchTo method, of class UnparallelWorkflow.
      */
-    @org.junit.Test
+    @Test
     public void testSwitchThread()
     {
         System.out.println("switchThread");
@@ -69,6 +72,16 @@ public class UnparallelWorkflowTest
         assertEquals(6, instance.getThreadCount());
         instance.kill(4);
         assertEquals(5, instance.getThreadCount());
+        instance.stopThreads();
+        try
+        {
+            instance.switchTo(5);
+            fail("should throw exception");
+        }
+        catch (IllegalStateException ex)
+        {
+
+        }
     }
 
     public class UnparallelWorkflowImpl extends UnparallelWorkflow<Integer>
@@ -87,8 +100,8 @@ public class UnparallelWorkflowTest
     }
     public class Worker implements Runnable
     {
-        private int number;
-        private UnparallelWorkflowImpl wf;
+        private final int number;
+        private final UnparallelWorkflowImpl wf;
 
         public Worker(int number, UnparallelWorkflowImpl wf)
         {

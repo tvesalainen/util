@@ -33,6 +33,7 @@ public abstract class UnparallelWorkflow<K>
     private final Map<Thread,Semaphore> semaphoreMap;
     /**
      * Constructs a new workflow. Current thread is named to start.
+     * @param name ThreadGroup name for additional threads.
      * @param start Name of current thread.
      */
     public UnparallelWorkflow(K start)
@@ -50,6 +51,10 @@ public abstract class UnparallelWorkflow<K>
      */
     public void switchTo(K to)
     {
+        if (threadMap.isEmpty())
+        {
+            throw new IllegalStateException("threads are already interrupted");
+        }
         try
         {
             Thread currentThread = Thread.currentThread();
@@ -78,26 +83,52 @@ public abstract class UnparallelWorkflow<K>
         }
         catch (InterruptedException ex)
         {
-            throw new IllegalArgumentException(ex);
+            throw new ThreadStoppedException(ex);
         }
     }
     
     public int getThreadCount()
     {
+        if (threadMap.isEmpty())
+        {
+            throw new IllegalStateException("threads are already interrupted");
+        }
         return threadMap.size();
     }
     public void kill(K key)
     {
+        if (threadMap.isEmpty())
+        {
+            throw new IllegalStateException("threads are already interrupted");
+        }
         Thread thread = threadMap.get(key);
         threadMap.remove(key);
         semaphoreMap.remove(thread);
         thread.interrupt();
     }
+    public void stopThreads()
+    {
+        if (threadMap.isEmpty())
+        {
+            throw new IllegalStateException("threads are already interrupted");
+        }
+        threadMap.clear();
+        semaphoreMap.clear();
+        Thread currentThread = Thread.currentThread();
+        for (Thread thread : threadMap.values())
+        {
+            if (!currentThread.equals(thread))
+            {
+                thread.interrupt();
+            }
+        }
+    }
+
     /**
      * Creates a Runnable implementation for key.
      * @param key Key for Runnable object
      * @return new Runnable implementation associated with the key.
      */
     protected abstract Runnable create(K key);
-    
+
 }
