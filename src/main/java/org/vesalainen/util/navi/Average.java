@@ -122,7 +122,7 @@ public class Average
         count++;
     }
     /**
-     * Returns average of added values.
+     * Returns estimated average of added values.
      * @return 
      */
     public double getAverage()
@@ -130,7 +130,7 @@ public class Average
         return average;
     }
     /**
-     * Returns standard deviation of values.
+     * Returns estimated standard deviation of values.
      * @return 
      */
     public double getDeviation()
