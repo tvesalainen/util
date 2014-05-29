@@ -19,7 +19,7 @@ package org.vesalainen.util.navi;
 import java.util.Random;
 
 /**
- * SimpleStats class is a simple utility to count some statistic values.
+ * SimpleStats class is a simple utility to estimate some statistic values.
  * 
  * <p> Implementation doesn't store the values. Because of this the calculated
  * values are not accurate.

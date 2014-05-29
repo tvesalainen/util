@@ -20,30 +20,30 @@ package org.vesalainen.util.navi;
  *
  * @author tkv
  */
-public class AverageMotion
+public class MotionStats
 {
-    protected Average x = new Average();
-    protected Average y = new Average();
-    protected Average speed = new Average();
-    protected AverageAngle angle = new AverageAngle();
+    protected SimpleStats x = new SimpleStats();
+    protected SimpleStats y = new SimpleStats();
+    protected SimpleStats speed = new SimpleStats();
+    protected AngleStats angle = new AngleStats();
     private int count;
 
-    public AverageMotion()
+    public MotionStats()
     {
     }
 
-    public AverageMotion(AverageMotion a)
+    public MotionStats(MotionStats a)
     {
-        x = new Average(a.x);
-        y = new Average(a.y);
+        x = new SimpleStats(a.x);
+        y = new SimpleStats(a.y);
     }
 
-    public AverageMotion(AverageMotion a1, AverageMotion a2)
+    public MotionStats(MotionStats a1, MotionStats a2)
     {
-        x = new Average(a1.x, a2.x);
-        y = new Average(a1.y, a2.y);
-        speed = new Average(a1.speed, a2.speed);
-        angle = new AverageAngle(a1.angle, a2.angle);
+        x = new SimpleStats(a1.x, a2.x);
+        y = new SimpleStats(a1.y, a2.y);
+        speed = new SimpleStats(a1.speed, a2.speed);
+        angle = new AngleStats(a1.angle, a2.angle);
         count = a1.count + a2.count;
     }
 
@@ -105,7 +105,7 @@ public class AverageMotion
     {
         try
         {
-            AverageMotion aa = new AverageMotion();
+            MotionStats aa = new MotionStats();
             aa.add(new Motion(new Knots(6), new Degree(350)));
             aa.add(new Motion(new Knots(6), new Degree(170)));
             aa.add(new Motion(new Knots(6), new Degree(270)));

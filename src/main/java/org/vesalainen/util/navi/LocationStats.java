@@ -21,26 +21,26 @@ package org.vesalainen.util.navi;
  *
  * @author tkv
  */
-public class AverageLocation
+public class LocationStats
 {
-    private Average x = new Average();
-    private Average y = new Average();
+    private SimpleStats x = new SimpleStats();
+    private SimpleStats y = new SimpleStats();
     private int count;
 
-    public AverageLocation()
+    public LocationStats()
     {
     }
 
-    public AverageLocation(AverageLocation a)
+    public LocationStats(LocationStats a)
     {
-        x = new Average(a.x);
-        y = new Average(a.y);
+        x = new SimpleStats(a.x);
+        y = new SimpleStats(a.y);
     }
 
-    public AverageLocation(AverageLocation a1, AverageLocation a2)
+    public LocationStats(LocationStats a1, LocationStats a2)
     {
-        x = new Average(a1.x, a2.x);
-        y = new Average(a1.y, a2.y);
+        x = new SimpleStats(a1.x, a2.x);
+        y = new SimpleStats(a1.y, a2.y);
         count = a1.count + a2.count;
     }
 
