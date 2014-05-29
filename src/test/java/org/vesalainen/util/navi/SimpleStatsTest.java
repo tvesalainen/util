@@ -29,10 +29,10 @@ import org.junit.Test;
  *
  * @author Timo Vesalainen
  */
-public class AverageTest
+public class SimpleStatsTest
 {
     
-    public AverageTest()
+    public SimpleStatsTest()
     {
     }
     
@@ -63,7 +63,7 @@ public class AverageTest
     {
         System.out.println("average1");
         Random random = new Random(123456789L);
-        Average average = new Average();
+        SimpleStats average = new SimpleStats();
         int count = 10000;
         double epsilon = 0.001;
         double min = Double.MAX_VALUE;
@@ -89,7 +89,7 @@ public class AverageTest
     @Test
     public void test2()
     {
-        Average average = new Average(-180, 180, 10000, 123456789);
+        SimpleStats average = new SimpleStats(-180, 180, 10000, 123456789);
         assertEquals(0, average.getAverage(), 1);
         assertEquals(100, average.getDeviation(), 10);
         assertEquals(180, average.getMax(), 1);
