@@ -22,6 +22,8 @@ import java.util.Locale;
 /**
  * AppendablePrinter enhances Appendable interface to cover PrintStream and
  * PrintReader methods.
+ * 
+ * <p>This class throws IOException wrapped in IllegalArgumentException.
  * @author tkv
  */
 public class AppendablePrinter implements Appendable
@@ -33,143 +35,325 @@ public class AppendablePrinter implements Appendable
         this.out = out;
     }
     @Override
-    public Appendable append(CharSequence csq) throws IOException
+    public Appendable append(CharSequence csq)
     {
-        return out.append(csq);
+        try
+        {
+            return out.append(csq);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @Override
-    public Appendable append(CharSequence csq, int start, int end) throws IOException
+    public Appendable append(CharSequence csq, int start, int end)
     {
-        return out.append(csq, start, end);
+        try
+        {
+            return out.append(csq, start, end);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @Override
-    public Appendable append(char c) throws IOException
+    public Appendable append(char c)
     {
-        return out.append(c);
+        try
+        {
+            return out.append(c);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void format(String format, Object... args) throws IOException
+    public void format(String format, Object... args)
     {
-        out.append(String.format(format, args));
+        try
+        {
+            out.append(String.format(format, args));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void format(Locale l, String format, Object... args) throws IOException
+    public void format(Locale l, String format, Object... args)
     {
-        out.append(String.format(l, format, args));
+        try
+        {
+            out.append(String.format(l, format, args));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(boolean b) throws IOException
+    public void print(boolean b)
     {
-        out.append(Boolean.toString(b));
+        try
+        {
+            out.append(Boolean.toString(b));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(char c) throws IOException
+    public void print(char c)
     {
-        out.append(c);
+        try
+        {
+            out.append(c);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(int i) throws IOException
+    public void print(int i)
     {
-        out.append(Integer.toString(i));
+        try
+        {
+            out.append(Integer.toString(i));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(long l) throws IOException
+    public void print(long l)
     {
-        out.append(Long.toString(l));
+        try
+        {
+            out.append(Long.toString(l));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(float f) throws IOException
+    public void print(float f)
     {
-        out.append(Float.toString(f));
+        try
+        {
+            out.append(Float.toString(f));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(double d) throws IOException
+    public void print(double d)
     {
-        out.append(Double.toString(d));
+        try
+        {
+            out.append(Double.toString(d));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void print(char[] s) throws IOException
+    public void print(char[] s)
     {
+            try
+            {
+         for (char cc : s)
+        {
+               out.append(cc);
+        }
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+    }
+
+    public void print(String s)
+    {
+        try
+        {
+            out.append(s);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void print(Object obj)
+    {
+        try
+        {
+            out.append(obj.toString());
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void printf(String format, Object... args)
+    {
+        try
+        {
+            out.append(String.format(format, args));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void printf(Locale l, String format, Object... args)
+    {
+        try
+        {
+            out.append(String.format(l, format, args));
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println()
+    {
+        try
+        {
+            out.append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(boolean b)
+    {
+        try
+        {
+            out.append(Boolean.toString(b)).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(char c)
+    {
+        try
+        {
+            out.append(c).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(int i)
+    {
+        try
+        {
+            out.append(Integer.toString(i)).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(long l)
+    {
+        try
+        {
+            out.append(Long.toString(l)).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(float f)
+    {
+        try
+        {
+            out.append(Float.toString(f)).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(double d)
+    {
+        try
+        {
+            out.append(Double.toString(d)).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    public void println(char[] s)
+    {
+        try
+        {
         for (char cc : s)
         {
             out.append(cc);
         }
-    }
-
-    public void print(String s) throws IOException
-    {
-        out.append(s);
-    }
-
-    public void print(Object obj) throws IOException
-    {
-        out.append(obj.toString());
-    }
-
-    public void printf(String format, Object... args) throws IOException
-    {
-        out.append(String.format(format, args));
-    }
-
-    public void printf(Locale l, String format, Object... args) throws IOException
-    {
-        out.append(String.format(l, format, args));
-    }
-
-    public void println() throws IOException
-    {
         out.append('\n');
-    }
-
-    public void println(boolean b) throws IOException
-    {
-        out.append(Boolean.toString(b)).append('\n');
-    }
-
-    public void println(char c) throws IOException
-    {
-        out.append(c).append('\n');
-    }
-
-    public void println(int i) throws IOException
-    {
-        out.append(Integer.toString(i)).append('\n');
-    }
-
-    public void println(long l) throws IOException
-    {
-        out.append(Long.toString(l)).append('\n');
-    }
-
-    public void println(float f) throws IOException
-    {
-        out.append(Float.toString(f)).append('\n');
-    }
-
-    public void println(double d) throws IOException
-    {
-        out.append(Double.toString(d)).append('\n');
-    }
-
-    public void println(char[] s) throws IOException
-    {
-        for (char cc : s)
-        {
-            out.append(cc);
         }
-        out.append('\n');
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void println(String s) throws IOException
+    public void println(String s)
     {
-        out.append(s).append('\n');
+        try
+        {
+            out.append(s).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public void println(Object obj) throws IOException
+    public void println(Object obj)
     {
-        out.append(obj.toString()).append('\n');
+        try
+        {
+            out.append(obj.toString()).append('\n');
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
 }
