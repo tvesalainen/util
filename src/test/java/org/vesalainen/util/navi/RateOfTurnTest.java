@@ -17,6 +17,7 @@
 
 package org.vesalainen.util.navi;
 
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,6 +106,78 @@ public class RateOfTurnTest
         RateOfTurn instance = new DegreesPerMinute(6);
         Distance expResult = new Miles(1/Math.PI);
         Distance result = instance.getRadius(velocity);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of isRight method, of class RateOfTurn.
+     */
+    @Test
+    public void testIsRight()
+    {
+        System.out.println("isRight");
+        RateOfTurn instance = new RateOfTurn(-10);
+        boolean expResult = false;
+        boolean result = instance.isRight();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getBearingAfter method, of class RateOfTurn.
+     */
+    @Test
+    public void testGetBearingAfter()
+    {
+        System.out.println("getBearingAfter");
+        Angle bearing = new Degree(350);
+        TimeSpan span = new TimeSpan(2, TimeUnit.MINUTES);
+        RateOfTurn instance = new DegreesPerMinute(10);
+        Angle expResult = new Degree(10);
+        Angle result = instance.getBearingAfter(bearing, span);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getBearingAfter method, of class RateOfTurn.
+     */
+    @Test
+    public void testGetBearingAfter2()
+    {
+        System.out.println("getBearingAfter");
+        Angle bearing = new Degree(10);
+        TimeSpan span = new TimeSpan(2, TimeUnit.MINUTES);
+        RateOfTurn instance = new DegreesPerMinute(-10);
+        Angle expResult = new Degree(350);
+        Angle result = instance.getBearingAfter(bearing, span);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getAngleChange method, of class RateOfTurn.
+     */
+    @Test
+    public void testGetAngleChange()
+    {
+        System.out.println("getAngleChange");
+        TimeSpan span = new TimeSpan(2, TimeUnit.MINUTES);
+        RateOfTurn instance = new DegreesPerMinute(-10);
+        Angle expResult = new Degree(340);
+        Angle result = instance.getAngleChange(span);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of getMotionAfter method, of class RateOfTurn.
+     */
+    @Test
+    public void testGetMotionAfter()
+    {
+        System.out.println("getMotionAfter");
+        Motion motion = new Motion(new Knots(20), new Degree(350));
+        TimeSpan span = new TimeSpan(2, TimeUnit.MINUTES);
+        RateOfTurn instance = new DegreesPerMinute(10);
+        Motion expResult = new Motion(new Knots(20), new Degree(10));
+        Motion result = instance.getMotionAfter(motion, span);
         assertEquals(expResult, result);
     }
 

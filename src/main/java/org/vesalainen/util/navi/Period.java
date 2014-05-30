@@ -62,15 +62,7 @@ public class Period implements Serializable
         return to;
     }
 
-    public void setFrom(Date from)
-    {
-        this.from = from;
-    }
 
-    public void setTo(Date to)
-    {
-        this.to = to;
-    }
 
     public TimeSpan getTimeSpan()
     {

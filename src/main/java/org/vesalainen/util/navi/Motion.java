@@ -210,14 +210,6 @@ public class Motion implements Serializable
         return speed+" "+angle;
     }
 
-    public void setSpeed(Velocity speed)
-    {
-        this.speed = speed;
-    }
 
-    public void setAngle(Angle angle)
-    {
-        this.angle = angle;
-    }
 
 }

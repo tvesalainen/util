@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class RateOfTurn extends Scalar
 {
-    private boolean right = true;
     public RateOfTurn()
     {
         super(ScalarType.TURN);
@@ -36,11 +35,7 @@ public class RateOfTurn extends Scalar
      */
     public RateOfTurn(double radiansPerSecond)
     {
-        super(Math.abs(radiansPerSecond), ScalarType.TURN);
-        if (radiansPerSecond < 0)
-        {
-            right = false;
-        }
+        super(radiansPerSecond, ScalarType.TURN);
     }
 
     public RateOfTurn(Scalar scalar)
@@ -50,7 +45,7 @@ public class RateOfTurn extends Scalar
 
     public boolean isRight()
     {
-        return right;
+        return value >= 0;
     }
     /**
      * Return ROT in degrees / minute
@@ -58,7 +53,7 @@ public class RateOfTurn extends Scalar
      */
     public double getDegreesPerMinute()
     {
-        return Math.toDegrees(value)*60;
+        return Math.toDegrees(Math.abs(value))*60;
     }
     /**
      * Returns TimeSpan for full circle
@@ -74,11 +69,11 @@ public class RateOfTurn extends Scalar
      */
     public double getSecondsForFullCircle()
     {
-        return 2*Math.PI / value;
+        return 2*Math.PI / Math.abs(value);
     }
     /**
      * Returns the radius of the circle
-     * @param velocity
+     * @param velocity Speed of the vessel
      * @return 
      */
     public Distance getRadius(Velocity velocity)
@@ -86,5 +81,28 @@ public class RateOfTurn extends Scalar
         Distance circle = velocity.getDistance(getTimeForFullCircle());
         circle.mul(1/Math.PI);
         return circle;
+    }
+    public Angle getBearingAfter(Angle bearing, TimeSpan span)
+    {
+        return bearing.add(getAngleChange(span));
+    }
+    /**
+     * Return's Angle change after span
+     * @param span TimeSpan of turning
+     * @return 
+     */
+    public Angle getAngleChange(TimeSpan span)
+    {
+        return new Angle(span.getSeconds()*value);
+    }
+    /**
+     * Return's motion after timespan
+     * @param motion Motion at the beginning
+     * @param span TimeSpan of turning
+     * @return 
+     */
+    public Motion getMotionAfter(Motion motion, TimeSpan span)
+    {
+        return new Motion(motion.getSpeed(), getBearingAfter(motion.getAngle(), span));
     }
 }

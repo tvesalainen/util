@@ -61,7 +61,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         value = scalar.value;
     }
     
-    public void copy(Scalar scalar)
+    void copy(Scalar scalar)
     {
         if (!type.equals(scalar.type))
         {
@@ -122,7 +122,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * Add x to this
      * @param x
      */
-    public void add(double x)
+    void add(double x)
     {
         value += x;
     }
@@ -130,7 +130,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * Add o value to this
      * @param o
      */
-    public void add(Scalar o)
+    void add(Scalar o)
     {
         if (!type.equals(o.type))
         {
@@ -142,7 +142,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * Subtract x from this
      * @param x
      */
-    public void subtract(double x)
+    void subtract(double x)
     {
         value -= x;
     }
@@ -150,7 +150,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * Subtract o value from this
      * @param o
      */
-    public void subtract(Scalar o)
+    void subtract(Scalar o)
     {
         if (!type.equals(o.type))
         {
@@ -162,14 +162,14 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * Multiply with x
      * @param x
      */
-    public void mul(double x)
+    void mul(double x)
     {
         value *= x;
     }
     /**
      * Add 1 to value
      */
-    public void plusPlus()
+    void plusPlus()
     {
         value++;
     }

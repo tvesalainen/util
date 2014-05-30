@@ -78,7 +78,7 @@ public class TimeSpan extends Scalar
         super(to.getTime() - from.getTime(), ScalarType.TIMESPAN);
     }
 
-    public Date addDate(Date from)
+    Date addDate(Date from)
     {
         return new Date(from.getTime() + (long)value);
     }
