@@ -31,9 +31,9 @@ public abstract class SimpleWorkflow<K>
 {
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
+    private final Semaphore stopSemaphore = new Semaphore(1);
     /**
      * Constructs a new workflow. Current thread is named to start.
-     * @param name ThreadGroup name for additional threads.
      * @param start Name of current thread.
      */
     public SimpleWorkflow(K start)
@@ -51,24 +51,34 @@ public abstract class SimpleWorkflow<K>
      */
     public void fork(K to)
     {
-        if (threadMap.isEmpty())
+        try
         {
-            throw new IllegalStateException("threads are already interrupted");
+            if (threadMap.isEmpty())
+            {
+                throw new IllegalStateException("threads are already interrupted");
+            }
+            stopSemaphore.acquire();
+            System.err.println("acquire="+stopSemaphore.availablePermits());
+            Thread nextThread = threadMap.get(to);
+            if (nextThread == null)
+            {
+                Runnable runnable = create(to);
+                nextThread = new Thread(runnable, to.toString());
+                Semaphore semaphore = new Semaphore(0);
+                threadMap.put(to, nextThread);
+                semaphoreMap.put(nextThread, semaphore);
+                nextThread.start();
+                stopSemaphore.release();
+            }
+            else
+            {
+                Semaphore semaphore = semaphoreMap.get(nextThread);
+                semaphore.release();
+            }
         }
-        Thread nextThread = threadMap.get(to);
-        if (nextThread == null)
+        catch (InterruptedException ex)
         {
-            Runnable runnable = create(to);
-            nextThread = new Thread(runnable, to.toString());
-            Semaphore semaphore = new Semaphore(0);
-            threadMap.put(to, nextThread);
-            semaphoreMap.put(nextThread, semaphore);
-            nextThread.start();
-        }
-        else
-        {
-            Semaphore semaphore = semaphoreMap.get(nextThread);
-            semaphore.release();
+            throw new IllegalArgumentException(ex);
         }
     }
     public void join()
@@ -79,6 +89,8 @@ public abstract class SimpleWorkflow<K>
         }
         try
         {
+            stopSemaphore.release();
+            System.err.println("release="+stopSemaphore.availablePermits());
             Thread currentThread = Thread.currentThread();
             Semaphore currentSemaphore = semaphoreMap.get(currentThread);
             if (currentSemaphore == null)
@@ -112,31 +124,48 @@ public abstract class SimpleWorkflow<K>
     }
     public void kill(K key)
     {
-        if (threadMap.isEmpty())
+        try
         {
-            throw new IllegalStateException("threads are already interrupted");
+            if (threadMap.isEmpty())
+            {
+                throw new IllegalStateException("threads are already interrupted");
+            }
+            Thread thread = threadMap.get(key);
+            threadMap.remove(key);
+            semaphoreMap.remove(thread);
+            thread.interrupt();
+            stopSemaphore.acquire();
         }
-        Thread thread = threadMap.get(key);
-        threadMap.remove(key);
-        semaphoreMap.remove(thread);
-        thread.interrupt();
+        catch (InterruptedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
     public void stopThreads()
     {
-        if (threadMap.isEmpty())
+        try
         {
-            throw new IllegalStateException("threads are already interrupted");
-        }
-        Thread currentThread = Thread.currentThread();
-        for (Thread thread : threadMap.values())
-        {
-            if (!currentThread.equals(thread))
+            if (threadMap.isEmpty())
             {
-                thread.interrupt();
+                throw new IllegalStateException("threads are already interrupted");
             }
+            System.err.println("permits="+stopSemaphore.availablePermits());
+            stopSemaphore.acquire(threadMap.size());
+            Thread currentThread = Thread.currentThread();
+            for (Thread thread : threadMap.values())
+            {
+                if (!currentThread.equals(thread))
+                {
+                    thread.interrupt();
+                }
+            }
+            threadMap.clear();
+            semaphoreMap.clear();
         }
-        threadMap.clear();
-        semaphoreMap.clear();
+        catch (InterruptedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     /**
