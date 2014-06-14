@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
- * UnparallelWorkflow creates a workflow using several threads. Only single
+ * SimpleWorkflow creates a workflow using several threads. Mostly single
  * thread is allowed to run at the same time.
  * @author tkv
  * @param <K> Thread key
  */
-public abstract class UnparallelWorkflow<K>
+public abstract class SimpleWorkflow<K>
 {
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
@@ -36,7 +36,7 @@ public abstract class UnparallelWorkflow<K>
      * @param name ThreadGroup name for additional threads.
      * @param start Name of current thread.
      */
-    public UnparallelWorkflow(K start)
+    public SimpleWorkflow(K start)
     {
         this.semaphoreMap = new HashMap<>();
         this.threadMap = new HashMap<>();
@@ -46,10 +46,32 @@ public abstract class UnparallelWorkflow<K>
     }
     
     /**
-     * Switch executing thread. 
+     * Fork executing thread. 
      * @param to Next executing
      */
-    public void switchTo(K to)
+    public void fork(K to)
+    {
+        if (threadMap.isEmpty())
+        {
+            throw new IllegalStateException("threads are already interrupted");
+        }
+        Thread nextThread = threadMap.get(to);
+        if (nextThread == null)
+        {
+            Runnable runnable = create(to);
+            nextThread = new Thread(runnable, to.toString());
+            Semaphore semaphore = new Semaphore(0);
+            threadMap.put(to, nextThread);
+            semaphoreMap.put(nextThread, semaphore);
+            nextThread.start();
+        }
+        else
+        {
+            Semaphore semaphore = semaphoreMap.get(nextThread);
+            semaphore.release();
+        }
+    }
+    public void join()
     {
         if (threadMap.isEmpty())
         {
@@ -63,28 +85,21 @@ public abstract class UnparallelWorkflow<K>
             {
                 throw new IllegalStateException("Current thread is not workflow thread");
             }
-            Thread nextThread = threadMap.get(to);
-            if (nextThread == null)
-            {
-                Runnable runnable = create(to);
-                nextThread = new Thread(runnable, to.toString());
-                Semaphore semaphore = new Semaphore(0);
-                threadMap.put(to, nextThread);
-                semaphoreMap.put(nextThread, semaphore);
-                nextThread.start();
-                currentSemaphore.acquire();
-            }
-            else
-            {
-                Semaphore semaphore = semaphoreMap.get(nextThread);
-                semaphore.release();
-                currentSemaphore.acquire();
-            }
+            currentSemaphore.acquire();
         }
         catch (InterruptedException ex)
         {
             throw new ThreadStoppedException(ex);
         }
+    }
+    /**
+     * Switch executing thread. 
+     * @param to Next executing
+     */
+    public void switchTo(K to)
+    {
+        fork(to);
+        join();
     }
     
     public int getThreadCount()
@@ -112,8 +127,6 @@ public abstract class UnparallelWorkflow<K>
         {
             throw new IllegalStateException("threads are already interrupted");
         }
-        threadMap.clear();
-        semaphoreMap.clear();
         Thread currentThread = Thread.currentThread();
         for (Thread thread : threadMap.values())
         {
@@ -122,6 +135,8 @@ public abstract class UnparallelWorkflow<K>
                 thread.interrupt();
             }
         }
+        threadMap.clear();
+        semaphoreMap.clear();
     }
 
     /**

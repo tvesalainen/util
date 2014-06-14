@@ -30,10 +30,10 @@ import org.junit.Test;
  *
  * @author tkv
  */
-public class UnparallelWorkflowTest
+public class SimpleWorkflowTest
 {
     
-    public UnparallelWorkflowTest()
+    public SimpleWorkflowTest()
     {
     }
     
@@ -58,7 +58,7 @@ public class UnparallelWorkflowTest
     }
 
     /**
-     * Test of switchTo method, of class UnparallelWorkflow.
+     * Test of switchTo method, of class SimpleWorkflow.
      */
     @Test
     public void testSwitchThread()
@@ -84,7 +84,7 @@ public class UnparallelWorkflowTest
         }
     }
 
-    public class UnparallelWorkflowImpl extends UnparallelWorkflow<Integer>
+    public class UnparallelWorkflowImpl extends SimpleWorkflow<Integer>
     {
 
         public UnparallelWorkflowImpl(int number)
