@@ -61,7 +61,7 @@ public class SimpleWorkflowTest
      * Test of switchTo method, of class SimpleWorkflow.
      */
     @Test
-    public void testSwitchThread()
+    public void testSwitchThread1()
     {
         System.out.println("switchThread");
         UnparallelWorkflowImpl instance = new UnparallelWorkflowImpl(0);
@@ -84,6 +84,25 @@ public class SimpleWorkflowTest
         }
     }
 
+    @Test
+    public void testSwitchThread2()
+    {
+        System.out.println("switchThread2");
+        UnparallelWorkflowImpl instance = new UnparallelWorkflowImpl(0);
+        assertEquals(1, instance.getThreadCount());
+        instance.switchTo(1);
+        assertEquals(2, instance.getThreadCount());
+        instance.stopThreads();
+        try
+        {
+            instance.switchTo(1);
+            fail("should throw exception");
+        }
+        catch (IllegalStateException ex)
+        {
+
+        }
+    }
     public class UnparallelWorkflowImpl extends SimpleWorkflow<Integer>
     {
 

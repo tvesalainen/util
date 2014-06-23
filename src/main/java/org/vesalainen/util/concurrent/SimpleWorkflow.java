@@ -58,7 +58,7 @@ public abstract class SimpleWorkflow<K>
                 throw new IllegalStateException("threads are already interrupted");
             }
             stopSemaphore.acquire();
-            System.err.println("acquire="+stopSemaphore.availablePermits());
+            System.err.println("forked="+stopSemaphore.availablePermits());
             Thread nextThread = threadMap.get(to);
             if (nextThread == null)
             {
@@ -69,6 +69,7 @@ public abstract class SimpleWorkflow<K>
                 semaphoreMap.put(nextThread, semaphore);
                 nextThread.start();
                 stopSemaphore.release();
+                System.err.println("created="+stopSemaphore.availablePermits());
             }
             else
             {
@@ -90,7 +91,7 @@ public abstract class SimpleWorkflow<K>
         try
         {
             stopSemaphore.release();
-            System.err.println("release="+stopSemaphore.availablePermits());
+            System.err.println("joined="+stopSemaphore.availablePermits());
             Thread currentThread = Thread.currentThread();
             Semaphore currentSemaphore = semaphoreMap.get(currentThread);
             if (currentSemaphore == null)
@@ -135,6 +136,7 @@ public abstract class SimpleWorkflow<K>
             semaphoreMap.remove(thread);
             thread.interrupt();
             stopSemaphore.acquire();
+            System.err.println("killed="+stopSemaphore.availablePermits());
         }
         catch (InterruptedException ex)
         {
@@ -149,7 +151,7 @@ public abstract class SimpleWorkflow<K>
             {
                 throw new IllegalStateException("threads are already interrupted");
             }
-            System.err.println("permits="+stopSemaphore.availablePermits());
+            System.err.println("stopping="+stopSemaphore.availablePermits());
             stopSemaphore.acquire(threadMap.size());
             Thread currentThread = Thread.currentThread();
             for (Thread thread : threadMap.values())
