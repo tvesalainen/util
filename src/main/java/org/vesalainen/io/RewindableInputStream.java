@@ -17,39 +17,31 @@
 
 package org.vesalainen.io;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class RewindableReader extends BufferedReader implements Rewindable
+public class RewindableInputStream extends BufferedInputStream implements Rewindable
 {
     protected int maxRewind;
     protected int lastReadCount;
-    /**
-     * Creates a Rewindable reader
-     * @param reader A Reader
-     * @param sz Input buffer size
-     * @param maxRewind Maximum rewind count
-     */
-    public RewindableReader(Reader reader, int sz, int maxRewind)
+
+    public RewindableInputStream(InputStream in, int maxRewind)
     {
-        super(reader, sz);
+        super(in);
         this.maxRewind = maxRewind;
     }
-    /**
-     * Creates a Rewindable reader
-     * @param reader A Reader
-     * @param maxRewind Maximum rewind count
-     */
-    public RewindableReader(Reader reader, int maxRewind)
+
+    public RewindableInputStream(InputStream in, int sz, int maxRewind)
     {
-        super(reader);
+        super(in, sz);
         this.maxRewind = maxRewind;
     }
+
     @Override
     public void rewind(int count) throws IOException
     {
@@ -62,47 +54,43 @@ public class RewindableReader extends BufferedReader implements Rewindable
     }
 
     @Override
-    public void reset() throws IOException
+    public boolean markSupported()
+    {
+        return false;
+    }
+
+    @Override
+    public synchronized void reset() throws IOException
     {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public void mark(int i) throws IOException
+    public synchronized void mark(int i)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public long skip(long l) throws IOException
+    public synchronized long skip(long l) throws IOException
     {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public int read(char[] chars, int off, int len) throws IOException
+    public synchronized int read(byte[] bytes, int off, int len) throws IOException
     {
         super.mark(maxRewind);
-        lastReadCount = super.read(chars, off, len);
+        lastReadCount = super.read(bytes, off, len);
         return lastReadCount;
     }
 
     @Override
-    public int read() throws IOException
+    public synchronized int read() throws IOException
     {
         super.mark(maxRewind);
         lastReadCount = 1;
         return super.read();
-    }
-    
-    /**
-     * Overrides BufferedReader to not support mark!
-     * @return 
-     */
-    @Override
-    public boolean markSupported()
-    {
-        return false;
     }
     
 }
