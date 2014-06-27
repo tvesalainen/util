@@ -39,18 +39,21 @@ public class RewindableInputStreamTest
     @Test
     public void test1() throws Exception
     {
-        InputStream is = RewindableInputStreamTest.class.getClassLoader().getResourceAsStream("test.txt");
-        RewindableInputStream ris = new RewindableInputStream(is, 64, 32);
-        byte[] buf = new byte[20];
-        int rc = ris.read(buf);
-        while (rc == buf.length)
+        try (InputStream is = RewindableInputStreamTest.class.getClassLoader().getResourceAsStream("test.txt");
+            RewindableInputStream ris = new RewindableInputStream(is, 64, 32);
+                )
         {
-            String s1 = new String(buf);
-            ris.rewind(10);
-            rc = ris.read(buf);
-            String s2 = new String(buf);
-            assertEquals(s1.substring(10), s2.substring(0, 10));
-            rc = ris.read(buf);
+            byte[] buf = new byte[20];
+            int rc = ris.read(buf);
+            while (rc == buf.length)
+            {
+                String s1 = new String(buf);
+                ris.rewind(10);
+                rc = ris.read(buf);
+                String s2 = new String(buf);
+                assertEquals(s1.substring(10), s2.substring(0, 10));
+                rc = ris.read(buf);
+            }
         }
     }
 

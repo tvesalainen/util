@@ -72,7 +72,7 @@ public class SimpleWorkflowTest
         assertEquals(6, instance.getThreadCount());
         instance.kill(4);
         assertEquals(5, instance.getThreadCount());
-        instance.stopThreads();
+        instance.waitAndStopThreads();
         try
         {
             instance.switchTo(5);
@@ -92,7 +92,7 @@ public class SimpleWorkflowTest
         assertEquals(1, instance.getThreadCount());
         instance.switchTo(1);
         assertEquals(2, instance.getThreadCount());
-        instance.stopThreads();
+        instance.waitAndStopThreads();
         try
         {
             instance.switchTo(1);

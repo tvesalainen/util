@@ -39,19 +39,21 @@ public class RewindableReaderTest
     @Test
     public void test1() throws Exception
     {
-        InputStream is = RewindableReaderTest.class.getClassLoader().getResourceAsStream("test.txt");
-        InputStreamReader isr = new InputStreamReader(is);
-        RewindableReader rr = new RewindableReader(isr, 64, 32);
-        char[] buf = new char[20];
-        int rc = rr.read(buf);
-        while (rc == buf.length)
+        try (InputStream is = RewindableReaderTest.class.getClassLoader().getResourceAsStream("test.txt");
+            InputStreamReader isr = new InputStreamReader(is);)
         {
-            String s1 = new String(buf);
-            rr.rewind(10);
-            rc = rr.read(buf);
-            String s2 = new String(buf);
-            assertEquals(s1.substring(10), s2.substring(0, 10));
-            rc = rr.read(buf);
+            RewindableReader rr = new RewindableReader(isr, 64, 32);
+            char[] buf = new char[20];
+            int rc = rr.read(buf);
+            while (rc == buf.length)
+            {
+                String s1 = new String(buf);
+                rr.rewind(10);
+                rc = rr.read(buf);
+                String s2 = new String(buf);
+                assertEquals(s1.substring(10), s2.substring(0, 10));
+                rc = rr.read(buf);
+            }
         }
     }
 
