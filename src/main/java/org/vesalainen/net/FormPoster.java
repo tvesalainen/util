@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.vesalainen.util;
+package org.vesalainen.net;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import org.vesalainen.util.MimeTypes;
 
 /**
  * @author Timo Vesalainen
