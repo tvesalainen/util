@@ -127,7 +127,7 @@ public abstract class SimpleWorkflow<K>
         System.err.println("joined="+stopSemaphore.availablePermits());
         doJoin();
     }
-    public void doJoin()
+    private void doJoin()
     {
         if (threadMap.isEmpty())
         {
