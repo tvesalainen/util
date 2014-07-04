@@ -30,7 +30,7 @@ import java.util.Deque;
  */
 public class PushbackReadable implements Readable, AutoCloseable, Pushbackable<CharBuffer>
 {
-    private final Readable in;
+    protected final Readable in;
     private Deque<CharBuffer> stack;
     
     public PushbackReadable(Readable in)
@@ -96,6 +96,12 @@ public class PushbackReadable implements Readable, AutoCloseable, Pushbackable<C
         }
         nbuf.clear();
         stack.push(nbuf);
+    }
+
+    @Override
+    public boolean hasPushback()
+    {
+        return stack != null && !stack.isEmpty();
     }
     
 }

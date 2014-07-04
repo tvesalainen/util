@@ -28,5 +28,15 @@ import java.nio.Buffer;
  */
 public interface Pushbackable<I extends Buffer>
 {
+    /**
+     * Pushes buffers back. Following reads will return buffers content in that order.
+     * @param buffer
+     * @throws IOException 
+     */
     void pushback(I... buffer) throws IOException;
+    /**
+     * Returns true if there are pushback data to read.
+     * @return 
+     */
+    boolean hasPushback();
 }

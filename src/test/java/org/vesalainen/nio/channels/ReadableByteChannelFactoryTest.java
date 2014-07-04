@@ -114,7 +114,7 @@ public class ReadableByteChannelFactoryTest
         }
     }
     
-    @Test
+    //@Test there might not be internet connection open
     public void testGetInstance_URL_HTTP() throws Exception
     {
         URL url = new URL("http://www.sailfaraway.net/");
