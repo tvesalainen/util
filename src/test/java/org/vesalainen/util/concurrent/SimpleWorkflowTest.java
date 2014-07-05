@@ -64,7 +64,7 @@ public class SimpleWorkflowTest
     public void testSwitchThread1()
     {
         System.out.println("switchThread");
-        UnparallelWorkflowImpl instance = new UnparallelWorkflowImpl(0);
+        UnparallelWorkflowImpl1 instance = new UnparallelWorkflowImpl1(0);
         assertEquals(1, instance.getThreadCount());
         instance.switchTo(5);
         assertEquals(6, instance.getThreadCount());
@@ -88,7 +88,7 @@ public class SimpleWorkflowTest
     public void testSwitchThread2()
     {
         System.out.println("switchThread2");
-        UnparallelWorkflowImpl instance = new UnparallelWorkflowImpl(0);
+        UnparallelWorkflowImpl1 instance = new UnparallelWorkflowImpl1(0);
         assertEquals(1, instance.getThreadCount());
         instance.switchTo(1);
         assertEquals(2, instance.getThreadCount());
@@ -103,10 +103,29 @@ public class SimpleWorkflowTest
 
         }
     }
-    public class UnparallelWorkflowImpl extends SimpleWorkflow<Integer>
+    @Test
+    public void testForkJoin1()
+    {
+        System.out.println("ForkJoin1");
+        UnparallelWorkflowImpl2 instance = new UnparallelWorkflowImpl2(0);
+        assertEquals(1, instance.getThreadCount());
+        instance.switchTo(1);
+        assertEquals(2, instance.getThreadCount());
+        instance.waitAndStopThreads();
+        try
+        {
+            instance.switchTo(1);
+            fail("should throw exception");
+        }
+        catch (IllegalStateException ex)
+        {
+
+        }
+    }
+    public class UnparallelWorkflowImpl1 extends SimpleWorkflow<Integer>
     {
 
-        public UnparallelWorkflowImpl(int number)
+        public UnparallelWorkflowImpl1(int number)
         {
             super(number);
         }
@@ -114,15 +133,15 @@ public class SimpleWorkflowTest
         @Override
         protected Runnable create(Integer key)
         {
-            return new Worker(key, this);
+            return new Worker1(key, this);
         }
     }
-    public class Worker implements Runnable
+    public class Worker1 implements Runnable
     {
         private final int number;
-        private final UnparallelWorkflowImpl wf;
+        private final UnparallelWorkflowImpl1 wf;
 
-        public Worker(int number, UnparallelWorkflowImpl wf)
+        public Worker1(int number, UnparallelWorkflowImpl1 wf)
         {
             this.number = number;
             this.wf = wf;
@@ -135,6 +154,47 @@ public class SimpleWorkflowTest
             {
                 wf.switchTo(number-1);
             }
+        }
+        
+    }
+    public class UnparallelWorkflowImpl2 extends SimpleWorkflow<Integer>
+    {
+
+        public UnparallelWorkflowImpl2(int number)
+        {
+            super(number);
+        }
+
+        @Override
+        protected Runnable create(Integer key)
+        {
+            return new Worker2(key, this);
+        }
+    }
+    public class Worker2 implements Runnable
+    {
+        private final int number;
+        private final UnparallelWorkflowImpl2 wf;
+
+        public Worker2(int number, UnparallelWorkflowImpl2 wf)
+        {
+            this.number = number;
+            this.wf = wf;
+        }
+
+        @Override
+        public void run()
+        {
+            wf.fork(0);
+            try
+            {
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+            wf.join();
         }
         
     }
