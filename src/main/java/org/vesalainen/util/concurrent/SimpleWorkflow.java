@@ -36,7 +36,6 @@ public abstract class SimpleWorkflow<K>
 {
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
-    private final Set<Thread> runningSet;
     private final Semaphore stopSemaphore;
     private final int maxParallelism;
     
@@ -64,11 +63,9 @@ public abstract class SimpleWorkflow<K>
         this.stopSemaphore = new Semaphore(maxParallelism);
         this.semaphoreMap = new HashMap<>();
         this.threadMap = new HashMap<>();
-        this.runningSet = new HashSet<>();
         Thread currentThread = Thread.currentThread();
         threadMap.put(start, currentThread);
         semaphoreMap.put(currentThread, new Semaphore(0));
-        runningSet.add(currentThread);
     }
     
     /**
@@ -84,7 +81,7 @@ public abstract class SimpleWorkflow<K>
         try
         {
             stopSemaphore.acquire();
-            System.err.println("forked="+stopSemaphore.availablePermits());
+            //System.err.println("forked="+stopSemaphore.availablePermits());
             doFork(to);
         }
         catch (InterruptedException ex)
@@ -99,48 +96,38 @@ public abstract class SimpleWorkflow<K>
             throw new IllegalStateException("threads are already interrupted");
         }
         Thread nextThread = threadMap.get(to);
-        if (runningSet.contains(nextThread))
-        {
-            throw new IllegalStateException(nextThread+" thread is already running!");
-        }
         if (nextThread == null)
         {
             Runnable runnable = create(to);
+            runnable = new Wrapper(runnable);
             nextThread = new Thread(runnable, to.toString());
             Semaphore semaphore = new Semaphore(0);
             threadMap.put(to, nextThread);
             semaphoreMap.put(nextThread, semaphore);
-            runningSet.add(nextThread);
             nextThread.start();
-            System.err.println("created="+stopSemaphore.availablePermits());
+            //System.err.println("created="+stopSemaphore.availablePermits());
         }
         else
         {
-            runningSet.add(nextThread);
             Semaphore semaphore = semaphoreMap.get(nextThread);
             semaphore.release();
         }
     }
     public void join()
     {
-        stopSemaphore.release();
-        System.err.println("joined="+stopSemaphore.availablePermits());
-        doJoin();
-    }
-    private void doJoin()
-    {
         if (threadMap.isEmpty())
         {
             throw new IllegalStateException("threads are already interrupted");
         }
+        stopSemaphore.release();
+        //System.err.println("joined="+stopSemaphore.availablePermits());
+        doJoin();
+    }
+    private void doJoin()
+    {
         try
         {
             Thread currentThread = Thread.currentThread();
-            if (!runningSet.contains(currentThread))
-            {
-                throw new IllegalStateException(currentThread+" thread is not running!");
-            }
-            runningSet.remove(currentThread);
             Semaphore currentSemaphore = semaphoreMap.get(currentThread);
             if (currentSemaphore == null)
             {
@@ -194,8 +181,9 @@ public abstract class SimpleWorkflow<K>
             {
                 throw new IllegalStateException("threads are already interrupted");
             }
-            System.err.println("stopping="+stopSemaphore.availablePermits());
+            //System.err.println("waiting stopping="+stopSemaphore.availablePermits());
             stopSemaphore.acquire(maxParallelism);
+            //System.err.println("released stopping="+stopSemaphore.availablePermits());
             stopThreads();
         }
         catch (InterruptedException ex)
@@ -232,4 +220,36 @@ public abstract class SimpleWorkflow<K>
      */
     protected abstract Runnable create(K key);
 
+    public class Wrapper implements Runnable
+    {
+        private Runnable runner;
+
+        public Wrapper(Runnable runner)
+        {
+            this.runner = runner;
+        }
+        
+        @Override
+        public void run()
+        {
+            try
+            {
+                runner.run();
+            }
+            catch (Throwable oex)
+            {
+                Throwable ex = oex;
+                while (ex != null)
+                {
+                    if (ex instanceof ThreadStoppedException)
+                    {
+                        return;
+                    }
+                    ex = ex.getCause();
+                }
+                throw oex;
+            }
+        }
+        
+    }
 }
