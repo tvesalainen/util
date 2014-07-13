@@ -38,7 +38,7 @@ public class InterfaceTracer implements InvocationHandler
     /**
      * Class instance for given interface or null
      */
-    protected Object ob;
+    protected Object obj;
     /**
      * Printer
      */
@@ -49,60 +49,64 @@ public class InterfaceTracer implements InvocationHandler
      */
     protected InterfaceTracer(Object ob)
     {
-        this.ob = ob;
+        this.obj = ob;
     }
     /**
      * Creates a tracer for intf
      * @param <T>
-     * @param intf Implemented interface
+     * @param intfs Implemented interface
      * @param ob Class instance for given interface or null
      * @return 
      */
-    public static <T> T getTracer(Class<T> intf, T ob)
+    public static <T> T getTracer(T ob, Class<T>... intfs)
     {
-        return getTracer(intf, new InterfaceTracer(ob), ob);
+        return getTracer(new InterfaceTracer(ob), ob, intfs);
     }
     /**
      * Creates a tracer for intf. This is meant to be used by subclass.
      * @param <T>
-     * @param intf Implemented interface
+     * @param tracer subclass
      * @param ob Class instance for given interface or null
+     * @param intfs Implemented interfaces
      * @return 
      */
-    protected static <T> T getTracer(Class<T> intf, InterfaceTracer tracer, T ob)
+    protected static <T> T getTracer(InterfaceTracer tracer, T ob, Class<T>... intfs)
     {
         tracer.setAppendable(System.err);
+        tracer.setObj(ob);
         return (T) Proxy.newProxyInstance(
-                intf.getClassLoader(), 
-                new Class<?>[] {intf}, 
+                intfs[0].getClassLoader(), 
+                intfs, 
                 tracer);
     }
     /**
      * Creates a tracer for intf
      * @param <T>
-     * @param intf Implemented interface
      * @param ob Class instance for given interface or null
      * @param appendable Output for trace
+     * @param intfs Implemented interfaces
      * @return 
      */
-    public static <T> T getTracer(Class<T> intf, T ob, Appendable appendable)
+    public static <T> T getTracer(T ob, Appendable appendable, Class<T>... intfs)
     {
-        return getTracer(intf, new InterfaceTracer(ob), ob, appendable);
+        return getTracer(new InterfaceTracer(ob), ob, appendable, intfs);
     }
     /**
      * Creates a tracer for intf. This is meant to be used by subclass.
      * @param <T>
-     * @param intf Implemented interface
+     * @param tracer subclass
      * @param ob Class instance for given interface or null
      * @param appendable Output for trace
+     * @param intfs Implemented interfaces
      * @return 
      */
-    protected static <T> T getTracer(Class<T> intf, InterfaceTracer tracer, T ob, Appendable appendable)
+    protected static <T> T getTracer(InterfaceTracer tracer, T ob, Appendable appendable, Class<T>... intfs)
     {
         tracer.setAppendable(appendable);
+        tracer.setObj(ob);
         return (T) Proxy.newProxyInstance(
-                intf.getClassLoader(), 
-                new Class<?>[] {intf}, 
+                intfs[0].getClassLoader(), 
+                intfs, 
                 tracer);
     }
 
@@ -111,28 +115,36 @@ public class InterfaceTracer implements InvocationHandler
         this.printer = new AppendablePrinter(appendable);
     }
 
+    private void setObj(Object obj)
+    {
+        this.obj = obj;
+    }
+
     @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable
     {
         Object res = null;
-        if (ob != null)
+        if (obj != null)
         {
-            res = method.invoke(ob, args);
+            res = method.invoke(obj, args);
         }
         printer.print(method.getName());
         printer.print("(");
-        boolean first = true;
-        for (Object arg : args)
+        if (args != null)
         {
-            if (!first)
+            boolean first = true;
+            for (Object arg : args)
             {
-                printer.print(", ");
+                if (!first)
+                {
+                    printer.print(", ");
+                }
+                printer.print(arg);
+                first = false;
             }
-            printer.print(arg);
-            first = false;
         }
         printer.print(")");
-        if (ob != null && !Void.TYPE.equals(method.getReturnType()))
+        if (obj != null && !Void.TYPE.equals(method.getReturnType()))
         {
             printer.println(" = "+res);
         }
