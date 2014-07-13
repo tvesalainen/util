@@ -54,59 +54,57 @@ public class InterfaceTracer implements InvocationHandler
     /**
      * Creates a tracer for intf
      * @param <T>
-     * @param intfs Implemented interface
+     * @param intf Implemented interface
      * @param ob Class instance for given interface or null
      * @return 
      */
-    public static <T> T getTracer(T ob, Class<T>... intfs)
+    public static <T> T getTracer(Class<T> intf, T ob)
     {
-        return getTracer(new InterfaceTracer(ob), ob, intfs);
+        return getTracer(intf, new InterfaceTracer(ob), ob);
     }
     /**
      * Creates a tracer for intf. This is meant to be used by subclass.
      * @param <T>
-     * @param tracer subclass
+     * @param intf Implemented interface
      * @param ob Class instance for given interface or null
-     * @param intfs Implemented interfaces
      * @return 
      */
-    protected static <T> T getTracer(InterfaceTracer tracer, T ob, Class<T>... intfs)
+    protected static <T> T getTracer(Class<T> intf, InterfaceTracer tracer, T ob)
     {
         tracer.setAppendable(System.err);
         tracer.setObj(ob);
         return (T) Proxy.newProxyInstance(
-                intfs[0].getClassLoader(), 
-                intfs, 
+                intf.getClassLoader(), 
+                new Class<?>[] {intf}, 
                 tracer);
     }
     /**
      * Creates a tracer for intf
      * @param <T>
+     * @param intf Implemented interface
      * @param ob Class instance for given interface or null
      * @param appendable Output for trace
-     * @param intfs Implemented interfaces
      * @return 
      */
-    public static <T> T getTracer(T ob, Appendable appendable, Class<T>... intfs)
+    public static <T> T getTracer(Class<T> intf, T ob, Appendable appendable)
     {
-        return getTracer(new InterfaceTracer(ob), ob, appendable, intfs);
+        return getTracer(intf, new InterfaceTracer(ob), ob, appendable);
     }
     /**
      * Creates a tracer for intf. This is meant to be used by subclass.
      * @param <T>
-     * @param tracer subclass
+     * @param intf Implemented interface
      * @param ob Class instance for given interface or null
      * @param appendable Output for trace
-     * @param intfs Implemented interfaces
      * @return 
      */
-    protected static <T> T getTracer(InterfaceTracer tracer, T ob, Appendable appendable, Class<T>... intfs)
+    protected static <T> T getTracer(Class<T> intf, InterfaceTracer tracer, T ob, Appendable appendable)
     {
         tracer.setAppendable(appendable);
         tracer.setObj(ob);
         return (T) Proxy.newProxyInstance(
-                intfs[0].getClassLoader(), 
-                intfs, 
+                intf.getClassLoader(), 
+                new Class<?>[] {intf}, 
                 tracer);
     }
 
