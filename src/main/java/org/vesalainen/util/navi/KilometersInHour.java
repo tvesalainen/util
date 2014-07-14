@@ -16,28 +16,26 @@
  */
 package org.vesalainen.util.navi;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  *
  * @author tkv
  */
-public class Knots extends Velocity
+public class KilometersInHour extends Velocity
 {
-    public Knots(double knots)
+    public KilometersInHour(double kilometersPerHour)
     {
-        super(Miles.NMInMeters*knots/HoursInSecond);
+        super(toMetersPerSecond(kilometersPerHour));
     }
     
-    public static double toMetersPerSecond(double knots)
+    public static double toMetersPerSecond(double kilometersPerHour)
     {
-        return NMInMeters*knots/HoursInSecond;
+        return Kilo*kilometersPerHour/HoursInSecond;
     }
 
     @Override
     public String toString()
     {
-        return String.format("%.1fKn", getKnots());
+        return String.format("%.1fKm/h", toKiloMetersInHour(value));
     }
     
 }

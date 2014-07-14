@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Timo Vesalainen
+ * Copyright (C) 2014 Timo Vesalainen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,31 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.vesalainen.util.navi;
 
-import java.util.concurrent.TimeUnit;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen
  */
-public class Knots extends Velocity
+public class KnotsTest
 {
-    public Knots(double knots)
-    {
-        super(Miles.NMInMeters*knots/HoursInSecond);
-    }
     
-    public static double toMetersPerSecond(double knots)
+    public KnotsTest()
     {
-        return NMInMeters*knots/HoursInSecond;
     }
 
-    @Override
-    public String toString()
+    /**
+     * Test of toMetersPerSecond method, of class Knots.
+     */
+    @Test
+    public void testToMetersPerSecond()
     {
-        return String.format("%.1fKn", getKnots());
+        assertEquals(1852.0/3600.0, Knots.toMetersPerSecond(1.0), Scalar.Epsilon);
     }
-    
+
 }
-

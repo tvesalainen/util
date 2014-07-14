@@ -84,12 +84,22 @@ public class Velocity extends Scalar
 
     public double getKiloMetersInHour()
     {
-        return TimeUnit.HOURS.toSeconds(1)*value/Distance.KILO;
+        return toKiloMetersInHour(value);
     }
 
     public double getKnots()
     {
-        return TimeUnit.HOURS.toSeconds(1)*value/Distance.NM_IN_METERS;
+        return toKnots(value);
+    }
+
+    public static double toKiloMetersInHour(double metersPerSecond)
+    {
+        return HoursInSecond*metersPerSecond/Kilo;
+    }
+
+    public static double toKnots(double metersPerSecond)
+    {
+        return HoursInSecond*metersPerSecond/NMInMeters;
     }
 
     @Override

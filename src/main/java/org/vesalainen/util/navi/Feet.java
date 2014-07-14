@@ -26,6 +26,6 @@ public class Feet extends Distance
 {
     public Feet(double feet)
     {
-        super(feet*FEET_IN_METERS);
+        super(feet*FeetInMeters);
     }
 }

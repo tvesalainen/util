@@ -51,12 +51,12 @@ public class Distance extends Scalar
 
     public double getMiles()
     {
-        return value/NM_IN_METERS;
+        return value/NMInMeters;
     }
     
     public double getFeets()
     {
-        return value/FEET_IN_METERS;
+        return value/FeetInMeters;
     }
     
     @Override

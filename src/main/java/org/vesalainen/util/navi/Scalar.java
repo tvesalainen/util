@@ -17,6 +17,7 @@
 package org.vesalainen.util.navi;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -29,10 +30,11 @@ public class Scalar implements Comparable<Scalar>, Serializable
     /**
      * The maximum amount two scalars can differ to be equal
      */
-    public static final double EPSILON = 0.0001;
-    protected static final double KILO = 1000;
-    protected static final double NM_IN_METERS = 1852;
-    protected static final double FEET_IN_METERS = 0.3048;
+    public static final double Epsilon = 0.0001;
+    protected static final double Kilo = 1000;
+    protected static final double NMInMeters = 1852;
+    protected static final double FeetInMeters = 0.3048;
+    protected static final double HoursInSecond = TimeUnit.HOURS.toSeconds(1);
     
     protected double value;
     protected ScalarType type;
@@ -85,10 +87,10 @@ public class Scalar implements Comparable<Scalar>, Serializable
     }
     /**
      * This method returns true even when the value of two objects 
-     * differ EPSILON amount
+ differ Epsilon amount
      * @param ob
-     * @return true if ob is Scalar and abs(value - ob.value) < EPSILON
-     * @see EPSILON
+     * @return true if ob is Scalar and abs(value - ob.value) < Epsilon
+     * @see EPSILON#Epsilon
      */
     @Override
     public boolean equals(Object ob)
@@ -96,7 +98,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         if (ob instanceof Scalar)
         {
             Scalar scalar = (Scalar) ob;
-            return equals(scalar, EPSILON);
+            return equals(scalar, Epsilon);
         }
         throw new UnsupportedOperationException("equals not possible with "+ob.getClass().getName());
     }

@@ -26,7 +26,7 @@ public class Miles extends Distance
     
     public Miles(double nauticalMiles)
     {
-        super(nauticalMiles*NM_IN_METERS);
+        super(nauticalMiles*NMInMeters);
     }
     
     @Override
