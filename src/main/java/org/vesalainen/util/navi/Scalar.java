@@ -34,6 +34,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
     protected static final double Kilo = 1000;
     protected static final double NMInMeters = 1852;
     protected static final double FeetInMeters = 0.3048;
+    protected static final double FathomInMeters = 1.8288;
     protected static final double HoursInSecond = TimeUnit.HOURS.toSeconds(1);
     
     protected double value;

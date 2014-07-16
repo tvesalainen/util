@@ -135,7 +135,7 @@ public class LocationTest
     {
         System.out.println("move");
         Angle bearing = new Degree(270);
-        Distance distance = new Miles(60);
+        Distance distance = new NauticalMile(60);
         Location instance = new Location(60,2);
         Location expResult = new Location(60,0);
         Location result = instance.move(bearing, distance);
@@ -219,7 +219,7 @@ public class LocationTest
         System.out.println("distance");
         Location loc = new Location(1,0);
         Location instance = new Location();
-        Distance expResult = new Miles(60);
+        Distance expResult = new NauticalMile(60);
         Distance result = instance.distance(loc);
         assertEquals(expResult, result);
     }
@@ -233,7 +233,7 @@ public class LocationTest
         System.out.println("distance");
         Location loc1 = new Location();
         Location loc2 = new Location(0,1);
-        Distance expResult = new Miles(60);
+        Distance expResult = new NauticalMile(60);
         Distance result = Location.distance(loc1, loc2);
         assertEquals(expResult, result);
     }
@@ -353,7 +353,7 @@ public class LocationTest
         Location current = new Location(-1,0);
         Location portBuoy = new Location(0,-1);
         Location starboardBuoy = new Location(0,1);
-        Distance expResult = new Miles(60);
+        Distance expResult = new NauticalMile(60);
         Distance result = Location.distanceToStartLine(current, portBuoy, starboardBuoy);
         assertEquals(expResult, result);
     }
@@ -368,7 +368,7 @@ public class LocationTest
         Angle bearing = new Angle();
         TimeSpan timeSpan = new TimeSpan(30, TimeUnit.MINUTES);
         Location moved = loc.move(bearing, velocity, instance, timeSpan);
-        Distance expResult = new Miles(2/Math.PI);
+        Distance expResult = new NauticalMile(2/Math.PI);
         Distance result = moved.distance(loc);
         assertEquals(expResult, result);
         Angle bearing1 = loc.bearing(moved);
@@ -385,7 +385,7 @@ public class LocationTest
         Angle bearing = new Angle();
         TimeSpan timeSpan = new TimeSpan(30, TimeUnit.MINUTES);
         Location moved = loc.move(bearing, velocity, instance, timeSpan);
-        Distance expResult = new Miles(2/Math.PI);
+        Distance expResult = new NauticalMile(2/Math.PI);
         Distance result = moved.distance(loc);
         assertEquals(expResult, result);
         Angle bearing1 = loc.bearing(moved);
@@ -402,7 +402,7 @@ public class LocationTest
         Angle bearing = new Angle();
         TimeSpan timeSpan = new TimeSpan(15, TimeUnit.MINUTES);
         Location moved = loc.move(bearing, velocity, instance, timeSpan);
-        Distance expResult = new Miles(Math.hypot(1/Math.PI, 1/Math.PI));
+        Distance expResult = new NauticalMile(Math.hypot(1/Math.PI, 1/Math.PI));
         Distance result = moved.distance(loc);
         assertEquals(expResult, result);
         Angle bearing1 = loc.bearing(moved);
@@ -419,7 +419,7 @@ public class LocationTest
         Angle bearing = new Angle();
         TimeSpan timeSpan = new TimeSpan(15, TimeUnit.MINUTES);
         Location moved = loc.move(bearing, velocity, instance, timeSpan);
-        Distance expResult = new Miles(Math.hypot(1/Math.PI, 1/Math.PI));
+        Distance expResult = new NauticalMile(Math.hypot(1/Math.PI, 1/Math.PI));
         Distance result = moved.distance(loc);
         assertEquals(expResult, result);
         Angle bearing1 = loc.bearing(moved);

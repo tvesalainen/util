@@ -267,7 +267,7 @@ public class Location extends Point2D.Double
     public static Distance distance(Location loc1, Location loc2)
     {
         double dep = departure(loc1, loc2);
-        return new Miles(60*Math.sqrt(Math.pow(loc1.getLatitude()-loc2.getLatitude(),2)+Math.pow(dep*(loc1.getLongitude()-loc2.getLongitude()),2)));
+        return new NauticalMile(60*Math.sqrt(Math.pow(loc1.getLatitude()-loc2.getLatitude(),2)+Math.pow(dep*(loc1.getLongitude()-loc2.getLongitude()),2)));
     }
     /**
      * Calcúlates the center point of the list of locations.
@@ -410,7 +410,7 @@ public class Location extends Point2D.Double
         double y2 = starboardBuoy.getLatitude();
 
         double d = ((x2-x1)*(y1-y0)-(x1-x0)*(y2-y1))/Math.sqrt(Math.pow((x2-x1), 2)+Math.pow((y2-y1), 2));
-        return new Miles(60*d);
+        return new NauticalMile(60*d);
     }
 
     private static double angleBetween(double a1, double a2)

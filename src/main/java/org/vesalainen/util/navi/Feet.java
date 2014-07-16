@@ -16,8 +16,6 @@
  */
 package org.vesalainen.util.navi;
 
-import org.vesalainen.util.navi.Distance;
-
 /**
  *
  * @author tkv
@@ -26,6 +24,17 @@ public class Feet extends Distance
 {
     public Feet(double feet)
     {
-        super(feet*FeetInMeters);
+        super(toMeters(feet));
     }
+    
+    public static double toMeters(double feets)
+    {
+        return feets*FeetInMeters;
+    }
+    @Override
+    public String toString()
+    {
+        return getFeets()+"ft";
+    }
+    
 }

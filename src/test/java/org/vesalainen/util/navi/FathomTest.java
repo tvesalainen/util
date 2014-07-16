@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Timo Vesalainen
+ * Copyright (C) 2014 Timo Vesalainen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,25 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.vesalainen.util.navi;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen
  */
-public class Miles extends Distance
+public class FathomTest
 {
     
-    public Miles(double nauticalMiles)
+    public FathomTest()
     {
-        super(nauticalMiles*NMInMeters);
     }
-    
-    @Override
-    public String toString()
+
+    /**
+     * Test of toMeters method, of class Fathom.
+     */
+    @Test
+    public void testToMeters()
     {
-        return getMiles()+"NM";
+        assertEquals(1.8288, Fathom.toMeters(1), Scalar.Epsilon);
     }
     
 }

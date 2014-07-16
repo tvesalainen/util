@@ -104,7 +104,7 @@ public class RateOfTurnTest
         System.out.println("getRadius");
         Velocity velocity = new Knots(1);
         RateOfTurn instance = new DegreesPerMinute(6);
-        Distance expResult = new Miles(1/Math.PI);
+        Distance expResult = new NauticalMile(1/Math.PI);
         Distance result = instance.getRadius(velocity);
         assertEquals(expResult, result);
     }

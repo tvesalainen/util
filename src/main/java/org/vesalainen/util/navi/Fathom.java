@@ -20,24 +20,21 @@ package org.vesalainen.util.navi;
  *
  * @author tkv
  */
-public class KilometersInHour extends Velocity
+public class Fathom extends Distance
 {
-    public KilometersInHour(double kilometersPerHour)
+    public Fathom(double fathom)
     {
-        super(toMetersPerSecond(kilometersPerHour));
+        super(toMeters(fathom));
     }
     
-    private static final double KiloPerHoursInSecond = Kilo / HoursInSecond;
-    public static double toMetersPerSecond(double kilometersPerHour)
+    public static double toMeters(double fathom)
     {
-        return KiloPerHoursInSecond*kilometersPerHour;
+        return fathom*FathomInMeters;
     }
-
     @Override
     public String toString()
     {
-        return String.format("%.1fKm/h", toKiloMetersInHour(value));
+        return getFathoms()+"ftm";
     }
     
 }
-

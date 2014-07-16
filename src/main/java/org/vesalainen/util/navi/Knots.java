@@ -26,12 +26,13 @@ public class Knots extends Velocity
 {
     public Knots(double knots)
     {
-        super(Miles.NMInMeters*knots/HoursInSecond);
+        super(NauticalMile.NMInMeters*knots/HoursInSecond);
     }
-    
+  
+    private static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSecond;
     public static double toMetersPerSecond(double knots)
     {
-        return NMInMeters*knots/HoursInSecond;
+        return NMInMetersPerHoursInSecond*knots;
     }
 
     @Override

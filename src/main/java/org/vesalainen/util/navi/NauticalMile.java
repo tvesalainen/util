@@ -16,28 +16,23 @@
  */
 package org.vesalainen.util.navi;
 
+
 /**
  *
  * @author tkv
  */
-public class KilometersInHour extends Velocity
+public class NauticalMile extends Distance
 {
-    public KilometersInHour(double kilometersPerHour)
+    
+    public NauticalMile(double nauticalMiles)
     {
-        super(toMetersPerSecond(kilometersPerHour));
+        super(nauticalMiles*NMInMeters);
     }
     
-    private static final double KiloPerHoursInSecond = Kilo / HoursInSecond;
-    public static double toMetersPerSecond(double kilometersPerHour)
-    {
-        return KiloPerHoursInSecond*kilometersPerHour;
-    }
-
     @Override
     public String toString()
     {
-        return String.format("%.1fKm/h", toKiloMetersInHour(value));
+        return getMiles()+"NM";
     }
     
 }
-

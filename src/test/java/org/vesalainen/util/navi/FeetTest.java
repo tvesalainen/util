@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Timo Vesalainen
+ * Copyright (C) 2014 Timo Vesalainen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,30 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.vesalainen.util.navi;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen
  */
-public class KilometersInHour extends Velocity
+public class FeetTest
 {
-    public KilometersInHour(double kilometersPerHour)
-    {
-        super(toMetersPerSecond(kilometersPerHour));
-    }
     
-    private static final double KiloPerHoursInSecond = Kilo / HoursInSecond;
-    public static double toMetersPerSecond(double kilometersPerHour)
+    public FeetTest()
     {
-        return KiloPerHoursInSecond*kilometersPerHour;
     }
 
-    @Override
-    public String toString()
+    /**
+     * Test of toMeters method, of class Feet.
+     */
+    @Test
+    public void testToMeters()
     {
-        return String.format("%.1fKm/h", toKiloMetersInHour(value));
+        assertEquals(0.3048, Feet.toMeters(1), Scalar.Epsilon);
     }
     
 }
-

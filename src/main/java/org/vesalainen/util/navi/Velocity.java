@@ -92,14 +92,16 @@ public class Velocity extends Scalar
         return toKnots(value);
     }
 
+    private static final double HoursInSecondPerKilo = HoursInSecond / Kilo;
     public static double toKiloMetersInHour(double metersPerSecond)
     {
-        return HoursInSecond*metersPerSecond/Kilo;
+        return HoursInSecondPerKilo*metersPerSecond;
     }
 
+    private static final double HoursInSecondPerNMInMeters = HoursInSecond / NMInMeters;
     public static double toKnots(double metersPerSecond)
     {
-        return HoursInSecond*metersPerSecond/NMInMeters;
+        return HoursInSecondPerNMInMeters*metersPerSecond;
     }
 
     @Override

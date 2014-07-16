@@ -59,6 +59,11 @@ public class Distance extends Scalar
         return value/FeetInMeters;
     }
     
+    public double getFathoms()
+    {
+        return value/FathomInMeters;
+    }
+    
     @Override
     public String toString()
     {
