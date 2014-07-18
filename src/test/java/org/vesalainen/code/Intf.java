@@ -17,6 +17,8 @@
 
 package org.vesalainen.code;
 
+import java.io.Writer;
+
 /**
  *
  * @author Timo Vesalainen
@@ -25,7 +27,7 @@ public interface Intf
 {
 
     void setXYZ(int x);
-
+    void setAsd(Writer writer);
     void setString(String s);
     
 }

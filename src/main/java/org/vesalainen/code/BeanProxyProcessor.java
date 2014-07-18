@@ -19,8 +19,11 @@ package org.vesalainen.code;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -34,7 +37,9 @@ import static javax.lang.model.element.ElementKind.INTERFACE;
 import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import static javax.lang.model.type.TypeKind.DECLARED;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -50,6 +55,16 @@ import javax.tools.JavaFileObject;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class BeanProxyProcessor extends AbstractProcessor
 {
+    private Elements elements;
+    private Types types;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment pe)
+    {
+        super.init(pe);
+        elements = pe.getElementUtils();
+        types = pe.getTypeUtils();
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
@@ -80,8 +95,6 @@ public class BeanProxyProcessor extends AbstractProcessor
 
     private void generate(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
     {
-        Elements elements = processingEnv.getElementUtils();
-        Types types = processingEnv.getTypeUtils();
         BeanProxyClass annotation = cls.getAnnotation(BeanProxyClass.class);
         if (annotation == null)
         {
@@ -97,38 +110,91 @@ public class BeanProxyProcessor extends AbstractProcessor
             String classname = value.substring(idx+1);
             String pgk = value.substring(0, idx);
 
+            List<? extends ExecutableElement> methods = getMethods(cls);
             mp.println("package "+pgk+";");
-            CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
-
-            for (TypeMirror intf : cls.getInterfaces())
+            /*
+            Set<CharSequence> imports = getImports(methods);
+            for (CharSequence im : imports)
             {
-                DeclaredType dt = (DeclaredType) intf;
-                TypeElement te = (TypeElement) dt.asElement();
-                if (te.getKind() == INTERFACE)
+                mp.println("import "+im+";");
+            }
+                    */
+            mp.println("import javax.annotation.Generated;");
+            mp.println("@Generated(\""+BeanProxyProcessor.class.getCanonicalName()+"\")");
+            CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
+            for (ExecutableElement m : methods)
+            {
+                mp.println("@Override");
+                CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
+                String name = m.getSimpleName().toString();
+                if (name.startsWith("get") || name.startsWith("set"))
                 {
-                    for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
-                    {
-                        TypeElement ee = (TypeElement) m.getEnclosingElement();
-                        if (!ee.getQualifiedName().contentEquals("java.lang.Object"))
-                        {
-                            CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
-                            String name = m.getSimpleName().toString();
-                            if (name.startsWith("get") || name.startsWith("set"))
-                            {
 
-                            }
-                            else
-                            {
-                                cm.println("// ");
-                                cm.println("throw new UnsupportedOperationException(\"not supported.\");");
-                            }
-                            cm.flush(cp);
-                        }
-                    }
                 }
+                else
+                {
+                    cm.println("// ");
+                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                }
+                cm.flush(cp);
             }
             cp.flush(mp);
         }
     }
 
+    private List<? extends ExecutableElement> getMethods(TypeElement cls)
+    {
+        List<ExecutableElement> list = new ArrayList<>();
+        for (TypeMirror intf : cls.getInterfaces())
+        {
+            DeclaredType dt = (DeclaredType) intf;
+            TypeElement te = (TypeElement) dt.asElement();
+            if (te.getKind() == INTERFACE)
+            {
+                for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
+                {
+                    TypeElement ee = (TypeElement) m.getEnclosingElement();
+                    if (!ee.getQualifiedName().contentEquals("java.lang.Object"))
+                    {
+                        list.add(m);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    private Set<CharSequence> getImports(List<? extends ExecutableElement> methods)
+    {
+        Set<CharSequence> set = new TreeSet<>();
+        for (ExecutableElement ee : methods)
+        {
+            add(set, ee.getReturnType());
+            for (TypeMirror tm : ee.getThrownTypes())
+            {
+                add(set, tm);
+            }
+            for (VariableElement ve : ee.getParameters())
+            {
+                add(set, ve.asType());
+            }
+        }
+        return set;
+    }
+    private static void add(Set<CharSequence> set, TypeMirror tm)
+    {
+        if (tm.getKind() == DECLARED)
+        {
+            String cl = tm.toString();
+            int idx = cl.lastIndexOf('.');
+            if (idx != -1)
+            {
+                if ("java.lang".equals(cl.substring(0, idx)))
+                {
+                    return;
+                }
+            }
+            set.add(cl);
+        }
+    }
 }
