@@ -22,9 +22,11 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.vesalainen.io.AppendablePrinter;
 
@@ -34,9 +36,9 @@ import org.vesalainen.io.AppendablePrinter;
  */
 public class CodePrinter
 {
-    private final String indent;
+    private final CharSequence indent;
     private final Appendable appendable;
-    private final String suffix;
+    private final CharSequence suffix;
     private boolean indented;
     private boolean flushed;
     private CodePrinter sub;
@@ -46,7 +48,7 @@ public class CodePrinter
         this("", appendable, "");
     }
 
-    private CodePrinter(String indent, Appendable appendable, String suffix)
+    private CodePrinter(CharSequence indent, Appendable appendable, CharSequence suffix)
     {
         this.indent = indent;
         this.appendable = appendable;
@@ -62,18 +64,29 @@ public class CodePrinter
         }
         TypeMirror returnType = method.getReturnType();
         print(returnType+" ");
-        print(method.getSimpleName()+" ");
+        print(method.getSimpleName()+"(");
+        ListPrinter<VariableElement> vl = new ListPrinter<VariableElement>(this, ", ", method.getParameters())
+        {
+            @Override
+            protected void print(int index, VariableElement item) throws IOException
+            {
+                print(item.asType().toString()+" ");
+                print(item.getSimpleName());
+            }
+        };
+        vl.print();
+        print(")");
         List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
         if (!thrownTypes.isEmpty())
         {
-            print("throws ");
+            print(" throws ");
             print(", ", thrownTypes);
         }
         println();
         println("{");
         return createSub(indent+"    ", "}");
     }
-    public CodePrinter createClass(EnumSet<Modifier> modifiers, CharSequence name, TypeElement sup) throws IOException
+    public CodePrinter createClass(EnumSet<Modifier> modifiers, CharSequence name, TypeElement superClass, TypeElement... interfaces) throws IOException
     {
         println();
         for (Modifier m : modifiers)
@@ -82,15 +95,28 @@ public class CodePrinter
         }
         print("class ");
         print(name+" ");
-        if (sup != null)
+        if (superClass != null)
         {
-            print("extends "+sup.getSimpleName());
+            print("extends "+superClass.getQualifiedName());
+        }
+        if (interfaces != null && interfaces.length > 0)
+        {
+            print(" implements ");
+            ListPrinter<TypeElement> elp = new ListPrinter<TypeElement>(this, ", ", interfaces) 
+            {
+                @Override
+                protected void print(int index, TypeElement item) throws IOException
+                {
+                    print(item.getSimpleName());
+                }
+            };
+            elp.print();
         }
         println();
         println("{");
         return createSub(indent+"    ", "}");
     }
-    public CodePrinter createSub(String indention, String suffix)
+    public CodePrinter createSub(CharSequence indention, CharSequence suffix)
     {
         sub = new CodePrinter(indention, appendable, suffix);
         return sub;
@@ -104,10 +130,10 @@ public class CodePrinter
             flushed = true;
         }
     }
-    public void print(String separator, List<? extends TypeMirror> classes) throws IOException
+    public <T> void print(CharSequence separator, List<T> classes) throws IOException
     {
         boolean first = true;
-        for (TypeMirror c : classes)
+        for (T c : classes)
         {
             if (!first)
             {
@@ -117,14 +143,14 @@ public class CodePrinter
             print(c.toString());
         }
     }
-    public void println(String str) throws IOException
+    public void println(CharSequence str) throws IOException
     {
         print(str);
         appendable.append('\n');
         indented = false;
     }
 
-    public void print(String str) throws IOException
+    public void print(CharSequence str) throws IOException
     {
         indent();
         appendable.append(str);

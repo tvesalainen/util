@@ -18,6 +18,7 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -29,6 +30,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import static javax.lang.model.element.ElementKind.INTERFACE;
 import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.TypeElement;
@@ -88,35 +90,45 @@ public class BeanProxyProcessor extends AbstractProcessor
         Filer filer = processingEnv.getFiler();
         String value = annotation.value();
         JavaFileObject sourceFile = filer.createSourceFile(value);
-        CodePrinter mp = new CodePrinter(sourceFile.openWriter());
-        int idx = value.lastIndexOf('.');
-        String classname = value.substring(idx+1);
-        String pgk = value.substring(0, idx);
-        
-        mp.println("package "+pgk+";");
-        CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
-        
-        for (TypeMirror intf : cls.getInterfaces())
+        try (Writer writer = sourceFile.openWriter())
         {
-            DeclaredType dt = (DeclaredType) intf;
-            TypeElement te = (TypeElement) dt.asElement();
-            for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
+            CodePrinter mp = new CodePrinter(writer);
+            int idx = value.lastIndexOf('.');
+            String classname = value.substring(idx+1);
+            String pgk = value.substring(0, idx);
+
+            mp.println("package "+pgk+";");
+            CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
+
+            for (TypeMirror intf : cls.getInterfaces())
             {
-                CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
-                String name = m.getSimpleName().toString();
-                if (name.startsWith("get") || name.startsWith("set"))
+                DeclaredType dt = (DeclaredType) intf;
+                TypeElement te = (TypeElement) dt.asElement();
+                if (te.getKind() == INTERFACE)
                 {
-                    
+                    for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
+                    {
+                        TypeElement ee = (TypeElement) m.getEnclosingElement();
+                        if (!ee.getQualifiedName().contentEquals("java.lang.Object"))
+                        {
+                            CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
+                            String name = m.getSimpleName().toString();
+                            if (name.startsWith("get") || name.startsWith("set"))
+                            {
+
+                            }
+                            else
+                            {
+                                cm.println("// ");
+                                cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                            }
+                            cm.flush(cp);
+                        }
+                    }
                 }
-                else
-                {
-                    cm.println("// ");
-                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
-                }
-                cm.flush(cp);
             }
+            cp.flush(mp);
         }
-        cp.flush(mp);
     }
 
 }

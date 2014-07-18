@@ -34,7 +34,7 @@ public class BeanProxyTest
     /**
      * Test of getInstance method, of class BeanProxy.
      */
-    //@Test
+    @Test
     public void testGetInstance()
     {
         System.err.println("BeanProxy");
@@ -49,14 +49,4 @@ public class BeanProxyTest
         }
     }
     
-    @BeanProxyClass("org.vesalainen.code.BTImpl")
-    public abstract class BT extends BeanProxy implements Intf
-    {
-        
-    }
-    public interface Intf
-    {
-        void setXYZ(int x);
-        void setString(String s);
-    }
 }
