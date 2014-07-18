@@ -59,6 +59,9 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.source}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- this disables annotation processing which 
+                    causes no class files-->
+                    <proc>none</proc> 
                 </configuration>
             </plugin>
             <plugin>

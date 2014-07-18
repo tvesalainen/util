@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.util.navi;
+package org.vesalainen.code;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -24,21 +24,39 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen
  */
-public class FathomTest
+public class BeanProxyTest
 {
     
-    public FathomTest()
+    public BeanProxyTest()
     {
     }
 
     /**
-     * Test of toMeters method, of class Fathom.
+     * Test of getInstance method, of class BeanProxy.
      */
-    @Test
-    public void testToMeters()
+    //@Test
+    public void testGetInstance()
     {
-        System.err.println("Fathom");
-        assertEquals(1.8288, Fathom.toMeters(1), Scalar.Epsilon);
+        System.err.println("BeanProxy");
+        try
+        {
+            BT instance = BT.getInstance(BT.class);
+            assertNotNull(instance);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
     
+    @BeanProxyClass("org.vesalainen.code.BTImpl")
+    public abstract class BT extends BeanProxy implements Intf
+    {
+        
+    }
+    public interface Intf
+    {
+        void setXYZ(int x);
+        void setString(String s);
+    }
 }

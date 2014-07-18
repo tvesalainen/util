@@ -18,25 +18,77 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.EnumSet;
+import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class BeanProxyProcessor
+@SupportedAnnotationTypes("org.vesalainen.code.BeanProxyClass")
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class BeanProxyProcessor extends AbstractProcessor
 {
-    public void process(Class<? extends BeanProxy> cls) throws IOException
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
-        CodePrinter mp = new CodePrinter(System.err);
+        Messager msg = processingEnv.getMessager();
+        for (TypeElement te : annotations)
+        {
+            for (Element e : roundEnv.getElementsAnnotatedWith(te))
+            {
+                TypeElement type = (TypeElement) e;
+                try
+                {
+                    msg.printMessage(Diagnostic.Kind.NOTE, "processing", type);
+                    System.err.println("processing "+type);
+                    generate(type, processingEnv);
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                    String m = ex.getMessage();
+                    m = m != null ? m : ex.toString();
+                    msg.printMessage(Diagnostic.Kind.ERROR, m, e);
+                }
+            }
+        }
+        return true;
+    }
+
+    private void generate(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
+    {
+        Elements elements = processingEnv.getElementUtils();
+        Types types = processingEnv.getTypeUtils();
         BeanProxyClass annotation = cls.getAnnotation(BeanProxyClass.class);
         if (annotation == null)
         {
             throw new IllegalArgumentException("@"+BeanProxyClass.class.getSimpleName()+" missing in cls");
         }
+        Filer filer = processingEnv.getFiler();
         String value = annotation.value();
+        JavaFileObject sourceFile = filer.createSourceFile(value);
+        CodePrinter mp = new CodePrinter(sourceFile.openWriter());
         int idx = value.lastIndexOf('.');
         String classname = value.substring(idx+1);
         String pgk = value.substring(0, idx);
@@ -44,12 +96,14 @@ public class BeanProxyProcessor
         mp.println("package "+pgk+";");
         CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
         
-        for (Class<?> intf : cls.getInterfaces())
+        for (TypeMirror intf : cls.getInterfaces())
         {
-            for (Method m : intf.getDeclaredMethods())
+            DeclaredType dt = (DeclaredType) intf;
+            TypeElement te = (TypeElement) dt.asElement();
+            for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
             {
                 CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
-                String name = m.getName();
+                String name = m.getSimpleName().toString();
                 if (name.startsWith("get") || name.startsWith("set"))
                 {
                     
@@ -64,30 +118,5 @@ public class BeanProxyProcessor
         }
         cp.flush(mp);
     }
-    
-    @BeanProxyClass("org.vesalainen.code.BImpl")
-    public abstract class B extends BeanProxy implements I
-    {
-        
-    }
-    public interface I
-    {
-        void setXYZ(int i);
-        void setXYZ(double d);
-        
-        boolean getFlag();
-        void test(String s) throws Exception;
-    }
-    public static void main(String... args)
-    {
-        try
-        {
-            BeanProxyProcessor bpp = new BeanProxyProcessor();
-            bpp.process(B.class);
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-    }
+
 }

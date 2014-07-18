@@ -19,8 +19,13 @@ package org.vesalainen.code;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.vesalainen.io.AppendablePrinter;
 
 /**
@@ -48,37 +53,38 @@ public class CodePrinter
         this.suffix = suffix;
     }
 
-    public CodePrinter createMethod(EnumSet<Modifier> modifiers, Method method) throws IOException
+    public CodePrinter createMethod(EnumSet<Modifier> modifiers, ExecutableElement method) throws IOException
     {
         println();
         for (Modifier m : modifiers)
         {
             print(m.name().toLowerCase()+" ");
         }
-        print(method.getReturnType().getSimpleName()+" ");
-        print(method.getName()+" ");
-        Class<?>[] thr = method.getExceptionTypes();
-        if (thr.length > 0)
+        TypeMirror returnType = method.getReturnType();
+        print(returnType+" ");
+        print(method.getSimpleName()+" ");
+        List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
+        if (!thrownTypes.isEmpty())
         {
             print("throws ");
-            print(", ", thr);
+            print(", ", thrownTypes);
         }
         println();
         println("{");
         return createSub(indent+"    ", "}");
     }
-    public CodePrinter createClass(EnumSet<Modifier> modifiers, CharSequence name, Class<?>... sup) throws IOException
+    public CodePrinter createClass(EnumSet<Modifier> modifiers, CharSequence name, TypeElement sup) throws IOException
     {
         println();
         for (Modifier m : modifiers)
         {
             print(m.name().toLowerCase()+" ");
         }
+        print("class ");
         print(name+" ");
-        if (sup.length > 0)
+        if (sup != null)
         {
-            print("extends ");
-            print(", ", sup);
+            print("extends "+sup.getSimpleName());
         }
         println();
         println("{");
@@ -98,17 +104,17 @@ public class CodePrinter
             flushed = true;
         }
     }
-    public void print(String separator, Class<?>... classes) throws IOException
+    public void print(String separator, List<? extends TypeMirror> classes) throws IOException
     {
         boolean first = true;
-        for (Class<?> c : classes)
+        for (TypeMirror c : classes)
         {
             if (!first)
             {
                 print(separator);
             }
             first = false;
-            print(c.getSimpleName());
+            print(c.toString());
         }
     }
     public void println(String str) throws IOException

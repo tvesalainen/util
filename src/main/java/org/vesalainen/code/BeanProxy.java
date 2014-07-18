@@ -17,14 +17,11 @@
 
 package org.vesalainen.code;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author Timo Vesalainen
  */
-public abstract class BeanProxy
+public class BeanProxy
 {
     public static <T extends BeanProxy> T getInstance(Class<T> cls)
     {
