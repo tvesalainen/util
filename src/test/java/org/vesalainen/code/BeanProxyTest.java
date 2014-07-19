@@ -40,8 +40,26 @@ public class BeanProxyTest
         System.err.println("BeanProxy");
         try
         {
-            BT instance = BT.getInstance(BT.class);
-            assertNotNull(instance);
+            BT bt = BT.getInstance(BT.class);
+            assertNotNull(bt);
+            bt.setZ(true);
+            assertTrue(bt.getZ());
+            bt.setB((byte)123);
+            assertEquals((byte)123, bt.getB());
+            bt.setC('w');
+            assertEquals('w', bt.getC());
+            bt.setS((short)12345);
+            assertEquals((short)12345, bt.getS());
+            bt.setI(123456);
+            assertEquals(123456, bt.getI());
+            bt.setL(1234567);
+            assertEquals(1234567, bt.getL());
+            bt.setF(1234567.89F);
+            assertEquals(1234567.89F, bt.getF(), 0.0000000001);
+            bt.setD(12345678.9);
+            assertEquals(12345678.9, bt.getD(), 0.0000000001);
+            bt.setString("qwerty");
+            assertEquals("qwerty", bt.getString());
         }
         catch (Exception ex)
         {

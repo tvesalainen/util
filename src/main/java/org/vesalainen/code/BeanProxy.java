@@ -40,75 +40,75 @@ public class BeanProxy
             throw new IllegalArgumentException(ex);
         }
     }
-    protected void set(String property, boolean arg) throws Exception
+    protected void set(String property, boolean arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, byte arg) throws Exception
+    protected void set(String property, byte arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, char arg) throws Exception
+    protected void set(String property, char arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, short arg) throws Exception
+    protected void set(String property, short arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, int arg) throws Exception
+    protected void set(String property, int arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, long arg) throws Exception
+    protected void set(String property, long arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, float arg) throws Exception
+    protected void set(String property, float arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, double arg) throws Exception
+    protected void set(String property, double arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected void set(String property, Object arg) throws Exception
+    protected void set(String property, Object arg)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected boolean getBoolean(String property) throws Exception
+    protected boolean getBoolean(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected byte getByte(String property) throws Exception
+    protected byte getByte(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected char getChar(String property) throws Exception
+    protected char getChar(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected short getShort(String property) throws Exception
+    protected short getShort(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected int getInt(String property) throws Exception
+    protected int getInt(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected long getLong(String property) throws Exception
+    protected long getLong(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected float getFloat(String property) throws Exception
+    protected float getFloat(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected double getDouble(String property) throws Exception
+    protected double getDouble(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }
-    protected Object getObject(String property) throws Exception
+    protected Object getObject(String property)
     {
         throw new UnsupportedOperationException("not supported.");
     }

@@ -20,6 +20,7 @@ package org.vesalainen.code;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +34,14 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import static javax.lang.model.element.ElementKind.INTERFACE;
+import static javax.lang.model.element.ElementKind.*;
 import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import static javax.lang.model.type.TypeKind.DECLARED;
+import javax.lang.model.type.TypeKind;
+import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -120,21 +122,44 @@ public class BeanProxyProcessor extends AbstractProcessor
             }
                     */
             mp.println("import javax.annotation.Generated;");
-            mp.println("@Generated(\""+BeanProxyProcessor.class.getCanonicalName()+"\")");
+            mp.println("@Generated(");
+            mp.println("\tvalue=\""+BeanProxyProcessor.class.getCanonicalName()+"\"");
+            mp.println("\t, comments=\"Generated for "+cls+"\"");
+            Date date = new Date();
+            mp.println("\t, date=\""+date+"\"");
+            mp.println(")");
             CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
             for (ExecutableElement m : methods)
             {
-                mp.println("@Override");
+                List<? extends VariableElement> parameters = m.getParameters();
+                TypeMirror returnType = m.getReturnType();
+                cp.println("@Override");
                 CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
                 String name = m.getSimpleName().toString();
-                if (name.startsWith("get") || name.startsWith("set"))
+                String property = getProperty(name);
+                if (
+                        name.startsWith("set") && 
+                        parameters.size() == 1 &&
+                        returnType.getKind() == VOID
+                        )
                 {
-
+                    VariableElement ve = parameters.get(0);
+                    cm.println("set(\""+property+"\", "+ve.getSimpleName()+");");
                 }
                 else
                 {
-                    cm.println("// ");
-                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                    if (
+                            name.startsWith("get") && 
+                            parameters.isEmpty() &&
+                            returnType.getKind() != VOID
+                            )
+                    {
+                        cm.println("return "+cast(returnType)+getter(returnType.getKind())+"(\""+property+"\");");
+                    }
+                    else
+                    {
+                        cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                    }
                 }
                 cm.flush(cp);
             }
@@ -153,8 +178,7 @@ public class BeanProxyProcessor extends AbstractProcessor
             {
                 for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
                 {
-                    TypeElement ee = (TypeElement) m.getEnclosingElement();
-                    if (!ee.getQualifiedName().contentEquals("java.lang.Object"))
+                    if (m.getModifiers().contains(ABSTRACT))
                     {
                         list.add(m);
                     }
@@ -195,6 +219,51 @@ public class BeanProxyProcessor extends AbstractProcessor
                 }
             }
             set.add(cl);
+        }
+    }
+
+    private String getProperty(String name)
+    {
+        return Character.toLowerCase(name.charAt(3))+name.substring(4);
+    }
+
+    private String getter(TypeKind kind)
+    {
+        switch (kind)
+        {
+            case ARRAY:
+            case DECLARED:
+                return "getObject";
+            case BOOLEAN:
+                return "getBoolean";
+            case BYTE:
+                return "getByte";
+            case CHAR:
+                return "getChar";
+            case DOUBLE:
+                return "getDouble";
+            case FLOAT:
+                return "getFloat";
+            case INT:
+                return "getInt";
+            case LONG:
+                return "getLong";
+            case SHORT:
+                return "getShort";
+            default:
+                throw new IllegalArgumentException("not getter for "+kind);
+        }
+    }
+
+    private String cast(TypeMirror tm)
+    {
+        switch (tm.getKind())
+        {
+            case ARRAY:
+            case DECLARED:
+                return "("+tm.toString()+")";
+            default:
+                return "";
         }
     }
 }

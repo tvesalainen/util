@@ -26,8 +26,25 @@ import java.io.Writer;
 public interface Intf
 {
 
-    void setXYZ(int x);
+    void setZ(boolean x);
+    void setB(byte x);
+    void setC(char x);
+    void setS(short x);
+    void setI(int x);
+    void setL(long x);
+    void setF(float x);
+    void setD(double x);
     void setAsd(Writer writer);
     void setString(String s);
     
+    boolean getZ();
+    byte getB();
+    char getC();
+    short getS();
+    int getI();
+    long getL();
+    float getF();
+    double getD();
+    Writer getAsd();
+    String getString();
 }

@@ -24,5 +24,122 @@ package org.vesalainen.code;
 @BeanProxyClass(value = "org.vesalainen.code.BTImpl")
 public abstract class BT extends BeanProxy implements Intf
 {
+    private boolean z;
+    private byte b;
+    private char c;
+    private short s;
+    private int i;
+    private long l;
+    private float f;
+    private double d;
+    private Object o;
+
+    @Override
+    protected Object getObject(String property)
+    {
+        return o;
+    }
+
+    @Override
+    protected double getDouble(String property)
+    {
+        return d;
+    }
+
+    @Override
+    protected float getFloat(String property)
+    {
+        return f;
+    }
+
+    @Override
+    protected long getLong(String property)
+    {
+        return l;
+    }
+
+    @Override
+    protected int getInt(String property)
+    {
+        return i;
+    }
+
+    @Override
+    protected short getShort(String property)
+    {
+        return s;
+    }
+
+    @Override
+    protected char getChar(String property)
+    {
+        return c;
+    }
+
+    @Override
+    protected byte getByte(String property)
+    {
+        return b;
+    }
+
+    @Override
+    protected boolean getBoolean(String property)
+    {
+        return z;
+    }
+
+    @Override
+    protected void set(String property, Object arg)
+    {
+        o = arg;
+    }
+
+    @Override
+    protected void set(String property, double arg)
+    {
+        d = arg;
+    }
+
+    @Override
+    protected void set(String property, float arg)
+    {
+        f = arg;
+    }
+
+    @Override
+    protected void set(String property, long arg)
+    {
+        l = arg;
+    }
+
+    @Override
+    protected void set(String property, int arg)
+    {
+        i = arg;
+    }
+
+    @Override
+    protected void set(String property, short arg)
+    {
+        s = arg;
+    }
+
+    @Override
+    protected void set(String property, char arg)
+    {
+        c = arg;
+    }
+
+    @Override
+    protected void set(String property, byte arg)
+    {
+        b = arg;
+    }
+
+    @Override
+    protected void set(String property, boolean arg)
+    {
+        z = arg;
+    }
     
 }
