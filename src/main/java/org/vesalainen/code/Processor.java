@@ -22,9 +22,11 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -53,10 +55,15 @@ import javax.tools.JavaFileObject;
  *
  * @author Timo Vesalainen
  */
-@SupportedAnnotationTypes("org.vesalainen.code.BeanProxyClass")
+@SupportedAnnotationTypes({
+    "org.vesalainen.code.BeanProxyClass",
+    "org.vesalainen.code.TransactionalSetterClass"
+})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-public class BeanProxyProcessor extends AbstractProcessor
+public class Processor extends AbstractProcessor
 {
+    private static final Set<String> classnames = new HashSet<>();
+    private static final AtomicInteger sequence = new AtomicInteger();
     private Elements elements;
     private Types types;
 
@@ -81,7 +88,17 @@ public class BeanProxyProcessor extends AbstractProcessor
                 {
                     msg.printMessage(Diagnostic.Kind.NOTE, "processing", type);
                     System.err.println("processing "+type);
-                    generate(type, processingEnv);
+                    switch (te.getQualifiedName().toString())
+                    {
+                        case "org.vesalainen.code.BeanProxyClass":
+                            generateBeanProxy(type, processingEnv);
+                            break;
+                        case "org.vesalainen.code.TransactionalSetterClass":
+                            generateTransactionalSetter(type, processingEnv);
+                            break;
+                        default:
+                            throw new UnsupportedOperationException(te.getQualifiedName().toString()+" not supported");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -95,7 +112,78 @@ public class BeanProxyProcessor extends AbstractProcessor
         return true;
     }
 
-    private void generate(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
+    private void generateTransactionalSetter(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
+    {
+        TransactionalSetterClass annotation = cls.getAnnotation(TransactionalSetterClass.class);
+        if (annotation == null)
+        {
+            throw new IllegalArgumentException("@"+TransactionalSetterClass.class.getSimpleName()+" missing in cls");
+        }
+        Filer filer = processingEnv.getFiler();
+        String value = annotation.value();
+        JavaFileObject sourceFile = filer.createSourceFile(value);
+        try (Writer writer = sourceFile.openWriter())
+        {
+            CodePrinter mp = new CodePrinter(writer);
+            int idx = value.lastIndexOf('.');
+            String classname = value.substring(idx+1);
+            String pgk = value.substring(0, idx);
+
+            List<? extends ExecutableElement> methods = getMethods(cls);
+            mp.println("package "+pgk+";");
+            mp.println("import javax.annotation.Generated;");
+            mp.println("@Generated(");
+            mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
+            mp.println("\t, comments=\"Generated for "+cls+"\"");
+            Date date = new Date();
+            mp.println("\t, date=\""+date+"\"");
+            mp.println(")");
+            CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
+            Set<String> en = new TreeSet<>();
+            for (ExecutableElement m : methods)
+            {
+                List<? extends VariableElement> parameters = m.getParameters();
+                TypeMirror returnType = m.getReturnType();
+                String name = m.getSimpleName().toString();
+                if (
+                        name.startsWith("set") && 
+                        parameters.size() == 1 &&
+                        returnType.getKind() == VOID
+                        )
+                {
+                    en.add(getEnum(name));
+                }
+            }
+            cp.print("private enum Prop {");
+            cp.print(", ", en);
+            cp.println("};");
+            for (ExecutableElement m : methods)
+            {
+                List<? extends VariableElement> parameters = m.getParameters();
+                TypeMirror returnType = m.getReturnType();
+                cp.println("@Override");
+                CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
+                String name = m.getSimpleName().toString();
+                String enumname = getEnum(name);
+                if (
+                        name.startsWith("set") && 
+                        parameters.size() == 1 &&
+                        returnType.getKind() == VOID
+                        )
+                {
+                    VariableElement ve = parameters.get(0);
+                    cm.println("set(Prop."+enumname+".ordinal(), "+ve.getSimpleName()+");");
+                }
+                else
+                {
+                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                }
+                cm.flush(cp);
+            }
+            cp.flush(mp);
+        }
+    }
+    private void generateBeanProxy(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
     {
         BeanProxyClass annotation = cls.getAnnotation(BeanProxyClass.class);
         if (annotation == null)
@@ -114,16 +202,9 @@ public class BeanProxyProcessor extends AbstractProcessor
 
             List<? extends ExecutableElement> methods = getMethods(cls);
             mp.println("package "+pgk+";");
-            /*
-            Set<CharSequence> imports = getImports(methods);
-            for (CharSequence im : imports)
-            {
-                mp.println("import "+im+";");
-            }
-                    */
             mp.println("import javax.annotation.Generated;");
             mp.println("@Generated(");
-            mp.println("\tvalue=\""+BeanProxyProcessor.class.getCanonicalName()+"\"");
+            mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
             mp.println("\t, comments=\"Generated for "+cls+"\"");
             Date date = new Date();
             mp.println("\t, date=\""+date+"\"");
@@ -188,6 +269,17 @@ public class BeanProxyProcessor extends AbstractProcessor
         return list;
     }
 
+    private synchronized String getUniqueClassname(String name)
+    {
+        String res = name;
+        while (classnames.contains(res))
+        {
+            res = name+sequence.incrementAndGet();
+        }
+        classnames.add(res);
+        return res;
+    }
+    
     private Set<CharSequence> getImports(List<? extends ExecutableElement> methods)
     {
         Set<CharSequence> set = new TreeSet<>();
@@ -227,31 +319,41 @@ public class BeanProxyProcessor extends AbstractProcessor
         return Character.toLowerCase(name.charAt(3))+name.substring(4);
     }
 
+    private String getEnum(String name)
+    {
+        return name.substring(3);
+    }
+
     private String getter(TypeKind kind)
+    {
+        return "get"+getTypename(kind);
+    }
+
+    private String getTypename(TypeKind kind)
     {
         switch (kind)
         {
             case ARRAY:
             case DECLARED:
-                return "getObject";
+                return "Object";
             case BOOLEAN:
-                return "getBoolean";
+                return "Boolean";
             case BYTE:
-                return "getByte";
+                return "Byte";
             case CHAR:
-                return "getChar";
+                return "Char";
             case DOUBLE:
-                return "getDouble";
+                return "Double";
             case FLOAT:
-                return "getFloat";
+                return "Float";
             case INT:
-                return "getInt";
+                return "Int";
             case LONG:
-                return "getLong";
+                return "Long";
             case SHORT:
-                return "getShort";
+                return "Short";
             default:
-                throw new IllegalArgumentException("not getter for "+kind);
+                throw new IllegalArgumentException("not type "+kind);
         }
     }
 
@@ -266,4 +368,5 @@ public class BeanProxyProcessor extends AbstractProcessor
                 return "";
         }
     }
+
 }

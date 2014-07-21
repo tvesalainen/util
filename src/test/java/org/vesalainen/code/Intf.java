@@ -31,7 +31,7 @@ public interface Intf
     void setC(char x);
     void setS(short x);
     void setI(int x);
-    void setL(long x);
+    void setJ(long x);
     void setF(float x);
     void setD(double x);
     void setAsd(Writer writer);

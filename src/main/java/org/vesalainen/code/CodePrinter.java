@@ -130,7 +130,7 @@ public class CodePrinter
             flushed = true;
         }
     }
-    public <T> void print(CharSequence separator, List<T> classes) throws IOException
+    public <T> void print(CharSequence separator, Collection<T> classes) throws IOException
     {
         boolean first = true;
         for (T c : classes)

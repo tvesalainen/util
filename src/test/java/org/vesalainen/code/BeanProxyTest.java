@@ -52,7 +52,7 @@ public class BeanProxyTest
             assertEquals((short)12345, bt.getS());
             bt.setI(123456);
             assertEquals(123456, bt.getI());
-            bt.setL(1234567);
+            bt.setJ(1234567);
             assertEquals(1234567, bt.getL());
             bt.setF(1234567.89F);
             assertEquals(1234567.89F, bt.getF(), 0.0000000001);

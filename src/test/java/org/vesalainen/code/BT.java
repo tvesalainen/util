@@ -29,7 +29,7 @@ public abstract class BT extends BeanProxy implements Intf
     private char c;
     private short s;
     private int i;
-    private long l;
+    private long j;
     private float f;
     private double d;
     private Object o;
@@ -55,7 +55,7 @@ public abstract class BT extends BeanProxy implements Intf
     @Override
     protected long getLong(String property)
     {
-        return l;
+        return j;
     }
 
     @Override
@@ -109,7 +109,7 @@ public abstract class BT extends BeanProxy implements Intf
     @Override
     protected void set(String property, long arg)
     {
-        l = arg;
+        j = arg;
     }
 
     @Override
