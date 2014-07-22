@@ -17,11 +17,13 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author Timo Vesalainen
+ * @param <T>
  */
 public abstract class ListPrinter<T>
 {
@@ -29,9 +31,9 @@ public abstract class ListPrinter<T>
     protected final CodePrinter out;
     protected final CharSequence separator;
     protected T[] array;
-    protected List<? extends T> list;
+    protected Collection<? extends T> list;
 
-    public ListPrinter(CodePrinter out, CharSequence separator, List<? extends T> list)
+    public ListPrinter(CodePrinter out, CharSequence separator, Collection<? extends T> list)
     {
         this.out = out;
         this.separator = separator;

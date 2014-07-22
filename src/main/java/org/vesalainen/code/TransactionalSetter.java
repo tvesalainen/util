@@ -26,56 +26,70 @@ import org.vesalainen.util.Transactional;
  */
 public abstract class TransactionalSetter implements Transactional
 {
-    protected enum Prim {Z, B, C, S, I, J, F, D, R};
+    protected Object intf;
     protected Object[] arr = new Object[9];
     protected int[][] ord = new int[9][];
     protected int[] ind = new int[9];
 
-    public TransactionalSetter()
+    protected TransactionalSetter(int[] sizes)
     {
-        this(5, EnumSet.allOf(Prim.class));
-    }
-
-    public TransactionalSetter(int size, EnumSet<Prim> types)
-    {
-        for (Prim p : types)
+        assert JavaType.values().length == 9;
+        if (sizes.length != 9)
         {
-            ord[p.ordinal()] = new int[size];
-            switch (p)
+            throw new IllegalArgumentException("sizes illegal length");
+        }
+        for (int ii=0;ii<9;ii++)
+        {
+            if (sizes[ii] > 0)
             {
-                case Z:
-                    arr[p.ordinal()]= (Object)new boolean[size];
-                    break;
-                case B:
-                    arr[p.ordinal()]= (Object)new byte[size];
-                    break;
-                case C:
-                    arr[p.ordinal()]= (Object)new char[size];
-                    break;
-                case S:
-                    arr[p.ordinal()]= (Object)new short[size];
-                    break;
-                case I:
-                    arr[p.ordinal()]= (Object)new int[size];
-                    break;
-                case J:
-                    arr[p.ordinal()]= (Object)new long[size];
-                    break;
-                case F:
-                    arr[p.ordinal()]= (Object)new float[size];
-                    break;
-                case D:
-                    arr[p.ordinal()]= (Object)new double[size];
-                    break;
-                case R:
-                    arr[p.ordinal()]= new Object[size];
-                    break;
+                ord[ii] = new int[sizes[ii]];
+                JavaType jt = JavaType.values()[ii];
+                switch (jt)
+                {
+                    case BOOLEAN:
+                        arr[ii]= (Object)new boolean[sizes[ii]];
+                        break;
+                    case BYTE:
+                        arr[ii]= (Object)new byte[sizes[ii]];
+                        break;
+                    case CHAR:
+                        arr[ii]= (Object)new char[sizes[ii]];
+                        break;
+                    case SHORT:
+                        arr[ii]= (Object)new short[sizes[ii]];
+                        break;
+                    case INT:
+                        arr[ii]= (Object)new int[sizes[ii]];
+                        break;
+                    case LONG:
+                        arr[ii]= (Object)new long[sizes[ii]];
+                        break;
+                    case FLOAT:
+                        arr[ii]= (Object)new float[sizes[ii]];
+                        break;
+                    case DOUBLE:
+                        arr[ii]= (Object)new double[sizes[ii]];
+                        break;
+                    case DECLARED:
+                        arr[ii]= new Object[sizes[ii]];
+                        break;
+                }
             }
         }
     }
     
-    public static <T extends TransactionalSetter> T getInstance(Class<T> cls)
+    public static <T extends TransactionalSetter> T getInstance(Class<T> cls, Object intf)
     {
+        Class<?>[] interfaces = cls.getInterfaces();
+        if (interfaces.length != 1)
+        {
+            throw new IllegalArgumentException(cls+" should implement exactly one interface");
+        }
+        boolean ok = false;
+        if (!interfaces[0].isAssignableFrom(intf.getClass()))
+        {
+            throw new IllegalArgumentException(cls+" doesn't implement "+intf);
+        }
         try
         {
             TransactionalSetterClass annotation = cls.getAnnotation(TransactionalSetterClass.class);
@@ -84,72 +98,75 @@ public abstract class TransactionalSetter implements Transactional
                 throw new IllegalArgumentException("@"+TransactionalSetterClass.class.getSimpleName()+" missing in cls");
             }
             Class<?> c = Class.forName(annotation.value());
-            return (T) c.newInstance();
+            T t =(T) c.newInstance();
+            t.intf = intf;
+            return t;
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
         {
             throw new IllegalArgumentException(ex);
         }
     }
+    
     protected void set(int ordinal, boolean arg)
     {
-        int o = Prim.Z.ordinal();
+        int o = JavaType.BOOLEAN.ordinal();
         ord[o][ind[o]] = ordinal;
         ((boolean[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, byte arg)
     {
-        int o = Prim.B.ordinal();
+        int o = JavaType.BYTE.ordinal();
         ord[o][ind[o]] = ordinal;
         ((byte[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, char arg)
     {
-        int o = Prim.C.ordinal();
+        int o = JavaType.CHAR.ordinal();
         ord[o][ind[o]] = ordinal;
         ((char[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, short arg)
     {
-        int o = Prim.S.ordinal();
+        int o = JavaType.SHORT.ordinal();
         ord[o][ind[o]] = ordinal;
         ((short[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, int arg)
     {
-        int o = Prim.I.ordinal();
+        int o = JavaType.INT.ordinal();
         ord[o][ind[o]] = ordinal;
         ((int[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, long arg)
     {
-        int o = Prim.J.ordinal();
+        int o = JavaType.LONG.ordinal();
         ord[o][ind[o]] = ordinal;
         ((long[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, float arg)
     {
-        int o = Prim.F.ordinal();
+        int o = JavaType.FLOAT.ordinal();
         ord[o][ind[o]] = ordinal;
         ((float[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, double arg)
     {
-        int o = Prim.D.ordinal();
+        int o = JavaType.DOUBLE.ordinal();
         ord[o][ind[o]] = ordinal;
         ((double[])arr[o])[ind[o]] = arg;
         ind[o]++;
     }
     protected void set(int ordinal, Object arg)
     {
-        int o = Prim.R.ordinal();
+        int o = JavaType.DECLARED.ordinal();
         ord[o][ind[o]] = ordinal;
         ((Object[])arr[o])[ind[o]] = arg;
         ind[o]++;

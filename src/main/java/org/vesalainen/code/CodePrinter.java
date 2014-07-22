@@ -18,17 +18,14 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.vesalainen.io.AppendablePrinter;
 
 /**
  *
@@ -36,20 +33,24 @@ import org.vesalainen.io.AppendablePrinter;
  */
 public class CodePrinter
 {
+    private final String Indent = "    ";
+    
     private final CharSequence indent;
     private final Appendable appendable;
     private final CharSequence suffix;
     private boolean indented;
     private boolean flushed;
+    private CodePrinter parent;
     private CodePrinter sub;
 
     public CodePrinter(Appendable appendable)
     {
-        this("", appendable, "");
+        this(null, "", appendable, "");
     }
 
-    private CodePrinter(CharSequence indent, Appendable appendable, CharSequence suffix)
+    private CodePrinter(CodePrinter parent, CharSequence indent, Appendable appendable, CharSequence suffix)
     {
+        this.parent = parent;
         this.indent = indent;
         this.appendable = appendable;
         this.suffix = suffix;
@@ -84,7 +85,7 @@ public class CodePrinter
         }
         println();
         println("{");
-        return createSub(indent+"    ", "}");
+        return createSub("}");
     }
     public CodePrinter createClass(EnumSet<Modifier> modifiers, CharSequence name, TypeElement superClass, TypeElement... interfaces) throws IOException
     {
@@ -114,26 +115,42 @@ public class CodePrinter
         }
         println();
         println("{");
-        return createSub(indent+"    ", "}");
+        return createSub("}");
     }
-    public CodePrinter createSub(CharSequence indention, CharSequence suffix)
+    public CodePrinter createSub(CharSequence suffix)
     {
-        sub = new CodePrinter(indention, appendable, suffix);
+        sub = new CodePrinter(this, indent+Indent, appendable, suffix);
         return sub;
     }
-    void flush(CodePrinter cp) throws IOException
+    void flush() throws IOException
     {
         if (!flushed)
         {
-            cp.println();
-            cp.println(suffix);
-            flushed = true;
+            if (parent != null)
+            {
+                parent.println();
+                parent.println(suffix);
+                flushed = true;
+            }
         }
     }
-    public <T> void print(CharSequence separator, Collection<T> classes) throws IOException
+    public <T> void print(CharSequence separator, Collection<T> items) throws IOException
     {
         boolean first = true;
-        for (T c : classes)
+        for (T c : items)
+        {
+            if (!first)
+            {
+                print(separator);
+            }
+            first = false;
+            print(c.toString());
+        }
+    }
+    public <T> void print(CharSequence separator, T[] items) throws IOException
+    {
+        boolean first = true;
+        for (T c : items)
         {
             if (!first)
             {

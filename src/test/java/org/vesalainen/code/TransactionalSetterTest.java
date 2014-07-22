@@ -37,23 +37,24 @@ public class TransactionalSetterTest
     @Test
     public void testGetInstance()
     {
-        TS ts = TS.getInstance(TS.class);
+        TrIntfImpl tri = new TrIntfImpl();
+        TS ts = TS.getInstance(TS.class, tri);
         assertNotNull(ts);
         
         ts.setI(123);
-        assertEquals(0, ts.getI());
+        assertEquals(0, tri.getI());
         ts.setString("qwerty");
-        assertNull(ts.getString());
+        assertNull(tri.getString());
         ts.commit(null);
-        assertEquals(123, ts.getI());
-        assertEquals("qwerty", ts.getString());
+        assertEquals(123, tri.getI());
+        assertEquals("qwerty", tri.getString());
         ts.setI(456);
         ts.setString("asdfgh");
-        assertEquals(123, ts.getI());
-        assertEquals("qwerty", ts.getString());
+        assertEquals(123, tri.getI());
+        assertEquals("qwerty", tri.getString());
         ts.rollback(null);
-        assertEquals(123, ts.getI());
-        assertEquals("qwerty", ts.getString());
+        assertEquals(123, tri.getI());
+        assertEquals("qwerty", tri.getString());
     }
     
 }

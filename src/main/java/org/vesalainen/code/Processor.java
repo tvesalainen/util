@@ -140,6 +140,7 @@ public class Processor extends AbstractProcessor
             mp.println(")");
             CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), classname, cls);
             Set<String> en = new TreeSet<>();
+            Integer[] sizes = new Integer[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
             for (ExecutableElement m : methods)
             {
                 List<? extends VariableElement> parameters = m.getParameters();
@@ -152,11 +153,30 @@ public class Processor extends AbstractProcessor
                         )
                 {
                     en.add(getEnum(name));
+                    try
+                    {
+                        VariableElement ve = parameters.get(0);
+                        TypeMirror tm = ve.asType();
+                        TypeKind tk = tm.getKind();
+                        JavaType jt = JavaType.valueOf(tk.name());
+                        sizes[jt.ordinal()]++;
+                    }
+                    catch (IllegalArgumentException ex)
+                    {
+                    }
                 }
             }
             cp.print("private enum Prop {");
             cp.print(", ", en);
             cp.println("};");
+            
+            cp.println("public "+classname+"()");
+            cp.println("{");
+            CodePrinter cons = cp.createSub("}");
+            cons.print("super(new int[] {");
+            cons.print(", ", sizes);
+            cons.println("});");
+            cons.flush();
             for (ExecutableElement m : methods)
             {
                 List<? extends VariableElement> parameters = m.getParameters();
@@ -176,11 +196,48 @@ public class Processor extends AbstractProcessor
                 }
                 else
                 {
-                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                    if (
+                            name.equals("commit") && 
+                            parameters.size() == 1 &&
+                            "java.lang.String".equals(parameters.get(0).asType().toString()) &&
+                            returnType.getKind() == VOID
+                            )
+                    {
+                        cm.println("int cnt = 0;");
+                        for (JavaType jt : JavaType.values())
+                        {
+                            int ordinal = jt.ordinal();
+                            if (sizes[ordinal] > 0)
+                            {
+                                String code = jt.getCode();
+                                cm.println(code+"[] arr"+ordinal+" = ("+code+"[])arr["+ordinal+"];");
+                                cm.println("cnt = ind["+ordinal+"];");
+                                cm.println("for (int ii=0;ii<cnt;ii++)");
+                                cm.println("{");
+                                CodePrinter cc = cm.createSub("}");
+                                cc.flush();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (
+                                name.equals("rollback") && 
+                                parameters.size() == 1 &&
+                                "java.lang.String".equals(parameters.get(0).asType().toString()) &&
+                                returnType.getKind() == VOID
+                                )
+                        {
+                        }
+                        else
+                        {
+                            cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                        }
+                    }
                 }
-                cm.flush(cp);
+                cm.flush();
             }
-            cp.flush(mp);
+            cp.flush();
         }
     }
     private void generateBeanProxy(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
@@ -242,9 +299,9 @@ public class Processor extends AbstractProcessor
                         cm.println("throw new UnsupportedOperationException(\"not supported.\");");
                     }
                 }
-                cm.flush(cp);
+                cm.flush();
             }
-            cp.flush(mp);
+            cp.flush();
         }
     }
 
@@ -257,6 +314,7 @@ public class Processor extends AbstractProcessor
             TypeElement te = (TypeElement) dt.asElement();
             if (te.getKind() == INTERFACE)
             {
+                System.err.println("interface "+te.getQualifiedName());
                 for (ExecutableElement m : ElementFilter.methodsIn(elements.getAllMembers(te)))
                 {
                     if (m.getModifiers().contains(ABSTRACT))

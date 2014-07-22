@@ -17,16 +17,35 @@
 
 package org.vesalainen.code;
 
+import java.util.EnumSet;
+import javax.lang.model.type.TypeKind;
+
 /**
  *
  * @author Timo Vesalainen
  */
-@TransactionalSetterClass("org.vesalainen.code.TSImpl")
-public abstract class TS extends TransactionalSetter implements TrIntf
+public enum JavaType
 {
-
-    public TS(int[] sizes)
+    BOOLEAN("boolean"),
+    BYTE("byte"),
+    CHAR("char"),
+    SHORT("short"),
+    INT("int"),
+    LONG("long"),
+    FLOAT("float"),
+    DOUBLE("double"),
+    DECLARED("Object");
+    
+    private final String code;
+    
+    private JavaType(String name)
     {
-        super(sizes);
+        this.code = name;
     }
+
+    public String getCode()
+    {
+        return code;
+    }
+    
 }
