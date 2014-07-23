@@ -39,6 +39,7 @@ import javax.lang.model.element.Element;
 import static javax.lang.model.element.ElementKind.*;
 import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -50,6 +51,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.vesalainen.util.Transactional;
 
 /**
  *
@@ -119,6 +121,7 @@ public class Processor extends AbstractProcessor
         {
             throw new IllegalArgumentException("@"+TransactionalSetterClass.class.getSimpleName()+" missing in cls");
         }
+        TypeElement transactional = elements.getTypeElement(Transactional.class.getCanonicalName());
         Filer filer = processingEnv.getFiler();
         String value = annotation.value();
         JavaFileObject sourceFile = filer.createSourceFile(value);
@@ -130,7 +133,14 @@ public class Processor extends AbstractProcessor
             String pgk = value.substring(0, idx);
 
             List<? extends ExecutableElement> methods = getMethods(cls);
+            List<? extends TypeMirror> interfaces = cls.getInterfaces();
+            if (interfaces.size() != 1)
+            {
+                throw new IllegalArgumentException("interface count != 1 (="+interfaces.size()+")");
+            }
+            TypeMirror theInterface = interfaces.get(0);
             mp.println("package "+pgk+";");
+            mp.println("import java.util.Arrays;");
             mp.println("import javax.annotation.Generated;");
             mp.println("@Generated(");
             mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
@@ -203,7 +213,11 @@ public class Processor extends AbstractProcessor
                             returnType.getKind() == VOID
                             )
                     {
-                        cm.println("int cnt = 0;");
+                        cm.println("int cnt;");
+                        cm.println("int[] ordinals;");
+                        cm.println("Prop[] values = Prop.values();");
+                        String iname = theInterface.toString();
+                        cm.println(iname+" interf = ("+iname+")intf;");
                         for (JavaType jt : JavaType.values())
                         {
                             int ordinal = jt.ordinal();
@@ -212,11 +226,46 @@ public class Processor extends AbstractProcessor
                                 String code = jt.getCode();
                                 cm.println(code+"[] arr"+ordinal+" = ("+code+"[])arr["+ordinal+"];");
                                 cm.println("cnt = ind["+ordinal+"];");
+                                cm.println("ordinals = ord["+ordinal+"];");
                                 cm.println("for (int ii=0;ii<cnt;ii++)");
                                 cm.println("{");
                                 CodePrinter cc = cm.createSub("}");
+                                cc.println("switch (values[ordinals[ii]])");
+                                cc.println("{");
+                                CodePrinter cs = cc.createSub("}");
+                                for (ExecutableElement ee : methods)
+                                {
+                                    List<? extends VariableElement> params = ee.getParameters();
+                                    TypeMirror rt = ee.getReturnType();
+                                    String sn = ee.getSimpleName().toString();
+                                    if (
+                                            sn.startsWith("set") && 
+                                            params.size() == 1 &&
+                                            rt.getKind() == VOID
+                                            )
+                                    {
+                                        if (jt.name().contentEquals(params.get(0).asType().getKind().name()))
+                                        {
+                                            cs.println("case "+getEnum(sn)+":");
+                                            CodePrinter csw = cs.createSub("");
+                                            csw.println("interf."+sn+"("+cast(params.get(0).asType())+"arr"+ordinal+"[ii]);");
+                                            csw.println("break;");
+                                            csw.flush();
+                                        }
+                                    }
+                                }
+                                cs.println("default:");
+                                CodePrinter csw = cs.createSub("");
+                                csw.println("throw new UnsupportedOperationException(\"should not happen\");");
+                                csw.flush();
+                                cs.flush();
                                 cc.flush();
                             }
+                        }
+                        cm.println("Arrays.fill(ind, 0);");
+                        if (types.isAssignable(theInterface, transactional.asType()))
+                        {
+                            cm.println("interf.commit("+parameters.get(0).getSimpleName()+");");
                         }
                     }
                     else
@@ -228,6 +277,13 @@ public class Processor extends AbstractProcessor
                                 returnType.getKind() == VOID
                                 )
                         {
+                            cm.println("Arrays.fill(ind, 0);");
+                            if (types.isAssignable(theInterface, transactional.asType()))
+                            {
+                                String iname = theInterface.toString();
+                                cm.println(iname+" interf = ("+iname+")intf;");
+                                cm.println("interf.rollback("+parameters.get(0).getSimpleName()+");");
+                            }
                         }
                         else
                         {
