@@ -17,7 +17,6 @@
 
 package org.vesalainen.code;
 
-import java.util.EnumSet;
 import org.vesalainen.util.Transactional;
 
 /**
