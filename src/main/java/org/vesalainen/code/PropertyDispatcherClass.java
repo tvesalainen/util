@@ -17,16 +17,20 @@
 
 package org.vesalainen.code;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.lang.model.element.Modifier;
+
 /**
  *
  * @author Timo Vesalainen
  */
-@TransactionalSetterClass("org.vesalainen.code.impl.TSImpl")
-public abstract class TS extends TransactionalSetter implements TrIntf
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface PropertyDispatcherClass
 {
-
-    protected TS(int[] sizes)
-    {
-        super(sizes);
-    }
+    String value();
+    Modifier[] modifiers() default {Modifier.PUBLIC};
 }

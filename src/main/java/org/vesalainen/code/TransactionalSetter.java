@@ -17,66 +17,52 @@
 
 package org.vesalainen.code;
 
-import org.vesalainen.util.Transactional;
-
 /**
- *
+ * TransactionalSetter can be used to add transactions to setter type interface.
+ * 
+ * <p>Extend TransactionalSetter and declare implementing the target interface,
+ * but don't implement the methods. Annotate the class with @TransactionalSetterClass.
+ * Make the class abstract.
+ * 
+ * <p>Create class instance with getInstance method.
+ * 
+ * <p>Target interface doesn't have to support Transactional interface. However 
+ * if it doesn't, its commit/rollback methods are called.
+ * 
+ * <p>Example:
+ * <code>
+ * @TransactionalSetterClass("org.vesalainen.code.TSImpl")
+ * public abstract class TS extends TransactionalSetter implements TrIntf
+ * {
+ * 
+ *     public TS(int[] sizes)
+ *     {
+ *         super(sizes);
+ *     }
+ * }
+ * </code>
+ * <code>
+ *     TrIntfImpl tri = new TrIntfImpl();
+ *     TS ts = TS.getInstance(TS.class, tri);
+ * </code>
  * @author Timo Vesalainen
+ * @see org.vesalainen.util.Transactional
  */
-public abstract class TransactionalSetter implements Transactional
+public abstract class TransactionalSetter extends AbstractDispatcher
 {
     protected Object intf;
-    protected Object[] arr = new Object[9];
-    protected int[][] ord = new int[9][];
-    protected int[] ind = new int[9];
 
     protected TransactionalSetter(int[] sizes)
     {
-        assert JavaType.values().length == 9;
-        if (sizes.length != 9)
-        {
-            throw new IllegalArgumentException("sizes illegal length");
-        }
-        for (int ii=0;ii<9;ii++)
-        {
-            if (sizes[ii] > 0)
-            {
-                ord[ii] = new int[sizes[ii]];
-                JavaType jt = JavaType.values()[ii];
-                switch (jt)
-                {
-                    case BOOLEAN:
-                        arr[ii]= (Object)new boolean[sizes[ii]];
-                        break;
-                    case BYTE:
-                        arr[ii]= (Object)new byte[sizes[ii]];
-                        break;
-                    case CHAR:
-                        arr[ii]= (Object)new char[sizes[ii]];
-                        break;
-                    case SHORT:
-                        arr[ii]= (Object)new short[sizes[ii]];
-                        break;
-                    case INT:
-                        arr[ii]= (Object)new int[sizes[ii]];
-                        break;
-                    case LONG:
-                        arr[ii]= (Object)new long[sizes[ii]];
-                        break;
-                    case FLOAT:
-                        arr[ii]= (Object)new float[sizes[ii]];
-                        break;
-                    case DOUBLE:
-                        arr[ii]= (Object)new double[sizes[ii]];
-                        break;
-                    case DECLARED:
-                        arr[ii]= new Object[sizes[ii]];
-                        break;
-                }
-            }
-        }
+        super(sizes);
     }
-    
+    /**
+     * Creates a instance of a class TransactionalSetter subclass.
+     * @param <T> Type of TransactionalSetter subclass
+     * @param cls TransactionalSetter subclass class
+     * @param intf Interface implemented by TransactionalSetter subclass
+     * @return 
+     */
     public static <T extends TransactionalSetter> T getInstance(Class<T> cls, Object intf)
     {
         Class<?>[] interfaces = cls.getInterfaces();
@@ -107,67 +93,4 @@ public abstract class TransactionalSetter implements Transactional
         }
     }
     
-    protected void set(int ordinal, boolean arg)
-    {
-        int o = JavaType.BOOLEAN.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((boolean[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, byte arg)
-    {
-        int o = JavaType.BYTE.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((byte[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, char arg)
-    {
-        int o = JavaType.CHAR.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((char[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, short arg)
-    {
-        int o = JavaType.SHORT.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((short[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, int arg)
-    {
-        int o = JavaType.INT.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((int[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, long arg)
-    {
-        int o = JavaType.LONG.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((long[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, float arg)
-    {
-        int o = JavaType.FLOAT.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((float[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, double arg)
-    {
-        int o = JavaType.DOUBLE.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((double[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
-    protected void set(int ordinal, Object arg)
-    {
-        int o = JavaType.DECLARED.ordinal();
-        ord[o][ind[o]] = ordinal;
-        ((Object[])arr[o])[ind[o]] = arg;
-        ind[o]++;
-    }
 }

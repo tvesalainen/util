@@ -21,7 +21,7 @@ package org.vesalainen.code;
  *
  * @author Timo Vesalainen
  */
-@BeanProxyClass(value = "org.vesalainen.code.BTImpl")
+@BeanProxyClass(value = "org.vesalainen.code.impl.BTImpl")
 public abstract class BT extends BeanProxy implements Intf
 {
     private boolean z;

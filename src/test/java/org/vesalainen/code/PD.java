@@ -21,11 +21,11 @@ package org.vesalainen.code;
  *
  * @author Timo Vesalainen
  */
-@TransactionalSetterClass("org.vesalainen.code.impl.TSImpl")
-public abstract class TS extends TransactionalSetter implements TrIntf
+@PropertyDispatcherClass("org.vesalainen.code.impl.PDImpl")
+public abstract class PD extends PropertyDispatcher implements TrIntf
 {
 
-    protected TS(int[] sizes)
+    protected PD(int[] sizes)
     {
         super(sizes);
     }
