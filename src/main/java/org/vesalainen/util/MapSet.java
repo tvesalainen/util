@@ -49,7 +49,7 @@ public interface MapSet<M, S> extends Map<M,Set<S>>
     boolean contains(M key, S value);
     /**
      * Replaces mapped Set with collection.
-     * Old set or null is returned.
+     * New set is returned.
      * @param key
      * @param value
      * @return 

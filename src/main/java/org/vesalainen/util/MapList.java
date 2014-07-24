@@ -42,7 +42,7 @@ public interface MapList<M, L> extends Map<M,List<L>>
      */
     void add(M key, int index, L value);
     /**
-     * Returns mapped list or null if not found.
+     * Returns mapped list or empty list if not found.
      * @param key
      * @return 
      */
@@ -50,7 +50,7 @@ public interface MapList<M, L> extends Map<M,List<L>>
     List<L> get(Object key);
     /**
      * Replaces mapped list with collection. New list is in collection iterator order.
-     * Old list or null is returned.
+     * New list is returned.
      * @param key
      * @param value
      * @return 
