@@ -50,8 +50,17 @@ package org.vesalainen.code;
  */
 public abstract class TransactionalSetter extends AbstractDispatcher
 {
+    /**
+     * Target interface.
+     */
     protected Object intf;
-
+    /**
+     * Creates a TransactionalSetter. This is called by generated sub class.
+     * @param sizes Defines how many method class per type can be stored. Default
+     * implementation allows interfaces all methods being called once. Size per type
+     * is in the same order as in JavaType enum.
+     * @see org.vesalainen.code.JavaType
+     */
     protected TransactionalSetter(int[] sizes)
     {
         super(sizes);

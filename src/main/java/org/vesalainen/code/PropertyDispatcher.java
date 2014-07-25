@@ -31,13 +31,46 @@ import org.vesalainen.util.Transactional;
  * <p>If PropertySetter class implements also Transactional, its commit or 
  * rollback method is called.
  * 
+ * <p>Example:
+ * Create PropertyDispatcher sub class.
+ * <code>
+ * @PropertyDispatcherClass("org.vesalainen.code.impl.PDImpl")
+ * public abstract class PD extends PropertyDispatcher implements TrIntf
+ * {
+ * 
+ *     protected PD(int[] sizes)
+ *     {
+ *         super(sizes);
+ *     }
+ * }
+ * </code>
+ * Create PropertySetter implementation.
+ * <code>
+ *    public class PS implements PropertySetter
+ *    {
+ *    * 
+ * </code>
+ * Get instance of PropertyDispatcher sublass and add observer(s)
+ * <code>
+ *        PS ps = new PS();
+ *        PD pd = PD.getInstance(PD.class);
+ *        
+ *        pd.addObserver(ps, "string", "i");
+ *        pd.setI(123);
+ * </code>
  * @author Timo Vesalainen
  * @see org.vesalainen.util.Transactional
  */
 public abstract class PropertyDispatcher extends AbstractDispatcher
 {
     protected List<Transactional> transactionalObservers = new ArrayList<>();
-    
+    /**
+     * Creates a PropertyDispatcher. This is called by generated sub class.
+     * @param sizes Defines how many method class per type can be stored. Default
+     * implementation allows interfaces all methods being called once. Size per type
+     * is in the same order as in JavaType enum.
+     * @see org.vesalainen.code.JavaType
+     */
     protected PropertyDispatcher(int[] sizes)
     {
         super(sizes);
