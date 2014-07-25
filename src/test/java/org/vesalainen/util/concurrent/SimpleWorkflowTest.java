@@ -17,6 +17,9 @@
 
 package org.vesalainen.util.concurrent;
 
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -120,6 +123,36 @@ public class SimpleWorkflowTest
 
         }
     }
+    @Test
+    public void testTimeout()
+    {
+        try
+        {
+            System.out.println("Timeout");
+            UnparallelWorkflowImpl2 instance = new UnparallelWorkflowImpl2(0);
+            assertEquals(1, instance.getThreadCount());
+            Thread.sleep(1000);
+            assertEquals(1, instance.getThreadCount());
+            instance.switchTo(1);
+            assertEquals(2, instance.getThreadCount());
+            Thread.sleep(2000);
+            assertEquals(1, instance.getThreadCount());
+            instance.waitAndStopThreads();
+            try
+            {
+                instance.switchTo(1);
+                fail("should throw exception");
+            }
+            catch (IllegalStateException ex)
+            {
+            }
+        }
+        catch (InterruptedException ex)
+        {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+    }
     public class UnparallelWorkflowImpl1 extends SimpleWorkflow<Integer>
     {
 
@@ -160,7 +193,7 @@ public class SimpleWorkflowTest
 
         public UnparallelWorkflowImpl2(int number)
         {
-            super(number);
+            super(number, 1, 500, TimeUnit.MILLISECONDS);
         }
 
         @Override
