@@ -24,6 +24,11 @@ package org.vesalainen.util.concurrent;
 public class ThreadStoppedException extends RuntimeException
 {
 
+    public ThreadStoppedException(String string)
+    {
+        super(string);
+    }
+
     public ThreadStoppedException(Throwable thrwbl)
     {
         super(thrwbl);

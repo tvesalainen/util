@@ -18,10 +18,10 @@
 package org.vesalainen.util.concurrent;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * SimpleWorkflow creates a workflow using several threads. 
@@ -34,32 +34,43 @@ import java.util.concurrent.Semaphore;
  */
 public abstract class SimpleWorkflow<K>
 {
+    private final K id;
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
     private final Semaphore stopSemaphore;
     private final int maxParallelism;
+    private final int timeout;
+    private final TimeUnit timeUnit;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
     
     /**
      * Creates a new workflow. Current thread is named to start.
-     * Maximum number of parallel running threads = 1.
+     * Maximum number of parallel running threads = 1. No timeout for idle threads.
      * @param start Name of current thread.
      */
     public SimpleWorkflow(K start)
     {
-        this(start, 1);
+        this(start, 1, 0, TimeUnit.MILLISECONDS);
     }
     /**
      * Creates a new workflow. Current thread is named to start.
      * @param start Name of current thread.
      * @param maxParallelism Maximum number of parallel running threads.
+     * @param timeout Timeout for idle thread to be stopped.
+     * @param timeUnit Time unit for idle thread to be stopped.
      */
-    public SimpleWorkflow(K start, int maxParallelism)
+    public SimpleWorkflow(K start, int maxParallelism, int timeout, TimeUnit timeUnit)
     {
         if (maxParallelism < 0)
         {
             throw new IllegalArgumentException("maxParallelism < 0");
         }
+        this.id = start;
         this.maxParallelism = maxParallelism;
+        this.timeout = timeout;
+        this.timeUnit = timeUnit;
         this.stopSemaphore = new Semaphore(maxParallelism);
         this.semaphoreMap = new HashMap<>();
         this.threadMap = new HashMap<>();
@@ -91,26 +102,34 @@ public abstract class SimpleWorkflow<K>
     }
     private void doFork(K to)
     {
-        if (threadMap.isEmpty())
+        writeLock.lock();
+        try
         {
-            throw new IllegalStateException("threads are already interrupted");
+            if (threadMap.isEmpty())
+            {
+                throw new IllegalStateException("threads are already interrupted");
+            }
+            Thread nextThread = threadMap.get(to);
+            if (nextThread == null)
+            {
+                Runnable runnable = create(to);
+                runnable = new Wrapper(runnable);
+                nextThread = new Thread(runnable, to.toString());
+                Semaphore semaphore = new Semaphore(0);
+                threadMap.put(to, nextThread);
+                semaphoreMap.put(nextThread, semaphore);
+                nextThread.start();
+                //System.err.println("created="+stopSemaphore.availablePermits());
+            }
+            else
+            {
+                Semaphore semaphore = semaphoreMap.get(nextThread);
+                semaphore.release();
+            }
         }
-        Thread nextThread = threadMap.get(to);
-        if (nextThread == null)
+        finally
         {
-            Runnable runnable = create(to);
-            runnable = new Wrapper(runnable);
-            nextThread = new Thread(runnable, to.toString());
-            Semaphore semaphore = new Semaphore(0);
-            threadMap.put(to, nextThread);
-            semaphoreMap.put(nextThread, semaphore);
-            nextThread.start();
-            //System.err.println("created="+stopSemaphore.availablePermits());
-        }
-        else
-        {
-            Semaphore semaphore = semaphoreMap.get(nextThread);
-            semaphore.release();
+            writeLock.unlock();
         }
     }
     public void join()
@@ -133,7 +152,11 @@ public abstract class SimpleWorkflow<K>
             {
                 throw new IllegalStateException("Current thread is not workflow thread");
             }
-            currentSemaphore.acquire();
+            boolean success = currentSemaphore.tryAcquire(timeout, timeUnit);
+            if (!success)
+            {
+                kill(id);
+            }
         }
         catch (InterruptedException ex)
         {
@@ -164,10 +187,18 @@ public abstract class SimpleWorkflow<K>
         {
             throw new IllegalStateException("threads are already interrupted");
         }
-        Thread thread = threadMap.get(key);
-        threadMap.remove(key);
-        semaphoreMap.remove(thread);
-        thread.interrupt();
+        writeLock.lock();
+        try
+        {
+            Thread thread = threadMap.get(key);
+            threadMap.remove(key);
+            semaphoreMap.remove(thread);
+            thread.interrupt();
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     /**
      * Wait until parallel excecuting threads have joined. After that interrupt
@@ -175,6 +206,7 @@ public abstract class SimpleWorkflow<K>
      */
     public void waitAndStopThreads()
     {
+        readLock.lock();
         try
         {
             if (threadMap.isEmpty())
@@ -190,6 +222,10 @@ public abstract class SimpleWorkflow<K>
         {
             throw new IllegalArgumentException(ex);
         }
+        finally
+        {
+            readLock.unlock();
+        }
     }
     /**
      * Interrupt
@@ -201,16 +237,24 @@ public abstract class SimpleWorkflow<K>
         {
             throw new IllegalStateException("threads are already interrupted");
         }
-        Thread currentThread = Thread.currentThread();
-        for (Thread thread : threadMap.values())
+        writeLock.lock();
+        try
         {
-            if (!currentThread.equals(thread))
+            Thread currentThread = Thread.currentThread();
+            for (Thread thread : threadMap.values())
             {
-                thread.interrupt();
+                if (!currentThread.equals(thread))
+                {
+                    thread.interrupt();
+                }
             }
+            threadMap.clear();
+            semaphoreMap.clear();
         }
-        threadMap.clear();
-        semaphoreMap.clear();
+        finally
+        {
+            writeLock.unlock();
+        }
     }
 
     /**
