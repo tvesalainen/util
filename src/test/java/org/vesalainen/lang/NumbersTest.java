@@ -17,8 +17,9 @@
 
 package org.vesalainen.lang;
 
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
+import static org.vesalainen.junit.Assertions.*;
 
 /**
  *
@@ -31,6 +32,17 @@ public class NumbersTest
     {
     }
 
+    @Test
+    public void test()
+    {
+        for (int cp = Character.MIN_CODE_POINT;cp < Character.MAX_CODE_POINT;cp++)
+        {
+            if (Character.isDigit(cp))
+            {
+                System.err.println(Character.getName(cp)+"="+Character.digit(cp, 10)+" \\u"+Integer.toHexString(Character.highSurrogate(cp))+"\\u"+Integer.toHexString(Character.lowSurrogate(cp)));
+            }
+        }
+    }
     /**
      * Test of Numbers.parseInt method, of class Numbers.
      */
@@ -45,6 +57,7 @@ public class NumbersTest
         assertEquals(102, Numbers.parseInt("1100110", 2));
         assertEquals(2147483647, Numbers.parseInt("2147483647", 10));
         assertEquals(-2147483648, Numbers.parseInt("-2147483648", 10));
+        assertEquals(1234, Numbers.parseInt("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa", 10));
         try
         {
             Numbers.parseInt("2147483648", 10);
@@ -85,9 +98,40 @@ public class NumbersTest
     @Test
     public void testParseFloat()
     {
-        assertEquals(0F, Numbers.parseFloat("0"), Math.ulp(0F));
-        assertEquals(123456.789F, Numbers.parseFloat("123456.789"), Math.ulp(123456.789F));
-        assertEquals(123456.789F, Numbers.parseFloat("123456789E-3"), Math.ulp(123456.789F));
+        testEquals(0F, Numbers.parseFloat("0"));
+        testEquals(123456.789F, Numbers.parseFloat("123456.789"));
+        testEquals(123456.789F, Numbers.parseFloat("123456789E-3"));
+        testEquals(123456.789F, Numbers.parseFloat("+123456.789"));
+        testEquals(123456.789F, Numbers.parseFloat("+123456789E-3"));
+        testEquals(-123456.789F, Numbers.parseFloat("-123456.789"));
+        testEquals(-123456.789F, Numbers.parseFloat("-123456789E-3"));
+        testEquals(1.0000001F, Numbers.parseFloat("1.00000017881393421514957253748434595763683319091796875001"));
+        testEquals(1000000178813934215149572537484345F, Numbers.parseFloat("1000000178813934215149572537484345"));
+        testEquals(1234F, Numbers.parseFloat("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
+        try
+        {
+            Numbers.parseFloat("-123456789E-3.2");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseFloat("-123456789Ee-3");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseFloat("x123456789E-3");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
 
     /**
@@ -96,13 +140,46 @@ public class NumbersTest
     @Test
     public void testParseDouble()
     {
-        assertEquals(0, Numbers.parseDouble("0"), Math.ulp(0));
-        assertEquals(123456.789, Numbers.parseDouble("123456.789"), Math.ulp(123456.789));
-        assertEquals(123456.789, Numbers.parseDouble("123456789E-3"), Math.ulp(123456.789));
+        testEquals(0, Numbers.parseDouble("0"));
+        testEquals(123456.789, Numbers.parseDouble("123456.789"));
+        testEquals(123456.789, Numbers.parseDouble("123456789E-3"));
+        testEquals(-123456.789, Numbers.parseDouble("-123456.789"));
+        testEquals(-123456.789, Numbers.parseDouble("-123456789E-3"));
+        testEquals(123456.789, Numbers.parseDouble("+123456.789"));
+        testEquals(123456.789, Numbers.parseDouble("+123456789E-3"));
         double max = Double.MAX_VALUE;
-        assertEquals(max, Numbers.parseDouble(Double.toString(max)), Math.ulp(max));
+        String maxs = Double.toString(max);
+        testEquals(max, Numbers.parseDouble(maxs));
         double min = Double.MIN_VALUE;
-        assertEquals(min, Numbers.parseDouble(Double.toString(min)), Math.ulp(min));
+        String mins = Double.toString(min);
+        testEquals(min, Numbers.parseDouble(mins));
+        testEquals(1.0000001788139342, Numbers.parseDouble("1.00000017881393421514957253748434595763683319091796875001"));
+        testEquals(100000017881393421514957253748434595763683319091796875001.0, Numbers.parseDouble("100000017881393421514957253748434595763683319091796875001"));
+        testEquals(1234, Numbers.parseDouble("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
+        try
+        {
+            Numbers.parseDouble("-123456789E-3.2");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseDouble("-123456789Ee-3");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseDouble("x123456789E-3");
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
     
 }

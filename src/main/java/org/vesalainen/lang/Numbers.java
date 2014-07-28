@@ -23,6 +23,8 @@ package org.vesalainen.lang;
  */
 public class Numbers
 {
+    private static final int IntLimit = Integer.MAX_VALUE/10-10;
+    private static final long LongLimit = Long.MAX_VALUE/10-10;
     private enum FloatState {Significand, Decimal, Exponent};
     
     public static float parseFloat(CharSequence cs)
@@ -35,6 +37,7 @@ public class Numbers
         int decimal = 0;
         int exponent = 0;
         int exponentSign = 1;
+        boolean overFlow = false;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -66,14 +69,30 @@ public class Numbers
                     if (Character.isDigit(cp))
                     {
                         int digit = Character.digit(cp, 10);
+                        if (!overFlow && significand > IntLimit)
+                        {
+                            overFlow = true;
+                        }
                         switch (fs)
                         {
                             case Significand:
-                                significand = 10*significand + digit;
+                                if (!overFlow)
+                                {
+                                    significand *= 10;
+                                    significand += digit;
+                                }
+                                else
+                                {
+                                    decimal++;
+                                }
                                 break;
                             case Decimal:
-                                significand = 10*significand + digit;
-                                decimal--;
+                                if (!overFlow)
+                                {
+                                    significand *= 10;
+                                    significand += digit;
+                                    decimal--;
+                                }
                                 break;
                             case Exponent:
                                 exponent = 10*exponent + digit;
@@ -86,10 +105,18 @@ public class Numbers
                     }
                     break;
                 case '.':
+                    if (fs != FloatState.Significand)
+                    {
+                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                    }
                     fs = FloatState.Decimal;
                     break;
                 case 'e':
                 case 'E':
+                    if (fs == FloatState.Exponent)
+                    {
+                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                    }
                     fs = FloatState.Exponent;
                     break;
                 case '-':
@@ -119,6 +146,7 @@ public class Numbers
         int decimal = 0;
         int exponent = 0;
         int exponentSign = 1;
+        boolean overFlow = false;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -150,14 +178,30 @@ public class Numbers
                     if (Character.isDigit(cp))
                     {
                         int digit = Character.digit(cp, 10);
+                        if (!overFlow && significand > LongLimit)
+                        {
+                            overFlow = true;
+                        }
                         switch (fs)
                         {
                             case Significand:
-                                significand = 10*significand + digit;
+                                if (!overFlow)
+                                {
+                                    significand *= 10;
+                                    significand += digit;
+                                }
+                                else
+                                {
+                                    decimal++;
+                                }
                                 break;
                             case Decimal:
-                                significand = 10*significand + digit;
-                                decimal--;
+                                if (!overFlow)
+                                {
+                                    significand *= 10;
+                                    significand += digit;
+                                    decimal--;
+                                }
                                 break;
                             case Exponent:
                                 exponent = 10*exponent + digit;
@@ -170,10 +214,18 @@ public class Numbers
                     }
                     break;
                 case '.':
+                    if (fs != FloatState.Significand)
+                    {
+                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                    }
                     fs = FloatState.Decimal;
                     break;
                 case 'e':
                 case 'E':
+                    if (fs == FloatState.Exponent)
+                    {
+                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                    }
                     fs = FloatState.Exponent;
                     break;
                 case '-':
