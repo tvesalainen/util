@@ -68,6 +68,14 @@ public class NumbersTest
         }
         try
         {
+            Numbers.parseInt("-2147483649", 10);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
             Numbers.parseInt("99", 8);
             fail("should throw exception");
         }

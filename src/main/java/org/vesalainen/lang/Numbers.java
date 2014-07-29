@@ -255,7 +255,7 @@ public class Numbers
             radix = -radix;
         }
         int result = 0;
-        int sign = 1;
+        int sign = -1;
         int index = 0;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
@@ -272,7 +272,7 @@ public class Numbers
             {
                 throw new NumberFormatException("no signs for 2-complement "+cs);
             }
-            sign = -1;
+            sign = 1;
             index++;
         }
         if (index >= length)
@@ -284,7 +284,11 @@ public class Numbers
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
-            result += Character.digit(cp, radix);
+            result -= Character.digit(cp, radix);
+            if (result > 0)
+            {
+                throw new NumberFormatException("too long "+cs);
+            }
             if (Character.isBmpCodePoint(cp))
             {
                 index++;
@@ -294,24 +298,17 @@ public class Numbers
                 index += 2;
             }
         }
-        if (result < 0)
+        if (result == Integer.MIN_VALUE && sign == -1)
         {
-            if (sign == -1)
-            {
-                sign = 1;
-            }
-            else
-            {
-                throw new NumberFormatException("too long "+cs);
-            }
+            throw new NumberFormatException("too long "+cs);
         }
-        if (!twoComp || result < (1<<(count-1)))
+        if (!twoComp || -result < (1<<(count-1)))
         {
             return sign*result;
         }
         else
         {
-            return result + (-1<<count);
+            return -result + (-1<<count);
         }
     }
 }
