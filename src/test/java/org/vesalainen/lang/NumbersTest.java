@@ -336,7 +336,7 @@ public class NumbersTest
     {
         String maxDec = Byte.toString(Byte.MAX_VALUE);
         String minDec = Byte.toString(Byte.MIN_VALUE);
-        assertEquals(0, Numbers.parseByte("0", 10));
+        assertEquals(0, Numbers.parseByte("00000000000000000000000", 10));
         assertEquals(73, Numbers.parseByte("73", 10));
         assertEquals(42, Numbers.parseByte("+42", 10));
         assertEquals(0, Numbers.parseByte("-0", 10));
@@ -377,12 +377,13 @@ public class NumbersTest
         catch (NumberFormatException ex)
         {
         }
-        assertEquals(52, Numbers.parseByte("Ko", 27));
+        assertEquals(20, Numbers.parseByte("K", 27));
         assertEquals(126, Numbers.parseByte("01111110", -2));
         assertEquals(127, Numbers.parseByte("01111111", -2));
         assertEquals(2, Numbers.parseByte("00000010", -2));
         assertEquals(1, Numbers.parseByte("00000001", -2));
         assertEquals(0, Numbers.parseByte("00000000", -2));
+        assertEquals(-1, Numbers.parseByte("11111111", -2));
         assertEquals(-1, Numbers.parseByte("1111111", -2));
         assertEquals(-2, Numbers.parseByte("1111110", -2));
     }
@@ -561,6 +562,76 @@ public class NumbersTest
         catch (NumberFormatException ex)
         {
         }
+    }
+
+    /**
+     * Test of parseUnsignedInt method, of class Numbers.
+     */
+    @Test
+    public void testParseUnsignedInt_CharSequence()
+    {
+    }
+
+    /**
+     * Test of parseUnsignedInt method, of class Numbers.
+     */
+    @Test
+    public void testParseUnsignedInt_CharSequence_int()
+    {
+        String maxBin = Integer.toUnsignedString(-1, 2);
+        String maxOct = Integer.toUnsignedString(-1, 8);
+        String maxHex = Integer.toUnsignedString(-1, 16);
+        String maxDec = Integer.toUnsignedString(-1, 10);
+        assertEquals(0, Numbers.parseUnsignedInt("0", 10));
+        assertEquals(473, Numbers.parseUnsignedInt("473", 10));
+        assertEquals(42, Numbers.parseUnsignedInt("+42", 10));
+        try
+        {
+            Numbers.parseUnsignedInt("-0", 10);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseUnsignedInt("-FF", 16);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        assertEquals(102, Numbers.parseUnsignedInt("1100110", 2));
+        assertEquals(-1, Numbers.parseUnsignedInt(maxDec, 10));
+        assertEquals(-1, Numbers.parseUnsignedInt(maxHex, 16));
+        assertEquals(-1, Numbers.parseUnsignedInt(maxOct, 8));
+        assertEquals(-1, Numbers.parseUnsignedInt(maxBin, 2));
+        assertEquals(1234, Numbers.parseUnsignedInt("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa", 10));
+        try
+        {
+            Numbers.parseUnsignedInt("4294967296", 10);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseUnsignedInt("99", 8);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseUnsignedInt("Kona", 10);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        assertEquals(411787, Numbers.parseUnsignedInt("Kona", 27));
     }
 
 }
