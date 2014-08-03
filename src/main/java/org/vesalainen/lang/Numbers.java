@@ -37,7 +37,36 @@ public class Numbers
 {
     private static final int IntLimit = Integer.MAX_VALUE/10-10;
     private static final long LongLimit = Long.MAX_VALUE/10-10;
+
     private enum FloatState {Significand, Decimal, Exponent};
+    
+    public static boolean parseBoolean(CharSequence cs)
+    {
+        return 
+                cs.length() == 4 &&
+                Character.codePointCount(cs, 0, 4) == 4 &&
+                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'T' &&
+                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'R' &&
+                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'U' &&
+                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'E';
+    }
+    public static boolean parseBoolean(CharSequence cs, int radix)
+    {
+        if (radix != 2)
+        {
+            throw new IllegalArgumentException("radix must be 2");
+        }
+        if (cs.length() != 1)
+        {
+            throw new IllegalArgumentException("input length must be 1");
+        }
+        if (Character.codePointCount(cs, 0, 4) != 1)
+        {
+            throw new IllegalArgumentException("input length must be 1");
+        }
+        return 
+                Character.digit(Character.codePointAt(cs, 0), 2) == 1;
+    }
     /**
      * Parses float from decimal floating point representation.
      * 
@@ -321,13 +350,18 @@ public class Numbers
      */
     public static int parseInt(CharSequence cs, int radix)
     {
-        check(cs, radix, NumberRanges.IntRange);
+        int size = Integer.SIZE;
         int length = cs.length();
         boolean twoComp = false;
         if (radix < 0)
         {
             twoComp = true;
             radix = -radix;
+            check(cs, size);
+        }
+        else
+        {
+            check(cs, radix, NumberRanges.IntRange);
         }
         int result = 0;
         int sign = -1;
@@ -355,6 +389,10 @@ public class Numbers
             throw new NumberFormatException("unparsable number "+cs);
         }
         int count = Character.codePointCount(cs, index, length);
+        if (count == size)
+        {
+            twoComp = false;
+        }
         while (index < length)
         {
             result *= radix;
@@ -365,10 +403,6 @@ public class Numbers
                 throw new NumberFormatException("unparsable number "+cs);
             }
             result -= digit;
-            if (result > 0)
-            {
-                throw new NumberFormatException("too long "+cs);
-            }
             if (Character.isBmpCodePoint(cp))
             {
                 index++;
@@ -377,10 +411,6 @@ public class Numbers
             {
                 index += 2;
             }
-        }
-        if (result == Integer.MIN_VALUE && sign == -1)
-        {
-            throw new NumberFormatException("too long "+cs);
         }
         if (!twoComp || -result < (1<<(count-1)))
         {
@@ -420,13 +450,18 @@ public class Numbers
      */
     public static long parseLong(CharSequence cs, int radix)
     {
-        check(cs, radix, NumberRanges.LongRange);
+        int size = Long.SIZE;
         int length = cs.length();
         boolean twoComp = false;
         if (radix < 0)
         {
             twoComp = true;
             radix = -radix;
+            check(cs, size);
+        }
+        else
+        {
+            check(cs, radix, NumberRanges.LongRange);
         }
         long result = 0;
         int sign = -1;
@@ -454,6 +489,10 @@ public class Numbers
             throw new NumberFormatException("unparsable number "+cs);
         }
         int count = Character.codePointCount(cs, index, length);
+        if (count == size)
+        {
+            twoComp = false;
+        }
         while (index < length)
         {
             result *= radix;
@@ -464,10 +503,6 @@ public class Numbers
                 throw new NumberFormatException("unparsable number "+cs);
             }
             result -= digit;
-            if (result > 0)
-            {
-                throw new NumberFormatException("too long "+cs);
-            }
             if (Character.isBmpCodePoint(cp))
             {
                 index++;
@@ -476,10 +511,6 @@ public class Numbers
             {
                 index += 2;
             }
-        }
-        if (result == Long.MIN_VALUE && sign == -1)
-        {
-            throw new NumberFormatException("too long "+cs);
         }
         if (!twoComp || -result < (1<<(count-1)))
         {
@@ -519,13 +550,18 @@ public class Numbers
      */
     public static short parseShort(CharSequence cs, int radix)
     {
-        check(cs, radix, NumberRanges.ShortRange);
+        int size = Short.SIZE;
         int length = cs.length();
         boolean twoComp = false;
         if (radix < 0)
         {
             twoComp = true;
             radix = -radix;
+            check(cs, size);
+        }
+        else
+        {
+            check(cs, radix, NumberRanges.ShortRange);
         }
         short result = 0;
         int sign = -1;
@@ -553,6 +589,10 @@ public class Numbers
             throw new NumberFormatException("unparsable number "+cs);
         }
         int count = Character.codePointCount(cs, index, length);
+        if (count == size)
+        {
+            twoComp = false;
+        }
         while (index < length)
         {
             result *= radix;
@@ -563,10 +603,6 @@ public class Numbers
                 throw new NumberFormatException("unparsable number "+cs);
             }
             result -= digit;
-            if (result > 0)
-            {
-                throw new NumberFormatException("too long "+cs);
-            }
             if (Character.isBmpCodePoint(cp))
             {
                 index++;
@@ -575,10 +611,6 @@ public class Numbers
             {
                 index += 2;
             }
-        }
-        if (result == Short.MIN_VALUE && sign == -1)
-        {
-            throw new NumberFormatException("too long "+cs);
         }
         if (!twoComp || -result < (1<<(count-1)))
         {
@@ -618,15 +650,20 @@ public class Numbers
      */
     public static byte parseByte(CharSequence cs, int radix)
     {
-        check(cs, radix, NumberRanges.ByteRange);
+        int size = Byte.SIZE;
         int length = cs.length();
         boolean twoComp = false;
         if (radix < 0)
         {
             twoComp = true;
             radix = -radix;
+            check(cs, size);
         }
-        byte result = 0;
+        else
+        {
+            check(cs, radix, NumberRanges.ByteRange);
+        }
+        short result = 0;
         int sign = -1;
         int index = 0;
         int cp = Character.codePointAt(cs, index);
@@ -652,6 +689,10 @@ public class Numbers
             throw new NumberFormatException("unparsable number "+cs);
         }
         int count = Character.codePointCount(cs, index, length);
+        if (count == size)
+        {
+            twoComp = false;
+        }
         while (index < length)
         {
             result *= radix;
@@ -662,10 +703,6 @@ public class Numbers
                 throw new NumberFormatException("unparsable number "+cs);
             }
             result -= digit;
-            if (result > 0)
-            {
-                throw new NumberFormatException("too long "+cs);
-            }
             if (Character.isBmpCodePoint(cp))
             {
                 index++;
@@ -674,10 +711,6 @@ public class Numbers
             {
                 index += 2;
             }
-        }
-        if (result == Byte.MIN_VALUE && sign == -1)
-        {
-            throw new NumberFormatException("too long "+cs);
         }
         if (!twoComp || -result < (1<<(count-1)))
         {
@@ -751,14 +784,12 @@ public class Numbers
     }
     private static void check(CharSequence cs, int radix, CharSequence[][] range)
     {
-        if (radix == -2)
-        {
-            return;
-        }
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
         {
             throw new NumberFormatException(cs+" radix "+radix+" not supported");
         }
+        CharSequence lower = range[radix][0];
+        CharSequence upper = range[radix][1];
         int sign = 1;
         int index = 0;
         int cp = Character.codePointAt(cs, index);
@@ -790,28 +821,28 @@ public class Numbers
         }
         if (sign == -1)
         {
-            if (Character.codePointAt(range[radix][0], 0) != '-')
+            if (Character.codePointAt(lower, 0) != '-')
             {
-                throw new NumberFormatException(cs+" not in range["+range[radix][0]+" - "+range[radix][1]+"]");
+                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
             }
-            if (count > range[radix][0].length())
+            if (count+1 > lower.length())
             {
-                throw new NumberFormatException(cs+" not in range["+range[radix][0]+" - "+range[radix][1]+"]");
+                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
             }
-            if (count == range[radix][0].length() && isGreater(cs, radix, range[radix][0]))
+            if (count+1 == lower.length() && isGreater(cs, radix, lower))
             {
-                throw new NumberFormatException(cs+" not in range["+range[radix][0]+" - "+range[radix][1]+"]");
+                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
             }
         }
         else
         {
-            if (count > range[radix][1].length())
+            if (count > upper.length())
             {
-                throw new NumberFormatException(cs+" not in range["+range[radix][0]+" - "+range[radix][1]+"]");
+                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
             }
-            if (count == range[radix][1].length() && isGreater(cs, radix, range[radix][1]))
+            if (count == upper.length() && isGreater(cs, radix, upper))
             {
-                throw new NumberFormatException(cs+" not in range["+range[radix][0]+" - "+range[radix][1]+"]");
+                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
             }
         }
     }
@@ -824,6 +855,9 @@ public class Numbers
         switch (cs.charAt(0))
         {
             case '-':
+                ii = 1;
+                jj = 1;
+                break;
             case '+':
                 ii = 1;
                 break;
@@ -856,5 +890,15 @@ public class Numbers
             }
         }
         return false;
+    }
+    private static void check(CharSequence cs, int size)
+    {
+        int len = cs.length();
+        int index = 0;
+        int count = Character.codePointCount(cs, index, cs.length());
+        if (count > size)
+        {
+            throw new NumberFormatException(cs+"not valid number");
+        }
     }
 }

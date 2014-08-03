@@ -199,6 +199,33 @@ public class NumbersTest
         assertEquals(0, Numbers.parseInt("00000000", -2));
         assertEquals(-1, Numbers.parseInt("11111111", -2));
         assertEquals(-2, Numbers.parseInt("11111110", -2));
+        assertEquals(-1, Numbers.parseInt("11111111111111111111111111111111", -2));
+        assertEquals(-1, Numbers.parseInt("1111111", -2));
+        assertEquals(-2, Numbers.parseInt("1111110", -2));
+        try
+        {
+            Numbers.parseInt("00000011111111111111111111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseInt("-11111111111111111111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseInt("+0000011111111111111111111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
 
     /**
@@ -267,6 +294,25 @@ public class NumbersTest
         assertEquals(0, Numbers.parseLong("00000000", -2));
         assertEquals(-1, Numbers.parseLong("11111111", -2));
         assertEquals(-2, Numbers.parseLong("11111110", -2));
+        assertEquals(-1, Numbers.parseLong("1111111111111111111111111111111111111111111111111111111111111111", -2));
+        assertEquals(-1, Numbers.parseLong("1111111", -2));
+        assertEquals(-2, Numbers.parseLong("1111110", -2));
+        try
+        {
+            Numbers.parseLong("0000001111111111111111111111111111111111111111111111111111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseLong("+000001111111111111111111111111111111111111111111111111111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
 
     /**
@@ -326,6 +372,33 @@ public class NumbersTest
         assertEquals(0, Numbers.parseShort("00000000", -2));
         assertEquals(-1, Numbers.parseShort("11111111", -2));
         assertEquals(-2, Numbers.parseShort("11111110", -2));
+        assertEquals(-1, Numbers.parseShort("1111111111111111", -2));
+        assertEquals(-1, Numbers.parseShort("1111111", -2));
+        assertEquals(-2, Numbers.parseShort("1111110", -2));
+        try
+        {
+            Numbers.parseShort("0000001111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseShort("-1111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseShort("+000001111111111111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
 
     /**
@@ -386,6 +459,30 @@ public class NumbersTest
         assertEquals(-1, Numbers.parseByte("11111111", -2));
         assertEquals(-1, Numbers.parseByte("1111111", -2));
         assertEquals(-2, Numbers.parseByte("1111110", -2));
+        try
+        {
+            Numbers.parseByte("00000011111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseByte("-11111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
+        try
+        {
+            Numbers.parseByte("+0000011111111", -2);
+            fail("should throw exception");
+        }
+        catch (NumberFormatException ex)
+        {
+        }
     }
 
     /**
