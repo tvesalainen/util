@@ -33,7 +33,7 @@ package org.vesalainen.lang;
  * @see java.lang.Double
  * @author Timo Vesalainen
  */
-public class Numbers
+public class Primitives
 {
     private static final int IntLimit = Integer.MAX_VALUE/10-10;
     private static final long LongLimit = Long.MAX_VALUE/10-10;
