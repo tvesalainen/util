@@ -39,33 +39,71 @@ public class Primitives
     private static final long LongLimit = Long.MAX_VALUE/10-10;
 
     private enum FloatState {Significand, Decimal, Exponent};
-    
+    /**
+     * Returns char from input.
+     * @param cs
+     * @return 
+     * @throws IllegalArgumentException if input length is not 1.
+     */
+    public static char parseChar(CharSequence cs)
+    {
+        if (cs.length() != 1)
+        {
+            throw new IllegalArgumentException("input length must be 1");
+        }
+        return cs.charAt(0);
+    }
+    /**
+     * Parses the char sequence argument as a boolean. The boolean returned represents 
+     * the value true if the char sequence argument is not null and is equal, ignoring 
+     * case, to the string "true".
+     * @param cs
+     * @return 
+     * @throws IllegalArgumentException if input length is not 4.
+     * @see java.lang.Boolean#parseBoolean(java.lang.String) 
+     */
     public static boolean parseBoolean(CharSequence cs)
     {
         return 
                 cs.length() == 4 &&
                 Character.codePointCount(cs, 0, 4) == 4 &&
                 Character.toUpperCase(Character.codePointAt(cs, 0)) == 'T' &&
-                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'R' &&
-                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'U' &&
-                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'E';
+                Character.toUpperCase(Character.codePointAt(cs, 1)) == 'R' &&
+                Character.toUpperCase(Character.codePointAt(cs, 2)) == 'U' &&
+                Character.toUpperCase(Character.codePointAt(cs, 3)) == 'E';
     }
+    /**
+     * Parses the char sequence argument as a boolean. The boolean returned represents 
+     * the value true if the char sequence argument is not null and it's digit value
+     * is 1.
+     * @param cs
+     * @param radix Must be 2.
+     * @return 
+     * @throws IllegalArgumentException radix != 2 or if code point count != 1
+     * or if input digit is not 0/1.
+     * @see java.lang.Character#digit(int, int) 
+     * @see java.lang.Character#codePointCount(java.lang.CharSequence, int, int) 
+     */
     public static boolean parseBoolean(CharSequence cs, int radix)
     {
         if (radix != 2)
         {
             throw new IllegalArgumentException("radix must be 2");
         }
-        if (cs.length() != 1)
+        if (Character.codePointCount(cs, 0, cs.length()) != 1)
         {
             throw new IllegalArgumentException("input length must be 1");
         }
-        if (Character.codePointCount(cs, 0, 4) != 1)
+        int digit = Character.digit(Character.codePointAt(cs, 0), 2);
+        switch (digit)
         {
-            throw new IllegalArgumentException("input length must be 1");
+            case 1:
+                return true;
+            case 0:
+                return false;
+            default:
+                throw new IllegalArgumentException("input must be 0/1");
         }
-        return 
-                Character.digit(Character.codePointAt(cs, 0), 2) == 1;
     }
     /**
      * Parses float from decimal floating point representation.

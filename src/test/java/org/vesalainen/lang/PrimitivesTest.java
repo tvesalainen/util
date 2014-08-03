@@ -731,4 +731,58 @@ public class PrimitivesTest
         assertEquals(411787, Primitives.parseUnsignedInt("Kona", 27));
     }
 
+    /**
+     * Test of parseChar method, of class Primitives.
+     */
+    @Test
+    public void testParseChar()
+    {
+        assertEquals('A', Primitives.parseChar("A"));
+        try
+        {
+            Primitives.parseChar("qwerty");
+            fail("should throw exception");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+        try
+        {
+            Primitives.parseChar("");
+            fail("should throw exception");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+    }
+
+    /**
+     * Test of parseBoolean method, of class Primitives.
+     */
+    @Test
+    public void testParseBoolean_CharSequence()
+    {
+        assertEquals(true, Primitives.parseBoolean("True"));
+        assertEquals(true, Primitives.parseBoolean("true"));
+        assertEquals(false, Primitives.parseBoolean("qwerty"));
+    }
+
+    /**
+     * Test of parseBoolean method, of class Primitives.
+     */
+    @Test
+    public void testParseBoolean_CharSequence_int()
+    {
+        assertEquals(true, Primitives.parseBoolean("1", 2));
+        assertEquals(false, Primitives.parseBoolean("0", 2));
+        try
+        {
+            Primitives.parseBoolean("q", 2);
+            fail("should throw exception");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+    }
+
 }
