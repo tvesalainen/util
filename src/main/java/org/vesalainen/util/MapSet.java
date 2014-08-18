@@ -41,6 +41,11 @@ public interface MapSet<M, S> extends Map<M,Set<S>>
      */
     void addAll(M key, Collection<S> value);
     /**
+     * Adds all maps key value pairs.
+     * @param map 
+     */
+    void addAll(Map<M,S> map);
+    /**
      * Return true is mapped set contains value.
      * @param key
      * @param value

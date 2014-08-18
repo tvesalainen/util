@@ -42,6 +42,11 @@ public interface MapList<M, L> extends Map<M,List<L>>
      */
     void add(M key, int index, L value);
     /**
+     * Adds all maps key value pairs.
+     * @param map 
+     */
+    void addAll(Map<M,L> map);
+    /**
      * Returns mapped list or empty list if not found.
      * @param key
      * @return 

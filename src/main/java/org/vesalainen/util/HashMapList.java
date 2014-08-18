@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * HashMap and ArrayList based implementation of MapList
@@ -102,6 +104,15 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
         else
         {
             return list;
+        }
+    }
+
+    @Override
+    public void addAll(Map<M, L> map)
+    {
+        for (Entry<M, L> entry : map.entrySet())
+        {
+            add(entry.getKey(), entry.getValue());
         }
     }
 

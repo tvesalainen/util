@@ -19,6 +19,7 @@ package org.vesalainen.util;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -87,6 +88,15 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
             set.addAll(value);
         }
         return set;
+    }
+
+    @Override
+    public void addAll(Map<M, S> map)
+    {
+        for (Entry<M, S> entry : map.entrySet())
+        {
+            add(entry.getKey(), entry.getValue());
+        }
     }
 
 }

@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * EnumMap and ArrayList based implementation of MapList
@@ -105,6 +106,15 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
         else
         {
             return list;
+        }
+    }
+
+    @Override
+    public void addAll(Map<M, L> map)
+    {
+        for (Entry<M, L> entry : map.entrySet())
+        {
+            add(entry.getKey(), entry.getValue());
         }
     }
 
