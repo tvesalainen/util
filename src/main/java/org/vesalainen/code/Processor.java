@@ -142,6 +142,7 @@ public class Processor extends AbstractProcessor
             mp.println("import org.vesalainen.util.EnumMapList;");
             mp.println("import org.vesalainen.util.Transactional;");
             mp.println("import org.vesalainen.code.PropertySetter;");
+            mp.println("import java.util.Arrays;");
             mp.println("import javax.annotation.Generated;");
             mp.println("@Generated(");
             mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
@@ -220,64 +221,54 @@ public class Processor extends AbstractProcessor
                             returnType.getKind() == VOID
                             )
                     {
-                        cm.println("int cnt;");
-                        cm.println("int[] ordinals;");
+                        cm.println("Arrays.fill(ind, 0);");
                         cm.println("Prop[] values = Prop.values();");
-                        for (JavaType jt : JavaType.values())
+                        cm.println("for (int ii=0;ii<ordInd;ii++)");
+                        cm.println("{");
+                        CodePrinter cc = cm.createSub("}");
+                        cc.println("switch (values[ord[ii]])");
+                        cc.println("{");
+                        CodePrinter cs = cc.createSub("}");
+                        for (ExecutableElement ee : methods)
                         {
-                            int ordinal = jt.ordinal();
-                            if (sizes[ordinal] > 0)
+                            List<? extends VariableElement> params = ee.getParameters();
+                            TypeMirror rt = ee.getReturnType();
+                            String sn = ee.getSimpleName().toString();
+                            if (
+                                    sn.startsWith("set") && 
+                                    params.size() == 1 &&
+                                    rt.getKind() == VOID
+                                    )
                             {
+                                JavaType jt = JavaType.valueOf(params.get(0).asType().getKind().name());
+                                String aEnum = getEnum(sn);
+                                String prop = getProperty(sn);
+                                cs.println("case "+aEnum+":");
+                                cs.println("{");
+                                CodePrinter csw = cs.createSub("}");
                                 String code = jt.getCode();
-                                cm.println(code+"[] arr"+ordinal+" = ("+code+"[])arr["+ordinal+"];");
-                                cm.println("cnt = ind["+ordinal+"];");
-                                cm.println("ordinals = ord["+ordinal+"];");
-                                cm.println("for (int ii=0;ii<cnt;ii++)");
-                                cm.println("{");
-                                CodePrinter cc = cm.createSub("}");
-                                cc.println("switch (values[ordinals[ii]])");
-                                cc.println("{");
-                                CodePrinter cs = cc.createSub("}");
-                                for (ExecutableElement ee : methods)
-                                {
-                                    List<? extends VariableElement> params = ee.getParameters();
-                                    TypeMirror rt = ee.getReturnType();
-                                    String sn = ee.getSimpleName().toString();
-                                    if (
-                                            sn.startsWith("set") && 
-                                            params.size() == 1 &&
-                                            rt.getKind() == VOID
-                                            )
-                                    {
-                                        if (jt.name().contentEquals(params.get(0).asType().getKind().name()))
-                                        {
-                                            String enu = getEnum(sn);
-                                            String pn = getProperty(sn);
-                                            cs.println("case "+enu+":");
-                                            CodePrinter csw = cs.createSub("");
-                                            csw.println("for (PropertySetter ps : observers.get(Prop."+enu+"))");
-                                            csw.println("{");
-                                            CodePrinter cfor = csw.createSub("}");
-                                            cfor.println("ps.set(\""+pn+"\", arr"+ordinal+"[ii]);");
-                                            cfor.flush();
-                                            csw.println("break;");
-                                            csw.flush();
-                                        }
-                                    }
-                                }
-                                cs.println("default:");
-                                CodePrinter csw = cs.createSub("");
-                                csw.println("throw new UnsupportedOperationException(\"should not happen\");");
+                                int ordinal = jt.ordinal();
+                                csw.println(code+"[] a = ("+code+"[])arr["+ordinal+"];");
+                                csw.println("for (PropertySetter ps : observers.get(Prop."+aEnum+"))");
+                                csw.println("{");
+                                CodePrinter csf = csw.createSub("}");
+                                csf.println("ps.set(\""+prop+"\", a[ind["+ordinal+"]++]);");
+                                csf.flush();
+                                csw.println("break;");
                                 csw.flush();
-                                cs.flush();
-                                cc.flush();
-                                cm.println("for (Transactional tr : transactionalObservers)");
-                                cm.println("{");
-                                CodePrinter ctr = cm.createSub("}");
-                                ctr.println("tr.commit("+parameters.get(0).getSimpleName()+");");
-                                ctr.flush();
                             }
                         }
+                        cs.println("default:");
+                        CodePrinter csw = cs.createSub("");
+                        csw.println("throw new UnsupportedOperationException(\"should not happen\");");
+                        csw.flush();
+                        cs.flush();
+                        cc.flush();
+                        cm.println("for (Transactional tr : transactionalObservers)");
+                        cm.println("{");
+                        CodePrinter ctr = cm.createSub("}");
+                        ctr.println("tr.commit("+parameters.get(0).getSimpleName()+");");
+                        ctr.flush();
                         cm.println("clear();");
                     }
                     else
@@ -356,6 +347,7 @@ public class Processor extends AbstractProcessor
             }
             TypeMirror theInterface = interfaces.get(0);
             mp.println("package "+pgk+";");
+            mp.println("import java.util.Arrays;");
             mp.println("import javax.annotation.Generated;");
             mp.println("@Generated(");
             mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
@@ -428,55 +420,46 @@ public class Processor extends AbstractProcessor
                             returnType.getKind() == VOID
                             )
                     {
-                        cm.println("int cnt;");
-                        cm.println("int[] ordinals;");
+                        cm.println("Arrays.fill(ind, 0);");
                         cm.println("Prop[] values = Prop.values();");
                         String iname = theInterface.toString();
                         cm.println(iname+" interf = ("+iname+")intf;");
-                        for (JavaType jt : JavaType.values())
+                        cm.println("for (int ii=0;ii<ordInd;ii++)");
+                        cm.println("{");
+                        CodePrinter cc = cm.createSub("}");
+                        cc.println("switch (values[ord[ii]])");
+                        cc.println("{");
+                        CodePrinter cs = cc.createSub("}");
+                        for (ExecutableElement ee : methods)
                         {
-                            int ordinal = jt.ordinal();
-                            if (sizes[ordinal] > 0)
+                            List<? extends VariableElement> params = ee.getParameters();
+                            TypeMirror rt = ee.getReturnType();
+                            String sn = ee.getSimpleName().toString();
+                            if (
+                                    sn.startsWith("set") && 
+                                    params.size() == 1 &&
+                                    rt.getKind() == VOID
+                                    )
                             {
+                                JavaType jt = JavaType.valueOf(params.get(0).asType().getKind().name());
+                                String aEnum = getEnum(sn);
+                                cs.println("case "+aEnum+":");
+                                cs.println("{");
+                                CodePrinter csw = cs.createSub("}");
                                 String code = jt.getCode();
-                                cm.println(code+"[] arr"+ordinal+" = ("+code+"[])arr["+ordinal+"];");
-                                cm.println("cnt = ind["+ordinal+"];");
-                                cm.println("ordinals = ord["+ordinal+"];");
-                                cm.println("for (int ii=0;ii<cnt;ii++)");
-                                cm.println("{");
-                                CodePrinter cc = cm.createSub("}");
-                                cc.println("switch (values[ordinals[ii]])");
-                                cc.println("{");
-                                CodePrinter cs = cc.createSub("}");
-                                for (ExecutableElement ee : methods)
-                                {
-                                    List<? extends VariableElement> params = ee.getParameters();
-                                    TypeMirror rt = ee.getReturnType();
-                                    String sn = ee.getSimpleName().toString();
-                                    if (
-                                            sn.startsWith("set") && 
-                                            params.size() == 1 &&
-                                            rt.getKind() == VOID
-                                            )
-                                    {
-                                        if (jt.name().contentEquals(params.get(0).asType().getKind().name()))
-                                        {
-                                            cs.println("case "+getEnum(sn)+":");
-                                            CodePrinter csw = cs.createSub("");
-                                            csw.println("interf."+sn+"("+cast(params.get(0).asType())+"arr"+ordinal+"[ii]);");
-                                            csw.println("break;");
-                                            csw.flush();
-                                        }
-                                    }
-                                }
-                                cs.println("default:");
-                                CodePrinter csw = cs.createSub("");
-                                csw.println("throw new UnsupportedOperationException(\"should not happen\");");
+                                int ordinal = jt.ordinal();
+                                csw.println(code+"[] a = ("+code+"[])arr["+ordinal+"];");
+                                csw.println("interf."+sn+"("+cast(params.get(0).asType())+"a[ind["+ordinal+"]++]);");
+                                csw.println("break;");
                                 csw.flush();
-                                cs.flush();
-                                cc.flush();
                             }
                         }
+                        cs.println("default:");
+                        CodePrinter csw = cs.createSub("");
+                        csw.println("throw new UnsupportedOperationException(\"should not happen\");");
+                        csw.flush();
+                        cs.flush();
+                        cc.flush();
                         cm.println("clear();");
                         if (types.isAssignable(theInterface, transactional.asType()))
                         {

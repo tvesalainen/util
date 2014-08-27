@@ -28,7 +28,8 @@ public abstract class AbstractDispatcher implements Transactional
 {
     protected final int Size = JavaType.values().length;
     protected Object[] arr = new Object[Size];
-    protected int[][] ord = new int[Size][];
+    protected int[] ord;
+    protected int ordInd;
     protected int[] ind = new int[Size];
 
     protected AbstractDispatcher(int[] sizes)
@@ -37,11 +38,12 @@ public abstract class AbstractDispatcher implements Transactional
         {
             throw new IllegalArgumentException("sizes illegal length");
         }
+        int ordSize = 0;
         for (int ii=0;ii<Size;ii++)
         {
             if (sizes[ii] > 0)
             {
-                ord[ii] = new int[sizes[ii]];
+                ordSize += sizes[ii];
                 JavaType jt = JavaType.values()[ii];
                 switch (jt)
                 {
@@ -75,17 +77,19 @@ public abstract class AbstractDispatcher implements Transactional
                 }
             }
         }
+        ord = new int[ordSize];
     }
 
     protected void clear()
     {
+        ordInd = 0;
         Arrays.fill(ind, 0);
     }
 
     protected void set(int ordinal, boolean arg)
     {
         int o = JavaType.BOOLEAN.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((boolean[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -93,7 +97,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, byte arg)
     {
         int o = JavaType.BYTE.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((byte[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -101,7 +105,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, char arg)
     {
         int o = JavaType.CHAR.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((char[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -109,7 +113,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, short arg)
     {
         int o = JavaType.SHORT.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((short[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -117,7 +121,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, int arg)
     {
         int o = JavaType.INT.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((int[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -125,7 +129,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, long arg)
     {
         int o = JavaType.LONG.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((long[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -133,7 +137,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, float arg)
     {
         int o = JavaType.FLOAT.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((float[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -141,7 +145,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, double arg)
     {
         int o = JavaType.DOUBLE.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((double[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }
@@ -149,7 +153,7 @@ public abstract class AbstractDispatcher implements Transactional
     protected void set(int ordinal, Object arg)
     {
         int o = JavaType.DECLARED.ordinal();
-        ord[o][ind[o]] = ordinal;
+        ord[ordInd++] = ordinal;
         ((Object[]) arr[o])[ind[o]] = arg;
         ind[o]++;
     }

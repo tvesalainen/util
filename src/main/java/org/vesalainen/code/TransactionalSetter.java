@@ -27,7 +27,7 @@ package org.vesalainen.code;
  * <p>Create class instance with getInstance method.
  * 
  * <p>Target interface doesn't have to support Transactional interface. However 
- * if it doesn't, its commit/rollback methods are called.
+ * if it does, its commit/rollback methods are called.
  * 
  * <p>Example:
  * <code>
