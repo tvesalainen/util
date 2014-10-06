@@ -1,3 +1,10 @@
+package org.vesalainen.util.math;
+
+
+import org.ejml.data.DenseMatrix64F;
+import static org.ejml.ops.CommonOps.*;
+import static org.ejml.ops.SpecializedOps.*;
+
 /**
  * <p>
  * This is a straight forward implementation of the Levenberg-Marquardt (LM) algorithm. LM is used to minimize
