@@ -138,7 +138,7 @@ public class LevenbergMarquardt {
         // the difference between the current and previous cost
         double difference = 1000;
 
-        for( int iter = 0; iter < 20 || difference < 1e-6 ; iter++ ) {
+        for( int iter = 0; iter < 20 && difference > 1e-6 ; iter++ ) {
             // compute some variables based on the gradient
             computeDandH(param,X,Y);
 
