@@ -37,6 +37,7 @@ public class LevenbergMarquardt {
 
     // the function that is optimized
     private Function func;
+    private JacobianFactory jacobianFactory;
 
     // the optimized parameters and associated costs
     private DenseMatrix64F param;
@@ -64,7 +65,18 @@ public class LevenbergMarquardt {
      *
      * @param funcCost Cost function that is being optimized.
      */
-    public LevenbergMarquardt( Function funcCost )
+    public LevenbergMarquardt(Function func)
+    {
+        this(func, null);
+    }
+
+    /**
+     * Creates a new instance that uses the provided cost function.
+     *
+     * @param funcCost Cost function that is being optimized.
+     * @param jacobianFactory
+     */
+    public LevenbergMarquardt( Function funcCost, JacobianFactory jacobianFactory )
     {
         this.initialLambda = 1;
 
@@ -78,6 +90,7 @@ public class LevenbergMarquardt {
         this.jacobian = new DenseMatrix64F(numParam,maxElements);
 
         this.func = funcCost;
+        this.jacobianFactory = jacobianFactory;
 
         this.param = new DenseMatrix64F(numParam,1);
         this.d = new DenseMatrix64F(numParam,1);
@@ -183,7 +196,7 @@ public class LevenbergMarquardt {
     {
         if( Y.getNumRows() != X.getNumRows() ) {
             throw new IllegalArgumentException("Different vector lengths");
-        } else if( Y.getNumCols() != 1 || X.getNumCols() != 1 ) {
+        } else if( Y.getNumCols() != 1 /*|| X.getNumCols() != 1*/ ) {
             throw new IllegalArgumentException("Inputs must be a column vector");
         }
 
@@ -220,10 +233,17 @@ public class LevenbergMarquardt {
         func.compute(param,x, tempDH);
         subtractEquals(tempDH, y);
 
-        computeNumericalJacobian(param,x,jacobian);
+        if (jacobianFactory != null)
+        {
+            jacobianFactory.computeJacobian(param, x, jacobian);
+        }
+        else
+        {
+            computeNumericalJacobian(param,x,jacobian);
+        }
 
         int numParam = param.getNumElements();
-        int length = x.getNumElements();
+        int length = y.getNumElements();
 
         // d = average{ (f(x_i;p) - y_i) * jacobian(:,i) }
         for( int i = 0; i < numParam; i++ ) {
@@ -309,5 +329,12 @@ public class LevenbergMarquardt {
          * @param y the resulting output.
          */
         public void compute( DenseMatrix64F param , DenseMatrix64F x , DenseMatrix64F y );
+    }
+    /**
+     * Jacobian matrix creator
+     */
+    public interface JacobianFactory
+    {
+        public void computeJacobian( DenseMatrix64F param , DenseMatrix64F x , DenseMatrix64F jacobian );
     }
 }
