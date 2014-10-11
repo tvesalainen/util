@@ -320,17 +320,26 @@ public class LevenbergMarquardt {
             param.data[i] -= DELTA;
         }
     }
-
+    /**
+     * Sets the main loop count. Initially 25
+     * @param iter1 
+     */
     public void setIter1(int iter1)
     {
         this.iter1 = iter1;
     }
-
+    /**
+     * Sets the inner loop count. Initially 5
+     * @param iter1 
+     */
     public void setIter2(int iter2)
     {
         this.iter2 = iter2;
     }
-
+    /**
+     * Sets the max cost difference
+     * @param maxDifference 
+     */
     public void setMaxDifference(double maxDifference)
     {
         this.maxDifference = maxDifference;
