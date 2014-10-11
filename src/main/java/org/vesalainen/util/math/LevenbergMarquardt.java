@@ -32,6 +32,10 @@ public class LevenbergMarquardt {
     // how much the numerical jacobian calculation perturbs the parameters by.
     // In better implementation there are better ways to compute this delta.  See Numerical Recipes.
     private final static double DELTA = 1e-8;
+    
+    private int iter1 = 25;
+    private int iter2 = 5;
+    private double maxDifference = 1e-8;
 
     private double initialLambda;
 
@@ -151,14 +155,14 @@ public class LevenbergMarquardt {
         // the difference between the current and previous cost
         double difference = 1000;
 
-        for( int iter = 0; iter < 20 && difference > 1e-6 ; iter++ ) {
+        for( int iter = 0; iter < iter1 && difference > maxDifference ; iter++ ) {
             // compute some variables based on the gradient
             computeDandH(param,X,Y);
 
             // try various step sizes and see if any of them improve the
             // results over what has already been done
             boolean foundBetter = false;
-            for( int i = 0; i < 5; i++ ) {
+            for( int i = 0; i < iter2; i++ ) {
                 computeA(A,H,lambda);
 
                 if( !solve(A,d,negDelta) ) {
@@ -279,7 +283,7 @@ public class LevenbergMarquardt {
      *
      * cost = (1/N) Sum (f(x;p) - y)^2
      */
-    private double cost( DenseMatrix64F param , DenseMatrix64F X , DenseMatrix64F Y)
+    public double cost( DenseMatrix64F param , DenseMatrix64F X , DenseMatrix64F Y)
     {
         func.compute(param,X, temp0);
 
@@ -315,6 +319,21 @@ public class LevenbergMarquardt {
 
             param.data[i] -= DELTA;
         }
+    }
+
+    public void setIter1(int iter1)
+    {
+        this.iter1 = iter1;
+    }
+
+    public void setIter2(int iter2)
+    {
+        this.iter2 = iter2;
+    }
+
+    public void setMaxDifference(double maxDifference)
+    {
+        this.maxDifference = maxDifference;
     }
 
     /**
