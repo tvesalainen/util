@@ -170,6 +170,31 @@ public class CircleFitTest
 
     }
 
+    @Test
+    public void testOptimize7()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(40, 2);
+        Random rand = new Random(1234567L);
+        for (int ii=0;ii<x.numRows/2;ii++)
+        {
+            double r = 10;
+            x.set(2*ii, 0, r*Math.cos(Math.toRadians(ii)));
+            x.set(2*ii, 1, r*Math.sin(Math.toRadians(ii)));
+            r = 10-rand.nextDouble();
+            x.set(2*ii+1, 0, r*Math.cos(Math.toRadians(ii)));
+            x.set(2*ii+1, 1, r*Math.sin(Math.toRadians(ii)));
+        }
+        DenseMatrix64F y = new DenseMatrix64F(x.numRows, 1);
+        
+        CircleFitter cf = new CircleFitter();
+        cf.fit(x);
+        DenseMatrix64F center = cf.getCenter();
+        assertEquals(0, center.data[0], Epsilon);
+        assertEquals(0, center.data[1], Epsilon);
+        assertEquals(10, cf.getRadius(), Epsilon);
+
+    }
+
     public class Cost implements Function, JacobianFactory
     {
         private DenseMatrix64F di = new DenseMatrix64F(1);
