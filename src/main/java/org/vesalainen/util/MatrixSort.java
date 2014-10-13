@@ -36,7 +36,7 @@ public class MatrixSort
     public static void sort(DenseMatrix64F matrix, RowComparator comparator)
     {
         int len = matrix.numCols;
-        quickSort(matrix.data, 0, matrix.getNumElements()-1, len, comparator, new double[len], new double[len]);
+        quickSort(matrix.data, 0, matrix.numRows-1, len, comparator, new double[len], new double[len]);
     }
     /**
      * Sorts rows in 1D array in ascending order using given comparator.
@@ -46,13 +46,13 @@ public class MatrixSort
      */
     public static void sort(double[] data, int rowLength, RowComparator comparator)
     {
-        quickSort(data, 0, data.length - 1, rowLength, comparator, new double[rowLength], new double[rowLength]);
+        quickSort(data, 0, (data.length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
     }
 
     private static void quickSort(double[] arr, int left, int right, int len, RowComparator c, double[] pivot, double[] tmp)
     {
         int i = left, j = right;
-        System.arraycopy(arr, (left + right) / 2, pivot, 0, len);
+        System.arraycopy(arr, ((left + right) / 2)*len, pivot, 0, len);
 
         /* partition */
         while (i <= j)
@@ -69,9 +69,9 @@ public class MatrixSort
             {
                 if (i != j)
                 {
-                    System.arraycopy(arr, i, tmp, 0, len);
-                    System.arraycopy(arr, j, arr, i, len);
-                    System.arraycopy(tmp, 0, arr, j, len);
+                    System.arraycopy(arr, i*len, tmp, 0, len);
+                    System.arraycopy(arr, j*len, arr, i*len, len);
+                    System.arraycopy(tmp, 0, arr, j*len, len);
                 }
                 i++;
                 j--;

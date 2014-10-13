@@ -19,6 +19,8 @@ package org.vesalainen.util.math;
 
 import org.ejml.data.DenseMatrix64F;
 import static org.ejml.ops.CommonOps.*;
+import org.vesalainen.util.MatrixSort;
+import org.vesalainen.util.MatrixSort.RowComparator;
 import org.vesalainen.util.math.LevenbergMarquardt.Function;
 import org.vesalainen.util.math.LevenbergMarquardt.JacobianFactory;
 
@@ -69,6 +71,16 @@ public class CircleFitter implements Function, JacobianFactory
         }
         if (levenbergMarquardt.optimize(center, points, zero))
         {
+            if (points.numRows > 10)
+            {
+                center.set(levenbergMarquardt.getParameters());
+                filterInnerPoints(points, center);
+                zero.reshape(points.numRows, 1);
+                if (!levenbergMarquardt.optimize(center, points, zero))
+                {
+                    throw new IllegalArgumentException("Fit failed");
+                }
+            }
             center.set(levenbergMarquardt.getParameters());
         }
         else
@@ -77,6 +89,12 @@ public class CircleFitter implements Function, JacobianFactory
         }
     }
     
+    public void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center)
+    {
+        DistComp dc = new DistComp(center.get(0, 0), center.get(1, 0));
+        MatrixSort.sort(points, dc);
+        points.reshape(points.numRows/2, 2, true);
+    }
     public boolean initialCenter(DenseMatrix64F points, DenseMatrix64F center)
     {
         assert points.numCols == 2;
@@ -110,7 +128,7 @@ public class CircleFitter implements Function, JacobianFactory
             return false;
         }
     }
-    
+
     private boolean center(DenseMatrix64F points, int i, int j, int k, DenseMatrix64F center)
     {
         double xi = points.get(i, 0);
@@ -203,5 +221,44 @@ public class CircleFitter implements Function, JacobianFactory
     {
         return levenbergMarquardt;
     }
-    
+
+    private class DistComp implements RowComparator
+    {
+        private final double x;
+        private final double y;
+
+        public DistComp(double x, double y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+        
+        @Override
+        public int compare(double[] data, int row, double[] pivot, int len)
+        {
+            double dd = dist(data[row*len], data[row*len+1]);
+            double dp = dist(pivot[0], pivot[1]);
+            if (dd < dp)
+            {
+                return 1;
+            }
+            else
+            {
+                if (dd > dp)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        private double dist(double xx, double yy)
+        {
+            double dx = x-xx;
+            double dy = y-yy;
+            return Math.sqrt(dx*dx+dy*dy);
+        }
+    }
 }
