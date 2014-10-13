@@ -161,6 +161,10 @@ public class CircleFitter implements Function, JacobianFactory
         {
             di = new DenseMatrix64F(x.numRows, 1);
         }
+        else
+        {
+            di.reshape(x.numRows, 1);
+        }
 
         for (int row=0;row<x.numRows;row++)
         {
