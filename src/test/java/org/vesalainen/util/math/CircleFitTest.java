@@ -189,9 +189,9 @@ public class CircleFitTest
         CircleFitter cf = new CircleFitter();
         cf.fit(x);
         DenseMatrix64F center = cf.getCenter();
-        assertEquals(0, center.data[0], Epsilon);
-        assertEquals(0, center.data[1], Epsilon);
-        assertEquals(10, cf.getRadius(), Epsilon);
+        assertEquals(0, center.data[0], 1e-2);
+        assertEquals(0, center.data[1], 1e-2);
+        assertEquals(10, cf.getRadius(), 1e-1);
 
     }
 
