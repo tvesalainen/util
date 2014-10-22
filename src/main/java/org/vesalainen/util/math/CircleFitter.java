@@ -163,7 +163,10 @@ public class CircleFitter implements Function, JacobianFactory
         }
         else
         {
-            di.reshape(x.numRows, 1);
+            if (di.numRows != x.numRows)
+            {
+                di.reshape(x.numRows, 1);
+            }
         }
 
         for (int row=0;row<x.numRows;row++)
