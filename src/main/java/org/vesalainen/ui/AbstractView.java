@@ -26,7 +26,7 @@ package org.vesalainen.ui;
  * coordinates. Translation maintains aspect ratio.
  * @author Timo Vesalainen
  */
-class AbstractView
+public class AbstractView
 {
     private double xMax;
     private double yMax;
@@ -36,7 +36,7 @@ class AbstractView
     private double yOff;
     private double scale;
 
-    AbstractView()
+    public AbstractView()
     {
     }
     /**
@@ -44,7 +44,7 @@ class AbstractView
      * @param width
      * @param height 
      */
-    void setScreen(double width, double height)
+    public void setScreen(double width, double height)
     {
         double aspect = width / height;
         double xyWidth = xMax - xMin;
@@ -95,7 +95,15 @@ class AbstractView
     {
         return - scale * y + yOff;
     }
-
+    /**
+     * Scales the argument to screen scale.
+     * @param d
+     * @return 
+     */
+    public double scale(double d)
+    {
+        return scale * d;
+    }
     /**
      * Sets the maximum x that is visible in screen.
      * @param xMax 
