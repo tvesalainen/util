@@ -28,16 +28,17 @@ package org.vesalainen.ui;
  */
 public class AbstractView
 {
-    private double xMax;
-    private double yMax;
-    private double xMin;
-    private double yMin;
-    private double xOff;
-    private double yOff;
-    private double scale;
+    protected double xMax;
+    protected double yMax;
+    protected double xMin;
+    protected double yMin;
+    protected double xOff;
+    protected double yOff;
+    protected double scale;
 
-    public AbstractView()
+    public AbstractView(double xMin, double xMax, double yMin, double yMax)
     {
+        setRect(xMin, xMax, yMin, yMax);
     }
     /**
      * Sets the screen size.
@@ -64,13 +65,47 @@ public class AbstractView
         }
     }
     /**
+     * Resets the limits.
+     */
+    public void reset()
+    {
+        xMin = Double.MAX_VALUE;
+        xMax = Double.MIN_VALUE;
+        yMin = Double.MAX_VALUE;
+        yMax = Double.MIN_VALUE;
+    }
+    /**
+     * Updates the limits if point is not inside visible screen.
+     * @param x
+     * @param y 
+     */
+    public void update(double x, double y)
+    {
+        if (x < xMin)
+        {
+            xMin = x;
+        }
+        if (x > xMax)
+        {
+            xMax = x;
+        }
+        if (y < yMin)
+        {
+            yMin = y;
+        }
+        if (y > yMax)
+        {
+            yMax = y;
+        }
+    }
+    /**
      * Sets the visible rectangle of translated coordinates.
      * @param xMin
      * @param xMax
      * @param yMin
      * @param yMax 
      */
-    public void setRect(double xMin, double xMax, double yMin, double yMax)
+    public final void setRect(double xMin, double xMax, double yMin, double yMax)
     {
         this.xMin = xMin;
         this.xMax = xMax;
