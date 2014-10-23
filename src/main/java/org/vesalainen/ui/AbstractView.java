@@ -35,6 +35,8 @@ public class AbstractView
     protected double xOff;
     protected double yOff;
     protected double scale;
+    protected boolean rectSet = true;
+    protected boolean screenSet;
 
     public AbstractView(double xMin, double xMax, double yMin, double yMax)
     {
@@ -63,6 +65,7 @@ public class AbstractView
             xOff = -scale*xMin;
             yOff = scale*yMin + height / 2.0 + scale*xyHeight / 2.0;
         }
+        screenSet = true;
     }
     /**
      * Resets the limits.
@@ -73,6 +76,7 @@ public class AbstractView
         xMax = Double.MIN_VALUE;
         yMin = Double.MAX_VALUE;
         yMax = Double.MIN_VALUE;
+        rectSet = false;
     }
     /**
      * Updates the limits if point is not inside visible screen.
@@ -97,6 +101,7 @@ public class AbstractView
         {
             yMax = y;
         }
+        rectSet = true;
     }
     /**
      * Sets the visible rectangle of translated coordinates.
@@ -111,6 +116,7 @@ public class AbstractView
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
+        rectSet = true;
     }
     /**
      * Translates cartesian x-coordinate to screen coordinate.
@@ -119,6 +125,8 @@ public class AbstractView
      */
     public double translateX(double x)
     {
+        assert rectSet;
+        assert screenSet;
         return scale * x + xOff;
     }
     /**
@@ -128,6 +136,8 @@ public class AbstractView
      */
     public double translateY(double y)
     {
+        assert rectSet;
+        assert screenSet;
         return - scale * y + yOff;
     }
     /**
@@ -137,39 +147,8 @@ public class AbstractView
      */
     public double scale(double d)
     {
+        assert rectSet;
+        assert screenSet;
         return scale * d;
     }
-    /**
-     * Sets the maximum x that is visible in screen.
-     * @param xMax 
-     */
-    public void setXMax(double xMax)
-    {
-        this.xMax = xMax;
-    }
-    /**
-     * Sets the maximum y that is visible in screen.
-     * @param yMax 
-     */
-    public void setYMax(double yMax)
-    {
-        this.yMax = yMax;
-    }
-    /**
-     * Sets the minimum x that is visible in screen.
-     * @param xMin 
-     */
-    public void setXMin(double xMin)
-    {
-        this.xMin = xMin;
-    }
-    /**
-     * Sets the minimum y that is visible in screen.
-     * @param yMin 
-     */
-    public void setYMin(double yMin)
-    {
-        this.yMin = yMin;
-    }
-
 }
