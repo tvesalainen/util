@@ -35,25 +35,49 @@ public class AbstractViewTest
     @Test
     public void testView1()
     {
-        AbstractView view = new AbstractView();
-        view.setRect(-10, 10, -10, 10);
+        AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(100, 200);
+        assertTrue(view.isReady());
         assertEquals(0, view.translateX(-10), Epsilon);
         assertEquals(100, view.translateX(10), Epsilon);
         assertEquals(150, view.translateY(-10), Epsilon);
         assertEquals(50, view.translateY(10), Epsilon);
+        assertEquals(50, view.translateX(0), Epsilon);
+        assertEquals(100, view.translateY(0), Epsilon);
+        assertEquals(5, view.scale(1), Epsilon);
     }
     
     @Test
     public void testView2()
     {
-        AbstractView view = new AbstractView();
-        view.setRect(-10, 10, -10, 10);
+        AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(200, 100);
+        assertTrue(view.isReady());
         assertEquals(50, view.translateX(-10), Epsilon);
         assertEquals(150, view.translateX(10), Epsilon);
         assertEquals(100, view.translateY(-10), Epsilon);
         assertEquals(0, view.translateY(10), Epsilon);
+        assertEquals(100, view.translateX(0), Epsilon);
+        assertEquals(50, view.translateY(0), Epsilon);
+        assertEquals(5, view.scale(1), Epsilon);
+    }
+    
+    @Test
+    public void testView3()
+    {
+        AbstractView view = new AbstractView();
+        view.setScreen(200, 100);
+        assertFalse(view.isReady());
+        view.update(0, 0);
+        view.update(-10, 10);
+        view.update(10, -10);
+        assertEquals(50, view.translateX(-10), Epsilon);
+        assertEquals(150, view.translateX(10), Epsilon);
+        assertEquals(100, view.translateY(-10), Epsilon);
+        assertEquals(0, view.translateY(10), Epsilon);
+        assertEquals(100, view.translateX(0), Epsilon);
+        assertEquals(50, view.translateY(0), Epsilon);
+        assertEquals(5, view.scale(1), Epsilon);
     }
     
 }

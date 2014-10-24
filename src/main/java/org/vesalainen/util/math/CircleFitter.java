@@ -45,42 +45,31 @@ public class CircleFitter implements Function, JacobianFactory
     
     private DenseMatrix64F di;
     private DenseMatrix64F center;
-    private final DenseMatrix64F zero;
-    private final LevenbergMarquardt levenbergMarquardt;
+    private final DenseMatrix64F zero = new DenseMatrix64F(1, 1);
+    private final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
     private double radius;
-    
-    public CircleFitter()
+    /**
+     * Creates a CircleFitter with estimated center. Estimated center can by 
+     * calculated with method initialCenter
+     * @param center 
+     * @see org.vesalainen.util.math.CircleFitter#initialCenter(org.ejml.data.DenseMatrix64F, org.ejml.data.DenseMatrix64F) 
+     */
+    public CircleFitter(DenseMatrix64F center)
     {
-        this.zero = new DenseMatrix64F(1, 1);
-        levenbergMarquardt = new LevenbergMarquardt(this, this);
+        this.center = center;
     }
-    
+    /**
+     * Fits points to a circle
+     * @param points 
+     */
     public void fit(DenseMatrix64F points)
     {
-        if (center == null)
-        {
-            center = new DenseMatrix64F(2, 1);
-            if (!initialCenter(points, center))
-            {
-                throw new IllegalArgumentException("All points were aligned");
-            }
-        }
         if (zero.numRows != points.numRows)
         {
             zero.reshape(points.numRows, 1);
         }
         if (levenbergMarquardt.optimize(center, points, zero))
         {
-            if (points.numRows > 10)
-            {
-                center.set(levenbergMarquardt.getParameters());
-                filterInnerPoints(points, center);
-                zero.reshape(points.numRows, 1);
-                if (!levenbergMarquardt.optimize(center, points, zero))
-                {
-                    throw new IllegalArgumentException("Fit failed");
-                }
-            }
             center.set(levenbergMarquardt.getParameters());
         }
         else
@@ -88,14 +77,24 @@ public class CircleFitter implements Function, JacobianFactory
             throw new IllegalArgumentException("Fit failed");
         }
     }
-    
-    public void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center)
+    /**
+     * Filters points which are closes to the last estimated center.
+     * @param points
+     * @param center 
+     */
+    public static void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center)
     {
         DistComp dc = new DistComp(center.get(0, 0), center.get(1, 0));
         MatrixSort.sort(points, dc);
         points.reshape(points.numRows/2, 2, true);
     }
-    public boolean initialCenter(DenseMatrix64F points, DenseMatrix64F center)
+    /**
+     * Calculates an initial estimate for center.
+     * @param points
+     * @param center
+     * @return 
+     */
+    public static boolean initialCenter(DenseMatrix64F points, DenseMatrix64F center)
     {
         assert points.numCols == 2;
         assert center.numCols == 1;
@@ -129,7 +128,7 @@ public class CircleFitter implements Function, JacobianFactory
         }
     }
 
-    private boolean center(DenseMatrix64F points, int i, int j, int k, DenseMatrix64F center)
+    private static boolean center(DenseMatrix64F points, int i, int j, int k, DenseMatrix64F center)
     {
         double xi = points.get(i, 0);
         double yi = points.get(i, 1);
@@ -229,7 +228,7 @@ public class CircleFitter implements Function, JacobianFactory
         return levenbergMarquardt;
     }
 
-    private class DistComp implements RowComparator
+    private static class DistComp implements RowComparator
     {
         private final double x;
         private final double y;

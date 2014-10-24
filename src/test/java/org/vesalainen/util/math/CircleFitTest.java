@@ -135,7 +135,7 @@ public class CircleFitTest
     @Test
     public void testOptimize5()
     {
-        DenseMatrix64F center = new DenseMatrix64F(2, 1);    //98.680, 47.345); 
+        DenseMatrix64F center = new DenseMatrix64F(2, 1);
         DenseMatrix64F x = new DenseMatrix64F(5, 2, true,
                 30, 68,
                 50, -6,
@@ -143,9 +143,9 @@ public class CircleFitTest
                 35, 15,
                 45, 97
         );
-        CircleFitter cf = new CircleFitter();
-        boolean ok = cf.initialCenter(x, center);
+        boolean ok = CircleFitter.initialCenter(x, center);
         assertTrue(ok);
+        CircleFitter cf = new CircleFitter(center);
         assertEquals(98.680, center.data[0], Epsilon);
         assertEquals(47.345, center.data[1], Epsilon);
     }
@@ -153,6 +153,7 @@ public class CircleFitTest
     @Test
     public void testOptimize6()
     {
+        DenseMatrix64F center = new DenseMatrix64F(2, 1);
         DenseMatrix64F x = new DenseMatrix64F(5, 2, true,
                 30, 68,
                 50, -6,
@@ -161,9 +162,11 @@ public class CircleFitTest
                 45, 97
         );
         
-        CircleFitter cf = new CircleFitter();
+        boolean ok = CircleFitter.initialCenter(x, center);
+        assertTrue(ok);
+        CircleFitter cf = new CircleFitter(center);
         cf.fit(x);
-        DenseMatrix64F center = cf.getCenter();
+        center = cf.getCenter();
         assertEquals(96.076, center.data[0], Epsilon);
         assertEquals(48.135, center.data[1], Epsilon);
         assertEquals(69.960, cf.getRadius(), Epsilon);
@@ -186,9 +189,14 @@ public class CircleFitTest
         }
         DenseMatrix64F y = new DenseMatrix64F(x.numRows, 1);
         
-        CircleFitter cf = new CircleFitter();
+        DenseMatrix64F center = new DenseMatrix64F(2, 1);
+        boolean ok = CircleFitter.initialCenter(x, center);
+        assertTrue(ok);
+        CircleFitter cf = new CircleFitter(center);
         cf.fit(x);
-        DenseMatrix64F center = cf.getCenter();
+        CircleFitter.filterInnerPoints(x, center);
+        cf.fit(x);
+        center = cf.getCenter();
         assertEquals(0, center.data[0], 1e-2);
         assertEquals(0, center.data[1], 1e-2);
         assertEquals(10, cf.getRadius(), 1e-1);

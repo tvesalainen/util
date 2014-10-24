@@ -28,15 +28,20 @@ package org.vesalainen.ui;
  */
 public class AbstractView
 {
-    protected double xMax;
-    protected double yMax;
-    protected double xMin;
-    protected double yMin;
+    protected double width = Double.NaN;
+    protected double height = Double.NaN;
+    protected double xMax = Double.NaN;
+    protected double yMax = Double.NaN;
+    protected double xMin = Double.NaN;
+    protected double yMin = Double.NaN;
     protected double xOff;
     protected double yOff;
     protected double scale;
-    protected boolean rectSet = true;
-    protected boolean screenSet;
+    protected boolean calculated;
+
+    public AbstractView()
+    {
+    }
 
     public AbstractView(double xMin, double xMax, double yMin, double yMax)
     {
@@ -48,6 +53,19 @@ public class AbstractView
      * @param height 
      */
     public void setScreen(double width, double height)
+    {
+        if (this.width != width)
+        {
+            this.width = width;
+            calculated = false;
+        }
+        if (this.height != height)
+        {
+            this.height = height;
+            calculated = false;
+        }
+    }
+    private void calculate()
     {
         double aspect = width / height;
         double xyWidth = xMax - xMin;
@@ -65,18 +83,33 @@ public class AbstractView
             xOff = -scale*xMin;
             yOff = scale*yMin + height / 2.0 + scale*xyHeight / 2.0;
         }
-        screenSet = true;
+        calculated = true;
+    }
+    /**
+     * Returns true if both rect and screen have proper values;
+     * @return 
+     */
+    public boolean isReady()
+    {
+        return 
+            !Double.isNaN(width) &&
+            !Double.isNaN(height) &&
+            !Double.isNaN(xMin) &&
+            !Double.isNaN(xMax) &&
+            !Double.isNaN(yMin) &&
+            !Double.isNaN(yMax)
+                ;
     }
     /**
      * Resets the limits.
      */
     public void reset()
     {
-        xMin = Double.MAX_VALUE;
-        xMax = Double.MIN_VALUE;
-        yMin = Double.MAX_VALUE;
-        yMax = Double.MIN_VALUE;
-        rectSet = false;
+        xMin = Double.NaN;
+        xMax = Double.NaN;
+        yMin = Double.NaN;
+        yMax = Double.NaN;
+        calculated = false;
     }
     /**
      * Updates the limits if point is not inside visible screen.
@@ -85,23 +118,26 @@ public class AbstractView
      */
     public void update(double x, double y)
     {
-        if (x < xMin)
+        if (x < xMin || Double.isNaN(xMin))
         {
             xMin = x;
+            calculated = false;
         }
-        if (x > xMax)
+        if (x > xMax || Double.isNaN(xMax))
         {
             xMax = x;
+            calculated = false;
         }
-        if (y < yMin)
+        if (y < yMin || Double.isNaN(yMin))
         {
             yMin = y;
+            calculated = false;
         }
-        if (y > yMax)
+        if (y > yMax || Double.isNaN(yMax))
         {
             yMax = y;
+            calculated = false;
         }
-        rectSet = true;
     }
     /**
      * Sets the visible rectangle of translated coordinates.
@@ -116,7 +152,7 @@ public class AbstractView
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
-        rectSet = true;
+        calculated = false;
     }
     /**
      * Translates cartesian x-coordinate to screen coordinate.
@@ -125,8 +161,11 @@ public class AbstractView
      */
     public double translateX(double x)
     {
-        assert rectSet;
-        assert screenSet;
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
         return scale * x + xOff;
     }
     /**
@@ -136,8 +175,11 @@ public class AbstractView
      */
     public double translateY(double y)
     {
-        assert rectSet;
-        assert screenSet;
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
         return - scale * y + yOff;
     }
     /**
@@ -147,8 +189,11 @@ public class AbstractView
      */
     public double scale(double d)
     {
-        assert rectSet;
-        assert screenSet;
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
         return scale * d;
     }
 }
