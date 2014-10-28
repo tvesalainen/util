@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  */
 public class AbstractViewTest
 {
-    private static final double Epsilon = 0.000001F;
+    private static final double Epsilon = 1e-10;
     
     public AbstractViewTest()
     {
@@ -78,6 +78,40 @@ public class AbstractViewTest
         assertEquals(100, view.translateX(0), Epsilon);
         assertEquals(50, view.translateY(0), Epsilon);
         assertEquals(5, view.scale(1), Epsilon);
+    }
+    
+    @Test
+    public void testView4()
+    {
+        AbstractView view = new AbstractView();
+        view.setScreen(600, 895);
+        double d = (895.0-600.0)/2;
+        assertFalse(view.isReady());
+        view.update(-13.60272896379027,28.131008962509526);
+        assertEquals(-13.60272896379027, view.xMin, Epsilon);
+        assertEquals(-13.60272896379027, view.xMax, Epsilon);
+        assertEquals(28.131008962509526, view.yMin, Epsilon);
+        assertEquals(28.131008962509526, view.yMax, Epsilon);
+        view.update(-13.602733673016058,28.130998989573197);
+        assertEquals(-13.602733673016058, view.xMin, Epsilon);
+        assertEquals(-13.60272896379027, view.xMax, Epsilon);
+        assertEquals(28.130998989573197, view.yMin, Epsilon);
+        assertEquals(28.131008962509526, view.yMax, Epsilon);
+    }
+    
+    @Test
+    public void testView5()
+    {
+        AbstractView view = new AbstractView(-1, 2, -2, 10);
+        view.setScreen(7, 12);
+        assertTrue(view.isReady());
+        assertEquals(2, view.translateX(-1), Epsilon);
+        assertEquals(5, view.translateX(2), Epsilon);
+        assertEquals(12, view.translateY(-2), Epsilon);
+        assertEquals(0, view.translateY(10), Epsilon);
+        assertEquals(3, view.translateX(0), Epsilon);
+        assertEquals(10, view.translateY(0), Epsilon);
+        assertEquals(1, view.scale(1), Epsilon);
     }
     
 }

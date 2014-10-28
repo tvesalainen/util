@@ -41,7 +41,7 @@ import org.vesalainen.util.math.LevenbergMarquardt.JacobianFactory;
  */
 public class CircleFitter implements Function, JacobianFactory
 {
-    private static final double Epsilon = 1e-6;
+    private static final double Epsilon = 1e-10;
     
     private DenseMatrix64F di;
     private DenseMatrix64F center;
@@ -94,7 +94,7 @@ public class CircleFitter implements Function, JacobianFactory
      * @param center
      * @return 
      */
-    public static boolean initialCenter(DenseMatrix64F points, DenseMatrix64F center)
+    public static double initialCenter(DenseMatrix64F points, DenseMatrix64F center)
     {
         assert points.numCols == 2;
         assert center.numCols == 1;
@@ -120,11 +120,13 @@ public class CircleFitter implements Function, JacobianFactory
         if (count > 0)
         {
             divide(center, count);
-            return true;
+            DenseMatrix64F di = new DenseMatrix64F(points.numRows, 1);
+            computeDi(center, points, di);
+            return elementSum(di) / (double)points.numRows;
         }
         else
         {
-            return false;
+            return Double.NaN;
         }
     }
 
@@ -152,36 +154,40 @@ public class CircleFitter implements Function, JacobianFactory
         return true;
     }
         
-    private void computeDi(DenseMatrix64F param, DenseMatrix64F x)
+    private void computeDi(DenseMatrix64F center, DenseMatrix64F points)
     {
-        double xx = param.get(0, 0);
-        double yy = param.get(1, 0);
         if (di == null)
         {
-            di = new DenseMatrix64F(x.numRows, 1);
+            di = new DenseMatrix64F(points.numRows, 1);
         }
         else
         {
-            if (di.numRows != x.numRows)
+            if (di.numRows != points.numRows)
             {
-                di.reshape(x.numRows, 1);
+                di.reshape(points.numRows, 1);
             }
         }
+        computeDi(center, points, di);
+    }
+    private static void computeDi(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F di)
+    {
+        double xx = center.get(0, 0);
+        double yy = center.get(1, 0);
 
-        for (int row=0;row<x.numRows;row++)
+        for (int row=0;row<points.numRows;row++)
         {
-            double xd = xx - x.get(row, 0);
-            double yd = yy - x.get(row, 1);
+            double xd = xx - points.get(row, 0);
+            double yd = yy - points.get(row, 1);
             double r = Math.sqrt(xd*xd+yd*yd);
             di.set(row, 0, r);
         }
     }
     @Override
-    public void compute(DenseMatrix64F param, DenseMatrix64F x, DenseMatrix64F y)
+    public void compute(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F y)
     {
-        computeDi(param, x);
-        radius = elementSum(di) / (double)x.numRows;
-        for (int row=0;row<x.numRows;row++)
+        computeDi(center, points);
+        radius = elementSum(di) / (double)points.numRows;
+        for (int row=0;row<points.numRows;row++)
         {
             y.data[row] = di.data[row] - radius;
         }

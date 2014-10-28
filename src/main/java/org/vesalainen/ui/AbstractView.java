@@ -112,6 +112,20 @@ public class AbstractView
         calculated = false;
     }
     /**
+     * Updates limits so that circle is visible.
+     * @param x
+     * @param y
+     * @param radius 
+     */
+    public void update(double x, double y, double radius)
+    {
+        update(x, y);
+        update(x-radius, y-radius);
+        update(x+radius, y-radius);
+        update(x-radius, y+radius);
+        update(x+radius, y+radius);
+    }
+    /**
      * Updates the limits if point is not inside visible screen.
      * @param x
      * @param y 
