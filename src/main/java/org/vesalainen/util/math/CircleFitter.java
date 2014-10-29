@@ -84,6 +84,7 @@ public class CircleFitter implements Function, JacobianFactory
      */
     public static void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center)
     {
+        assert points.numCols == 2;
         assert center.numCols == 1;
         assert center.numRows == 2;
         DistComp dc = new DistComp(center.data[0], center.data[1]);
