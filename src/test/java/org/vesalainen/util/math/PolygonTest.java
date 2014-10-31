@@ -79,9 +79,67 @@ public class PolygonTest
     @Test
     public void testCreateConvexPolygon()
     {
+        DenseMatrix64F x = new DenseMatrix64F(22, 2, true,
+                1, 6,
+                2, 3,
+                2, 4,
+                3, 4,
+                3, 6,
+                3, 7,
+                3, 8,
+                4, 2,
+                4, 3,
+                4, 7,
+                5, 9,
+                6, 1,
+                6, 7,
+                7, 8,
+                8, 2,
+                8, 4,
+                8, 6,
+                8, 8,
+                9, 2,
+                9, 3,
+                9, 7,
+                10, 5
+        );
+        Polygon p = Polygon.createConvexPolygon(x);
+        assertTrue(p.isHit(2, 4));
+        assertTrue(p.isHit(3, 4));
+        assertTrue(p.isHit(3, 6));
+        assertTrue(p.isHit(3, 7));
+        assertTrue(p.isHit(4, 3));
+        assertTrue(p.isHit(4, 7));
+        assertTrue(p.isHit(6, 7));
+        assertTrue(p.isHit(7, 8));
+        assertTrue(p.isHit(8, 2));
+        assertTrue(p.isHit(8, 6));
+        assertTrue(p.isHit(9, 3));
+        assertTrue(p.isVertex(10, 5));
+        assertTrue(p.isVertex(9, 7));
+        assertTrue(p.isVertex(8, 8));
+        assertTrue(p.isVertex(5, 9));
+        assertTrue(p.isVertex(3, 8));
+        assertTrue(p.isVertex(1, 6));
+        assertTrue(p.isVertex(2, 3));
+        assertTrue(p.isVertex(4, 2));
+        assertTrue(p.isVertex(6, 1));
+        assertTrue(p.isVertex(9, 2));
+        assertFalse(p.isHit(0, 0));
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
+    }
+    
+    public void testCreateConvexPolygon0()
+    {
         DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
                 1, 1,
-                3, 3,
+                3.1, 3,
                 6, 1,
                 3, 6,
                 1, 6,
@@ -92,6 +150,13 @@ public class PolygonTest
         assertTrue(p.isHit(5, 2));
         assertTrue(p.isHit(3, 2));
         assertFalse(p.isHit(0, 0));
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
     }
     
 }

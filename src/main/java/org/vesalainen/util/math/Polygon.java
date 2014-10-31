@@ -27,8 +27,8 @@ import org.vesalainen.util.MatrixSort.RowComparator;
 public class Polygon
 {
 
-    private DenseMatrix64F points;
-    private Rect bounds;
+    private final DenseMatrix64F points;
+    private final Rect bounds;
 
     public Polygon(DenseMatrix64F points)
     {
@@ -102,46 +102,165 @@ public class Polygon
         int left = 1;
         int right = find(points, x2, y2, left)-1;
         int index = 1;
-        index = process(points, index, left, right, m);
+        index += process(
+                points, 
+                index, 
+                left, 
+                right, 
+                points.data[2*(left-1)],
+                points.data[2*(left-1)+1],
+                points.data[2*(right+1)],
+                points.data[2*(right+1)+1],
+                m);
         
         left = right+2;
         right = find(points, x3, y3, left)-1;
-        index = process(points, index, left, right, m);
+        index += process(
+                points, 
+                index, 
+                left, 
+                right, 
+                points.data[2*(left-1)],
+                points.data[2*(left-1)+1],
+                points.data[2*(right+1)],
+                points.data[2*(right+1)+1],
+                m);
         
         left = right+2;
         right = find(points, x4, y4, left)-1;
-        index = process(points, index, left, right, m);
+        index += process(
+                points, 
+                index, 
+                left, 
+                right, 
+                points.data[2*(left-1)],
+                points.data[2*(left-1)+1],
+                points.data[2*(right+1)],
+                points.data[2*(right+1)+1],
+                m);
         
         left = right+2;
-        right = points.numRows-1;
-        index = process(points, index, left, right, m);
+        right = points.numRows-2;
+        index += process(
+                points, 
+                index, 
+                left, 
+                right, 
+                points.data[2*(left-1)],
+                points.data[2*(left-1)+1],
+                points.data[2*(right+1)],
+                points.data[2*(right+1)+1],
+                m);
         
         return new Polygon(m);
     }
-    private static int process(DenseMatrix64F points, int index, int left, int right, DenseMatrix64F m)
+    private static int process(
+            DenseMatrix64F points, 
+            int index, 
+            int left, 
+            int right, 
+            double xl,
+            double yl,
+            double xr,
+            double yr,
+            DenseMatrix64F cm)
     {
-        while (left <= right && isRawHit(m, points.data[2*left], points.data[2*left+1]))
+        if (left > right)
         {
-            left++;
+            return 0;
         }
-        while (left <= right && isRawHit(m, points.data[2*right], points.data[2*right+1]))
+        int dIndex = 0;
+        double xc;
+        double yc;
+        int sector;
+        if (xl > xr)
         {
-            right--;
-        }
-        if (left == right)
-        {
-            insert(m, points.data[2*left], points.data[2*left+1], index++);
+            if (yr > yl)
+            {
+                sector = 1;
+                xc = xr;
+                yc = yl;
+            }
+            else
+            {
+                sector = 2;
+                xc = xl;
+                yc = yr;
+            }
         }
         else
         {
-            for (int ii=left;ii<=right;ii++)
+            if (yr < yl)
             {
-
+                sector = 3;
+                xc = xr;
+                yc = yl;
+            }
+            else
+            {
+                sector = 4;
+                xc = xl;
+                yc = yr;
             }
         }
-        return index+1;
+        boolean upper = sector < 3;
+        double m = (yr-yl)/(xr-xl);
+        double b = yl-m*yr;
+        int i = left;
+        int j = right;
+        while (i <= j && inner(m, b, points.data[2*i], points.data[2*i+1], upper))
+        {
+            i++;
+        }
+        while (i <= j && inner(m, b, points.data[2*j], points.data[2*j+1], upper))
+        {
+            j--;
+        }
+        if (i == j)
+        {
+            insert(cm, points.data[2*i], points.data[2*i+1], index);
+            dIndex++;
+        }
+        else
+        {
+            if (i < j)
+            {
+                int ind = -1;
+                double max = -1;
+                for (int ii=i;ii<=j;ii++)
+                {
+                    double xx = points.data[2*ii];
+                    double yy = points.data[2*ii+1];
+                    double dx = xx - xc;
+                    double dy = yy - yc;
+                    double mm = dx*dx+dy*dy;
+                    if (mm > max)
+                    {
+                        max = mm;
+                        ind = ii;
+                    }
+                }
+                double nx = points.data[2*ind];
+                double ny = points.data[2*ind+1];
+                insert(cm, nx, ny, index);
+                double di = process(points, index, i, ind-1, xl, yl, nx, ny, cm);
+                dIndex += di+1;
+                dIndex += process(points, index+dIndex, ind+1, j, nx, ny, xr, yr, cm);
+            }
+        }
+        return dIndex;
     }
-
+    private static boolean inner(double m, double b, double x, double y, boolean upper)
+    {
+        if (upper)
+        {
+            return y < m*x+b;
+        }
+        else
+        {
+            return y > m*x+b;
+        }
+    }
     private static int find(DenseMatrix64F m, double x, double y, int start)
     {
         int len = m.numRows;
@@ -174,7 +293,7 @@ public class Polygon
      * @param testx
      * @param testy
      * @return 
-     * @see <a href="http://www.codeproject.com/Tips/84226/Is-a-Point-inside-a-Polygon">Is a Point inside a Polygon?</a>
+     * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in Polygon Test W. Randolph Franklin (WRF)</a>
      */
     public boolean isHit(double testx, double testy)
     {
@@ -190,7 +309,7 @@ public class Polygon
      * @param testx
      * @param testy
      * @return 
-     * @see <a href="http://www.codeproject.com/Tips/84226/Is-a-Point-inside-a-Polygon">Is a Point inside a Polygon?</a>
+     * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in Polygon Test W. Randolph Franklin (WRF)</a>
      */
     public static boolean isRawHit(DenseMatrix64F points, double testx, double testy)
     {
@@ -207,6 +326,26 @@ public class Polygon
             }
         }
         return c;
+    }
+    /**
+     * Returns true if given point is vertex.
+     * <p>This is mainly for testing!
+     * @param x
+     * @param y
+     * @return 
+     */
+    boolean isVertex(double x, double y)
+    {
+        int cnt = points.numRows;
+        double[] d = points.data;
+        for (int ii=0;ii<cnt;ii++)
+        {
+            if (x == d[2*ii] && y== d[2*ii+1])
+            {
+                return true;
+            }
+        }
+        return false;
     }
     private static class RC implements RowComparator
     {
@@ -238,10 +377,54 @@ public class Polygon
             double y = data[len*row+1];
             double px = pivot[0];
             double py = pivot[1];
-            return rank(x, y) - rank(px, py);
+            int xys = sector(x, y);
+            int ps = sector(px, py);
+            if (xys != ps)
+            {
+                return xys - ps;
+            }
+            else
+            {
+                if (ps < 3)
+                {
+                    if (x > px)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        if (x < px)
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                }
+                else
+                {
+                    if (x > px)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        if (x < px)
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                }
+            }
         }
 
-        private int rank(double x, double y)
+        private int sector(double x, double y)
         {
             if (x == x1 && y == y1)
             {
