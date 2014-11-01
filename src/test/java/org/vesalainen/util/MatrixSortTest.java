@@ -66,6 +66,20 @@ public class MatrixSortTest
         assertTrue(Arrays.equals(arr2, arr1));
     }
 
+    @Test
+    public void testSort3()
+    {
+        double[] arr1 = new double[]
+        {
+            10, 9, 8, 8, 7, 6, 5, 3, 3, 4, 1
+        };
+        double[] arr2 = new double[arr1.length];
+        System.arraycopy(arr1, 0, arr2, 0, arr1.length);
+        MatrixSort.sort(arr1, 1, new C());
+        Arrays.sort(arr2);
+        assertTrue(Arrays.equals(arr2, arr1));
+    }
+
     public class C implements RowComparator
     {
 

@@ -21,20 +21,29 @@ import org.vesalainen.util.MatrixSort;
 import org.vesalainen.util.MatrixSort.RowComparator;
 
 /**
- *
+ * 
  * @author Timo Vesalainen
  */
 public class Polygon
 {
 
     private final DenseMatrix64F points;
-    private final Rect bounds;
+    private final Rect bounds = new Rect();
+
+    private Polygon()
+    {
+        this(new DenseMatrix64F(0, 2));
+    }
 
     public Polygon(DenseMatrix64F points)
     {
         assert points.numCols == 2;
         this.points = points;
-        bounds = new Rect();
+        updateBounds();
+    }
+    private void updateBounds()
+    {
+        bounds.reset();
         int len = points.numRows;
         double[] d = points.data;
         for (int ii=0;ii<len;ii++)
@@ -42,7 +51,12 @@ public class Polygon
             bounds.update(d[2*ii], d[2*ii+1]);
         }
     }
+            
     public static Polygon createConvexPolygon(DenseMatrix64F points)
+    {
+        return updateConvexPolygon(new Polygon(), points);
+    }
+    public static Polygon updateConvexPolygon(Polygon polygon, DenseMatrix64F points)
     {
         assert points.numCols == 2;
         double x1 = Double.NaN;
@@ -92,16 +106,22 @@ public class Polygon
         }
         assert x1 == points.data[0];
         assert y1 == points.data[1];
-        DenseMatrix64F m = new DenseMatrix64F(0, 2);
+        DenseMatrix64F m = polygon.points;
+        m.reshape(0, 2);
         
         add(m, x1, y1);
         add(m, x2, y2);
         add(m, x3, y3);
         add(m, x4, y4);
         add(m, x1, y1);
-        int left = 1;
-        int right = find(points, x2, y2, left)-1;
         int index = 1;
+        int left = 1;
+        int idx = find(points, x2, y2, left);
+        if (idx == -1)
+        {
+            throw new IllegalArgumentException("corenr not found");
+        }
+        int right = idx-1;
         index += process(
                 points, 
                 index, 
@@ -114,7 +134,13 @@ public class Polygon
                 m);
         
         left = right+2;
-        right = find(points, x3, y3, left)-1;
+        idx = find(points, x3, y3, left);
+        if (idx == -1)
+        {
+            throw new IllegalArgumentException("corenr not found");
+        }
+        right = idx-1;
+        index++;
         index += process(
                 points, 
                 index, 
@@ -127,20 +153,26 @@ public class Polygon
                 m);
         
         left = right+2;
-        right = find(points, x4, y4, left)-1;
-        index += process(
-                points, 
-                index, 
-                left, 
-                right, 
-                points.data[2*(left-1)],
-                points.data[2*(left-1)+1],
-                points.data[2*(right+1)],
-                points.data[2*(right+1)+1],
-                m);
-        
-        left = right+2;
+        idx = find(points, x4, y4, left);
+        if (idx != -1)
+        {
+            right = idx-1;
+            index++;
+            index += process(
+                    points, 
+                    index, 
+                    left, 
+                    right, 
+                    points.data[2*(left-1)],
+                    points.data[2*(left-1)+1],
+                    points.data[2*(right+1)],
+                    points.data[2*(right+1)+1],
+                    m);
+
+            left = right+2;
+        }
         right = points.numRows-2;
+        index++;
         index += process(
                 points, 
                 index, 
@@ -151,8 +183,8 @@ public class Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-        
-        return new Polygon(m);
+        polygon.updateBounds();
+        return polygon;
     }
     private static int process(
             DenseMatrix64F points, 
@@ -205,7 +237,11 @@ public class Polygon
         }
         boolean upper = sector < 3;
         double m = (yr-yl)/(xr-xl);
-        double b = yl-m*yr;
+        if (!Double.isFinite(m))
+        {
+            return 0;
+        }
+        double b = yl-m*xl;
         int i = left;
         int j = right;
         while (i <= j && inner(m, b, points.data[2*i], points.data[2*i+1], upper))
@@ -347,6 +383,13 @@ public class Polygon
         }
         return false;
     }
+
+    @Override
+    public String toString()
+    {
+        return points.toString();
+    }
+    
     private static class RC implements RowComparator
     {
         double x1;
@@ -385,41 +428,25 @@ public class Polygon
             }
             else
             {
-                if (ps < 3)
+                int res = 0;
+                if (x > px)
                 {
-                    if (x > px)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        if (x < px)
-                        {
-                            return 1;
-                        }
-                        else
-                        {
-                            return 0;
-                        }
-                    }
+                    res = -1;
                 }
                 else
                 {
-                    if (x > px)
+                    if (x < px)
                     {
-                        return 1;
+                        res = 1;
                     }
-                    else
-                    {
-                        if (x < px)
-                        {
-                            return -1;
-                        }
-                        else
-                        {
-                            return 0;
-                        }
-                    }
+                }
+                if (ps <= 5)
+                {
+                    return res;
+                }
+                else
+                {
+                    return -res;
                 }
             }
         }
@@ -442,29 +469,19 @@ public class Polygon
             {
                 return 7;
             }
-            if (x > x2)
+            if (x >= x2 && y >= y1)
             {
-                if (y > y1)
-                {
-                    return 2;
-                }
-                else
-                {
-                    return 8;
-                }
+                return 2;
             }
-            else
+            if (x <= x2 && y >= y3)
             {
-                if (y > y3)
-                {
-                    return 4;
-                }
-                else
-                {
-                    return 6;
-                }
+                return 4;
             }
+            if (x <= x4 && y <= y3)
+            {
+                return 6;
+            }
+            return 8;
         }
-        
     }
 }

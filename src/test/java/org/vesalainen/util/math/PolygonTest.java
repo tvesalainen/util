@@ -77,7 +77,7 @@ public class PolygonTest
      * Test of createConvexPolygon method, of class Polygon.
      */
     @Test
-    public void testCreateConvexPolygon()
+    public void testCreateConvexPolygon1()
     {
         DenseMatrix64F x = new DenseMatrix64F(22, 2, true,
                 1, 6,
@@ -135,7 +135,8 @@ public class PolygonTest
         }
     }
     
-    public void testCreateConvexPolygon0()
+    @Test
+    public void testCreateConvexPolygon2()
     {
         DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
                 1, 1,
@@ -149,6 +150,82 @@ public class PolygonTest
         assertTrue(p.isHit(2, 3));
         assertTrue(p.isHit(5, 2));
         assertTrue(p.isHit(3, 2));
+        assertFalse(p.isHit(0, 0));
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
+    }
+    
+    @Test
+    public void testCreateConvexPolygon3()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(10, 2, true,
+                1, 1,
+                2, 1,
+                4, 1,
+                4, 4,
+                4, 6,
+                3, 6,
+                1, 6,
+                1, 3,
+                2, 4,
+                3, 3
+        );
+        Polygon p = Polygon.createConvexPolygon(x);
+        System.err.println(p);
+        assertTrue(p.isHit(2, 3));
+        assertTrue(p.isHit(3, 5));
+        assertTrue(p.isHit(3, 2));
+        assertFalse(p.isHit(0, 0));
+    }
+    
+    @Test
+    public void testCreateConvexPolygon4()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+                1, 1,
+                2, 3,
+                3, 2,
+                3, 5,
+                4, 2,
+                4, 3,
+                6, 1
+        );
+        Polygon p = Polygon.createConvexPolygon(x);
+        System.err.println(p);
+        assertTrue(p.isHit(2, 2));
+        assertTrue(p.isHit(3, 4));
+        assertTrue(p.isHit(3, 2));
+        assertFalse(p.isHit(0, 0));
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
+    }
+    
+    public void testCreateConvexPolygon5()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+                1, 4,
+                2, 3,
+                3, 1,
+                3, 4,
+                4, 3,
+                5, 4
+        );
+        Polygon p = Polygon.createConvexPolygon(x);
+        System.err.println(p);
+        assertTrue(p.isHit(2, 3));
+        assertTrue(p.isHit(3, 3));
+        assertTrue(p.isHit(3, 2));
+        assertFalse(p.isHit(2, 2));
         assertFalse(p.isHit(0, 0));
         for (int r=0;r<x.numRows;r++)
         {
