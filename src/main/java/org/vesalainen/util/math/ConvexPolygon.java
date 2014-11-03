@@ -171,6 +171,7 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)+1],
                 m);
         polygon.updateBounds();
+        assert check(polygon.points);
         return polygon;
     }
     private static int process(
@@ -311,6 +312,40 @@ public class ConvexPolygon extends Polygon
         m.data[2*index] = x;
         m.data[2*index+1] = y;
     }
+    private static boolean check(DenseMatrix64F m)
+    {
+        int rows = m.numRows-1;
+        int cols = m.numCols;
+        double[] d = m.data;
+        double xf = d[0];
+        double yf = d[+1];
+        double xl = d[cols*(rows-1)];
+        double yl = d[cols*(rows-1)+1];
+        double mp = (yf-yl)/(xf-xl);
+        System.err.println("slope="+mp);
+        for (int ii=0;ii<rows;ii++)
+        {
+            double x1 = d[cols*ii];
+            double y1 = d[cols*ii+1];
+            double x2 = d[cols*ii+2];
+            double y2 = d[cols*ii+3];
+            double mn = (y2-y1)/(x2-x1);
+            if (!(
+                    (Double.isInfinite(mp) || Double.isNaN(mp) || mp >= 0) && 
+                    (Double.isInfinite(mn) || Double.isNaN(mn) || mn <= 0)
+                    ))
+            {
+                if (mn < mp)
+                {
+                    return false;
+                }
+            }
+            mp = mn;
+            System.err.println("slope="+mn);
+        }
+        return true;
+    }
+
     private static class RC implements MatrixSort.RowComparator
     {
         double x1;
