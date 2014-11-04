@@ -158,7 +158,7 @@ public class ConvexPolygon extends Polygon
                 m);
 
         left = right+2;
-        right = points.numRows-2;
+        right = points.numRows-1;
         index++;
         index += process(
                 points, 
@@ -167,8 +167,8 @@ public class ConvexPolygon extends Polygon
                 right, 
                 points.data[2*(left-1)],
                 points.data[2*(left-1)+1],
-                points.data[2*(right+1)],
-                points.data[2*(right+1)+1],
+                x1,
+                y1,
                 m);
         polygon.updateBounds();
         assert check(polygon.points);
@@ -232,11 +232,11 @@ public class ConvexPolygon extends Polygon
         double b = yl-m*xl;
         int i = left;
         int j = right;
-        while (i <= j && inner(m, b, points.data[2*i], points.data[2*i+1], upper))
+        while (i <= j && distance(m, b, points.data[2*i], points.data[2*i+1], upper) < 0)
         {
             i++;
         }
-        while (i <= j && inner(m, b, points.data[2*j], points.data[2*j+1], upper))
+        while (i <= j && distance(m, b, points.data[2*j], points.data[2*j+1], upper) < 0)
         {
             j--;
         }
@@ -250,14 +250,12 @@ public class ConvexPolygon extends Polygon
             if (i < j)
             {
                 int ind = -1;
-                double max = -1;
+                double max = Double.NEGATIVE_INFINITY;
                 for (int ii=i;ii<=j;ii++)
                 {
                     double xx = points.data[2*ii];
                     double yy = points.data[2*ii+1];
-                    double dx = xx - xc;
-                    double dy = yy - yc;
-                    double mm = dx*dx+dy*dy;
+                    double mm = distance(m, b, xx, yy, upper);
                     if (mm > max)
                     {
                         max = mm;
@@ -274,15 +272,15 @@ public class ConvexPolygon extends Polygon
         }
         return dIndex;
     }
-    private static boolean inner(double m, double b, double x, double y, boolean upper)
+    private static double distance(double m, double b, double x, double y, boolean upper)
     {
         if (upper)
         {
-            return y < m*x+b;
+            return y - (m*x+b);
         }
         else
         {
-            return y > m*x+b;
+            return (m*x+b) - y;
         }
     }
     private static int find(DenseMatrix64F m, double x, double y, int start)
@@ -321,7 +319,10 @@ public class ConvexPolygon extends Polygon
         double yf = d[+1];
         double xl = d[cols*(rows-1)];
         double yl = d[cols*(rows-1)+1];
-        double mp = (yf-yl)/(xf-xl);
+        double dy = yf-yl;
+        double dx = xf-xl;
+        int sp = 0;
+        double mp = dy/dx;
         System.err.println("slope="+mp);
         for (int ii=0;ii<rows;ii++)
         {
@@ -329,23 +330,59 @@ public class ConvexPolygon extends Polygon
             double y1 = d[cols*ii+1];
             double x2 = d[cols*ii+2];
             double y2 = d[cols*ii+3];
-            double mn = (y2-y1)/(x2-x1);
-            if (!(
-                    (Double.isInfinite(mp) || Double.isNaN(mp) || mp >= 0) && 
-                    (Double.isInfinite(mn) || Double.isNaN(mn) || mn <= 0)
-                    ))
+            dy = y2-y1;
+            dx = x2-x1;
+            if (dy == 0 && dx == 0)
+            {
+                continue;
+            }
+            int sn = sector(dy, dx);
+            double mn = dy/dx;
+            if (sp == sn)
             {
                 if (mn < mp)
                 {
                     return false;
                 }
             }
+            else
+            {
+                if (!Double.isInfinite(mn) && sp > sn)
+                {
+                    return false;
+                }
+            }
+            sp = sn;
             mp = mn;
             System.err.println("slope="+mn);
         }
         return true;
     }
-
+    private static int sector(double dy, double dx)
+    {
+        if (dy >= 0)
+        {
+            if (dx <= 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return 4;
+            }
+        }
+        else
+        {
+            if (dx <= 0)
+            {
+                return 2;
+            }
+            else
+            {
+                return 3;
+            }
+        }
+    }
     private static class RC implements MatrixSort.RowComparator
     {
         double x1;
@@ -376,8 +413,8 @@ public class ConvexPolygon extends Polygon
             double y = data[len*row+1];
             double px = pivot[0];
             double py = pivot[1];
-            int xys = sector(x, y);
-            int ps = sector(px, py);
+            int xys = sec(x, y);
+            int ps = sec(px, py);
             if (xys != ps)
             {
                 return xys - ps;
@@ -407,7 +444,7 @@ public class ConvexPolygon extends Polygon
             }
         }
 
-        private int sector(double x, double y)
+        private int sec(double x, double y)
         {
             if (x == x1 && y == y1)
             {
