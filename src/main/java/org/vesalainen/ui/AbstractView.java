@@ -30,10 +30,10 @@ public class AbstractView
 {
     protected double width = Double.NaN;
     protected double height = Double.NaN;
-    protected double xMax = Double.NaN;
-    protected double yMax = Double.NaN;
-    protected double xMin = Double.NaN;
-    protected double yMin = Double.NaN;
+    protected double xMax = Double.NEGATIVE_INFINITY;
+    protected double yMax = Double.NEGATIVE_INFINITY;
+    protected double xMin = Double.POSITIVE_INFINITY;
+    protected double yMin = Double.POSITIVE_INFINITY;
     protected double xOff;
     protected double yOff;
     protected double scale;
@@ -94,10 +94,10 @@ public class AbstractView
         return 
             !Double.isNaN(width) &&
             !Double.isNaN(height) &&
-            !Double.isNaN(xMin) &&
-            !Double.isNaN(xMax) &&
-            !Double.isNaN(yMin) &&
-            !Double.isNaN(yMax)
+            !Double.isInfinite(xMin) &&
+            !Double.isInfinite(xMax) &&
+            !Double.isInfinite(yMin) &&
+            !Double.isInfinite(yMax)
                 ;
     }
     /**
@@ -105,10 +105,10 @@ public class AbstractView
      */
     public void reset()
     {
-        xMin = Double.NaN;
-        xMax = Double.NaN;
-        yMin = Double.NaN;
-        yMax = Double.NaN;
+        xMin = Double.POSITIVE_INFINITY;
+        xMax = Double.NEGATIVE_INFINITY;
+        yMin = Double.POSITIVE_INFINITY;
+        yMax = Double.NEGATIVE_INFINITY;
         calculated = false;
     }
     /**
@@ -132,22 +132,22 @@ public class AbstractView
      */
     public void update(double x, double y)
     {
-        if (x < xMin || Double.isNaN(xMin))
+        if (x < xMin)
         {
             xMin = x;
             calculated = false;
         }
-        if (x > xMax || Double.isNaN(xMax))
+        if (x > xMax)
         {
             xMax = x;
             calculated = false;
         }
-        if (y < yMin || Double.isNaN(yMin))
+        if (y < yMin)
         {
             yMin = y;
             calculated = false;
         }
-        if (y > yMax || Double.isNaN(yMax))
+        if (y > yMax)
         {
             yMax = y;
             calculated = false;
@@ -173,7 +173,7 @@ public class AbstractView
      * @param x
      * @return 
      */
-    public double translateX(double x)
+    public double toScreenX(double x)
     {
         assert isReady();
         if (!calculated)
@@ -187,7 +187,7 @@ public class AbstractView
      * @param y
      * @return 
      */
-    public double translateY(double y)
+    public double toScreenY(double y)
     {
         assert isReady();
         if (!calculated)
@@ -195,6 +195,34 @@ public class AbstractView
             calculate();
         }
         return - scale * y + yOff;
+    }
+    /**
+     * Translates screen x-coordinate to cartesian coordinate.
+     * @param x
+     * @return 
+     */
+    public double fromScreenX(double x)
+    {
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
+        return (x - xOff) / scale;
+    }
+    /**
+     * Translates screen y-coordinate to cartesian coordinate.
+     * @param y
+     * @return 
+     */
+    public double fromScreenY(double y)
+    {
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
+        return - (y - yOff) / scale;
     }
     /**
      * Scales the argument to screen scale.

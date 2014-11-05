@@ -38,13 +38,20 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(100, 200);
         assertTrue(view.isReady());
-        assertEquals(0, view.translateX(-10), Epsilon);
-        assertEquals(100, view.translateX(10), Epsilon);
-        assertEquals(150, view.translateY(-10), Epsilon);
-        assertEquals(50, view.translateY(10), Epsilon);
-        assertEquals(50, view.translateX(0), Epsilon);
-        assertEquals(100, view.translateY(0), Epsilon);
+        assertEquals(0, view.toScreenX(-10), Epsilon);
+        assertEquals(100, view.toScreenX(10), Epsilon);
+        assertEquals(150, view.toScreenY(-10), Epsilon);
+        assertEquals(50, view.toScreenY(10), Epsilon);
+        assertEquals(50, view.toScreenX(0), Epsilon);
+        assertEquals(100, view.toScreenY(0), Epsilon);
         assertEquals(5, view.scale(1), Epsilon);
+        
+        assertEquals(-10, view.fromScreenX(0), Epsilon);
+        assertEquals(10, view.fromScreenX(100), Epsilon);
+        assertEquals(-10, view.fromScreenY(150), Epsilon);
+        assertEquals(10, view.fromScreenY(50), Epsilon);
+        assertEquals(0, view.fromScreenX(50), Epsilon);
+        assertEquals(0, view.fromScreenY(100), Epsilon);
     }
     
     @Test
@@ -53,12 +60,12 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(200, 100);
         assertTrue(view.isReady());
-        assertEquals(50, view.translateX(-10), Epsilon);
-        assertEquals(150, view.translateX(10), Epsilon);
-        assertEquals(100, view.translateY(-10), Epsilon);
-        assertEquals(0, view.translateY(10), Epsilon);
-        assertEquals(100, view.translateX(0), Epsilon);
-        assertEquals(50, view.translateY(0), Epsilon);
+        assertEquals(50, view.toScreenX(-10), Epsilon);
+        assertEquals(150, view.toScreenX(10), Epsilon);
+        assertEquals(100, view.toScreenY(-10), Epsilon);
+        assertEquals(0, view.toScreenY(10), Epsilon);
+        assertEquals(100, view.toScreenX(0), Epsilon);
+        assertEquals(50, view.toScreenY(0), Epsilon);
         assertEquals(5, view.scale(1), Epsilon);
     }
     
@@ -71,12 +78,12 @@ public class AbstractViewTest
         view.update(0, 0);
         view.update(-10, 10);
         view.update(10, -10);
-        assertEquals(50, view.translateX(-10), Epsilon);
-        assertEquals(150, view.translateX(10), Epsilon);
-        assertEquals(100, view.translateY(-10), Epsilon);
-        assertEquals(0, view.translateY(10), Epsilon);
-        assertEquals(100, view.translateX(0), Epsilon);
-        assertEquals(50, view.translateY(0), Epsilon);
+        assertEquals(50, view.toScreenX(-10), Epsilon);
+        assertEquals(150, view.toScreenX(10), Epsilon);
+        assertEquals(100, view.toScreenY(-10), Epsilon);
+        assertEquals(0, view.toScreenY(10), Epsilon);
+        assertEquals(100, view.toScreenX(0), Epsilon);
+        assertEquals(50, view.toScreenY(0), Epsilon);
         assertEquals(5, view.scale(1), Epsilon);
     }
     
@@ -105,12 +112,12 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-1, 2, -2, 10);
         view.setScreen(7, 12);
         assertTrue(view.isReady());
-        assertEquals(2, view.translateX(-1), Epsilon);
-        assertEquals(5, view.translateX(2), Epsilon);
-        assertEquals(12, view.translateY(-2), Epsilon);
-        assertEquals(0, view.translateY(10), Epsilon);
-        assertEquals(3, view.translateX(0), Epsilon);
-        assertEquals(10, view.translateY(0), Epsilon);
+        assertEquals(2, view.toScreenX(-1), Epsilon);
+        assertEquals(5, view.toScreenX(2), Epsilon);
+        assertEquals(12, view.toScreenY(-2), Epsilon);
+        assertEquals(0, view.toScreenY(10), Epsilon);
+        assertEquals(3, view.toScreenX(0), Epsilon);
+        assertEquals(10, view.toScreenY(0), Epsilon);
         assertEquals(1, view.scale(1), Epsilon);
     }
     
