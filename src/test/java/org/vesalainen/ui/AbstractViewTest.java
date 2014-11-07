@@ -120,5 +120,21 @@ public class AbstractViewTest
         assertEquals(10, view.toScreenY(0), Epsilon);
         assertEquals(1, view.scale(1), Epsilon);
     }
+
+    @Test
+    public void testView6()
+    {
+        AbstractView view = new AbstractView();
+        view.setScreen(200, 100);
+        assertFalse(view.isReady());
+        view.update(0, 0, 10);
+        assertEquals(50, view.toScreenX(-10), Epsilon);
+        assertEquals(150, view.toScreenX(10), Epsilon);
+        assertEquals(100, view.toScreenY(-10), Epsilon);
+        assertEquals(0, view.toScreenY(10), Epsilon);
+        assertEquals(100, view.toScreenX(0), Epsilon);
+        assertEquals(50, view.toScreenY(0), Epsilon);
+        assertEquals(5, view.scale(1), Epsilon);
+    }
     
 }

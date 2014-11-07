@@ -168,6 +168,14 @@ public class AbstractView
         this.yMax = yMax;
         calculated = false;
     }
+    public final void setRect(double x, double y, double r)
+    {
+        this.xMin = x - r;
+        this.xMax = x + r;
+        this.yMin = y - r;
+        this.yMax = y + r;
+        calculated = false;
+    }
     /**
      * Translates cartesian x-coordinate to screen coordinate.
      * @param x
