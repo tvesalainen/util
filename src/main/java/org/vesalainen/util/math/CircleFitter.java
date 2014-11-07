@@ -82,15 +82,110 @@ public class CircleFitter implements Function, JacobianFactory
      * @param points
      * @param center 
      */
-    public static void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center)
+    public static void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center, int minLeft, double percent)
     {
         assert points.numCols == 2;
         assert center.numCols == 1;
         assert center.numRows == 2;
+        if (percent <= 0 || percent >= 1)
+        {
+            throw new IllegalArgumentException("percent "+percent+" is not between 0 & 1");
+        }
         DistComp dc = new DistComp(center.data[0], center.data[1]);
         MatrixSort.sort(points, dc);
-        points.reshape(points.numRows/2, 2, true);
+        int rows = points.numRows;
+        double[] d = points.data;
+        double limit = dc.distance(d[0], d[1])*percent;
+        for (int r=minLeft;r<rows;r++)
+        {
+            double distance = dc.distance(d[2*r], d[2*r+1]);
+            if (distance < limit)
+            {
+                points.reshape(r/2, 2, true);
+                break;
+            }
+        }
     }
+    /**
+     * Changes pr so that distance from p0 is in range min - max. Slope of (p0,pr)
+     * remains the same.
+     * @param p0
+     * @param pr
+     * @param min
+     * @param max 
+     */
+    public static void limitDistance(DenseMatrix64F p0, DenseMatrix64F pr, double min, double max)
+    {
+        double x0 = p0.data[0];
+        double y0 = p0.data[1];
+        double xr = pr.data[0];
+        double yr = pr.data[1];
+        double dx = xr-x0;
+        double dy = yr-y0;
+        double r = Math.sqrt(dx*dx+dy*dy);
+        if (r < min || r > max)
+        {
+            if (r < min)
+            {
+                r = min;
+            }
+            else
+            {
+                r = max;
+            }
+            double m = dy/dx;
+            if (Double.isInfinite(m))
+            {
+                if (m > 0)
+                {
+                    pr.data[1] = y0 +  r;
+                }
+                else
+                {
+                    pr.data[1] = y0 -  r;
+                }
+            }
+            else
+            {
+                double x = Math.sqrt((r*r)/(m*m+1));
+                double y = m*x;
+                pr.data[0] = x0 +  x;
+                pr.data[1] = y0 +  y;
+            }
+        }
+    }
+    /**
+     * Calculates mean center of points
+     * @param points in
+     * @param center out
+     * @return 
+     */
+    public static double meanCenter(DenseMatrix64F points, DenseMatrix64F center)
+    {
+        assert points.numCols == 2;
+        assert center.numCols == 1;
+        assert center.numRows == 2;
+        center.zero();
+        int count = points.numRows;
+        double[] d = points.data;
+        for (int i=0;i<count;i++)
+        {
+            center.add(0, 0, d[2*i]);
+            center.add(1, 0, d[2*i+1]);
+        }
+        if (count > 0)
+        {
+            divide(center, count);
+            DenseMatrix64F di = new DenseMatrix64F(points.numRows, 1);
+            computeDi(center, points, di);
+            return elementSum(di) / (double)points.numRows;
+        }
+        else
+        {
+            return Double.NaN;
+        }
+    }
+
     /**
      * Calculates an initial estimate for center.
      * @param points
@@ -251,8 +346,8 @@ public class CircleFitter implements Function, JacobianFactory
         @Override
         public int compare(double[] data, int row, double[] pivot, int len)
         {
-            double dd = dist(data[row*len], data[row*len+1]);
-            double dp = dist(pivot[0], pivot[1]);
+            double dd = distance(data[row*len], data[row*len+1]);
+            double dp = distance(pivot[0], pivot[1]);
             if (dd < dp)
             {
                 return 1;
@@ -269,7 +364,7 @@ public class CircleFitter implements Function, JacobianFactory
                 }
             }
         }
-        private double dist(double xx, double yy)
+        private double distance(double xx, double yy)
         {
             double dx = x-xx;
             double dy = y-yy;

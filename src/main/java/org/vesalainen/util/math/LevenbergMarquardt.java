@@ -129,6 +129,10 @@ public class LevenbergMarquardt {
                              DenseMatrix64F X ,
                              DenseMatrix64F Y )
     {
+        if (X.numRows == 0)
+        {
+            return false;
+        }
         configure(initParam,X,Y);
 
         // save the cost of the initial parameters so that it knows if it improves or not

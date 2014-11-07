@@ -29,12 +29,74 @@ import org.vesalainen.util.math.LevenbergMarquardt.JacobianFactory;
  *
  * @author Timo Vesalainen
  */
-public class CircleFitTest
+public class CircleFitterTest
 {
     private static final double Epsilon = 1e-3;
     
-    public CircleFitTest()
+    public CircleFitterTest()
     {
+    }
+
+    @Test
+    public void testLimitDistance1()
+    {
+        DenseMatrix64F p0 = new DenseMatrix64F(2, 1, true, 1, 2);
+        DenseMatrix64F pr = new DenseMatrix64F(2, 1, true, 5, 6);
+        CircleFitter.limitDistance(p0, pr, 0, 1);
+        double sq2 = Math.sqrt(2)/2.0;
+        assertEquals(1+sq2, pr.data[0], Epsilon);
+        assertEquals(2+sq2, pr.data[1], Epsilon);
+
+    }
+
+    @Test
+    public void testLimitDistance2()
+    {
+        DenseMatrix64F p0 = new DenseMatrix64F(2, 1, true, 1, 2);
+        DenseMatrix64F pr = new DenseMatrix64F(2, 1, true, 1.1, 2.1);
+        CircleFitter.limitDistance(p0, pr, 1, 2);
+        double sq2 = Math.sqrt(2)/2.0;
+        assertEquals(1+sq2, pr.data[0], Epsilon);
+        assertEquals(2+sq2, pr.data[1], Epsilon);
+
+    }
+
+    @Test
+    public void testLimitDistance3()
+    {
+        DenseMatrix64F p0 = new DenseMatrix64F(2, 1, true, 1, 2);
+        DenseMatrix64F pr = new DenseMatrix64F(2, 1, true, 1, 6);
+        CircleFitter.limitDistance(p0, pr, 1, 2);
+        assertEquals(1, pr.data[0], Epsilon);
+        assertEquals(2+2, pr.data[1], Epsilon);
+
+    }
+
+    @Test
+    public void testLimitDistance4()
+    {
+        DenseMatrix64F p0 = new DenseMatrix64F(2, 1, true, 1, 6);
+        DenseMatrix64F pr = new DenseMatrix64F(2, 1, true, 1, 2);
+        CircleFitter.limitDistance(p0, pr, 1, 2);
+        assertEquals(1, pr.data[0], Epsilon);
+        assertEquals(6-2, pr.data[1], Epsilon);
+
+    }
+
+    @Test
+    public void testMeanCenter()
+    {
+        DenseMatrix64F center = new DenseMatrix64F(2, 1);
+        DenseMatrix64F points = new DenseMatrix64F(4, 2, true,
+                1, 1,
+                2, 1,
+                2, 2,
+                1, 2
+        );
+        CircleFitter.meanCenter(points, center);
+        assertEquals(1.5, center.data[0], Epsilon);
+        assertEquals(1.5, center.data[1], Epsilon);
+
     }
 
     /**
@@ -43,18 +105,18 @@ public class CircleFitTest
     @Test
     public void testOptimize1()
     {
-        DenseMatrix64F param = new DenseMatrix64F(2, 1, true, 60, 30);    //98.680, 47.345); 
-        DenseMatrix64F x = new DenseMatrix64F(5, 2, true,
+        DenseMatrix64F center = new DenseMatrix64F(2, 1, true, 60, 30);
+        DenseMatrix64F points = new DenseMatrix64F(5, 2, true,
                 30, 68,
                 50, -6,
                 110, -20,
                 35, 15,
                 45, 97
         );
-        DenseMatrix64F y = new DenseMatrix64F(x.numRows, 1);
+        DenseMatrix64F y = new DenseMatrix64F(points.numRows, 1);
         
         LevenbergMarquardt lm = new LevenbergMarquardt(new Cost());
-        boolean ok = lm.optimize(param, x, y);
+        boolean ok = lm.optimize(center, points, y);
         assertTrue(ok);
         DenseMatrix64F parameters = lm.getParameters();
         assertEquals(96.076, parameters.data[0], Epsilon);
@@ -194,7 +256,7 @@ public class CircleFitTest
         assertFalse(Double.isNaN(radius));
         CircleFitter cf = new CircleFitter(center);
         cf.fit(x);
-        CircleFitter.filterInnerPoints(x, center);
+        CircleFitter.filterInnerPoints(x, center, x.numRows/2, 0.95);
         cf.fit(x);
         center = cf.getCenter();
         assertEquals(0, center.data[0], 1e-2);
@@ -223,6 +285,44 @@ public class CircleFitTest
         assertFalse(Double.isNaN(radius));
         CircleFitter cf = new CircleFitter(center);
         cf.fit(x);
+        center = cf.getCenter();
+        assertEquals(-13.603, center.data[0], Epsilon);
+        assertEquals(28.131, center.data[1], Epsilon);
+        assertEquals(3.76021e-5, cf.getRadius(), Epsilon);
+
+    }
+
+    @Test
+    public void testOptimize9()
+    {
+        DenseMatrix64F center = new DenseMatrix64F(2, 1);
+        DenseMatrix64F points = new DenseMatrix64F(20, 2, true,
+            -13.602771764692406, 28.130542667469683,
+            -13.602771764692406, 28.130542667469683,
+            -13.602771764692406, 28.130542667469683,
+            -13.602781148342935, 28.13057796563436,
+            -13.602781965204658, 28.130588268982418,
+            -13.602784003797742, 28.13056873625168,
+            -13.602791633675045, 28.13058576084586,
+            -13.6027966886659, 28.130583818918435,
+            -13.602796723045554, 28.130546732492093,
+            -13.602799001326073, 28.13057767492597,
+            -13.602802252281942, 28.130566492657344,
+            -13.602802328189087, 28.130544532776668,
+            -13.60280445717498, 28.130553826085254,
+            -13.602805542032861, 28.13055697898711,
+            -13.602856488497137, 28.130595470661465,
+            -13.602856488497137, 28.130595470661465,
+            -13.602838249356934, 28.130534710976608,
+            -13.602806239495267, 28.130476943469457,
+            -13.602783005182733, 28.130513254790376,
+            -13.602773066740017, 28.130531422744827
+        );
+        center.data[0] = -13.602787648626254;
+        center.data[1] = 28.130571761975013;
+        CircleFitter.filterInnerPoints(points, center, points.numRows/3, 0.8);
+        CircleFitter cf = new CircleFitter(center);
+        cf.fit(points);
         center = cf.getCenter();
         assertEquals(-13.603, center.data[0], Epsilon);
         assertEquals(28.131, center.data[1], Epsilon);
