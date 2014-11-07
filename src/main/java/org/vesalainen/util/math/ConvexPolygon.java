@@ -88,10 +88,6 @@ public class ConvexPolygon extends Polygon
             }
         }
         MatrixSort.sort(points, new RC(x1, y1, x2, y2, x3, y3, x4, y4));
-        for (int ii=0;ii<len;ii++)
-        {
-            System.err.println("("+d[2*ii]+", "+d[2*ii+1]+")");
-        }
         assert x1 == points.data[0];
         assert y1 == points.data[1];
         DenseMatrix64F m = polygon.points;
@@ -323,7 +319,6 @@ public class ConvexPolygon extends Polygon
         double dx = xf-xl;
         int sp = 0;
         double mp = dy/dx;
-        System.err.println("slope="+mp);
         for (int ii=0;ii<rows;ii++)
         {
             double x1 = d[cols*ii];
@@ -354,7 +349,6 @@ public class ConvexPolygon extends Polygon
             }
             sp = sn;
             mp = mn;
-            System.err.println("slope="+mn);
         }
         return true;
     }
