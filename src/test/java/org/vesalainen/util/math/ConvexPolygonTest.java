@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
  */
 public class ConvexPolygonTest
 {
+    private static final double Epsilon = 1e-6;
     
     public ConvexPolygonTest()
     {
@@ -223,6 +224,110 @@ public class ConvexPolygonTest
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
+    }
+    
+    @Test
+    public void testSlopeComp()
+    {
+        for (int d1=0;d1<400;d1++)
+        {
+            int d2 = d1 + 5;
+            double a1 = Math.toRadians(d1);
+            double a2 = Math.toRadians(d2);
+            double x1 = Math.cos(a1);
+            double y1 = Math.sin(a1);
+            double x2 = Math.cos(a2);
+            double y2 = Math.sin(a2);
+            assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1) > 0);
+        }
+    }
+    @Test
+    public void testIsConvex1()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(4, 2, true,
+                1, 1,
+                2, 2,
+                3, 1,
+                2, 3
+        );
+        assertFalse(ConvexPolygon.isConvex(x));
+    }
+    
+    @Test
+    public void testIsConvex2()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+                1, 2,
+                2, 1,
+                3, 2,
+                5, 3,
+                4, 4,
+                3, 6,
+                2, 5
+        );
+        assertFalse(ConvexPolygon.isConvex(x));
+    }
+    
+    @Test
+    public void testGetOuterBoundary()
+    {
+        DenseMatrix64F o = new DenseMatrix64F(0, 2);
+        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+                1, 2,
+                2, 1,
+                3, 2,
+                5, 3,
+                4, 4,
+                3, 6,
+                2, 5
+        );
+        ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+        System.err.println(p);
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
+        p.getOuterBoundary(3, -1, o);
+        assertEquals(4, o.numRows);
+        int idx = 0;
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(6, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        
+        p.getOuterBoundary(6, 6, o);
+        assertEquals(5, o.numRows);
+        idx = 0;
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(6, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        
+        p.getOuterBoundary(3, 8, o);
+        assertEquals(4, o.numRows);
+        idx = 0;
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        
     }
     
 }

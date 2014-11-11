@@ -34,16 +34,92 @@ public class ConvexPolygon extends Polygon
     public ConvexPolygon(DenseMatrix64F points)
     {
         super(points);
+        if (!isConvex(points))
+        {
+            throw new IllegalArgumentException("Polygon is not convex");
+        }
     }
-    
+    public void getOuterBoundary(DenseMatrix64F point, DenseMatrix64F outer)
+    {
+        getOuterBoundary(point.data[0], point.data[0], outer);
+    }
+    public void getOuterBoundary(double x0, double y0, DenseMatrix64F outer)
+    {
+        int rows = points.numRows;
+        if (rows < 3)
+        {
+            outer.setReshape(points);
+            return;
+        }
+        double[] d = points.data;
+        int left = 0;
+        int right = 0;
+        double x = d[0];
+        double y = d[1];
+        double dxLeft  = x-x0;
+        double dxRight  = dxLeft;
+        double dyLeft = y-y0;
+        double dyRight = dyLeft;
+        for (int r=1;r<rows;r++)
+        {
+            x = d[2*r];
+            y = d[2*r+1];
+            double dx  = x-x0;
+            double dy = y-y0;
+            if (slopeComp(dx, dy, dxLeft, dyLeft) > 0)
+            {
+                dxLeft = dx;
+                dyLeft = dy;
+                left = r;
+            }
+            if (slopeComp(dx, dy, dxRight, dyRight) < 0)
+            {
+                dxRight = dx;
+                dyRight = dy;
+                right = r;
+            }
+        }
+        if (left > right)
+        {
+            int count = left-right+1;
+            outer.reshape(count, 2);
+            System.arraycopy(d, 2*right, outer.data, 0, 2*count);
+        }
+        else
+        {
+            outer.reshape(rows-(right-left)+1, 2);
+            System.arraycopy(d, 2*right, outer.data, 0, 2*(rows-right));
+            System.arraycopy(d, 2*left, outer.data, 2*(rows-right), 2*(left+1));
+        }
+    }
+    /**
+     * Creates a minimum convex polygon that contains every point either as a 
+     * boundary or inside.
+     * @param points 2D Points as rows
+     * @return 
+     */
     public static ConvexPolygon createConvexPolygon(DenseMatrix64F points)
     {
         return updateConvexPolygon(new ConvexPolygon(), points);
     }
+    /**
+     * Creates a minimum convex polygon that contains every point either as a 
+     * boundary or inside.
+     * <p>Existing points are removed.
+     * @param points 2D Points as rows
+     */
     public void updateConvexPolygon(DenseMatrix64F points)
     {
         updateConvexPolygon(this, points);
     }
+    /**
+     * Creates a minimum convex polygon that contains every point either as a 
+     * boundary or inside.
+     * <p>Existing points are removed.
+     * @param polygon
+     * @param points
+     * @return 
+     */
     public static ConvexPolygon updateConvexPolygon(ConvexPolygon polygon, DenseMatrix64F points)
     {
         assert points.numCols == 2;
@@ -166,8 +242,9 @@ public class ConvexPolygon extends Polygon
                 x1,
                 y1,
                 m);
+        m.reshape(m.numRows-1, 2, true);    // remove last point
         polygon.updateBounds();
-        assert check(polygon.points);
+        assert isConvex(polygon.points);
         return polygon;
     }
     private static int process(
@@ -306,74 +383,169 @@ public class ConvexPolygon extends Polygon
         m.data[2*index] = x;
         m.data[2*index+1] = y;
     }
-    private static boolean check(DenseMatrix64F m)
+    static boolean isConvex(DenseMatrix64F m)
     {
         int rows = m.numRows-1;
         int cols = m.numCols;
         double[] d = m.data;
         double xf = d[0];
-        double yf = d[+1];
+        double yf = d[1];
         double xl = d[cols*(rows-1)];
         double yl = d[cols*(rows-1)+1];
-        double dy = yf-yl;
-        double dx = xf-xl;
-        int sp = 0;
-        double mp = dy/dx;
+        double dyr = yf-yl;
+        double dxr = xf-xl;
         for (int ii=0;ii<rows;ii++)
         {
             double x1 = d[cols*ii];
             double y1 = d[cols*ii+1];
             double x2 = d[cols*ii+2];
             double y2 = d[cols*ii+3];
-            dy = y2-y1;
-            dx = x2-x1;
-            if (dy == 0 && dx == 0)
+            double dyl = y2-y1;
+            double dxl = x2-x1;
+            if (slopeComp(dxl, dyl, dxr, dyr) < 0)
             {
-                continue;
+                return false;
             }
-            int sn = sector(dy, dx);
-            double mn = dy/dx;
-            if (sp == sn)
-            {
-                if (mn < mp)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!Double.isInfinite(mn) && sp > sn)
-                {
-                    return false;
-                }
-            }
-            sp = sn;
-            mp = mn;
+            dyr = dyl;
+            dxr = dxl;
         }
         return true;
     }
-    private static int sector(double dy, double dx)
+    static int slopeComp(
+            double x01,
+            double y01,
+            double x1,
+            double y1,
+            double x02,
+            double y02,
+            double x2,
+            double y2
+    )
     {
-        if (dy >= 0)
+        return slopeComp(
+                x1-x01,
+                y1-y01,
+                x2-x02,
+                y2-x02
+        );
+    }
+    /**
+     * Return 1 if dx1, dy1 left of dx2, dy2. -1 if right and 0
+     * if same slope.
+     * @param dx1
+     * @param dy1
+     * @param dx2
+     * @param dy2
+     * @return 
+     */
+    static int slopeComp(
+            double dx1,
+            double dy1,
+            double dx2,
+            double dy2
+    )
+    {
+        int s1 = sector(dy1, dx1);
+        int s2 = sector(dy2, dx2);
+        if (s1 == s2)
         {
-            if (dx <= 0)
+            double m1 = dy1/dx1;
+            double m2 = dy2/dx2;
+            if (m1 > m2)
             {
                 return 1;
             }
             else
             {
-                return 4;
+                if (m1 < m2)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        else
+        {
+            switch (s1)
+            {
+                case 1:
+                    switch (s2)
+                    {
+                        case 2:
+                            return -1;
+                        case 3:
+                            return 1;
+                        case 4:
+                            return 1;
+                        default:
+                            throw new IllegalArgumentException("can't happen");
+                    }
+                case 2:
+                    switch (s2)
+                    {
+                        case 1:
+                            return 1;
+                        case 3:
+                            return -1;
+                        case 4:
+                            return 1;
+                        default:
+                            throw new IllegalArgumentException("can't happen");
+                    }
+                case 3:
+                    switch (s2)
+                    {
+                        case 1:
+                            return 1;
+                        case 2:
+                            return 1;
+                        case 4:
+                            return -1;
+                        default:
+                            throw new IllegalArgumentException("can't happen");
+                    }
+                case 4:
+                    switch (s2)
+                    {
+                        case 1:
+                            return -1;
+                        case 2:
+                            return 1;
+                        case 3:
+                            return 1;
+                        default:
+                            throw new IllegalArgumentException("can't happen");
+                    }
+                default:
+                    throw new IllegalArgumentException("can't happen");
+            }
+        }
+    }
+    private static int sector(double dy, double dx)
+    {
+        if (dy >= 0)
+        {
+            if (dx >= 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
             }
         }
         else
         {
             if (dx <= 0)
             {
-                return 2;
+                return 3;
             }
             else
             {
-                return 3;
+                return 4;
             }
         }
     }
