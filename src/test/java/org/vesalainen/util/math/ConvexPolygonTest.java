@@ -238,7 +238,7 @@ public class ConvexPolygonTest
             double y1 = Math.sin(a1);
             double x2 = Math.cos(a2);
             double y2 = Math.sin(a2);
-            assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1) > 0);
+            assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)>0);
         }
     }
     @Test
@@ -328,6 +328,40 @@ public class ConvexPolygonTest
         assertEquals(5, o.data[idx++], Epsilon);
         assertEquals(3, o.data[idx++], Epsilon);
         
+        p.getOuterBoundary(-1, 3, o);
+        assertEquals(3, o.numRows);
+        idx = 0;
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(5, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(6, o.data[idx++], Epsilon);
+        
     }
     
+    @Test
+    public void testGetOuterBoundary2()
+    {
+        DenseMatrix64F o = new DenseMatrix64F(0, 2);
+        DenseMatrix64F x = new DenseMatrix64F(2, 2, true,
+                1, 1,
+                3, 2
+        );
+        ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+        for (int r=0;r<x.numRows;r++)
+        {
+            assertTrue(
+                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isVertex(x.data[2*r], x.data[2*r+1])
+            );
+        }
+        p.getOuterBoundary(0, 0, o);
+        assertEquals(2, o.numRows);
+        int idx = 0;
+        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(1, o.data[idx++], Epsilon);
+    }        
 }

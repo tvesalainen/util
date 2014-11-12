@@ -66,13 +66,13 @@ public class ConvexPolygon extends Polygon
             y = d[2*r+1];
             double dx  = x-x0;
             double dy = y-y0;
-            if (slopeComp(dx, dy, dxLeft, dyLeft) > 0)
+            if (ConvexPolygon.slopeComp(dx, dy, dxLeft, dyLeft) > 0)
             {
                 dxLeft = dx;
                 dyLeft = dy;
                 left = r;
             }
-            if (slopeComp(dx, dy, dxRight, dyRight) < 0)
+            if (ConvexPolygon.slopeComp(dx, dy, dxRight, dyRight) < 0)
             {
                 dxRight = dx;
                 dyRight = dy;
@@ -89,7 +89,7 @@ public class ConvexPolygon extends Polygon
         {
             outer.reshape(rows-(right-left)+1, 2);
             System.arraycopy(d, 2*right, outer.data, 0, 2*(rows-right));
-            System.arraycopy(d, 2*left, outer.data, 2*(rows-right), 2*(left+1));
+            System.arraycopy(d, 0, outer.data, 2*(rows-right), 2*(left+1));
         }
     }
     /**
@@ -402,7 +402,7 @@ public class ConvexPolygon extends Polygon
             double y2 = d[cols*ii+3];
             double dyl = y2-y1;
             double dxl = x2-x1;
-            if (slopeComp(dxl, dyl, dxr, dyr) < 0)
+            if (ConvexPolygon.slopeComp(dxl, dyl, dxr, dyr)<0)
             {
                 return false;
             }
@@ -422,7 +422,7 @@ public class ConvexPolygon extends Polygon
             double y2
     )
     {
-        return slopeComp(
+        return ConvexPolygon.slopeComp(
                 x1-x01,
                 y1-y01,
                 x2-x02,
@@ -430,99 +430,132 @@ public class ConvexPolygon extends Polygon
         );
     }
     /**
-     * Return 1 if dx1, dy1 left of dx2, dy2. -1 if right and 0
-     * if same slope.
-     * @param dx1
-     * @param dy1
-     * @param dx2
-     * @param dy2
+     * Return 1 if vector (vx1,vy2) is left of (vx2, vy2). -1 if it is to right.
+     * 0 if they equal.
+ if same slope.
+     * @param vx1
+     * @param vy1
+     * @param vx2
+     * @param vy2
      * @return 
      */
     static int slopeComp(
-            double dx1,
-            double dy1,
-            double dx2,
-            double dy2
+            double vx1,
+            double vy1,
+            double vx2,
+            double vy2
     )
     {
-        int s1 = sector(dy1, dx1);
-        int s2 = sector(dy2, dx2);
-        if (s1 == s2)
+        if (isInNextSector(vx1, vy1, vx2, vy2))
         {
-            double m1 = dy1/dx1;
-            double m2 = dy2/dx2;
-            if (m1 > m2)
-            {
-                return 1;
-            }
-            else
-            {
-                if (m1 < m2)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
+            return 1;
         }
         else
         {
-            switch (s1)
+            if (isInPrevSector(vx1, vy1, vx2, vy2))
             {
-                case 1:
-                    switch (s2)
+                return -1;
+            }
+            else
+            {
+                if (isInSameSector(vx1, vy1, vx2, vy2))
+                {
+                    double m1 = vy1/vx1;
+                    double m2 = vy2/vx2;
+                    if (m1 > m2)
                     {
-                        case 2:
-                            return -1;
-                        case 3:
-                            return 1;
-                        case 4:
-                            return 1;
-                        default:
-                            throw new IllegalArgumentException("can't happen");
+                        return 1;
                     }
-                case 2:
-                    switch (s2)
+                    else
                     {
-                        case 1:
-                            return 1;
-                        case 3:
+                        if (m1 < m2)
+                        {
                             return -1;
-                        case 4:
-                            return 1;
-                        default:
-                            throw new IllegalArgumentException("can't happen");
+                        }
+                        else
+                        {
+                            return 0;
+                        }
                     }
-                case 3:
-                    switch (s2)
+                }
+                else
+                {
+                    double m1 = vy1/vx1;
+                    double m2 = -vy2/-vx2;
+                    if (m1 > m2)
                     {
-                        case 1:
-                            return 1;
-                        case 2:
-                            return 1;
-                        case 4:
-                            return -1;
-                        default:
-                            throw new IllegalArgumentException("can't happen");
+                        return 1;
                     }
-                case 4:
-                    switch (s2)
+                    else
                     {
-                        case 1:
+                        if (m1 < m2)
+                        {
                             return -1;
-                        case 2:
-                            return 1;
-                        case 3:
-                            return 1;
-                        default:
-                            throw new IllegalArgumentException("can't happen");
+                        }
+                        else
+                        {
+                            return 0;
+                        }
                     }
-                default:
-                    throw new IllegalArgumentException("can't happen");
+                }
             }
         }
+    }
+    private static boolean isInOppositeSector(double vx1, double vy1, double vx2, double vy2)
+    {
+        return isInSameSector(vx1, vy1, -vx2, -vy2);
+    }
+    /**
+     * Returns true is vector(vx1,vy1) and (vx2, vy2) are in same sector.
+     * @param vx1
+     * @param vy1
+     * @param vx2
+     * @param vy2
+     * @return 
+     */
+    private static boolean isInSameSector(double vx1, double vy1, double vx2, double vy2)
+    {
+        if (vx1 >= 0 && vx2 >= 0 && vy1 >= 0 && vy2 >= 0)
+        {
+            return true;
+        }
+        if (vx1 <= 0 && vx2 <= 0 && vy1 >= 0 && vy2 >= 0)
+        {
+            return true;
+        }
+        if (vx1 <= 0 && vx2 <= 0 && vy1 <= 0 && vy2 <= 0)
+        {
+            return true;
+        }
+        if (vx1 >= 0 && vx2 >= 0 && vy1 <= 0 && vy2 <= 0)
+        {
+            return true;
+        }
+        return false;
+    }
+    private static boolean isInPrevSector(double vx1, double vy1, double vx2, double vy2)
+    {
+        return isInNextSector(vx2, vy2, vx1, vy1);
+    }
+    private static boolean isInNextSector(double vx1, double vy1, double vx2, double vy2)
+    {
+        if (vx1 <= 0 && vy1 >= 0 && vx2 >= 0 && vy2 >= 0)
+        {
+            return true;
+        }
+        if (vx1 <= 0 && vy1 <= 0 && vx2 <= 0 && vy2 >= 0)
+        {
+            return true;
+        }
+        if (vx1 >= 0 && vy1 <= 0 && vx2 <= 0 && vy2 <= 0)
+        {
+            return true;
+        }
+        if (vx1 >= 0 && vy1 >= 0 && vx2 >= 0 && vy2 <= 0)
+        {
+            return true;
+        }
+        return false;
     }
     private static int sector(double dy, double dx)
     {
@@ -530,22 +563,22 @@ public class ConvexPolygon extends Polygon
         {
             if (dx >= 0)
             {
-                return 1;
+                return 0;
             }
             else
             {
-                return 2;
+                return 1;
             }
         }
         else
         {
             if (dx <= 0)
             {
-                return 3;
+                return 2;
             }
             else
             {
-                return 4;
+                return 3;
             }
         }
     }
