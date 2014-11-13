@@ -19,17 +19,17 @@ package org.vesalainen.math;
 import org.ejml.data.DenseMatrix64F;
 
 /**
- * MatrixSort is able to sort matrix rows when matrix is stored is one dimensional 
- * array as in DenseMatrix64F.
- * 
- * <p>Sort is using Quick Sort algorithm.
+ * Matrices contains utilities for DenseMatrix64F etc.
  * @author Timo Vesalainen
  * @see org.ejml.data.DenseMatrix64F
  */
 public class Matrices
 {
     /**
-     * Sorts matrix rows in ascending order using given comparator.
+     * MatrixSort is able to sort matrix rows when matrix is stored in one dimensional 
+     * array as in DenseMatrix64F.
+     * 
+     * <p>Sort is using Quick Sort algorithm.
      * @param matrix
      * @param comparator 
      */
