@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.util.math;
+package org.vesalainen.math;
 
 import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.vesalainen.util.math.LevenbergMarquardt.Function;
-import org.vesalainen.util.math.LevenbergMarquardt.JacobianFactory;
+import org.vesalainen.math.LevenbergMarquardt.Function;
+import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 
 /**
  *

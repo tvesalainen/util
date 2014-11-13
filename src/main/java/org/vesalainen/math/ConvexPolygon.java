@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.util.math;
+package org.vesalainen.math;
 
 import org.ejml.data.DenseMatrix64F;
-import org.vesalainen.util.MatrixSort;
 
 /**
  *

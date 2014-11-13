@@ -15,14 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.vesalainen.util.math;
+package org.vesalainen.math;
 
 import org.ejml.data.DenseMatrix64F;
 import static org.ejml.ops.CommonOps.*;
-import org.vesalainen.util.MatrixSort;
-import org.vesalainen.util.MatrixSort.RowComparator;
-import org.vesalainen.util.math.LevenbergMarquardt.Function;
-import org.vesalainen.util.math.LevenbergMarquardt.JacobianFactory;
+import org.vesalainen.math.MatrixSort.RowComparator;
+import org.vesalainen.math.LevenbergMarquardt.Function;
+import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 
 /**
  * CircleFitter is a simple class that helps finding circle center and radius for

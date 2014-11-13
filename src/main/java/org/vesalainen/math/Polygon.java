@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util.math;
+package org.vesalainen.math;
 
 import org.ejml.data.DenseMatrix64F;
-import org.vesalainen.util.MatrixSort;
-import org.vesalainen.util.MatrixSort.RowComparator;
 
 /**
  * 

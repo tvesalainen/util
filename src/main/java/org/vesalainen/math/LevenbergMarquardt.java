@@ -1,4 +1,4 @@
-package org.vesalainen.util.math;
+package org.vesalainen.math;
 
 
 import org.ejml.data.DenseMatrix64F;
