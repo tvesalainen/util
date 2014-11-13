@@ -25,6 +25,41 @@ import org.ejml.data.DenseMatrix64F;
  */
 public class Matrices
 {
+    public static void removeEqualRows(DenseMatrix64F matrix)
+    {
+        double[] d = matrix.data;
+        int cols = matrix.numCols;
+        int rows = matrix.numRows;
+        int left = rows-1;
+        int delta = 0;
+        for (int i=0;i<left;i++)
+        {
+            int j=i;
+            for (;j<left && eq(d, i, j+1, cols);j++);
+            if (i != j)
+            {
+                int cnt = j-i;
+                System.arraycopy(d, cols*j, d, cols*i, cols*(left-j+1));
+                left -= cnt;
+                delta += cnt;
+            }
+        }
+        if (delta > 0)
+        {
+            matrix.reshape(rows-delta, cols, true);
+        }
+    }
+    private static boolean eq(double[] d, int i1, int i2, int cols)
+    {
+        for (int ii=0;ii<cols;ii++)
+        {
+            if (d[cols*i1+ii] != d[cols*i2+ii])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * MatrixSort is able to sort matrix rows when matrix is stored in one dimensional 
      * array as in DenseMatrix64F.

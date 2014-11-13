@@ -37,6 +37,7 @@ public class Polygon
     {
         assert points.numCols == 2;
         this.points = points;
+        Matrices.removeEqualRows(points);
         updateBounds();
     }
     protected void updateBounds()

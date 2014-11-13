@@ -242,6 +242,7 @@ public class ConvexPolygon extends Polygon
                 y1,
                 m);
         m.reshape(m.numRows-1, 2, true);    // remove last point
+        Matrices.removeEqualRows(m);
         polygon.updateBounds();
         assert isConvex(polygon.points);
         return polygon;

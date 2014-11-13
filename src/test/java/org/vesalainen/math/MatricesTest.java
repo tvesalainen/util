@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.util.Arrays;
 import java.util.Random;
+import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.Matrices.RowComparator;
@@ -28,11 +29,141 @@ import org.vesalainen.math.Matrices.RowComparator;
  */
 public class MatricesTest
 {
+    private static final double Epsilon = 1e-10;
 
     public MatricesTest()
     {
     }
 
+    @Test
+    public void testRemoveEqualRows1()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(10, 1, true,
+                1,
+                1,
+                3,
+                1,
+                1,
+                1,
+                1,
+                6,
+                6,
+                6
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(4, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(6, x.data[index++], Epsilon);
+    }
+    @Test
+    public void testRemoveEqualRows2()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(10, 1, true,
+                1,
+                3,
+                3,
+                1,
+                4,
+                1,
+                1,
+                5,
+                5,
+                6
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(7, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(4, x.data[index++], Epsilon);
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(5, x.data[index++], Epsilon);
+        assertEquals(6, x.data[index++], Epsilon);
+    }
+    @Test
+    public void testRemoveEqualRows3()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(10, 1, true,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                0
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(10, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(2, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(4, x.data[index++], Epsilon);
+        assertEquals(5, x.data[index++], Epsilon);
+        assertEquals(6, x.data[index++], Epsilon);
+        assertEquals(7, x.data[index++], Epsilon);
+        assertEquals(8, x.data[index++], Epsilon);
+        assertEquals(9, x.data[index++], Epsilon);
+        assertEquals(0, x.data[index++], Epsilon);
+    }
+    @Test
+    public void testRemoveEqualRows4()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(5, 2, true,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                0
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(5, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(2, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(4, x.data[index++], Epsilon);
+        assertEquals(5, x.data[index++], Epsilon);
+        assertEquals(6, x.data[index++], Epsilon);
+        assertEquals(7, x.data[index++], Epsilon);
+        assertEquals(8, x.data[index++], Epsilon);
+        assertEquals(9, x.data[index++], Epsilon);
+        assertEquals(0, x.data[index++], Epsilon);
+    }
+    @Test
+    public void testRemoveEqualRows5()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(5, 2, true,
+                1, 2,
+                3, 4,
+                3, 4,
+                7, 8,
+                9, 0
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(4, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(2, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(4, x.data[index++], Epsilon);
+        assertEquals(7, x.data[index++], Epsilon);
+        assertEquals(8, x.data[index++], Epsilon);
+        assertEquals(9, x.data[index++], Epsilon);
+        assertEquals(0, x.data[index++], Epsilon);
+    }
     /**
      * Test of sort method, of class MatrixSort.
      */
