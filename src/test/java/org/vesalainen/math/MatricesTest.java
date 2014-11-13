@@ -14,22 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util;
+package org.vesalainen.math;
 
 import java.util.Arrays;
 import java.util.Random;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.vesalainen.math.MatrixSort.RowComparator;
+import org.vesalainen.math.Matrices.RowComparator;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class MatrixSortTest
+public class MatricesTest
 {
 
-    public MatrixSortTest()
+    public MatricesTest()
     {
     }
 
@@ -45,7 +45,7 @@ public class MatrixSortTest
         };
         double[] arr2 = new double[arr1.length];
         System.arraycopy(arr1, 0, arr2, 0, arr1.length);
-        MatrixSort.sort(arr1, 1, new C());
+        Matrices.sort(arr1, 1, new C());
         Arrays.sort(arr2);
         assertTrue(Arrays.equals(arr2, arr1));
     }
@@ -61,7 +61,7 @@ public class MatrixSortTest
             arr1[ii] = r.nextDouble();
         }
         System.arraycopy(arr1, 0, arr2, 0, arr1.length);
-        MatrixSort.sort(arr1, 1, new C());
+        Matrices.sort(arr1, 1, new C());
         Arrays.sort(arr2);
         assertTrue(Arrays.equals(arr2, arr1));
     }
@@ -75,7 +75,7 @@ public class MatrixSortTest
         };
         double[] arr2 = new double[arr1.length];
         System.arraycopy(arr1, 0, arr2, 0, arr1.length);
-        MatrixSort.sort(arr1, 1, new C());
+        Matrices.sort(arr1, 1, new C());
         Arrays.sort(arr2);
         assertTrue(Arrays.equals(arr2, arr1));
     }

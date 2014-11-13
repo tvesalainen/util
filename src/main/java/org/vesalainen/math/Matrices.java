@@ -26,7 +26,7 @@ import org.ejml.data.DenseMatrix64F;
  * @author Timo Vesalainen
  * @see org.ejml.data.DenseMatrix64F
  */
-public class MatrixSort
+public class Matrices
 {
     /**
      * Sorts matrix rows in ascending order using given comparator.

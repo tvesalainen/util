@@ -162,7 +162,7 @@ public class ConvexPolygon extends Polygon
                 y4 = y;
             }
         }
-        MatrixSort.sort(points, new RC(x1, y1, x2, y2, x3, y3, x4, y4));
+        Matrices.sort(points, new RC(x1, y1, x2, y2, x3, y3, x4, y4));
         assert x1 == points.data[0];
         assert y1 == points.data[1];
         DenseMatrix64F m = polygon.points;
@@ -581,7 +581,7 @@ public class ConvexPolygon extends Polygon
             }
         }
     }
-    private static class RC implements MatrixSort.RowComparator
+    private static class RC implements Matrices.RowComparator
     {
         double x1;
         double y1;

@@ -19,7 +19,7 @@ package org.vesalainen.math;
 
 import org.ejml.data.DenseMatrix64F;
 import static org.ejml.ops.CommonOps.*;
-import org.vesalainen.math.MatrixSort.RowComparator;
+import org.vesalainen.math.Matrices.RowComparator;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 
@@ -91,7 +91,7 @@ public class CircleFitter implements Function, JacobianFactory
             throw new IllegalArgumentException("percent "+percent+" is not between 0 & 1");
         }
         DistComp dc = new DistComp(center.data[0], center.data[1]);
-        MatrixSort.sort(points, dc);
+        Matrices.sort(points, dc);
         int rows = points.numRows;
         double[] d = points.data;
         double limit = dc.distance(d[0], d[1])*percent;
