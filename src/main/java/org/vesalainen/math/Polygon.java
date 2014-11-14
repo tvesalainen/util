@@ -58,7 +58,7 @@ public class Polygon
      * @return 
      * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in Polygon Test W. Randolph Franklin (WRF)</a>
      */
-    public boolean isHit(double testx, double testy)
+    public boolean isInside(double testx, double testy)
     {
         if (!bounds.isHit(testx, testy))
         {

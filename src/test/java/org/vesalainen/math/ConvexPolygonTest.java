@@ -65,17 +65,17 @@ public class ConvexPolygonTest
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         System.err.println(p);
-        assertTrue(p.isHit(2, 4));
-        assertTrue(p.isHit(3, 4));
-        assertTrue(p.isHit(3, 6));
-        assertTrue(p.isHit(3, 7));
-        assertTrue(p.isHit(4, 3));
-        assertTrue(p.isHit(4, 7));
-        assertTrue(p.isHit(6, 7));
-        assertTrue(p.isHit(7, 8));
-        assertTrue(p.isHit(8, 2));
-        assertTrue(p.isHit(8, 6));
-        assertTrue(p.isHit(9, 3));
+        assertTrue(p.isInside(2, 4));
+        assertTrue(p.isInside(3, 4));
+        assertTrue(p.isInside(3, 6));
+        assertTrue(p.isInside(3, 7));
+        assertTrue(p.isInside(4, 3));
+        assertTrue(p.isInside(4, 7));
+        assertTrue(p.isInside(6, 7));
+        assertTrue(p.isInside(7, 8));
+        assertTrue(p.isInside(8, 2));
+        assertTrue(p.isInside(8, 6));
+        assertTrue(p.isInside(9, 3));
         assertTrue(p.isVertex(10, 5));
         assertTrue(p.isVertex(9, 7));
         assertTrue(p.isVertex(8, 8));
@@ -86,11 +86,11 @@ public class ConvexPolygonTest
         assertTrue(p.isVertex(4, 2));
         assertTrue(p.isVertex(6, 1));
         assertTrue(p.isVertex(9, 2));
-        assertFalse(p.isHit(0, 0));
+        assertFalse(p.isInside(0, 0));
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
@@ -108,14 +108,14 @@ public class ConvexPolygonTest
                 1, 1
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        assertTrue(p.isHit(2, 3));
-        assertTrue(p.isHit(5, 2));
-        assertTrue(p.isHit(3, 2));
-        assertFalse(p.isHit(0, 0));
+        assertTrue(p.isInside(2, 3));
+        assertTrue(p.isInside(5, 2));
+        assertTrue(p.isInside(3, 2));
+        assertFalse(p.isInside(0, 0));
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
@@ -138,10 +138,10 @@ public class ConvexPolygonTest
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         System.err.println(p);
-        assertTrue(p.isHit(2, 3));
-        assertTrue(p.isHit(3, 5));
-        assertTrue(p.isHit(3, 2));
-        assertFalse(p.isHit(0, 0));
+        assertTrue(p.isInside(2, 3));
+        assertTrue(p.isInside(3, 5));
+        assertTrue(p.isInside(3, 2));
+        assertFalse(p.isInside(0, 0));
     }
     
     @Test
@@ -158,14 +158,14 @@ public class ConvexPolygonTest
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         System.err.println(p);
-        assertTrue(p.isHit(2, 2));
-        assertTrue(p.isHit(3, 4));
-        assertTrue(p.isHit(3, 2));
-        assertFalse(p.isHit(0, 0));
+        assertTrue(p.isInside(2, 2));
+        assertTrue(p.isInside(3, 4));
+        assertTrue(p.isInside(3, 2));
+        assertFalse(p.isInside(0, 0));
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
@@ -184,11 +184,11 @@ public class ConvexPolygonTest
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         System.err.println(p);
-        assertTrue(p.isHit(2, 3));
-        assertTrue(p.isHit(3, 3));
-        assertTrue(p.isHit(3, 2));
-        assertFalse(p.isHit(2, 2));
-        assertFalse(p.isHit(0, 0));
+        assertTrue(p.isInside(2, 3));
+        assertTrue(p.isInside(3, 3));
+        assertTrue(p.isInside(3, 2));
+        assertFalse(p.isInside(2, 2));
+        assertFalse(p.isInside(0, 0));
     }
     
     @Test
@@ -220,7 +220,7 @@ public class ConvexPolygonTest
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
@@ -316,7 +316,7 @@ public class ConvexPolygonTest
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }
@@ -382,7 +382,7 @@ public class ConvexPolygonTest
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
-                    p.isHit(x.data[2*r], x.data[2*r+1]) ||
+                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
                     p.isVertex(x.data[2*r], x.data[2*r+1])
             );
         }

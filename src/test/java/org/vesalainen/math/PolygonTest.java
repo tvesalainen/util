@@ -33,7 +33,7 @@ public class PolygonTest
     }
 
     /**
-     * Test of isHit method, of class Polygon.
+     * Test of isInside method, of class Polygon.
      */
     @Test
     public void testIsHit()
@@ -47,10 +47,10 @@ public class PolygonTest
                 1, 1
         );
         Polygon p = new Polygon(x);
-        assertTrue(p.isHit(2, 3));
-        assertTrue(p.isHit(5, 2));
-        assertFalse(p.isHit(3, 2));
-        assertFalse(p.isHit(0, 0));
+        assertTrue(p.isInside(2, 3));
+        assertTrue(p.isInside(5, 2));
+        assertFalse(p.isInside(3, 2));
+        assertFalse(p.isInside(0, 0));
     }
 
     /**
