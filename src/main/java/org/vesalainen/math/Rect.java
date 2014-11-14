@@ -28,7 +28,7 @@ public class Rect
     public double xMin = Double.NaN;
     public double yMin = Double.NaN;
     
-    public boolean isHit(double x, double y)
+    public boolean isInside(double x, double y)
     {
         return !(x > xMax || x < xMin || y > yMax || y < yMin);
     }

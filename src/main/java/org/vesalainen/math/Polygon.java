@@ -60,7 +60,7 @@ public class Polygon
      */
     public boolean isInside(double testx, double testy)
     {
-        if (!bounds.isHit(testx, testy))
+        if (!bounds.isInside(testx, testy))
         {
             return false;
         }
