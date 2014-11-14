@@ -163,6 +163,7 @@ public class ConvexPolygon extends Polygon
             }
         }
         Matrices.sort(points, new RC(x1, y1, x2, y2, x3, y3, x4, y4));
+        Matrices.removeEqualRows(points);
         assert x1 == points.data[0];
         assert y1 == points.data[1];
         DenseMatrix64F m = polygon.points;
@@ -385,7 +386,7 @@ public class ConvexPolygon extends Polygon
     }
     static boolean isConvex(DenseMatrix64F m)
     {
-        int rows = m.numRows-1;
+        int rows = m.numRows;
         int cols = m.numCols;
         double[] d = m.data;
         double xf = d[0];
@@ -482,13 +483,13 @@ public class ConvexPolygon extends Polygon
                 {
                     double m1 = vy1/vx1;
                     double m2 = -vy2/-vx2;
-                    if (m1 > m2)
+                    if (m1 < m2)
                     {
                         return 1;
                     }
                     else
                     {
-                        if (m1 < m2)
+                        if (m1 > m2)
                         {
                             return -1;
                         }

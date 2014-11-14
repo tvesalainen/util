@@ -227,7 +227,7 @@ public class ConvexPolygonTest
     }
     
     @Test
-    public void testSlopeComp()
+    public void testSlopeComp1()
     {
         for (int d1=0;d1<400;d1++)
         {
@@ -239,6 +239,36 @@ public class ConvexPolygonTest
             double x2 = Math.cos(a2);
             double y2 = Math.sin(a2);
             assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)>0);
+        }
+    }
+    @Test
+    public void testSlopeComp2()
+    {
+        for (int d1=0;d1<400;d1++)
+        {
+            int d2 = d1 + 179;
+            double a1 = Math.toRadians(d1);
+            double a2 = Math.toRadians(d2);
+            double x1 = Math.cos(a1);
+            double y1 = Math.sin(a1);
+            double x2 = Math.cos(a2);
+            double y2 = Math.sin(a2);
+            assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)>0);
+        }
+    }
+    @Test
+    public void testSlopeComp3()
+    {
+        for (int d1=0;d1<400;d1++)
+        {
+            int d2 = d1 + 181;
+            double a1 = Math.toRadians(d1);
+            double a2 = Math.toRadians(d2);
+            double x1 = Math.cos(a1);
+            double y1 = Math.sin(a1);
+            double x2 = Math.cos(a2);
+            double y2 = Math.sin(a2);
+            assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)<0);
         }
     }
     @Test
