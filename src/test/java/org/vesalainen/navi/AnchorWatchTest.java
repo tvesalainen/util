@@ -17,14 +17,16 @@
 
 package org.vesalainen.navi;
 
+import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.parsers.nmea.AbstractNMEAObserver;
 import org.vesalainen.parsers.nmea.NMEAParser;
+import org.vesalainen.ui.Plotter;
 
 /**
  *
@@ -50,6 +52,9 @@ public class AnchorWatchTest
         try
         {
             parser.parse(url, no, null);
+            DenseMatrix64F center = aw.getCenter();
+            no.plotter.drawCircle(center.data[0], center.data[1], aw.getRadius());
+            no.plotter.plot(new File("test.png"));
         }
         catch (IOException ex)
         {
@@ -61,10 +66,15 @@ public class AnchorWatchTest
         AnchorWatch anchorWatch;
         private float longitude;
         private float latitude;
+        private float prevLongitude;
+        private float prevLatitude;
+        private Plotter plotter;
 
         public NO(AnchorWatch anchorWatch)
         {
             this.anchorWatch = anchorWatch;
+            plotter = new Plotter(1000, 1000);
+            plotter.setColor(Color.BLACK);
         }
 
         @Override
@@ -82,7 +92,13 @@ public class AnchorWatchTest
         @Override
         public void commit(String reason)
         {
-            anchorWatch.update(longitude, latitude);
+            if (prevLatitude != latitude && prevLongitude != longitude)
+            {
+                plotter.drawPoint(Math.cos(Math.toRadians(latitude))*longitude, latitude);
+                anchorWatch.update(longitude, latitude);
+                prevLatitude = latitude;
+                prevLongitude = longitude;
+            }
         }
         
     }

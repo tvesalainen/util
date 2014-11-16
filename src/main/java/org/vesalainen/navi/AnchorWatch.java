@@ -102,4 +102,13 @@ public class AnchorWatch
             points.reshape(points.numRows+Size, 2, true);
         }
     }
+
+    public DenseMatrix64F getCenter()
+    {
+        return center;
+    }
+    public double getRadius()
+    {
+        return fitter.getRadius();
+    }
 }
