@@ -170,21 +170,14 @@ public class ConvexPolygon extends Polygon
         m.reshape(0, 2);
         
         add(m, x1, y1);
-        add(m, x2, y2);
-        add(m, x3, y3);
-        add(m, x4, y4);
-        add(m, x1, y1);
-        int index = 1;
         int left = 1;
         int right = 0;
         int idx = find(points, x2, y2, left);
         if (idx != -1)
         {
             right = idx-1;
-        }
-        index += process(
+            process(
                 points, 
-                index, 
                 left, 
                 right, 
                 points.data[2*(left-1)],
@@ -192,17 +185,19 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-        
-        left = right+2;
+            add(m, x2, y2);
+            left = right+2;
+        }
+        else
+        {
+            System.err.println("222");
+        }
         idx = find(points, x3, y3, left);
         if (idx != -1)
         {
             right = idx-1;
-        }
-        index++;
-        index += process(
+            process(
                 points, 
-                index, 
                 left, 
                 right, 
                 points.data[2*(left-1)],
@@ -210,17 +205,19 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-        
-        left = right+2;
+            add(m, x3, y3);
+            left = right+2;
+        }
+        else
+        {
+            System.err.println("333");
+        }
         idx = find(points, x4, y4, left);
         if (idx != -1)
         {
             right = idx-1;
-        }
-        index++;
-        index += process(
+            process(
                 points, 
-                index, 
                 left, 
                 right, 
                 points.data[2*(left-1)],
@@ -228,13 +225,16 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-
-        left = right+2;
+            add(m, x4, y4);
+            left = right+2;
+        }
+        else
+        {
+            System.err.println("444");
+        }
         right = points.numRows-1;
-        index++;
-        index += process(
+        process(
                 points, 
-                index, 
                 left, 
                 right, 
                 points.data[2*(left-1)],
@@ -242,15 +242,13 @@ public class ConvexPolygon extends Polygon
                 x1,
                 y1,
                 m);
-        m.reshape(m.numRows-1, 2, true);    // remove last point
         Matrices.removeEqualRows(m);
         polygon.updateBounds();
-        assert isConvex(polygon.points);
+        assert isConvex(m);
         return polygon;
     }
-    private static int process(
+    private static void process(
             DenseMatrix64F points, 
-            int index, 
             int left, 
             int right, 
             double xl,
@@ -261,9 +259,8 @@ public class ConvexPolygon extends Polygon
     {
         if (left > right)
         {
-            return 0;
+            return;
         }
-        int dIndex = 0;
         double xc;
         double yc;
         int sector;
@@ -301,7 +298,7 @@ public class ConvexPolygon extends Polygon
         double m = (yr-yl)/(xr-xl);
         if (Double.isInfinite(m) || Double.isNaN(m))
         {
-            return 0;
+            return;
         }
         double b = yl-m*xl;
         int i = left;
@@ -316,8 +313,7 @@ public class ConvexPolygon extends Polygon
         }
         if (i == j)
         {
-            insert(cm, points.data[2*i], points.data[2*i+1], index);
-            dIndex++;
+            add(cm, points.data[2*i], points.data[2*i+1]);
         }
         else
         {
@@ -338,13 +334,11 @@ public class ConvexPolygon extends Polygon
                 }
                 double nx = points.data[2*ind];
                 double ny = points.data[2*ind+1];
-                insert(cm, nx, ny, index);
-                double di = process(points, index, i, ind-1, xl, yl, nx, ny, cm);
-                dIndex += di+1;
-                dIndex += process(points, index+dIndex, ind+1, j, nx, ny, xr, yr, cm);
+                process(points, i, ind-1, xl, yl, nx, ny, cm);
+                add(cm, nx, ny);
+                process(points, ind+1, j, nx, ny, xr, yr, cm);
             }
         }
-        return dIndex;
     }
     private static double distance(double m, double b, double x, double y, boolean upper)
     {
@@ -386,13 +380,13 @@ public class ConvexPolygon extends Polygon
     }
     static boolean isConvex(DenseMatrix64F m)
     {
-        int rows = m.numRows;
+        int rows = m.numRows-1;
         int cols = m.numCols;
         double[] d = m.data;
         double xf = d[0];
         double yf = d[1];
-        double xl = d[cols*(rows-1)];
-        double yl = d[cols*(rows-1)+1];
+        double xl = d[cols*rows];
+        double yl = d[cols*rows+1];
         double dyr = yf-yl;
         double dxr = xf-xl;
         for (int ii=0;ii<rows;ii++)

@@ -227,6 +227,21 @@ public class ConvexPolygonTest
     }
     
     @Test
+    public void testCreateConvexPolygon7()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+                2, 465,
+                1000, 15,
+                938, 245,
+                832, 595,
+                215, 986,
+                0, 876,
+                1000, 15
+        );
+        ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+    }
+    
+    @Test
     public void testSlopeComp1()
     {
         for (int d1=0;d1<400;d1++)
@@ -270,6 +285,15 @@ public class ConvexPolygonTest
             double y2 = Math.sin(a2);
             assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)<0);
         }
+    }
+    @Test
+    public void testSlopeComp4()
+    {
+        double x1 = -3.8;
+        double y1 = 2.2;
+        double x2 = 4.7;
+        double y2 = -4;
+        assertTrue(ConvexPolygon.slopeComp(x2, y2, x1, y1)>0);
     }
     @Test
     public void testIsConvex1()

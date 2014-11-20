@@ -21,11 +21,11 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import org.junit.Test;
-import org.vesalainen.parsers.nmea.AbstractNMEAObserver;
-import org.vesalainen.parsers.nmea.NMEAParser;
 import org.vesalainen.ui.Plotter;
 
 /**
@@ -34,7 +34,7 @@ import org.vesalainen.ui.Plotter;
  */
 public class AnchorWatchTest
 {
-    
+    public static final File dir = new File("target/surefire-reports");
     public AnchorWatchTest()
     {
     }
@@ -45,61 +45,19 @@ public class AnchorWatchTest
     @Test
     public void testUpdate()
     {
-        AnchorWatch aw = new AnchorWatch();
-        URL url = AnchorWatchTest.class.getClassLoader().getResource("atAnchor.nmea");
-        NMEAParser parser = NMEAParser.newInstance();
-        NO no = new NO(aw);
+        URL url = AnchorWatchTest.class.getResource("/20141117091525.nmea");
+        CoordinateParser parser = CoordinateParser.newInstance();
+        Plotter plotter = new Plotter(1000, 1000);
+        plotter.setDir(dir);
+        AnchorWatch aw = new AnchorWatch(plotter);
+        
         try
         {
-            parser.parse(url, no, null);
-            DenseMatrix64F center = aw.getCenter();
-            no.plotter.drawCircle(center.data[0], center.data[1], aw.getRadius());
-            no.plotter.plot(new File("test.png"));
+            parser.parse(url, aw);
         }
         catch (IOException ex)
         {
             fail(ex.getMessage());
         }
-    }
-    private class NO extends AbstractNMEAObserver
-    {
-        AnchorWatch anchorWatch;
-        private float longitude;
-        private float latitude;
-        private float prevLongitude;
-        private float prevLatitude;
-        private Plotter plotter;
-
-        public NO(AnchorWatch anchorWatch)
-        {
-            this.anchorWatch = anchorWatch;
-            plotter = new Plotter(1000, 1000);
-            plotter.setColor(Color.BLACK);
-        }
-
-        @Override
-        public void setLongitude(float longitude)
-        {
-            this.longitude = longitude;
-        }
-
-        @Override
-        public void setLatitude(float latitude)
-        {
-            this.latitude = latitude;
-        }
-
-        @Override
-        public void commit(String reason)
-        {
-            if (prevLatitude != latitude && prevLongitude != longitude)
-            {
-                plotter.drawPoint(Math.cos(Math.toRadians(latitude))*longitude, latitude);
-                anchorWatch.update(longitude, latitude);
-                prevLatitude = latitude;
-                prevLongitude = longitude;
-            }
-        }
-        
     }
 }

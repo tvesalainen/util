@@ -47,8 +47,8 @@
         </dependency>
         <dependency>
             <groupId>org.vesalainen.lpg</groupId>
-            <artifactId>NMEAParser</artifactId>
-            <version>0.0.2</version>
+            <artifactId>javalpg</artifactId>
+            <version>1.1.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

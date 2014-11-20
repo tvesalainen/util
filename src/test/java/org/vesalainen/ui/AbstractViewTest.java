@@ -75,9 +75,9 @@ public class AbstractViewTest
         AbstractView view = new AbstractView();
         view.setScreen(200, 100);
         assertFalse(view.isReady());
-        view.update(0, 0);
-        view.update(-10, 10);
-        view.update(10, -10);
+        view.updatePoint(0, 0);
+        view.updatePoint(-10, 10);
+        view.updatePoint(10, -10);
         assertEquals(50, view.toScreenX(-10), Epsilon);
         assertEquals(150, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);
@@ -94,12 +94,12 @@ public class AbstractViewTest
         view.setScreen(600, 895);
         double d = (895.0-600.0)/2;
         assertFalse(view.isReady());
-        view.update(-13.60272896379027,28.131008962509526);
+        view.updatePoint(-13.60272896379027,28.131008962509526);
         assertEquals(-13.60272896379027, view.xMin, Epsilon);
         assertEquals(-13.60272896379027, view.xMax, Epsilon);
         assertEquals(28.131008962509526, view.yMin, Epsilon);
         assertEquals(28.131008962509526, view.yMax, Epsilon);
-        view.update(-13.602733673016058,28.130998989573197);
+        view.updatePoint(-13.602733673016058,28.130998989573197);
         assertEquals(-13.602733673016058, view.xMin, Epsilon);
         assertEquals(-13.60272896379027, view.xMax, Epsilon);
         assertEquals(28.130998989573197, view.yMin, Epsilon);
@@ -127,7 +127,7 @@ public class AbstractViewTest
         AbstractView view = new AbstractView();
         view.setScreen(200, 100);
         assertFalse(view.isReady());
-        view.update(0, 0, 10);
+        view.updateCircle(0, 0, 10);
         assertEquals(50, view.toScreenX(-10), Epsilon);
         assertEquals(150, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);

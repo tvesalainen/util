@@ -17,6 +17,10 @@
 
 package org.vesalainen.ui;
 
+import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.Polygon;
+import org.vesalainen.math.Rect;
+
 
 /**
  * The AbstractView class translates cartesian coordinates to screen coordinates.
@@ -111,26 +115,46 @@ public class AbstractView
         yMax = Double.NEGATIVE_INFINITY;
         calculated = false;
     }
+    public void updatePolygon(Polygon polygon)
+    {
+        updateRect(polygon.bounds);
+    }
+    public void updatePolygon(DenseMatrix64F polygon)
+    {
+        int len = polygon.numRows;
+        double[] d = polygon.data;
+        for (int r=0;r<len;r++)
+        {
+            updatePoint(d[2*r], d[2*r+1]);
+        }
+    }
+    public void updateRect(Rect bounds)
+    {
+        updatePoint(bounds.xMax, bounds.yMax);
+        updatePoint(bounds.xMin, bounds.yMax);
+        updatePoint(bounds.xMin, bounds.yMin);
+        updatePoint(bounds.xMax, bounds.yMin);
+    }
     /**
      * Updates limits so that circle is visible.
      * @param x
      * @param y
      * @param radius 
      */
-    public void update(double x, double y, double radius)
+    public void updateCircle(double x, double y, double radius)
     {
-        update(x, y);
-        update(x-radius, y-radius);
-        update(x+radius, y-radius);
-        update(x-radius, y+radius);
-        update(x+radius, y+radius);
+        updatePoint(x, y);
+        updatePoint(x-radius, y-radius);
+        updatePoint(x+radius, y-radius);
+        updatePoint(x-radius, y+radius);
+        updatePoint(x+radius, y+radius);
     }
     /**
      * Updates the limits if point is not inside visible screen.
      * @param x
      * @param y 
      */
-    public void update(double x, double y)
+    public void updatePoint(double x, double y)
     {
         if (x < xMin)
         {
@@ -246,4 +270,5 @@ public class AbstractView
         }
         return scale * d;
     }
+
 }

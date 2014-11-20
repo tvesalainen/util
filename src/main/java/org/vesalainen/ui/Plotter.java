@@ -19,15 +19,16 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
+import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.Polygon;
 
 /**
  *
@@ -39,6 +40,7 @@ public class Plotter extends AbstractView
     private final Graphics2D graphics2D;
     private Color color = Color.BLACK;
     private final List<Drawable> drawables = new ArrayList<>();
+    private File dir;
 
     public Plotter(int width, int height)
     {
@@ -53,6 +55,17 @@ public class Plotter extends AbstractView
         graphics2D.clearRect(0, 0, (int)width, (int)height);
     }
 
+    public void clear()
+    {
+        graphics2D.clearRect(0, 0, (int)width, (int)height);
+        drawables.clear();
+    }
+    
+    public void setDir(File dir)
+    {
+        this.dir = dir;
+    }
+
     public void setColor(Color color)
     {
         this.color = color;
@@ -60,14 +73,26 @@ public class Plotter extends AbstractView
 
     public void drawCircle(double x, double y, double r)
     {
-        update(x, y, r);
+        updateCircle(x, y, r);
         drawables.add(new Circle(color, x, y, r));
     }
     
     public void drawPoint(double x, double y)
     {
-        update(x, y);
+        updatePoint(x, y);
         drawables.add(new Point(color, x, y));
+    }
+    
+    public void drawPolygon(Polygon polygon)
+    {
+        updatePolygon(polygon);
+        drawables.add(new Poly(color, polygon));
+    }
+    
+    public void drawPolygon(DenseMatrix64F polygon)
+    {
+        updatePolygon(polygon);
+        drawables.add(new Poly(color, polygon));
     }
     
     @Override
@@ -76,7 +101,20 @@ public class Plotter extends AbstractView
         throw new UnsupportedOperationException("Screen coordinates must be set in constructor");
     }
     
-    public void plot(File file) throws IOException
+    public void plot(String filename, String ext) throws IOException
+    {
+        File file;
+        if (dir != null)
+        {
+            file = new File(dir, filename+'.'+ext);
+        }
+        else
+        {
+            file = new File(filename+'.'+ext);
+        }
+        plot(file, ext);
+    }
+    public void plot(File file, String ext) throws IOException
     {
         for (Drawable d : drawables)
         {
@@ -84,24 +122,21 @@ public class Plotter extends AbstractView
         }
         try (FileOutputStream fos = new FileOutputStream(file))
         {
-            ImageIO.write(image, "png", fos);
+            ImageIO.write(image, ext, fos);
         }
         catch (IOException ex)
         {
             throw ex;
         }
     }
+
     private class Drawable
     {
         Color color;
-        double x;
-        double y;
 
-        public Drawable(Color color, double x, double y)
+        public Drawable(Color color)
         {
             this.color = color;
-            this.x = x;
-            this.y = y;
         }
         
         protected void draw(Graphics2D graphics2D)
@@ -111,10 +146,13 @@ public class Plotter extends AbstractView
     }
     private class Point extends Drawable
     {
-
+        double x;
+        double y;
         public Point(Color color, double x, double y)
         {
-            super(color, x, y);
+            super(color);
+            this.x = x;
+            this.y = y;
         }
         
         @Override
@@ -126,7 +164,7 @@ public class Plotter extends AbstractView
             graphics2D.drawOval(sx-2, sy-2, 4, 4);
         }
     }
-    private class Circle extends Drawable
+    private class Circle extends Point
     {
         double r;
 
@@ -144,6 +182,42 @@ public class Plotter extends AbstractView
             int sy = (int) toScreenY(y);
             int sr = (int) scale(r);
             graphics2D.drawOval(sx-sr, sy-sr, sr, sr);
+        }
+    }
+    private class Poly extends Drawable
+    {
+        double[] data;
+        public Poly(Color color, Polygon polygon)
+        {
+            super(color);
+            DenseMatrix64F m = polygon.points;
+            this.data = Arrays.copyOf(m.data, m.getNumElements());
+        }
+
+        private Poly(Color color, DenseMatrix64F m)
+        {
+            super(color);
+            this.data = Arrays.copyOf(m.data, m.getNumElements());
+        }
+        
+        @Override
+        protected void draw(Graphics2D graphics2D)
+        {
+            super.draw(graphics2D);
+            int len = data.length/2;
+            if (len >= 2)
+            {
+                int x1 = (int) toScreenX(data[2*(len-1)]);
+                int y1 = (int) toScreenY(data[2*(len-1)+1]);
+                for (int r=0;r<len;r++)
+                {
+                    int x2 = (int) toScreenX(data[2*r]);
+                    int y2 = (int) toScreenY(data[2*r+1]);
+                    graphics2D.drawLine(x1, y1, x2, y2);
+                    x1 = x2;
+                    y1 = y2;
+                }
+            }
         }
     }
 }
