@@ -40,12 +40,12 @@ public class ConvexPolygon extends Polygon
     }
     public void getOuterBoundary(DenseMatrix64F point, DenseMatrix64F outer)
     {
-        getOuterBoundary(point.data[0], point.data[0], outer);
+        getOuterBoundary(point.data[0], point.data[1], outer);
     }
     public void getOuterBoundary(double x0, double y0, DenseMatrix64F outer)
     {
         int rows = points.numRows;
-        if (rows < 3)
+        if (rows < 3 || isInside(x0, y0))
         {
             outer.setReshape(points);
             return;
@@ -169,7 +169,7 @@ public class ConvexPolygon extends Polygon
         DenseMatrix64F m = polygon.points;
         m.reshape(0, 2);
         
-        add(m, x1, y1);
+        Matrices.addRow(m, x1, y1);
         int left = 1;
         int right = 0;
         int idx = find(points, x2, y2, left);
@@ -185,12 +185,8 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-            add(m, x2, y2);
+            Matrices.addRow(m, x2, y2);
             left = right+2;
-        }
-        else
-        {
-            System.err.println("222");
         }
         idx = find(points, x3, y3, left);
         if (idx != -1)
@@ -205,12 +201,8 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-            add(m, x3, y3);
+            Matrices.addRow(m, x3, y3);
             left = right+2;
-        }
-        else
-        {
-            System.err.println("333");
         }
         idx = find(points, x4, y4, left);
         if (idx != -1)
@@ -225,12 +217,8 @@ public class ConvexPolygon extends Polygon
                 points.data[2*(right+1)],
                 points.data[2*(right+1)+1],
                 m);
-            add(m, x4, y4);
+            Matrices.addRow(m, x4, y4);
             left = right+2;
-        }
-        else
-        {
-            System.err.println("444");
         }
         right = points.numRows-1;
         process(
@@ -313,7 +301,7 @@ public class ConvexPolygon extends Polygon
         }
         if (i == j)
         {
-            add(cm, points.data[2*i], points.data[2*i+1]);
+            Matrices.addRow(cm, points.data[2*i], points.data[2*i+1]);
         }
         else
         {
@@ -335,7 +323,7 @@ public class ConvexPolygon extends Polygon
                 double nx = points.data[2*ind];
                 double ny = points.data[2*ind+1];
                 process(points, i, ind-1, xl, yl, nx, ny, cm);
-                add(cm, nx, ny);
+                Matrices.addRow(cm, nx, ny);
                 process(points, ind+1, j, nx, ny, xr, yr, cm);
             }
         }
@@ -362,21 +350,6 @@ public class ConvexPolygon extends Polygon
             }
         }
         return -1;
-    }
-    private static void add(DenseMatrix64F m, double x, double y)
-    {
-        int n = m.numRows;
-        m.reshape(n+1, 2, true);
-        m.data[2*n] = x;
-        m.data[2*n+1] = y;
-    }
-    private static void insert(DenseMatrix64F m, double x, double y, int index)
-    {
-        int n = m.numRows;
-        m.reshape(n+1, 2, true);
-        System.arraycopy(m.data, 2*index, m.data, 2*index+2, 2*(n-index));
-        m.data[2*index] = x;
-        m.data[2*index+1] = y;
     }
     static boolean isConvex(DenseMatrix64F m)
     {

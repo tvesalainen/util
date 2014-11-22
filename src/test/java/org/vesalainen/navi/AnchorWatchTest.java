@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import org.vesalainen.math.ConvexPolygon;
+import org.vesalainen.navi.AnchorWatch.Watcher;
 import org.vesalainen.ui.Plotter;
 
 /**
@@ -49,8 +51,9 @@ public class AnchorWatchTest
         CoordinateParser parser = CoordinateParser.newInstance();
         Plotter plotter = new Plotter(1000, 1000);
         plotter.setDir(dir);
-        AnchorWatch aw = new AnchorWatch(plotter);
-        
+        AnchorWatch aw = new AnchorWatch();
+        W w = new W(plotter);
+        aw.addWatcher(w);
         try
         {
             parser.parse(url, aw);
@@ -59,5 +62,86 @@ public class AnchorWatchTest
         {
             fail(ex.getMessage());
         }
+    }
+    private class W implements Watcher
+    {
+        private Plotter plotter;
+        private int plot;
+
+        public W(Plotter plotter)
+        {
+            this.plotter = plotter;
+        }
+        
+        @Override
+        public void location(double x, double y)
+        {
+            System.err.println("location("+x+", "+y+")");
+            plotter.setColor(Color.BLACK);
+            plotter.drawPoint(x, y);
+        }
+
+        @Override
+        public void area(ConvexPolygon area)
+        {
+            for (int r=0;r<area.points.numRows;r++)
+            {
+                System.err.println("area("+area.points.data[2*r]+", "+area.points.data[2*r+1]+")");
+            }
+            plotter.setColor(Color.BLUE);
+            plotter.drawPolygon(area);
+        }
+
+        @Override
+        public void outer(DenseMatrix64F path)
+        {
+            for (int r=0;r<path.numRows;r++)
+            {
+                System.err.println("outer("+path.data[2*r]+", "+path.data[2*r+1]+")");
+            }
+            plotter.setColor(Color.ORANGE);
+            plotter.drawLines(path);
+        }
+
+        @Override
+        public void estimated(double x, double y, double r)
+        {
+            System.err.println("estimated("+x+", "+y+", "+r+")");
+            plotter.setColor(Color.GREEN);
+            plotter.drawPoint(x, y);
+            plotter.drawCircle(x, y, r);
+        }
+
+        @Override
+        public void error(double x, double y, double r)
+        {
+            System.err.println("error("+x+", "+y+")");
+            plotter.setColor(Color.PINK);
+            plotter.drawPoint(x, y);
+            plotter.drawCircle(x, y, r);
+            plot();
+        }
+        @Override
+        public void center(double x, double y)
+        {
+            System.err.println("center("+x+", "+y+")");
+            plotter.setColor(Color.MAGENTA);
+            plotter.drawPoint(x, y);
+        }
+
+        public void plot()
+        {
+            try
+            {
+                plotter.plot("test" + plot, "png");
+                plotter.clear();
+                plot++;
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+
     }
 }

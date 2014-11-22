@@ -43,10 +43,12 @@ public class CircleFitter implements Function, JacobianFactory
     private static final double Epsilon = 1e-10;
     
     private DenseMatrix64F di;
-    private DenseMatrix64F center;
+    private final DenseMatrix64F center;
+    private final double[] centerData;
     private final DenseMatrix64F zero = new DenseMatrix64F(1, 1);
     private final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
     private double radius;
+    private double maxRadius;
     /**
      * Creates a CircleFitter with estimated center. Estimated center can by 
      * calculated with method initialCenter
@@ -56,6 +58,7 @@ public class CircleFitter implements Function, JacobianFactory
     public CircleFitter(DenseMatrix64F center)
     {
         this.center = center;
+        this.centerData = center.data;
     }
     /**
      * Fits points to a circle
@@ -284,7 +287,9 @@ public class CircleFitter implements Function, JacobianFactory
     {
         computeDi(center, points);
         radius = elementSum(di) / (double)points.numRows;
-        for (int row=0;row<points.numRows;row++)
+        maxRadius = elementMax(di);
+        int len = points.numRows;
+        for (int row=0;row<len;row++)
         {
             y.data[row] = di.data[row] - radius;
         }
@@ -321,9 +326,24 @@ public class CircleFitter implements Function, JacobianFactory
         return center;
     }
 
+    public double getX()
+    {
+        return centerData[0];
+    }
+
+    public double getY()
+    {
+        return centerData[1];
+    }
+
     public double getRadius()
     {
         return radius;
+    }
+
+    public double getMaxRadius()
+    {
+        return maxRadius;
     }
 
     public LevenbergMarquardt getLevenbergMarquardt()

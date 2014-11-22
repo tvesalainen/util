@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.Circle;
 import org.vesalainen.math.Polygon;
 
 /**
@@ -71,10 +72,26 @@ public class Plotter extends AbstractView
         this.color = color;
     }
 
+    public void drawCircle(Circle circle)
+    {
+        drawCircle(circle.x, circle.y, circle.r);
+    }
+    
     public void drawCircle(double x, double y, double r)
     {
         updateCircle(x, y, r);
-        drawables.add(new Circle(color, x, y, r));
+        drawables.add(new Circl(color, x, y, r));
+    }
+    
+    public void drawPoint(DenseMatrix64F point)
+    {
+        assert point.numCols == 1;
+        assert point.numRows == 2;
+        double[] d = point.data;
+        double x = d[0];
+        double y = d[1];
+        updatePoint(x, y);
+        drawables.add(new Point(color, x, y));
     }
     
     public void drawPoint(double x, double y)
@@ -93,6 +110,18 @@ public class Plotter extends AbstractView
     {
         updatePolygon(polygon);
         drawables.add(new Poly(color, polygon));
+    }
+    
+    public void drawLines(Polygon polygon)
+    {
+        updatePolygon(polygon);
+        drawables.add(new Lines(color, polygon));
+    }
+    
+    public void drawLines(DenseMatrix64F polygon)
+    {
+        updatePolygon(polygon);
+        drawables.add(new Lines(color, polygon));
     }
     
     @Override
@@ -164,11 +193,11 @@ public class Plotter extends AbstractView
             graphics2D.drawOval(sx-2, sy-2, 4, 4);
         }
     }
-    private class Circle extends Point
+    private class Circl extends Point
     {
         double r;
 
-        public Circle(Color color, double x, double y, double r)
+        public Circl(Color color, double x, double y, double r)
         {
             super(color, x, y);
             this.r = r;
@@ -181,7 +210,8 @@ public class Plotter extends AbstractView
             int sx = (int) toScreenX(x);
             int sy = (int) toScreenY(y);
             int sr = (int) scale(r);
-            graphics2D.drawOval(sx-sr, sy-sr, sr, sr);
+            int sr2 = sr/2;
+            graphics2D.drawOval(sx-sr2, sy-sr2, sr, sr);
         }
     }
     private class Poly extends Drawable
@@ -210,6 +240,42 @@ public class Plotter extends AbstractView
                 int x1 = (int) toScreenX(data[2*(len-1)]);
                 int y1 = (int) toScreenY(data[2*(len-1)+1]);
                 for (int r=0;r<len;r++)
+                {
+                    int x2 = (int) toScreenX(data[2*r]);
+                    int y2 = (int) toScreenY(data[2*r+1]);
+                    graphics2D.drawLine(x1, y1, x2, y2);
+                    x1 = x2;
+                    y1 = y2;
+                }
+            }
+        }
+    }
+    private class Lines extends Drawable
+    {
+        double[] data;
+        public Lines(Color color, Polygon polygon)
+        {
+            super(color);
+            DenseMatrix64F m = polygon.points;
+            this.data = Arrays.copyOf(m.data, m.getNumElements());
+        }
+
+        private Lines(Color color, DenseMatrix64F m)
+        {
+            super(color);
+            this.data = Arrays.copyOf(m.data, m.getNumElements());
+        }
+        
+        @Override
+        protected void draw(Graphics2D graphics2D)
+        {
+            super.draw(graphics2D);
+            int len = data.length/2;
+            if (len >= 2)
+            {
+                int x1 = (int) toScreenX(data[0]);
+                int y1 = (int) toScreenY(data[1]);
+                for (int r=1;r<len;r++)
                 {
                     int x2 = (int) toScreenX(data[2*r]);
                     int y2 = (int) toScreenY(data[2*r+1]);

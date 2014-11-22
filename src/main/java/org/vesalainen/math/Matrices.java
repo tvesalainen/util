@@ -25,6 +25,47 @@ import org.ejml.data.DenseMatrix64F;
  */
 public class Matrices
 {
+    public static void setRow(DenseMatrix64F m, int index, double... row)
+    {
+        int cols = m.numCols;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        System.arraycopy(row, 0, m.data, cols*index, row.length);
+    }
+
+    public static void addRow(DenseMatrix64F m, double x, double y)
+    {
+        int cols = m.numCols;
+        int rows = m.numRows;
+        m.reshape(rows+1, cols, true);
+        m.data[cols*rows] = x;
+        m.data[cols*rows+1] = y;
+    }
+    public static void addRow(DenseMatrix64F m, double... row)
+    {
+        int cols = m.numCols;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        int rows = m.numRows;
+        m.reshape(rows+1, cols, true);
+        System.arraycopy(row, 0, m.data, cols*rows, row.length);
+    }
+    public static void insertRow(DenseMatrix64F m, int index, double... row)
+    {
+        int cols = m.numCols;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        int rows = m.numRows;
+        m.reshape(rows+1, cols, true);
+        System.arraycopy(m.data, cols*index, m.data, cols*(index+1), cols*(rows-index));
+        System.arraycopy(row, 0, m.data, cols*index, row.length);
+    }
     public static void removeEqualRows(DenseMatrix64F matrix)
     {
         double[] d = matrix.data;

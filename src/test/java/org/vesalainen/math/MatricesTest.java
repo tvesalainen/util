@@ -36,6 +36,25 @@ public class MatricesTest
     }
 
     @Test
+    public void testInsertRow1()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(0, 3, true);
+        Matrices.addRow(x, 1, 2, 3);
+        Matrices.addRow(x, 4, 5, 6);
+        Matrices.addRow(x, 7, 8, 9);
+        assertEquals(3, x.numRows);
+        Matrices.insertRow(x, 1, -1, -2, -3);
+        assertEquals(4, x.numRows);
+        assertEquals(-1, x.get(1, 0), Epsilon);
+        assertEquals(-2, x.get(1, 1), Epsilon);
+        assertEquals(-3, x.get(1, 2), Epsilon);
+        Matrices.setRow(x, 2, 10, 20, 30);
+        assertEquals(4, x.numRows);
+        assertEquals(10, x.get(2, 0), Epsilon);
+        assertEquals(20, x.get(2, 1), Epsilon);
+        assertEquals(30, x.get(2, 2), Epsilon);
+    }
+    @Test
     public void testRemoveEqualRows1()
     {
         DenseMatrix64F x = new DenseMatrix64F(10, 1, true,

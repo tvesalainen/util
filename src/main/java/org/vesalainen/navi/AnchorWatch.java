@@ -16,15 +16,13 @@
  */
 package org.vesalainen.navi;
 
-import java.awt.Color;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.ConvexPolygon;
-import org.vesalainen.ui.Plotter;
+import org.vesalainen.math.Matrices;
 
 /**
  *
@@ -32,109 +30,71 @@ import org.vesalainen.ui.Plotter;
  */
 public class AnchorWatch
 {
-
     private static final double DegreeToMeters = 36.0 / 4000000.0;
     private static final double MaxRadius = 50 * DegreeToMeters;
     private static final double MinRadius = 30 * DegreeToMeters;
-    private static final int Size = 10;
-    private static final double Limit = 5;  // meters
-    private ConvexPolygon area = new ConvexPolygon();
+    private static final int Size = 50;
+    private static final int CenterCount = 5;
+    private final ConvexPolygon area = new ConvexPolygon();
     private final DenseMatrix64F points = new DenseMatrix64F(Size, 2);
     private final DenseMatrix64F center = new DenseMatrix64F(2, 1);
     private final DenseMatrix64F outer = new DenseMatrix64F(0, 1);
-    private int index;
+    private final DenseMatrix64F centers = new DenseMatrix64F(CenterCount, 2);
+    private int centerIndex;
     private CircleFitter fitter;
-    private final double[] deltaArray = new double[5];
-    private int deltaIndex;
-    private double delta;
-    private double finalCost;
-    private DenseMatrix64F meanCenter = new DenseMatrix64F(2, 1);
-    private Plotter plotter;
-    private int plot;
+    private CircleFitter centerFitter;
+    private final List<Watcher> watchers = new ArrayList<>();
 
     public AnchorWatch()
     {
-        this(null);
-    }
-
-    public AnchorWatch(Plotter plotter)
-    {
-        this.plotter = plotter;
-        Arrays.fill(deltaArray, Double.MAX_VALUE);
+        points.reshape(0, 2);
+        centers.reshape(0, 2);
     }
 
     public void update(double longitude, double latitude)
     {
         longitude *= Math.cos(Math.toRadians(latitude));
-        if (area.isInside(longitude, latitude))
+        if (!area.isInside(longitude, latitude))
         {
-            return;
-        }
-        double[] d = points.data;
-        d[2 * index] = longitude;
-        d[2 * index + 1] = latitude;
-        index++;
-        if (index == points.numRows)
-        {
-            double xo = center.data[0];
-            double yo = center.data[1];
+            fireLocation(longitude, latitude);
+            Matrices.addRow(points, longitude, latitude);
             area.updateConvexPolygon(points);
-            points.reshape(area.points.numRows, 2);
-            points.set(area.points);
-            if (plotter != null)
-            {
-                plotter.setColor(Color.BLUE);
-                plotter.drawPolygon(area);
-            }
+            fireArea(area);
+            points.setReshape(area.points);
             if (fitter == null)
             {
                 double radius = CircleFitter.initialCenter(points, center);
                 if (!Double.isNaN(radius))
                 {
+                    fireCenter(center.data[0], center.data[1]);
                     fitter = new CircleFitter(center);
+                    centerFitter = new CircleFitter(center);
                 }
             }
             if (fitter != null)
             {
-                area.getOuterBoundary(center, outer);
-                if (plotter != null)
+                if (!area.isInside(center.data[0], center.data[1]))
                 {
-                    plotter.setColor(Color.ORANGE);
-                    //plotter.drawPolygon(outer);
+                    area.getOuterBoundary(center, outer);
+                    fireOuter(outer);
+                    fitter.fit(outer);
                 }
-                fitter.fit(outer);
-                double dx = xo - center.data[0];
-                double dy = yo - center.data[1];
-                double dd = Math.sqrt(dx * dx + dy * dy);
-                deltaArray[deltaIndex++ % deltaArray.length] = dd;
-                delta = 0;
-                for (int ii = 0; ii < deltaArray.length; ii++)
+                else
                 {
-                    delta += deltaArray[ii];
+                    fitter.fit(area.points);
                 }
-                delta /= DegreeToMeters;
-                double r = fitter.getRadius() / DegreeToMeters;
-                CircleFitter.meanCenter(outer, meanCenter);
-                double dxx = center.data[0] - meanCenter.data[0];
-                double dyy = center.data[1] - meanCenter.data[1];
-                double angle = Math.toDegrees(Math.atan2(dyy, dxx));
-                System.err.println(center.data[0] + " " + center.data[1] + " delta=" + delta + " radius=" + r + " angle=" + angle);
-                finalCost = fitter.getLevenbergMarquardt().getFinalCost();
-            }
-            index = points.numRows;
-            points.reshape(points.numRows + Size, 2, true);
-            if (plotter != null)
-            {
-                try
+                fireEstimated(fitter.getX(), fitter.getY(), fitter.getMaxRadius());
+                if (centerIndex < CenterCount)
                 {
-                    plotter.plot("test" + plot, "png");
-                    plotter.clear();
-                    plot++;
+                    Matrices.addRow(centers, center.data);
                 }
-                catch (IOException ex)
+                else
                 {
-                    throw new IllegalArgumentException(ex);
+                    Matrices.setRow(centers, centerIndex % CenterCount, center.data);
                 }
+                centerIndex++;
+                centerFitter.fit(centers);
+                fireError(centerFitter.getX(), centerFitter.getY(), centerFitter.getMaxRadius());
             }
         }
     }
@@ -154,4 +114,70 @@ public class AnchorWatch
         return area;
     }
 
+    public void addWatcher(Watcher watcher)
+    {
+        watchers.add(watcher);
+    }
+    
+    public void removeWatcher(Watcher watcher)
+    {
+        watchers.remove(watcher);
+    }
+    
+    private void fireLocation(double x, double y)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.location(x, y);
+        }
+    }
+    private void fireArea(ConvexPolygon area)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.area(area);
+        }
+    }
+    private void fireOuter(DenseMatrix64F path)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.outer(path);
+        }
+    }
+    private void fireEstimated(double x, double y, double r)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.estimated(x, y, r);
+        }
+    }
+    private void fireError(double x, double y, double r)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.error(x, y, r);
+        }
+    }
+    private void fireCenter(double x, double y)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.center(x, y);
+        }
+    }
+    /**
+     * Anchor updates.
+     * <p>Note! All coordinates are projected for geometry. Y-coordinate is the
+     * same as latitude while x-coordinate is cos(latitude) * longitude.
+     */
+    public interface Watcher
+    {
+        void location(double x, double y);
+        void area(ConvexPolygon area);
+        void outer(DenseMatrix64F path);
+        void center(double x, double y);
+        void error(double x, double y, double r);
+        void estimated(double x, double y, double r);
+    }
 }
