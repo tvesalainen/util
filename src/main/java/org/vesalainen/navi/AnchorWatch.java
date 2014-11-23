@@ -16,7 +16,6 @@
  */
 package org.vesalainen.navi;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.ejml.data.DenseMatrix64F;
@@ -31,29 +30,28 @@ import org.vesalainen.math.Matrices;
 public class AnchorWatch
 {
     private static final double DegreeToMeters = 36.0 / 4000000.0;
-    private static final double MaxRadius = 50 * DegreeToMeters;
-    private static final double MinRadius = 30 * DegreeToMeters;
     private static final int Size = 50;
-    private static final int CenterCount = 5;
     private final ConvexPolygon area = new ConvexPolygon();
     private final DenseMatrix64F points = new DenseMatrix64F(Size, 2);
     private final DenseMatrix64F center = new DenseMatrix64F(2, 1);
     private final DenseMatrix64F outer = new DenseMatrix64F(0, 1);
-    private final DenseMatrix64F centers = new DenseMatrix64F(CenterCount, 2);
-    private int centerIndex;
     private CircleFitter fitter;
-    private CircleFitter centerFitter;
     private final List<Watcher> watchers = new ArrayList<>();
+    private double chainLength = 60 * DegreeToMeters;
 
     public AnchorWatch()
     {
         points.reshape(0, 2);
-        centers.reshape(0, 2);
     }
 
     public void update(double longitude, double latitude)
     {
         longitude *= Math.cos(Math.toRadians(latitude));
+        double distance = distance(longitude, latitude);
+        if (fitter != null && distance > chainLength)
+        {
+            fireAlarm(toMeters(distance));
+        }
         if (!area.isInside(longitude, latitude))
         {
             fireLocation(longitude, latitude);
@@ -68,7 +66,6 @@ public class AnchorWatch
                 {
                     fireCenter(center.data[0], center.data[1]);
                     fitter = new CircleFitter(center);
-                    centerFitter = new CircleFitter(center);
                 }
             }
             if (fitter != null)
@@ -84,17 +81,6 @@ public class AnchorWatch
                     fitter.fit(area.points);
                 }
                 fireEstimated(fitter.getX(), fitter.getY(), fitter.getMaxRadius());
-                if (centerIndex < CenterCount)
-                {
-                    Matrices.addRow(centers, center.data);
-                }
-                else
-                {
-                    Matrices.setRow(centers, centerIndex % CenterCount, center.data);
-                }
-                centerIndex++;
-                centerFitter.fit(centers);
-                fireError(centerFitter.getX(), centerFitter.getY(), centerFitter.getMaxRadius());
             }
         }
     }
@@ -114,6 +100,26 @@ public class AnchorWatch
         return area;
     }
 
+    public void setChainLength(int meters)
+    {
+        this.chainLength = meters * DegreeToMeters;
+    }
+
+    public static double toMeters(double degrees)
+    {
+        return degrees / DegreeToMeters;
+    }
+    
+    private double distance(double x, double y)
+    {
+        double[] d = center.data;
+        double cx = d[0];
+        double cy = d[1];
+        double dx = cx-x;
+        double dy = cy-y;
+        return Math.hypot(dx, dy);
+    }
+
     public void addWatcher(Watcher watcher)
     {
         watchers.add(watcher);
@@ -129,6 +135,13 @@ public class AnchorWatch
         for (Watcher watcher : watchers)
         {
             watcher.location(x, y);
+        }
+    }
+    private void fireAlarm(double distance)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.alarm(distance);
         }
     }
     private void fireArea(ConvexPolygon area)
@@ -152,13 +165,6 @@ public class AnchorWatch
             watcher.estimated(x, y, r);
         }
     }
-    private void fireError(double x, double y, double r)
-    {
-        for (Watcher watcher : watchers)
-        {
-            watcher.error(x, y, r);
-        }
-    }
     private void fireCenter(double x, double y)
     {
         for (Watcher watcher : watchers)
@@ -166,6 +172,7 @@ public class AnchorWatch
             watcher.center(x, y);
         }
     }
+
     /**
      * Anchor updates.
      * <p>Note! All coordinates are projected for geometry. Y-coordinate is the
@@ -173,11 +180,11 @@ public class AnchorWatch
      */
     public interface Watcher
     {
+        void alarm(double distance);
         void location(double x, double y);
         void area(ConvexPolygon area);
         void outer(DenseMatrix64F path);
         void center(double x, double y);
-        void error(double x, double y, double r);
         void estimated(double x, double y, double r);
     }
 }

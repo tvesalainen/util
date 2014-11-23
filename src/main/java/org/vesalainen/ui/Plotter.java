@@ -210,8 +210,8 @@ public class Plotter extends AbstractView
             int sx = (int) toScreenX(x);
             int sy = (int) toScreenY(y);
             int sr = (int) scale(r);
-            int sr2 = sr/2;
-            graphics2D.drawOval(sx-sr2, sy-sr2, sr, sr);
+            int sr2 = 2*sr;
+            graphics2D.drawOval(sx-sr, sy-sr, sr2, sr2);
         }
     }
     private class Poly extends Drawable

@@ -21,8 +21,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -45,15 +43,15 @@ public class AnchorWatchTest
      * Test of update method, of class AnchorWatch.
      */
     @Test
-    public void testUpdate()
+    public void testUpdate1()
     {
         URL url = AnchorWatchTest.class.getResource("/20141117091525.nmea");
         CoordinateParser parser = CoordinateParser.newInstance();
         Plotter plotter = new Plotter(1000, 1000);
         plotter.setDir(dir);
         AnchorWatch aw = new AnchorWatch();
-        W w = new W(plotter);
-        aw.addWatcher(w);
+        Watcher testWatcher = new TestWatcher();
+        aw.addWatcher(testWatcher);
         try
         {
             parser.parse(url, aw);
@@ -63,12 +61,66 @@ public class AnchorWatchTest
             fail(ex.getMessage());
         }
     }
-    private class W implements Watcher
+    @Test
+    public void testUpdate2()
+    {
+        URL url = AnchorWatchTest.class.getResource("/20141118090616.nmea");
+        CoordinateParser parser = CoordinateParser.newInstance();
+        Plotter plotter = new Plotter(1000, 1000);
+        plotter.setDir(dir);
+        AnchorWatch aw = new AnchorWatch();
+        Watcher testWatcher = new TestWatcher();
+        aw.addWatcher(testWatcher);
+        try
+        {
+            parser.parse(url, aw);
+        }
+        catch (IOException ex)
+        {
+            fail(ex.getMessage());
+        }
+    }
+    private class TestWatcher implements Watcher
+    {
+
+        @Override
+        public void alarm(double distance)
+        {
+            fail("alarm="+distance);
+        }
+
+        @Override
+        public void location(double x, double y)
+        {
+        }
+
+        @Override
+        public void area(ConvexPolygon area)
+        {
+        }
+
+        @Override
+        public void outer(DenseMatrix64F path)
+        {
+        }
+
+        @Override
+        public void center(double x, double y)
+        {
+        }
+
+        @Override
+        public void estimated(double x, double y, double r)
+        {
+        }
+        
+    }
+    private class PlottingWatcher implements Watcher
     {
         private Plotter plotter;
         private int plot;
 
-        public W(Plotter plotter)
+        public PlottingWatcher(Plotter plotter)
         {
             this.plotter = plotter;
         }
@@ -110,17 +162,12 @@ public class AnchorWatchTest
             plotter.setColor(Color.GREEN);
             plotter.drawPoint(x, y);
             plotter.drawCircle(x, y, r);
-        }
-
-        @Override
-        public void error(double x, double y, double r)
-        {
-            System.err.println("error("+x+", "+y+")");
-            plotter.setColor(Color.PINK);
-            plotter.drawPoint(x, y);
-            plotter.drawCircle(x, y, r);
+            double rr = 2*4.0207960716949595E-4-r;
+            plotter.setColor(Color.RED);
+            plotter.drawCircle(x, y, rr);
             plot();
         }
+
         @Override
         public void center(double x, double y)
         {
@@ -129,11 +176,23 @@ public class AnchorWatchTest
             plotter.drawPoint(x, y);
         }
 
+        @Override
+        public void alarm(double distance)
+        {
+            System.err.println("alarm("+distance+")");
+        }
+
         public void plot()
         {
             try
             {
-                plotter.plot("test" + plot, "png");
+                if (plot % 50 == 0)
+                {
+                    double meters = AnchorWatch.toMeters(4.986421120771726E-4);
+                    plotter.setColor(Color.GRAY);
+                    plotter.drawCircle(-13.602631724919243, 28.13095300208171, 4.986421120771726E-4);
+                    plotter.plot("test" + plot, "png");
+                }
                 plotter.clear();
                 plot++;
             }

@@ -49,6 +49,7 @@ public class CircleFitter implements Function, JacobianFactory
     private final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
     private double radius;
     private double maxRadius;
+    private DenseMatrix64F points;
     /**
      * Creates a CircleFitter with estimated center. Estimated center can by 
      * calculated with method initialCenter
@@ -60,12 +61,22 @@ public class CircleFitter implements Function, JacobianFactory
         this.center = center;
         this.centerData = center.data;
     }
+    public void meanFit(DenseMatrix64F points)
+    {
+        meanCenter(points, center);
+        this.points = points;
+        radius = Double.NaN;
+        maxRadius = Double.NaN;
+    }
     /**
      * Fits points to a circle
      * @param points 
      */
     public void fit(DenseMatrix64F points)
     {
+        this.points = points;
+        radius = Double.NaN;
+        maxRadius = Double.NaN;
         if (zero.numRows != points.numRows)
         {
             zero.reshape(points.numRows, 1);
@@ -286,12 +297,13 @@ public class CircleFitter implements Function, JacobianFactory
     public void compute(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F y)
     {
         computeDi(center, points);
-        radius = elementSum(di) / (double)points.numRows;
-        maxRadius = elementMax(di);
+        double r = elementSum(di) / (double)points.numRows;
         int len = points.numRows;
+        double[] yd = y.data;
+        double[] did = di.data;
         for (int row=0;row<len;row++)
         {
-            y.data[row] = di.data[row] - radius;
+            yd[row] = did[row] - r;
         }
     }
 
@@ -338,11 +350,23 @@ public class CircleFitter implements Function, JacobianFactory
 
     public double getRadius()
     {
+        if (Double.isNaN(radius))
+        {
+            computeDi(center, points);
+            radius = elementSum(di) / (double)points.numRows;
+            maxRadius = elementMax(di);
+        }
         return radius;
     }
 
     public double getMaxRadius()
     {
+        if (Double.isNaN(radius))
+        {
+            computeDi(center, points);
+            radius = elementSum(di) / (double)points.numRows;
+            maxRadius = elementMax(di);
+        }
         return maxRadius;
     }
 
