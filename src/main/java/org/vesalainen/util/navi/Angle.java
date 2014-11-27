@@ -211,7 +211,7 @@ public class Angle extends Scalar
      */
     public final boolean clockwise(Angle angle)
     {
-        return angleDiff(value, angle.value) >= 0;
+        return clockwise(value, angle.value);
     }
     /**
      * 10 is clockwise from 340
@@ -221,7 +221,17 @@ public class Angle extends Scalar
      */
     public static final boolean clockwise(Angle angle1, Angle angle2)
     {
-        return angleDiff(angle1.value, angle2.value) >= 0;
+        return clockwise(angle1.value, angle2.value);
+    }
+    /**
+     * Returns true if angle1 is clockwise of angle2
+     * @param angle1
+     * @param angle2
+     * @return 
+     */
+    public static final boolean clockwise(double angle1, double angle2)
+    {
+        return angleDiff(angle1, angle2) >= 0;
     }
 
     /**

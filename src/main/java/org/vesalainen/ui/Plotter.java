@@ -74,7 +74,7 @@ public class Plotter extends AbstractView
 
     public void drawCircle(Circle circle)
     {
-        drawCircle(circle.x, circle.y, circle.r);
+        drawCircle(circle.getX(), circle.getY(), circle.getRadius());
     }
     
     public void drawCircle(double x, double y, double r)

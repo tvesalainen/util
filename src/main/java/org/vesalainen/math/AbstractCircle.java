@@ -21,21 +21,50 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen
  */
-public interface Circle
+public class AbstractCircle implements Circle
 {
-    /**
-     * Returns the x-coordinate of center.
-     * @return 
-     */
-    double getX();
-    /**
-     * Returns the y-coordinate of center.
-     * @return 
-     */
-    double getY();
-    /**
-     * Returns the radius.
-     * @return 
-     */
-    double getRadius();
+    private double x;
+    private double y;
+    private double radius;
+
+    public AbstractCircle(double x, double y, double radius)
+    {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    @Override
+    public double getX()
+    {
+        return x;
+    }
+
+    public void setX(double x)
+    {
+        this.x = x;
+    }
+
+    @Override
+    public double getY()
+    {
+        return y;
+    }
+
+    public void setY(double y)
+    {
+        this.y = y;
+    }
+
+    @Override
+    public double getRadius()
+    {
+        return radius;
+    }
+
+    public void setRadius(double radius)
+    {
+        this.radius = radius;
+    }
+    
 }

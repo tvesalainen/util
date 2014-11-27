@@ -21,21 +21,21 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen
  */
-public interface Circle
+public interface Sector extends Circle
 {
     /**
-     * Returns the x-coordinate of center.
+     * Returns the angle of the sector in radians.
      * @return 
      */
-    double getX();
+    double getAngle();
     /**
-     * Returns the y-coordinate of center.
+     * Returns the left angle of the sector in radians.
      * @return 
      */
-    double getY();
+    double getLeftAngle();
     /**
-     * Returns the radius.
+     * Returns the right angle of the sector in radians.
      * @return 
      */
-    double getRadius();
+    double getRightAngle();
 }
