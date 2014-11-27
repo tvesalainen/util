@@ -25,9 +25,14 @@ import org.vesalainen.util.navi.Angle;
  */
 public class AbstractSector implements Sector
 {
-    private Circle circle;
-    private double leftAngle;
-    private double rightAngle;
+    protected Circle circle;
+    protected double leftAngle;
+    protected double rightAngle;
+
+    public AbstractSector(Circle circle)
+    {
+        this.circle = circle;
+    }
 
     public AbstractSector(Circle circle, double leftAngle, double rightAngle)
     {
@@ -63,6 +68,45 @@ public class AbstractSector implements Sector
         return circle.getRadius();
     }
 
+    public void setX(double x)
+    {
+        if (circle instanceof AbstractCircle)
+        {
+            AbstractCircle ac = (AbstractCircle) circle;
+            ac.setX(x);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("optional method not supported");
+        }
+    }
+
+    public void setY(double y)
+    {
+        if (circle instanceof AbstractCircle)
+        {
+            AbstractCircle ac = (AbstractCircle) circle;
+            ac.setY(y);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("optional method not supported");
+        }
+    }
+
+    public void setRadius(double radius)
+    {
+        if (circle instanceof AbstractCircle)
+        {
+            AbstractCircle ac = (AbstractCircle) circle;
+            ac.setRadius(radius);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("optional method not supported");
+        }
+    }
+    
     public double getLeftX()
     {
         return circle.getX()+Math.cos(leftAngle)*circle.getRadius();
@@ -83,6 +127,10 @@ public class AbstractSector implements Sector
         return circle.getY()+Math.sin(rightAngle)*circle.getRadius();
     }
     
+    public boolean isCircle()
+    {
+        return leftAngle == rightAngle;
+    }
     @Override
     public double getAngle()
     {

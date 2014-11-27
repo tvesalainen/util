@@ -27,6 +27,13 @@ public class AbstractCircle implements Circle
     private double y;
     private double radius;
 
+    public AbstractCircle(Circle circle)
+    {
+        this.x = circle.getX();
+        this.y = circle.getY();
+        this.radius = circle.getRadius();
+    }
+
     public AbstractCircle(double x, double y, double radius)
     {
         this.x = x;
