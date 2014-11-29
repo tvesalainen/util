@@ -17,7 +17,7 @@
 
 package org.vesalainen.ui;
 
-import org.vesalainen.math.AbstractCircle;
+import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.AbstractSector;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Circles;
@@ -29,7 +29,7 @@ import org.vesalainen.util.navi.Angle;
  */
 public class MouldableSector extends AbstractSector
 {
-    private Circle safeCircle;
+    private AbstractPoint tempPoint;
     private final double precision;
 
     public MouldableSector(Circle circle, double precision)
@@ -37,28 +37,79 @@ public class MouldableSector extends AbstractSector
         super(circle);
         this.precision = precision;
     }
-    
-    public void detachCircle()
+    /**
+     * Detach sector center point from circle. Center updates won't effect 
+     * original circle.
+     */
+    public void detachPoint()
     {
-        if (safeCircle != null)
+        if (tempPoint != null)
         {
             throw new IllegalStateException("already detached");
         }
-        safeCircle = circle;
-        circle = new AbstractCircle(safeCircle);
+        tempPoint = new AbstractPoint(circle);
     }
-    public void attachCircle()
+    /**
+     * Attach to original circle.
+     */
+    public void attachPoint()
     {
-        if (safeCircle == null)
+        if (tempPoint == null)
         {
             throw new IllegalStateException("not detached");
         }
-        circle = safeCircle;
-        safeCircle = null;
+        tempPoint = null;
     }
-    public boolean isAttached()
+    @Override
+    public void setY(double y)
     {
-        return safeCircle != null;
+        if (tempPoint == null)
+        {
+            super.setY(y);
+        }
+        else
+        {
+            tempPoint.setY(y);
+        }
+    }
+
+    @Override
+    public void setX(double x)
+    {
+        if (tempPoint == null)
+        {
+            super.setX(x);
+        }
+        else
+        {
+            tempPoint.setX(x);
+        }
+    }
+
+    @Override
+    public double getY()
+    {
+        if (tempPoint == null)
+        {
+            return super.getY();
+        }
+        else
+        {
+            return tempPoint.getY();
+        }
+    }
+
+    @Override
+    public double getX()
+    {
+        if (tempPoint == null)
+        {
+            return super.getX();
+        }
+        else
+        {
+            return tempPoint.getX();
+        }
     }
     
     public Cursor getCursor(double x, double y)
@@ -151,15 +202,15 @@ public class MouldableSector extends AbstractSector
             double d2 = Circles.distance(x0, y0, x, y);
             double rd = Math.abs(d0-d1)*2;
             Cursor cursor;
-            if (d2 > rd)
+            if (d2 < rd)
             {
                 cursor = new RadiusCursor();
             }
             else
             {
-                double a0 = Circles.angle(circle, x0, y0);
+                leftAngle = rightAngle = Circles.angle(circle, x0, y0);
                 double a = Circles.angle(circle, x, y);
-                if (Angle.clockwise(a0, a))
+                if (Angle.clockwise(leftAngle, a))
                 {
                     cursor = new LeftCursor();
                 }

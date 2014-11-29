@@ -27,7 +27,7 @@ import java.io.Serializable;
 public class CubicBezierCurve implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    private Point[] P;
+    private CurvePoint[] P;
     private int start;
 
     protected CubicBezierCurve()
@@ -37,7 +37,7 @@ public class CubicBezierCurve implements Serializable
      * Creates a CubicBezierCurve
      * @param controlPoints 4 control points starting at 0
      */
-    public CubicBezierCurve(Point... controlPoints)
+    public CubicBezierCurve(CurvePoint... controlPoints)
     {
         P = controlPoints;
     }
@@ -46,7 +46,7 @@ public class CubicBezierCurve implements Serializable
      * @param start index
      * @param controlPoints 4 control points starting at start
      */
-    public CubicBezierCurve(int start, Point... controlPoints)
+    public CubicBezierCurve(int start, CurvePoint... controlPoints)
     {
         P = controlPoints;
         this.start = start;
@@ -54,19 +54,19 @@ public class CubicBezierCurve implements Serializable
     /**
      * Evaluates points in Bezier Curve
      * @param t Param t in [0,1]
-     * @return A Point in Bezier Curve
+     * @return A CurvePoint in Bezier Curve
      */
-    public Point eval(double t)
+    public CurvePoint eval(double t)
     {
         if (t < 0 || t > 1)
         {
             throw new IllegalArgumentException("t="+t+" not in [0,1]");
         }
-        return Point.add(
-                Point.mul(Math.pow(1-t, 3), P[start]),
-                Point.mul(3*Math.pow(1-t, 2)*t, P[start+1]),
-                Point.mul(3*(1-t)*t*t, P[start+2]),
-                Point.mul(t*t*t, P[start+3])
+        return CurvePoint.add(
+                CurvePoint.mul(Math.pow(1-t, 3), P[start]),
+                CurvePoint.mul(3*Math.pow(1-t, 2)*t, P[start+1]),
+                CurvePoint.mul(3*(1-t)*t*t, P[start+2]),
+                CurvePoint.mul(t*t*t, P[start+3])
                 );
     }
     /**
@@ -74,26 +74,26 @@ public class CubicBezierCurve implements Serializable
      */
     public void curveStart()
     {
-        double d0 = Point.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = Point.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = Point.angle(P[start+3], P[start+2]);    // P3 -> P2
+        double d0 = CurvePoint.angle(P[start], P[start+3]);      // P0 -> P3
+        double d1 = CurvePoint.angle(P[start+3], P[start]);      // P3 -> P0
+        double d2 = CurvePoint.angle(P[start+3], P[start+2]);    // P3 -> P2
         double a1 = d1 - d2;
         double a2 = d0 + a1;
-        double di = Point.distance(P[start+3], P[start+2]);
-        P[start+1] = Point.move(P[start], a2, di);
+        double di = CurvePoint.distance(P[start+3], P[start+2]);
+        P[start+1] = CurvePoint.move(P[start], a2, di);
     }
     /**
      * Experimental! makes the end curve like the start
      */
     public void curveEnd()
     {
-        double d0 = Point.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = Point.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = Point.angle(P[start], P[start+1]);    // P0 -> P1
+        double d0 = CurvePoint.angle(P[start], P[start+3]);      // P0 -> P3
+        double d1 = CurvePoint.angle(P[start+3], P[start]);      // P3 -> P0
+        double d2 = CurvePoint.angle(P[start], P[start+1]);    // P0 -> P1
         double a1 = d2 - d0;
         double a2 = d0 + a1;
-        double di = Point.distance(P[start], P[start+1]);
-        P[start+2] = Point.move(P[start+3], a2, di);
+        double di = CurvePoint.distance(P[start], P[start+1]);
+        P[start+2] = CurvePoint.move(P[start+3], a2, di);
     }
     /**
      * @param args the command line arguments
@@ -103,10 +103,10 @@ public class CubicBezierCurve implements Serializable
         try
         {
            CubicBezierCurve cbc = new CubicBezierCurve(
-                   new Point(2,3),
-                   new Point(0,5),
-                   new Point(-1,-2),
-                   new Point(2,1)
+                   new CurvePoint(2,3),
+                   new CurvePoint(0,5),
+                   new CurvePoint(-1,-2),
+                   new CurvePoint(2,1)
                    );
            for (double t = 0;t<1;t += 0.1)
            {

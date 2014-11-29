@@ -18,6 +18,7 @@
 package org.vesalainen.ui;
 
 import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.Circle;
 import org.vesalainen.math.Polygon;
 import org.vesalainen.math.Rect;
 
@@ -135,6 +136,11 @@ public class AbstractView
         updatePoint(bounds.xMin, bounds.yMin);
         updatePoint(bounds.xMax, bounds.yMin);
     }
+    public void updateCircle(Circle c)
+    {
+        updateCircle(c.getX(), c.getY(), c.getRadius());
+    }
+
     /**
      * Updates limits so that circle is visible.
      * @param x

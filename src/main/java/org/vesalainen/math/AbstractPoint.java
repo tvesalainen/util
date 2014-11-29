@@ -21,16 +21,43 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen
  */
-public interface Point
+public class AbstractPoint implements Point
 {
-    /**
-     * Returns the x-coordinate.
-     * @return 
-     */
-    double getX();
-    /**
-     * Returns the y-coordinate.
-     * @return 
-     */
-    double getY();
+    protected double x;
+    protected double y;
+
+    public AbstractPoint(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public AbstractPoint(Point point)
+    {
+        this.x = point.getX();
+        this.y = point.getY();
+    }
+
+    @Override
+    public double getX()
+    {
+        return x;
+    }
+
+    public void setX(double x)
+    {
+        this.x = x;
+    }
+
+    @Override
+    public double getY()
+    {
+        return y;
+    }
+
+    public void setY(double y)
+    {
+        this.y = y;
+    }
+    
 }

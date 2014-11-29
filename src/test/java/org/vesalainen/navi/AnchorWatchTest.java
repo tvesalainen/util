@@ -24,8 +24,10 @@ import java.net.URL;
 import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import org.vesalainen.math.Circle;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.navi.AnchorWatch.Watcher;
+import org.vesalainen.ui.MouldableSector;
 import org.vesalainen.ui.Plotter;
 
 /**
@@ -105,12 +107,12 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void center(double x, double y)
+        public void estimated(Circle estimated)
         {
         }
 
         @Override
-        public void estimated(double x, double y, double r)
+        public void safeSector(MouldableSector safe)
         {
         }
         
@@ -156,24 +158,16 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void estimated(double x, double y, double r)
+        public void estimated(Circle estimated)
         {
-            System.err.println("estimated("+x+", "+y+", "+r+")");
             plotter.setColor(Color.GREEN);
-            plotter.drawPoint(x, y);
-            plotter.drawCircle(x, y, r);
-            double rr = 2*4.0207960716949595E-4-r;
-            plotter.setColor(Color.RED);
-            plotter.drawCircle(x, y, rr);
+            plotter.drawCircle(estimated);
             plot();
         }
 
         @Override
-        public void center(double x, double y)
+        public void safeSector(MouldableSector safe)
         {
-            System.err.println("center("+x+", "+y+")");
-            plotter.setColor(Color.MAGENTA);
-            plotter.drawPoint(x, y);
         }
 
         @Override

@@ -19,9 +19,13 @@ package org.vesalainen.navi;
 import java.util.ArrayList;
 import java.util.List;
 import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.AbstractCircle;
+import org.vesalainen.math.Circle;
 import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Matrices;
+import org.vesalainen.math.Point;
+import org.vesalainen.ui.MouldableSector;
 
 /**
  *
@@ -34,14 +38,19 @@ public class AnchorWatch
     private final ConvexPolygon area = new ConvexPolygon();
     private final DenseMatrix64F points = new DenseMatrix64F(Size, 2);
     private final DenseMatrix64F center = new DenseMatrix64F(2, 1);
+    private final Point point = new Center();
+    private Circle estimated;
     private final DenseMatrix64F outer = new DenseMatrix64F(0, 1);
     private CircleFitter fitter;
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
+    private final MouldableSector safeSector;
 
     public AnchorWatch()
     {
         points.reshape(0, 2);
+        estimated = new AbstractCircle(point, chainLength);
+        safeSector = new MouldableSector(estimated, DegreeToMeters);
     }
 
     public void update(double longitude, double latitude)
@@ -64,7 +73,6 @@ public class AnchorWatch
                 double radius = CircleFitter.initialCenter(points, center);
                 if (!Double.isNaN(radius))
                 {
-                    fireCenter(center.data[0], center.data[1]);
                     fitter = new CircleFitter(center);
                 }
             }
@@ -80,14 +88,15 @@ public class AnchorWatch
                 {
                     fitter.fit(area.points);
                 }
-                fireEstimated(fitter.getX(), fitter.getY(), fitter.getMaxRadius());
+                fireEstimated(estimated);
+                fireSafeSector(safeSector);
             }
         }
     }
 
-    public DenseMatrix64F getCenter()
+    public Point getCenter()
     {
-        return center;
+        return point;
     }
 
     public double getRadius()
@@ -122,6 +131,10 @@ public class AnchorWatch
 
     public void addWatcher(Watcher watcher)
     {
+        if (watcher == null)
+        {
+            throw new NullPointerException();
+        }
         watchers.add(watcher);
     }
     
@@ -158,18 +171,18 @@ public class AnchorWatch
             watcher.outer(path);
         }
     }
-    private void fireEstimated(double x, double y, double r)
+    private void fireEstimated(Circle estimated)
     {
         for (Watcher watcher : watchers)
         {
-            watcher.estimated(x, y, r);
+            watcher.estimated(estimated);
         }
     }
-    private void fireCenter(double x, double y)
+    private void fireSafeSector(MouldableSector safe)
     {
         for (Watcher watcher : watchers)
         {
-            watcher.center(x, y);
+            watcher.safeSector(safe);
         }
     }
 
@@ -184,7 +197,22 @@ public class AnchorWatch
         void location(double x, double y);
         void area(ConvexPolygon area);
         void outer(DenseMatrix64F path);
-        void center(double x, double y);
-        void estimated(double x, double y, double r);
+        void estimated(Circle estimated);
+        void safeSector(MouldableSector safe);
     }
+    public class Center implements Point
+    {
+        @Override
+        public double getX()
+        {
+            return center.data[0];
+        }
+
+        @Override
+        public double getY()
+        {
+            return center.data[1];
+        }
+    }
+        
 }

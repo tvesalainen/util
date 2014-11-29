@@ -23,44 +23,63 @@ package org.vesalainen.math;
  */
 public class AbstractCircle implements Circle
 {
-    private double x;
-    private double y;
+    private final Point center;
     private double radius;
+
+    public AbstractCircle(Point center, double radius)
+    {
+        this.center = center;
+        this.radius = radius;
+    }
 
     public AbstractCircle(Circle circle)
     {
-        this.x = circle.getX();
-        this.y = circle.getY();
+        this.center = new AbstractPoint(circle.getX(), circle.getY());
         this.radius = circle.getRadius();
     }
 
     public AbstractCircle(double x, double y, double radius)
     {
-        this.x = x;
-        this.y = y;
+        this.center = new AbstractPoint(x, y);
         this.radius = radius;
     }
 
     @Override
     public double getX()
     {
-        return x;
+        return center.getX();
     }
 
     public void setX(double x)
     {
-        this.x = x;
+        if (center instanceof AbstractPoint)
+        {
+            AbstractPoint ap = (AbstractPoint) center;
+            ap.setX(x);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("optional method not supported");
+        }
     }
 
     @Override
     public double getY()
     {
-        return y;
+        return center.getY();
     }
 
     public void setY(double y)
     {
-        this.y = y;
+        if (center instanceof AbstractPoint)
+        {
+            AbstractPoint ap = (AbstractPoint) center;
+            ap.setY(y);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("optional method not supported");
+        }
     }
 
     @Override

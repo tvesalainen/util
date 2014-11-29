@@ -21,18 +21,8 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen
  */
-public interface Circle
+public interface Circle extends Point
 {
-    /**
-     * Returns the x-coordinate of center.
-     * @return 
-     */
-    double getX();
-    /**
-     * Returns the y-coordinate of center.
-     * @return 
-     */
-    double getY();
     /**
      * Returns the radius.
      * @return 
