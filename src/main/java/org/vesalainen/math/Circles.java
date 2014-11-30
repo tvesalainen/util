@@ -34,7 +34,11 @@ public class Circles
      */
     public static double angle(Circle circle, double x, double y)
     {
-        return Angle.normalizeToFullAngle(Math.atan2(y-circle.getY(), x-circle.getX()));
+        return angle(circle.getX(), circle.getY(), x, y);
+    }
+    public static double angle(double x1, double y1, double x2, double y2)
+    {
+        return Angle.normalizeToFullAngle(Math.atan2(y2-y1, x2-x1));
     }
     /**
      * Returns true if point (x, y) is inside circle

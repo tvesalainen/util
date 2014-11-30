@@ -47,6 +47,10 @@ public class AbstractSector implements Sector
         {
             return false;
         }
+        if (isCircle())
+        {
+            return true;
+        }
         double angle = Circles.angle(circle, x, y);
         return Angle.clockwise(rightAngle, angle) && Angle.clockwise(angle, leftAngle);
     }

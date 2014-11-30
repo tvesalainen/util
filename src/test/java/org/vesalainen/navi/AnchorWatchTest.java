@@ -18,6 +18,8 @@
 package org.vesalainen.navi;
 
 import java.awt.Color;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -41,41 +43,47 @@ public class AnchorWatchTest
     {
     }
 
-    /**
-     * Test of update method, of class AnchorWatch.
-     */
     @Test
-    public void testUpdate1()
+    public void testSimulate() throws InterruptedException
     {
-        URL url = AnchorWatchTest.class.getResource("/20141117091525.nmea");
-        CoordinateParser parser = CoordinateParser.newInstance();
         Plotter plotter = new Plotter(1000, 1000);
         plotter.setDir(dir);
         AnchorWatch aw = new AnchorWatch();
         Watcher testWatcher = new TestWatcher();
         aw.addWatcher(testWatcher);
+        AnchorageSimulator simu = new AnchorageSimulator();
         try
         {
-            parser.parse(url, aw);
+            simu.simulate(aw, 10, false);
         }
         catch (IOException ex)
         {
             fail(ex.getMessage());
         }
     }
+    /**
+     * Test of update method, of class AnchorWatch.
+     */
     @Test
-    public void testUpdate2()
+    public void testUpdate1()
     {
-        URL url = AnchorWatchTest.class.getResource("/20141118090616.nmea");
-        CoordinateParser parser = CoordinateParser.newInstance();
+        URL url = AnchorWatchTest.class.getResource("/data.ser");
         Plotter plotter = new Plotter(1000, 1000);
         plotter.setDir(dir);
         AnchorWatch aw = new AnchorWatch();
         Watcher testWatcher = new TestWatcher();
         aw.addWatcher(testWatcher);
-        try
+        try (DataInputStream dis = new DataInputStream(url.openStream()))
         {
-            parser.parse(url, aw);
+            while (true)
+            {
+                float lon = dis.readFloat();
+                float lat = dis.readFloat();
+                aw.update(lon, lat);
+            }
+        }
+        catch (EOFException ex)
+        {
         }
         catch (IOException ex)
         {

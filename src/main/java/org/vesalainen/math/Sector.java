@@ -38,4 +38,9 @@ public interface Sector extends Circle
      * @return 
      */
     double getRightAngle();
+    /**
+     * Returns true if sector cover whole circle.
+     * @return 
+     */
+    boolean isCircle();
 }

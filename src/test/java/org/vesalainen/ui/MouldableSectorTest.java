@@ -73,11 +73,11 @@ public class MouldableSectorTest
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
         MouldableSector ms = new MouldableSector(c1, 1);
-        Cursor cursor = ms.getCursor(-4.9, 0.1);
+        Cursor cursor = ms.getCursor(-5, 0);
         assertNotNull(cursor);
-        cursor = cursor.update(-5.1, -0.5);
-        assertEquals(Math.toDegrees(Math.atan2(0.1, -4.9)), Math.toDegrees(ms.getRightAngle()), Epsilon);
-        assertEquals(Math.toDegrees(Angle.normalizeToFullAngle(Math.atan2(-0.5, -5.1))), Math.toDegrees(ms.getLeftAngle()), Epsilon);
+        cursor = cursor.update(5*Math.cos(Math.toRadians(225)), 5*Math.sin(Math.toRadians(225)));
+        assertEquals(180, Math.toDegrees(ms.getRightAngle()), Epsilon);
+        assertEquals(225, Math.toDegrees(ms.getLeftAngle()), Epsilon);
         cursor = cursor.update(0, -6);
         assertEquals(270, Math.toDegrees(ms.getLeftAngle()), Epsilon);
         cursor = ms.getCursor(0.1, -4.8);

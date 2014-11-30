@@ -65,12 +65,9 @@ public class MouldableSector extends AbstractSector
     {
         if (tempPoint == null)
         {
-            super.setY(y);
+            tempPoint = new AbstractPoint(circle);
         }
-        else
-        {
-            tempPoint.setY(y);
-        }
+        tempPoint.setY(y);
     }
 
     @Override
@@ -78,12 +75,9 @@ public class MouldableSector extends AbstractSector
     {
         if (tempPoint == null)
         {
-            super.setX(x);
+            tempPoint = new AbstractPoint(circle);
         }
-        else
-        {
-            tempPoint.setX(x);
-        }
+        tempPoint.setX(x);
     }
 
     @Override
@@ -114,7 +108,7 @@ public class MouldableSector extends AbstractSector
     
     public Cursor getCursor(double x, double y)
     {
-        double distance = Circles.distanceFromCenter(circle, x, y);
+        double distance = Circles.distance(getX(), getY(), x, y);
         if (distance < precision)
         {
             return new CenterCursor();
@@ -197,8 +191,8 @@ public class MouldableSector extends AbstractSector
         @Override
         public Cursor update(double x, double y)
         {
-            double d0 = Circles.distanceFromCenter(circle, x0, y0);
-            double d1 = Circles.distanceFromCenter(circle, x, y);
+            double d0 = Circles.distance(getX(), getY(), x0, y0);
+            double d1 = Circles.distance(getX(), getY(), x, y);
             double d2 = Circles.distance(x0, y0, x, y);
             double rd = Math.abs(d0-d1)*2;
             Cursor cursor;
@@ -208,8 +202,8 @@ public class MouldableSector extends AbstractSector
             }
             else
             {
-                leftAngle = rightAngle = Circles.angle(circle, x0, y0);
-                double a = Circles.angle(circle, x, y);
+                leftAngle = rightAngle = Circles.angle(getX(), getY(), x0, y0);
+                double a = Circles.angle(getX(), getY(), x, y);
                 if (Angle.clockwise(leftAngle, a))
                 {
                     cursor = new LeftCursor();
@@ -228,7 +222,7 @@ public class MouldableSector extends AbstractSector
         @Override
         public Cursor update(double x, double y)
         {
-            leftAngle = Circles.angle(circle, x, y);
+            leftAngle = Circles.angle(getX(), getY(), x, y);
             return this;
         }
     }
@@ -237,7 +231,7 @@ public class MouldableSector extends AbstractSector
         @Override
         public Cursor update(double x, double y)
         {
-            rightAngle = Circles.angle(circle, x, y);
+            rightAngle = Circles.angle(getX(), getY(), x, y);
             return this;
         }
     }
@@ -246,7 +240,7 @@ public class MouldableSector extends AbstractSector
         @Override
         public Cursor update(double x, double y)
         {
-            setRadius(Circles.distanceFromCenter(circle, x, y));
+            setRadius(Circles.distance(getX(), getY(), x, y));
             return this;
         }
     }

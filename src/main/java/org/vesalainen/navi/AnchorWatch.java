@@ -50,14 +50,15 @@ public class AnchorWatch
     {
         points.reshape(0, 2);
         estimated = new AbstractCircle(point, chainLength);
-        safeSector = new MouldableSector(estimated, DegreeToMeters);
+        AbstractCircle ac = new AbstractCircle(point, chainLength);
+        safeSector = new MouldableSector(ac, 4*DegreeToMeters);
     }
 
     public void update(double longitude, double latitude)
     {
         longitude *= Math.cos(Math.toRadians(latitude));
         double distance = distance(longitude, latitude);
-        if (fitter != null && distance > chainLength)
+        if (fitter != null && !safeSector.isInside(longitude, latitude))
         {
             fireAlarm(toMeters(distance));
         }
