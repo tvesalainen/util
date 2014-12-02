@@ -113,24 +113,25 @@ public class AbstractSector implements Sector
     
     public double getLeftX()
     {
-        return circle.getX()+Math.cos(leftAngle)*circle.getRadius();
+        return getX()+Math.cos(leftAngle)*getRadius();
     }
     
     public double getLeftY()
     {
-        return circle.getY()+Math.sin(leftAngle)*circle.getRadius();
+        return getY()+Math.sin(leftAngle)*getRadius();
     }
     
     public double getRightX()
     {
-        return circle.getX()+Math.cos(rightAngle)*circle.getRadius();
+        return getX()+Math.cos(rightAngle)*getRadius();
     }
     
     public double getRightY()
     {
-        return circle.getY()+Math.sin(rightAngle)*circle.getRadius();
+        return getY()+Math.sin(rightAngle)*getRadius();
     }
     
+    @Override
     public boolean isCircle()
     {
         return leftAngle == rightAngle;

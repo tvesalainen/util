@@ -50,8 +50,7 @@ public class AnchorWatch
     {
         points.reshape(0, 2);
         estimated = new AbstractCircle(point, chainLength);
-        AbstractCircle ac = new AbstractCircle(point, chainLength);
-        safeSector = new MouldableSector(ac, 4*DegreeToMeters);
+        safeSector = new MouldableSector(estimated);
     }
 
     public void update(double longitude, double latitude)

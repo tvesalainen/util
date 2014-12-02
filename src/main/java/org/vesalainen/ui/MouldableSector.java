@@ -30,12 +30,10 @@ import org.vesalainen.util.navi.Angle;
 public class MouldableSector extends AbstractSector
 {
     private AbstractPoint tempPoint;
-    private final double precision;
 
-    public MouldableSector(Circle circle, double precision)
+    public MouldableSector(Circle circle)
     {
         super(circle);
-        this.precision = precision;
     }
     /**
      * Detach sector center point from circle. Center updates won't effect 
@@ -109,6 +107,7 @@ public class MouldableSector extends AbstractSector
     public Cursor getCursor(double x, double y)
     {
         double distance = Circles.distance(getX(), getY(), x, y);
+        double precision = getRadius()/5.0;
         if (distance < precision)
         {
             return new CenterCursor();
@@ -136,6 +135,7 @@ public class MouldableSector extends AbstractSector
     }
     private Cursor getAngleCursor(double x, double y)
     {
+        double precision = getRadius()/5.0;
         double dLeft = Circles.distance(getLeftX(), getLeftY(), x, y);
         double dRight = Circles.distance(getRightX(), getRightY(), x, y);
         if (dLeft < precision || dRight < precision)
@@ -164,6 +164,12 @@ public class MouldableSector extends AbstractSector
          * @return 
          */
         Cursor update(double x, double y);
+        /**
+         * Indicate finish of update.
+         * @param x
+         * @param y 
+         */
+        void ready(double x, double y);
     }
     private class CenterCursor implements Cursor
     {
@@ -175,12 +181,22 @@ public class MouldableSector extends AbstractSector
             setY(y);
             return this;
         }
+
+        @Override
+        public void ready(double x, double y)
+        {
+            double distance = Circles.distanceFromCenter(circle, x, y);
+            if (distance < getRadius()/10.0)
+            {
+                attachPoint();
+            }
+        }
         
     }
     private class RadiusOrSplitCursor implements Cursor
     {
-        private double x0;
-        private double y0;
+        private final double x0;
+        private final double y0;
 
         public RadiusOrSplitCursor(double x0, double y0)
         {
@@ -191,12 +207,11 @@ public class MouldableSector extends AbstractSector
         @Override
         public Cursor update(double x, double y)
         {
-            double d0 = Circles.distance(getX(), getY(), x0, y0);
-            double d1 = Circles.distance(getX(), getY(), x, y);
-            double d2 = Circles.distance(x0, y0, x, y);
-            double rd = Math.abs(d0-d1)*2;
+            double ra = Circles.angle(getX(), getY(), x0, y0);
+            double ta = Circles.angle(x0, y0, x, y);
+            double diff = Math.abs(Angle.angleDiff(ra, ta));
             Cursor cursor;
-            if (d2 < rd)
+            if (diff < Math.PI/4 || diff > Math.PI-Math.PI/4)
             {
                 cursor = new RadiusCursor();
             }
@@ -206,32 +221,51 @@ public class MouldableSector extends AbstractSector
                 double a = Circles.angle(getX(), getY(), x, y);
                 if (Angle.clockwise(leftAngle, a))
                 {
-                    cursor = new LeftCursor();
+                    cursor = new RightCursor();
                 }
                 else
                 {
-                    cursor = new RightCursor();
+                    cursor = new LeftCursor();
                 }
             }
             cursor.update(x, y);
             return cursor;
         }
+
+        @Override
+        public void ready(double x, double y)
+        {
+        }
     }
-    private class LeftCursor implements Cursor
+    private abstract class AngleCursor implements Cursor
+    {
+        @Override
+        public void ready(double x, double y)
+        {
+            double diff = Angle.angleDiff(leftAngle, rightAngle);
+            if (Math.abs(diff) < Math.PI/8 )
+            {
+                leftAngle = rightAngle;
+            }
+        }
+    }
+    private class LeftCursor extends AngleCursor
     {
         @Override
         public Cursor update(double x, double y)
         {
-            leftAngle = Circles.angle(getX(), getY(), x, y);
+            double a = Circles.angle(getX(), getY(), x, y);
+            leftAngle = a;
             return this;
         }
     }
-    private class RightCursor implements Cursor
+    private class RightCursor extends AngleCursor
     {
         @Override
         public Cursor update(double x, double y)
         {
-            rightAngle = Circles.angle(getX(), getY(), x, y);
+            double a = Circles.angle(getX(), getY(), x, y);
+            rightAngle = a;
             return this;
         }
     }
@@ -242,6 +276,11 @@ public class MouldableSector extends AbstractSector
         {
             setRadius(Circles.distance(getX(), getY(), x, y));
             return this;
+        }
+
+        @Override
+        public void ready(double x, double y)
+        {
         }
     }
 }
