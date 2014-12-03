@@ -207,7 +207,6 @@ public class CircleFitterTest
         );
         double radius = CircleFitter.initialCenter(x, center);
         assertFalse(Double.isNaN(radius));
-        CircleFitter cf = new CircleFitter(center);
         assertEquals(98.680, center.data[0], Epsilon);
         assertEquals(47.345, center.data[1], Epsilon);
     }
@@ -226,11 +225,10 @@ public class CircleFitterTest
         
         double radius = CircleFitter.initialCenter(x, center);
         assertFalse(Double.isNaN(radius));
-        CircleFitter cf = new CircleFitter(center);
-        cf.fit(x);
-        center = cf.getCenter();
-        assertEquals(96.076, center.data[0], Epsilon);
-        assertEquals(48.135, center.data[1], Epsilon);
+        CircleFitter cf = new CircleFitter();
+        cf.fit(center, x);
+        assertEquals(96.076, cf.getX(), Epsilon);
+        assertEquals(48.135, cf.getY(), Epsilon);
         assertEquals(69.960, cf.getRadius(), Epsilon);
 
     }
@@ -254,13 +252,14 @@ public class CircleFitterTest
         DenseMatrix64F center = new DenseMatrix64F(2, 1);
         double radius = CircleFitter.initialCenter(x, center);
         assertFalse(Double.isNaN(radius));
-        CircleFitter cf = new CircleFitter(center);
-        cf.fit(x);
+        CircleFitter cf = new CircleFitter();
+        cf.fit(center, x);
+        center.data[0] = cf.getX();
+        center.data[1] = cf.getY();
         CircleFitter.filterInnerPoints(x, center, x.numRows/2, 0.95);
-        cf.fit(x);
-        center = cf.getCenter();
-        assertEquals(0, center.data[0], 1e-2);
-        assertEquals(0, center.data[1], 1e-2);
+        cf.fit(center, x);
+        assertEquals(0, cf.getX(), 1e-2);
+        assertEquals(0, cf.getY(), 1e-2);
         assertEquals(10, cf.getRadius(), 1e-1);
 
     }
@@ -283,11 +282,10 @@ public class CircleFitterTest
         
         double radius = CircleFitter.initialCenter(x, center);
         assertFalse(Double.isNaN(radius));
-        CircleFitter cf = new CircleFitter(center);
-        cf.fit(x);
-        center = cf.getCenter();
-        assertEquals(-13.603, center.data[0], Epsilon);
-        assertEquals(28.131, center.data[1], Epsilon);
+        CircleFitter cf = new CircleFitter();
+        cf.fit(center, x);
+        assertEquals(-13.603, cf.getX(), Epsilon);
+        assertEquals(28.131, cf.getY(), Epsilon);
         assertEquals(3.76021e-5, cf.getRadius(), Epsilon);
 
     }
@@ -321,11 +319,10 @@ public class CircleFitterTest
         center.data[0] = -13.602787648626254;
         center.data[1] = 28.130571761975013;
         CircleFitter.filterInnerPoints(points, center, points.numRows/3, 0.8);
-        CircleFitter cf = new CircleFitter(center);
-        cf.fit(points);
-        center = cf.getCenter();
-        assertEquals(-13.603, center.data[0], Epsilon);
-        assertEquals(28.131, center.data[1], Epsilon);
+        CircleFitter cf = new CircleFitter();
+        cf.fit(center, points);
+        assertEquals(-13.603, cf.getX(), Epsilon);
+        assertEquals(28.131, cf.getY(), Epsilon);
         assertEquals(3.76021e-5, cf.getRadius(), Epsilon);
 
     }

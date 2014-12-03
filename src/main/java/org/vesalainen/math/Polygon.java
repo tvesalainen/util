@@ -51,6 +51,10 @@ public class Polygon
         }
     }
             
+    public boolean isInside(Point p)
+    {
+        return isInside(p.getX(), p.getY());
+    }
     /**
      * Returns true if point is inside a polygon.
      * @param testx

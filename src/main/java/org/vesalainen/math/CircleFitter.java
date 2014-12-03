@@ -24,8 +24,8 @@ import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 
 /**
- * CircleFitter is a simple class that helps finding circle center and radius for
- * a set of points in the circle. Circle points doesn't have to cover whole circle.
+ * CircleFitter is a simple class that helps finding circle tempCenter and radius for
+ a set of points in the circle. Circle points doesn't have to cover whole circle.
  * A small sector will do.
  * 
  * <p>Implementation is using equations and Jacobian as described in 
@@ -38,52 +38,67 @@ import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
  * @see <a href="https://code.google.com/p/efficient-java-matrix-library/">EJML</a> 
  * @see org.vesalainen.util.math.LevenbergMarquardt
  */
-public class CircleFitter implements Function, JacobianFactory
+public class CircleFitter implements Function, JacobianFactory, Circle
 {
     private static final double Epsilon = 1e-10;
     
     private DenseMatrix64F di;
-    private final DenseMatrix64F center;
-    private final double[] centerData;
+    private final DenseMatrix64F initCenter = new DenseMatrix64F(2, 1);
+    private final double[] centerData = initCenter.data;
     private final DenseMatrix64F zero = new DenseMatrix64F(1, 1);
     private final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
     private double radius;
-    private double maxRadius;
     private DenseMatrix64F points;
     /**
-     * Creates a CircleFitter with estimated center. Estimated center can by 
-     * calculated with method initialCenter
-     * @param center 
+     * Creates a CircleFitter with estimated tempCenter. Estimated tempCenter can by 
+ calculated with method initialCenter
      * @see org.vesalainen.util.math.CircleFitter#initialCenter(org.ejml.data.DenseMatrix64F, org.ejml.data.DenseMatrix64F) 
      */
-    public CircleFitter(DenseMatrix64F center)
+    public CircleFitter()
     {
-        this.center = center;
-        this.centerData = center.data;
-    }
-    public void meanFit(DenseMatrix64F points)
-    {
-        meanCenter(points, center);
-        this.points = points;
-        radius = Double.NaN;
-        maxRadius = Double.NaN;
     }
     /**
      * Fits points to a circle
      * @param points 
      */
-    public void fit(DenseMatrix64F points)
+    public Circle fit(Point initPoint, DenseMatrix64F points)
+    {
+        initCenter.data[0] = initPoint.getX();
+        initCenter.data[1] = initPoint.getY();
+        radius = Double.NaN;
+        fit(points);
+        return this;
+    }
+    public Circle fit(DenseMatrix64F initPoint, DenseMatrix64F points)
+    {
+        initCenter.setReshape(initPoint);
+        radius = Double.NaN;
+        fit(points);
+        return this;
+    }
+    /**
+     * Fits points to a circle
+     * @param points 
+     */
+    public Circle fit(Circle initCircle, DenseMatrix64F points)
+    {
+        initCenter.data[0] = initCircle.getX();
+        initCenter.data[1] = initCircle.getY();
+        radius = initCircle.getRadius();
+        fit(points);
+        return this;
+    }
+    private void fit(DenseMatrix64F points)
     {
         this.points = points;
         radius = Double.NaN;
-        maxRadius = Double.NaN;
         if (zero.numRows != points.numRows)
         {
             zero.reshape(points.numRows, 1);
         }
-        if (levenbergMarquardt.optimize(center, points, zero))
+        if (levenbergMarquardt.optimize(initCenter, points, zero))
         {
-            center.set(levenbergMarquardt.getParameters());
+            initCenter.set(levenbergMarquardt.getParameters());
         }
         else
         {
@@ -91,7 +106,7 @@ public class CircleFitter implements Function, JacobianFactory
         }
     }
     /**
-     * Filters points which are closes to the last estimated center.
+     * Filters points which are closes to the last estimated tempCenter.
      * @param points
      * @param center 
      */
@@ -168,7 +183,7 @@ public class CircleFitter implements Function, JacobianFactory
         }
     }
     /**
-     * Calculates mean center of points
+     * Calculates mean tempCenter of points
      * @param points in
      * @param center out
      * @return 
@@ -200,7 +215,7 @@ public class CircleFitter implements Function, JacobianFactory
     }
 
     /**
-     * Calculates an initial estimate for center.
+     * Calculates an initial estimate for tempCenter.
      * @param points
      * @param center
      * @return 
@@ -296,8 +311,16 @@ public class CircleFitter implements Function, JacobianFactory
     @Override
     public void compute(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F y)
     {
-        computeDi(center, points);
-        double r = elementSum(di) / (double)points.numRows;
+        double r;
+        if (Double.isNaN(radius))
+        {
+            computeDi(center, points);
+            r = elementSum(di) / (double)points.numRows;
+        }
+        else
+        {
+            r = radius;
+        }
         int len = points.numRows;
         double[] yd = y.data;
         double[] did = di.data;
@@ -333,41 +356,27 @@ public class CircleFitter implements Function, JacobianFactory
         }
     }
 
-    public DenseMatrix64F getCenter()
-    {
-        return center;
-    }
-
+    @Override
     public double getX()
     {
         return centerData[0];
     }
 
+    @Override
     public double getY()
     {
         return centerData[1];
     }
 
+    @Override
     public double getRadius()
     {
         if (Double.isNaN(radius))
         {
-            computeDi(center, points);
+            computeDi(initCenter, points);
             radius = elementSum(di) / (double)points.numRows;
-            maxRadius = elementMax(di);
         }
         return radius;
-    }
-
-    public double getMaxRadius()
-    {
-        if (Double.isNaN(radius))
-        {
-            computeDi(center, points);
-            radius = elementSum(di) / (double)points.numRows;
-            maxRadius = elementMax(di);
-        }
-        return maxRadius;
     }
 
     public LevenbergMarquardt getLevenbergMarquardt()
