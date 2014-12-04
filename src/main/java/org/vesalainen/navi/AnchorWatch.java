@@ -35,13 +35,12 @@ import org.vesalainen.ui.MouldableSector;
 public class AnchorWatch
 {
     private static final double DegreeToMeters = 36.0 / 4000000.0;
-    private static final int Size = 50;
-    private final ConvexPolygon area = new ConvexPolygon();
-    private final DenseMatrix64F points = new DenseMatrix64F(Size, 2);
-    private final DenseMatrix64F tempCenter = new DenseMatrix64F(2, 1);
+    private ConvexPolygon area;
+    private DenseMatrix64F points;
+    private DenseMatrix64F tempCenter;
     private Point center;
     private AbstractCircle estimated;
-    private final DenseMatrix64F outer = new DenseMatrix64F(0, 1);
+    private DenseMatrix64F outer;
     private CircleFitter fitter;
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
@@ -49,7 +48,19 @@ public class AnchorWatch
 
     public AnchorWatch()
     {
-        points.reshape(0, 2);
+        reset();
+    }
+
+    public final void reset()
+    {
+        tempCenter = new DenseMatrix64F(2, 1);
+        points = new DenseMatrix64F(0, 2);
+        area = new ConvexPolygon();
+        outer = new DenseMatrix64F(0, 1);
+        center = null;
+        estimated = null;
+        fitter = null;
+        safeSector = null;
     }
 
     public void update(double longitude, double latitude)
