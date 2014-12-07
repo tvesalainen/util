@@ -17,11 +17,12 @@
 
 package org.vesalainen.math;
 
+import java.io.Serializable;
 import org.ejml.data.DenseMatrix64F;
 import static org.ejml.ops.CommonOps.*;
-import org.vesalainen.math.Matrices.RowComparator;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
+import org.vesalainen.math.Matrices.RowComparator;
 
 /**
  * CircleFitter is a simple class that helps finding circle tempCenter and radius for
@@ -38,8 +39,9 @@ import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
  * @see <a href="https://code.google.com/p/efficient-java-matrix-library/">EJML</a> 
  * @see org.vesalainen.util.math.LevenbergMarquardt
  */
-public class CircleFitter implements Function, JacobianFactory, Circle
+public class CircleFitter implements Function, JacobianFactory, Circle, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private static final double Epsilon = 1e-10;
     
     private DenseMatrix64F di;

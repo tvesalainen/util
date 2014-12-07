@@ -17,14 +17,16 @@
 
 package org.vesalainen.math;
 
+import java.io.Serializable;
 import org.vesalainen.util.navi.Angle;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class AbstractSector implements Sector
+public class AbstractSector implements Sector, Serializable
 {
+    private static final long serialVersionUID = 1L;
     protected Circle circle;
     protected double leftAngle;
     protected double rightAngle;

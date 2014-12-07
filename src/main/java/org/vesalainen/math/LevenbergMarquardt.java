@@ -1,6 +1,7 @@
 package org.vesalainen.math;
 
 
+import java.io.Serializable;
 import org.ejml.data.DenseMatrix64F;
 import static org.ejml.ops.CommonOps.*;
 import static org.ejml.ops.SpecializedOps.*;
@@ -28,7 +29,9 @@ import static org.ejml.ops.SpecializedOps.*;
  * </p>
  * @author Peter Abeles
  */
-public class LevenbergMarquardt {
+public class LevenbergMarquardt implements Serializable
+{
+    private static final long serialVersionUID = 1L;
     // how much the numerical jacobian calculation perturbs the parameters by.
     // In better implementation there are better ways to compute this delta.  See Numerical Recipes.
     private final static double DELTA = 1e-8;

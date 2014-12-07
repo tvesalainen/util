@@ -17,12 +17,15 @@
 
 package org.vesalainen.math;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Timo Vesalainen
  */
-public class Rect
+public class Rect implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     public double xMax = Double.NaN;
     public double yMax = Double.NaN;
     public double xMin = Double.NaN;

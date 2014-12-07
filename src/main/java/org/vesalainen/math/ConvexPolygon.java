@@ -25,6 +25,7 @@ import org.ejml.data.DenseMatrix64F;
  */
 public class ConvexPolygon extends Polygon
 {
+    private static final long serialVersionUID = 1L;
 
     public ConvexPolygon()
     {

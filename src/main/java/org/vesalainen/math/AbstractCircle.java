@@ -17,12 +17,15 @@
 
 package org.vesalainen.math;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Timo Vesalainen
  */
-public class AbstractCircle implements Circle
+public class AbstractCircle implements Circle, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private final Point center;
     private double radius;
 

@@ -17,12 +17,15 @@
 
 package org.vesalainen.math;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Timo Vesalainen
  */
-public class AbstractPoint implements Point
+public class AbstractPoint implements Point, Serializable
 {
+    private static final long serialVersionUID = 1L;
     protected double x;
     protected double y;
 

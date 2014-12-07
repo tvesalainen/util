@@ -16,14 +16,16 @@
  */
 package org.vesalainen.math;
 
+import java.io.Serializable;
 import org.ejml.data.DenseMatrix64F;
 
 /**
  * 
  * @author Timo Vesalainen
  */
-public class Polygon
+public class Polygon implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     public final DenseMatrix64F points;
     public final Rect bounds = new Rect();

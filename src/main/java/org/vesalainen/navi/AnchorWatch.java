@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.ejml.data.DenseMatrix64F;
@@ -32,8 +33,9 @@ import org.vesalainen.ui.MouldableSector;
  *
  * @author Timo Vesalainen
  */
-public class AnchorWatch
+public class AnchorWatch implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
     private ConvexPolygon area;
     private DenseMatrix64F points;

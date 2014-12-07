@@ -18,13 +18,17 @@
 package org.vesalainen.navi;
 
 import java.awt.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import org.ejml.data.DenseMatrix64F;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.ConvexPolygon;
@@ -86,6 +90,36 @@ public class AnchorWatchTest
         {
         }
         catch (IOException ex)
+        {
+            fail(ex.getMessage());
+        }
+    }
+    @Test
+    public void testSerialize()
+    {
+        AnchorWatch aw = new AnchorWatch();
+        aw.update(25.1, 60.1);
+        aw.update(25.2, 60.0);
+        aw.update(25.3, 60.2);
+        aw.update(25.3, 60.1);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream oas = new ObjectOutputStream(baos))
+        {
+            oas.writeObject(aw);
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        try (ObjectInputStream ois = new ObjectInputStream(bais))
+        {
+            Object ob = ois.readObject();
+            assertTrue(ob instanceof AnchorWatch);
+            AnchorWatch aw2 = (AnchorWatch) ob;
+        }
+        catch (IOException | ClassNotFoundException ex)
         {
             fail(ex.getMessage());
         }
