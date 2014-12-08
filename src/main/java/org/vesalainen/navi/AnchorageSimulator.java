@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -40,6 +38,12 @@ public class AnchorageSimulator extends TimerTask
 
     public AnchorageSimulator()
     {
+        this(null);
+    }
+
+    public AnchorageSimulator(Timer timer)
+    {
+        this.timer = timer;
         this.url = AnchorageSimulator.class.getResource("/simulation.ser");
         if (url == null)
         {
@@ -50,14 +54,18 @@ public class AnchorageSimulator extends TimerTask
      * Starts simulating anchorige.
      * @param anchorWatch
      * @param period Update rate in millis.
-     * @param isDaemon Sets timer thread. In single thread this should be false.
+     * @param isDaemon Sets timer thread. In single thread this should be false. 
+     * This parament is used only if external Timer was not provided!
      * @throws IOException 
      */
     public void simulate(AnchorWatch anchorWatch, long period, boolean isDaemon) throws IOException
     {
         this.anchorWatch = anchorWatch;
         dis = new DataInputStream(new BufferedInputStream(url.openStream()));
-        timer = new Timer("AnchorageSimulator", isDaemon);
+        if (timer == null)
+        {
+            timer = new Timer("AnchorageSimulator", isDaemon);
+        }
         timer.scheduleAtFixedRate(this, 0, period);
     }
 
