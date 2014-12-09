@@ -41,7 +41,7 @@ public class MouldableSectorTest
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
         MouldableSector ms = new MouldableSector(c1);
-        ms.detachPoint();
+        ms.detachCircle();
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
         Cursor cursor = ms.getCursor(0.1, -0.1);
@@ -50,7 +50,7 @@ public class MouldableSectorTest
         cursor = cursor.update(2, 2);
         assertEquals(2, ms.getX(), Epsilon);
         assertEquals(2, ms.getY(), Epsilon);
-        ms.attachPoint();
+        ms.attachCircle();
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
     }
