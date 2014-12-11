@@ -31,6 +31,10 @@ public class Feet extends Distance
     {
         return feets*FeetInMeters;
     }
+    public static double fromMeters(double meters)
+    {
+        return meters/FeetInMeters;
+    }
     @Override
     public String toString()
     {
