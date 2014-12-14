@@ -27,13 +27,14 @@ import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Matrices;
 import org.vesalainen.math.Point;
+import org.vesalainen.ui.MouldableCircle.MouldableCircleObserver;
 import org.vesalainen.ui.MouldableSector;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class AnchorWatch implements Serializable
+public class AnchorWatch implements Serializable, MouldableCircleObserver
 {
     private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
@@ -89,6 +90,7 @@ public class AnchorWatch implements Serializable
                     center = new AbstractPoint(tempCenter.data[0], tempCenter.data[1]);
                     estimated = new AbstractCircle(center, chainLength);
                     safeSector = new MouldableSector(estimated);
+                    safeSector.addObserver(this);
                 }
             }
             if (fitter != null)
@@ -104,11 +106,22 @@ public class AnchorWatch implements Serializable
                     fitter.fit(safeSector, area.points);
                 }
                 estimated.set(fitter);
-                fireEstimated(estimated);
                 safeSector.update(fitter);
+                fireEstimated(estimated);
                 fireSafeSector(safeSector);
             }
         }
+    }
+
+    @Override
+    public void centerMoved(double x, double y)
+    {
+    }
+
+    @Override
+    public void radiusChanged(double r)
+    {
+        estimated.setRadius(r);
     }
 
     public Point getCenter()

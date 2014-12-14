@@ -18,6 +18,8 @@
 package org.vesalainen.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.Circle;
@@ -34,6 +36,7 @@ public class MouldableCircle implements Circle, Serializable
     protected AbstractCircle circle;
     protected boolean attached = true;
     protected AbstractPoint attachPoint;
+    protected List<MouldableCircleObserver> observers = new ArrayList<>();
 
     public MouldableCircle(AbstractCircle circle)
     {
@@ -91,6 +94,32 @@ public class MouldableCircle implements Circle, Serializable
         circle.setRadius(radius);
     }
 
+    public void addObserver(MouldableCircleObserver observer)
+    {
+        observers.add(observer);
+    }
+    
+    public void removeObserver(MouldableCircleObserver observer)
+    {
+        observers.remove(observer);
+    }
+    
+    private void fireCenter(double x, double y)
+    {
+        for (MouldableCircleObserver observer : observers)
+        {
+            observer.centerMoved(x, y);
+        }
+    }
+
+    private void fireRadius(double radius)
+    {
+        for (MouldableCircleObserver observer : observers)
+        {
+            observer.radiusChanged(radius);
+        }
+    }
+    
     public Cursor getCursor(double x, double y)
     {
         double distance = Circles.distance(getX(), getY(), x, y);
@@ -143,8 +172,9 @@ public class MouldableCircle implements Circle, Serializable
                 circle.set(attachPoint);
                 attached = true;
             }
+            fireCenter(x, y);
         }
-        
+
     }
     protected class RadiusCursor implements Cursor
     {
@@ -159,6 +189,12 @@ public class MouldableCircle implements Circle, Serializable
         public void ready(double x, double y)
         {
             update(x, y);
+            fireRadius(getRadius());
         }
+    }
+    public interface MouldableCircleObserver
+    {
+        void centerMoved(double x, double y);
+        void radiusChanged(double r);
     }
 }

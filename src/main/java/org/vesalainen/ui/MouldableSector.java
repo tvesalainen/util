@@ -101,6 +101,28 @@ public class MouldableSector extends MouldableCircle implements Sector
         sector.setRightAngle(rightAngle);
     }
     
+    private void fireLeft(double leftAngle)
+    {
+        for (MouldableCircleObserver observer : observers)
+        {
+            if (observer instanceof MouldableSectorObserver)
+            {
+                MouldableSectorObserver mso = (MouldableSectorObserver) observer;
+                mso.leftAngleChanged(leftAngle);
+            }
+        }
+    }
+    private void fireRight(double rightAngle)
+    {
+        for (MouldableCircleObserver observer : observers)
+        {
+            if (observer instanceof MouldableSectorObserver)
+            {
+                MouldableSectorObserver mso = (MouldableSectorObserver) observer;
+                mso.rightAngleChanged(rightAngle);
+            }
+        }
+    }
     @Override
     public Cursor getCursor(double x, double y)
     {
@@ -220,6 +242,14 @@ public class MouldableSector extends MouldableCircle implements Sector
             sector.setLeftAngle(a);
             return this;
         }
+
+        @Override
+        public void ready(double x, double y)
+        {
+            super.ready(x, y);
+            fireLeft(getLeftAngle());
+        }
+        
     }
     protected class RightCursor extends AngleCursor
     {
@@ -230,5 +260,17 @@ public class MouldableSector extends MouldableCircle implements Sector
             sector.setRightAngle(a);;
             return this;
         }
+        @Override
+        public void ready(double x, double y)
+        {
+            super.ready(x, y);
+            fireRight(getRightAngle());
+        }
+        
+    }
+    public interface MouldableSectorObserver extends MouldableCircleObserver
+    {
+        void leftAngleChanged(double leftAngle);
+        void rightAngleChanged(double rightAngle);
     }
 }
