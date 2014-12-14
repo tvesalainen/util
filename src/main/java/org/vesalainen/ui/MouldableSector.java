@@ -17,10 +17,7 @@
 
 package org.vesalainen.ui;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.vesalainen.math.AbstractCircle;
-import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.AbstractSector;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Circles;
@@ -33,7 +30,6 @@ import org.vesalainen.util.navi.Angle;
 public class MouldableSector extends AbstractSector
 {
     private Circle tempCircle;
-    private final List<MouldableSectorObserver> observers = new ArrayList<>();
 
     public MouldableSector(Circle circle)
     {
@@ -134,41 +130,6 @@ public class MouldableSector extends AbstractSector
             return null;
         }
     }
-    private void fireCenter(double x, double y)
-    {
-        for (MouldableSectorObserver o : observers)
-        {
-            o.changedCenter(x, y);
-        }
-    }
-    public void addObserver(MouldableSectorObserver o)
-    {
-        observers.add(o);
-    }
-    public void removeObserver(MouldableSectorObserver o)
-    {
-        observers.remove(o);
-    }
-    private void fireRadius(double radius)
-    {
-        for (MouldableSectorObserver o : observers)
-        {
-            o.changedRadius(radius);
-        }
-    }
-    private void fireSector(double leftAngle, double rightAngle)
-    {
-        for (MouldableSectorObserver o : observers)
-        {
-            o.changedSector(leftAngle, rightAngle);
-        }
-    }
-    public interface MouldableSectorObserver
-    {
-        void changedCenter(double x, double y);
-        void changedRadius(double radius);
-        void changedSector(double leftAngle, double rightAngle);
-    }
     public interface Cursor
     {
         /**
@@ -206,7 +167,6 @@ public class MouldableSector extends AbstractSector
             {
                 attachCircle();
             }
-            fireCenter(x, y);
         }
         
     }
@@ -264,7 +224,6 @@ public class MouldableSector extends AbstractSector
             {
                 leftAngle = rightAngle;
             }
-            fireSector(leftAngle, rightAngle);
         }
     }
     private class LeftCursor extends AngleCursor
@@ -300,7 +259,6 @@ public class MouldableSector extends AbstractSector
         public void ready(double x, double y)
         {
             update(x, y);
-            fireRadius(getRadius());
         }
     }
 }
