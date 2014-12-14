@@ -23,66 +23,27 @@ import java.io.Serializable;
  *
  * @author Timo Vesalainen
  */
-public class AbstractCircle implements Circle, Serializable
+public class AbstractCircle extends AbstractPoint implements Circle, Serializable
 {
     private static final long serialVersionUID = 1L;
-    private final Point center;
-    private double radius;
+    protected double radius;
 
     public AbstractCircle(Point center, double radius)
     {
-        this.center = center;
+        super(center);
         this.radius = radius;
     }
 
     public AbstractCircle(Circle circle)
     {
-        this.center = new AbstractPoint(circle.getX(), circle.getY());
+        super(circle);
         this.radius = circle.getRadius();
     }
 
     public AbstractCircle(double x, double y, double radius)
     {
-        this.center = new AbstractPoint(x, y);
+        super(x, y);
         this.radius = radius;
-    }
-
-    @Override
-    public double getX()
-    {
-        return center.getX();
-    }
-
-    public void setX(double x)
-    {
-        if (center instanceof AbstractPoint)
-        {
-            AbstractPoint ap = (AbstractPoint) center;
-            ap.setX(x);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("optional method not supported");
-        }
-    }
-
-    @Override
-    public double getY()
-    {
-        return center.getY();
-    }
-
-    public void setY(double y)
-    {
-        if (center instanceof AbstractPoint)
-        {
-            AbstractPoint ap = (AbstractPoint) center;
-            ap.setY(y);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("optional method not supported");
-        }
     }
 
     @Override
@@ -94,6 +55,11 @@ public class AbstractCircle implements Circle, Serializable
     public void setRadius(double radius)
     {
         this.radius = radius;
+    }
+
+    boolean isInside(double x, double y)
+    {
+        return Circles.isInside(this, x, y);
     }
     
 }

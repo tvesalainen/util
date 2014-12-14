@@ -103,9 +103,9 @@ public class AnchorWatch implements Serializable
                 {
                     fitter.fit(safeSector, area.points);
                 }
-                estimated.setX(fitter.getX());
-                estimated.setY(fitter.getY());
+                estimated.set(fitter);
                 fireEstimated(estimated);
+                safeSector.update(fitter);
                 fireSafeSector(safeSector);
             }
         }

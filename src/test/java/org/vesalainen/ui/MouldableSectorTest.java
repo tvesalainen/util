@@ -21,8 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.Circle;
-import org.vesalainen.ui.MouldableSector.Cursor;
-import org.vesalainen.util.navi.Angle;
+import org.vesalainen.ui.MouldableCircle.Cursor;
 
 /**
  *
@@ -41,7 +40,7 @@ public class MouldableSectorTest
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
         MouldableSector ms = new MouldableSector(c1);
-        ms.detachCircle();
+        ms.setX(0);
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
         Cursor cursor = ms.getCursor(0.1, -0.1);
@@ -50,7 +49,7 @@ public class MouldableSectorTest
         cursor = cursor.update(2, 2);
         assertEquals(2, ms.getX(), Epsilon);
         assertEquals(2, ms.getY(), Epsilon);
-        ms.attachCircle();
+        cursor.ready(0.1, -0.2);
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
     }

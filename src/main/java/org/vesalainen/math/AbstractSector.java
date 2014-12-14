@@ -24,28 +24,28 @@ import org.vesalainen.util.navi.Angle;
  *
  * @author Timo Vesalainen
  */
-public class AbstractSector implements Sector, Serializable
+public class AbstractSector extends AbstractCircle implements Sector, Serializable
 {
     private static final long serialVersionUID = 1L;
-    protected Circle circle;
     protected double leftAngle;
     protected double rightAngle;
 
     public AbstractSector(Circle circle)
     {
-        this.circle = circle;
+        super(circle);
     }
 
     public AbstractSector(Circle circle, double leftAngle, double rightAngle)
     {
-        this.circle = circle;
+        super(circle);
         this.leftAngle = leftAngle;
         this.rightAngle = rightAngle;
     }
 
+    @Override
     public boolean isInside(double x, double y)
     {
-        if (!Circles.isInside(circle, x, y))
+        if (!super.isInside(x, y))
         {
             return false;
         }
@@ -53,64 +53,8 @@ public class AbstractSector implements Sector, Serializable
         {
             return true;
         }
-        double angle = Circles.angle(circle, x, y);
+        double angle = Circles.angle(this, x, y);
         return Angle.clockwise(rightAngle, angle) && Angle.clockwise(angle, leftAngle);
-    }
-    @Override
-    public double getX()
-    {
-        return circle.getX();
-    }
-
-    @Override
-    public double getY()
-    {
-        return circle.getY();
-    }
-
-    @Override
-    public double getRadius()
-    {
-        return circle.getRadius();
-    }
-
-    public void setX(double x)
-    {
-        if (circle instanceof AbstractCircle)
-        {
-            AbstractCircle ac = (AbstractCircle) circle;
-            ac.setX(x);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("optional method not supported");
-        }
-    }
-
-    public void setY(double y)
-    {
-        if (circle instanceof AbstractCircle)
-        {
-            AbstractCircle ac = (AbstractCircle) circle;
-            ac.setY(y);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("optional method not supported");
-        }
-    }
-
-    public void setRadius(double radius)
-    {
-        if (circle instanceof AbstractCircle)
-        {
-            AbstractCircle ac = (AbstractCircle) circle;
-            ac.setRadius(radius);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("optional method not supported");
-        }
     }
     
     public double getLeftX()
@@ -164,6 +108,11 @@ public class AbstractSector implements Sector, Serializable
     public void setRightAngle(double rightAngle)
     {
         this.rightAngle = rightAngle;
+    }
+
+    public void makeCircle()
+    {
+        this.leftAngle = this.rightAngle = 0.0;
     }
 
 }

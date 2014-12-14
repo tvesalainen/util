@@ -47,6 +47,17 @@ public class AbstractPoint implements Point, Serializable
         return x;
     }
 
+    public void set(Point point)
+    {
+        set(point.getX(), point.getY());
+    }
+    
+    public void set(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+    
     public void setX(double x)
     {
         this.x = x;

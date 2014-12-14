@@ -63,14 +63,14 @@ public class Circles
     }
     /**
      * Returns point (x, y) distance from circles center.
-     * @param circle
+     * @param center
      * @param x
      * @param y
      * @return 
      */
-    public static double distanceFromCenter(Circle circle, double x, double y)
+    public static double distanceFromCenter(Point center, double x, double y)
     {
-        return Math.hypot(x-circle.getX(), y-circle.getY());
+        return Math.hypot(x-center.getX(), y-center.getY());
     }
     public static double distance(double x1, double y1, double x2, double y2)
     {

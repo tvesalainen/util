@@ -17,69 +17,91 @@
 
 package org.vesalainen.ui;
 
-import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.AbstractSector;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Circles;
+import org.vesalainen.math.Sector;
 import org.vesalainen.util.navi.Angle;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class MouldableSector extends AbstractSector
+public class MouldableSector extends MouldableCircle implements Sector
 {
-    private Circle tempCircle;
+    protected AbstractSector sector;
 
     public MouldableSector(Circle circle)
     {
-        super(circle);
+        this(new AbstractSector(circle));
     }
-    /**
-     * Detach sector center point from circle. Center updates won't effect 
-     * original circle.
-     */
-    public void detachCircle()
+    
+    public MouldableSector(AbstractSector sector)
     {
-        if (tempCircle != null)
-        {
-            throw new IllegalStateException("already detached");
-        }
-        tempCircle = circle;
-        circle = new AbstractCircle(circle);
+        super(sector);
+        this.sector = (AbstractSector) circle;
     }
-    /**
-     * Attach to original circle.
-     */
-    public void attachCircle()
+
+    public boolean isInside(double x, double y)
     {
-        if (tempCircle == null)
-        {
-            throw new IllegalStateException("not detached");
-        }
-        circle = tempCircle;
-        tempCircle = null;
+        return sector.isInside(x, y);
     }
-    @Override
-    public void setY(double y)
+
+    public double getLeftX()
     {
-        if (tempCircle == null)
-        {
-            detachCircle();
-        }
-        super.setY(y);
+        return sector.getLeftX();
+    }
+
+    public double getLeftY()
+    {
+        return sector.getLeftY();
+    }
+
+    public double getRightX()
+    {
+        return sector.getRightX();
+    }
+
+    public double getRightY()
+    {
+        return sector.getRightY();
     }
 
     @Override
-    public void setX(double x)
+    public boolean isCircle()
     {
-        if (tempCircle == null)
-        {
-            detachCircle();
-        }
-        super.setX(x);
+        return sector.isCircle();
     }
 
+    @Override
+    public double getAngle()
+    {
+        return sector.getAngle();
+    }
+
+    @Override
+    public double getLeftAngle()
+    {
+        return sector.getLeftAngle();
+    }
+
+    public void setLeftAngle(double leftAngle)
+    {
+        sector.setLeftAngle(leftAngle);
+    }
+
+    @Override
+    public double getRightAngle()
+    {
+        return sector.getRightAngle();
+    }
+
+    public void setRightAngle(double rightAngle)
+    {
+        sector.setRightAngle(rightAngle);
+    }
+    
+    @Override
     public Cursor getCursor(double x, double y)
     {
         double distance = Circles.distance(getX(), getY(), x, y);
@@ -109,7 +131,7 @@ public class MouldableSector extends AbstractSector
         }
         return null;
     }
-    private Cursor getAngleCursor(double x, double y)
+    protected Cursor getAngleCursor(double x, double y)
     {
         double precision = getRadius()/5.0;
         double dLeft = Circles.distance(getLeftX(), getLeftY(), x, y);
@@ -130,47 +152,8 @@ public class MouldableSector extends AbstractSector
             return null;
         }
     }
-    public interface Cursor
-    {
-        /**
-         * Updates cursors position
-         * <p>Note! Use returned cursor in future updates!
-         * @param x
-         * @param y
-         * @return 
-         */
-        Cursor update(double x, double y);
-        /**
-         * Indicate finish of update.
-         * @param x
-         * @param y 
-         */
-        void ready(double x, double y);
-    }
-    private class CenterCursor implements Cursor
-    {
 
-        @Override
-        public Cursor update(double x, double y)
-        {
-            setX(x);
-            setY(y);
-            return this;
-        }
-
-        @Override
-        public void ready(double x, double y)
-        {
-            update(x, y);
-            double distance = Circles.distanceFromCenter(tempCircle, x, y);
-            if (distance < getRadius()/10.0)
-            {
-                attachCircle();
-            }
-        }
-        
-    }
-    private class RadiusOrSplitCursor implements Cursor
+    protected class RadiusOrSplitCursor implements Cursor
     {
         private final double x0;
         private final double y0;
@@ -194,9 +177,11 @@ public class MouldableSector extends AbstractSector
             }
             else
             {
-                leftAngle = rightAngle = Circles.angle(getX(), getY(), x0, y0);
+                double angle = Circles.angle(getX(), getY(), x0, y0);
+                sector.setLeftAngle(angle);
+                sector.setRightAngle(angle);
                 double a = Circles.angle(getX(), getY(), x, y);
-                if (Angle.clockwise(leftAngle, a))
+                if (Angle.clockwise(angle, a))
                 {
                     cursor = new RightCursor();
                 }
@@ -214,51 +199,36 @@ public class MouldableSector extends AbstractSector
         {
         }
     }
-    private abstract class AngleCursor implements Cursor
+    protected abstract class AngleCursor implements Cursor
     {
         @Override
         public void ready(double x, double y)
         {
-            double diff = Angle.angleDiff(leftAngle, rightAngle);
+            double diff = Angle.angleDiff(sector.getLeftAngle(), sector.getRightAngle());
             if (Math.abs(diff) < Math.PI/8 )
             {
-                leftAngle = rightAngle;
+                sector.makeCircle();
             }
         }
     }
-    private class LeftCursor extends AngleCursor
+    protected class LeftCursor extends AngleCursor
     {
         @Override
         public Cursor update(double x, double y)
         {
             double a = Circles.angle(getX(), getY(), x, y);
-            leftAngle = a;
+            sector.setLeftAngle(a);
             return this;
         }
     }
-    private class RightCursor extends AngleCursor
+    protected class RightCursor extends AngleCursor
     {
         @Override
         public Cursor update(double x, double y)
         {
             double a = Circles.angle(getX(), getY(), x, y);
-            rightAngle = a;
+            sector.setRightAngle(a);;
             return this;
-        }
-    }
-    private class RadiusCursor implements Cursor
-    {
-        @Override
-        public Cursor update(double x, double y)
-        {
-            setRadius(Circles.distance(getX(), getY(), x, y));
-            return this;
-        }
-
-        @Override
-        public void ready(double x, double y)
-        {
-            update(x, y);
         }
     }
 }
