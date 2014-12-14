@@ -95,6 +95,11 @@ public class MouldableCircle implements Circle, Serializable
         circle.setRadius(radius);
     }
 
+    public boolean isInside(double x, double y)
+    {
+        return circle.isInside(x, y);
+    }
+
     public void addObserver(MouldableCircleObserver observer)
     {
         observers.add(observer);

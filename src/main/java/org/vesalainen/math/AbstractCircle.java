@@ -57,7 +57,7 @@ public class AbstractCircle extends AbstractPoint implements Circle, Serializabl
         this.radius = radius;
     }
 
-    boolean isInside(double x, double y)
+    public boolean isInside(double x, double y)
     {
         return Circles.isInside(this, x, y);
     }

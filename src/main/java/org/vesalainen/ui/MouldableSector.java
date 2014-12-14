@@ -42,6 +42,7 @@ public class MouldableSector extends MouldableCircle implements Sector
         this.sector = (AbstractSector) circle;
     }
 
+    @Override
     public boolean isInside(double x, double y)
     {
         return sector.isInside(x, y);
@@ -126,13 +127,13 @@ public class MouldableSector extends MouldableCircle implements Sector
     @Override
     public Cursor getCursor(double x, double y)
     {
-        double distance = Circles.distance(getX(), getY(), x, y);
+        double distance = Circles.distanceFromCenter(this, x, y);
         double precision = getRadius()/5.0;
         if (distance < precision)
         {
             return new CenterCursor();
         }
-        if (Math.abs(distance - circle.getRadius()) < precision)
+        if (Math.abs(distance - getRadius()) < precision)
         {
             if (isCircle())
             {
