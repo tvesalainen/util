@@ -59,6 +59,7 @@ public class MouldableCircle implements Circle, Serializable
         attachPoint.setX(x);
         attachPoint.setY(y);
     }
+
     @Override
     public double getX()
     {
@@ -67,7 +68,7 @@ public class MouldableCircle implements Circle, Serializable
 
     public void setX(double x)
     {
-        attached = true;
+        attached = false;
         circle.setX(x);
     }
 
@@ -79,7 +80,7 @@ public class MouldableCircle implements Circle, Serializable
 
     public void setY(double y)
     {
-        attached = true;
+        attached = false;
         circle.setY(y);
     }
 
@@ -134,6 +135,7 @@ public class MouldableCircle implements Circle, Serializable
         }
         return null;
     }
+
     public interface Cursor
     {
         /**

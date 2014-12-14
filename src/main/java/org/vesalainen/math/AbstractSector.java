@@ -45,10 +45,11 @@ public class AbstractSector extends AbstractCircle implements Sector, Serializab
     @Override
     public boolean isInside(double x, double y)
     {
-        if (!super.isInside(x, y))
-        {
-            return false;
-        }
+        return super.isInside(x, y) && isInSector(x, y);
+    }
+    
+    public boolean isInSector(double x, double y)
+    {
         if (isCircle())
         {
             return true;
@@ -56,7 +57,6 @@ public class AbstractSector extends AbstractCircle implements Sector, Serializab
         double angle = Circles.angle(this, x, y);
         return Angle.clockwise(rightAngle, angle) && Angle.clockwise(angle, leftAngle);
     }
-    
     public double getLeftX()
     {
         return getX()+Math.cos(leftAngle)*getRadius();
