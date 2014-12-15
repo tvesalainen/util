@@ -29,6 +29,7 @@ import org.vesalainen.math.Matrices;
 import org.vesalainen.math.Point;
 import org.vesalainen.ui.MouldableCircle.MouldableCircleObserver;
 import org.vesalainen.ui.MouldableSector;
+import org.vesalainen.ui.MouldableSectorWithInnerCircle;
 
 /**
  *
@@ -47,7 +48,7 @@ public class AnchorWatch implements Serializable, MouldableCircleObserver
     private CircleFitter fitter;
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
-    private MouldableSector safeSector;
+    private MouldableSectorWithInnerCircle safeSector;
 
     public AnchorWatch()
     {
@@ -89,7 +90,7 @@ public class AnchorWatch implements Serializable, MouldableCircleObserver
                     fitter = new CircleFitter();
                     center = new AbstractPoint(tempCenter.data[0], tempCenter.data[1]);
                     estimated = new AbstractCircle(center, chainLength);
-                    safeSector = new MouldableSector(estimated);
+                    safeSector = new MouldableSectorWithInnerCircle(estimated);
                     safeSector.addObserver(this);
                 }
             }
@@ -208,7 +209,7 @@ public class AnchorWatch implements Serializable, MouldableCircleObserver
             watcher.estimated(estimated);
         }
     }
-    private void fireSafeSector(MouldableSector safe)
+    private void fireSafeSector(MouldableSectorWithInnerCircle safe)
     {
         for (Watcher watcher : watchers)
         {
@@ -228,7 +229,7 @@ public class AnchorWatch implements Serializable, MouldableCircleObserver
         void area(ConvexPolygon area);
         void outer(DenseMatrix64F path);
         void estimated(Circle estimated);
-        void safeSector(MouldableSector safe);
+        void safeSector(MouldableSectorWithInnerCircle safe);
     }
     public class Center implements Point
     {

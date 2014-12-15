@@ -48,6 +48,12 @@ public class MouldableSector extends MouldableCircle implements Sector
         return sector.isInside(x, y);
     }
 
+    @Override
+    public boolean isInSector(double x, double y)
+    {
+        return sector.isInSector(x, y);
+    }
+
     public double getLeftX()
     {
         return sector.getLeftX();

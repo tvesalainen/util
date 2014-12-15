@@ -39,7 +39,7 @@ public class MouldableSectorTest
     public void testCenterCursor()
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
-        MouldableSector ms = new MouldableSector(c1);
+        MouldableSectorWithInnerCircle ms = new MouldableSectorWithInnerCircle(c1);
         ms.setX(0);
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
@@ -58,7 +58,7 @@ public class MouldableSectorTest
     public void testRadiusCursor()
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
-        MouldableSector ms = new MouldableSector(c1);
+        MouldableSectorWithInnerCircle ms = new MouldableSectorWithInnerCircle(c1);
         Cursor cursor = ms.getCursor(-4.9, 0.1);
         assertNotNull(cursor);
         cursor = cursor.update(-4, 0);
@@ -71,7 +71,7 @@ public class MouldableSectorTest
     public void testRightCursor()
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
-        MouldableSector ms = new MouldableSector(c1);
+        MouldableSectorWithInnerCircle ms = new MouldableSectorWithInnerCircle(c1);
         Cursor cursor = ms.getCursor(-5, 0);
         assertNotNull(cursor);
         cursor = cursor.update(5*Math.cos(Math.toRadians(225)), 5*Math.sin(Math.toRadians(225)));
@@ -81,6 +81,7 @@ public class MouldableSectorTest
         cursor = cursor.update(0, -6);
         assertEquals(270, Math.toDegrees(ms.getRightAngle()), Epsilon);
         cursor = ms.getCursor(0.1, -4.8);
+        assertNotNull(cursor);
         cursor = cursor.update(4, -4);
         assertEquals(315, Math.toDegrees(ms.getRightAngle()), Epsilon);
     }
@@ -89,7 +90,7 @@ public class MouldableSectorTest
     public void testLeftCursor()
     {
         Circle c1 = new AbstractCircle(0, 0, 5);
-        MouldableSector ms = new MouldableSector(c1);
+        MouldableSectorWithInnerCircle ms = new MouldableSectorWithInnerCircle(c1);
         Cursor cursor = ms.getCursor(-5, 0);
         assertNotNull(cursor);
         cursor = cursor.update(5*Math.cos(Math.toRadians(135)), 5*Math.sin(Math.toRadians(135)));
@@ -99,8 +100,36 @@ public class MouldableSectorTest
         cursor = cursor.update(0, -6);
         assertEquals(270, Math.toDegrees(ms.getLeftAngle()), Epsilon);
         cursor = ms.getCursor(0.1, -4.8);
+        assertNotNull(cursor);
         cursor = cursor.update(4, -4);
         assertEquals(315, Math.toDegrees(ms.getLeftAngle()), Epsilon);
+    }
+    
+    @Test
+    public void testInnerCursor()
+    {
+        Circle c1 = new AbstractCircle(0, 0, 5);
+        MouldableSectorWithInnerCircle ms = new MouldableSectorWithInnerCircle(c1);
+        Cursor cursor = ms.getCursor(5, 0);
+        assertNotNull(cursor);
+        cursor = cursor.update(0, 5);
+        assertEquals(90, Math.toDegrees(ms.getRightAngle()), Epsilon);
+        assertEquals(0, Math.toDegrees(ms.getLeftAngle()), Epsilon);
+        assertEquals(270, Math.toDegrees(ms.getAngle()), Epsilon);
+        cursor = ms.getCursor(2.5, 0.2);
+        cursor = cursor.update(4.9, 0.2);
+        MouldableCircle ic = ms.getInnerCircle();
+        assertNotNull(ic);
+        assertEquals(4.9, ic.getRadius(), 0.1);
+        cursor = cursor.update(0.9, 0.2);
+        assertEquals(0.9, ic.getRadius(), 0.1);
+        assertFalse(ms.isCircle());
+        cursor.ready(4.9, 0.2);
+        assertTrue(ms.isCircle());
+        ms.setX(1);
+        ms.setY(1);
+        assertEquals(ms.getX(), ic.getX(), Epsilon);
+        assertEquals(ms.getY(), ic.getY(), Epsilon);
     }
     
 }

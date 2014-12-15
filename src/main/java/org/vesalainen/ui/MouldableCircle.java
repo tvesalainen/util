@@ -55,9 +55,18 @@ public class MouldableCircle implements Circle, Serializable
         {
             circle.setX(x);
             circle.setY(y);
+            fireCenter(x, y);
         }
         attachPoint.setX(x);
         attachPoint.setY(y);
+    }
+
+    public void set(double x, double y)
+    {
+        attached = false;
+        circle.setX(x);
+        circle.setY(y);
+        fireCenter(x, y);
     }
 
     @Override
@@ -70,6 +79,7 @@ public class MouldableCircle implements Circle, Serializable
     {
         attached = false;
         circle.setX(x);
+        fireCenter(x, getY());
     }
 
     @Override
@@ -82,6 +92,7 @@ public class MouldableCircle implements Circle, Serializable
     {
         attached = false;
         circle.setY(y);
+        fireCenter(getX(), y);
     }
 
     @Override
@@ -100,6 +111,11 @@ public class MouldableCircle implements Circle, Serializable
         return circle.isInside(x, y);
     }
 
+    public boolean isInSector(double x, double y)
+    {
+        return true;
+    }
+    
     public void addObserver(MouldableCircleObserver observer)
     {
         observers.add(observer);
@@ -110,7 +126,7 @@ public class MouldableCircle implements Circle, Serializable
         observers.remove(observer);
     }
     
-    private void fireCenter(double x, double y)
+    protected void fireCenter(double x, double y)
     {
         for (MouldableCircleObserver observer : observers)
         {
@@ -118,7 +134,7 @@ public class MouldableCircle implements Circle, Serializable
         }
     }
 
-    private void fireRadius(double radius)
+    protected void fireRadius(double radius)
     {
         for (MouldableCircleObserver observer : observers)
         {
@@ -131,6 +147,17 @@ public class MouldableCircle implements Circle, Serializable
         return Circles.distanceFromCenter(circle, x, y) < getPrecision();
     }
     public boolean isNearCircle(double x, double y)
+    {
+        if (isInSector(x, y))
+        {
+            return rawNearCircle(x, y);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    protected boolean rawNearCircle(double x, double y)
     {
         double radius = circle.getRadius();
         double distance = Circles.distanceFromCenter(circle, x, y);
@@ -210,7 +237,7 @@ public class MouldableCircle implements Circle, Serializable
         @Override
         public Cursor update(double x, double y)
         {
-            setRadius(Circles.distance(getX(), getY(), x, y));
+            setRadius(Circles.distanceFromCenter(circle, x, y));
             return this;
         }
 

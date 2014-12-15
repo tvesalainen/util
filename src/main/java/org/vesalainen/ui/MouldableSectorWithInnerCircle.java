@@ -28,7 +28,7 @@ import org.vesalainen.math.Circles;
  */
 public class MouldableSectorWithInnerCircle extends MouldableSector
 {
-    private MouldableCircle innerCircle;
+    private MouldableInnerCircle innerCircle;
     
     public MouldableSectorWithInnerCircle(Circle circle)
     {
@@ -38,7 +38,8 @@ public class MouldableSectorWithInnerCircle extends MouldableSector
     public MouldableSectorWithInnerCircle(AbstractSector sector)
     {
         super(sector);
-        innerCircle = new MouldableCircle(new AbstractCircle(sector, sector.getRadius()/2.0));
+        innerCircle = new MouldableInnerCircle(this, new AbstractCircle(sector, sector.getRadius()/2.0));
+        addObserver(innerCircle);
     }
 
     @Override
@@ -70,5 +71,5 @@ public class MouldableSectorWithInnerCircle extends MouldableSector
     {
         return innerCircle;
     }
-    
+
 }
