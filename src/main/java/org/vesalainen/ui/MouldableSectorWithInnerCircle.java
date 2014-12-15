@@ -57,13 +57,9 @@ public class MouldableSectorWithInnerCircle extends MouldableSector
         }
         else
         {
-            if (!isInside(x, y))
+            if (!isInside(x, y) && !innerCircle.isNearCenter(x, y))
             {
-                double distance = Circles.distanceFromCenter(this, x, y);
-                if (distance > getRadius()/4.0)
-                {
-                    return innerCircle.getCursor(x, y);
-                }
+                return innerCircle.getCursor(x, y);
             }
         }
         return null;
