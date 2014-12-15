@@ -125,22 +125,45 @@ public class MouldableCircle implements Circle, Serializable
             observer.radiusChanged(radius);
         }
     }
-    
+
+    public boolean isNearCenter(double x, double y)
+    {
+        return Circles.distanceFromCenter(circle, x, y) < getPrecision();
+    }
+    public boolean isNearCircle(double x, double y)
+    {
+        double radius = circle.getRadius();
+        double distance = Circles.distanceFromCenter(circle, x, y);
+        return Math.abs(distance - radius) < getPrecision();
+    }
+    public boolean isInCenter(double x, double y)
+    {
+        return Circles.distanceFromCenter(circle, x, y) < getPrecision()/2.0;
+    }
+    protected double getPrecision()
+    {
+        return getRadius()/5.0;
+    }
     public Cursor getCursor(double x, double y)
     {
-        double distance = Circles.distance(getX(), getY(), x, y);
-        double precision = getRadius()/5.0;
-        if (distance < precision)
+        if (isNearCenter(x, y))
         {
-            return new CenterCursor();
+            return createCenterCursor(x, y);
         }
-        if (Math.abs(distance - circle.getRadius()) < precision)
+        if (isNearCircle(x, y))
         {
-            return new RadiusCursor();
+            return createRadiusCursor(x, y);
         }
         return null;
     }
-
+    protected Cursor createCenterCursor(double x, double y)
+    {
+        return new CenterCursor();
+    }
+    protected Cursor createRadiusCursor(double x, double y)
+    {
+        return new RadiusCursor();
+    }
     public interface Cursor
     {
         /**
@@ -173,8 +196,7 @@ public class MouldableCircle implements Circle, Serializable
         public void ready(double x, double y)
         {
             update(x, y);
-            double distance = Circles.distanceFromCenter(attachPoint, x, y);
-            if (distance < getRadius()/10.0)
+            if (isInCenter(x, y))
             {
                 circle.set(attachPoint);
                 attached = true;

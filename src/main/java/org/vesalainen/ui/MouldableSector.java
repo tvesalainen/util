@@ -125,38 +125,29 @@ public class MouldableSector extends MouldableCircle implements Sector
         }
     }
     @Override
-    public Cursor getCursor(double x, double y)
+    protected Cursor createRadiusCursor(double x, double y)
     {
-        double distance = Circles.distanceFromCenter(this, x, y);
-        double precision = getRadius()/5.0;
-        if (distance < precision)
+        if (isCircle())
         {
-            return new CenterCursor();
+            return new RadiusOrSplitCursor(x, y);
         }
-        if (Math.abs(distance - getRadius()) < precision)
+        else
         {
-            if (isCircle())
+            Cursor angleCursor = createAngleCursor(x, y);
+            if (angleCursor != null)
             {
-                return new RadiusOrSplitCursor(x, y);
+                return angleCursor;
             }
             else
             {
-                Cursor angleCursor = getAngleCursor(x, y);
-                if (angleCursor != null)
-                {
-                    return angleCursor;
-                }
-                else
-                {
-                    return new RadiusCursor();
-                }
+                return new RadiusCursor();
             }
         }
-        return null;
     }
-    protected Cursor getAngleCursor(double x, double y)
+    
+    protected Cursor createAngleCursor(double x, double y)
     {
-        double precision = getRadius()/5.0;
+        double precision = getPrecision();
         double dLeft = Circles.distance(getLeftX(), getLeftY(), x, y);
         double dRight = Circles.distance(getRightX(), getRightY(), x, y);
         if (dLeft < precision || dRight < precision)
