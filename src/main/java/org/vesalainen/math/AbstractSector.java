@@ -55,7 +55,14 @@ public class AbstractSector extends AbstractCircle implements Sector, Serializab
             return true;
         }
         double angle = Circles.angle(this, x, y);
-        return Angle.clockwise(rightAngle, angle) && Angle.clockwise(angle, leftAngle);
+        if (getAngle() <= Math.PI)
+        {
+            return Angle.clockwise(rightAngle, angle) && Angle.clockwise(angle, leftAngle);
+        }
+        else
+        {
+            return !(Angle.clockwise(leftAngle, angle) && Angle.clockwise(angle, rightAngle));
+        }
     }
     public double getLeftX()
     {

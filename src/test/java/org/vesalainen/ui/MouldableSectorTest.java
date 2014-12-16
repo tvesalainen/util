@@ -99,7 +99,7 @@ public class MouldableSectorTest
         assertEquals(315, Math.toDegrees(ms.getAngle()), Epsilon);
         cursor = cursor.update(0, -6);
         assertEquals(270, Math.toDegrees(ms.getLeftAngle()), Epsilon);
-        cursor = ms.getCursor(0.1, -4.8);
+        cursor = ms.getCursor(-0.1, -4.8);
         assertNotNull(cursor);
         cursor = cursor.update(4, -4);
         assertEquals(315, Math.toDegrees(ms.getLeftAngle()), Epsilon);
