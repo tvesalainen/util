@@ -64,34 +64,48 @@ public class MouldableCircle implements Circle, Serializable
     public void set(double x, double y)
     {
         attached = false;
-        circle.setX(x);
-        circle.setY(y);
+        attachPoint.setX(x);
+        attachPoint.setY(y);
         fireCenter(x, y);
     }
 
     @Override
     public double getX()
     {
-        return circle.getX();
+        if (attached)
+        {
+            return circle.getX();
+        }
+        else
+        {
+            return attachPoint.getX();
+        }
     }
 
     public void setX(double x)
     {
         attached = false;
-        circle.setX(x);
+        attachPoint.setX(x);
         fireCenter(x, getY());
     }
 
     @Override
     public double getY()
     {
-        return circle.getY();
+        if (attached)
+        {
+            return circle.getY();
+        }
+        else
+        {
+            return attachPoint.getY();
+        }
     }
 
     public void setY(double y)
     {
         attached = false;
-        circle.setY(y);
+        attachPoint.setY(y);
         fireCenter(getX(), y);
     }
 
@@ -210,8 +224,7 @@ public class MouldableCircle implements Circle, Serializable
     }
     protected class CenterCursor implements Cursor
     {
-
-        @Override
+       @Override
         public Cursor update(double x, double y)
         {
             setX(x);
@@ -225,7 +238,6 @@ public class MouldableCircle implements Circle, Serializable
             update(x, y);
             if (isInCenter(x, y))
             {
-                circle.set(attachPoint);
                 attached = true;
             }
             fireCenter(x, y);

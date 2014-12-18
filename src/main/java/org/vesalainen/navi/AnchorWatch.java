@@ -28,7 +28,6 @@ import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Matrices;
 import org.vesalainen.math.Point;
 import org.vesalainen.ui.MouldableCircle.MouldableCircleObserver;
-import org.vesalainen.ui.MouldableSector;
 import org.vesalainen.ui.MouldableSectorWithInnerCircle;
 
 /**
