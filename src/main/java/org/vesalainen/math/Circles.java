@@ -72,6 +72,10 @@ public class Circles
     {
         return Math.hypot(x-center.getX(), y-center.getY());
     }
+    public static double distance(Point p1, Point p2)
+    {
+        return distance(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
     public static double distance(double x1, double y1, double x2, double y2)
     {
         return Math.hypot(x1-x2, y1-y2);
