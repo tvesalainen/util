@@ -131,7 +131,7 @@ public class SafeSectorTest
         assertEquals(270, Math.toDegrees(ms.getLeftAngle()), Epsilon);
         cursor = ms.getCursor(9.9, 5.2, 0.5);
         assertNotNull(cursor);
-        cursor = cursor.update(14, 6);
+        cursor.ready(14, 6);
         assertEquals(315, Math.toDegrees(ms.getLeftAngle()), Epsilon);
     }
     
@@ -161,4 +161,15 @@ public class SafeSectorTest
         assertEquals(ms.getY(), ic.getY(), Epsilon);
     }
     
+    @Test
+    public void testSetAngle()
+    {
+        AbstractCircle c1 = new AbstractCircle(0, 0, 5);
+        SafeSector ms = new SafeSector(c1);
+        ms.setRightAngle(Math.toRadians(90));
+        ms.setLeftAngle(Math.toRadians(0));
+        assertEquals(90, Math.toDegrees(ms.getRightAngle()), Epsilon);
+        assertEquals(0, Math.toDegrees(ms.getLeftAngle()), Epsilon);
+        assertEquals(270, Math.toDegrees(ms.getAngle()), Epsilon);
+    }
 }

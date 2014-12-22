@@ -69,6 +69,20 @@ public class SafeSector implements Sector, Serializable
         return Angle.normalizeToFullAngle(Math.atan2(rightY-getY(), rightX-getX()));
     }
 
+    public void setLeftAngle(double radians)
+    {
+        double radius = getRadius();
+        leftX = radius*Math.cos(radians)+getX();
+        leftY = radius*Math.sin(radians)+getY();
+    }
+    
+    public void setRightAngle(double radians)
+    {
+        double radius = getRadius();
+        rightX = radius*Math.cos(radians)+getX();
+        rightY = radius*Math.sin(radians)+getY();
+    }
+    
     @Override
     public boolean isCircle()
     {
@@ -109,12 +123,29 @@ public class SafeSector implements Sector, Serializable
         {
             point = detachPoint = new AbstractPoint(attachCircle);
         }
+        if (!isCircle())
+        {
+            double dx = x-point.getX();
+            double dy = y-point.getY();
+            leftX+=dx;
+            leftY+=dy;
+            rightX+=dx;
+            rightY+=dy;
+        }
         detachPoint.set(x, y);
     }
 
     public boolean isInside(double x, double y)
     {
-        return Circles.isInside(this, x, y) && isInSector(x, y);
+        if (isCircle())
+        {
+            return Circles.isInside(this, x, y);
+        }
+        else
+        {
+            return (Circles.isInside(this, x, y) && isInSector(x, y)) ||
+                    Circles.isInside(innerCircle, x, y);
+        }
     }
     
     public boolean isInSector(double x, double y)
@@ -287,6 +318,7 @@ public class SafeSector implements Sector, Serializable
         public void ready(double x, double y)
         {
             update(x, y);
+            innerRadius = Math.min(innerRadius, getRadius());
         }
 
     }
@@ -302,13 +334,8 @@ public class SafeSector implements Sector, Serializable
         @Override
         public void ready(double x, double y)
         {
-            double radius = getRadius();
-            double leftAngle = getLeftAngle();
-            leftX = radius*Math.cos(leftAngle)+getX();
-            leftY = radius*Math.sin(leftAngle)+getY();
-            double rightAngle = getRightAngle();
-            rightX = radius*Math.cos(rightAngle)+getX();
-            rightY = radius*Math.sin(rightAngle)+getY();
+            setLeftAngle(getLeftAngle());
+            setRightAngle(getRightAngle());
             if (Circles.distance(leftX, leftY, rightX, rightY) < r)
             {
                 leftX = leftY = rightX = rightY = 0;
