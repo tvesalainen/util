@@ -33,8 +33,6 @@ import org.junit.Test;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.navi.AnchorWatch.Watcher;
-import org.vesalainen.ui.MouldableSector;
-import org.vesalainen.ui.MouldableSectorWithInnerCircle;
 import org.vesalainen.ui.Plotter;
 
 /**
@@ -155,7 +153,7 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void safeSector(MouldableSectorWithInnerCircle safe)
+        public void safeSector(SafeSector safe)
         {
         }
         
@@ -209,7 +207,7 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void safeSector(MouldableSectorWithInnerCircle safe)
+        public void safeSector(SafeSector safe)
         {
         }
 

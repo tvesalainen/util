@@ -17,6 +17,7 @@
 
 package org.vesalainen.navi;
 
+import java.io.Serializable;
 import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.Circle;
@@ -30,8 +31,9 @@ import org.vesalainen.util.navi.Angle;
  *
  * @author Timo Vesalainen
  */
-public class SafeSector implements Sector
+public class SafeSector implements Sector, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private final InnerCircle innerCircle;
     private Point point;
     private final AbstractCircle attachCircle;
@@ -46,6 +48,7 @@ public class SafeSector implements Sector
     {
         this.point = attachCircle = circle;
         this.innerCircle = new InnerCircle();
+        innerRadius = circle.getRadius() / 2.0;
     }
     
     @Override
@@ -57,13 +60,13 @@ public class SafeSector implements Sector
     @Override
     public double getLeftAngle()
     {
-        return Angle.normalizeToFullAngle(Math.atan2(leftY, leftX));
+        return Angle.normalizeToFullAngle(Math.atan2(leftY-getY(), leftX-getX()));
     }
 
     @Override
     public double getRightAngle()
     {
-        return Angle.normalizeToFullAngle(Math.atan2(rightY, rightX));
+        return Angle.normalizeToFullAngle(Math.atan2(rightY-getY(), rightX-getX()));
     }
 
     @Override
@@ -109,6 +112,32 @@ public class SafeSector implements Sector
         detachPoint.set(x, y);
     }
 
+    public boolean isInside(double x, double y)
+    {
+        return Circles.isInside(this, x, y) && isInSector(x, y);
+    }
+    
+    public boolean isInSector(double x, double y)
+    {
+        if (isCircle())
+        {
+            return true;
+        }
+        return rawIsInSector(x, y);
+    }
+    private boolean rawIsInSector(double x, double y)
+    {
+        double ox = getX();
+        double oy = getY();
+        if (Vectors.isClockwise(ox, oy, leftX, leftY, rightX, rightY))
+        {
+            return Vectors.isClockwise(ox, oy, leftX, leftY, x, y) && Vectors.isClockwise(ox, oy, x, y, rightX, rightY);
+        }
+        else
+        {
+            return !(Vectors.isClockwise(ox, oy, rightX, rightY, x, y) && Vectors.isClockwise(ox, oy, x, y, leftX, leftY));
+        }
+    }
     public Cursor getCursor(double x, double y, double r)
     {
         double distanceFromCenter = Circles.distanceFromCenter(this, x, y);
@@ -118,11 +147,35 @@ public class SafeSector implements Sector
         }
         if (!isCircle())
         {
-            
+            if (Circles.distance(leftX, leftY, x, y) < r)
+            {
+                return new LeftCursor(r);
+            }
+            if (Circles.distance(rightX, rightY, x, y) < r)
+            {
+                return new RightCursor(r);
+            }
+            if (rawIsInSector(x, y))
+            {
+                if (distanceFromCenter - getRadius() < r)
+                {
+                    return new RadiusCursor();
+                }
+            }
+            else
+            {
+                if (distanceFromCenter - innerRadius < r)
+                {
+                    return new InnerRadiusCursor(r);
+                }
+            }
         }
-        if (distanceFromCenter - getRadius() < r)
+        else
         {
-            return new RadiusOrAngleCursor(x, y, r);
+            if (distanceFromCenter - getRadius() < r)
+            {
+                return new RadiusOrAngleCursor(x, y, r);
+            }
         }
         return null;
     }
@@ -196,7 +249,7 @@ public class SafeSector implements Sector
                 }
                 else
                 {
-                    if (Vectors.isClockwise(this.x, this.y, x, y))
+                    if (Vectors.isClockwise(getX(), getY(), this.x, this.y, x, y))
                     {
                         cursor = new LeftCursor(r);
                         rightX = this.x;
@@ -251,11 +304,11 @@ public class SafeSector implements Sector
         {
             double radius = getRadius();
             double leftAngle = getLeftAngle();
-            leftX = radius*Math.cos(leftAngle);
-            leftY = radius*Math.sin(leftAngle);
+            leftX = radius*Math.cos(leftAngle)+getX();
+            leftY = radius*Math.sin(leftAngle)+getY();
             double rightAngle = getRightAngle();
-            rightX = radius*Math.cos(rightAngle);
-            rightY = radius*Math.sin(rightAngle);
+            rightX = radius*Math.cos(rightAngle)+getX();
+            rightY = radius*Math.sin(rightAngle)+getY();
             if (Circles.distance(leftX, leftY, rightX, rightY) < r)
             {
                 leftX = leftY = rightX = rightY = 0;
@@ -311,8 +364,9 @@ public class SafeSector implements Sector
         }
         
     }
-    public class InnerCircle implements Circle
+    public class InnerCircle implements Circle, Serializable
     {
+        private static final long serialVersionUID = 1L;
 
         @Override
         public double getRadius()
@@ -332,5 +386,37 @@ public class SafeSector implements Sector
             return point.getY();
         }
         
+    }
+    public class InnerRadiusCursor implements Cursor
+    {
+        private double r;
+
+        public InnerRadiusCursor(double r)
+        {
+            this.r = r;
+        }
+        
+        @Override
+        public Cursor update(double x, double y)
+        {
+            double ir = Circles.distanceFromCenter(point, x, y);
+            if (ir < getRadius() && ir > r)
+            {
+                innerRadius = ir;
+            }
+            return this;
+        }
+
+        @Override
+        public void ready(double x, double y)
+        {
+            update(x, y);
+            if (getRadius() - innerRadius < r)
+            {
+                leftX = leftY = rightX = rightY = 0;
+                innerRadius = getRadius() / 2.0;
+            }
+        }
+
     }
 }

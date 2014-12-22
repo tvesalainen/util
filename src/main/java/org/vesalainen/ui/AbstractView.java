@@ -263,18 +263,28 @@ public class AbstractView
         return - (y - yOff) / scale;
     }
     /**
-     * Scales the argument to screen scale.
+     * Scales the argument to screen scaleToScreen.
      * @param d
      * @return 
      */
-    public double scale(double d)
+    public double scaleToScreen(double d)
     {
         assert isReady();
         if (!calculated)
         {
             calculate();
         }
-        return scale * d;
+        return d * scale;
+    }
+
+    public double scaleFromScreen(double d)
+    {
+        assert isReady();
+        if (!calculated)
+        {
+            calculate();
+        }
+        return d / scale;
     }
 
 }

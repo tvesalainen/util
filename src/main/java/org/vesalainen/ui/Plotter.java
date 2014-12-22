@@ -209,7 +209,7 @@ public class Plotter extends AbstractView
             super.draw(graphics2D);
             int sx = (int) toScreenX(x);
             int sy = (int) toScreenY(y);
-            int sr = (int) scale(r);
+            int sr = (int) scaleToScreen(r);
             int sr2 = 2*sr;
             graphics2D.drawOval(sx-sr, sy-sr, sr2, sr2);
         }

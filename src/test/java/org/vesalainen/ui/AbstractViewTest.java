@@ -44,7 +44,7 @@ public class AbstractViewTest
         assertEquals(50, view.toScreenY(10), Epsilon);
         assertEquals(50, view.toScreenX(0), Epsilon);
         assertEquals(100, view.toScreenY(0), Epsilon);
-        assertEquals(5, view.scale(1), Epsilon);
+        assertEquals(5, view.scaleToScreen(1), Epsilon);
         
         assertEquals(-10, view.fromScreenX(0), Epsilon);
         assertEquals(10, view.fromScreenX(100), Epsilon);
@@ -66,7 +66,7 @@ public class AbstractViewTest
         assertEquals(0, view.toScreenY(10), Epsilon);
         assertEquals(100, view.toScreenX(0), Epsilon);
         assertEquals(50, view.toScreenY(0), Epsilon);
-        assertEquals(5, view.scale(1), Epsilon);
+        assertEquals(5, view.scaleToScreen(1), Epsilon);
     }
     
     @Test
@@ -84,7 +84,7 @@ public class AbstractViewTest
         assertEquals(0, view.toScreenY(10), Epsilon);
         assertEquals(100, view.toScreenX(0), Epsilon);
         assertEquals(50, view.toScreenY(0), Epsilon);
-        assertEquals(5, view.scale(1), Epsilon);
+        assertEquals(5, view.scaleToScreen(1), Epsilon);
     }
     
     @Test
@@ -118,7 +118,7 @@ public class AbstractViewTest
         assertEquals(0, view.toScreenY(10), Epsilon);
         assertEquals(3, view.toScreenX(0), Epsilon);
         assertEquals(10, view.toScreenY(0), Epsilon);
-        assertEquals(1, view.scale(1), Epsilon);
+        assertEquals(1, view.scaleToScreen(1), Epsilon);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class AbstractViewTest
         assertEquals(0, view.toScreenY(10), Epsilon);
         assertEquals(100, view.toScreenX(0), Epsilon);
         assertEquals(50, view.toScreenY(0), Epsilon);
-        assertEquals(5, view.scale(1), Epsilon);
+        assertEquals(5, view.scaleToScreen(1), Epsilon);
     }
     
 }

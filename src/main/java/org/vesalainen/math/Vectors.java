@@ -35,4 +35,19 @@ public class Vectors
     {
         return -x1*y2+x2*y1 > 0;
     }
+    /**
+     * Returns true if vector (x2, y2) is clockwise of (x1, y1) in (ox, oy) centered
+     * coordinate.
+     * @param ox
+     * @param oy
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return 
+     */
+    public static final boolean isClockwise(double ox, double oy, double x1, double y1, double x2, double y2)
+    {
+        return isClockwise(x1-ox, y1-oy, x2-ox, y2-oy);
+    }
 }

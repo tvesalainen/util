@@ -37,10 +37,13 @@ public class VectorsTest
     @Test
     public void testIsClockwise()
     {
-        assertTrue(Vectors.isClockwise(0, 1, 1, 0));
+        assertTrue(Vectors.isClockwise(0, 1, 10, 0));
         assertTrue(Vectors.isClockwise(0, 1, 0.1, -1));
         assertTrue(Vectors.isClockwise(-1, 1, 1, 1));
         assertFalse(Vectors.isClockwise(-1, 1, 1, -1));
+        assertTrue(Vectors.isClockwise(-1, -0.1, -1, 0));
+        assertTrue(Vectors.isClockwise(-1, -1, -1, -0.1));
+        assertTrue(Vectors.isClockwise(-3, -3, -4, -0.1));
     }
     
 }
