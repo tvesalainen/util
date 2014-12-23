@@ -60,27 +60,32 @@ public class SafeSector implements Sector, Serializable
     @Override
     public double getLeftAngle()
     {
-        return Angle.normalizeToFullAngle(Math.atan2(leftY-getY(), leftX-getX()));
+        return Angle.normalizeToFullAngle(Math.atan2(leftY, leftX));
     }
 
     @Override
     public double getRightAngle()
     {
-        return Angle.normalizeToFullAngle(Math.atan2(rightY-getY(), rightX-getX()));
+        return Angle.normalizeToFullAngle(Math.atan2(rightY, rightX));
     }
 
+    private void updateSector()
+    {
+        setLeftAngle(getLeftAngle());
+        setRightAngle(getRightAngle());
+    }
     public void setLeftAngle(double radians)
     {
         double radius = getRadius();
-        leftX = radius*Math.cos(radians)+getX();
-        leftY = radius*Math.sin(radians)+getY();
+        leftX = radius*Math.cos(radians);
+        leftY = radius*Math.sin(radians);
     }
     
     public void setRightAngle(double radians)
     {
         double radius = getRadius();
-        rightX = radius*Math.cos(radians)+getX();
-        rightY = radius*Math.sin(radians)+getY();
+        rightX = radius*Math.cos(radians);
+        rightY = radius*Math.sin(radians);
     }
     
     @Override
@@ -98,6 +103,7 @@ public class SafeSector implements Sector, Serializable
     private void setRadius(double r)
     {
         attachCircle.setRadius(r);
+        updateSector();
     }
 
     public Circle getInnerCircle()
@@ -122,15 +128,6 @@ public class SafeSector implements Sector, Serializable
         if (detachPoint == null)
         {
             point = detachPoint = new AbstractPoint(attachCircle);
-        }
-        if (!isCircle())
-        {
-            double dx = x-point.getX();
-            double dy = y-point.getY();
-            leftX+=dx;
-            leftY+=dy;
-            rightX+=dx;
-            rightY+=dy;
         }
         detachPoint.set(x, y);
     }
@@ -158,15 +155,15 @@ public class SafeSector implements Sector, Serializable
     }
     private boolean rawIsInSector(double x, double y)
     {
-        double ox = getX();
-        double oy = getY();
-        if (Vectors.isClockwise(ox, oy, leftX, leftY, rightX, rightY))
+        double ox = x-getX();
+        double oy = y-getY();
+        if (Vectors.isClockwise(leftX, leftY, rightX, rightY))
         {
-            return Vectors.isClockwise(ox, oy, leftX, leftY, x, y) && Vectors.isClockwise(ox, oy, x, y, rightX, rightY);
+            return Vectors.isClockwise(leftX, leftY, ox, oy) && Vectors.isClockwise(ox, oy, rightX, rightY);
         }
         else
         {
-            return !(Vectors.isClockwise(ox, oy, rightX, rightY, x, y) && Vectors.isClockwise(ox, oy, x, y, leftX, leftY));
+            return !(Vectors.isClockwise(rightX, rightY, ox, oy) && Vectors.isClockwise(ox, oy, leftX, leftY));
         }
     }
     public Cursor getCursor(double x, double y, double r)
@@ -178,11 +175,13 @@ public class SafeSector implements Sector, Serializable
         }
         if (!isCircle())
         {
-            if (Circles.distance(leftX, leftY, x, y) < r)
+            double ox = x-getX();
+            double oy = y-getY();
+            if (Circles.distance(leftX, leftY, ox, oy) < r)
             {
                 return new LeftCursor(r);
             }
-            if (Circles.distance(rightX, rightY, x, y) < r)
+            if (Circles.distance(rightX, rightY, ox, oy) < r)
             {
                 return new RightCursor(r);
             }
@@ -262,15 +261,17 @@ public class SafeSector implements Sector, Serializable
 
         public RadiusOrAngleCursor(double x, double y, double r)
         {
-            this.x = x;
-            this.y = y;
+            this.x = x-getX();
+            this.y = y-getY();
             this.r = r;
         }
 
         @Override
         public Cursor update(double x, double y)
         {
-            double distance = Circles.distance(this.x, this.y, x, y);
+            double ox = x-getX();
+            double oy = y-getY();
+            double distance = Circles.distance(this.x, this.y, ox, oy);
             if (distance > r)
             {
                 Cursor cursor;
@@ -280,7 +281,7 @@ public class SafeSector implements Sector, Serializable
                 }
                 else
                 {
-                    if (Vectors.isClockwise(getX(), getY(), this.x, this.y, x, y))
+                    if (Vectors.isClockwise(this.x, this.y, ox, oy))
                     {
                         cursor = new LeftCursor(r);
                         rightX = this.x;
@@ -334,8 +335,7 @@ public class SafeSector implements Sector, Serializable
         @Override
         public void ready(double x, double y)
         {
-            setLeftAngle(getLeftAngle());
-            setRightAngle(getRightAngle());
+            updateSector();
             if (Circles.distance(leftX, leftY, rightX, rightY) < r)
             {
                 leftX = leftY = rightX = rightY = 0;
@@ -354,8 +354,8 @@ public class SafeSector implements Sector, Serializable
         @Override
         public Cursor update(double x, double y)
         {
-            leftX = x;
-            leftY = y;
+            leftX = x-getX();
+            leftY = y-getY();
             return this;
         }
 
@@ -378,8 +378,8 @@ public class SafeSector implements Sector, Serializable
         @Override
         public Cursor update(double x, double y)
         {
-            rightX = x;
-            rightY = y;
+            rightX = x-getX();
+            rightY = y-getY();
             return this;
         }
 
