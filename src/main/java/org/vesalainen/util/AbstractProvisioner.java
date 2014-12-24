@@ -17,10 +17,6 @@
 
 package org.vesalainen.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -28,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AbstractProvisioner to provision values to @Setting annotated methods. When 
- * class T is attached it's public methods are searched to find methods annotated
+ * AbstractProvisioner is a feature to provision values to @Setting annotated methods. When 
+ * class T is attached, it's public methods are searched to find methods annotated
  * with @Setting annotation. Method has to have one parameters and it is 
  * practical to have return type void. In attach phase each annotated method is 
  * called with a value returned from getValue method if that value is other than
@@ -39,46 +35,76 @@ import java.util.Map;
  * to all attached methods.
  * 
  * @author Timo Vesalainen
- * @param <T>
+ * @param <T> Type of annotated class
+ * @param <K> Annotation key type
+ * @param <V> Provisioned type
  */
-public abstract class AbstractProvisioner<T>
+public abstract class AbstractProvisioner<T,K,V>
 {
-    protected final MapList<String,InstanceMethod> map = new HashMapList<>();
-
+    private MapList<K,InstanceMethod> map;
+    /**
+     * Return true if attached settings exists.
+     * @return 
+     */
     public boolean isEmpty()
     {
         return map.isEmpty();
     }
-    
+    /**
+     * Attach ob
+     * @param ob 
+     */
     public void attach(T ob)
+    {
+        if (map == null)
+        {
+            map = new HashMapList<>();
+        }
+        provision(ob);
+    }
+    /**
+     * Provision ob without attaching it.
+     * @param ob 
+     */
+    public void provision(T ob)
     {
         for (Method method : ob.getClass().getMethods())
         {
-            Setting setting = method.getAnnotation(Setting.class);
-            if (setting != null)
+            K key = getKey(method);
+            if (key != null)
             {
-                String name = setting.value();
                 Class<?>[] params = method.getParameterTypes();
                 if (params.length != 1)
                 {
-                    throw new IllegalArgumentException("@Setting("+name+") argument count != 1");
+                    throw new IllegalArgumentException("@"+key.getClass().getSimpleName()+"Setting("+key+") argument count != 1");
                 }
                 InstanceMethod instanceMethod = new InstanceMethod(ob, method);
-                Object value = getValue(name);
+                V value = getValue(key);
                 if (value != null)
                 {
                     instanceMethod.invoke(value);
                 }
-                map.add(name, instanceMethod);
+                if (map != null)
+                {
+                    map.add(key, instanceMethod);
+                }
             }
         }
     }
+    /**
+     * Detach ob
+     * @param ob 
+     */
     public void detach(T ob)
     {
-        Iterator<Map.Entry<String, List<InstanceMethod>>> ki = map.entrySet().iterator();
+        if (map == null)
+        {
+            throw new IllegalStateException("attach not called");
+        }
+        Iterator<Map.Entry<K, List<InstanceMethod>>> ki = map.entrySet().iterator();
         while (ki.hasNext())
         {
-            Map.Entry<String, List<InstanceMethod>> entry = ki.next();
+            Map.Entry<K, List<InstanceMethod>> entry = ki.next();
             Iterator<InstanceMethod> li = entry.getValue().iterator();
             while (li.hasNext())
             {
@@ -95,22 +121,18 @@ public abstract class AbstractProvisioner<T>
         }
     }
 
-    public abstract Object getValue(String name);
+    public abstract V getValue(K key);
     
-    public void setValue(String name, Object value)
+    public abstract K getKey(Method method);
+    
+    public void setValue(K name, V value)
     {
         for (InstanceMethod im : map.get(name))
         {
             im.invoke(value);
         }
     }
-    
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public @interface Setting
-    {
-        String value();
-    }
+
     private class InstanceMethod
     {
         T instance;
