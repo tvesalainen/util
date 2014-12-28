@@ -418,4 +418,28 @@ public class ConvexPolygonTest
         assertEquals(1, o.data[idx++], Epsilon);
         assertEquals(1, o.data[idx++], Epsilon);
     }        
+    @Test
+    public void testdistanceFromLine()
+    {
+        assertEquals(1, ConvexPolygon.distanceFromLine(1, 1, 0, 0, 0, 1), Epsilon);
+        assertEquals(1, ConvexPolygon.distanceFromLine(1, 1, 0, 0, 1, 0), Epsilon);
+        assertEquals(0, ConvexPolygon.distanceFromLine(1, 1, 0, 0, 1, 1), Epsilon);
+        assertEquals(Math.sqrt(2), ConvexPolygon.distanceFromLine(1, 1, 0, 0, 1, -1), Epsilon);
+    }
+    @Test
+    public void testGetMinimumDistance()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+                1, 2,
+                2, 1,
+                3, 2,
+                5, 3,
+                4, 4,
+                3, 6,
+                2, 5
+        );
+        ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+        assertEquals(Math.sqrt(2)/2, p.getMinimumDistance(2, 2), Epsilon);
+        assertEquals(ConvexPolygon.distanceFromLine(3, 4, 5, 3, 3, 6), p.getMinimumDistance(3, 4), Epsilon);
+    }
 }

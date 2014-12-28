@@ -39,6 +39,58 @@ public class ConvexPolygon extends Polygon
             throw new IllegalArgumentException("Polygon is not convex");
         }
     }
+    /**
+     * Returns minimum distance from inside point (x0, y0) to edge.
+     * @param x0
+     * @param y0
+     * @return 
+     */
+    public double getMinimumDistance(double x0, double y0)
+    {
+        if (!isInside(x0, y0))
+        {
+            throw new IllegalArgumentException("point not inside convex polygon");
+        }
+        double min = Double.MAX_VALUE;
+        int rows = points.numRows;
+        double[] d = points.data;
+        double x1 = d[2 * (rows - 1)];
+        double y1 = d[2 * (rows - 1) + 1];
+        for (int r = 0; r < rows; r++)
+        {
+            double x2 = d[2 * r];
+            double y2 = d[2 * r + 1];
+            min=Math.min(min, distanceFromLine(x0, y0, x1, y1, x2, y2));
+            x1 = x2;
+            y1 = y2;
+        }
+        return min;
+    }
+    /**
+     * Returns distance from point (x0, y0) to line that goes through points
+     * (x1, y1) and (x2, y2)
+     * @param x0
+     * @param y0
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return 
+     */
+    public static double distanceFromLine(double x0, double y0, double x1, double y1, double x2, double y2)
+    {
+        double dx = x2-x1;
+        if (dx == 0.0)
+        {
+            return Math.abs(y1-y0);
+        }
+        double dy = y2-y1;
+        if (dy == 0.0)
+        {
+            return Math.abs(x1-x0);
+        }
+        return Math.abs(dy*x0-dx*y0+x2*y1-y2*x1)/Math.hypot(dx, dy);
+    }
     public void getOuterBoundary(DenseMatrix64F point, DenseMatrix64F outer)
     {
         getOuterBoundary(point.data[0], point.data[1], outer);
