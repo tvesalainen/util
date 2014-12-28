@@ -19,15 +19,15 @@ package org.vesalainen.util;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.vesalainen.util.AbstractStringProvisioner.StringSetting;
+import org.vesalainen.util.AbstractProvisioner.Setting;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class AbstractStringProvisionerTest
+public class AbstractProvisionerTest
 {
-    public AbstractStringProvisionerTest()
+    public AbstractProvisionerTest()
     {
     }
 
@@ -37,7 +37,7 @@ public class AbstractStringProvisionerTest
     @Test
     public void test()
     {
-        StringProvisionerImpl api = new StringProvisionerImpl();
+        AbstractProvisionerImpl api = new AbstractProvisionerImpl();
         TestClass testClass = new TestClass();
         api.attach(testClass);
         assertEquals("settingA", testClass.getA());
@@ -48,7 +48,7 @@ public class AbstractStringProvisionerTest
     public class TestClass
     {
         private String a;
-        @StringSetting("settingA")
+        @Setting("settingA")
         public void setA(String a)
         {
             this.a = a;
@@ -60,7 +60,7 @@ public class AbstractStringProvisionerTest
         }
         
     }
-    public class StringProvisionerImpl extends AbstractStringProvisioner<TestClass>
+    public class AbstractProvisionerImpl extends AbstractProvisioner<TestClass>
     {
 
         @Override
