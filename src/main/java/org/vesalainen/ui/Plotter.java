@@ -156,7 +156,7 @@ public class Plotter extends AbstractView
         catch (IOException ex)
         {
             throw ex;
-        }
+         }
     }
 
     private class Drawable

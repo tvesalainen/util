@@ -32,7 +32,7 @@ public class LocalLongitude implements Serializable
     
     protected double departure;
 
-    protected LocalLongitude(double latitude)
+    private LocalLongitude(double latitude)
     {
         this.departure = Math.cos(Math.toRadians(latitude));
     }

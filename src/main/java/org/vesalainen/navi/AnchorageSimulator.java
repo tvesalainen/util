@@ -76,7 +76,7 @@ public class AnchorageSimulator extends TimerTask
         {
             float lon = dis.readFloat();
             float lat = dis.readFloat();
-            anchorWatch.update(lon, lat);
+            anchorWatch.update(lon, lat, System.currentTimeMillis(), 1);
         }
         catch (EOFException ex)
         {

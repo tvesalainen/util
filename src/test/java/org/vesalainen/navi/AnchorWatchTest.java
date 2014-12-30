@@ -76,13 +76,19 @@ public class AnchorWatchTest
         AnchorWatch aw = new AnchorWatch();
         Watcher testWatcher = new TestWatcher();
         aw.addWatcher(testWatcher);
+        int count=0;
         try (DataInputStream dis = new DataInputStream(url.openStream()))
         {
             while (true)
             {
+                if (count==316)
+                {
+                    System.err.println();
+                }
                 float lon = dis.readFloat();
                 float lat = dis.readFloat();
-                aw.update(lon, lat);
+                aw.update(lon, lat, System.currentTimeMillis(), 1);
+                count++;
             }
         }
         catch (EOFException ex)
@@ -97,10 +103,10 @@ public class AnchorWatchTest
     public void testSerialize()
     {
         AnchorWatch aw = new AnchorWatch();
-        aw.update(25.1, 60.1);
-        aw.update(25.2, 60.0);
-        aw.update(25.3, 60.2);
-        aw.update(25.3, 60.1);
+        aw.update(25.1, 60.1, System.currentTimeMillis(), 1);
+        aw.update(25.2, 60.0, System.currentTimeMillis(), 1);
+        aw.update(25.3, 60.2, System.currentTimeMillis(), 1);
+        aw.update(25.3, 60.1, System.currentTimeMillis(), 1);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oas = new ObjectOutputStream(baos))
         {
@@ -133,7 +139,7 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void location(double x, double y)
+        public void location(double x, double y, long time, double accuracy, double speed)
         {
         }
 
@@ -157,6 +163,11 @@ public class AnchorWatchTest
         {
         }
         
+        @Override
+        public void suggestNextUpdateIn(double seconds, double meters)
+        {
+        }
+
     }
     private class PlottingWatcher implements Watcher
     {
@@ -169,7 +180,7 @@ public class AnchorWatchTest
         }
         
         @Override
-        public void location(double x, double y)
+        public void location(double x, double y, long time, double accuracy, double speed)
         {
             System.err.println("location("+x+", "+y+")");
             plotter.setColor(Color.BLACK);
@@ -235,6 +246,12 @@ public class AnchorWatchTest
             {
                 throw new IllegalArgumentException(ex);
             }
+        }
+
+        @Override
+        public void suggestNextUpdateIn(double seconds, double meters)
+        {
+            System.err.println("suggestNextUpdateIn("+seconds+", "+meters+")");
         }
 
     }

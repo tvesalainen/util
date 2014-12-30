@@ -46,6 +46,10 @@ public class AnchorWatch implements Serializable
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
     private SafeSector safeSector;
+    private LocalLongitude localLongitude;
+    private double lastLongitude = Double.NaN;  // internal
+    private double lastLatitude = Double.NaN;
+    private long lastTime = -1;
 
     public AnchorWatch()
     {
@@ -62,20 +66,63 @@ public class AnchorWatch implements Serializable
         estimated = null;
         fitter = null;
         safeSector = null;
+        localLongitude = null;
+        lastLongitude = Double.NaN;  // internal
+        lastLatitude = Double.NaN;
+        lastTime = -1;
+        
     }
 
-    public void update(double longitude, double latitude)
+    public void update(double longitude, double latitude, long time, double accuracy)
     {
-        longitude *= Math.cos(Math.toRadians(latitude));
-        double distance = distance(longitude, latitude);
-        if (fitter != null && !safeSector.isInside(longitude, latitude))
+        if (localLongitude == null)
+        {
+            localLongitude = LocalLongitude.getInstance(longitude, latitude);
+        }
+        double internal = longitude*Math.cos(Math.toRadians(latitude));//localLongitude.getInternal(longitude);
+        if (Double.isNaN(lastLongitude))
+        {
+            doUpdate(internal, latitude, time, accuracy, 0);
+        }
+        else
+        {
+            double distance = Math.hypot(internal-lastLongitude, latitude-lastLatitude);
+            double dTime = (time-lastTime)/1000.0;
+            double speed = toMeters(distance/dTime);
+            doUpdate(internal, latitude, time, accuracy, speed);
+        }
+        lastLongitude = internal;
+        lastLatitude = latitude;
+        lastTime = time;
+    }
+    public void update(double longitude, double latitude, long time, double accuracy, double speed)
+    {
+        if (localLongitude == null)
+        {
+            localLongitude = LocalLongitude.getInstance(longitude, latitude);
+        }
+        double internal = localLongitude.getInternal(longitude);
+        doUpdate(internal, latitude, time, accuracy, speed);
+        lastLongitude = internal;
+        lastLatitude = latitude;
+        lastTime = time;
+    }
+    private void doUpdate(double internal, double latitude, long time, double accuracy, double speed)
+    {
+        double distance = distance(internal, latitude);
+        if (fitter != null && !safeSector.isInside(internal, latitude))
         {
             fireAlarm(toMeters(distance));
         }
-        if (!area.isInside(longitude, latitude))
+        fireLocation(internal, latitude, time, accuracy, speed);
+        if (area.isInside(internal, latitude))
         {
-            fireLocation(longitude, latitude);
-            Matrices.addRow(points, longitude, latitude);
+            double minimumDistance = area.getMinimumDistance(internal, latitude);
+            fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
+        }
+        else
+        {
+            Matrices.addRow(points, internal, latitude);
             area.updateConvexPolygon(points);
             fireArea(area);
             points.setReshape(area.points);
@@ -158,11 +205,11 @@ public class AnchorWatch implements Serializable
         watchers.remove(watcher);
     }
     
-    private void fireLocation(double x, double y)
+    private void fireLocation(double x, double y, long time, double accuracy, double speed)
     {
         for (Watcher watcher : watchers)
         {
-            watcher.location(x, y);
+            watcher.location(x, y, time, accuracy, speed);
         }
     }
     private void fireAlarm(double distance)
@@ -200,6 +247,13 @@ public class AnchorWatch implements Serializable
             watcher.safeSector(safe);
         }
     }
+    private void fireSuggestNextUpdateIn(double seconds, double meters)
+    {
+        for (Watcher watcher : watchers)
+        {
+            watcher.suggestNextUpdateIn(seconds, meters);
+        }
+    }
 
     /**
      * Anchor updates.
@@ -209,11 +263,12 @@ public class AnchorWatch implements Serializable
     public interface Watcher
     {
         void alarm(double distance);
-        void location(double x, double y);
+        void location(double x, double y, long time, double accuracy, double speed);
         void area(ConvexPolygon area);
         void outer(DenseMatrix64F path);
         void estimated(Circle estimated);
         void safeSector(SafeSector safe);
+        void suggestNextUpdateIn(double seconds, double meters);
     }
     public class Center implements Point
     {
