@@ -23,7 +23,7 @@ import org.ejml.data.DenseMatrix64F;
  * @author Timo Vesalainen
  * @see org.ejml.data.DenseMatrix64F
  */
-public class Matrices
+public final class Matrices
 {
     public static void setRow(DenseMatrix64F m, int index, double... row)
     {
@@ -66,11 +66,19 @@ public class Matrices
         System.arraycopy(m.data, cols*index, m.data, cols*(index+1), cols*(rows-index));
         System.arraycopy(row, 0, m.data, cols*index, row.length);
     }
+    /**
+     * Removes equal subsequent rows and additionally last row if it is equal to first row.
+     * @param matrix 
+     */
     public static void removeEqualRows(DenseMatrix64F matrix)
     {
+        int rows = matrix.numRows;
+        if (rows < 2)
+        {
+            return;
+        }
         double[] d = matrix.data;
         int cols = matrix.numCols;
-        int rows = matrix.numRows;
         int left = rows-1;
         int delta = 0;
         for (int i=0;i<left;i++)
@@ -84,6 +92,10 @@ public class Matrices
                 left -= cnt;
                 delta += cnt;
             }
+        }
+        if (eq(d, 0, rows-1, cols))
+        {
+            delta++;
         }
         if (delta > 0)
         {

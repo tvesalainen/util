@@ -183,6 +183,29 @@ public class MatricesTest
         assertEquals(9, x.data[index++], Epsilon);
         assertEquals(0, x.data[index++], Epsilon);
     }
+    @Test
+    public void testRemoveEqualRows6()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+                1, 2,
+                3, 4,
+                3, 4,
+                7, 8,
+                9, 0,
+                1, 2
+        );
+        Matrices.removeEqualRows(x);
+        assertEquals(4, x.numRows);
+        int index = 0;
+        assertEquals(1, x.data[index++], Epsilon);
+        assertEquals(2, x.data[index++], Epsilon);
+        assertEquals(3, x.data[index++], Epsilon);
+        assertEquals(4, x.data[index++], Epsilon);
+        assertEquals(7, x.data[index++], Epsilon);
+        assertEquals(8, x.data[index++], Epsilon);
+        assertEquals(9, x.data[index++], Epsilon);
+        assertEquals(0, x.data[index++], Epsilon);
+    }
     /**
      * Test of sort method, of class MatrixSort.
      */

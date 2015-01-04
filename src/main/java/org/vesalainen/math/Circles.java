@@ -23,7 +23,7 @@ import org.vesalainen.util.navi.Angle;
  *
  * @author Timo Vesalainen
  */
-public class Circles
+public final class Circles
 {
     /**
      * Returns points (x, y) angle to the circle center in radians.

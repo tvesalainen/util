@@ -21,7 +21,7 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen
  */
-public class Vectors
+public final class Vectors
 {
     /**
      * Returns true if vector (x2, y2) is clockwise of (x1, y1)
@@ -34,6 +34,33 @@ public class Vectors
     public static final boolean isClockwise(double x1, double y1, double x2, double y2)
     {
         return -x1*y2+x2*y1 > 0;
+    }
+    /**
+     * Returns true if vectors (x1, y1) and (x2, y2) are aligned (ox, oy) centered
+     * coordinate.
+     * @param ox
+     * @param oy
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return 
+     */
+    public static final boolean areAligned(double ox, double oy, double x1, double y1, double x2, double y2)
+    {
+        return areAligned(x1-ox, y1-oy, x2-ox, y2-oy);
+    }
+    /**
+     * Returns true if vectors (x1, y1) and (x2, y2) are aligned
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return 
+     */
+    public static final boolean areAligned(double x1, double y1, double x2, double y2)
+    {
+        return -x1*y2+x2*y1 == 0;
     }
     /**
      * Returns true if vector (x2, y2) is clockwise of (x1, y1) in (ox, oy) centered
