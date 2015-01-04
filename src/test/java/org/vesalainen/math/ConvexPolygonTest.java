@@ -33,6 +33,69 @@ public class ConvexPolygonTest
     {
     }
 
+    @Test
+    public void testAddPointAligned()
+    {
+        ConvexPolygon cp = new ConvexPolygon();
+        assertTrue(cp.addPoint(4, 4));
+        assertEquals(1, cp.getCount());
+        assertFalse(cp.addPoint(4, 4));
+        assertEquals(1, cp.getCount());
+        assertTrue(cp.addPoint(4, 6));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.addPoint(4, 5));
+        assertEquals(2, cp.getCount());
+        assertTrue(cp.addPoint(4, 7));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.contains(4, 6));
+        assertTrue(cp.contains(4, 7));
+        assertTrue(cp.addPoint(4, 3));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.contains(4, 4));
+        assertTrue(cp.contains(4, 3));
+    }
+    @Test
+    public void testAddPointUnaligned()
+    {
+        ConvexPolygon cp = new ConvexPolygon();
+        assertTrue(cp.addPoint(4, 4));
+        assertEquals(1, cp.getCount());
+        assertFalse(cp.addPoint(4, 4));
+        assertEquals(1, cp.getCount());
+        assertTrue(cp.addPoint(6, 6));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.addPoint(5, 5));
+        assertEquals(2, cp.getCount());
+        assertTrue(cp.addPoint(7, 7));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.contains(6, 6));
+        assertTrue(cp.contains(7, 7));
+        assertTrue(cp.addPoint(3, 3));
+        assertEquals(2, cp.getCount());
+        assertFalse(cp.contains(4, 4));
+        assertTrue(cp.contains(3, 3));
+        assertTrue(cp.addPoint(4, 6));
+        assertEquals(3, cp.getCount());
+        assertTrue(cp.contains(4, 6));
+        assertTrue(cp.addPoint(7, 5));
+        assertEquals(4, cp.getCount());
+        assertTrue(cp.contains(7, 5));
+        assertTrue(cp.addPoint(8, 4));
+        assertEquals(4, cp.getCount());
+        assertTrue(cp.contains(8, 4));
+        assertFalse(cp.contains(7, 5));
+        assertFalse(cp.addPoint(6, 4));
+        assertEquals(4, cp.getCount());
+        assertFalse(cp.contains(6, 4));
+        assertTrue(cp.addPoint(5, 7));
+        assertEquals(5, cp.getCount());
+        assertTrue(cp.contains(5, 7));
+        assertTrue(cp.addPoint(4, 8));
+        assertEquals(4, cp.getCount());
+        assertTrue(cp.contains(4, 8));
+        assertFalse(cp.contains(4, 6));
+        assertFalse(cp.contains(5, 7));
+    }
     /**
      * Test of createConvexPolygon method, of class Polygon.
      */

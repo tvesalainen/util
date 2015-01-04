@@ -40,6 +40,42 @@ public class ConvexPolygon extends Polygon
         }
     }
     /**
+     * Add new point to convex polygon. Returns true if point was added, false 
+     * if point was inside.
+     * @param x
+     * @param y
+     * @return 
+     */
+    public boolean addPoint(double x, double y)
+    {
+        if (contains(x, y))
+        {
+            return false;
+        }
+        double[] d = points.data;
+        switch (points.numRows)
+        {
+        case 0:
+            Matrices.addRow(points, x, y);
+            return true;
+        case 1:
+            Matrices.addRow(points, x, y);
+            return true;
+        case 2:
+            if (Vectors.areAligned(d[0], d[1], d[2], d[3], x, y))
+            {
+                return addAligned(d, x, y);
+            }
+            else
+            {
+                Matrices.addRow(points, x, y);
+                return true;
+            }
+        default:
+            return add(d, x, y);
+        }
+    }
+    /**
      * Returns minimum distance from inside point (x0, y0) to edge.
      * @param x0
      * @param y0
@@ -603,6 +639,159 @@ public class ConvexPolygon extends Polygon
             }
         }
     }
+
+    public int getCount()
+    {
+        return points.numRows;
+    }
+    
+    public boolean contains(double x, double y)
+    {
+        int rows = points.numRows;
+        double[] d = points.data;
+        for (int ii=0;ii<rows;ii++)
+        {
+            if (d[2*ii] == x && d[2*ii+1] == y)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean addAligned(double[] d, double x, double y)
+    {
+        if (d[0] != d[2])
+        {
+            if (x < d[0] && x < d[2])
+            {
+                if (d[0] < d[2])
+                {
+                    d[0] = x;
+                    d[1] = y;
+                }
+                else
+                {
+                    d[2] = x;
+                    d[3] = y;
+                }
+                return true;
+            }
+            if (x > d[0] && x > d[2])
+            {
+                if (d[0] > d[2])
+                {
+                    d[0] = x;
+                    d[1] = y;
+                }
+                else
+                {
+                    d[2] = x;
+                    d[3] = y;
+                }
+                return true;
+            }
+        }
+        else
+        {
+            // vertical
+            if (y < d[1] && y < d[3])
+            {
+                if (d[1] < d[3])
+                {
+                    d[0] = x;
+                    d[1] = y;
+                }
+                else
+                {
+                    d[2] = x;
+                    d[3] = y;
+                }
+                return true;
+            }
+            if (y > d[1] && y > d[3])
+            {
+                if (d[1] > d[3])
+                {
+                    d[0] = x;
+                    d[1] = y;
+                }
+                else
+                {
+                    d[2] = x;
+                    d[3] = y;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean add(double[] d, double x, double y)
+    {
+        int len = d.length/2;
+        int ptr=0;
+        for (int ii=0;ii<len;ii++)
+        {
+            int next = (ii+1) % len;
+            if (!Vectors.isClockwise(d[2*ii], d[2*ii+1], d[2*next], d[2*next+1], x, y))
+            {
+                ptr=ii;
+                break;
+            }
+        }
+        int start=-1;
+        int end=-1;
+        for (int cnt=0;cnt<len;cnt++)
+        {
+            ptr=(ptr+1)%len;
+            int next = (ptr+1) % len;
+            if (Vectors.isClockwise(d[2*ptr], d[2*ptr+1], d[2*next], d[2*next+1], x, y))
+            {
+                if (start==-1)
+                {
+                    start=ptr;
+                }
+            }
+            else
+            {
+                if (start != -1)
+                {
+                    end=ptr;
+                    break;
+                }
+            }
+        }
+        if (start != -1)
+        {
+            if (((start+1)%len)==end)
+            {
+                Matrices.insertRow(points, end, x, y);
+            }
+            else
+            {
+                int ii=(start+1)%len;
+                int c=0;
+                while (ii!=end)
+                {
+                    d[2*ii]=x;
+                    d[2*ii+1]=y;
+                    ii=(ii+1)%len;
+                    c++;
+                }
+                if (c>1)
+                {
+                    Matrices.removeEqualRows(points);
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private static class RC implements Matrices.RowComparator
     {
         double x1;
