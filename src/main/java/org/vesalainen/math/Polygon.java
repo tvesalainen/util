@@ -122,5 +122,31 @@ public class Polygon implements Serializable
     {
         return points.toString();
     }
+
+    public boolean isConvex()
+    {
+        int rows = points.numRows;
+        if (rows < 3)
+        {
+            return true;
+        }
+        double[] d = points.data;
+        for (int i1 = 0; i1 < rows; i1++)
+        {
+            int i2 = (i1 + 1) % rows;
+            int i3 = (i2 + 1) % rows;
+            double x1 = d[2 * i1];
+            double y1 = d[2 * i1 + 1];
+            double x2 = d[2 * i2];
+            double y2 = d[2 * i2 + 1];
+            double x3 = d[2 * i3];
+            double y3 = d[2 * i3 + 1];
+            if (Vectors.isClockwise(x1, y1, x2, y2, x3, y3))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     
 }
