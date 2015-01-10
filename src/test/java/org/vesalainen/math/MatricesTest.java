@@ -36,6 +36,43 @@ public class MatricesTest
     }
 
     @Test
+    public void testRemoveRow1()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(0, 3, true);
+        Matrices.addRow(x, 1, 2, 3);
+        Matrices.addRow(x, 4, 5, 6);
+        Matrices.addRow(x, 7, 8, 9);
+        Matrices.removeRow(x, 1);
+        assertEquals(2, x.numRows);
+        assertTrue(Matrices.containsRow(x, 1, 2, 3));
+        assertFalse(Matrices.containsRow(x, 4, 5, 6));
+        assertTrue(Matrices.containsRow(x, 7, 8, 9));
+    }
+    @Test
+    public void testRemoveRow2()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(0, 3, true);
+        Matrices.addRow(x, 1, 2, 3);
+        Matrices.addRow(x, 4, 5, 6);
+        Matrices.addRow(x, 7, 8, 9);
+        Matrices.removeRowAt(x, 4, 5, 6);
+        assertEquals(2, x.numRows);
+        assertTrue(Matrices.containsRow(x, 1, 2, 3));
+        assertFalse(Matrices.containsRow(x, 4, 5, 6));
+        assertTrue(Matrices.containsRow(x, 7, 8, 9));
+    }
+    @Test
+    public void testContainsRow1()
+    {
+        DenseMatrix64F x = new DenseMatrix64F(0, 3, true);
+        Matrices.addRow(x, 1, 2, 3);
+        Matrices.addRow(x, 4, 5, 6);
+        Matrices.addRow(x, 7, 8, 9);
+        assertTrue(Matrices.containsRow(x, 1, 2, 3));
+        assertTrue(Matrices.containsRow(x, 4, 5, 6));
+        assertTrue(Matrices.containsRow(x, 7, 8, 9));
+    }
+    @Test
     public void testInsertRow1()
     {
         DenseMatrix64F x = new DenseMatrix64F(0, 3, true);

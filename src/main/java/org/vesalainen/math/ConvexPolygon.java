@@ -44,7 +44,11 @@ public class ConvexPolygon extends Polygon
      */
     public boolean addPoint(double x, double y)
     {
-        if (contains(x, y))
+        return addPoint(points, x, y);
+    }
+    public static boolean addPoint(DenseMatrix64F points, double x, double y)
+    {
+        if (Matrices.containsRow(points, x, y))
         {
             return false;
         }
@@ -60,7 +64,7 @@ public class ConvexPolygon extends Polygon
         case 2:
             if (Vectors.areAligned(d[0], d[1], d[2], d[3], x, y))
             {
-                return addAligned(d, x, y);
+                return addAligned(points, x, y);
             }
             else
             {
@@ -68,7 +72,7 @@ public class ConvexPolygon extends Polygon
                 return true;
             }
         default:
-            return add(d, x, y);
+            return add(points, x, y);
         }
     }
     /**
@@ -235,8 +239,9 @@ public class ConvexPolygon extends Polygon
         return false;
     }
 
-    private boolean addAligned(double[] d, double x, double y)
+    private static boolean addAligned(DenseMatrix64F m, double x, double y)
     {
+        double[] d = m.data;
         if (d[0] != d[2])
         {
             if (x < d[0] && x < d[2])
@@ -303,9 +308,10 @@ public class ConvexPolygon extends Polygon
         return false;
     }
 
-    private boolean add(double[] d, double x, double y)
+    private static boolean add(DenseMatrix64F m, double x, double y)
     {
-        int len = d.length/2;
+        int len = m.numRows;
+        double[] d = m.data;
         int ptr=0;
         for (int ii=0;ii<len;ii++)
         {
@@ -342,7 +348,7 @@ public class ConvexPolygon extends Polygon
         {
             if (((start+1)%len)==end)
             {
-                Matrices.insertRow(points, end, x, y);
+                Matrices.insertRow(m, end, x, y);
             }
             else
             {
@@ -357,7 +363,7 @@ public class ConvexPolygon extends Polygon
                 }
                 if (c>1)
                 {
-                    Matrices.removeEqualRows(points);
+                    Matrices.removeEqualRows(m);
                 }
             }
             return true;

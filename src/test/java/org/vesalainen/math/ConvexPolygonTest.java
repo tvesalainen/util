@@ -363,14 +363,13 @@ public class ConvexPolygonTest
                 2, 5
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
-        for (int r=0;r<x.numRows;r++)
-        {
-            assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
-            );
-        }
+        assertTrue(p.isVertex(1, 2));
+        assertTrue(p.isVertex(2, 1));
+        assertTrue(p.isVertex(5, 3));
+        assertTrue(p.isVertex(3, 6));
+        assertTrue(p.isVertex(2, 5));
+        assertTrue(p.isInside(3, 3));
+        assertTrue(p.isInside(4, 4));
         p.getOuterBoundary(3, -1, o);
         assertEquals(4, o.numRows);
         int idx = 0;

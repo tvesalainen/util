@@ -25,6 +25,59 @@ import org.ejml.data.DenseMatrix64F;
  */
 public final class Matrices
 {
+    public static boolean removeRowAt(DenseMatrix64F m, double... row)
+    {
+        int idx = findRow(m, row);
+        if (idx != -1)
+        {
+            removeRow(m, idx);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Returns true if m contains row.
+     * @param m
+     * @param row
+     * @return 
+     */
+    public static boolean containsRow(DenseMatrix64F m, double... row)
+    {
+        return findRow(m, row) != -1;
+    }
+    /**
+     * Returns found row number or -1.
+     * @param m
+     * @param row
+     * @return 
+     */
+    public static int findRow(DenseMatrix64F m, double... row)
+    {
+        int cols = m.numCols;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        double[] d = m.data;
+        int rows = m.numRows;
+        for (int r=0;r<rows;r++)
+        {
+            boolean eq=true;
+            for (int c=0;c<cols;c++)
+            {
+                if (d[cols*r+c] != row[c])
+                {
+                    eq = false;
+                    break;
+                }
+            }
+            if (eq)
+            {
+                return r;
+            }
+        }
+        return -1;
+    }
     public static void setRow(DenseMatrix64F m, int index, double... row)
     {
         int cols = m.numCols;
@@ -63,8 +116,17 @@ public final class Matrices
         }
         int rows = m.numRows;
         m.reshape(rows+1, cols, true);
-        System.arraycopy(m.data, cols*index, m.data, cols*(index+1), cols*(rows-index));
-        System.arraycopy(row, 0, m.data, cols*index, row.length);
+        double[] d = m.data;
+        System.arraycopy(d, cols*index, d, cols*(index+1), cols*(rows-index));
+        System.arraycopy(row, 0, d, cols*index, row.length);
+    }
+    public static void removeRow(DenseMatrix64F m, int index)
+    {
+        int cols = m.numCols;
+        int rows = m.numRows;
+        double[] d = m.data;
+        System.arraycopy(d, cols*(index+1), d, cols*index, cols*(rows-index-1));
+        m.reshape(rows-1, cols, true);
     }
     /**
      * Removes equal subsequent rows and additionally last row if it is equal to first row.
