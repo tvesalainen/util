@@ -35,6 +35,12 @@ public class ConvexPolygon extends Polygon
     {
         updateConvexPolygon(this, points);
     }
+
+    public void copy(ConvexPolygon oth)
+    {
+        super.copy(oth);
+    }
+    
     /**
      * Add new point to convex polygon. Returns true if point was added, false 
      * if point was inside.
@@ -127,10 +133,31 @@ public class ConvexPolygon extends Polygon
         }
         return Math.abs(dy*x0-dx*y0+x2*y1-y2*x1)/Math.hypot(dx, dy);
     }
+    public void getOuterBoundary(DenseMatrix64F point, ConvexPolygon outer)
+    {
+        getOuterBoundary(point.data[0], point.data[1], outer);
+    }
+    public void getOuterBoundary(double x0, double y0, ConvexPolygon outer)
+    {
+        outer.copy(this);
+        outer.addPoint(x0, y0);
+        outer.removePoint(x0, y0);
+    }
+    /**
+     * @deprecated 
+     * @param point
+     * @param outer 
+     */
     public void getOuterBoundary(DenseMatrix64F point, DenseMatrix64F outer)
     {
         getOuterBoundary(point.data[0], point.data[1], outer);
     }
+    /**
+     * @deprecated 
+     * @param x0
+     * @param y0
+     * @param outer 
+     */
     public void getOuterBoundary(double x0, double y0, DenseMatrix64F outer)
     {
         int rows = points.numRows;
@@ -372,6 +399,11 @@ public class ConvexPolygon extends Polygon
         {
             return false;
         }
+    }
+
+    private void removePoint(double x0, double y0)
+    {
+        Matrices.removeRow(points, x0, y0);
     }
 
 }

@@ -110,4 +110,12 @@ public class Rect implements Serializable
         this.yMin = yMin;
         this.yMax = yMax;
     }
+
+    public void set(Rect oth)
+    {
+        this.xMin = oth.xMin;
+        this.xMax = oth.xMax;
+        this.yMin = oth.yMin;
+        this.yMax = oth.yMax;
+    }
 }

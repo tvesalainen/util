@@ -352,7 +352,7 @@ public class ConvexPolygonTest
     @Test
     public void testGetOuterBoundary()
     {
-        DenseMatrix64F o = new DenseMatrix64F(0, 2);
+        ConvexPolygon o = new ConvexPolygon();
         DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
                 1, 2,
                 2, 1,
@@ -371,59 +371,39 @@ public class ConvexPolygonTest
         assertTrue(p.isInside(3, 3));
         assertTrue(p.isInside(4, 4));
         p.getOuterBoundary(3, -1, o);
-        assertEquals(4, o.numRows);
-        int idx = 0;
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(6, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
+        assertEquals(4, o.getCount());
+        assertTrue(p.isVertex(5, 3));
+        assertTrue(p.isVertex(3, 6));
+        assertTrue(p.isVertex(2, 5));
+        assertTrue(p.isVertex(1, 2));
         
         p.getOuterBoundary(6, 6, o);
-        assertEquals(5, o.numRows);
-        idx = 0;
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(6, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(5, o.getCount());
+        assertTrue(p.isVertex(3, 6));
+        assertTrue(p.isVertex(2, 5));
+        assertTrue(p.isVertex(1, 2));
+        assertTrue(p.isVertex(2, 1));
+        assertTrue(p.isVertex(5, 3));
         
         p.getOuterBoundary(3, 8, o);
-        assertEquals(4, o.numRows);
-        idx = 0;
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
+        assertEquals(4, o.getCount());
+        assertTrue(p.isVertex(2, 5));
+        assertTrue(p.isVertex(1, 2));
+        assertTrue(p.isVertex(2, 1));
+        assertTrue(p.isVertex(5, 3));
         
         p.getOuterBoundary(-1, 3, o);
-        assertEquals(3, o.numRows);
-        idx = 0;
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(5, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(6, o.data[idx++], Epsilon);
+        assertEquals(3, o.getCount());
+        assertTrue(p.isVertex(2, 1));
+        assertTrue(p.isVertex(5, 3));
+        assertTrue(p.isVertex(3, 6));
         
     }
     
     @Test
     public void testGetOuterBoundary2()
     {
-        DenseMatrix64F o = new DenseMatrix64F(0, 2);
+        ConvexPolygon o = new ConvexPolygon();
         DenseMatrix64F x = new DenseMatrix64F(2, 2, true,
                 1, 1,
                 3, 2
@@ -437,12 +417,9 @@ public class ConvexPolygonTest
             );
         }
         p.getOuterBoundary(0, 0, o);
-        assertEquals(2, o.numRows);
-        int idx = 0;
-        assertEquals(3, o.data[idx++], Epsilon);
-        assertEquals(2, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
-        assertEquals(1, o.data[idx++], Epsilon);
+        assertEquals(2, o.getCount());
+        assertTrue(p.isVertex(3, 2));
+        assertTrue(p.isVertex(1, 1));
     }        
     @Test
     public void testdistanceFromLine()

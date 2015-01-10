@@ -42,7 +42,12 @@ public class Polygon implements Serializable
         Matrices.removeEqualRows(points);
         updateBounds();
     }
-    protected void updateBounds()
+    protected void copy(Polygon oth)
+    {
+        points.setReshape(oth.points);
+        bounds.set(oth.bounds);
+    }
+    protected final void updateBounds()
     {
         bounds.reset();
         int len = points.numRows;

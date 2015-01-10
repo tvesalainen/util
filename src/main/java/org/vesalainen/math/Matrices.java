@@ -25,12 +25,12 @@ import org.ejml.data.DenseMatrix64F;
  */
 public final class Matrices
 {
-    public static boolean removeRowAt(DenseMatrix64F m, double... row)
+    public static boolean removeRow(DenseMatrix64F m, double... row)
     {
         int idx = findRow(m, row);
         if (idx != -1)
         {
-            removeRow(m, idx);
+            Matrices.removeRowAt(m, idx);
             return true;
         }
         return false;
@@ -120,7 +120,7 @@ public final class Matrices
         System.arraycopy(d, cols*index, d, cols*(index+1), cols*(rows-index));
         System.arraycopy(row, 0, d, cols*index, row.length);
     }
-    public static void removeRow(DenseMatrix64F m, int index)
+    public static void removeRowAt(DenseMatrix64F m, int index)
     {
         int cols = m.numCols;
         int rows = m.numRows;
