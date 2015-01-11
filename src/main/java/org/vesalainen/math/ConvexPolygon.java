@@ -62,8 +62,6 @@ public class ConvexPolygon extends Polygon
         switch (points.numRows)
         {
         case 0:
-            Matrices.addRow(points, x, y);
-            return true;
         case 1:
             Matrices.addRow(points, x, y);
             return true;
@@ -74,7 +72,14 @@ public class ConvexPolygon extends Polygon
             }
             else
             {
-                Matrices.addRow(points, x, y);
+                if (Vectors.isClockwise(d[0], d[1], d[2], d[3], x, y))
+                {
+                    Matrices.insertRow(points, 1, x, y);
+                }
+                else
+                {
+                    Matrices.addRow(points, x, y);
+                }
                 return true;
             }
         default:

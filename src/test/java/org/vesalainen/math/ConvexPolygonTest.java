@@ -172,7 +172,7 @@ public class ConvexPolygonTest
                 10, 5
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
+        assertTrue(p.isConvex());
         assertTrue(p.isInside(2, 4));
         assertTrue(p.isInside(3, 4));
         assertTrue(p.isInside(3, 6));
@@ -216,6 +216,7 @@ public class ConvexPolygonTest
                 1, 1
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+        assertTrue(p.isConvex());
         assertTrue(p.isInside(2, 3));
         assertTrue(p.isInside(5, 2));
         assertTrue(p.isInside(3, 2));
@@ -245,7 +246,7 @@ public class ConvexPolygonTest
                 3, 3
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
+        assertTrue(p.isConvex());
         assertTrue(p.isInside(2, 3));
         assertTrue(p.isInside(3, 5));
         assertTrue(p.isInside(3, 2));
@@ -265,7 +266,7 @@ public class ConvexPolygonTest
                 6, 1
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
+        assertTrue(p.isConvex());
         assertTrue(p.isInside(2, 2));
         assertTrue(p.isInside(3, 4));
         assertTrue(p.isInside(3, 2));
@@ -291,7 +292,7 @@ public class ConvexPolygonTest
                 5, 4
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
+        assertTrue(p.isConvex());
         assertTrue(p.isInside(2, 3));
         assertTrue(p.isInside(3, 3));
         assertTrue(p.isInside(3, 2));
@@ -324,7 +325,7 @@ public class ConvexPolygonTest
             -13.602587236295879, 28.130489450596553 
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        System.err.println(p);
+        assertTrue(p.isConvex());
         for (int r=0;r<x.numRows;r++)
         {
             assertTrue(
@@ -347,6 +348,7 @@ public class ConvexPolygonTest
                 1000, 15
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
+        assertTrue(p.isConvex());
     }
     
     @Test
