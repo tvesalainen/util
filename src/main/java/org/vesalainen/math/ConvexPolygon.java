@@ -94,10 +94,6 @@ public class ConvexPolygon extends Polygon
      */
     public double getMinimumDistance(double x0, double y0)
     {
-        if (!isInside(x0, y0))
-        {
-            throw new IllegalArgumentException("point not inside convex polygon");
-        }
         double min = Double.MAX_VALUE;
         int rows = points.numRows;
         double[] d = points.data;
@@ -110,6 +106,10 @@ public class ConvexPolygon extends Polygon
             min=Math.min(min, distanceFromLine(x0, y0, x1, y1, x2, y2));
             x1 = x2;
             y1 = y2;
+        }
+        if (min > 0 && !isInside(x0, y0))
+        {
+            throw new IllegalArgumentException("point not inside convex polygon");
         }
         return min;
     }
@@ -129,18 +129,18 @@ public class ConvexPolygon extends Polygon
         double dx = x2-x1;
         if (dx == 0.0)
         {
-            return Math.abs(y1-y0);
+            return Math.abs(x1-x0);
         }
         double dy = y2-y1;
         if (dy == 0.0)
         {
-            return Math.abs(x1-x0);
+            return Math.abs(y1-y0);
         }
         return Math.abs(dy*x0-dx*y0+x2*y1-y2*x1)/Math.hypot(dx, dy);
     }
-    public void getOuterBoundary(DenseMatrix64F point, ConvexPolygon outer)
+    public void getOuterBoundary(Point point, ConvexPolygon outer)
     {
-        getOuterBoundary(point.data[0], point.data[1], outer);
+        getOuterBoundary(point.getX(), point.getY(), outer);
     }
     public void getOuterBoundary(double x0, double y0, ConvexPolygon outer)
     {
