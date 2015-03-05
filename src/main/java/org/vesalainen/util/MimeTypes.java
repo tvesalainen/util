@@ -259,7 +259,7 @@ public class MimeTypes
     /**
      *
      * @return Returns MIME TYPE for filename extension. Returns DEFAULT if extension is unknown.
-     * @param file File whose file type is resolved
+     * @param uri File whose file type is resolved
      */
     public static String getMimeType(URI uri)
     {

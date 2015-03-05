@@ -70,7 +70,7 @@ public class LevenbergMarquardt implements Serializable
     /**
      * Creates a new instance that uses the provided cost function.
      *
-     * @param funcCost Cost function that is being optimized.
+     * @param func Cost function that is being optimized.
      */
     public LevenbergMarquardt(Function func)
     {
@@ -337,7 +337,7 @@ public class LevenbergMarquardt implements Serializable
     }
     /**
      * Sets the inner loop count. Initially 5
-     * @param iter1 
+     * @param iter2 
      */
     public void setIter2(int iter2)
     {

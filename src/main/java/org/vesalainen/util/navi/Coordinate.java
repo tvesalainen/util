@@ -63,7 +63,6 @@ public class Coordinate
      * Creates a new instance of Coordinate
      * @param coordinate
      * @param direction
-     * @throws org.vesalainen.navi.IllegalCoordinateException
      */
     protected Coordinate(double coordinate, Direction direction)
     {
@@ -98,7 +97,6 @@ public class Coordinate
      * Degree minute second. Example 60\u00B025'34.5"N
      * Degree minute. Example 60\u00B025.5' W
      * Decimal. Example -60,1234
-     * @throws org.vesalainen.navi.IllegalCoordinateException
      */
     public Coordinate(String str)
     {

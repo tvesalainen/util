@@ -397,7 +397,7 @@ public class Location extends Point2D.Double
      * @param portBuoy
      * @param starboardBuoy
      * @return
-     * @see http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+     * @see <a href="http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html">Point-Line Distance--2-Dimensional</a>
      */
     public static final Distance distanceToStartLine(Location current, Location portBuoy, Location starboardBuoy)
     {

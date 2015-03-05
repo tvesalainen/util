@@ -90,8 +90,8 @@ public class Scalar implements Comparable<Scalar>, Serializable
      * This method returns true even when the value of two objects 
  differ Epsilon amount
      * @param ob
-     * @return true if ob is Scalar and abs(value - ob.value) < Epsilon
-     * @see EPSILON#Epsilon
+     * @return true if ob is Scalar and abs(value - ob.value) &lt; Epsilon
+     * @see #Epsilon
      */
     @Override
     public boolean equals(Object ob)
@@ -177,7 +177,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         value++;
     }
     /**
-     * True if this > o
+     * True if this &gt; o
      * @param o
      * @return
      */
@@ -186,7 +186,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         return compareTo(o) > 0;
     }
     /**
-     * True if this < o
+     * True if this &lt; o
      * @param o
      * @return
      */
@@ -195,7 +195,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         return compareTo(o) < 0;
     }
     /**
-     * True if this >= o
+     * True if this &gt;= o
      * @param o
      * @return
      */
@@ -204,7 +204,7 @@ public class Scalar implements Comparable<Scalar>, Serializable
         return compareTo(o) >= 0;
     }
     /**
-     * True if this <= o
+     * True if this &lt;= o
      * @param o
      * @return
      */

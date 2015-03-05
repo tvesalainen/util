@@ -167,7 +167,7 @@ public class Motion implements Serializable
     /**
      * 
      * @return cos
-     * @see java.lang.Math.cos
+     * @see java.lang.Math#cos
      */
     public double cos()
     {
@@ -177,7 +177,7 @@ public class Motion implements Serializable
     /**
      * 
      * @return sin
-     * @see java.lang.Math.sin
+     * @see java.lang.Math#sin
      */
     public double sin()
     {

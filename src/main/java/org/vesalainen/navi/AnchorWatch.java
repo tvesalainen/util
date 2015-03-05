@@ -24,6 +24,7 @@ import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.CircleFitter;
+import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Matrices;
 import org.vesalainen.math.Point;
@@ -41,7 +42,7 @@ public class AnchorWatch implements Serializable
     private DenseMatrix64F tempCenter;
     private Point center;
     private AbstractCircle estimated;
-    private DenseMatrix64F outer;
+    private ConvexPolygon outer;
     private CircleFitter fitter;
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
@@ -61,7 +62,7 @@ public class AnchorWatch implements Serializable
         tempCenter = new DenseMatrix64F(2, 1);
         points = new DenseMatrix64F(0, 2);
         area = new ConvexPolygon();
-        outer = new DenseMatrix64F(0, 1);
+        outer = new ConvexPolygon();
         center = null;
         estimated = null;
         fitter = null;
@@ -73,13 +74,17 @@ public class AnchorWatch implements Serializable
         
     }
 
+    public void update(double longitude, double latitude, long time)
+    {
+        update(longitude, latitude, time, Double.NaN);
+    }
     public void update(double longitude, double latitude, long time, double accuracy)
     {
         if (localLongitude == null)
         {
             localLongitude = LocalLongitude.getInstance(longitude, latitude);
         }
-        double internal = longitude*Math.cos(Math.toRadians(latitude));//localLongitude.getInternal(longitude);
+        double internal = localLongitude.getInternal(longitude);
         if (Double.isNaN(lastLongitude))
         {
             doUpdate(internal, latitude, time, accuracy, 0);
@@ -109,21 +114,14 @@ public class AnchorWatch implements Serializable
     }
     private void doUpdate(double internal, double latitude, long time, double accuracy, double speed)
     {
-        double distance = distance(internal, latitude);
         if (fitter != null && !safeSector.isInside(internal, latitude))
         {
+            double distance = Circles.distanceFromCenter(safeSector, internal, latitude);
             fireAlarm(toMeters(distance));
         }
         fireLocation(internal, latitude, time, accuracy, speed);
-        if (area.isInside(internal, latitude))
+        if (area.addPoint(internal, latitude))
         {
-            double minimumDistance = area.getMinimumDistance(internal, latitude);
-            fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
-        }
-        else
-        {
-            Matrices.addRow(points, internal, latitude);
-            area.updateConvexPolygon(points);
             fireArea(area);
             points.setReshape(area.points);
             if (fitter == null)
@@ -141,9 +139,9 @@ public class AnchorWatch implements Serializable
             {
                 if (!area.isInside(center))
                 {
-                    area.getOuterBoundary(tempCenter, outer);
-                    fireOuter(outer);
-                    fitter.fit(safeSector, outer);
+                    area.getOuterBoundary(safeSector, outer);
+                    fireOuter(outer.points);
+                    fitter.fit(safeSector, outer.points);
                 }
                 else
                 {
@@ -153,6 +151,11 @@ public class AnchorWatch implements Serializable
                 fireEstimated(estimated);
                 fireSafeSector(safeSector);
             }
+        }
+        else
+        {
+            double minimumDistance = area.getMinimumDistance(internal, latitude);
+            fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
         }
     }
 
@@ -181,16 +184,6 @@ public class AnchorWatch implements Serializable
         return degrees / DegreeToMeters;
     }
     
-    private double distance(double x, double y)
-    {
-        double[] d = tempCenter.data;
-        double cx = d[0];
-        double cy = d[1];
-        double dx = cx-x;
-        double dy = cy-y;
-        return Math.hypot(dx, dy);
-    }
-
     public void addWatcher(Watcher watcher)
     {
         if (watcher == null)

@@ -34,7 +34,7 @@ import org.vesalainen.util.Transactional;
  * <p>Example:
  * Create PropertyDispatcher sub class.
  * <code>
- * @PropertyDispatcherClass("org.vesalainen.code.impl.PDImpl")
+ * &#64;PropertyDispatcherClass("org.vesalainen.code.impl.PDImpl")
  * public abstract class PD extends PropertyDispatcher implements TrIntf
  * {
  * 

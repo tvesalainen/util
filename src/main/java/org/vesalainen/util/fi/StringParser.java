@@ -47,7 +47,7 @@ public class StringParser
      * Finds a pattern. If succeeds the skipped text returnned from skipped() method
      * @param pattern
      * @return
-     * @see Matcher.find
+     * @see java.util.regex.Matcher#find
      */
     public boolean find(Pattern pattern)
     {
@@ -68,7 +68,7 @@ public class StringParser
      *
      * @param pattern
      * @return
-     * @see Matcher.lookinAt
+     * @see java.util.regex.Matcher#lookingAt()
      */
     public boolean lookingAt(Pattern pattern)
     {
@@ -88,7 +88,7 @@ public class StringParser
      *
      * @param pattern
      * @return
-     * @see Matcher.matches
+     * @see java.util.regex.Matcher#matches
      */
     public boolean matches(Pattern pattern)
     {

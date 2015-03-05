@@ -37,7 +37,7 @@ import org.vesalainen.math.Matrices.RowComparator;
  * @see <a href="https://www.spaceroots.org/documents/circle/circle-fitting.pdf">Finding the circle that best fits a set of points</a>
  * @see <a href="http://www.cs.bsu.edu/homepages/kerryj/kjones/circles.pdf">A Few Methods for Fitting Circles to Data</a>
  * @see <a href="https://code.google.com/p/efficient-java-matrix-library/">EJML</a> 
- * @see org.vesalainen.util.math.LevenbergMarquardt
+ * @see org.vesalainen.math.LevenbergMarquardt
  */
 public class CircleFitter implements Function, JacobianFactory, Circle, Serializable
 {
@@ -54,7 +54,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
     /**
      * Creates a CircleFitter with estimated tempCenter. Estimated tempCenter can by 
  calculated with method initialCenter
-     * @see org.vesalainen.util.math.CircleFitter#initialCenter(org.ejml.data.DenseMatrix64F, org.ejml.data.DenseMatrix64F) 
+     * @see org.vesalainen.math.CircleFitter#initialCenter(org.ejml.data.DenseMatrix64F, org.ejml.data.DenseMatrix64F) 
      */
     public CircleFitter()
     {

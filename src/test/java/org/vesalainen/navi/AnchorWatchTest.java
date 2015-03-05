@@ -81,7 +81,7 @@ public class AnchorWatchTest
         {
             while (true)
             {
-                if (count==316)
+                if (count==152)
                 {
                     System.err.println();
                 }

@@ -36,7 +36,7 @@ public class Angle extends Scalar
     public static final double FULL_CIRCLE = 2*Math.PI;
     /**
      * Creates a Angle class
-     * @param value Angle in radians
+     * @param radians Angle in radians
      */
     public Angle(double radians)
     {
@@ -46,7 +46,7 @@ public class Angle extends Scalar
      * Creates a Angle class
      * @param x Param x in rectangular coordinates
      * @param y Param y in rectangular coordinates
-     * @see java.lang.Math.atan2
+     * @see java.lang.Math#atan2
      */
     public Angle(double x, double y)
     {
@@ -136,8 +136,8 @@ public class Angle extends Scalar
         }
     }
     /**
-     * Turn angle clockwise or counter clockwice. If < 180 turns
-     * clockwice. If >= 180 turns counter clockwice 360 - angle
+     * Turn angle clockwise or counter clockwice. If &lt; 180 turns
+     * clockwice. If &ge; 180 turns counter clockwice 360 - angle
      * @param angle
      * @return Returns a new Angle 
      */
@@ -152,8 +152,7 @@ public class Angle extends Scalar
             return add(angle.toHalfAngle(), false);
         }
     }
-    /**
-     * @param Angle 
+    /** 
      * @return Angle normalized between 0 - 180 degrees
      */
     public Angle toHalfAngle()
@@ -237,7 +236,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return acos
-     * @see java.lang.Math.acos
+     * @see java.lang.Math#acos(double) 
      */
     public final double acos()
     {
@@ -246,7 +245,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return asin
-     * @see java.lang.Math.asin
+     * @see java.lang.Math#asin
      */
     public final double asin()
     {
@@ -256,7 +255,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return atan
-     * @see java.lang.Math.atan
+     * @see java.lang.Math#atan
      */
     public double atan()
     {
@@ -266,7 +265,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return cos
-     * @see java.lang.Math.cos
+     * @see java.lang.Math#cos
      */
     public double cos()
     {
@@ -276,7 +275,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return cosh
-     * @see java.lang.Math.cosh
+     * @see java.lang.Math#cosh
      */
     public double cosh()
     {
@@ -286,7 +285,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return sin
-     * @see java.lang.Math.sin
+     * @see java.lang.Math#sin
      */
     public double sin()
     {
@@ -296,7 +295,7 @@ public class Angle extends Scalar
     /**
      * 
      * @return sinh
-     * @see java.lang.Math.sinh
+     * @see java.lang.Math#sinh
      */
     public double sinh()
     {
@@ -310,7 +309,7 @@ public class Angle extends Scalar
     }
     
     /**
-     * @param Angle in radians
+     * @param angle in radians
      * @return Angle normalized between 0 - 180 degrees
      */
     public static final double normalizeToHalfAngle(double angle)
@@ -325,8 +324,8 @@ public class Angle extends Scalar
     }
     
     /**
-     * @param Angle in radians
-     * @return Angle normalized between 0 - 360 degrees
+     * @param angle in radians
+     * @return angle normalized between 0 - 360 degrees
      */
     public  static final double normalizeToFullAngle(double angle)
     {
@@ -342,7 +341,7 @@ public class Angle extends Scalar
         return angle;
     }
     /**
-     * Convert full angle to signed angle -180 - 180. 340 -> -20
+     * Convert full angle to signed angle -180 - 180. 340 -&gt; -20
      * @param angle
      * @return
      */

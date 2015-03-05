@@ -31,7 +31,7 @@ public class RateOfTurn extends Scalar
     }
     /**
      * 
-     * @param radiansPerSecond If < 0 turns left (or port)
+     * @param radiansPerSecond If &lt; 0 turns left (or port)
      */
     public RateOfTurn(double radiansPerSecond)
     {

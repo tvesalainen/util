@@ -20,6 +20,7 @@ package org.vesalainen.math;
 import org.ejml.data.DenseMatrix64F;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ui.AbstractView;
 
 /**
  *
@@ -446,5 +447,36 @@ public class ConvexPolygonTest
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         assertEquals(Math.sqrt(2)/2, p.getMinimumDistance(2, 2), Epsilon);
         assertEquals(ConvexPolygon.distanceFromLine(3, 4, 5, 3, 3, 6), p.getMinimumDistance(3, 4), Epsilon);
+    }
+    @Test
+    public void testX()
+    {
+        double[] d = new double[] {
+            -11.995946716577064, 28.13094139099121,
+            -11.995987085582065, 28.130937576293945,
+            -11.99607707482238, 28.130830764770508,
+            -11.995936624325813, 28.130653381347656,
+            -11.995929896158312, 28.130647659301758,
+            -11.99577767136862, 28.130632400512695,
+            -11.995768420138306, 28.130640029907227,
+            -11.995668338646741, 28.13094139099121,
+        };
+        AbstractView view = new AbstractView();
+        for (int ii=0;ii<d.length/2;ii++)
+        {
+            view.updatePoint(d[2*ii], d[2*ii+1]);
+        }
+        view.setScreen(10, 10);
+        ConvexPolygon cp = new ConvexPolygon();
+        for (int ii=0;ii<d.length/2;ii++)
+        {
+            System.err.println(view.toScreenX(d[2*ii])+", "+view.toScreenY(d[2*ii+1]));
+            assertTrue(cp.addPoint(view.toScreenX(d[2*ii]), view.toScreenY(d[2*ii+1])));
+        }
+        double x = view.toScreenX(-11.995941670451439);
+        double y = view.toScreenY(28.13094139099121);
+        assertFalse(cp.addPoint(x, y));
+        double minimumDistance = cp.getMinimumDistance(x, y);
+        assertTrue(cp.isInside(view.toScreenX(-11.995941670451439), view.toScreenY(28.13094139099121)));
     }
 }

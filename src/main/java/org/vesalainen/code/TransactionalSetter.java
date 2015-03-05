@@ -31,7 +31,7 @@ package org.vesalainen.code;
  * 
  * <p>Example:
  * <code>
- * @TransactionalSetterClass("org.vesalainen.code.TSImpl")
+ * &#64;TransactionalSetterClass("org.vesalainen.code.TSImpl")
  * public abstract class TS extends TransactionalSetter implements TrIntf
  * {
  * 
