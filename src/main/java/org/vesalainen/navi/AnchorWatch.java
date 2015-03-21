@@ -26,7 +26,6 @@ import org.vesalainen.math.Circle;
 import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
-import org.vesalainen.math.Matrices;
 import org.vesalainen.math.Point;
 
 /**
@@ -155,6 +154,10 @@ public class AnchorWatch implements Serializable
         else
         {
             double minimumDistance = area.getMinimumDistance(internal, latitude);
+            if (Double.isFinite(accuracy))
+            {
+                minimumDistance = Math.max(0, minimumDistance-accuracy);
+            }
             fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
         }
     }
