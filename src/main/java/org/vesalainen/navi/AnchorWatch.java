@@ -154,11 +154,24 @@ public class AnchorWatch implements Serializable
         else
         {
             double minimumDistance = area.getMinimumDistance(internal, latitude);
-            if (Double.isFinite(accuracy))
+            if (!Double.isNaN(accuracy) && !Double.isInfinite(accuracy))
             {
                 minimumDistance = Math.max(0, minimumDistance-accuracy);
             }
             fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
+        }
+    }
+
+    public boolean setAnchorLocation()
+    {
+        if (safeSector != null && !Double.isNaN(lastLongitude))
+        {
+            safeSector.set(lastLongitude, lastLatitude);
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
