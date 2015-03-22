@@ -23,7 +23,7 @@ import java.util.Iterator;
  *
  * @author Timo Vesalainen
  */
-public class Scaler implements Iterable<Scaler>, Iterator<Scaler>
+public abstract class Scaler implements Iterable<Scaler>, Iterator<Scaler>
 {
 
     public Scaler(double min, double max)

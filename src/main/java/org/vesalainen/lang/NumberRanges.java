@@ -59,13 +59,13 @@ public class NumberRanges
             {
                 if (int.class == type)
                 {
-                    System.err.print("{\""+Integer.toUnsignedString((int) min, radix)+"\", \""+Integer.toUnsignedString((int) max, radix)+"\"}");
+//                    System.err.print("{\""+Integer.toUnsignedString((int) min, radix)+"\", \""+Integer.toUnsignedString((int) max, radix)+"\"}");
                 }
                 else
                 {
                     if (long.class == type)
                     {
-                        System.err.print("{\""+Long.toUnsignedString(min, radix)+"\", \""+Long.toUnsignedString(max, radix)+"\"}");
+  //                      System.err.print("{\""+Long.toUnsignedString(min, radix)+"\", \""+Long.toUnsignedString(max, radix)+"\"}");
                     }
                     else
                     {

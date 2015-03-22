@@ -34,7 +34,7 @@ public class ScalerTest
     @Test
     public void test()
     {
-        Scaler scaler = new Scaler(1e-3, 6e-3);
+//        Scaler scaler = new Scaler(1e-3, 6e-3);
     }
 
 }
