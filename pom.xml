@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.vesalainen</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.4</version>
     </parent>    
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vesalainen</groupId>
@@ -23,6 +23,10 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
         </dependency>
     </dependencies>
     <build>
