@@ -16,12 +16,18 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
+
 /**
  *
  * @author tkv
+ * @param <F> First type
+ * @param <S> Second type
  */
-public class Pair<F,S>
+public class Pair<F,S> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+    
     private F first;
     private S second;
 
