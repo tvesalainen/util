@@ -36,13 +36,11 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import static javax.lang.model.element.ElementKind.*;
 import javax.lang.model.element.ExecutableElement;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
@@ -164,7 +162,7 @@ public class Processor extends AbstractProcessor
                         returnType.getKind() == VOID
                         )
                 {
-                    en.add(getEnum(name));
+                    en.add(getEnum(m));
                     try
                     {
                         VariableElement ve = parameters.get(0);
@@ -198,13 +196,13 @@ public class Processor extends AbstractProcessor
                 cp.println("@Override");
                 CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
                 String name = m.getSimpleName().toString();
-                String enumname = getEnum(name);
                 if (
                         name.startsWith("set") && 
                         parameters.size() == 1 &&
                         returnType.getKind() == VOID
                         )
                 {
+                    String enumname = getEnum(m);
                     VariableElement ve = parameters.get(0);
                     cm.println("if (observers.containsKey(Prop."+enumname+"))");
                     cm.println("{");
@@ -241,7 +239,7 @@ public class Processor extends AbstractProcessor
                                     )
                             {
                                 JavaType jt = JavaType.valueOf(params.get(0).asType().getKind().name());
-                                String aEnum = getEnum(sn);
+                                String aEnum = getEnum(ee);
                                 String prop = getProperty(sn);
                                 cs.println("case "+aEnum+":");
                                 cs.println("{");
@@ -302,10 +300,18 @@ public class Processor extends AbstractProcessor
                                 Name arg1 = parameters.get(1).getSimpleName();
                                 cm.println("super.addObserver("+arg0+");");
                                 cm.println("for (String p : "+arg1+")");
+                                cm.println("{");
                                 CodePrinter cao = cm.createSub("}");
+                                cao.println("String str = Character.toUpperCase(p.charAt(0))+p.substring(1);");
+                                cao.println("for (Prop pr : Prop.values())");
                                 cao.println("{");
-                                cao.println("Prop pr = Prop.valueOf(Character.toUpperCase(p.charAt(0))+p.substring(1));");
-                                cao.println("observers.add(pr, "+arg0+");");
+                                CodePrinter caoo = cao.createSub("}");
+                                caoo.println("if (pr.name().startsWith(str))");
+                                caoo.println("{");
+                                CodePrinter caooo = caoo.createSub("}");
+                                caooo.println("observers.add(pr, "+arg0+");");
+                                caooo.flush();
+                                caoo.flush();
                                 cao.flush();
                             }
                             else
@@ -369,7 +375,7 @@ public class Processor extends AbstractProcessor
                         returnType.getKind() == VOID
                         )
                 {
-                    en.add(getEnum(name));
+                    en.add(getEnum(m));
                     try
                     {
                         VariableElement ve = parameters.get(0);
@@ -401,7 +407,7 @@ public class Processor extends AbstractProcessor
                 cp.println("@Override");
                 CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
                 String name = m.getSimpleName().toString();
-                String enumname = getEnum(name);
+                String enumname = getEnum(m);
                 if (
                         name.startsWith("set") && 
                         parameters.size() == 1 &&
@@ -442,7 +448,7 @@ public class Processor extends AbstractProcessor
                                     )
                             {
                                 JavaType jt = JavaType.valueOf(params.get(0).asType().getKind().name());
-                                String aEnum = getEnum(sn);
+                                String aEnum = getEnum(ee);
                                 cs.println("case "+aEnum+":");
                                 cs.println("{");
                                 CodePrinter csw = cs.createSub("}");
@@ -622,9 +628,18 @@ public class Processor extends AbstractProcessor
         return Character.toLowerCase(name.charAt(3))+name.substring(4);
     }
 
-    private String getEnum(String name)
+    private String getEnum(ExecutableElement m)
     {
-        return name.substring(3);
+        String name = m.getSimpleName().toString();
+        List<? extends VariableElement> parameters = m.getParameters();
+        if (parameters.size() != 1)
+        {
+            throw new IllegalArgumentException(m.toString());
+        }
+        VariableElement ve = parameters.get(0);
+        TypeMirror type = ve.asType();
+        String typeString = type.toString().replace('.', '_');
+        return name.substring(3)+'_'+typeString;
     }
 
     private String getter(TypeKind kind)

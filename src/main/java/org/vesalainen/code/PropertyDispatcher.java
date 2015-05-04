@@ -76,11 +76,12 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
         super(sizes);
     }
     /**
-     * Adds a PropertySetter observer for given properties.
+     * Adds a PropertySetter observer for properties that have given prefix. As
+     * a consequence ALL properties are added is empty prefix is used.
      * @param observer
      * @param properties 
      */
-    public abstract void addObserver(PropertySetter observer, String... properties);
+    public abstract void addObserver(PropertySetter observer, String... prefixes);
     protected void addObserver(PropertySetter observer)
     {
         if (observer instanceof Transactional)
