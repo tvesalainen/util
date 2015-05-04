@@ -17,65 +17,83 @@
 
 package org.vesalainen.code;
 
+import org.vesalainen.util.Transactional;
+
 /**
- * A class throwing exception for every not handled property
+ * A class that implements every set method by calling setProperty which throws 
+ * exception for every not handled property
  * @author Timo Vesalainen
  */
-public class AbstractPropertySetter implements PropertySetter
+public class AbstractPropertySetter implements PropertySetter, Transactional
 {
 
-    @Override
-    public void set(String property, boolean arg)
+    protected void setProperty(String property, Object arg)
     {
         throw new UnsupportedOperationException("Not supported for boolean property '"+property+"'");
     }
 
     @Override
+    public void set(String property, boolean arg)
+    {
+        setProperty(property, arg);
+    }
+
+    @Override
     public void set(String property, byte arg)
     {
-        throw new UnsupportedOperationException("Not supported for byte property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, char arg)
     {
-        throw new UnsupportedOperationException("Not supported for char property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, short arg)
     {
-        throw new UnsupportedOperationException("Not supported for short property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, int arg)
     {
-        throw new UnsupportedOperationException("Not supported for int property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, long arg)
     {
-        throw new UnsupportedOperationException("Not supported for long property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, float arg)
     {
-        throw new UnsupportedOperationException("Not supported for float property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, double arg)
     {
-        throw new UnsupportedOperationException("Not supported for double property '"+property+"'");
+        setProperty(property, arg);
     }
 
     @Override
     public void set(String property, Object arg)
     {
-        throw new UnsupportedOperationException("Not supported for Object property '"+property+"'");
+        setProperty(property, arg);
+    }
+
+    @Override
+    public void rollback(String reason)
+    {
+    }
+
+    @Override
+    public void commit(String reason)
+    {
     }
     
 }
