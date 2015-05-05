@@ -20,6 +20,7 @@ package org.vesalainen.util.concurrent;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,10 +31,15 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>Running thread activates another by using switchTo or fork method. 
  * Parallel excecution is possible between fork and join methods. Using switchTo
  * is same as calling fork and join.
+ * <p>
+ * Thread can pass messages.
+ * 
  * @author tkv
  * @param <K> Thread key
+ * @param <M> Message type
+ * @param <C> Context type
  */
-public abstract class SimpleWorkflow<K>
+public abstract class SimpleWorkflow<K,M,C>
 {
     private final Map<K,Thread> threadMap;
     private final Map<Thread,Semaphore> semaphoreMap;
@@ -42,6 +48,9 @@ public abstract class SimpleWorkflow<K>
     private final long timeout;
     private final TimeUnit timeUnit;
     private final ReentrantLock lock = new ReentrantLock();
+    private ReentrantLock contextLock;
+    private C context;
+    private final Map<K,M> messageMap = new HashMap<>();
     
     /**
      * Creates a new workflow. Current thread is named to start.
@@ -50,21 +59,33 @@ public abstract class SimpleWorkflow<K>
      */
     public SimpleWorkflow(K start)
     {
-        this(start, 1, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        this(start, null, 1, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+    /**
+     * Creates a new workflow. Current thread is named to start.
+     * Maximum number of parallel running threads = 1. No timeout for idle threads.
+     * @param start Name of current thread.
+     * @param context a context object for all threads to share
+     */
+    public SimpleWorkflow(K start, C context)
+    {
+        this(start, context, 1, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
     /**
      * Creates a new workflow. Current thread is named to start.
      * @param start Name of starter thread.
+     * @param context a context object for all threads to share
      * @param maxParallelism Maximum number of parallel running threads.
      * @param timeout Timeout for idle thread to be stopped.
      * @param timeUnit Time unit for idle thread to be stopped.
      */
-    public SimpleWorkflow(K start, int maxParallelism, long timeout, TimeUnit timeUnit)
+    public SimpleWorkflow(K start, C context, int maxParallelism, long timeout, TimeUnit timeUnit)
     {
         if (maxParallelism < 0)
         {
             throw new IllegalArgumentException("maxParallelism < 0");
         }
+        this.context = context;
         this.maxParallelism = maxParallelism;
         this.timeout = timeout;
         this.timeUnit = timeUnit;
@@ -74,6 +95,10 @@ public abstract class SimpleWorkflow<K>
         Thread currentThread = Thread.currentThread();
         threadMap.put(start, currentThread);
         semaphoreMap.put(currentThread, new Semaphore(0));
+        if (context != null)
+        {
+            contextLock = new ReentrantLock();
+        }
     }
     
     /**
@@ -82,6 +107,15 @@ public abstract class SimpleWorkflow<K>
      */
     public void fork(K to)
     {
+        fork(to, null);
+    }
+    /**
+     * Fork executing thread. 
+     * @param to Next executing
+     * @param msg Message to
+     */
+    public void fork(K to, M msg)
+    {
         if (maxParallelism == 0)
         {
             throw new IllegalArgumentException("maxParallelism == 0, fork() not allowed! Use switchTo.");
@@ -89,15 +123,14 @@ public abstract class SimpleWorkflow<K>
         try
         {
             stopSemaphore.acquire();
-            //System.err.println("forked="+stopSemaphore.availablePermits());
-            doFork(to);
+            doFork(to, msg);
         }
         catch (InterruptedException ex)
         {
             throw new IllegalArgumentException(ex);
         }
     }
-    private void doFork(K to)
+    private void doFork(K to, M msg)
     {
         lock.lock();
         try
@@ -106,6 +139,7 @@ public abstract class SimpleWorkflow<K>
             {
                 throw new IllegalStateException("threads are already interrupted");
             }
+            messageMap.put(to, msg);
             Thread nextThread = threadMap.get(to);
             if (nextThread == null)
             {
@@ -116,7 +150,6 @@ public abstract class SimpleWorkflow<K>
                 threadMap.put(to, nextThread);
                 semaphoreMap.put(nextThread, semaphore);
                 nextThread.start();
-                //System.err.println("created="+stopSemaphore.availablePermits());
             }
             else
             {
@@ -129,7 +162,12 @@ public abstract class SimpleWorkflow<K>
             lock.unlock();
         }
     }
-    public void join()
+    /**
+     * Thread waits until another thread calls fork, switchTo or endTo method
+     * using threads key. Returns message from another thread.
+     * @return 
+     */
+    public M join()
     {
         if (threadMap.isEmpty())
         {
@@ -142,10 +180,9 @@ public abstract class SimpleWorkflow<K>
             throw new IllegalStateException("Current thread is not workflow thread");
         }
         stopSemaphore.release();
-        //System.err.println("joined="+stopSemaphore.availablePermits());
-        doJoin();
+        return doJoin();
     }
-    private void doJoin()
+    private M doJoin()
     {
         try
         {
@@ -179,6 +216,7 @@ public abstract class SimpleWorkflow<K>
                     lock.unlock();
                 }
             }
+            return getMessage();
         }
         catch (InterruptedException ex)
         {
@@ -186,13 +224,34 @@ public abstract class SimpleWorkflow<K>
         }
     }
     /**
+     * Returns current message or null if there's no message. This is the same
+     * message that is returned from join or switchTo method. For starting thread
+     * this is the only way to get the message.
+     * @return 
+     */
+    public M getMessage()
+    {
+        return messageMap.get(getCurrentKey());
+    }
+    /**
      * Switch executing thread. 
      * @param to Next executing
+     * @return 
      */
-    public void switchTo(K to)
+    public M switchTo(K to)
     {
-        doFork(to);
-        doJoin();
+        return switchTo(to, null);
+    }
+    /**
+     * Switch executing thread. 
+     * @param to Next executing
+     * @param msg
+     * @return 
+     */
+    public M switchTo(K to, M msg)
+    {
+        doFork(to, msg);
+        return doJoin();
     }
     
     public int getThreadCount()
@@ -202,6 +261,54 @@ public abstract class SimpleWorkflow<K>
             throw new IllegalStateException("threads are already interrupted");
         }
         return threadMap.size();
+    }
+    /**
+     * Ends the current thread and switches to
+     * @param to 
+     */
+    public void endTo(K to)
+    {
+        endTo(to, null);
+    }
+    /**
+     * Ends the current thread and switches to
+     * @param to 
+     * @param msg 
+     */
+    public void endTo(K to, M msg)
+    {
+        K key = getCurrentKey();
+        if (key.equals(to))
+        {
+            throw new IllegalArgumentException("current and to are equals");
+        }
+        if (key != null)
+        {
+            kill(key);
+            doFork(to, msg);
+            throw new ThreadStoppedException("suicide");
+        }
+        else
+        {
+            throw new IllegalArgumentException("called from wrong thread");
+        }
+    }
+    /**
+     * Returns key for current thread. Returns null if current thread is not
+     * part of the workflow.
+     * @return 
+     */
+    public K getCurrentKey()
+    {
+        Thread currentThread = Thread.currentThread();
+        for (Entry<K,Thread> entry : threadMap.entrySet())
+        {
+            if (currentThread.equals(entry.getValue()))
+            {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
     public void kill(K key)
     {
@@ -234,9 +341,7 @@ public abstract class SimpleWorkflow<K>
             {
                 throw new IllegalStateException("threads are already interrupted");
             }
-            //System.err.println("waiting stopping="+stopSemaphore.availablePermits());
             stopSemaphore.acquire(maxParallelism);
-            //System.err.println("released stopping="+stopSemaphore.availablePermits());
             stopThreads();
         }
         catch (InterruptedException ex)
@@ -312,5 +417,27 @@ public abstract class SimpleWorkflow<K>
             }
         }
         
+    }
+    /**
+     * Provides thread save access to the context object. ContextAccess.access 
+     * method is called inside a lock to prevent concurrent modification to
+     * the object.
+     * @param access 
+     */
+    public void accessContext(ContextAccess access)
+    {
+        contextLock.lock();
+        try
+        {
+            access.access(context);
+        }
+        finally
+        {
+            contextLock.unlock();
+        }
+    }
+    public interface ContextAccess<C>
+    {
+        void access(C context);
     }
 }
