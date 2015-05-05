@@ -302,7 +302,7 @@ public class Processor extends AbstractProcessor
                                 cm.println("for (String p : "+arg1+")");
                                 cm.println("{");
                                 CodePrinter cao = cm.createSub("}");
-                                cao.println("String str = Character.toUpperCase(p.charAt(0))+p.substring(1);");
+                                cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
                                 cao.println("for (Prop pr : Prop.values())");
                                 cao.println("{");
                                 CodePrinter caoo = cao.createSub("}");

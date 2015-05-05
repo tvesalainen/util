@@ -18,14 +18,13 @@
 package org.vesalainen.util.concurrent;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.vesalainen.util.concurrent.SimpleWorkflow.ContextAccess;
 
 /**
  *
@@ -67,9 +66,11 @@ public class SimpleWorkflowTest
         System.out.println("switchThread");
         UnparallelWorkflowImpl1 instance = new UnparallelWorkflowImpl1(0);
         assertEquals(1, instance.getThreadCount());
-        instance.switchTo(5);
+        String msg = instance.switchTo(5, "msg5");
+        assertEquals("msg5", msg);
         assertEquals(6, instance.getThreadCount());
-        instance.switchTo(5);
+        msg = instance.switchTo(5, "msg6");
+        assertEquals("msg6", msg);
         assertEquals(6, instance.getThreadCount());
         instance.kill(4);
         assertEquals(5, instance.getThreadCount());
@@ -153,7 +154,28 @@ public class SimpleWorkflowTest
             fail(ex.getMessage());
         }
     }
-    public class UnparallelWorkflowImpl1 extends SimpleWorkflow<Integer>
+    @Test
+    public void testEndTo()
+    {
+        System.out.println("endTo");
+        Counter counter = new Counter();
+        UnparallelWorkflowImpl3 instance = new UnparallelWorkflowImpl3(0, counter);
+        instance.fork(1);
+        assertEquals(2, instance.getThreadCount());
+        instance.join();
+        assertEquals(1, counter.number);
+        assertEquals(1, instance.getThreadCount());
+        instance.waitAndStopThreads();
+        try
+        {
+            instance.switchTo(1);
+            fail("should throw exception");
+        }
+        catch (IllegalStateException ex)
+        {
+        }
+    }
+    public class UnparallelWorkflowImpl1 extends SimpleWorkflow<Integer,String,Object>
     {
 
         public UnparallelWorkflowImpl1(int number)
@@ -183,17 +205,18 @@ public class SimpleWorkflowTest
         {
             while (true)
             {
-                wf.switchTo(number-1);
+                String m = wf.getMessage();
+                wf.switchTo(number-1, m);
             }
         }
         
     }
-    public class UnparallelWorkflowImpl2 extends SimpleWorkflow<Integer>
+    public class UnparallelWorkflowImpl2 extends SimpleWorkflow<Integer,String,Object>
     {
 
         public UnparallelWorkflowImpl2(int number)
         {
-            super(number, 1, 500, TimeUnit.MILLISECONDS);
+            super(number, null, 1, 500, TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -228,5 +251,63 @@ public class SimpleWorkflowTest
             wf.join();
         }
         
+    }
+    public class UnparallelWorkflowImpl3 extends SimpleWorkflow<Integer,String,Counter>
+    {
+
+        public UnparallelWorkflowImpl3(int number, Counter counter)
+        {
+            super(number, counter);
+        }
+
+        @Override
+        protected Runnable create(Integer key)
+        {
+            return new Worker3(key, this);
+        }
+    }
+    public class Worker3 implements Runnable
+    {
+        private final int number;
+        private final UnparallelWorkflowImpl3 wf;
+
+        public Worker3(int number, UnparallelWorkflowImpl3 wf)
+        {
+            this.number = number;
+            this.wf = wf;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                ContextAccess<Counter> ca = new ContextAccess<Counter>() 
+                {
+                    @Override
+                    public void access(Counter counter)
+                    {
+                        counter.number++;
+                    }
+                };
+                wf.accessContext(ca);
+                Thread.sleep(1000);
+                switch (number)
+                {
+                    case 1:
+                        wf.endTo(0);
+                        break;
+                }
+            }
+            catch (InterruptedException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        
+    }
+    public class Counter
+    {
+        int number;
     }
 }
