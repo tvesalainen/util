@@ -282,12 +282,13 @@ public class SimpleWorkflowTest
         {
             try
             {
-                ContextAccess<Counter> ca = new ContextAccess<Counter>() 
+                ContextAccess<Counter,Void> ca = new ContextAccess<Counter,Void>() 
                 {
                     @Override
-                    public void access(Counter counter)
+                    public Void access(Counter counter)
                     {
                         counter.number++;
+                        return null;
                     }
                 };
                 wf.accessContext(ca);

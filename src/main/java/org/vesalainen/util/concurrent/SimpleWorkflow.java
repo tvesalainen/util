@@ -17,10 +17,13 @@
 
 package org.vesalainen.util.concurrent;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -50,7 +53,8 @@ public abstract class SimpleWorkflow<K,M,C>
     private final ReentrantLock lock = new ReentrantLock();
     private ReentrantLock contextLock;
     private C context;
-    private final Map<K,M> messageMap = new HashMap<>();
+    private final Map<K,M> messageMap = (Map<K,M>) Collections.synchronizedMap(new HashMap<>());
+    private final Set<K> parallelSet = (Set<K>) Collections.synchronizedSet(new HashSet<>());
     
     /**
      * Creates a new workflow. Current thread is named to start.
@@ -92,13 +96,10 @@ public abstract class SimpleWorkflow<K,M,C>
         this.stopSemaphore = new Semaphore(maxParallelism);
         this.semaphoreMap = new HashMap<>();
         this.threadMap = new HashMap<>();
+        this.contextLock = new ReentrantLock();
         Thread currentThread = Thread.currentThread();
         threadMap.put(start, currentThread);
         semaphoreMap.put(currentThread, new Semaphore(0));
-        if (context != null)
-        {
-            contextLock = new ReentrantLock();
-        }
     }
     
     /**
@@ -123,6 +124,7 @@ public abstract class SimpleWorkflow<K,M,C>
         try
         {
             stopSemaphore.acquire();
+            parallelSet.add(getCurrentKey());
             doFork(to, msg);
         }
         catch (InterruptedException ex)
@@ -180,6 +182,7 @@ public abstract class SimpleWorkflow<K,M,C>
             throw new IllegalStateException("Current thread is not workflow thread");
         }
         stopSemaphore.release();
+        parallelSet.remove(getCurrentKey());
         return doJoin();
     }
     private M doJoin()
@@ -300,15 +303,23 @@ public abstract class SimpleWorkflow<K,M,C>
      */
     public K getCurrentKey()
     {
-        Thread currentThread = Thread.currentThread();
-        for (Entry<K,Thread> entry : threadMap.entrySet())
+        lock.lock();
+        try
         {
-            if (currentThread.equals(entry.getValue()))
+            Thread currentThread = Thread.currentThread();
+            for (Entry<K,Thread> entry : threadMap.entrySet())
             {
-                return entry.getKey();
+                if (currentThread.equals(entry.getValue()))
+                {
+                    return entry.getKey();
+                }
             }
+            return null;
         }
-        return null;
+        finally
+        {
+            lock.unlock();
+        }
     }
     public void kill(K key)
     {
@@ -322,6 +333,11 @@ public abstract class SimpleWorkflow<K,M,C>
             Thread thread = threadMap.get(key);
             threadMap.remove(key);
             semaphoreMap.remove(thread);
+            if (parallelSet.contains(key))
+            {
+                parallelSet.remove(key);
+                stopSemaphore.release();
+            }
             thread.interrupt();
         }
         finally
@@ -422,22 +438,24 @@ public abstract class SimpleWorkflow<K,M,C>
      * Provides thread save access to the context object. ContextAccess.access 
      * method is called inside a lock to prevent concurrent modification to
      * the object.
+     * @param <R> Return type
      * @param access 
+     * @return  
      */
-    public void accessContext(ContextAccess access)
+    public <R> R accessContext(ContextAccess<C,R> access)
     {
         contextLock.lock();
         try
         {
-            access.access(context);
+            return access.access(context);
         }
         finally
         {
             contextLock.unlock();
         }
     }
-    public interface ContextAccess<C>
+    public interface ContextAccess<C,R>
     {
-        void access(C context);
+        R access(C context);
     }
 }
