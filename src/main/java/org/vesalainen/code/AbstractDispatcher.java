@@ -18,6 +18,7 @@
 package org.vesalainen.code;
 
 import java.util.Arrays;
+import static org.vesalainen.code.JavaType.DECLARED;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -84,6 +85,7 @@ public abstract class AbstractDispatcher implements Transactional
     {
         ordInd = 0;
         Arrays.fill(ind, 0);
+        Arrays.fill((Object[]) arr[DECLARED.ordinal()], 0);
     }
 
     protected void set(int ordinal, boolean arg)
