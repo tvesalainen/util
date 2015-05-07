@@ -95,7 +95,15 @@ public class SynchronizedRingBuffer
                     break;
                 }
                 need = rc;
-                span.increment(rc);
+                lock.lock();
+                try
+                {
+                    span.increment(rc);
+                }
+                finally
+                {
+                    lock.unlock();
+                }
                 for (BufferConsumer consumer : consumers)
                 {
                     consumer.input(rc);
