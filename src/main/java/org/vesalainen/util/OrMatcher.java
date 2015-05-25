@@ -16,43 +16,40 @@
  */
 package org.vesalainen.util;
 
-import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * @author tkv
  */
-public class SimpleMatcher implements Matcher
+public class OrMatcher implements Matcher
 {
-    private final byte[] expression;
-    private int idx;
+    private final List<Matcher> matchers = new ArrayList<>();
     
-    public SimpleMatcher(String expr, Charset charset)
+    public void add(Matcher matcher)
     {
-        expression = expr.getBytes(charset);
+        matchers.add(matcher);
     }
-
+    /**
+     * If one matches returns Match. If all return Error returns error.
+     * Otherwise returns Ok.
+     * @param cc
+     * @return 
+     */
     @Override
     public Status match(int cc)
     {
-        if (expression[idx] == cc || expression[idx] == '?')
+        int highest = -1;
+        for (Matcher matcher : matchers)
         {
-            idx++;
-            if (idx == expression.length)
+            Status s = matcher.match(cc);
+            if (s == Status.Match)
             {
-                idx = 0;
-                return Status.Match;
+                return s;
             }
-            else
-            {
-                return Status.Ok;
-            }
+            highest = Math.max(highest, s.ordinal());
         }
-        else
-        {
-            idx = 0;
-            return Status.Error;
-        }
+        return Status.values()[highest];
     }
     
 }

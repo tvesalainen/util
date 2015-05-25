@@ -36,18 +36,40 @@ public class SimpleMatcherTest
     public void test1()
     {
         SimpleMatcher sm = new SimpleMatcher("$??GLL", StandardCharsets.US_ASCII);
-        assertEquals(Status.Scan, sm.match('z'));
+        assertEquals(Status.Error, sm.match('z'));
         assertEquals(Status.Ok, sm.match('$'));
         assertEquals(Status.Ok, sm.match('G'));
         assertEquals(Status.Ok, sm.match('P'));
         assertEquals(Status.Error, sm.match('W'));
-        assertEquals(Status.Scan, sm.match('z'));
+        assertEquals(Status.Error, sm.match('z'));
         assertEquals(Status.Ok, sm.match('$'));
         assertEquals(Status.Ok, sm.match('G'));
         assertEquals(Status.Ok, sm.match('P'));
         assertEquals(Status.Ok, sm.match('G'));
         assertEquals(Status.Ok, sm.match('L'));
         assertEquals(Status.Match, sm.match('L'));
+    }
+    
+    @Test
+    public void test2()
+    {
+        SimpleMatcher sm1 = new SimpleMatcher("$??GLL", StandardCharsets.US_ASCII);
+        SimpleMatcher sm2 = new SimpleMatcher("$??GGA", StandardCharsets.US_ASCII);
+        OrMatcher om = new OrMatcher();
+        om.add(sm1);
+        om.add(sm2);
+        assertEquals(Status.Error, om.match('z'));
+        assertEquals(Status.Ok, om.match('$'));
+        assertEquals(Status.Ok, om.match('G'));
+        assertEquals(Status.Ok, om.match('P'));
+        assertEquals(Status.Error, om.match('W'));
+        assertEquals(Status.Error, om.match('z'));
+        assertEquals(Status.Ok, om.match('$'));
+        assertEquals(Status.Ok, om.match('G'));
+        assertEquals(Status.Ok, om.match('P'));
+        assertEquals(Status.Ok, om.match('G'));
+        assertEquals(Status.Ok, om.match('L'));
+        assertEquals(Status.Match, om.match('L'));
     }
     
 }
