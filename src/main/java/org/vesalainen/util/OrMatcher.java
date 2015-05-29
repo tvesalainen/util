@@ -16,19 +16,41 @@
  */
 package org.vesalainen.util;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
+ * A class that contains a set of matchers.
  * @author tkv
+ * @param <T> Attachment type
  */
-public class OrMatcher implements Matcher
+public class OrMatcher<T> implements Matcher
 {
-    private final List<Matcher> matchers = new ArrayList<>();
-    
+    private final Set<Matcher> matchers = new HashSet<>();
+    private final MapList<Matcher,T> map = new HashMapList<>();
+    private List<T> lastMatched;
+
+    public OrMatcher()
+    {
+    }
+    /**
+     * Add matcher
+     * @param matcher 
+     */
     public void add(Matcher matcher)
     {
         matchers.add(matcher);
+    }
+    /**
+     * Add matcher with attachment. If matcher exist only attachment is stored.
+     * @param matcher
+     * @param attachment 
+     */
+    public void add(Matcher matcher, T attachment)
+    {
+        matchers.add(matcher);
+        map.add(matcher, attachment);
     }
     /**
      * If one matches returns Match. If all return Error returns error.
@@ -45,11 +67,20 @@ public class OrMatcher implements Matcher
             Status s = matcher.match(cc);
             if (s == Status.Match)
             {
+                lastMatched = map.get(matcher);
                 return s;
             }
             highest = Math.max(highest, s.ordinal());
         }
         return Status.values()[highest];
+    }
+    /**
+     * Returns attachment of last matched matcher.
+     * @return 
+     */
+    public List<T> getLastMatched()
+    {
+        return lastMatched;
     }
     
 }

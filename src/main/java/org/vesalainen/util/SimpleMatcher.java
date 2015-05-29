@@ -17,9 +17,13 @@
 package org.vesalainen.util;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 /**
- *
+ * A class that matches input with a simple pattern. All characters except '?'
+ * and '*' matches as they are. '?' matches matches any single char. '*' matches
+ * any number of all characters except the one that follows '*' in pattern.
+ * <p>Note that escaping '?' or '*' is not currently implemented!
  * @author tkv
  */
 public class SimpleMatcher implements Matcher
@@ -29,12 +33,27 @@ public class SimpleMatcher implements Matcher
     
     public SimpleMatcher(String expr, Charset charset)
     {
+        if (expr.endsWith("*"))
+        {
+            throw new IllegalArgumentException(expr+" ending with '*'");
+        }
         expression = expr.getBytes(charset);
     }
 
     @Override
     public Status match(int cc)
     {
+        if (expression[idx] == '*')
+        {
+            if (cc == expression[idx+1])
+            {
+                idx++;
+            }
+            else
+            {
+                return Status.Ok;
+            }
+        }
         if (expression[idx] == cc || expression[idx] == '?')
         {
             idx++;
@@ -53,6 +72,33 @@ public class SimpleMatcher implements Matcher
             idx = 0;
             return Status.Error;
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 71 * hash + Arrays.hashCode(this.expression);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final SimpleMatcher other = (SimpleMatcher) obj;
+        if (!Arrays.equals(this.expression, other.expression))
+        {
+            return false;
+        }
+        return true;
     }
     
 }
