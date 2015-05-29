@@ -35,6 +35,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.Matcher;
+import org.vesalainen.util.OrMatcher;
 import org.vesalainen.util.SimpleMatcher;
 import org.vesalainen.util.concurrent.SynchronizedRingBufferTest;
 
@@ -64,7 +65,12 @@ public class RingByteBufferTest
             GatheringByteChannel gbc = ChannelHelper.getGatheringByteChannel(oc);
             
             String str1 = "pellentesque";
-            SimpleMatcher matcher = new SimpleMatcher(str1, StandardCharsets.US_ASCII);
+            String str2 = "sollicitudin";
+            SimpleMatcher matcher1 = new SimpleMatcher(str1, StandardCharsets.US_ASCII);
+            SimpleMatcher matcher2 = new SimpleMatcher(str2, StandardCharsets.US_ASCII);
+            OrMatcher matcher = new OrMatcher();
+            matcher.add(matcher1);
+            matcher.add(matcher2);
             boolean mark = true;
             int writeCount = 0;
             RingByteBuffer rbb = new RingByteBuffer(100);
@@ -83,6 +89,7 @@ public class RingByteBufferTest
                             mark = true;
                             break;
                         case Match:
+                            assertTrue(str1.contentEquals(rbb) || str2.contentEquals(rbb));
                             rbb.write(gbc);
                             mark = true;
                             writeCount++;
@@ -92,13 +99,89 @@ public class RingByteBufferTest
                 rc = rbb.read(fc);
                 assertTrue(rc <= 100);
             }
-            assertEquals(22, writeCount);
-            assertEquals(22*str1.length(), baos.size());
+            assertEquals(26, writeCount);
+            assertEquals(22*str1.length()+4*str2.length(), baos.size());
+            String res = baos.toString(StandardCharsets.US_ASCII.name());
+            assertEquals(22, countStrings(res, str1));
+            assertEquals(4, countStrings(res, str2));
         }
         catch (IOException | URISyntaxException ex)
         {
             Logger.getLogger(RingByteBufferTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
+    @Test
+    public void test2()
+    {
+        try
+        {
+            URL url = SynchronizedRingBufferTest.class.getClassLoader().getResource("nmea.txt");
+            Path path = Paths.get(url.toURI());
+            File file = path.toFile();
+            FileChannel fc = FileChannel.open(path, StandardOpenOption.READ);
+
+            ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+            WritableByteChannel oc1 = Channels.newChannel(baos1);
+            GatheringByteChannel gbc1 = ChannelHelper.getGatheringByteChannel(oc1);
+            
+            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+            WritableByteChannel oc2 = Channels.newChannel(baos2);
+            GatheringByteChannel gbc2 = ChannelHelper.getGatheringByteChannel(oc2);
+            
+            SimpleMatcher matcher1 = new SimpleMatcher("$??RMC*\r\n", StandardCharsets.US_ASCII);
+            SimpleMatcher matcher2 = new SimpleMatcher("$??DPT*\r\n", StandardCharsets.US_ASCII);
+            OrMatcher<GatheringByteChannel> matcher = new OrMatcher<>();
+            matcher.add(matcher1, gbc1);
+            matcher.add(matcher2, gbc2);
+            boolean mark = true;
+            RingByteBuffer rbb = new RingByteBuffer(100);
+            int rc = rbb.read(fc);
+            while (rc > 0)
+            {
+                while (rbb.hasRemaining())
+                {
+                    byte b = rbb.get(mark);
+                    switch (matcher.match(b))
+                    {
+                        case Ok:
+                            mark = false;
+                            break;
+                        case Error:
+                            mark = true;
+                            break;
+                        case Match:
+                            for (GatheringByteChannel gbc : matcher.getLastMatched())
+                            {
+                                rbb.write(gbc);
+                            }
+                            mark = true;
+                            break;
+                    }
+                }
+                rc = rbb.read(fc);
+                assertTrue(rc <= 100);
+            }
+            String res1 = baos1.toString(StandardCharsets.US_ASCII.name());
+            assertEquals(11, countStrings(res1, "RMC"));
+            String res2 = baos2.toString(StandardCharsets.US_ASCII.name());
+            assertEquals(10, countStrings(res2, "DPT"));
+        }
+        catch (IOException | URISyntaxException ex)
+        {
+            Logger.getLogger(RingByteBufferTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private int countStrings(String str, String sub)
+    {
+        int count=0;
+        int index = str.indexOf(sub);
+        while (index != -1)
+        {
+            count++;
+            index = str.indexOf(sub, index+sub.length());
+        }
+        return count;
+    }
 }

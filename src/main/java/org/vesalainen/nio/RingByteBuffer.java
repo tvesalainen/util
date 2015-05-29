@@ -22,7 +22,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
 /**
- *
+ * 
  * @author tkv
  */
 public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,GatheringByteChannel>
@@ -46,15 +46,31 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         ar1 = new ByteBuffer[] {bb1};
         ar2 = new ByteBuffer[] {bb1, bb2};
     }
-
+    /**
+     * Returns byte at current position and increments the position.
+     * @return 
+     */
     public byte get()
     {
         return get(false);
     }
+    /**
+     * Returns byte at current position and increments the position. If mark == true
+     * the current position is marked.
+     * @param mark
+     * @return 
+     */
     public byte get(boolean mark)
     {
         return buffer.get(rawGet(mark));
     }
+
+    @Override
+    public int implGetAt(int index)
+    {
+        return buffer.get((mark+index)%capacity) & 0xff;
+    }
+    
     @Override
     protected ByteBuffer allocate(int size, boolean direct)
     {

@@ -22,21 +22,31 @@ import java.nio.BufferUnderflowException;
 import java.nio.InvalidMarkException;
 
 /**
- *
+ * A RingBuffer wrapper for Buffer. 
+ * <p>This class acts also as CharSequence between mark and position.
  * @author tkv
  * @param <B> Buffer type
  * @param <R> Reader type
  * @param <W> Writer type
  */
-public abstract class RingBuffer<B extends Buffer,R,W>
+public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
 {
     protected final B buffer;
-    private int position;
-    private int mark=-1;
-    private int limit;
-    private final int capacity;
-    private int remaining;
-
+    protected int position;
+    protected int mark=-1;
+    protected int limit;
+    protected final int capacity;
+    protected int remaining;
+    protected int marked;
+    /**
+     * Creates a RingBuffer of size. The backing buffer is either direct- or 
+     * heapbuffer depending on direct.
+     * <p>Method names which are same as in java.nio.Buffer have the same meaning.
+     * Reading and writing differs from Buffer.
+     * @param size
+     * @param direct 
+     * @see java.nio.Buffer
+     */
     public RingBuffer(int size, boolean direct)
     {
         this.buffer = allocate(size, direct);
@@ -48,7 +58,7 @@ public abstract class RingBuffer<B extends Buffer,R,W>
 
     protected abstract B allocate(int size, boolean direct);
     /**
-     * Returns true is there are remaining items.
+     * Returns true is there are remaining items between position and limit.
      * @return 
      */
     public final boolean hasRemaining()
@@ -56,7 +66,7 @@ public abstract class RingBuffer<B extends Buffer,R,W>
         return remaining > 0;
     }
     /**
-     * Return  the count of remaining items.
+     * Return  the count of remaining items between position and limit.
      * @return 
      */
     public final int remaining()
@@ -69,7 +79,30 @@ public abstract class RingBuffer<B extends Buffer,R,W>
     public final void mark()
     {
         mark = position;
+        marked = 0;
     }
+    /**
+     * Return item as int value at index position from mark. If mark is not set 
+     * throws InvalidMarkException
+     * @param index
+     * @return 
+     */
+    public int getAt(int index)
+    {
+        if (index > marked)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        return implGetAt(index);
+    }
+    public abstract int implGetAt(int index);
+    /**
+     * Returns the current position and increments it. If markIt == true the 
+     * returned position is marked.
+     * <p>This method is a support for concrete subclass's get method.
+     * @param markIt
+     * @return 
+     */
     protected final int rawGet(boolean markIt)
     {
         int pos;
@@ -78,6 +111,11 @@ public abstract class RingBuffer<B extends Buffer,R,W>
             if (markIt)
             {
                 mark = position;
+                marked = 1;
+            }
+            else
+            {
+                marked++;
             }
             pos = position;
             position = (position+1) % capacity;
@@ -90,8 +128,10 @@ public abstract class RingBuffer<B extends Buffer,R,W>
         }
     }
     /**
-     * Reads more items to buffer.
-     * @param reader
+     * Reads more items to buffer between limit and mark/position. Read will not
+     * pass mark or position. Return the actual items read.
+     * @param reader Number of items read.
+     * @return 
      * @throws IOException 
      */
     public int read(R reader) throws IOException
@@ -143,6 +183,7 @@ public abstract class RingBuffer<B extends Buffer,R,W>
     /**
      * Write buffers content from mark (included) to position (excluded)
      * @param writer
+     * @return 
      * @throws IOException 
      */
     public int write(W writer) throws IOException
@@ -166,7 +207,6 @@ public abstract class RingBuffer<B extends Buffer,R,W>
             }
         };
         int count = s.doIt(writer, mark, position);
-        position = (position+count)%capacity;
         return count;
     }
     /**
@@ -197,6 +237,24 @@ public abstract class RingBuffer<B extends Buffer,R,W>
     public String toString()
     {
         return "RingBuffer{" + "position=" + position + ", mark=" + mark + ", limit=" + limit + ", capacity=" + capacity + ", remaining=" + remaining + '}';
+    }
+
+    @Override
+    public int length()
+    {
+        return marked;
+    }
+
+    @Override
+    public char charAt(int index)
+    {
+        return (char) getAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end)
+    {
+        throw new UnsupportedOperationException("Not supported.");
     }
 
     private abstract class Splitter<T>
