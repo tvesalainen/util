@@ -34,7 +34,7 @@ public class ChannelHelper
 {
     public static OutputStream getGatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
     {
-        return new GatheringOutputStream(srcs, offset, length);
+        return new ByteBufferOutputStream(srcs, offset, length);
     }
     public static GatheringByteChannel getGatheringByteChannel(WritableByteChannel channel)
     {
@@ -163,38 +163,4 @@ public class ChannelHelper
 
     }
 
-    public static class GatheringOutputStream extends OutputStream
-    {
-        private final ByteBuffer[] srcs;
-        private int offset;
-        private  int length;
-        public GatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
-        {
-            this.srcs = srcs;
-            this.offset = offset;
-            this.length = length;
-        }
-
-        @Override
-        public void write(int b) throws IOException
-        {
-            try
-            {
-                srcs[offset].put((byte) (b & 0xff));
-            }
-            catch (BufferOverflowException ex)
-            {
-                if (length > 1)
-                {
-                    offset++;
-                    length--;
-                    write(b);
-                }
-                else
-                {
-                    throw new IOException("buffer overflow");
-                }
-            }
-        }
-    }
 }
