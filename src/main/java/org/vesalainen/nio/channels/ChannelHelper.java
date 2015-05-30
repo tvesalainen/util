@@ -17,6 +17,9 @@
 package org.vesalainen.nio.channels;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -29,6 +32,10 @@ import java.nio.channels.WritableByteChannel;
  */
 public class ChannelHelper
 {
+    public static OutputStream getGatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
+    {
+        return new GatheringOutputStream(srcs, offset, length);
+    }
     public static GatheringByteChannel getGatheringByteChannel(WritableByteChannel channel)
     {
         return new GatheringByteChannelImpl(channel);
@@ -154,5 +161,40 @@ public class ChannelHelper
             channel.close();
         }
 
+    }
+
+    public static class GatheringOutputStream extends OutputStream
+    {
+        private final ByteBuffer[] srcs;
+        private int offset;
+        private  int length;
+        public GatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
+        {
+            this.srcs = srcs;
+            this.offset = offset;
+            this.length = length;
+        }
+
+        @Override
+        public void write(int b) throws IOException
+        {
+            try
+            {
+                srcs[offset].put((byte) (b & 0xff));
+            }
+            catch (BufferOverflowException ex)
+            {
+                if (length > 1)
+                {
+                    offset++;
+                    length--;
+                    write(b);
+                }
+                else
+                {
+                    throw new IOException("buffer overflow");
+                }
+            }
+        }
     }
 }
