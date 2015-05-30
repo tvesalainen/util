@@ -33,11 +33,28 @@ public class SimpleMatcher implements Matcher
     
     public SimpleMatcher(String expr, Charset charset)
     {
+        if (expr.isEmpty())
+        {
+            throw new IllegalArgumentException("empty expression");
+        }
         if (expr.endsWith("*"))
         {
             throw new IllegalArgumentException(expr+" ending with '*'");
         }
         expression = expr.getBytes(charset);
+    }
+
+    public SimpleMatcher(byte[] expression)
+    {
+        if (expression.length == 0)
+        {
+            throw new IllegalArgumentException("empty expression");
+        }
+        if (expression[expression.length-1] == '*')
+        {
+            throw new IllegalArgumentException("expr ending with '*'");
+        }
+        this.expression = expression;
     }
 
     @Override
