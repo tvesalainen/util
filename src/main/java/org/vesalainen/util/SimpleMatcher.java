@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -30,7 +31,20 @@ public class SimpleMatcher implements Matcher
 {
     private final byte[] expression;
     private int idx;
+    /**
+     * Creates new SimpleMatcher. Used charset is US_ASCII.
+     * @param expr 
+     */
+    public SimpleMatcher(String expr)
+    {
+        this(expr, StandardCharsets.US_ASCII);
+    }
     
+    /**
+     * Creates SimpleMatcher.
+     * @param expr
+     * @param charset 
+     */
     public SimpleMatcher(String expr, Charset charset)
     {
         if (expr.isEmpty())

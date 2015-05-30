@@ -27,25 +27,52 @@ import java.nio.ByteBuffer;
  */
 public class ByteBufferOutputStream extends OutputStream
 {
-    private final ByteBuffer[] srcs;
+    private ByteBuffer[] srcs;
     private int offset;
     private int length;
 
+    public ByteBufferOutputStream()
+    {
+    }
+
     public ByteBufferOutputStream(ByteBuffer src)
     {
-        this.srcs = new ByteBuffer[] {src};
-        this.offset = 0;
-        this.length = 1;
+        this(new ByteBuffer[] {src});
     }
 
     public ByteBufferOutputStream(ByteBuffer[] srcs)
     {
-        this.srcs = srcs;
-        this.offset = 0;
-        this.length = 1;
+        this(srcs, 0, 1);
     }
 
     public ByteBufferOutputStream(ByteBuffer[] srcs, int offset, int length)
+    {
+        set(srcs, offset, length);
+    }
+    /**
+     * Returns the number of bytes that can be written.
+     * @return 
+     */
+    public final int getRemaining()
+    {
+        int rem = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            rem += srcs[offset+ii].remaining();
+        }
+        return rem;
+    }
+    public final void set(ByteBuffer src)
+    {
+        set(new ByteBuffer[] {src});
+    }
+
+    public final void set(ByteBuffer[] srcs)
+    {
+        set(srcs, 0, srcs.length);
+    }
+
+    public final void set(ByteBuffer[] srcs, int offset, int length)
     {
         this.srcs = srcs;
         this.offset = offset;
