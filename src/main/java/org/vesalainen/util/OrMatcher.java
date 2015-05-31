@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,14 @@ public class OrMatcher<T> implements Matcher
     {
         matchers.add(matcher);
         map.add(matcher, attachment);
+    }
+    public void add(Matcher matcher, Collection<T> attachments)
+    {
+        matchers.add(matcher);
+        for (T attachment : attachments)
+        {
+            map.add(matcher, attachment);
+        }
     }
     /**
      * If one matches returns Match. If all return Error returns error.

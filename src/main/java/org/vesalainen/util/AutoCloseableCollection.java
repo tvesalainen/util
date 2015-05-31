@@ -16,11 +16,13 @@
  */
 package org.vesalainen.util;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /**
  *
  * @author tkv
+ * @param <T>
  */
 public class AutoCloseableCollection<T extends AutoCloseable> implements AutoCloseable
 {
@@ -32,11 +34,18 @@ public class AutoCloseableCollection<T extends AutoCloseable> implements AutoClo
     }
     
     @Override
-    public void close() throws Exception
+    public void close() throws IOException
     {
         for (T a : collection)
         {
-            a.close();
+            try
+            {
+                a.close();
+            }
+            catch (Exception ex)
+            {
+                throw new IOException(ex);
+            }
         }
     }
     
