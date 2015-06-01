@@ -29,8 +29,6 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
 {
     private final ByteBuffer bb1;
     private final ByteBuffer bb2;
-    private final ByteBuffer[] ar0;
-    private final ByteBuffer[] ar1;
     private final ByteBuffer[] ar2;
     
     public RingByteBuffer(int size)
@@ -42,8 +40,6 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         super(size, direct);
         bb1 = buffer.duplicate();
         bb2 = buffer.duplicate();
-        ar0 = new ByteBuffer[] {};
-        ar1 = new ByteBuffer[] {bb1};
         ar2 = new ByteBuffer[] {bb1, bb2};
     }
     /**
@@ -87,16 +83,14 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     protected int read(ScatteringByteChannel reader, int position, int limit) throws IOException
     {
-        System.err.println("read("+position+", "+limit);
         bb1.limit(limit);
         bb1.position(position);
-        return (int) reader.read(ar1);
+        return (int) reader.read(ar2, 0, 1);
     }
 
     @Override
     protected int read(ScatteringByteChannel reader, int position1, int limit1, int position2, int limit2) throws IOException
     {
-        System.err.println("read("+position1+", "+limit1+", "+position2+", "+limit2);
         bb1.limit(limit1);
         bb1.position(position1);
         bb2.limit(limit2);
@@ -107,16 +101,14 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     protected int write(GatheringByteChannel writer, int position, int limit) throws IOException
     {
-        System.err.println("write("+position+", "+limit);
         bb1.limit(limit);
         bb1.position(position);
-        return (int) writer.write(ar1);
+        return (int) writer.write(ar2, 0, 1);
     }
 
     @Override
     protected int write(GatheringByteChannel writer, int position1, int limit1, int position2, int limit2) throws IOException
     {
-        System.err.println("write("+position1+", "+limit1+", "+position2+", "+limit2);
         bb1.limit(limit1);
         bb1.position(position1);
         bb2.limit(limit2);
