@@ -74,7 +74,7 @@ public class OrMatcher<T> implements Matcher
         for (Matcher matcher : matchers)
         {
             Status s = matcher.match(cc);
-            if (s == Status.Match)
+            if (s == Status.Match || s == Status.WillMatch)
             {
                 lastMatched = map.get(matcher);
                 return s;

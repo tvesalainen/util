@@ -78,15 +78,15 @@ public class SimpleMatcherTest
         SimpleMatcher sm = new SimpleMatcher("$*GLL", StandardCharsets.US_ASCII);
         assertEquals(Status.Error, sm.match('z'));
         assertEquals(Status.Ok, sm.match('$'));
-        assertEquals(Status.Ok, sm.match('I'));
-        assertEquals(Status.Ok, sm.match('I'));
-        assertEquals(Status.Ok, sm.match('W'));
-        assertEquals(Status.Ok, sm.match('z'));
-        assertEquals(Status.Ok, sm.match('$'));
-        assertEquals(Status.Ok, sm.match('I'));
-        assertEquals(Status.Ok, sm.match('I'));
-        assertEquals(Status.Ok, sm.match('G'));
-        assertEquals(Status.Ok, sm.match('L'));
+        assertEquals(Status.WillMatch, sm.match('I'));
+        assertEquals(Status.WillMatch, sm.match('I'));
+        assertEquals(Status.WillMatch, sm.match('W'));
+        assertEquals(Status.WillMatch, sm.match('z'));
+        assertEquals(Status.WillMatch, sm.match('$'));
+        assertEquals(Status.WillMatch, sm.match('I'));
+        assertEquals(Status.WillMatch, sm.match('I'));
+        assertEquals(Status.WillMatch, sm.match('G'));
+        assertEquals(Status.WillMatch, sm.match('L'));
         assertEquals(Status.Match, sm.match('L'));
     }
     

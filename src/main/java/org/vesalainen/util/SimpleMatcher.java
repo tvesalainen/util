@@ -31,6 +31,7 @@ public class SimpleMatcher implements Matcher
 {
     private final byte[] expression;
     private int idx;
+    private Status okStatus = Status.Ok;
     /**
      * Creates new SimpleMatcher. Used charset is US_ASCII.
      * @param expr 
@@ -70,19 +71,28 @@ public class SimpleMatcher implements Matcher
         }
         this.expression = expression;
     }
-
+    /**
+     * Matches input. Returns Error if in doesn't match. Ok if all matched chars
+     * are ok. WillMatch if all matched chars are ok and matching algorythm is 
+     * in '*' phase. Matched when whole input has matched.
+     * <p>WillMatch is meant for cases where partial matched input needs to be 
+     * processed before all input is available.
+     * @param cc
+     * @return 
+     */
     @Override
     public Status match(int cc)
     {
         if (expression[idx] == '*')
         {
+            okStatus = Status.WillMatch;
             if (cc == expression[idx+1])
             {
                 idx++;
             }
             else
             {
-                return Status.Ok;
+                return okStatus;
             }
         }
         if (expression[idx] == cc || expression[idx] == '?')
@@ -91,16 +101,18 @@ public class SimpleMatcher implements Matcher
             if (idx == expression.length)
             {
                 idx = 0;
+                okStatus = Status.Ok;
                 return Status.Match;
             }
             else
             {
-                return Status.Ok;
+                return okStatus;
             }
         }
         else
         {
             idx = 0;
+            okStatus = Status.Ok;
             return Status.Error;
         }
     }

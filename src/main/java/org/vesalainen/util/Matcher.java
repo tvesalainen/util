@@ -22,6 +22,23 @@ package org.vesalainen.util;
  */
 public interface Matcher
 {
-    public enum Status {Error, Ok, Match};
+    public enum Status {
+        /**
+         * Input error
+         */
+        Error, 
+        /**
+         * So far input is ok
+         */
+        Ok, 
+        /**
+         * Input will match
+         */
+        WillMatch, 
+        /**
+         * Whole input matched
+         */
+        Match
+    };
     Status match(int cc);
 }

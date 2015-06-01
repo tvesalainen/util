@@ -142,9 +142,11 @@ public class RingByteBufferTest
                 while (rbb.hasRemaining())
                 {
                     byte b = rbb.get(mark);
-                    switch (matcher.match(b))
+                    Matcher.Status match = matcher.match(b);
+                    switch (match)
                     {
                         case Ok:
+                        case WillMatch:
                             mark = false;
                             break;
                         case Error:
