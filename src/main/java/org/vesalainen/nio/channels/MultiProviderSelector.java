@@ -131,9 +131,12 @@ public class MultiProviderSelector extends AbstractSelector
             for (SelectorWrapper sw : wrapperMap.values())
             {
                 sw.wakeup();
+            }
+            semaphore.acquire(wrapperMap.size()-1);
+            for (SelectorWrapper sw : wrapperMap.values())
+            {
                 res += sw.returnValue;
             }
-            semaphore.drainPermits();
             return res;
         }
         catch (InterruptedException ex)
@@ -171,8 +174,8 @@ public class MultiProviderSelector extends AbstractSelector
         {
             if (selecting)
             {
-                selector.wakeup();
-            }
+              selector.wakeup();
+            }   
         }
         @Override
         public void run()
@@ -191,8 +194,8 @@ public class MultiProviderSelector extends AbstractSelector
                     {
                         returnValue = selector.select();
                     }
-                    selecting = false;
                     semaphore.release();
+                    selecting = false;
                 }
                 catch (InterruptedException ex)
                 {
