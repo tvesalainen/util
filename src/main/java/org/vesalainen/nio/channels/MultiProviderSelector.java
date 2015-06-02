@@ -17,6 +17,7 @@
 package org.vesalainen.nio.channels;
 
 import java.io.IOException;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
@@ -30,8 +31,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -51,6 +50,14 @@ public class MultiProviderSelector extends AbstractSelector
         super(MultiSelectorProvider.provider());
     }
 
+    public Selector getSelectorFor(SelectableChannel channel)
+    {
+        return getSelectorFor(channel.provider());
+    }
+    public Selector getSelectorFor(SelectorProvider provider)
+    {
+        return map.get(provider);
+    }
     @Override
     protected void implCloseSelector() throws IOException
     {
@@ -381,4 +388,5 @@ public class MultiProviderSelector extends AbstractSelector
         }
         
     }
+    
 }
