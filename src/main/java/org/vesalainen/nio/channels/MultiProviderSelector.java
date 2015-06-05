@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,10 +31,13 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 /**
- *
+ * a bridge between selectors from different providers.
+ * 
+ * <p>Note! You cannot use SelectableChannel register method. Instead use 
+ * MultiProviderSelector.register.
  * @author tkv
  */
-public class MultiProviderSelector extends AbstractSelector
+public class MultiProviderSelector extends Selector
 {
     private final Map<SelectorProvider,Selector> map = new HashMap<>();
     private final Map<Selector,SelectorWrapper> wrapperMap = new HashMap<>();
@@ -44,10 +45,11 @@ public class MultiProviderSelector extends AbstractSelector
     private final UnionSet<SelectionKey> keys = new UnionSet<>();
     private final UnionSet<SelectionKey> selectedKeys = new UnionSet<>();
     private final Semaphore semaphore = new Semaphore(0);
+    private boolean isOpen = true;
     
     public MultiProviderSelector()
     {
-        super(MultiSelectorProvider.provider());
+        super();
     }
 
     public Selector getSelectorFor(SelectableChannel channel)
@@ -59,7 +61,29 @@ public class MultiProviderSelector extends AbstractSelector
         return map.get(provider);
     }
     @Override
-    protected void implCloseSelector() throws IOException
+    public Selector wakeup()
+    {
+        for (SelectorWrapper sw : wrapperMap.values())
+        {
+            sw.wakeup();
+        }
+        return this;
+    }
+
+    @Override
+    public boolean isOpen()
+    {
+        return isOpen;
+    }
+
+    @Override
+    public SelectorProvider provider()
+    {
+        return MultiSelectorProvider.provider();
+    }
+
+    @Override
+    public void close() throws IOException
     {
         for (Selector selector : map.values())
         {
@@ -71,10 +95,10 @@ public class MultiProviderSelector extends AbstractSelector
             threadMap.remove(selector);
             selector.close();
         }
+        isOpen = false;
     }
 
-    @Override
-    protected SelectionKey register(AbstractSelectableChannel ch, int ops, Object att)
+    public SelectionKey register(SelectableChannel ch, int ops, Object att)
     {
         try
         {
@@ -135,10 +159,7 @@ public class MultiProviderSelector extends AbstractSelector
                 sw.selectorSemaphore.release();
             }
             semaphore.acquire();
-            for (SelectorWrapper sw : wrapperMap.values())
-            {
-                sw.wakeup();
-            }
+            wakeup();
             semaphore.acquire(wrapperMap.size()-1);
             for (SelectorWrapper sw : wrapperMap.values())
             {
@@ -156,12 +177,6 @@ public class MultiProviderSelector extends AbstractSelector
     public int select() throws IOException
     {
         return select(-1);
-    }
-
-    @Override
-    public Selector wakeup()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private class SelectorWrapper implements Runnable
