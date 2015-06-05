@@ -83,6 +83,7 @@ public class OrMatcher<T> implements Matcher
         }
         return Status.values()[highest];
     }
+    
     /**
      * Returns attachment of last matched matcher.
      * @return 
@@ -90,6 +91,15 @@ public class OrMatcher<T> implements Matcher
     public List<T> getLastMatched()
     {
         return lastMatched;
+    }
+
+    @Override
+    public void clear()
+    {
+        for (Matcher matcher : matchers)
+        {
+            matcher.clear();
+        }
     }
     
 }

@@ -118,6 +118,13 @@ public class SimpleMatcher implements Matcher
     }
 
     @Override
+    public void clear()
+    {
+        idx = 0;
+        okStatus = Status.Ok;
+    }
+
+    @Override
     public int hashCode()
     {
         int hash = 7;

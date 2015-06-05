@@ -41,4 +41,5 @@ public interface Matcher
         Match
     };
     Status match(int cc);
+    void clear();
 }
