@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.ProtocolFamily;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.Pipe;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelector;
@@ -58,6 +59,11 @@ public class MultiSelectorProvider extends SelectorProvider
 
     @Override
     public AbstractSelector openSelector() throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported! Use openMultiSelector().");
+    }
+    
+    public Selector openMultiSelector()
     {
         return new MultiProviderSelector();
     }
