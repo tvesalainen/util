@@ -66,6 +66,14 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return remaining > 0;
     }
     /**
+     * Returns true if there are not any space in buffer to read in.
+     * @return 
+     */
+    public boolean isFull()
+    {
+        return marked+remaining==capacity;
+    }
+    /**
      * Return  the count of remaining items between position and limit.
      * @return 
      */

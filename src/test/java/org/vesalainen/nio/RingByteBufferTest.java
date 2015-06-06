@@ -57,7 +57,6 @@ public class RingByteBufferTest
         {
             URL url = SynchronizedRingBufferTest.class.getClassLoader().getResource("test.txt");
             Path path = Paths.get(url.toURI());
-            File file = path.toFile();
             FileChannel fc = FileChannel.open(path, StandardOpenOption.READ);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -75,6 +74,7 @@ public class RingByteBufferTest
             int writeCount = 0;
             RingByteBuffer rbb = new RingByteBuffer(100);
             int rc = rbb.read(fc);
+            assertTrue(rbb.isFull());
             while (rc > 0)
             {
                 while (rbb.hasRemaining())
