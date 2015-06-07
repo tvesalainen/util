@@ -21,10 +21,11 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -98,6 +99,11 @@ public class MultiProviderSelector extends Selector
         isOpen = false;
     }
 
+    public SelectionKey register(SelectableChannel ch, int ops)
+    {
+        return register(ch, ops, null);
+    }
+    
     public SelectionKey register(SelectableChannel ch, int ops, Object att)
     {
         try
@@ -232,7 +238,7 @@ public class MultiProviderSelector extends Selector
     }
     public class UnionSet<T> implements Set<T>
     {
-        private final Set<Set<T>> sets = new HashSet<>();
+        private final List<Set<T>> sets = new ArrayList<>();
         
         private void add(Set<T> set)
         {
