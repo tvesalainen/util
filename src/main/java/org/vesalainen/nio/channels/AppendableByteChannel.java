@@ -45,16 +45,30 @@ public class AppendableByteChannel implements Appendable
     @Override
     public Appendable append(CharSequence csq) throws IOException
     {
-        append(csq, 0, csq.length());
+        if (csq != null)
+        {
+            append(csq, 0, csq.length());
+        }
+        else
+        {
+            append("null", 0, 4);
+        }
         return this;
     }
 
     @Override
     public Appendable append(CharSequence csq, int start, int end) throws IOException
     {
-        for (int ii=start;ii<end;ii++)
+        if (csq != null)
         {
-            append(csq.charAt(ii));
+            for (int ii=start;ii<end;ii++)
+            {
+                append(csq.charAt(ii));
+            }
+        }
+        else
+        {
+            append('n').append('u').append('l').append('l');
         }
         return this;
     }
