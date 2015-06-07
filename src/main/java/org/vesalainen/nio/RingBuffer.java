@@ -161,8 +161,11 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      
         int lim = mark == -1 ? position : mark;
         int count = s.doIt(reader, limit, lim);
-        limit = (limit+count)%capacity;
-        remaining += count;
+        if (count != -1)
+        {
+            limit = (limit+count)%capacity;
+            remaining += count;
+        }
         return count;
     }
     /**
