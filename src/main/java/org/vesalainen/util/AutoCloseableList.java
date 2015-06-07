@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,12 +44,21 @@ public class AutoCloseableList<T extends AutoCloseable> implements AutoCloseable
     {
         for (T t : collection)
         {
-            add(t);
+            list.add(new WeakReference<>(t));
         }
     }
     
     public final void add(T item)
     {
+        Iterator<WeakReference<T>> iterator = list.iterator();
+        while (iterator.hasNext())
+        {
+            WeakReference<T> next = iterator.next();
+            if (next.get() == null)
+            {
+                iterator.remove();
+            }
+        }
         list.add(new WeakReference<>(item));
     }
     
