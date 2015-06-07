@@ -29,10 +29,24 @@ import java.util.Locale;
 public class AppendablePrinter implements Appendable
 {
     protected Appendable out;
-
+    protected String eol;
+    /**
+     * Creates new AppendablePrinter. End-of-line is \\n
+     * @param out 
+     */
     public AppendablePrinter(Appendable out)
     {
+        this(out, "\n");
+    }
+    /**
+     * Creates new AppendablePrinter.
+     * @param out
+     * @param endOfLine 
+     */
+    public AppendablePrinter(Appendable out, String endOfLine)
+    {
         this.out = out;
+        this.eol = endOfLine;
     }
     @Override
     public Appendable append(CharSequence csq)
@@ -236,7 +250,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append('\n');
+            out.append(eol);
         }
         catch (IOException ex)
         {
@@ -248,7 +262,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(Boolean.toString(b)).append('\n');
+            out.append(Boolean.toString(b)).append(eol);
         }
         catch (IOException ex)
         {
@@ -260,7 +274,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(c).append('\n');
+            out.append(c).append(eol);
         }
         catch (IOException ex)
         {
@@ -272,7 +286,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(Integer.toString(i)).append('\n');
+            out.append(Integer.toString(i)).append(eol);
         }
         catch (IOException ex)
         {
@@ -284,7 +298,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(Long.toString(l)).append('\n');
+            out.append(Long.toString(l)).append(eol);
         }
         catch (IOException ex)
         {
@@ -296,7 +310,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(Float.toString(f)).append('\n');
+            out.append(Float.toString(f)).append(eol);
         }
         catch (IOException ex)
         {
@@ -308,7 +322,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(Double.toString(d)).append('\n');
+            out.append(Double.toString(d)).append(eol);
         }
         catch (IOException ex)
         {
@@ -324,7 +338,7 @@ public class AppendablePrinter implements Appendable
         {
             out.append(cc);
         }
-        out.append('\n');
+        out.append(eol);
         }
         catch (IOException ex)
         {
@@ -336,7 +350,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(s).append('\n');
+            out.append(s).append(eol);
         }
         catch (IOException ex)
         {
@@ -348,7 +362,7 @@ public class AppendablePrinter implements Appendable
     {
         try
         {
-            out.append(obj.toString()).append('\n');
+            out.append(obj.toString()).append(eol);
         }
         catch (IOException ex)
         {
