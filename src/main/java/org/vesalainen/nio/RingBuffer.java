@@ -240,7 +240,20 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      * @throws IOException 
      */
     protected abstract int write(W writer, int position1, int limit1, int position2, int limit2) throws IOException;
-
+    /**
+     * Returns input between mark and position as a string
+     * @return 
+     */
+    public String getString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int ii=0;ii<marked;ii++)
+        {
+            sb.append(charAt(ii));
+        }
+        return sb.toString();
+    }
+    
     @Override
     public String toString()
     {
