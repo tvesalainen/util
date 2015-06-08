@@ -107,7 +107,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     /**
      * Returns the current position and increments it. If markIt == true the 
      * returned position is marked.
-     * <p>This method is a support for concrete subclass's get method.
+     * <p>This method is a support for concrete subclasses get method.
      * @param markIt
      * @return 
      */
@@ -133,6 +133,21 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         else
         {
             throw new BufferUnderflowException();
+        }
+    }
+    /**
+     * This method has the same effect as by calling get until <code>hasReminder()</code> returns
+     * false;
+     * @param markIt 
+     */
+    public void getAll(boolean markIt)
+    {
+        position = (position+remaining) % capacity;
+        remaining = 0;
+        if (markIt)
+        {
+            mark = position;
+            marked = 0;
         }
     }
     /**
