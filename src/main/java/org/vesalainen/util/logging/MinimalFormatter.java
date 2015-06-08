@@ -18,7 +18,6 @@ package org.vesalainen.util.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -35,7 +34,7 @@ public class MinimalFormatter extends Formatter
         Throwable thrown = record.getThrown();
         if (thrown == null)
         {
-            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\n", 
+            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n", 
                     record.getMillis(),
                     record.getMessage()
             );
@@ -46,7 +45,7 @@ public class MinimalFormatter extends Formatter
             PrintWriter pw = new PrintWriter(sw);
             pw.flush();
             thrown.printStackTrace(pw);
-            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\n%3$s\n", 
+            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n%3$s\n\n", 
                     record.getMillis(),
                     record.getMessage(),
                     sw.toString()

@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +30,9 @@ import java.util.Set;
 public class OrMatcher<T> implements Matcher
 {
     private final Set<Matcher> matchers = new HashSet<>();
+    private Set<Matcher> active = new HashSet<>();
     private final MapList<Matcher,T> map = new HashMapList<>();
-    private List<T> lastMatched;
+    private Matcher lastMatched;
 
     public OrMatcher()
     {
@@ -42,6 +44,7 @@ public class OrMatcher<T> implements Matcher
     public void add(Matcher matcher)
     {
         matchers.add(matcher);
+        active.add(matcher);
     }
     /**
      * Add matcher with attachment. If matcher exist only attachment is stored.
@@ -50,12 +53,12 @@ public class OrMatcher<T> implements Matcher
      */
     public void add(Matcher matcher, T attachment)
     {
-        matchers.add(matcher);
+        add(matcher);
         map.add(matcher, attachment);
     }
     public void add(Matcher matcher, Collection<T> attachments)
     {
-        matchers.add(matcher);
+        add(matcher);
         for (T attachment : attachments)
         {
             map.add(matcher, attachment);
@@ -71,15 +74,30 @@ public class OrMatcher<T> implements Matcher
     public Status match(int cc)
     {
         int highest = -1;
-        for (Matcher matcher : matchers)
+        Iterator<Matcher> iterator = active.iterator();
+        while (iterator.hasNext())
         {
+            Matcher matcher = iterator.next();
             Status s = matcher.match(cc);
-            if (s == Status.Match || s == Status.WillMatch)
-            {
-                lastMatched = map.get(matcher);
-                return s;
-            }
             highest = Math.max(highest, s.ordinal());
+            switch (s)
+            {
+                case Match:
+                    lastMatched = matcher;
+                    clear();
+                    return s;
+                case WillMatch:
+                    lastMatched = matcher;
+                    return s;
+                case Error:
+                    iterator.remove();
+                    break;
+            }
+        }
+        if (active.isEmpty())
+        {
+            clear();
+            return Status.Error;
         }
         return Status.values()[highest];
     }
@@ -90,7 +108,7 @@ public class OrMatcher<T> implements Matcher
      */
     public List<T> getLastMatched()
     {
-        return lastMatched;
+        return map.get(lastMatched);
     }
 
     @Override
@@ -100,6 +118,7 @@ public class OrMatcher<T> implements Matcher
         {
             matcher.clear();
         }
+        active.addAll(matchers);
     }
     
 }

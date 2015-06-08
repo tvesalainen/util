@@ -29,6 +29,7 @@ import java.util.Arrays;
  */
 public class SimpleMatcher implements Matcher
 {
+    private final String expr;
     private final byte[] expression;
     private int idx;
     private Status okStatus = Status.Ok;
@@ -56,6 +57,7 @@ public class SimpleMatcher implements Matcher
         {
             throw new IllegalArgumentException(expr+" ending with '*'");
         }
+        this.expr = expr;
         expression = expr.getBytes(charset);
     }
 
@@ -69,6 +71,7 @@ public class SimpleMatcher implements Matcher
         {
             throw new IllegalArgumentException("expr ending with '*'");
         }
+        this.expr = new String(expression);
         this.expression = expression;
     }
     /**
@@ -149,6 +152,12 @@ public class SimpleMatcher implements Matcher
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SimpleMatcher{" + "expr=" + expr + '}';
     }
     
 }
