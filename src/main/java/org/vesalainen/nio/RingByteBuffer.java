@@ -116,4 +116,10 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         return (int) writer.write(ar2);
     }
 
+    @Override
+    public String toString()
+    {
+        return super.toString()+"->'"+getString()+"'";
+    }
+
 }

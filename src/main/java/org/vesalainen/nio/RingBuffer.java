@@ -275,7 +275,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     @Override
     public String toString()
     {
-        return "RingBuffer{" + "position=" + position + ", mark=" + mark + ", limit=" + limit + ", capacity=" + capacity + ", remaining=" + remaining + '}';
+        return "RingBuffer{" + "p=" + position + ", m=" + mark + ", l=" + limit + ", c=" + capacity + ", r=" + remaining + '}';
     }
 
     @Override
