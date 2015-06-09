@@ -142,13 +142,17 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public void getAll(boolean markIt)
     {
-        position = (position+remaining) % capacity;
-        remaining = 0;
         if (markIt)
         {
             mark = position;
-            marked = 0;
+            marked = remaining;
         }
+        else
+        {
+            marked += remaining;
+        }
+        position = (position+remaining) % capacity;
+        remaining = 0;
     }
     /**
      * Reads more items to buffer between limit and mark/position. Read will not
@@ -275,7 +279,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     @Override
     public String toString()
     {
-        return "RingBuffer{" + "p=" + position + ", m=" + mark + ", l=" + limit + ", c=" + capacity + ", r=" + remaining + '}';
+        return "RingBuffer{" + "m=" + mark + ", p=" + position + ", l=" + limit + ", c=" + capacity + ", r=" + remaining + '}';
     }
 
     @Override

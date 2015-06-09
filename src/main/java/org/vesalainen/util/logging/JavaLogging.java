@@ -25,11 +25,25 @@ import java.util.logging.Logger;
  */
 public class JavaLogging extends BaseLogging
 {
-    private final Logger logger;
+    private Logger logger;
+
+    public JavaLogging()
+    {
+    }
 
     public JavaLogging(Logger logger)
     {
         this.logger = logger;
+    }
+
+    public void setLogger(Logger logger)
+    {
+        this.logger = logger;
+    }
+    
+    public Logger getLogger()
+    {
+        return logger;
     }
     
     @Override
