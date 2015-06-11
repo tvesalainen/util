@@ -58,7 +58,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public byte get(boolean mark)
     {
-        return buffer.get(rawGet(mark));
+        return (byte) (buffer.get(rawGet(mark)) & 0xff);
     }
 
     @Override
