@@ -38,6 +38,8 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     protected final int capacity;
     protected int remaining;
     protected int marked;
+    private final Splitter<R> readSplitter;
+    private final Splitter<W> writeSplitter;
     /**
      * Creates a RingBuffer of size. The backing buffer is either direct- or 
      * heapbuffer depending on direct.
@@ -54,6 +56,35 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         this.mark = -1;
         this.limit = 0;
         this.capacity = buffer.capacity();
+        this.readSplitter = new Splitter<R>() 
+        {
+            @Override
+            protected int op(R reader, int position, int limit) throws IOException
+            {
+                return read(reader, position, limit);
+            }
+
+            @Override
+            protected int op(R reader, int position1, int limit1, int position2, int limit2) throws IOException
+            {
+                return read(reader, position1, limit1, position2, limit2);
+            }
+        };
+        this.writeSplitter = new Splitter<W>() 
+        {
+            @Override
+            protected int op(W writer, int position, int limit) throws IOException
+            {
+                return write(writer, position, limit);
+            }
+
+            @Override
+            protected int op(W writer, int position1, int limit1, int position2, int limit2) throws IOException
+            {
+                return write(writer, position1, limit1, position2, limit2);
+            }
+        };
+     
     }
 
     protected abstract B allocate(int size, boolean direct);
@@ -163,23 +194,8 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int read(R reader) throws IOException
     {
-        Splitter<R> s = new Splitter<R>() 
-        {
-            @Override
-            protected int op(R reader, int position, int limit) throws IOException
-            {
-                return read(reader, position, limit);
-            }
-
-            @Override
-            protected int op(R reader, int position1, int limit1, int position2, int limit2) throws IOException
-            {
-                return read(reader, position1, limit1, position2, limit2);
-            }
-        };
-     
         int lim = mark == -1 ? position : mark;
-        int count = s.doIt(reader, limit, lim);
+        int count = readSplitter.doIt(reader, limit, lim);
         if (count != -1)
         {
             limit = (limit+count)%capacity;
@@ -222,21 +238,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         {
             throw new InvalidMarkException();
         }
-        Splitter<W> s = new Splitter<W>() 
-        {
-            @Override
-            protected int op(W writer, int position, int limit) throws IOException
-            {
-                return write(writer, position, limit);
-            }
-
-            @Override
-            protected int op(W writer, int position1, int limit1, int position2, int limit2) throws IOException
-            {
-                return write(writer, position1, limit1, position2, limit2);
-            }
-        };
-        int count = s.doIt(writer, mark, position);
+        int count = writeSplitter.doIt(writer, mark, position);
         return count;
     }
     /**
