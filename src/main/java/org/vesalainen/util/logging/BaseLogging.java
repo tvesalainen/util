@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util.logging;
 
+import java.util.List;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 
@@ -25,6 +26,13 @@ import static java.util.logging.Level.*;
  */
 public abstract class BaseLogging
 {
+    /**
+     * Write to log SEVERE level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void severe(String format, Object... args)
     {
         if (isLoggable(SEVERE))
@@ -32,6 +40,13 @@ public abstract class BaseLogging
             logIt(SEVERE, String.format(format, args));
         }
     }
+    /**
+     * Write to log at WARNING level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void warning(String format, Object... args)
     {
         if (isLoggable(WARNING))
@@ -39,6 +54,13 @@ public abstract class BaseLogging
             logIt(WARNING, String.format(format, args));
         }
     }
+    /**
+     * Write to log at INFO level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void info(String format, Object... args)
     {
         if (isLoggable(INFO))
@@ -46,6 +68,13 @@ public abstract class BaseLogging
             logIt(INFO, String.format(format, args));
         }
     }
+    /**
+     * Write to log at CONFIG level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void config(String format, Object... args)
     {
         if (isLoggable(CONFIG))
@@ -53,6 +82,13 @@ public abstract class BaseLogging
             logIt(CONFIG, String.format(format, args));
         }
     }
+    /**
+     * Write to log at FINE level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void fine(String format, Object... args)
     {
         if (isLoggable(FINE))
@@ -60,6 +96,13 @@ public abstract class BaseLogging
             logIt(FINE, String.format(format, args));
         }
     }
+    /**
+     * Write to log at FINER level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void finer(String format, Object... args)
     {
         if (isLoggable(FINER))
@@ -67,6 +110,13 @@ public abstract class BaseLogging
             logIt(FINER, String.format(format, args));
         }
     }
+    /**
+     * Write to log at FINEST level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void finest(String format, Object... args)
     {
         if (isLoggable(FINEST))
@@ -74,6 +124,14 @@ public abstract class BaseLogging
             logIt(FINEST, String.format(format, args));
         }
     }
+    /**
+     * Write to log
+     * @param level
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void log(Level level, String format, Object... args)
     {
         if (isLoggable(level))
@@ -81,6 +139,15 @@ public abstract class BaseLogging
             logIt(level, String.format(format, args));
         }
     }
+    /**
+     * Write to log
+     * @param level
+     * @param thrown
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
     public void log(Level level, Throwable thrown, String format, Object... args)
     {
         if (isLoggable(level))
@@ -88,7 +155,8 @@ public abstract class BaseLogging
             logIt(level, String.format(format, args), thrown);
         }
     }
-    protected abstract boolean isLoggable(Level level);
+    public abstract List<String> getLoggerNames();
+    public abstract boolean isLoggable(Level level);
     protected abstract void logIt(Level level, String msg);
     protected abstract void logIt(Level level, String msg, Throwable thrown);
 }

@@ -169,6 +169,10 @@ public class MultiProviderSelector extends Selector
             semaphore.acquire(wrapperMap.size()-1);
             for (SelectorWrapper sw : wrapperMap.values())
             {
+                if (sw.ioException != null)
+                {
+                    throw sw.ioException;
+                }
                 res += sw.returnValue;
             }
             return res;
@@ -192,6 +196,7 @@ public class MultiProviderSelector extends Selector
         long timeout;
         int returnValue;
         volatile boolean selecting;
+        private IOException ioException;
 
         public SelectorWrapper(Selector selector)
         {
@@ -231,7 +236,7 @@ public class MultiProviderSelector extends Selector
                 }
                 catch (IOException ex)
                 {
-                    throw new IllegalArgumentException(ex);
+                    ioException = ex;
                 }
             }
         }

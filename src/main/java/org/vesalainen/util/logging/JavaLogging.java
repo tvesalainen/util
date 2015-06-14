@@ -16,7 +16,11 @@
  */
 package org.vesalainen.util.logging;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -47,7 +51,7 @@ public class JavaLogging extends BaseLogging
     }
     
     @Override
-    protected boolean isLoggable(Level level)
+    public boolean isLoggable(Level level)
     {
         return logger.isLoggable(level);
     }
@@ -62,6 +66,18 @@ public class JavaLogging extends BaseLogging
     protected void logIt(Level level, String msg, Throwable thrown)
     {
         logger.log(level, msg, thrown);
+    }
+
+    @Override
+    public List<String> getLoggerNames()
+    {
+        List<String> list = new ArrayList<>();
+        Enumeration cl = LogManager.getLogManager().getLoggerNames();
+        while (cl.hasMoreElements())
+        {
+            list.add(cl.nextElement().toString());
+        }
+        return list;
     }
     
 }

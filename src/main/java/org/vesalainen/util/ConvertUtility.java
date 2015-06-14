@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -43,61 +44,61 @@ public class ConvertUtility
         Class<?> clazz = object.getClass();
         if (clazz.isPrimitive())
         {
-            if ("boolean".equals(clazz.getName()))
+            if (boolean.class.equals(clazz))
             {
                 Boolean b = (Boolean) object;
                 return b;
             }
-            if ("byte".equals(clazz.getName()))
+            if (byte.class.equals(clazz))
             {
                 Byte b = (Byte) object;
                 return b;
             }
-            if ("char".equals(clazz.getName()))
+            if (char.class.equals(clazz))
             {
                 Character c = (Character) object;
                 return c;
             }
-            if ("short".equals(clazz.getName()))
+            if (short.class.equals(clazz))
             {
                 Short s = (Short) object;
                 return s;
             }
-            if ("int".equals(clazz.getName()))
+            if (int.class.equals(clazz))
             {
                 Integer i = (Integer) object;
                 return i;
             }
-            if ("long".equals(clazz.getName()))
+            if (long.class.equals(clazz))
             {
                 Long l = (Long) object;
                 return l;
             }
-            if ("float".equals(clazz.getName()))
+            if (float.class.equals(clazz))
             {
                 Float f  = (Float) object;
                 return f;
             }
-            if ("double".equals(clazz.getName()))
+            if (double.class.equals(clazz))
             {
                 Double d  = (Double) object;
                 return d;
             }
-            throw new IllegalArgumentException("Unknown primitive type'" + clazz.getName());
+            throw new IllegalArgumentException("Unknown primitive type'" + clazz);
         }
         return object;
     }
 
-    public static void convert(Object[] target, Object[] object) throws ConvertUtilityException
+    public static <T> void convert(T[] target, Object[] object) throws ConvertUtilityException
     {
-        Object[] result = (Object[]) convert(target.getClass(), object);
+        T[] result = (T[]) convert(target.getClass(), object);
         for (int ii=0;ii<result.length;ii++)
         {
             target[ii] = result[ii];
         }
 
     }
-    public static Object convert(Class<?> expectedReturnType, Object object) throws ConvertUtilityException
+    public static <T> T convert(Class<T> expectedReturnType, Object object) throws ConvertUtilityException
     {
         try
         {
@@ -109,7 +110,7 @@ public class ConvertUtility
             Class clazz = object.getClass();
             if (clazz.isArray())
             {
-                if ("[I".equals(clazz.getName()))
+                if (int[].class.equals(clazz))
                 {
                     int[] arr = (int[]) object;
                     Object[] oa = new Object[arr.length];
@@ -117,9 +118,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[J".equals(clazz.getName()))
+                if (long[].class.equals(clazz))
                 {
                     long[] arr = (long[]) object;
                     Object[] oa = new Object[arr.length];
@@ -127,9 +128,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[S".equals(clazz.getName()))
+                if (short[].class.equals(clazz))
                 {
                     short[] arr = (short[]) object;
                     Object[] oa = new Object[arr.length];
@@ -137,9 +138,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[F".equals(clazz.getName()))
+                if (float[].class.equals(clazz))
                 {
                     float[] arr = (float[]) object;
                     Object[] oa = new Object[arr.length];
@@ -147,9 +148,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[D".equals(clazz.getName()))
+                if (double[].class.equals(clazz))
                 {
                     double[] arr = (double[]) object;
                     Object[] oa = new Object[arr.length];
@@ -157,9 +158,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[C".equals(clazz.getName()))
+                if (char[].class.equals(clazz))
                 {
                     char[] arr = (char[]) object;
                     Object[] oa = new Object[arr.length];
@@ -167,9 +168,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[B".equals(clazz.getName()))
+                if (byte[].class.equals(clazz))
                 {
                     byte[] arr = (byte[]) object;
                     Object[] oa = new Object[arr.length];
@@ -177,9 +178,9 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
-                if ("[Z".equals(clazz.getName()))
+                if (boolean[].class.equals(clazz))
                 {
                     boolean[] arr = (boolean[]) object;
                     Object[] oa = new Object[arr.length];
@@ -187,19 +188,21 @@ public class ConvertUtility
                     {
                         oa[ii] = convert(expectedReturnType, arr[ii]);
                     }
-                    return oa;
+                    return (T) oa;
                 }
+                /*
                 Object[] arr = (Object[]) object;
                 Object[] oa = new Object[arr.length];
                 for (int ii=0;ii<arr.length;ii++)
                 {
-                    oa[ii] = convert(expectedReturnType, arr[ii]);
+                    oa[ii] = convert(expectedReturnType.getComponentType(), arr[ii]);
                 }
-                return oa;
+                return (T) Arrays.copyOf(oa, oa.length, expectedReturnType);
+                        */
             }
             if (expectedReturnType.isAssignableFrom(clazz))
             {
-                return object;
+                return (T) object;
             }
             if (object instanceof Convertable)
             {
@@ -207,54 +210,54 @@ public class ConvertUtility
                 TypeVariable<?>[] tvl = cc.getClass().getTypeParameters();
                 if (expectedReturnType.isAssignableFrom((Class<?>) tvl[1].getGenericDeclaration()))
                 {
-                    return cc.convertTo();
+                    return (T) cc.convertTo();
                 }
             }
             if (expectedReturnType.equals(String.class))
             {
-                return object.toString();
+                return (T) object.toString();
             }
             if (expectedReturnType.isPrimitive())
             {
-                if ("boolean".equals(expectedReturnType.getName()) && object instanceof Boolean)
+                if (boolean.class.equals(expectedReturnType) && object instanceof Boolean)
                 {
                     Boolean b = (Boolean) object;
-                    return b.booleanValue();
+                    return (T) b;
                 }
-                if ("byte".equals(expectedReturnType.getName()) && object instanceof Byte)
+                if (byte.class.equals(expectedReturnType) && object instanceof Byte)
                 {
                     Byte b = (Byte) object;
-                    return b.byteValue();
+                    return (T) b;
                 }
-                if ("char".equals(expectedReturnType.getName()) && object instanceof Character)
+                if (char.class.equals(expectedReturnType) && object instanceof Character)
                 {
                     Character c = (Character) object;
-                    return c.charValue();
+                    return (T) c;
                 }
-                if ("short".equals(expectedReturnType.getName()) && object instanceof Short)
+                if (short.class.equals(expectedReturnType) && object instanceof Short)
                 {
                     Short s = (Short) object;
-                    return s.shortValue();
+                    return (T) s;
                 }
-                if ("int".equals(expectedReturnType.getName()) && object instanceof Integer)
+                if (int.class.equals(expectedReturnType) && object instanceof Integer)
                 {
                     Integer i = (Integer) object;
-                    return i.intValue();
+                    return (T) i;
                 }
-                if ("long".equals(expectedReturnType.getName()) && object instanceof Long)
+                if (long.class.equals(expectedReturnType) && object instanceof Long)
                 {
                     Long l = (Long) object;
-                    return l.longValue();
+                    return (T) l;
                 }
-                if ("float".equals(expectedReturnType.getName()) && object instanceof Float)
+                if (float.class.equals(expectedReturnType) && object instanceof Float)
                 {
                     Float f = (Float) object;
-                    return f.floatValue();
+                    return (T) f;
                 }
-                if ("double".equals(expectedReturnType.getName()) && object instanceof Double)
+                if (double.class.equals(expectedReturnType) && object instanceof Double)
                 {
                     Double d = (Double) object;
-                    return d.doubleValue();
+                    return (T) d;
                 }
             }
             if (object instanceof String)
@@ -262,53 +265,54 @@ public class ConvertUtility
                 String string = (String) object;
                 if (expectedReturnType.isPrimitive())
                 {
-                    if ("boolean".equals(expectedReturnType.getName()))
+                    if (boolean.class.equals(expectedReturnType))
                     {
-                        return Boolean.parseBoolean(string);
+                        return (T) Boolean.valueOf(string);
                     }
-                    if ("byte".equals(expectedReturnType.getName()))
+                    if (byte.class.equals(expectedReturnType))
                     {
-                        return Byte.parseByte(string);
+                        return (T) Byte.valueOf(string);
                     }
-                    if ("char".equals(expectedReturnType.getName()))
+                    if (char.class.equals(expectedReturnType))
                     {
                         if (string.length() != 1)
                         {
                             throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
                         }
-                        return string.charAt(0);
+                        Character cc = string.charAt(0);
+                        return (T)cc;
                     }
-                    if ("short".equals(expectedReturnType.getName()))
+                    if (short.class.equals(expectedReturnType))
                     {
-                        return Short.parseShort(string);
+                        return (T) Short.valueOf(string);
                     }
-                    if ("int".equals(expectedReturnType.getName()))
+                    if (int.class.equals(expectedReturnType))
                     {
-                        return Integer.parseInt(string);
+                        return (T) Integer.valueOf(string);
                     }
-                    if ("long".equals(expectedReturnType.getName()))
+                    if (long.class.equals(expectedReturnType))
                     {
-                        return Long.parseLong(string);
+                        return (T) Long.valueOf(string);
                     }
-                    if ("float".equals(expectedReturnType.getName()))
+                    if (float.class.equals(expectedReturnType))
                     {
-                        return Float.parseFloat(string);
+                        return (T) Float.valueOf(string);
                     }
-                    if ("double".equals(expectedReturnType.getName()))
+                    if (double.class.equals(expectedReturnType))
                     {
-                        return Double.parseDouble(string);
+                        return (T) Double.valueOf(string);
                     }
-                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType.getName()+"'");
+                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType+"'");
                 }
                 if (expectedReturnType.isEnum())
                 {
-                    return Enum.valueOf((Class<Enum>) expectedReturnType, string);
+                    return (T) Enum.valueOf((Class<Enum>) expectedReturnType, string);
                 }
                 try
                 {
                     // try to find valueOf method
                     Method method = expectedReturnType.getDeclaredMethod("parse", clazz);
-                    return method.invoke(null, object);
+                    return (T) method.invoke(null, object);
                 }
                 catch (NoSuchMethodException ex)
                 {
@@ -319,31 +323,31 @@ public class ConvertUtility
                 Number number = (Number) object;
                 if (expectedReturnType.isPrimitive())
                 {
-                    if ("byte".equals(expectedReturnType.getName()))
+                    if (Byte.class.equals(expectedReturnType))
                     {
-                        return number.byteValue();
+                        return (T) (Byte)number.byteValue();
                     }
-                    if ("short".equals(expectedReturnType.getName()))
+                    if (Short.class.equals(expectedReturnType))
                     {
-                        return number.shortValue();
+                        return (T) (Short)number.shortValue();
                     }
-                    if ("int".equals(expectedReturnType.getName()))
+                    if (Integer.class.equals(expectedReturnType))
                     {
-                        return number.intValue();
+                        return (T) (Integer)number.intValue();
                     }
-                    if ("long".equals(expectedReturnType.getName()))
+                    if (Long.class.equals(expectedReturnType))
                     {
-                        return number.longValue();
+                        return (T) (Long)number.longValue();
                     }
-                    if ("float".equals(expectedReturnType.getName()))
+                    if (Float.class.equals(expectedReturnType))
                     {
-                        return number.floatValue();
+                        return (T) (Float)number.floatValue();
                     }
-                    if ("double".equals(expectedReturnType.getName()))
+                    if (Double.class.equals(expectedReturnType))
                     {
-                        return number.doubleValue();
+                        return (T) (Double)number.doubleValue();
                     }
-                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType.getName()+"'");
+                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType+"'");
                 }
             }
             if (object instanceof Calendar)
@@ -351,15 +355,15 @@ public class ConvertUtility
                 Calendar calendar = (Calendar) object;
                 if (expectedReturnType.isPrimitive())
                 {
-                    if ("long".equals(expectedReturnType.getName()))
+                    if (long.class.equals(expectedReturnType))
                     {
-                        return calendar.getTimeInMillis();
+                        return (T) (Long)calendar.getTimeInMillis();
                     }
-                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType.getName()+"'");
+                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType+"'");
                 }
                 if (expectedReturnType.equals(Date.class))
                 {
-                    return calendar.getTime();
+                    return (T)calendar.getTime();
                 }
             }
             if (object instanceof Date)
@@ -367,24 +371,24 @@ public class ConvertUtility
                 Date date = (Date) object;
                 if (expectedReturnType.isPrimitive())
                 {
-                    if ("long".equals(expectedReturnType.getName()))
+                    if (long.class.equals(expectedReturnType))
                     {
-                        return date.getTime();
+                        return (T)(Long)date.getTime();
                     }
-                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType.getName()+"'");
+                    throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType+"'");
                 }
                 if (expectedReturnType.equals(Calendar.class))
                 {
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(date);
-                    return calendar;
+                    return (T)calendar;
                 }
             }
             try
             {
                 // try to find valueOf method
                 Method method = expectedReturnType.getDeclaredMethod("valueOf", clazz);
-                return method.invoke(null, object);
+                return (T)method.invoke(null, object);
             }
             catch (NoSuchMethodException ex)
             {
@@ -393,12 +397,12 @@ public class ConvertUtility
             {
                 // try to find expectedReturnType constructor taking single object argument
                 Constructor cons = expectedReturnType.getConstructor(clazz);
-                return cons.newInstance(object);
+                return (T)cons.newInstance(object);
             }
             catch (NoSuchMethodException ex)
             {
             }
-            throw new IllegalArgumentException("Cannot convert "+clazz.getName()+" to " + expectedReturnType.getName());
+            throw new IllegalArgumentException("Cannot convert "+clazz+" to " + expectedReturnType);
         }
         catch (InstantiationException | IllegalAccessException | InvocationTargetException ex1)
         {
