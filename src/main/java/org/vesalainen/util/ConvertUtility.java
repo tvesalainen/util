@@ -300,6 +300,19 @@ public class ConvertUtility
                     }
                     throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType.getName()+"'");
                 }
+                if (expectedReturnType.isEnum())
+                {
+                    return Enum.valueOf((Class<Enum>) expectedReturnType, string);
+                }
+                try
+                {
+                    // try to find valueOf method
+                    Method method = expectedReturnType.getDeclaredMethod("parse", clazz);
+                    return method.invoke(null, object);
+                }
+                catch (NoSuchMethodException ex)
+                {
+                }
             }
             if (object instanceof Number)
             {
@@ -375,27 +388,19 @@ public class ConvertUtility
             }
             catch (NoSuchMethodException ex)
             {
-                try
-                {
-                    // try to find expectedReturnType constructor taking single object argument
-                    Constructor cons = expectedReturnType.getConstructor(clazz);
-                    return cons.newInstance(object);
-                }
-                catch (NoSuchMethodException exx)
-                {
-                    throw new IllegalArgumentException("Cannot convert "+clazz.getName()+" to " + expectedReturnType.getName(), exx);
-                }
             }
+            try
+            {
+                // try to find expectedReturnType constructor taking single object argument
+                Constructor cons = expectedReturnType.getConstructor(clazz);
+                return cons.newInstance(object);
+            }
+            catch (NoSuchMethodException ex)
+            {
+            }
+            throw new IllegalArgumentException("Cannot convert "+clazz.getName()+" to " + expectedReturnType.getName());
         }
-        catch (InstantiationException ex1)
-        {
-            throw new ConvertUtilityException(expectedReturnType, object, ex1);
-        }
-        catch (IllegalAccessException ex1)
-        {
-            throw new ConvertUtilityException(expectedReturnType, object, ex1);
-        }
-        catch (InvocationTargetException ex1)
+        catch (InstantiationException | IllegalAccessException | InvocationTargetException ex1)
         {
             throw new ConvertUtilityException(expectedReturnType, object, ex1);
         }
