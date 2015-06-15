@@ -227,7 +227,6 @@ public class MultiProviderSelector extends Selector
                     {
                         returnValue = selector.select();
                     }
-                    semaphore.release();
                     selecting = false;
                 }
                 catch (InterruptedException ex)
@@ -237,6 +236,10 @@ public class MultiProviderSelector extends Selector
                 catch (IOException ex)
                 {
                     ioException = ex;
+                }
+                finally
+                {
+                    semaphore.release();
                 }
             }
         }

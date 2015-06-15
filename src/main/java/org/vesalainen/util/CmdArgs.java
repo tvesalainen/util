@@ -35,8 +35,8 @@ public class CmdArgs
     private final List<Class<?>> types = new ArrayList<>();
     private final List<String> names = new ArrayList<>();
     private Map<String,Object> options;
-    private Object[] rest;
-    private String activeGroup;
+    private Map<String,Object> arguments;
+    private String effectiveGroup;
     /**
      * Creates CmdArgs instance. 
      */
@@ -65,11 +65,11 @@ public class CmdArgs
                         opt = map.get(arg);
                         if (opt.exclusiveGroup != null)
                         {
-                            if (activeGroup != null && !activeGroup.equals(opt.exclusiveGroup))
+                            if (effectiveGroup != null && !effectiveGroup.equals(opt.exclusiveGroup))
                             {
-                                throw new CmdArgsException(opt.exclusiveGroup+" mix with "+activeGroup);
+                                throw new CmdArgsException(opt.exclusiveGroup+" mix with "+effectiveGroup);
                             }
-                            activeGroup = opt.exclusiveGroup;
+                            effectiveGroup = opt.exclusiveGroup;
                         }
                     }
                     else
@@ -84,10 +84,11 @@ public class CmdArgs
             {
                 throw new CmdArgsException("wrong number of arguments");
             }
-            rest = new Object[len];
+            arguments = new HashMap<>();
             for (int ii=0;ii<len;ii++)
             {
-                rest[ii] = ConvertUtility.convert(types.get(ii), args[ii+index]);
+                Object value = ConvertUtility.convert(types.get(ii), args[ii+index]);
+                arguments.put(names.get(ii), value);
             }
             for (Option o : map.values())
             {
@@ -96,25 +97,58 @@ public class CmdArgs
                     throw new CmdArgsException("mandatory option "+o.name+": "+o.description+" missing");
                 }
             }
+            if (effectiveGroup != null)
+            {
+                for (Option o : groups.get(effectiveGroup))
+                {
+                    if (!options.containsKey(o.name))
+                    {
+                        throw new CmdArgsException(effectiveGroup+" option "+o.name+": "+o.description+" missing");
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
             throw new CmdArgsException(ex);
         }
     }
-    public Object[] getRest()
+    /**
+     * Returns the effective group from exclusive groups which has values or null
+     * if none has values.
+     * @return 
+     */
+    public String getEffectiveGroup()
     {
-        return rest;
+        if (arguments == null)
+        {
+            throw new IllegalStateException("setArgs not called");
+        }
+        return effectiveGroup;
+    }
+    
+    public Object getArgument(String name)
+    {
+        if (arguments == null)
+        {
+            throw new IllegalStateException("setArgs not called");
+        }
+        return arguments.get(name);
     }
     public <T> T getOption(String name)
     {
-        if (rest == null)
+        if (arguments == null)
         {
             throw new IllegalStateException("setArgs not called");
         }
         Object value = options.get(name);
         if (value == null)
         {
+            Option opt = map.get("-"+name);
+            if (opt.defValue != null)
+            {
+                return (T) opt.defValue;
+            }
             throw new IllegalArgumentException(name+" not found");
         }
         return (T) value;

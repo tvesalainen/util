@@ -49,8 +49,8 @@ public class CmdArgsTest
             assertEquals(4096, cmdArgs.getOption("s"));
             assertEquals(new File("text.txt"), cmdArgs.getOption("f"));
             assertEquals(Level.FINE, cmdArgs.getOption("l"));
-            Object[] rest = cmdArgs.getRest();
-            Assert.assertArrayEquals(new Object[] {"rest1", 1234L}, rest);
+            assertEquals("rest1", cmdArgs.getArgument("arg1"));
+            assertEquals(1234L, cmdArgs.getArgument("arg2"));
             assertEquals("usage:  -s <size> -f <file> -l <level> <arg1> <arg2>", cmdArgs.getUsage());
         }
         catch (CmdArgs.CmdArgsException ex)
