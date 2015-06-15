@@ -44,55 +44,62 @@ public class CmdArgs
     {
     }
     
-    public void setArgs(String... args)
+    public void setArgs(String... args) throws CmdArgsException
     {
-        options = new HashMap<>();
-        Option opt = null;
-        int index = 0;
-        for (String arg : args)
+        try
         {
-            if (opt != null)
+            options = new HashMap<>();
+            Option opt = null;
+            int index = 0;
+            for (String arg : args)
             {
-                options.put(opt.name, ConvertUtility.convert(opt.cls, arg));
-                opt = null;
-            }
-            else
-            {
-                if (map.containsKey(arg))
+                if (opt != null)
                 {
-                    opt = map.get(arg);
-                    if (opt.exclusiveGroup != null)
-                    {
-                        if (activeGroup != null && !activeGroup.equals(opt.exclusiveGroup))
-                        {
-                            throw new IllegalArgumentException(opt.exclusiveGroup+" mix with "+activeGroup);
-                        }
-                        activeGroup = opt.exclusiveGroup;
-                    }
+                    options.put(opt.name, ConvertUtility.convert(opt.cls, arg));
+                    opt = null;
                 }
                 else
                 {
-                    break;
+                    if (map.containsKey(arg))
+                    {
+                        opt = map.get(arg);
+                        if (opt.exclusiveGroup != null)
+                        {
+                            if (activeGroup != null && !activeGroup.equals(opt.exclusiveGroup))
+                            {
+                                throw new CmdArgsException(opt.exclusiveGroup+" mix with "+activeGroup);
+                            }
+                            activeGroup = opt.exclusiveGroup;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                index++;
+            }
+            int len = args.length-index;
+            if (len != types.size())
+            {
+                throw new CmdArgsException("wrong number of arguments");
+            }
+            rest = new Object[len];
+            for (int ii=0;ii<len;ii++)
+            {
+                rest[ii] = ConvertUtility.convert(types.get(ii), args[ii+index]);
+            }
+            for (Option o : map.values())
+            {
+                if (o.mandatory && !options.containsKey(o.name))
+                {
+                    throw new CmdArgsException("mandatory option "+o.name+": "+o.description+" missing");
                 }
             }
-            index++;
         }
-        int len = args.length-index;
-        if (len != types.size())
+        catch (Exception ex)
         {
-            throw new IllegalArgumentException("wrong number of arguments");
-        }
-        rest = new Object[len];
-        for (int ii=0;ii<len;ii++)
-        {
-            rest[ii] = ConvertUtility.convert(types.get(ii), args[ii+index]);
-        }
-        for (Option o : map.values())
-        {
-            if (o.mandatory && !options.containsKey(o.name))
-            {
-                throw new IllegalArgumentException("mandatory option "+o.name+": "+o.description+" missing");
-            }
+            throw new CmdArgsException(ex);
         }
     }
     public Object[] getRest()
@@ -131,6 +138,23 @@ public class CmdArgs
         types.add(cls);
         names.add(name);
     }
+    /**
+     * Add a mandatory string option
+     * @param <T> Type of option
+     * @param name Option name Option name without '-'
+     * @param description Option description
+     */
+    public <T> void addOption(String name, String description)
+    {
+        addOption(String.class, name, description, null);
+    }
+    /**
+     * Add a mandatory option
+     * @param <T> Type of option
+     * @param cls Option type class
+     * @param name Option name Option name without '-'
+     * @param description Option description
+     */
     public <T> void addOption(Class<T> cls, String name, String description)
     {
         addOption(cls, name, description, null);
@@ -157,12 +181,8 @@ public class CmdArgs
             groups.add(exclusiveGroup, opt);
         }
     }
-    public <T> void addOption(String name, String description, T defValue)
-    {
-        addOption(name, description, null, defValue);
-    }
     /**
-     * Add a option
+     * Add an option
      * @param <T>
      * @param name Option name Option name without '-'
      * @param description Option description
@@ -260,6 +280,23 @@ public class CmdArgs
         public T getValue(String str)
         {
             return (T) ConvertUtility.convert(cls, str);
+        }
+    }
+    public class CmdArgsException extends Exception
+    {
+
+        public CmdArgsException(String message)
+        {
+            super(message);
+        }
+
+        public CmdArgsException(Throwable cause)
+        {
+            super(cause);
+        }
+        public String usage()
+        {
+            return getUsage();
         }
     }
 }

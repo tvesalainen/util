@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -36,32 +37,46 @@ public class CmdArgsTest
     @Test
     public void test1()
     {
-        CmdArgs cmdArgs = new CmdArgs();
-        cmdArgs.addArgument("arg1");
-        cmdArgs.addArgument(Long.class, "arg2");
-        cmdArgs.addOption("s", "size", 16);
-        cmdArgs.addOption(File.class, "f", "file");
-        cmdArgs.addOption("l", "level", Level.INFO);
-        cmdArgs.setArgs("-s", "4096", "-f", "text.txt", "-l", "FINE", "rest1", "1234");
-        assertEquals(4096, cmdArgs.getOption("s"));
-        assertEquals(new File("text.txt"), cmdArgs.getOption("f"));
-        assertEquals(Level.FINE, cmdArgs.getOption("l"));
-        Object[] rest = cmdArgs.getRest();
-        Assert.assertArrayEquals(new Object[] {"rest1", 1234L}, rest);
-        assertEquals("usage:  -s <size> -f <file> -l <level> <arg1> <arg2>", cmdArgs.getUsage());
+        try
+        {
+            CmdArgs cmdArgs = new CmdArgs();
+            cmdArgs.addArgument("arg1");
+            cmdArgs.addArgument(Long.class, "arg2");
+            cmdArgs.addOption("s", "size", null, 16);
+            cmdArgs.addOption(File.class, "f", "file");
+            cmdArgs.addOption("l", "level", null, Level.INFO);
+            cmdArgs.setArgs("-s", "4096", "-f", "text.txt", "-l", "FINE", "rest1", "1234");
+            assertEquals(4096, cmdArgs.getOption("s"));
+            assertEquals(new File("text.txt"), cmdArgs.getOption("f"));
+            assertEquals(Level.FINE, cmdArgs.getOption("l"));
+            Object[] rest = cmdArgs.getRest();
+            Assert.assertArrayEquals(new Object[] {"rest1", 1234L}, rest);
+            assertEquals("usage:  -s <size> -f <file> -l <level> <arg1> <arg2>", cmdArgs.getUsage());
+        }
+        catch (CmdArgs.CmdArgsException ex)
+        {
+            Logger.getLogger(CmdArgsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Test
     public void test2()
     {
-        CmdArgs cmdArgs = new CmdArgs();
-        cmdArgs.addArgument("arg");
-        cmdArgs.addOption("h", "host", "net", "localhost");
-        cmdArgs.addOption("p", "port", "net", 23);
-        cmdArgs.addOption("f", "file", "local", "log.txt");
-        cmdArgs.setArgs("-h", "www.host.com", "-p", "1234", "hello");
-        assertEquals("www.host.com", cmdArgs.getOption("h"));
-        assertEquals(1234, cmdArgs.getOption("p"));
-        assertEquals("usage: [-h <host> -p <port>]|[-f <file>] <arg>", cmdArgs.getUsage());
+        try
+        {
+            CmdArgs cmdArgs = new CmdArgs();
+            cmdArgs.addArgument("arg");
+            cmdArgs.addOption("h", "host", "net", "localhost");
+            cmdArgs.addOption("p", "port", "net", 23);
+            cmdArgs.addOption("f", "file", "local", "log.txt");
+            cmdArgs.setArgs("-h", "www.host.com", "-p", "1234", "hello");
+            assertEquals("www.host.com", cmdArgs.getOption("h"));
+            assertEquals(1234, cmdArgs.getOption("p"));
+            assertEquals("usage: [-h <host> -p <port>]|[-f <file>] <arg>", cmdArgs.getUsage());
+        }
+        catch (CmdArgs.CmdArgsException ex)
+        {
+            Logger.getLogger(CmdArgsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
