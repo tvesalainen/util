@@ -16,10 +16,13 @@
  */
 package org.vesalainen.util;
 
+import java.io.File;
 import java.util.Date;
+import java.util.logging.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.code.JavaType;
 
 /**
  *
@@ -27,7 +30,7 @@ import static org.junit.Assert.*;
  */
 public class ConvertUtilityTest
 {
-    
+    private static final double Epsilon = 1e-10;
     public ConvertUtilityTest()
     {
     }
@@ -39,6 +42,10 @@ public class ConvertUtilityTest
         assertEquals((Integer)1, (Integer)ConvertUtility.convert(Integer.class, "1"));
         Date date = new Date();
         assertEquals(date, ConvertUtility.convert(Date.class, date.getTime()));
+        assertEquals(Level.FINER, ConvertUtility.convert(Level.class, "FINER"));
+        assertEquals(JavaType.BOOLEAN, ConvertUtility.convert(JavaType.class, "BOOLEAN"));
+        assertEquals(123.456, ConvertUtility.convert(Double.class, Double.valueOf(123.456)), Epsilon);
+        assertEquals(new File("f.txt"), ConvertUtility.convert(File.class, new File("f.txt")));
     }
     
 }

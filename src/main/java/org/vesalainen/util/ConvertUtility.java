@@ -107,7 +107,7 @@ public class ConvertUtility
             {
                 return null;
             }
-            Class clazz = object.getClass();
+            Class clazz = openBox(object.getClass());
             if (clazz.isArray())
             {
                 if (int[].class.equals(clazz))
@@ -407,6 +407,31 @@ public class ConvertUtility
         catch (InstantiationException | IllegalAccessException | InvocationTargetException ex1)
         {
             throw new ConvertUtilityException(expectedReturnType, object, ex1);
+        }
+    }
+
+    private static Class<?> openBox(Class<?> cls)
+    {
+        switch (cls.getName())
+        {
+            case "java.lang.Boolean":
+                return boolean.class;
+            case "java.lang.Byte":
+                return byte.class;
+            case "java.lang.Character":
+                return char.class;
+            case "java.lang.Short":
+                return short.class;
+            case "java.lang.Integer":
+                return int.class;
+            case "java.lang.Long":
+                return long.class;
+            case "java.lang.Float":
+                return float.class;
+            case "java.lang.Double":
+                return double.class;
+            default:
+                return cls;
         }
     }
 }

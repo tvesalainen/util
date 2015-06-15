@@ -36,16 +36,16 @@ public class CmdArgsTest
     @Test
     public void test1()
     {
-        CmdArgs cmdArgs = new CmdArgs();
+        CmdArgs cmdArgs = new CmdArgs(String.class, Long.class);
         cmdArgs.addOption('s', "size", "The size of ...", 16);
         cmdArgs.addOption(File.class, 'f', "file", "The file ...");
         cmdArgs.addOption('l', "level", "Log level", Level.INFO);
-        cmdArgs.setArgs("-s", "4096", "-f", "text.txt", "-l", "FINE", "rest1", "rest2");
+        cmdArgs.setArgs("-s", "4096", "-f", "text.txt", "-l", "FINE", "rest1", "1234");
         assertEquals(4096, cmdArgs.getOption('s'));
         assertEquals(new File("text.txt"), cmdArgs.getOption('f'));
         assertEquals(Level.FINE, cmdArgs.getOption('l'));
-        String[] rest = cmdArgs.getRest();
-        Assert.assertArrayEquals(new String[] {"rest1", "rest2"}, rest);
+        Object[] rest = cmdArgs.getRest();
+        Assert.assertArrayEquals(new Object[] {"rest1", 1234L}, rest);
     }
     
 }

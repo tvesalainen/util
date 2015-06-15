@@ -27,13 +27,22 @@ import java.util.Map;
 public class CmdArgs
 {
     private Map<String,Option> map = new HashMap<>();
+    private Class<?>[] types;
     private String[] args;
+    /**
+     * Creates CmdArgs instance. 
+     * @param argTypes Types for arguments. (Options excluded)
+     */
+    public CmdArgs(Class<?>... argTypes)
+    {
+        this.types = argTypes;
+    }
     
     public void setArgs(String... args)
     {
         this.args = args;
     }
-    public String[] getRest()
+    public Object[] getRest()
     {
         boolean found = false;
         int index = 0;
@@ -56,7 +65,17 @@ public class CmdArgs
             }
             index++;
         }
-        return Arrays.copyOfRange(args, index, args.length);
+        int len = args.length-index;
+        if (len != types.length)
+        {
+            throw new IllegalArgumentException("todo");
+        }
+        Object[] rest = new Object[len];
+        for (int ii=0;ii<len;ii++)
+        {
+            rest[ii] = ConvertUtility.convert(types[ii], args[ii+index]);
+        }
+        return rest;
     }
     public <T> T getOption(char letter)
     {
