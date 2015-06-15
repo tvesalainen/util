@@ -16,9 +16,13 @@
  */
 package org.vesalainen.util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  *
@@ -26,37 +30,45 @@ import java.util.Map;
  */
 public class CmdArgs
 {
-    private Map<String,Option> map = new HashMap<>();
-    private Class<?>[] types;
-    private String[] args;
+    private final Map<String,Option> map = new HashMap<>();
+    private final MapList<String,Option> groups = new HashMapList<>();
+    private final List<Class<?>> types = new ArrayList<>();
+    private final List<String> names = new ArrayList<>();
+    private Map<String,Object> options;
+    private Object[] rest;
+    private String activeGroup;
     /**
      * Creates CmdArgs instance. 
-     * @param argTypes Types for arguments. (Options excluded)
      */
-    public CmdArgs(Class<?>... argTypes)
+    public CmdArgs()
     {
-        this.types = argTypes;
     }
     
     public void setArgs(String... args)
     {
-        this.args = args;
-    }
-    public Object[] getRest()
-    {
-        boolean found = false;
+        options = new HashMap<>();
+        Option opt = null;
         int index = 0;
         for (String arg : args)
         {
-            if (found)
+            if (opt != null)
             {
-                found = false;
+                options.put(opt.name, ConvertUtility.convert(opt.cls, arg));
+                opt = null;
             }
             else
             {
                 if (map.containsKey(arg))
                 {
-                    found = true;
+                    opt = map.get(arg);
+                    if (opt.exclusiveGroup != null)
+                    {
+                        if (activeGroup != null && !activeGroup.equals(opt.exclusiveGroup))
+                        {
+                            throw new IllegalArgumentException(opt.exclusiveGroup+" mix with "+activeGroup);
+                        }
+                        activeGroup = opt.exclusiveGroup;
+                    }
                 }
                 else
                 {
@@ -66,102 +78,182 @@ public class CmdArgs
             index++;
         }
         int len = args.length-index;
-        if (len != types.length)
+        if (len != types.size())
         {
-            throw new IllegalArgumentException("todo");
+            throw new IllegalArgumentException("wrong number of arguments");
         }
-        Object[] rest = new Object[len];
+        rest = new Object[len];
         for (int ii=0;ii<len;ii++)
         {
-            rest[ii] = ConvertUtility.convert(types[ii], args[ii+index]);
+            rest[ii] = ConvertUtility.convert(types.get(ii), args[ii+index]);
         }
+        for (Option o : map.values())
+        {
+            if (o.mandatory && !options.containsKey(o.name))
+            {
+                throw new IllegalArgumentException("mandatory option "+o.name+": "+o.description+" missing");
+            }
+        }
+    }
+    public Object[] getRest()
+    {
         return rest;
     }
-    public <T> T getOption(char letter)
+    public <T> T getOption(String name)
     {
-        if (args == null)
+        if (rest == null)
         {
             throw new IllegalStateException("setArgs not called");
         }
-        Option opt = map.get("-"+letter);
-        if (opt == null)
+        Object value = options.get(name);
+        if (value == null)
         {
-            throw new IllegalArgumentException(letter+" not found");
+            throw new IllegalArgumentException(name+" not found");
         }
-        return (T) opt.getValue(getArg("-"+letter));
-    }
-    private String getArg(String flag)
-    {
-        boolean found = false;
-        for (String arg : args)
-        {
-            if (found)
-            {
-                return arg;
-            }
-            if (flag.equals(arg))
-            {
-                found = true;
-            }
-        }
-        throw new IllegalArgumentException(flag+" not found");
+        return (T) value;
     }
     /**
-     * Add a option
+     * Add String argument
+     * @param name 
+     */
+    public void addArgument(String name)
+    {
+        addArgument(String.class, name);
+    }
+    /**
+     * Add typed argument
+     * @param <T>
+     * @param cls
+     * @param name 
+     */
+    public <T> void addArgument(Class<T> cls, String name)
+    {
+        types.add(cls);
+        names.add(name);
+    }
+    public <T> void addOption(Class<T> cls, String name, String description)
+    {
+        addOption(cls, name, description, null);
+    }
+    /**
+     * Add a mandatory option
      * @param <T> Type of option
      * @param cls Option type class
-     * @param letter Option letter
-     * @param name Option name
+     * @param name Option name Option name without '-'
      * @param description Option description
+     * @param exclusiveGroup A group of options. Only options of a single group 
+     * are accepted.
      */
-    public <T> void addOption(Class<T> cls, char letter, String name, String description)
+    public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
     {
-        Option old = map.put("-"+letter, new Option(cls, letter, name, description));
+        Option opt = new Option(cls, name, description, exclusiveGroup);
+        Option old = map.put("-"+name, opt);
         if (old != null)
         {
-            throw new IllegalArgumentException(letter+" was already added");
+            throw new IllegalArgumentException(name+" was already added");
         }
+        if (exclusiveGroup != null)
+        {
+            groups.add(exclusiveGroup, opt);
+        }
+    }
+    public <T> void addOption(String name, String description, T defValue)
+    {
+        addOption(name, description, null, defValue);
     }
     /**
      * Add a option
      * @param <T>
-     * @param letter Option letter
-     * @param name Option name
+     * @param name Option name Option name without '-'
      * @param description Option description
+     * @param exclusiveGroup A group of options. Only options of a single group 
+     * are accepted.
      * @param defValue Option default value
      */
-    public <T> void addOption(char letter, String name, String description, T defValue)
+    public <T> void addOption(String name, String description, String exclusiveGroup, T defValue)
     {
-        Option old = map.put("-"+letter, new Option(letter, name, description, defValue));
+        Option opt = new Option(name, description, exclusiveGroup, defValue);
+        Option old = map.put("-"+name, opt);
         if (old != null)
         {
-            throw new IllegalArgumentException(letter+" was already added");
+            throw new IllegalArgumentException(name+" was already added");
         }
+        if (exclusiveGroup != null)
+        {
+            groups.add(exclusiveGroup, opt);
+        }
+    }
+
+    public String getUsage()
+    {
+        Set<Option> set = new HashSet<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("usage: ");
+        boolean n1 = false;
+        for (Entry<String,List<Option>> e : groups.entrySet())
+        {
+            if (n1)
+            {
+                sb.append("|");
+            }
+            n1 = true;
+            sb.append("[");
+            boolean n2 = false;
+            for (Option opt : e.getValue())
+            {
+                if (n2)
+                {
+                    sb.append(" ");
+                }
+                n2 = true;
+                append(sb, opt);
+                set.add(opt);
+            }
+            sb.append("]");
+        }
+        for (Option opt : map.values())
+        {
+            if (!set.contains(opt))
+            {
+                sb.append(" ");
+                append(sb, opt);
+            }
+        }
+        for (String n : names)
+        {
+            sb.append(" <").append(n).append(">");
+        }
+        return sb.toString();
+    }
+    private void append(StringBuilder sb, Option opt)
+    {
+        sb.append("-").append(opt.name).append(" ");
+        sb.append("<").append(opt.description).append(">");
     }
     public class Option<T>
     {
         private final Class<T> cls;
-        private final char letter;
         private final String name;
         private final String description;
+        private final String exclusiveGroup;
         private boolean mandatory;
         private T defValue;
 
-        public Option(Class<T> cls, char letter, String name, String description)
+        public Option(Class<T> cls, String name, String description, String exclusiveGroup)
         {
             this.cls = cls;
             this.name = name;
-            this.letter = letter;
             this.description = description;
+            this.exclusiveGroup = exclusiveGroup;
             mandatory = true;
         }
 
-        public Option(char letter, String name, String description, T defValue)
+        public Option(String name, String description, String exclusiveGroup, T defValue)
         {
-            this.letter = letter;
             this.name = name;
             this.description = description;
             this.defValue = defValue;
+            this.exclusiveGroup = exclusiveGroup;
             this.cls = (Class<T>) defValue.getClass();
         }
         
