@@ -236,7 +236,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     {
         if (mark == -1)
         {
-            throw new InvalidMarkException();
+            return 0;
         }
         int count = writeSplitter.doIt(writer, mark, position);
         return count;
