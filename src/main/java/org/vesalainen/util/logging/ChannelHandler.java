@@ -19,11 +19,10 @@ package org.vesalainen.util.logging;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 /**
  *
@@ -31,8 +30,9 @@ import java.util.logging.Logger;
  */
 public class ChannelHandler extends Handler
 {
-    private final ByteBuffer bb = ByteBuffer.allocateDirect(4096);
+    private final ByteBuffer bb = ByteBuffer.allocateDirect(4096);  // stacktrace migth need space
     private final WritableByteChannel channel;
+    private final ReentrantLock lock = new ReentrantLock();
     public ChannelHandler(WritableByteChannel channel)
     {
         this.channel = channel;
@@ -41,6 +41,7 @@ public class ChannelHandler extends Handler
     @Override
     public void publish(LogRecord record)
     {
+        lock.lock();
         try
         {
             Formatter formatter = getFormatter();
@@ -52,6 +53,10 @@ public class ChannelHandler extends Handler
         catch (IOException ex)
         {
             throw new IllegalArgumentException(ex);
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
 
