@@ -17,19 +17,24 @@
 package org.vesalainen.nio.channels;
 
 import java.io.IOException;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * a bridge between selectors from different providers.
@@ -38,102 +43,106 @@ import java.util.concurrent.Semaphore;
  * MultiProviderSelector.register.
  * @author tkv
  */
-public class MultiProviderSelector extends Selector
+public class MultiProviderSelector extends AbstractSelector
 {
-    private final Map<SelectorProvider,Selector> map = new HashMap<>();
-    private final Map<Selector,SelectorWrapper> wrapperMap = new HashMap<>();
-    private final Map<Selector,Thread> threadMap = new HashMap<>();
-    private final UnionSet<SelectionKey> keys = new UnionSet<>();
-    private final UnionSet<SelectionKey> selectedKeys = new UnionSet<>();
+    private Map<SelectorProvider,Selector> map = new HashMap<>();
+    private Map<Selector,SelectorWrapper> wrapperMap = new HashMap<>();
+    private Map<Selector,Thread> threadMap = new HashMap<>();
+    private Set<SelectionKey> keys = new HashSet<>();
+    private final Set<SelectionKey> unmodifiableKeys = Collections.unmodifiableSet(keys);
+    private Set<SelectionKey> selectedKeys = new HashSet<>();
+    private final Map<SelectionKey,MultiProviderSelectionKey> keyMap = new HashMap<>();
+    private Set<SelectionKey> keyPool = new HashSet<>();
+    private IOException ioException;
     private final Semaphore semaphore = new Semaphore(0);
-    private boolean isOpen = true;
+    private final Semaphore wrapperSemaphore = new Semaphore(0);
+    private AtomicInteger wrapperPermissions = new AtomicInteger();
+    private final ReentrantLock lock = new ReentrantLock();
+    private boolean wait;
+    private final JavaLogging log;
     
     public MultiProviderSelector()
     {
-        super();
+        super(MultiSelectorProvider.provider());
+        log = new JavaLogging(this.getClass());
     }
 
-    public Selector getSelectorFor(SelectableChannel channel)
-    {
-        return getSelectorFor(channel.provider());
-    }
-    public Selector getSelectorFor(SelectorProvider provider)
-    {
-        return map.get(provider);
-    }
     @Override
     public Selector wakeup()
     {
+        log.fine("wakeup(%s", this);
         for (SelectorWrapper sw : wrapperMap.values())
         {
-            sw.wakeup();
+            sw.selector.wakeup();
         }
         return this;
     }
 
     @Override
-    public boolean isOpen()
+    protected void implCloseSelector() throws IOException
     {
-        return isOpen;
-    }
-
-    @Override
-    public SelectorProvider provider()
-    {
-        return MultiSelectorProvider.provider();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
+        log.fine("close(%s", this);
         for (Selector selector : map.values())
         {
-            keys.remove(selector.keys());
-            selectedKeys.remove(selector.selectedKeys());
-            wrapperMap.remove(selector);
             Thread thread = threadMap.get(selector);
             thread.interrupt();
-            threadMap.remove(selector);
             selector.close();
         }
-        isOpen = false;
+        map = null;
+        keys = null;
+        selectedKeys = null;
+        keyPool = null;
+        wrapperMap = null;
+        threadMap = null;
     }
 
-    public SelectionKey register(SelectableChannel ch, int ops)
+    @Override
+    protected SelectionKey register(AbstractSelectableChannel ch, int ops, Object att)
     {
-        return register(ch, ops, null);
-    }
-    
-    public SelectionKey register(SelectableChannel ch, int ops, Object att)
-    {
+        log.fine("register(%s)", this);
+        lock.lock();
         try
         {
+            SelectionKey sk = null;
             SelectorProvider provider = ch.provider();
             Selector selector = map.get(provider);
             if (selector == null)
             {
                 selector = provider.openSelector();
                 map.put(provider, selector);
-                keys.add(selector.keys());
-                selectedKeys.add(selector.selectedKeys());
                 SelectorWrapper sw = new SelectorWrapper(selector);
                 wrapperMap.put(selector, sw);
                 Thread thread = new Thread(sw);
                 threadMap.put(selector, thread);
+                sk = ch.register(selector, ops);
+                wrapperPermissions.incrementAndGet();
                 thread.start();
             }
-            return ch.register(selector, ops, att);
+            else
+            {
+                selector.wakeup();
+                sk = ch.register(selector, ops);
+            }
+            MultiProviderSelectionKey mpsk = new MultiProviderSelectionKey(this, sk);
+            mpsk.attach(att);
+            keys.add(mpsk);
+            keyMap.put(sk, mpsk);
+            return mpsk;
         }
         catch (IOException ex)
         {
             throw new IllegalArgumentException(ex);
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
 
     @Override
     public Set<SelectionKey> keys()
     {
-        return keys;
+        return unmodifiableKeys;
     }
 
     @Override
@@ -156,26 +165,45 @@ public class MultiProviderSelector extends Selector
     @Override
     public int select(long timeout) throws IOException
     {
+        int keyCount = 0;
         try
         {
-            int res = 0;
-            for (SelectorWrapper sw : wrapperMap.values())
+            lock.lock();
+            try
             {
-                sw.timeout = timeout;
-                sw.selectorSemaphore.release();
-            }
-            semaphore.acquire();
-            wakeup();
-            semaphore.acquire(wrapperMap.size()-1);
-            for (SelectorWrapper sw : wrapperMap.values())
-            {
-                if (sw.ioException != null)
+                wrapperSemaphore.release(wrapperPermissions.getAndSet(0));
+                if (ioException != null)
                 {
-                    throw sw.ioException;
+                    throw ioException;
                 }
-                res += sw.returnValue;
+                handleCancelled();
+                if (keyPool.isEmpty())
+                {
+                    wait = true;
+                }
+                else
+                {
+                    keyCount = provision();
+                }
             }
-            return res;
+            finally
+            {
+                lock.unlock();
+            }
+            if (wait)
+            {
+                long nanoTime1 = System.nanoTime();
+                if (semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS))
+                {
+                    long nanoTime2 = System.nanoTime();
+                    log.fine("waited %d nanos", nanoTime2-nanoTime1);
+                    keyCount = provision();
+                    handleCancelled();
+                }
+                wait = false;
+            }
+            log.fine("select() -> %d", keyCount);
+            return keyCount;
         }
         catch (InterruptedException ex)
         {
@@ -183,239 +211,146 @@ public class MultiProviderSelector extends Selector
         }
     }
 
+    private void handleCancelled()
+    {
+        lock.lock();
+        try
+        {
+            Set<SelectionKey> cancelledKeys = cancelledKeys();
+            synchronized(cancelledKeys)
+            {
+                Iterator<SelectionKey> iterator = cancelledKeys.iterator();
+                while (iterator.hasNext())
+                {
+                    MultiProviderSelectionKey sk = (MultiProviderSelectionKey) iterator.next();
+                    deregister(sk);
+                    keys.remove(sk);
+                    keyMap.remove(sk.getRealSelectionKey());
+                    sk.doCancel();
+                    iterator.remove();
+                }
+            }
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    private int provision()
+    {
+        int count = 0;
+        lock.lock();
+        try
+        {
+            for (SelectionKey sk : keyPool)
+            {
+                MultiProviderSelectionKey mpsk = keyMap.get(sk);
+                if (mpsk != null)
+                {
+                    if (!selectedKeys.contains(mpsk))
+                    {
+                        selectedKeys.add(mpsk);
+                        count++;
+                    }
+                }
+                else
+                {
+                    log.fine("selectionKey=null");
+                }
+            }
+            keyPool.clear();
+            return count;
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
     @Override
     public int select() throws IOException
     {
         return select(-1);
     }
 
-    private class SelectorWrapper implements Runnable
+    private class SelectorWrapper extends JavaLogging implements Runnable
     {
-        Semaphore selectorSemaphore = new Semaphore(0);
         Selector selector;
-        long timeout;
-        int returnValue;
-        volatile boolean selecting;
-        private IOException ioException;
 
         public SelectorWrapper(Selector selector)
         {
             this.selector = selector;
+            setLogger(this.getClass());
         }
 
-        public void wakeup()
-        {
-            if (selecting)
-            {
-              selector.wakeup();
-            }   
-        }
         @Override
         public void run()
         {
-            while (true)
+            while (isOpen())
             {
+                lock.lock();
                 try
                 {
-                    selectorSemaphore.acquire();
-                    selecting = true;
-                    if (timeout > 0)
+                    if (selector.keys().isEmpty())
                     {
-                        returnValue = selector.select(timeout);
+                        info("stop selector thread");
+                        map.remove(selector.provider());
+                        wrapperMap.remove(selector);
+                        threadMap.remove(selector);
+                        return;
                     }
-                    else
-                    {
-                        returnValue = selector.select();
-                    }
-                    selecting = false;
-                }
-                catch (InterruptedException ex)
-                {
-                    return;
-                }
-                catch (IOException ex)
-                {
-                    ioException = ex;
                 }
                 finally
                 {
-                    semaphore.release();
+                    lock.unlock();
                 }
-            }
-        }
-    }
-    public class UnionSet<T> implements Set<T>
-    {
-        private final List<Set<T>> sets = new ArrayList<>();
-        
-        private void add(Set<T> set)
-        {
-            sets.add(set);
-        }
-        private void remove(Set<T> set)
-        {
-            sets.remove(set);
-        }
-        @Override
-        public int size()
-        {
-            int size = 0;
-            for (Set<T> set : sets)
-            {
-                size += set.size();
-            }
-            return size;
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return size() == 0;
-        }
-
-        @Override
-        public boolean contains(Object o)
-        {
-            for (Set<T> set : sets)
-            {
-                if (set.contains(o))
+                int count = 0;
+                IOException ioExc = null;
+                try
                 {
-                    return true;
+                    wrapperSemaphore.acquire();
+                    count = selector.select();
+                    fine("select(%s)=%d", this, count);
                 }
-            }
-            return false;
-        }
-
-        @Override
-        public Iterator<T> iterator()
-        {
-            return new UnionIterator(sets.iterator());
-        }
-
-        @Override
-        public Object[] toArray()
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public <T> T[] toArray(T[] a)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean add(T e)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean remove(Object o)
-        {
-            for (Set<T> set : sets)
-            {
-                if (set.remove(o))
+                catch (IOException ex)
                 {
-                    return true;
+                    log(Level.SEVERE, ex, "IOException(%s)", toString());
+                    ioExc = ex;
                 }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> c)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends T> c)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c)
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void clear()
-        {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-    }
-    public class UnionIterator<T> implements Iterator<T>
-    {
-        private Iterator<Set<T>> setIterator;
-        private Iterator<T> iterator;
-
-        public UnionIterator(Iterator<Set<T>> setIterator)
-        {
-            this.setIterator = setIterator;
-            if (setIterator.hasNext())
-            {
-                iterator = setIterator.next().iterator();
-            }
-        }
-        
-        @Override
-        public boolean hasNext()
-        {
-            if (iterator != null)
-            {
-                if (iterator.hasNext())
+                catch (InterruptedException ex)
                 {
-                    return true;
+                    Logger.getLogger(MultiProviderSelector.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                else
+                lock.lock();
+                try
                 {
-                    if (setIterator.hasNext())
+                    if (ioExc == null)
                     {
-                        iterator = setIterator.next().iterator();
-                        return hasNext();
+                        Set<SelectionKey> keys = selector.selectedKeys();
+                        keyPool.addAll(keys);
+                        keys.clear();
+                        wrapperPermissions.incrementAndGet();
                     }
                     else
                     {
-                        iterator = null;
-                        return false;
+                        ioException = ioExc;
                     }
                 }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        @Override
-        public T next()
-        {
-            if (iterator != null)
-            {
-                return iterator.next();
-            }
-            else
-            {
-                throw new NoSuchElementException();
+                finally
+                {
+                    if (wait)
+                    {
+                        semaphore.release();
+                    }
+                    lock.unlock();
+                }
             }
         }
 
         @Override
-        public void remove()
+        public String toString()
         {
-            iterator.remove();
+            return "SelectorWrapper{" + "selector=" + selector + '}';
         }
         
     }
-    
 }

@@ -16,38 +16,67 @@
  */
 package org.vesalainen.nio.channels;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketOption;
+import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
 import static java.net.StandardSocketOptions.SO_BROADCAST;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.GatheringByteChannel;
+import java.nio.channels.ScatteringByteChannel;
+import java.util.Arrays;
 
 /**
- *
+ * A DatagramChannel that binds to ports and sends to host/port.
  * @author tkv
  */
-public class UnconnectedDatagramChannel implements ReadableByteChannel, WritableByteChannel, AutoCloseable
+public class UnconnectedDatagramChannel implements ByteChannel, GatheringByteChannel, ScatteringByteChannel, AutoCloseable, Closeable
 {
+    private static final byte[] IPv4BroadcastAddress = new byte[] {(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff};
+
     private final DatagramChannel channel;
     private final InetSocketAddress address;
+    private final ByteBuffer readBuffer;
+    private final ByteBuffer writeBuffer;
 
-    public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address)
+    public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct)
     {
         this.channel = channel;
         this.address = address;
+        if (direct)
+        {
+            this.readBuffer = ByteBuffer.allocateDirect(maxDatagramSize);
+            this.writeBuffer = ByteBuffer.allocateDirect(maxDatagramSize);
+        }
+        else
+        {
+            this.readBuffer = ByteBuffer.allocate(maxDatagramSize);
+            this.writeBuffer = ByteBuffer.allocate(maxDatagramSize);
+        }
     }
+
     
-    public static UnconnectedDatagramChannel open(String host, int port) throws IOException
+    public static UnconnectedDatagramChannel open(String host, int port, int maxDatagramSize, boolean direct, boolean loop) throws IOException
     {
-        InetSocketAddress address = new InetSocketAddress(host, port);
+        InetAddress ia = InetAddress.getByName(host);
+        InetSocketAddress address = new InetSocketAddress(ia, port);
         DatagramChannel channel = DatagramChannel.open();
-        channel.setOption(SO_BROADCAST, true);
+        if (isBroadcast(ia))
+        {
+            channel.setOption(SO_BROADCAST, true);
+        }
         channel.setOption(SO_REUSEADDR, true);
         channel.bind(new InetSocketAddress(port));
-        return new UnconnectedDatagramChannel(channel, address);
+        if (ia.isMulticastAddress())
+        {
+            channel.setOption(IP_MULTICAST_LOOP, loop);
+        }
+        return new UnconnectedDatagramChannel(channel, address, maxDatagramSize, direct);
     }
     @Override
     public int read(ByteBuffer dst) throws IOException
@@ -76,5 +105,71 @@ public class UnconnectedDatagramChannel implements ReadableByteChannel, Writable
         channel.send(src, address);
         return src.remaining()-rem;
     }
-    
+
+    @Override
+    public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
+    {
+        if (length == 1)
+        {
+            return write(srcs[offset]);
+        }
+        else
+        {
+            writeBuffer.clear();
+            for  (int ii=0;ii<length;ii++)
+            {
+                ByteBuffer bb = srcs[ii+offset];
+                writeBuffer.put(bb);
+            }
+            return write(writeBuffer);
+        }
+    }
+
+    @Override
+    public long write(ByteBuffer[] srcs) throws IOException
+    {
+        return write(srcs, 0, srcs.length);
+    }
+
+    @Override
+    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
+    {
+        if (length == 1 || dsts[offset].remaining() > readBuffer.capacity())
+        {
+            return read(dsts[offset]);
+        }
+        else
+        {
+            readBuffer.clear();
+            int res = read(readBuffer);
+            readBuffer.flip();
+            for  (int ii=0;ii<length && readBuffer.hasRemaining();ii++)
+            {
+                ByteBuffer bb = dsts[ii+offset];
+                if (bb.remaining() >= readBuffer.remaining())
+                {
+                    bb.put(readBuffer);
+                }
+                else
+                {
+                    int lim = readBuffer.limit();
+                    readBuffer.limit(readBuffer.position()+bb.remaining());
+                    bb.put(readBuffer);
+                    readBuffer.limit(lim);
+                }
+            }
+            return res;
+        }
+    }
+
+    @Override
+    public long read(ByteBuffer[] dsts) throws IOException
+    {
+        return read(dsts, 0, dsts.length);
+    }
+
+    private static boolean isBroadcast(InetAddress addr)
+    {
+        return Arrays.equals(IPv4BroadcastAddress, addr.getAddress());
+    }
 }
