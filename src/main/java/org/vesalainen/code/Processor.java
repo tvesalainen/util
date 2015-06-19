@@ -638,7 +638,7 @@ public class Processor extends AbstractProcessor
         }
         VariableElement ve = parameters.get(0);
         TypeMirror type = ve.asType();
-        String typeString = type.toString().replace('.', '_');
+        String typeString = type.toString().replace('.', '_').replace('<', '_').replace('>', '_');
         return name.substring(3)+'_'+typeString;
     }
 

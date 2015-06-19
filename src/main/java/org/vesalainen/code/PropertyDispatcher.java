@@ -77,7 +77,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
     }
     /**
      * Adds a PropertySetter observer for properties that have given prefix. As
-     * a consequence ALL properties are added is empty prefix is used.
+     * a consequence ALL properties are added if empty prefix is used.
      * @param observer 
      * @param prefixes 
      */

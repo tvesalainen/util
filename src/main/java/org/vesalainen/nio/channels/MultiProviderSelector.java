@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.vesalainen.util.concurrent.ConcurrentArraySet;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -48,11 +49,11 @@ public class MultiProviderSelector extends AbstractSelector
     private Map<SelectorProvider,Selector> map = new HashMap<>();
     private Map<Selector,SelectorWrapper> wrapperMap = new HashMap<>();
     private Map<Selector,Thread> threadMap = new HashMap<>();
-    private Set<SelectionKey> keys = new HashSet<>();
+    private Set<SelectionKey> keys = new ConcurrentArraySet<>();
     private final Set<SelectionKey> unmodifiableKeys = Collections.unmodifiableSet(keys);
-    private Set<SelectionKey> selectedKeys = new HashSet<>();
+    private Set<SelectionKey> selectedKeys = new ConcurrentArraySet<>();
     private final Map<SelectionKey,MultiProviderSelectionKey> keyMap = new HashMap<>();
-    private Set<SelectionKey> keyPool = new HashSet<>();
+    private Set<SelectionKey> keyPool = new ConcurrentArraySet<>();
     private IOException ioException;
     private final Semaphore semaphore = new Semaphore(0);
     private final Semaphore wrapperSemaphore = new Semaphore(0);

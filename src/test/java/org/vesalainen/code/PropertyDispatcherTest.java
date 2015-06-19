@@ -121,6 +121,12 @@ public class PropertyDispatcherTest
         {
             map.put(property, arg);
         }
+
+        @Override
+        public String[] getPrefixes()
+        {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
     }
 }

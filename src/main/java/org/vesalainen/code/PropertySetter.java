@@ -23,6 +23,11 @@ package org.vesalainen.code;
  */
 public interface PropertySetter
 {
+    /**
+     * Returns list of interested property prefixes
+     * @return 
+     */
+    String[] getPrefixes();
     void set(String property, boolean arg);
     void set(String property, byte arg);
     void set(String property, char arg);

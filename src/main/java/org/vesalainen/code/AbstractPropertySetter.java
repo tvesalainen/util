@@ -95,5 +95,11 @@ public class AbstractPropertySetter implements PropertySetter, Transactional
     public void commit(String reason)
     {
     }
+
+    @Override
+    public String[] getPrefixes()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }
