@@ -26,16 +26,21 @@ import static java.net.StandardSocketOptions.SO_BROADCAST;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.Arrays;
 
 /**
  * A DatagramChannel that binds to ports and sends to host/port.
  * @author tkv
  */
-public class UnconnectedDatagramChannel implements ByteChannel, GatheringByteChannel, ScatteringByteChannel, AutoCloseable, Closeable
+public class UnconnectedDatagramChannel extends SelectableChannel implements ByteChannel, GatheringByteChannel, ScatteringByteChannel, AutoCloseable, Closeable
 {
     private static final byte[] IPv4BroadcastAddress = new byte[] {(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff};
 
@@ -84,18 +89,6 @@ public class UnconnectedDatagramChannel implements ByteChannel, GatheringByteCha
         int rem = dst.remaining();
         channel.receive(dst);
         return rem-dst.remaining();
-    }
-
-    @Override
-    public boolean isOpen()
-    {
-        return channel.isOpen();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        channel.close();
     }
 
     @Override
@@ -171,5 +164,59 @@ public class UnconnectedDatagramChannel implements ByteChannel, GatheringByteCha
     private static boolean isBroadcast(InetAddress addr)
     {
         return Arrays.equals(IPv4BroadcastAddress, addr.getAddress());
+    }
+
+    @Override
+    public SelectorProvider provider()
+    {
+        return channel.provider();
+    }
+
+    @Override
+    public int validOps()
+    {
+        return channel.validOps();
+    }
+
+    @Override
+    public boolean isRegistered()
+    {
+        return channel.isRegistered();
+    }
+
+    @Override
+    public SelectionKey keyFor(Selector sel)
+    {
+        return channel.keyFor(sel);
+    }
+
+    @Override
+    public SelectionKey register(Selector sel, int ops, Object att) throws ClosedChannelException
+    {
+        return channel.register(sel, ops, att);
+    }
+
+    @Override
+    public SelectableChannel configureBlocking(boolean block) throws IOException
+    {
+        return channel.configureBlocking(block);
+    }
+
+    @Override
+    public boolean isBlocking()
+    {
+        return channel.isBlocking();
+    }
+
+    @Override
+    public Object blockingLock()
+    {
+        return channel.blockingLock();
+    }
+
+    @Override
+    protected void implCloseChannel() throws IOException
+    {
+        channel.close();
     }
 }
