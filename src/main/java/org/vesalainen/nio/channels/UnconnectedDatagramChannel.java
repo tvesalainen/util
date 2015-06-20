@@ -20,6 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
 import static java.net.StandardSocketOptions.SO_BROADCAST;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
@@ -34,6 +35,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Arrays;
+import java.util.logging.Level;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * A DatagramChannel that binds to ports and sends to host/port.
@@ -47,9 +50,11 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     private final InetSocketAddress address;
     private final ByteBuffer readBuffer;
     private final ByteBuffer writeBuffer;
+    private final JavaLogging log;
 
     public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct)
     {
+        log = new JavaLogging(this.getClass());
         this.channel = channel;
         this.address = address;
         if (direct)
@@ -86,7 +91,10 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     public int read(ByteBuffer dst) throws IOException
     {
         int rem = dst.remaining();
-        channel.receive(dst);
+        int p1 = dst.position();
+        SocketAddress sa = channel.receive(dst);
+        int p2 = dst.position();
+        log(Level.FINEST, "receive", dst, p1, p2-p1);
         return rem-dst.remaining();
     }
 
@@ -94,10 +102,33 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     public int write(ByteBuffer src) throws IOException
     {
         int rem = src.remaining();
+        int p1 = src.position();
         channel.send(src, address);
+        int p2 = src.position();
+        log(Level.FINEST, "send", src, p1, p2-p1);
         return src.remaining()-rem;
     }
 
+    private void log(Level level, String msg, ByteBuffer bb, int offset, int length)
+    {
+        if (log.isLoggable(level))
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int ii=0;ii<length;ii++)
+            {
+                char cc = (char)(bb.get(ii+offset) & 0xff);
+                if (cc >= ' ' && cc <= 'z')
+                {
+                    sb.append(cc);
+                }
+                else
+                {
+                    sb.append('<').append(Integer.toHexString(cc)).append('>');
+                }
+            }
+            log.log(level, "%s='%s'", msg, sb.toString());
+        }
+    }
     @Override
     public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
     {
@@ -113,6 +144,7 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
                 ByteBuffer bb = srcs[ii+offset];
                 writeBuffer.put(bb);
             }
+            writeBuffer.flip();
             return write(writeBuffer);
         }
     }

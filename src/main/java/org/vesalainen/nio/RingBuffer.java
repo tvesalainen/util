@@ -234,12 +234,32 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int write(W writer) throws IOException
     {
-        if (mark == -1)
+        return write(writer, mark);
+    }
+    /**
+     * Write buffers content from mrk (included) to position (excluded)
+     * @param writer
+     * @param mrk
+     * @return 
+     * @throws IOException 
+     */
+    public int write(W writer, int mrk) throws IOException
+    {
+        if (mrk == -1)
         {
             return 0;
         }
-        int count = writeSplitter.doIt(writer, mark, position);
+        int count = writeSplitter.doIt(writer, mrk, position);
         return count;
+    }
+    /**
+     * Returns the current position. Only use for this position is in marked write method.
+     * @return 
+     * @see org.vesalainen.nio.RingByteBuffer#write(java.lang.Object, int) 
+     */
+    public int getPosition()
+    {
+        return position;
     }
     /**
      * Writes to buffer starting from position limit-position count Return count 
