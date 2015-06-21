@@ -27,7 +27,7 @@ import java.util.Set;
  * @author tkv
  * @param <T> Attachment type
  */
-public class OrMatcher<T> implements Matcher
+public class OrMatcher<T> implements Matcher, Iterable<Matcher>
 {
     private final Set<Matcher> matchers = new HashSet<>();
     private Set<Matcher> active = new HashSet<>();
@@ -119,6 +119,12 @@ public class OrMatcher<T> implements Matcher
             matcher.clear();
         }
         active.addAll(matchers);
+    }
+
+    @Override
+    public Iterator<Matcher> iterator()
+    {
+        return matchers.iterator();
     }
     
 }
