@@ -106,7 +106,7 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
         channel.send(src, address);
         int p2 = src.position();
         log(Level.FINEST, "send", src, p1, p2-p1);
-        return src.remaining()-rem;
+        return rem-src.remaining();
     }
 
     private void log(Level level, String msg, ByteBuffer bb, int offset, int length)

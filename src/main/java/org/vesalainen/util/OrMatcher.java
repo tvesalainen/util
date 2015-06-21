@@ -126,5 +126,8 @@ public class OrMatcher<T> implements Matcher, Iterable<Matcher>
     {
         return matchers.iterator();
     }
-    
+    public boolean isEmpty()
+    {
+        return matchers.isEmpty();
+    }
 }

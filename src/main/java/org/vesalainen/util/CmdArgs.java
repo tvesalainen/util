@@ -144,7 +144,11 @@ public class CmdArgs
         Object value = options.get(name);
         if (value == null)
         {
-            Option opt = map.get("-"+name);
+            Option opt = map.get(name);
+            if (opt == null)
+            {
+                throw new IllegalArgumentException("option "+name+" not found");
+            }
             if (opt.defValue != null)
             {
                 return (T) opt.defValue;
@@ -175,7 +179,7 @@ public class CmdArgs
     /**
      * Add a mandatory string option
      * @param <T> Type of option
-     * @param name Option name Option name without '-'
+     * @param name Option name Option name without
      * @param description Option description
      */
     public <T> void addOption(String name, String description)
@@ -186,7 +190,7 @@ public class CmdArgs
      * Add a mandatory option
      * @param <T> Type of option
      * @param cls Option type class
-     * @param name Option name Option name without '-'
+     * @param name Option name Option name without
      * @param description Option description
      */
     public <T> void addOption(Class<T> cls, String name, String description)
@@ -197,7 +201,7 @@ public class CmdArgs
      * Add a mandatory option
      * @param <T> Type of option
      * @param cls Option type class
-     * @param name Option name Option name without '-'
+     * @param name Option name Option name without
      * @param description Option description
      * @param exclusiveGroup A group of options. Only options of a single group 
      * are accepted.
@@ -205,7 +209,7 @@ public class CmdArgs
     public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
     {
         Option opt = new Option(cls, name, description, exclusiveGroup);
-        Option old = map.put("-"+name, opt);
+        Option old = map.put(name, opt);
         if (old != null)
         {
             throw new IllegalArgumentException(name+" was already added");
@@ -218,7 +222,7 @@ public class CmdArgs
     /**
      * Add an option
      * @param <T>
-     * @param name Option name Option name without '-'
+     * @param name Option name Option name without
      * @param description Option description
      * @param exclusiveGroup A group of options. Only options of a single group 
      * are accepted.
@@ -227,7 +231,7 @@ public class CmdArgs
     public <T> void addOption(String name, String description, String exclusiveGroup, T defValue)
     {
         Option opt = new Option(name, description, exclusiveGroup, defValue);
-        Option old = map.put("-"+name, opt);
+        Option old = map.put(name, opt);
         if (old != null)
         {
             throw new IllegalArgumentException(name+" was already added");
@@ -281,7 +285,7 @@ public class CmdArgs
     }
     private void append(StringBuilder sb, Option opt)
     {
-        sb.append("-").append(opt.name).append(" ");
+        sb.append(opt.name).append(" ");
         sb.append("<").append(opt.description).append(">");
     }
     public class Option<T>

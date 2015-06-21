@@ -74,6 +74,12 @@ public class SimpleMatcher implements Matcher
         this.expr = new String(expression);
         this.expression = expression;
     }
+
+    public String getExpression()
+    {
+        return expr;
+    }
+    
     /**
      * Matches input. Returns Error if in doesn't match. Ok if all matched chars
      * are ok. WillMatch if all matched chars are ok and matching algorythm is 
