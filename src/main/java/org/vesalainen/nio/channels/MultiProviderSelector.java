@@ -24,7 +24,6 @@ import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -118,6 +117,7 @@ public class MultiProviderSelector extends AbstractSelector
                 sk = ch.register(selector, ops);
                 wrapperPermissions.incrementAndGet();
                 thread.start();
+                log.info("start selector thread");
             }
             else
             {
@@ -256,7 +256,7 @@ public class MultiProviderSelector extends AbstractSelector
                 }
                 else
                 {
-                    log.fine("selectionKey=null");
+                    log.warning("selectionKey=null");
                 }
             }
             keyPool.clear();
@@ -319,7 +319,7 @@ public class MultiProviderSelector extends AbstractSelector
                 }
                 catch (InterruptedException ex)
                 {
-                    Logger.getLogger(MultiProviderSelector.class.getName()).log(Level.SEVERE, null, ex);
+                    log(Level.OFF, ex, ex.getMessage());
                 }
                 lock.lock();
                 try

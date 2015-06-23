@@ -40,9 +40,19 @@ public class JavaLogging extends BaseLogging
         setLogger(cls);
     }
 
+    public JavaLogging(Class<?> cls, String ext)
+    {
+        setLogger(cls, ext);
+    }
+
     public JavaLogging(String name)
     {
         setLogger(name);
+    }
+
+    public JavaLogging(String name, String ext)
+    {
+        setLogger(name, ext);
     }
 
     public JavaLogging(Logger logger)
@@ -57,12 +67,22 @@ public class JavaLogging extends BaseLogging
     
     public final void setLogger(Class<?> cls)
     {
-        logger = Logger.getLogger(cls.getName().replace('$', '.'));
+        setLogger(cls.getName().replace('$', '.'));
+    }
+    
+    public final void setLogger(Class<?> cls, String ext)
+    {
+        setLogger(cls.getName().replace('$', '.'), ext);
     }
     
     public final void setLogger(String name)
     {
         logger = Logger.getLogger(name);
+    }
+    
+    public final void setLogger(String name, String ext)
+    {
+        logger = Logger.getLogger(name+'.'+ext);
     }
     
     public Logger getLogger()
