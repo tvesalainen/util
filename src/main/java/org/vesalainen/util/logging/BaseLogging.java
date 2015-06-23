@@ -136,7 +136,14 @@ public abstract class BaseLogging
     {
         if (isLoggable(level))
         {
-            logIt(level, String.format(format, args));
+            if (format != null)
+            {
+                logIt(level, String.format(format, args));
+            }
+            else
+            {
+                logIt(level, "format == null");
+            }
         }
     }
     /**
