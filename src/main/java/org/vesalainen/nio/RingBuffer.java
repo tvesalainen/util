@@ -19,7 +19,6 @@ package org.vesalainen.nio;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
-import java.nio.InvalidMarkException;
 
 /**
  * A RingBuffer wrapper for Buffer. 

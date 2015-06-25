@@ -159,7 +159,14 @@ public abstract class BaseLogging
     {
         if (isLoggable(level))
         {
-            logIt(level, String.format(format, args), thrown);
+            if (format != null)
+            {
+                logIt(level, String.format(format, args), thrown);
+            }
+            else
+            {
+                logIt(level, "", thrown);
+            }
         }
     }
     public abstract List<String> getLoggerNames();
