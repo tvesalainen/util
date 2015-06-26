@@ -77,7 +77,6 @@ public class AutoCloseableList<T extends AutoCloseable> implements AutoCloseable
             }
             catch (Exception ex)
             {
-                throw new IOException(ex);
             }
         }
     }
