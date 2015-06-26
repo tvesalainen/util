@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * A class that stores AutoCloseable objects. This class implements AutoCloseable.
@@ -32,19 +33,20 @@ import java.util.List;
  * @author tkv
  * @param <T>
  */
-public class AutoCloseableList<T extends AutoCloseable> implements AutoCloseable
+public class AutoCloseableList<T extends AutoCloseable> extends JavaLogging implements AutoCloseable
 {
     private final List<WeakReference<T>> list = new ArrayList<>();
 
     public AutoCloseableList()
     {
+        setLogger(this.getClass());
     }
 
     public AutoCloseableList(Collection<T> collection)
     {
         for (T t : collection)
         {
-            list.add(new WeakReference<>(t));
+            add(t);
         }
     }
     
@@ -56,9 +58,11 @@ public class AutoCloseableList<T extends AutoCloseable> implements AutoCloseable
             WeakReference<T> next = iterator.next();
             if (next.get() == null)
             {
+                fine("removed autocloseable");
                 iterator.remove();
             }
         }
+        fine("add autocloseable %s", item);
         list.add(new WeakReference<>(item));
     }
     
@@ -72,7 +76,9 @@ public class AutoCloseableList<T extends AutoCloseable> implements AutoCloseable
                 T t = r.get();
                 if (t != null)
                 {
+                    fine("closing %s", t);
                     t.close();
+                    fine("closed %s", t);
                 }
             }
             catch (Exception ex)
