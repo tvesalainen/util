@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.concurrent.ConcurrentArraySet;
 import org.vesalainen.util.logging.JavaLogging;
 

@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public abstract class AbstractProvisioner<T>
 {
-    protected final MapList<String,InstanceMethod> map = new HashMapList<>();
+    private final MapList<String,InstanceMethod> map = new HashMapList<>();
 
     public boolean isEmpty()
     {

@@ -53,7 +53,7 @@ public class CmdArgsTest
             assertEquals(1234L, cmdArgs.getArgument("arg2"));
             assertEquals("usage:  -s <size> -f <file> -l <level> <arg1> <arg2>", cmdArgs.getUsage());
         }
-        catch (CmdArgs.CmdArgsException ex)
+        catch (CmdArgsException ex)
         {
             Logger.getLogger(CmdArgsTest.class.getName()).log(Level.SEVERE, null, ex);
             fail(ex.getMessage());
@@ -75,7 +75,7 @@ public class CmdArgsTest
             assertEquals(1234, cmdArgs.getOption("-p"));
             assertEquals("usage: [-h <host> -p <port>]|[-f <file>] <arg>", cmdArgs.getUsage());
         }
-        catch (CmdArgs.CmdArgsException ex)
+        catch (CmdArgsException ex)
         {
             Logger.getLogger(CmdArgsTest.class.getName()).log(Level.SEVERE, null, ex);
             fail(ex.getMessage());

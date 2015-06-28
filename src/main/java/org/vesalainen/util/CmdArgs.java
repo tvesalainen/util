@@ -27,8 +27,9 @@ import java.util.Set;
 /**
  *
  * @author tkv
+ * @param <T> Target type
  */
-public class CmdArgs
+public class CmdArgs<T> extends AbstractProvisioner<T>
 {
     private final Map<String,Option> map = new HashMap<>();
     private final MapList<String,Option> groups = new HashMapList<>();
@@ -42,6 +43,17 @@ public class CmdArgs
      */
     public CmdArgs()
     {
+    }
+    
+    @Override
+    public Object getValue(String name)
+    {
+        Object ob = options.get(name);
+        if (ob != null)
+        {
+            return ob;
+        }
+        return arguments.get(name);
     }
     
     public void setArgs(String... args) throws CmdArgsException
@@ -67,7 +79,7 @@ public class CmdArgs
                         {
                             if (effectiveGroup != null && !effectiveGroup.equals(opt.exclusiveGroup))
                             {
-                                throw new CmdArgsException(opt.exclusiveGroup+" mix with "+effectiveGroup);
+                                throw new CmdArgsException(opt.exclusiveGroup+" mix with "+effectiveGroup, this);
                             }
                             effectiveGroup = opt.exclusiveGroup;
                         }
@@ -82,7 +94,7 @@ public class CmdArgs
             int len = args.length-index;
             if (len != types.size())
             {
-                throw new CmdArgsException("wrong number of arguments");
+                throw new CmdArgsException("wrong number of arguments", this);
             }
             arguments = new HashMap<>();
             for (int ii=0;ii<len;ii++)
@@ -94,7 +106,7 @@ public class CmdArgs
             {
                 if (o.mandatory && !options.containsKey(o.name))
                 {
-                    throw new CmdArgsException("mandatory option "+o.name+": "+o.description+" missing");
+                    throw new CmdArgsException("mandatory option "+o.name+": "+o.description+" missing", this);
                 }
             }
             if (effectiveGroup != null)
@@ -103,14 +115,14 @@ public class CmdArgs
                 {
                     if (!options.containsKey(o.name))
                     {
-                        throw new CmdArgsException(effectiveGroup+" option "+o.name+": "+o.description+" missing");
+                        throw new CmdArgsException(effectiveGroup+" option "+o.name+": "+o.description+" missing", this);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            throw new CmdArgsException(ex);
+            throw new CmdArgsException(ex, this);
         }
     }
     /**
@@ -173,6 +185,10 @@ public class CmdArgs
      */
     public <T> void addArgument(Class<T> cls, String name)
     {
+        if (map.containsKey(name))
+        {
+            throw new IllegalArgumentException(name+" is already added as option");
+        }
         types.add(cls);
         names.add(name);
     }
@@ -208,6 +224,10 @@ public class CmdArgs
      */
     public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
     {
+        if (names.contains(name))
+        {
+            throw new IllegalArgumentException(name+" is already added as argument");
+        }
         Option opt = new Option(cls, name, description, exclusiveGroup);
         Option old = map.put(name, opt);
         if (old != null)
@@ -288,6 +308,7 @@ public class CmdArgs
         sb.append(opt.name).append(" ");
         sb.append("<").append(opt.description).append(">");
     }
+
     public class Option<T>
     {
         private final Class<T> cls;
@@ -318,23 +339,6 @@ public class CmdArgs
         public T getValue(String str)
         {
             return (T) ConvertUtility.convert(cls, str);
-        }
-    }
-    public class CmdArgsException extends Exception
-    {
-
-        public CmdArgsException(String message)
-        {
-            super(message);
-        }
-
-        public CmdArgsException(Throwable cause)
-        {
-            super(cause);
-        }
-        public String usage()
-        {
-            return getUsage();
         }
     }
 }
