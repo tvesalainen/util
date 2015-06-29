@@ -27,7 +27,7 @@ import java.util.Arrays;
  * <p>Note that escaping '?' or '*' is not currently implemented!
  * @author tkv
  */
-public class SimpleMatcher implements Matcher
+public class SimpleMatcher implements Matcher<String>
 {
     private final String expr;
     private final byte[] expression;
@@ -164,6 +164,12 @@ public class SimpleMatcher implements Matcher
     public String toString()
     {
         return "SimpleMatcher{" + "expr=" + expr + '}';
+    }
+
+    @Override
+    public String getMatched()
+    {
+        return expr;
     }
     
 }

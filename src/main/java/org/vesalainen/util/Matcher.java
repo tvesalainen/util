@@ -19,8 +19,9 @@ package org.vesalainen.util;
 /**
  *
  * @author tkv
+ * @param <T> Matched type
  */
-public interface Matcher
+public interface Matcher<T>
 {
     public enum Status {
         /**
@@ -41,5 +42,6 @@ public interface Matcher
         Match
     };
     Status match(int cc);
+    T getMatched();
     void clear();
 }

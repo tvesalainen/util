@@ -30,7 +30,7 @@ import java.util.Set;
 public class OrMatcher<T> implements Matcher, Iterable<Matcher>
 {
     private final Set<Matcher> matchers = new HashSet<>();
-    private Set<Matcher> active = new HashSet<>();
+    private final Set<Matcher> active = new HashSet<>();
     private final MapList<Matcher,T> map = new HashMapList<>();
     private Matcher lastMatched;
 
@@ -129,5 +129,11 @@ public class OrMatcher<T> implements Matcher, Iterable<Matcher>
     public boolean isEmpty()
     {
         return matchers.isEmpty();
+    }
+
+    @Override
+    public Object getMatched()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
