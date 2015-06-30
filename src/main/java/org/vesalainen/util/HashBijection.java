@@ -17,7 +17,6 @@
 package org.vesalainen.util;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,5 +74,17 @@ public class HashBijection<T,S> implements Bijection<T,S>
     public Set<S> secondSet()
     {
         return m2.keySet();
+    }
+
+    @Override
+    public S removeFirst(S s)
+    {
+        return m1.remove(s);
+    }
+
+    @Override
+    public T removeSecond(T t)
+    {
+        return m2.remove(t);
     }
 }

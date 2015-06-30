@@ -16,7 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +32,8 @@ public interface Bijection<T,S>
     S getSecond(T t);
     boolean containsFirst(S s);
     boolean containsSecond(T t);
+    S removeFirst(S s);
+    T removeSecond(T t);
     Set<Map.Entry<T, S>> entrySet();
     Set<T> firstSet();
     Set<S> secondSet();
