@@ -309,7 +309,7 @@ public class MultiProviderSelector extends AbstractSelector
                 {
                     wrapperSemaphore.acquire();
                     count = selector.select();
-                    fine("select(%s)=%d", this, count);
+                    fine("select(%s)=%d (%d)", this, count, selector.selectedKeys().size());
                 }
                 catch (IOException ex)
                 {
