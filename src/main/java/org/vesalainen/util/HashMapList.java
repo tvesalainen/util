@@ -16,9 +16,13 @@
  */
 package org.vesalainen.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * HashMap and ArrayList based implementation of MapList
@@ -26,16 +30,90 @@ import java.util.List;
  * @param <M> Map key type
  * @param <L> List value type
  */
-public class HashMapList<M,L> extends AbstractMapList<M,L>
+public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L>
 {
+    private Comparator<L> comparator;
+    private final List<L> emptyList = new ArrayList<>();
+
     public HashMapList()
     {
-        super(new HashMap<M,List<L>>());
     }
 
     public HashMapList(Comparator<L> comparator)
     {
-        super(new HashMap<M,List<L>>(), comparator);
+        this.comparator = comparator;
+    }
+
+    private List<L> createList()
+    {
+        if (comparator != null)
+        {
+            return new OrderedList<>(comparator);
+        }
+        else
+        {
+            return new ArrayList<>();
+        }
+    }
+    @Override
+    public void add(M key, L value)
+    {
+        add(key, -1, value);
+    }
+    
+    @Override
+    public void add(M key, int index, L value)
+    {
+        List<L> list = super.get(key);
+        if (list == null)
+        {
+            list = createList();
+            put(key, list);
+        }
+        if (index != -1)
+        {
+            list.add(index, value);
+        }
+        else
+        {
+            list.add(value);
+        }
+    }
+    @Override
+    public List<L> set(M key, Collection<L> value)
+    {
+        List<L> list = super.get(key);
+        if (list == null)
+        {
+            list = createList();
+            put(key, list);
+        }
+        list.clear();
+        list.addAll(value);
+        return list;
+    }
+
+    @Override
+    public List<L> get(Object key)
+    {
+        List<L> list = super.get(key);
+        if (list == null)
+        {
+            return emptyList;
+        }
+        else
+        {
+            return list;
+        }
+    }
+
+    @Override
+    public void addAll(Map<M, L> map)
+    {
+        for (Entry<M, L> entry : map.entrySet())
+        {
+            add(entry.getKey(), entry.getValue());
+        }
     }
 
 }
