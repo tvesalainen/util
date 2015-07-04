@@ -29,11 +29,11 @@ import java.util.Set;
  * @param <M>
  * @param <L>
  */
-public abstract class AbstractMapList<M,L> implements MapList<M, L>
+public class AbstractMapList<M,L> implements MapList<M, L>
 {
     private final Map<M,List<L>> map;
     
-    protected Comparator<L> comparator;
+    private Comparator<L> comparator;
     private final List<L> emptyList = new ArrayList<>();
 
     public AbstractMapList(Map<M, List<L>> map)
@@ -47,8 +47,17 @@ public abstract class AbstractMapList<M,L> implements MapList<M, L>
         this.comparator = comparator;
     }
     
-    protected abstract List<L> createList();
-
+    private List<L> createList()
+    {
+        if (comparator != null)
+        {
+            return new OrderedList<>(comparator);
+        }
+        else
+        {
+            return new ArrayList<>();
+        }
+    }
     @Override
     public void add(M key, L value)
     {
