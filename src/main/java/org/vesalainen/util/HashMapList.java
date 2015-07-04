@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -38,4 +39,16 @@ public class HashMapList<M,L> extends AbstractMapList<M,L>
         super(new HashMap<M,List<L>>(), comparator);
     }
 
+    @Override
+    protected List<L> createList()
+    {
+        if (comparator != null)
+        {
+            return new OrderedList<>(comparator);
+        }
+        else
+        {
+            return new ArrayList<>();
+        }
+    }
 }
