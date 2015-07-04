@@ -17,25 +17,25 @@
 package org.vesalainen.util;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
+import java.util.WeakHashMap;
 
 /**
- * HashMap and ArrayList based implementation of MapList
+ * WeakHashMap and ArrayList based implementation of MapList
  * @author tkv
  * @param <M> Map key type
  * @param <L> List value type
  */
-public class HashMapList<M,L> extends AbstractMapList<M,L>
+public class WeakHashMapList<M,L> extends AbstractMapList<M,L>
 {
-    public HashMapList()
+    public WeakHashMapList()
     {
-        super(new HashMap<M,List<L>>());
+        super(new WeakHashMap<M,List<L>>());
     }
 
-    public HashMapList(Comparator<L> comparator)
+    public WeakHashMapList(Comparator<L> comparator)
     {
-        super(new HashMap<M,List<L>>(), comparator);
+        super(new WeakHashMap<M,List<L>>(), comparator);
     }
 
 }
