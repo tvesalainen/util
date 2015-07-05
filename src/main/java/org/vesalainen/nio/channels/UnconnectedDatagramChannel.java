@@ -18,9 +18,14 @@ package org.vesalainen.nio.channels;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.ProtocolFamily;
 import java.net.SocketAddress;
+import java.net.StandardProtocolFamily;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
 import static java.net.StandardSocketOptions.SO_BROADCAST;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
@@ -35,6 +40,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -72,9 +78,14 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     
     public static UnconnectedDatagramChannel open(String host, int port, int maxDatagramSize, boolean direct, boolean loop) throws IOException
     {
+        ProtocolFamily family = StandardProtocolFamily.INET;
         InetAddress ia = InetAddress.getByName(host);
+        if (ia instanceof Inet6Address)
+        {
+            family = StandardProtocolFamily.INET6;
+        }
         InetSocketAddress address = new InetSocketAddress(ia, port);
-        DatagramChannel channel = DatagramChannel.open();
+        DatagramChannel channel = DatagramChannel.open(family);
         if (isBroadcast(ia))
         {
             channel.setOption(SO_BROADCAST, true);
@@ -84,6 +95,15 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
         if (ia.isMulticastAddress())
         {
             channel.setOption(IP_MULTICAST_LOOP, loop);
+            Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+            while (nis.hasMoreElements())
+            {
+                NetworkInterface ni = nis.nextElement();
+                if (ni.supportsMulticast() && ni.isUp())
+                {
+                    channel.join(ia, ni);
+                }
+            }
         }
         return new UnconnectedDatagramChannel(channel, address, maxDatagramSize, direct);
     }
