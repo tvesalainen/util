@@ -113,7 +113,7 @@ public class CmdArgs<T> extends AbstractProvisioner<T>
             {
                 for (Option o : groups.get(effectiveGroup))
                 {
-                    if (!options.containsKey(o.name))
+                    if (o.mandatory && !options.containsKey(o.name))
                     {
                         throw new CmdArgsException(effectiveGroup+" option "+o.name+": "+o.description+" missing", this);
                     }
