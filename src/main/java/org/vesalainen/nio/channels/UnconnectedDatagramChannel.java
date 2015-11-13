@@ -18,13 +18,13 @@ package org.vesalainen.nio.channels;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ProtocolFamily;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.StandardProtocolFamily;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
 import static java.net.StandardSocketOptions.SO_BROADCAST;
@@ -39,8 +39,10 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -57,8 +59,10 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     private final ByteBuffer readBuffer;
     private final ByteBuffer writeBuffer;
     private final JavaLogging log;
+    private final boolean loop;
+    private List<InetAddress> locals;
 
-    public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct)
+    public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct, boolean loop) throws SocketException
     {
         log = new JavaLogging(this.getClass());
         this.channel = channel;
@@ -72,6 +76,21 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
         {
             this.readBuffer = ByteBuffer.allocate(maxDatagramSize);
             this.writeBuffer = ByteBuffer.allocate(maxDatagramSize);
+        }
+        this.loop = loop;
+        if (!loop)
+        {
+            locals = new ArrayList<>();
+            Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+            while (nis.hasMoreElements())
+            {
+                NetworkInterface ni = nis.nextElement();
+                Enumeration<InetAddress> ias = ni.getInetAddresses();
+                while (ias.hasMoreElements())
+                {
+                    locals.add(ias.nextElement());
+                }
+            }
         }
     }
 
@@ -105,14 +124,25 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
                 }
             }
         }
-        return new UnconnectedDatagramChannel(channel, address, maxDatagramSize, direct);
+        return new UnconnectedDatagramChannel(channel, address, maxDatagramSize, direct, loop);
     }
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
         int rem = dst.remaining();
         int p1 = dst.position();
-        SocketAddress sa = channel.receive(dst);
+        InetSocketAddress sa = (InetSocketAddress) channel.receive(dst);
+        if (sa == null)
+        {
+            return 0;
+        }
+        if (!loop && locals.contains(sa))
+        {
+            // reject local send if OS doesn't support IP_MULTICAST_LOOP option
+            dst.position(p1);
+            log.warning("local send %s while IP_MULTICAST_LOOP false", sa);
+            return 0;
+        }
         int p2 = dst.position();
         log(Level.FINEST, "receive", dst, p1, p2-p1);
         return rem-dst.remaining();
