@@ -142,7 +142,7 @@ public abstract class BaseLogging
             }
             else
             {
-                logIt(level, "format == null");
+                logIt(level, String.format("%s format == null", level));
             }
         }
     }
