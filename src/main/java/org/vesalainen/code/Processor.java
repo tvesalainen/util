@@ -250,8 +250,9 @@ public class Processor extends AbstractProcessor
                                 csw.println("for (PropertySetter ps : observers.get(Prop."+aEnum+"))");
                                 csw.println("{");
                                 CodePrinter csf = csw.createSub("}");
-                                csf.println("ps.set(\""+prop+"\", a[ind["+ordinal+"]++]);");
+                                csf.println("ps.set(\""+prop+"\", a[ind["+ordinal+"]]);");
                                 csf.flush();
+                                csw.println("ind["+ordinal+"]++;");
                                 csw.println("break;");
                                 csw.flush();
                             }
