@@ -32,9 +32,9 @@ import org.vesalainen.util.BitArray;
  */
 public class CompressedOutput<T> extends CompressedIO<T>
 {
-    private byte[] buf2;
+    private final byte[] buf2;
     private DataOutputStream dos;
-    private final OutputStream out;
+    private OutputStream out;
     private ArrayOutputStream array;
     private DataOutputStream data;
     /**
@@ -143,6 +143,11 @@ public class CompressedOutput<T> extends CompressedIO<T>
         {
             throw new IOException(ex);
         }
+    }
+    
+    public void close() throws IOException
+    {
+        out.close();
     }
     
     private class ArrayOutputStream extends OutputStream
