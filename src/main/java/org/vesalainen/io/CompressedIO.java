@@ -17,7 +17,6 @@
 package org.vesalainen.io;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import org.vesalainen.util.BitArray;
 
 /**
@@ -25,7 +24,7 @@ import org.vesalainen.util.BitArray;
  * @author tkv
  * @param <T>
  */
-public class CompressedIO<T>
+public abstract class CompressedIO<T> implements AutoCloseable
 {
     protected final T obj;
     protected final Class<? extends Object> cls;

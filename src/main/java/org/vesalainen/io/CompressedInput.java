@@ -151,6 +151,12 @@ public class CompressedInput<T> extends CompressedIO<T>
             throw new IOException(ex);
         }
     }
+
+    @Override
+    public void close() throws IOException
+    {
+        in.close();
+    }
     
     private class ArrayInputStream extends InputStream
     {

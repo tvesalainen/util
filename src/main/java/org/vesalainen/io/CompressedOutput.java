@@ -145,6 +145,7 @@ public class CompressedOutput<T> extends CompressedIO<T>
         }
     }
     
+    @Override
     public void close() throws IOException
     {
         out.close();
