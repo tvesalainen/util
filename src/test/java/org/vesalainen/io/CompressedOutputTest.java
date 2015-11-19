@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -88,6 +89,54 @@ public class CompressedOutputTest
         }
     }
     
+    @Test
+    public void test1()
+    {
+        try
+        {
+            TestCls1 exp = new TestCls1();
+            TestCls1 got = new TestCls1();
+            
+            Random random = new Random(123456L);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            CompressedOutput co = new CompressedOutput<TestCls1>(baos, exp);
+            for (int ii=0;ii<1000;ii++)
+            {
+                exp.time = random.nextLong();
+                exp.latitude = random.nextFloat();
+                exp.longitude = random.nextFloat();
+                co.write();
+            }
+            co.close();
+            
+            random = new Random(123456L);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            CompressedInput ci = new CompressedInput(bais, got);
+            int cnt = 0;
+            try
+            {
+                while (true)
+                {
+                    ci.read();
+                    cnt++;
+                    assertEquals(random.nextLong(), got.time);
+                    assertEquals(random.nextFloat(), got.latitude, Epsilon);
+                    assertEquals(random.nextFloat(), got.longitude, Epsilon);
+                }
+            }
+            catch (EOFException ex)
+            {
+                
+            }
+            assertEquals(1000, cnt);
+        }
+        catch (IOException ex)
+        {
+            Logger.getLogger(CompressedOutputTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+            
     private void equals(TestCls exp, TestCls got)
     {
         assertEquals(exp.b, got.b);
@@ -98,6 +147,12 @@ public class CompressedOutputTest
         assertEquals(exp.i, got.i);
         assertEquals(exp.l, got.l);
         assertEquals(exp.s, got.s);
+    }
+    public class TestCls1
+    {
+        public long time;
+        public float latitude;
+        public float longitude;
     }
     public class TestCls
     {
