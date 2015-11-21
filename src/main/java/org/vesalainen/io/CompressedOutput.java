@@ -20,6 +20,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.UUID;
 import org.vesalainen.util.BitArray;
 
 /**
@@ -47,6 +48,7 @@ public class CompressedOutput<T> extends CompressedIO<T>
     {
         super(obj);
         this.out = out;
+        this.uuid = UUID.randomUUID();
         
         fields = cls.getFields();
 
@@ -81,6 +83,8 @@ public class CompressedOutput<T> extends CompressedIO<T>
                 dos.writeUTF(field.getName());
                 dos.writeUTF(type.getName());
             }
+            dos.writeLong(uuid.getMostSignificantBits());
+            dos.writeLong(uuid.getLeastSignificantBits());
         }
         array.reset();
         for (Field field : fields)

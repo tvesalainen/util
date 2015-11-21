@@ -17,6 +17,7 @@
 package org.vesalainen.io;
 
 import java.lang.reflect.Field;
+import java.util.UUID;
 import org.vesalainen.util.BitArray;
 
 /**
@@ -33,12 +34,18 @@ public abstract class CompressedIO<T> implements AutoCloseable
     protected BitArray bitArray;
     protected Field[] fields;
     protected int bytes;
+    protected UUID uuid;
 
     public CompressedIO(T obj)
     {
         this.obj = obj;
         
         cls = obj.getClass();
+    }
+
+    public UUID getUuid()
+    {
+        return uuid;
     }
 
     protected int getBytes(String type)

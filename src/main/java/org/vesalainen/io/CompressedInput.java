@@ -20,11 +20,13 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.UUID;
 import org.vesalainen.util.BitArray;
 
 /**
  * A class for reading compressed data.
  * @author tkv
+ * @param <T>
  */
 public class CompressedInput<T> extends CompressedIO<T>
 {
@@ -74,6 +76,9 @@ public class CompressedInput<T> extends CompressedIO<T>
             }
             fields[ii] = fld;
         }
+        long mostSigBits = dis.readLong();
+        long leastSigBits = dis.readLong();
+        uuid = new UUID(mostSigBits, leastSigBits);
         for (Field field : fields)
         {
             Class<?> type = field.getType();

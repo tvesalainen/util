@@ -63,6 +63,7 @@ public class CompressedOutputTest
             
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
             CompressedInput ci = new CompressedInput(bais, got);
+            assertEquals(co.getUuid(), ci.getUuid());
             ci.read();
             exp.d = 124567.12345;
             equals(exp, got);
