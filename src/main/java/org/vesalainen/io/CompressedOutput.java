@@ -154,6 +154,14 @@ public class CompressedOutput<T> extends CompressedIO<T>
     {
         out.close();
     }
+    /**
+     * Returns true if write method has been called at least once.
+     * @return 
+     */
+    public boolean hasData()
+    {
+        return dos != null;
+    }
     
     private class ArrayOutputStream extends OutputStream
     {
