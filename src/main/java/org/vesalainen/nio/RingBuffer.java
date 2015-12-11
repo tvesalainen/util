@@ -41,7 +41,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     private final Splitter<W> writeSplitter;
     /**
      * Creates a RingBuffer of size. The backing buffer is either direct- or 
-     * heapbuffer depending on direct.
+     * heapbuffer depending on direct parameter.
      * <p>Method names which are same as in java.nio.Buffer have the same meaning.
      * Reading and writing differs from Buffer.
      * @param size
