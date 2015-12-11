@@ -47,11 +47,23 @@ public class Primitives
      */
     public static char parseChar(CharSequence cs)
     {
-        if (cs.length() != 1)
+        return parseChar(cs, 0, cs.length());
+    }
+    /**
+     * Returns char from input.
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws IllegalArgumentException if input length is not 1.
+     */
+    public static char parseChar(CharSequence cs, int beginIndex, int endIndex)
+    {
+        if (endIndex - beginIndex != 1)
         {
             throw new IllegalArgumentException("input length must be 1");
         }
-        return cs.charAt(0);
+        return cs.charAt(beginIndex);
     }
     /**
      * Parses the char sequence argument as a boolean. The boolean returned represents 
@@ -64,13 +76,28 @@ public class Primitives
      */
     public static boolean parseBoolean(CharSequence cs)
     {
+        return parseBoolean(cs, 0, cs.length());
+    }
+    /**
+     * Parses the char sequence argument as a boolean. The boolean returned represents 
+     * the value true if the char sequence argument is not null and is equal, ignoring 
+     * case, to the string "true".
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws IllegalArgumentException if input length is not 4.
+     * @see java.lang.Boolean#parseBoolean(java.lang.String) 
+     */
+    public static boolean parseBoolean(CharSequence cs, int beginIndex, int endIndex)
+    {
         return 
-                cs.length() == 4 &&
-                Character.codePointCount(cs, 0, 4) == 4 &&
-                Character.toUpperCase(Character.codePointAt(cs, 0)) == 'T' &&
-                Character.toUpperCase(Character.codePointAt(cs, 1)) == 'R' &&
-                Character.toUpperCase(Character.codePointAt(cs, 2)) == 'U' &&
-                Character.toUpperCase(Character.codePointAt(cs, 3)) == 'E';
+                endIndex - beginIndex == 4 &&
+                Character.codePointCount(cs, beginIndex, endIndex) == 4 &&
+                Character.toUpperCase(Character.codePointAt(cs, beginIndex)) == 'T' &&
+                Character.toUpperCase(Character.codePointAt(cs, beginIndex+1)) == 'R' &&
+                Character.toUpperCase(Character.codePointAt(cs, beginIndex+2)) == 'U' &&
+                Character.toUpperCase(Character.codePointAt(cs, beginIndex+3)) == 'E';
     }
     /**
      * Parses the char sequence argument as a boolean. The boolean returned represents 
@@ -86,15 +113,33 @@ public class Primitives
      */
     public static boolean parseBoolean(CharSequence cs, int radix)
     {
+        return parseBoolean(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses the char sequence argument as a boolean. The boolean returned represents 
+     * the value true if the char sequence argument is not null and it's digit value
+     * is 1.
+     * @param cs
+     * @param radix Must be 2.
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws IllegalArgumentException radix != 2 or if code point count != 1
+     * or if input digit is not 0/1.
+     * @see java.lang.Character#digit(int, int) 
+     * @see java.lang.Character#codePointCount(java.lang.CharSequence, int, int) 
+     */
+    public static boolean parseBoolean(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
         if (radix != 2)
         {
             throw new IllegalArgumentException("radix must be 2");
         }
-        if (Character.codePointCount(cs, 0, cs.length()) != 1)
+        if (Character.codePointCount(cs, beginIndex, endIndex) != 1)
         {
             throw new IllegalArgumentException("input length must be 1");
         }
-        int digit = Character.digit(Character.codePointAt(cs, 0), 2);
+        int digit = Character.digit(Character.codePointAt(cs, beginIndex), 2);
         switch (digit)
         {
             case 1:
@@ -125,11 +170,35 @@ public class Primitives
      */
     public static float parseFloat(CharSequence cs)
     {
+        return parseFloat(cs, 0, cs.length());
+    }
+    /**
+     * Parses float from decimal floating point representation.
+     * 
+     * <p>Input can start with '-' or '+'.
+     * <p>All numbers are decimals.
+     * <p>Decimal separator is '.'
+     * <p>Exponent separator is 'e' or 'E'
+     * <p>Examples
+     * <p>-1234.56
+     * <p>+1234.56e12
+     * <p>-1234.56E-12
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @see java.lang.Float#parseFloat(java.lang.String) 
+     * @see java.lang.Character#digit(int, int) 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * float.
+     */
+    public static float parseFloat(CharSequence cs, int beginIndex, int endIndex)
+    {
         FloatState fs = FloatState.Significand;
-        int length = cs.length();
+        int end = endIndex;
         int significand = 0;
         int sign = 1;
-        int index = 0;
+        int index = beginIndex;
         int decimal = 0;
         int exponent = 0;
         int exponentSign = 1;
@@ -144,11 +213,11 @@ public class Primitives
             sign = -1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        while (index < length)
+        while (index < end)
         {
             cp = Character.codePointAt(cs, index);
             if (Character.isBmpCodePoint(cp))
@@ -252,11 +321,35 @@ public class Primitives
      */
     public static double parseDouble(CharSequence cs)
     {
+        return parseDouble(cs, 0, cs.length());
+    }
+    /**
+     * Parses double from decimal floating point representation.
+     * 
+     * <p>Input can start with '-' or '+'.
+     * <p>All number are decimals.
+     * <p>Decimal separator is '.'
+     * <p>Exponent separator is 'e' or 'E'
+     * <p>Examples
+     * <p>-1234.56
+     * <p>+1234.56e12
+     * <p>-1234.56E-12
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @see java.lang.Double#parseDouble(java.lang.String) 
+     * @see java.lang.Character#digit(int, int) 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * double.
+     */
+    public static double parseDouble(CharSequence cs, int beginIndex, int endIndex)
+    {
         FloatState fs = FloatState.Significand;
-        int length = cs.length();
+        int end = endIndex;
         long significand = 0;
         int sign = 1;
-        int index = 0;
+        int index = beginIndex;
         int decimal = 0;
         int exponent = 0;
         int exponentSign = 1;
@@ -271,11 +364,11 @@ public class Primitives
             sign = -1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        while (index < length)
+        while (index < end)
         {
             cp = Character.codePointAt(cs, index);
             if (Character.isBmpCodePoint(cp))
@@ -388,8 +481,47 @@ public class Primitives
      */
     public static int parseInt(CharSequence cs, int radix)
     {
+        return parseInt(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses int from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseInt(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static int parseInt(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseInt(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses int from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseInt(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
         int size = Integer.SIZE;
-        int length = cs.length();
+        int end = endIndex;
         boolean twoComp = false;
         if (radix < 0)
         {
@@ -399,11 +531,11 @@ public class Primitives
         }
         else
         {
-            check(cs, radix, NumberRanges.IntRange);
+            check(cs, radix, NumberRanges.IntRange, beginIndex, endIndex);
         }
         int result = 0;
         int sign = -1;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -422,16 +554,16 @@ public class Primitives
             sign = 1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        int count = Character.codePointCount(cs, index, length);
+        int count = Character.codePointCount(cs, index, end);
         if (count == size)
         {
             twoComp = false;
         }
-        while (index < length)
+        while (index < end)
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
@@ -488,8 +620,47 @@ public class Primitives
      */
     public static long parseLong(CharSequence cs, int radix)
     {
+        return parseLong(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses long from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * long.
+     * @see java.lang.Long#parseLong(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static long parseLong(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseLong(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses long from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * long.
+     * @see java.lang.Long#parseLong(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
         int size = Long.SIZE;
-        int length = cs.length();
+        int end = endIndex;
         boolean twoComp = false;
         if (radix < 0)
         {
@@ -499,11 +670,11 @@ public class Primitives
         }
         else
         {
-            check(cs, radix, NumberRanges.LongRange);
+            check(cs, radix, NumberRanges.LongRange, beginIndex, endIndex);
         }
         long result = 0;
         int sign = -1;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -522,16 +693,16 @@ public class Primitives
             sign = 1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        int count = Character.codePointCount(cs, index, length);
+        int count = Character.codePointCount(cs, index, end);
         if (count == size)
         {
             twoComp = false;
         }
-        while (index < length)
+        while (index < end)
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
@@ -588,8 +759,47 @@ public class Primitives
      */
     public static short parseShort(CharSequence cs, int radix)
     {
+        return parseShort(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses short from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * short.
+     * @see java.lang.Short#parseShort(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static short parseShort(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseShort(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses short from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * short.
+     * @see java.lang.Short#parseShort(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
         int size = Short.SIZE;
-        int length = cs.length();
+        int end = endIndex;
         boolean twoComp = false;
         if (radix < 0)
         {
@@ -599,11 +809,11 @@ public class Primitives
         }
         else
         {
-            check(cs, radix, NumberRanges.ShortRange);
+            check(cs, radix, NumberRanges.ShortRange, beginIndex, endIndex);
         }
         short result = 0;
         int sign = -1;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -622,16 +832,16 @@ public class Primitives
             sign = 1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        int count = Character.codePointCount(cs, index, length);
+        int count = Character.codePointCount(cs, index, end);
         if (count == size)
         {
             twoComp = false;
         }
-        while (index < length)
+        while (index < end)
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
@@ -688,8 +898,47 @@ public class Primitives
      */
     public static byte parseByte(CharSequence cs, int radix)
     {
+        return parseByte(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses byte from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * byte.
+     * @see java.lang.Byte#parseByte(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static byte parseByte(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseByte(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses byte from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * byte.
+     * @see java.lang.Byte#parseByte(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
         int size = Byte.SIZE;
-        int length = cs.length();
+        int end = endIndex;
         boolean twoComp = false;
         if (radix < 0)
         {
@@ -699,11 +948,11 @@ public class Primitives
         }
         else
         {
-            check(cs, radix, NumberRanges.ByteRange);
+            check(cs, radix, NumberRanges.ByteRange, beginIndex, endIndex);
         }
         short result = 0;
         int sign = -1;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -722,16 +971,16 @@ public class Primitives
             sign = 1;
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        int count = Character.codePointCount(cs, index, length);
+        int count = Character.codePointCount(cs, index, end);
         if (count == size)
         {
             twoComp = false;
         }
-        while (index < length)
+        while (index < end)
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
@@ -786,20 +1035,38 @@ public class Primitives
      */
     public static int parseUnsignedInt(CharSequence cs, int radix)
     {
-        check(cs, radix, NumberRanges.UnsignedIntRange);
-        int length = cs.length();
+        return parseUnsignedInt(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses unsigned int from input.
+     * <p>Input can start with '+'.
+     * <p>Numeric value is according to radix
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseUnsignedInt(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static int parseUnsignedInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        check(cs, radix, NumberRanges.UnsignedIntRange, beginIndex, endIndex);
+        int end = endIndex;
         int result = 0;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
             index++;
         }
-        if (index >= length)
+        if (index >= end)
         {
             throw new NumberFormatException("unparsable number "+cs);
         }
-        while (index < length)
+        while (index < end)
         {
             result *= radix;
             cp = Character.codePointAt(cs, index);
@@ -820,7 +1087,7 @@ public class Primitives
         }
         return result;
     }
-    private static void check(CharSequence cs, int radix, CharSequence[][] range)
+    private static void check(CharSequence cs, int radix, CharSequence[][] range, int beginIndex, int endIndex)
     {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
         {
@@ -829,7 +1096,7 @@ public class Primitives
         CharSequence lower = range[radix][0];
         CharSequence upper = range[radix][1];
         int sign = 1;
-        int index = 0;
+        int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
         {
@@ -840,7 +1107,7 @@ public class Primitives
             sign = -1;
             index++;
         }
-        int count = Character.codePointCount(cs, index, cs.length());
+        int count = Character.codePointCount(cs, index, endIndex);
         cp = Character.codePointAt(cs, index);
         int digit = Character.digit(cp, radix);
         while (digit == 0 && count > 1)
