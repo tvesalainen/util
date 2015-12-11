@@ -55,7 +55,7 @@ public class RingByteBufferTest
     {
         try
         {
-            URL url = SynchronizedRingBufferTest.class.getClassLoader().getResource("test.txt");
+            URL url = RingByteBufferTest.class.getClassLoader().getResource("test.txt");
             Path path = Paths.get(url.toURI());
             FileChannel fc = FileChannel.open(path, StandardOpenOption.READ);
 
@@ -116,7 +116,7 @@ public class RingByteBufferTest
     {
         try
         {
-            URL url = SynchronizedRingBufferTest.class.getClassLoader().getResource("nmea.txt");
+            URL url = RingByteBufferTest.class.getClassLoader().getResource("nmea.txt");
             Path path = Paths.get(url.toURI());
             File file = path.toFile();
             FileChannel fc = FileChannel.open(path, StandardOpenOption.READ);
