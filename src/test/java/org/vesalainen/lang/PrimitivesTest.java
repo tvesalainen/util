@@ -51,6 +51,7 @@ public class PrimitivesTest
     {
         testEquals(0F, Primitives.parseFloat("0"));
         testEquals(123456.789F, Primitives.parseFloat("123456.789"));
+        testEquals(123456.789F, Primitives.parseFloat("123123456.789123", 3, 13));
         testEquals(123456.789F, Primitives.parseFloat("123456789E-3"));
         testEquals(123456.789F, Primitives.parseFloat("+123456.789"));
         testEquals(123456.789F, Primitives.parseFloat("+123456789E-3"));
@@ -93,6 +94,7 @@ public class PrimitivesTest
     {
         testEquals(0, Primitives.parseDouble("0"));
         testEquals(123456.789, Primitives.parseDouble("123456.789"));
+        testEquals(123456.789, Primitives.parseDouble("123123456.789123", 3, 13));
         testEquals(123456.789, Primitives.parseDouble("123456789E-3"));
         testEquals(-123456.789, Primitives.parseDouble("-123456.789"));
         testEquals(-123456.789, Primitives.parseDouble("-123456789E-3"));
@@ -501,6 +503,7 @@ public class PrimitivesTest
         String minDec = Integer.toString(Integer.MIN_VALUE);
         assertEquals(0, Primitives.parseInt("0"));
         assertEquals(473, Primitives.parseInt("473"));
+        assertEquals(473, Primitives.parseInt("123473123", 3, 6));
         assertEquals(42, Primitives.parseInt("+42"));
         assertEquals(0, Primitives.parseInt("-0"));
         assertEquals(Integer.MAX_VALUE, Primitives.parseInt(maxDec));
@@ -548,6 +551,7 @@ public class PrimitivesTest
         String minDec = Long.toString(Long.MIN_VALUE);
         assertEquals(0, Primitives.parseLong("0"));
         assertEquals(473, Primitives.parseLong("473"));
+        assertEquals(473, Primitives.parseLong("123473123", 3, 6));
         assertEquals(42, Primitives.parseLong("+42"));
         assertEquals(0, Primitives.parseLong("-0"));
         assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxDec));
@@ -589,6 +593,7 @@ public class PrimitivesTest
         String minDec = Short.toString(Short.MIN_VALUE);
         assertEquals(0, Primitives.parseShort("0"));
         assertEquals(473, Primitives.parseShort("473"));
+        assertEquals(473, Primitives.parseShort("123473123", 3, 6));
         assertEquals(42, Primitives.parseShort("+42"));
         assertEquals(0, Primitives.parseShort("-0"));
         assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxDec));
@@ -630,6 +635,7 @@ public class PrimitivesTest
         String minDec = Byte.toString(Byte.MIN_VALUE);
         assertEquals(0, Primitives.parseByte("0"));
         assertEquals(73, Primitives.parseByte("73"));
+        assertEquals(73, Primitives.parseByte("12373123", 3, 5));
         assertEquals(42, Primitives.parseByte("+42"));
         assertEquals(0, Primitives.parseByte("-0"));
         assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxDec));
@@ -740,6 +746,7 @@ public class PrimitivesTest
     public void testParseChar()
     {
         assertEquals('A', Primitives.parseChar("A"));
+        assertEquals('A', Primitives.parseChar("ZAC", 1, 2));
         try
         {
             Primitives.parseChar("qwerty");
@@ -765,6 +772,7 @@ public class PrimitivesTest
     public void testParseBoolean_CharSequence()
     {
         assertEquals(true, Primitives.parseBoolean("True"));
+        assertEquals(true, Primitives.parseBoolean("FalseTrueFalse", 5, 9));
         assertEquals(true, Primitives.parseBoolean("true"));
         assertEquals(false, Primitives.parseBoolean("qwerty"));
     }
@@ -776,6 +784,7 @@ public class PrimitivesTest
     public void testParseBoolean_CharSequence_int()
     {
         assertEquals(true, Primitives.parseBoolean("1", 2));
+        assertEquals(true, Primitives.parseBoolean("010", 2, 1, 2));
         assertEquals(false, Primitives.parseBoolean("0", 2));
         try
         {
