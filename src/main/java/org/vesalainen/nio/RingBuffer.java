@@ -314,11 +314,21 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     {
         return (char) getAt(index);
     }
-
+    /**
+     * Note that implementation uses StringBuilder to create String as CharSequence.
+     * @param start
+     * @param end
+     * @return 
+     */
     @Override
     public CharSequence subSequence(int start, int end)
     {
-        throw new UnsupportedOperationException("Not supported.");
+        StringBuilder sb = new StringBuilder();
+        for (int ii=start;ii<end;ii++)
+        {
+            sb.append((char)getAt(ii));
+        }
+        return sb.toString();
     }
 
     private abstract class Splitter<T>
