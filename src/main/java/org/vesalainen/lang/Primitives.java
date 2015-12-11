@@ -215,7 +215,7 @@ public class Primitives
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         while (index < end)
         {
@@ -266,13 +266,13 @@ public class Primitives
                     }
                     else
                     {
-                        throw new NumberFormatException("no float "+cs);
+                        throw new NumberFormatException("no float "+cs.subSequence(beginIndex, endIndex));
                     }
                     break;
                 case '.':
                     if (fs != FloatState.Significand)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     fs = FloatState.Decimal;
                     break;
@@ -280,21 +280,21 @@ public class Primitives
                 case 'E':
                     if (fs == FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     fs = FloatState.Exponent;
                     break;
                 case '-':
                     if (fs != FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     exponentSign = -1;
                     break;
                 case '+':
                     if (fs != FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     break;
             }
@@ -366,7 +366,7 @@ public class Primitives
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         while (index < end)
         {
@@ -417,13 +417,13 @@ public class Primitives
                     }
                     else
                     {
-                        throw new NumberFormatException("no float "+cs);
+                        throw new NumberFormatException("no float "+cs.subSequence(beginIndex, endIndex));
                     }
                     break;
                 case '.':
                     if (fs != FloatState.Significand)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     fs = FloatState.Decimal;
                     break;
@@ -431,21 +431,21 @@ public class Primitives
                 case 'E':
                     if (fs == FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     fs = FloatState.Exponent;
                     break;
                 case '-':
                     if (fs != FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     exponentSign = -1;
                     break;
                 case '+':
                     if (fs != FloatState.Exponent)
                     {
-                        throw new NumberFormatException("cannot convert "+cs+" to float");
+                        throw new NumberFormatException("cannot convert "+cs.subSequence(beginIndex, endIndex)+" to float");
                     }
                     break;
             }
@@ -527,7 +527,7 @@ public class Primitives
         {
             twoComp = true;
             radix = -radix;
-            check(cs, size);
+            check(cs, size, beginIndex, endIndex);
         }
         else
         {
@@ -541,7 +541,7 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             index++;
         }
@@ -549,14 +549,14 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             sign = 1;
             index++;
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         int count = Character.codePointCount(cs, index, end);
         if (count == size)
@@ -570,7 +570,7 @@ public class Primitives
             int digit = Character.digit(cp, radix);
             if (digit == -1)
             {
-                throw new NumberFormatException("unparsable number "+cs);
+                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
             }
             result -= digit;
             if (Character.isBmpCodePoint(cp))
@@ -666,7 +666,7 @@ public class Primitives
         {
             twoComp = true;
             radix = -radix;
-            check(cs, size);
+            check(cs, size, beginIndex, endIndex);
         }
         else
         {
@@ -680,7 +680,7 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             index++;
         }
@@ -688,14 +688,14 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             sign = 1;
             index++;
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         int count = Character.codePointCount(cs, index, end);
         if (count == size)
@@ -709,7 +709,7 @@ public class Primitives
             int digit = Character.digit(cp, radix);
             if (digit == -1)
             {
-                throw new NumberFormatException("unparsable number "+cs);
+                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
             }
             result -= digit;
             if (Character.isBmpCodePoint(cp))
@@ -805,7 +805,7 @@ public class Primitives
         {
             twoComp = true;
             radix = -radix;
-            check(cs, size);
+            check(cs, size, beginIndex, endIndex);
         }
         else
         {
@@ -819,7 +819,7 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             index++;
         }
@@ -827,14 +827,14 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             sign = 1;
             index++;
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         int count = Character.codePointCount(cs, index, end);
         if (count == size)
@@ -848,7 +848,7 @@ public class Primitives
             int digit = Character.digit(cp, radix);
             if (digit == -1)
             {
-                throw new NumberFormatException("unparsable number "+cs);
+                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
             }
             result -= digit;
             if (Character.isBmpCodePoint(cp))
@@ -944,7 +944,7 @@ public class Primitives
         {
             twoComp = true;
             radix = -radix;
-            check(cs, size);
+            check(cs, size, beginIndex, endIndex);
         }
         else
         {
@@ -958,7 +958,7 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             index++;
         }
@@ -966,14 +966,14 @@ public class Primitives
         {
             if (twoComp)
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs);
+                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
             sign = 1;
             index++;
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         int count = Character.codePointCount(cs, index, end);
         if (count == size)
@@ -987,7 +987,7 @@ public class Primitives
             int digit = Character.digit(cp, radix);
             if (digit == -1)
             {
-                throw new NumberFormatException("unparsable number "+cs);
+                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
             }
             result -= digit;
             if (Character.isBmpCodePoint(cp))
@@ -1064,7 +1064,7 @@ public class Primitives
         }
         if (index >= end)
         {
-            throw new NumberFormatException("unparsable number "+cs);
+            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         while (index < end)
         {
@@ -1073,7 +1073,7 @@ public class Primitives
             int digit = Character.digit(cp, radix);
             if (digit == -1)
             {
-                throw new NumberFormatException("unparsable number "+cs);
+                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
             }
             result += digit;
             if (Character.isBmpCodePoint(cp))
@@ -1128,36 +1128,36 @@ public class Primitives
         {
             if (Character.codePointAt(lower, 0) != '-')
             {
-                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
             }
             if (count+1 > lower.length())
             {
-                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
             }
-            if (count+1 == lower.length() && isGreater(cs, radix, lower))
+            if (count+1 == lower.length() && isGreater(cs, radix, lower, beginIndex, endIndex))
             {
-                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
             }
         }
         else
         {
             if (count > upper.length())
             {
-                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
             }
-            if (count == upper.length() && isGreater(cs, radix, upper))
+            if (count == upper.length() && isGreater(cs, radix, upper, beginIndex, endIndex))
             {
-                throw new NumberFormatException(cs+" not in range["+lower+" - "+upper+"]");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
             }
         }
     }
-    private static boolean isGreater(CharSequence cs, int radix, CharSequence range)
+    private static boolean isGreater(CharSequence cs, int radix, CharSequence range, int beginIndex, int endIndex)
     {
-        int len = cs.length();
-        int count = Character.codePointCount(cs, 0, len);
+        int end = endIndex;
+        int count = Character.codePointCount(cs, beginIndex, end);
         int ii = 0;
         int jj = 0;
-        switch (cs.charAt(0))
+        switch (cs.charAt(beginIndex))
         {
             case '-':
                 ii = 1;
@@ -1173,7 +1173,7 @@ public class Primitives
             int d1 = Character.digit(cp1, radix);
             if (d1 == -1)
             {
-                throw new NumberFormatException(cs+"not valid number");
+                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+"not valid number");
             }
             int cp2 = Character.codePointAt(range, ii);
             int d2 = Character.digit(cp2, radix);
@@ -1196,14 +1196,14 @@ public class Primitives
         }
         return false;
     }
-    private static void check(CharSequence cs, int size)
+    private static void check(CharSequence cs, int size, int beginIndex, int endIndex)
     {
-        int len = cs.length();
-        int index = 0;
-        int count = Character.codePointCount(cs, index, cs.length());
+        int end = endIndex;
+        int index = beginIndex;
+        int count = Character.codePointCount(cs, index, end);
         if (count > size)
         {
-            throw new NumberFormatException(cs+"not valid number");
+            throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+"not valid number");
         }
     }
 }
