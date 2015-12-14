@@ -273,12 +273,12 @@ public class Processor extends AbstractProcessor
                     else
                     {
                         if (
-                                name.equals("isEmpty") && 
+                                name.equals("hasObservers") && 
                                 parameters.size() == 0 &&
                                 returnType.getKind() == BOOLEAN
                                 )
                         {
-                            cm.println("return observers.isEmpty();");
+                            cm.println("return !observers.isEmpty();");
                         }
                         else
                         {
