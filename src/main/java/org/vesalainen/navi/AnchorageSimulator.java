@@ -33,7 +33,7 @@ public class AnchorageSimulator extends TimerTask
 {
     private final URL url;
     private Timer timer;
-    private AnchorWatch anchorWatch;
+    private LocationSource locationSource;
     private DataInputStream dis;
 
     public AnchorageSimulator()
@@ -52,15 +52,15 @@ public class AnchorageSimulator extends TimerTask
     }
     /**
      * Starts simulating anchorige.
-     * @param anchorWatch
+     * @param locationSource
      * @param period Update rate in millis.
      * @param isDaemon Sets timer thread. In single thread this should be false. 
      * This parament is used only if external Timer was not provided!
      * @throws IOException 
      */
-    public void simulate(AnchorWatch anchorWatch, long period, boolean isDaemon) throws IOException
+    public void simulate(LocationSource locationSource, long period, boolean isDaemon) throws IOException
     {
-        this.anchorWatch = anchorWatch;
+        this.locationSource = locationSource;
         dis = new DataInputStream(new BufferedInputStream(url.openStream()));
         if (timer == null)
         {
@@ -76,7 +76,7 @@ public class AnchorageSimulator extends TimerTask
         {
             float lon = dis.readFloat();
             float lat = dis.readFloat();
-            anchorWatch.update(lon, lat, System.currentTimeMillis(), 1);
+            locationSource.update(lon, lat, System.currentTimeMillis(), 1);
         }
         catch (EOFException ex)
         {

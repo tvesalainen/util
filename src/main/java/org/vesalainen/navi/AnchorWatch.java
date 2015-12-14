@@ -32,7 +32,7 @@ import org.vesalainen.math.Point;
  *
  * @author Timo Vesalainen
  */
-public class AnchorWatch implements Serializable
+public class AnchorWatch implements Serializable, LocationObserver
 {
     private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
@@ -73,10 +73,12 @@ public class AnchorWatch implements Serializable
         
     }
 
+    @Override
     public void update(double longitude, double latitude, long time)
     {
         update(longitude, latitude, time, Double.NaN);
     }
+    @Override
     public void update(double longitude, double latitude, long time, double accuracy)
     {
         if (localLongitude == null)
@@ -99,6 +101,7 @@ public class AnchorWatch implements Serializable
         lastLatitude = latitude;
         lastTime = time;
     }
+    @Override
     public void update(double longitude, double latitude, long time, double accuracy, double speed)
     {
         if (localLongitude == null)

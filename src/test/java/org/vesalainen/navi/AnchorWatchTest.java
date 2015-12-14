@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -49,19 +51,21 @@ public class AnchorWatchTest
     @Test
     public void testSimulate() throws InterruptedException
     {
-        Plotter plotter = new Plotter(1000, 1000);
-        plotter.setDir(dir);
-        AnchorWatch aw = new AnchorWatch();
-        Watcher testWatcher = new TestWatcher();
-        aw.addWatcher(testWatcher);
-        AnchorageSimulator simu = new AnchorageSimulator();
         try
         {
-            simu.simulate(aw, 10, false);
+            Plotter plotter = new Plotter(1000, 1000);
+            plotter.setDir(dir);
+            AnchorWatch aw = new AnchorWatch();
+            Watcher testWatcher = new TestWatcher();
+            aw.addWatcher(testWatcher);
+            SimulatorLocationSource simulator = new SimulatorLocationSource(null, 10, false);
+            LocationSource.register("simu", simulator);
+            LocationSource.addObserver(aw);
+            LocationSource.activate("simu");
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            fail(ex.getMessage());
+            Logger.getLogger(AnchorWatchTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     /**
