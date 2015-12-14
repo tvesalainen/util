@@ -273,52 +273,34 @@ public class Processor extends AbstractProcessor
                     else
                     {
                         if (
-                                name.equals("rollback") && 
-                                parameters.size() == 1 &&
-                                "java.lang.String".equals(parameters.get(0).asType().toString()) &&
-                                returnType.getKind() == VOID
+                                name.equals("isEmpty") && 
+                                parameters.size() == 0 &&
+                                returnType.getKind() == BOOLEAN
                                 )
                         {
-                            cm.println("clear();");
-                            cm.println("for (Transactional tr : transactionalObservers)");
-                            cm.println("{");
-                            CodePrinter ctr = cm.createSub("}");
-                            ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
-                            ctr.flush();
+                            cm.println("return observers.isEmpty();");
                         }
                         else
                         {
-                            String sa = String.class.getCanonicalName()+"[]";
                             if (
-                                    name.equals("addObserver") && 
-                                    parameters.size() == 2 &&
-                                    PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
-                                    sa.equals(parameters.get(1).asType().toString()) &&
+                                    name.equals("rollback") && 
+                                    parameters.size() == 1 &&
+                                    "java.lang.String".equals(parameters.get(0).asType().toString()) &&
                                     returnType.getKind() == VOID
                                     )
                             {
-                                Name arg0 = parameters.get(0).getSimpleName();
-                                Name arg1 = parameters.get(1).getSimpleName();
-                                cm.println("super.addObserver("+arg0+");");
-                                cm.println("for (String p : "+arg1+")");
+                                cm.println("clear();");
+                                cm.println("for (Transactional tr : transactionalObservers)");
                                 cm.println("{");
-                                CodePrinter cao = cm.createSub("}");
-                                cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
-                                cao.println("for (Prop pr : Prop.values())");
-                                cao.println("{");
-                                CodePrinter caoo = cao.createSub("}");
-                                caoo.println("if (pr.name().startsWith(str))");
-                                caoo.println("{");
-                                CodePrinter caooo = caoo.createSub("}");
-                                caooo.println("observers.add(pr, "+arg0+");");
-                                caooo.flush();
-                                caoo.flush();
-                                cao.flush();
+                                CodePrinter ctr = cm.createSub("}");
+                                ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
+                                ctr.flush();
                             }
                             else
                             {
+                                String sa = String.class.getCanonicalName()+"[]";
                                 if (
-                                        name.equals("removeObserver") && 
+                                        name.equals("addObserver") && 
                                         parameters.size() == 2 &&
                                         PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
                                         sa.equals(parameters.get(1).asType().toString()) &&
@@ -327,7 +309,7 @@ public class Processor extends AbstractProcessor
                                 {
                                     Name arg0 = parameters.get(0).getSimpleName();
                                     Name arg1 = parameters.get(1).getSimpleName();
-                                    cm.println("super.removeObserver("+arg0+");");
+                                    cm.println("super.addObserver("+arg0+");");
                                     cm.println("for (String p : "+arg1+")");
                                     cm.println("{");
                                     CodePrinter cao = cm.createSub("}");
@@ -338,14 +320,43 @@ public class Processor extends AbstractProcessor
                                     caoo.println("if (pr.name().startsWith(str))");
                                     caoo.println("{");
                                     CodePrinter caooo = caoo.createSub("}");
-                                    caooo.println("observers.remove(pr);");
+                                    caooo.println("observers.add(pr, "+arg0+");");
                                     caooo.flush();
                                     caoo.flush();
                                     cao.flush();
                                 }
                                 else
                                 {
-                                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                    if (
+                                            name.equals("removeObserver") && 
+                                            parameters.size() == 2 &&
+                                            PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
+                                            sa.equals(parameters.get(1).asType().toString()) &&
+                                            returnType.getKind() == VOID
+                                            )
+                                    {
+                                        Name arg0 = parameters.get(0).getSimpleName();
+                                        Name arg1 = parameters.get(1).getSimpleName();
+                                        cm.println("super.removeObserver("+arg0+");");
+                                        cm.println("for (String p : "+arg1+")");
+                                        cm.println("{");
+                                        CodePrinter cao = cm.createSub("}");
+                                        cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
+                                        cao.println("for (Prop pr : Prop.values())");
+                                        cao.println("{");
+                                        CodePrinter caoo = cao.createSub("}");
+                                        caoo.println("if (pr.name().startsWith(str))");
+                                        caoo.println("{");
+                                        CodePrinter caooo = caoo.createSub("}");
+                                        caooo.println("observers.remove(pr);");
+                                        caooo.flush();
+                                        caoo.flush();
+                                        cao.flush();
+                                    }
+                                    else
+                                    {
+                                        cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                    }
                                 }
                             }
                         }

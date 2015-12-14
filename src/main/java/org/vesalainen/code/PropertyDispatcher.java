@@ -106,6 +106,11 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
         }
     }
     /**
+     * Return true if no observers
+     * @return 
+     */
+    public abstract boolean isEmpty();
+    /**
      * Creates a instance of a class PropertyDispatcher subclass.
      * @param <T> Type of PropertyDispatcher subclass
      * @param cls PropertyDispatcher subclass class

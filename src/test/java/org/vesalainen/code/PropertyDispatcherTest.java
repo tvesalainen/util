@@ -42,8 +42,9 @@ public class PropertyDispatcherTest
         PS ps = new PS();
         PD pd = PD.getInstance(PD.class);
         assertNotNull(pd);
-        
+        assertTrue(pd.isEmpty());
         pd.addObserver(ps, "string", "i", "d");
+        assertFalse(pd.isEmpty());
         pd.removeObserver(ps, "d");
         pd.setD(12.3);
         assertNull(ps.get("d"));
