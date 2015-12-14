@@ -348,7 +348,7 @@ public class Processor extends AbstractProcessor
                                         caoo.println("if (pr.name().startsWith(str))");
                                         caoo.println("{");
                                         CodePrinter caooo = caoo.createSub("}");
-                                        caooo.println("observers.remove(pr);");
+                                        caooo.println("observers.removeItem(pr, "+arg0+");");
                                         caooo.flush();
                                         caoo.flush();
                                         cao.flush();
