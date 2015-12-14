@@ -61,5 +61,12 @@ public interface MapList<M, L> extends Map<M,List<L>>
      * @return 
      */
     List<L> set(M key, Collection<L> value);
-    
+    /**
+     * Removes the first item from list. If list becomes empty it is removed from 
+     * map.
+     * @param key
+     * @param value
+     * @return 
+     */
+    boolean removeItem(M key, L value);
 }

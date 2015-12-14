@@ -99,4 +99,16 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
         }
     }
 
+    @Override
+    public boolean removeItem(M key, S value)
+    {
+        Set<S> set = get(key);
+        boolean res = set.remove(value);
+        if (set.isEmpty())
+        {
+            remove(key);
+        }
+        return res;
+    }
+
 }

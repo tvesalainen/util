@@ -60,5 +60,12 @@ public interface MapSet<M, S> extends Map<M,Set<S>>
      * @return 
      */
     Set<S> set(M key, Collection<S> value);
-    
+    /**
+     * Removes the item from set. If set becomes empty it is removed from 
+     * map.
+     * @param key
+     * @param value
+     * @return 
+     */
+    boolean removeItem(M key, S value);
 }

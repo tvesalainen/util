@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * HashMap and ArrayList based implementation of MapList
@@ -114,6 +113,18 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
         {
             add(entry.getKey(), entry.getValue());
         }
+    }
+
+    @Override
+    public boolean removeItem(M key, L value)
+    {
+        List<L> list = get(key);
+        boolean res = list.remove(value);
+        if (list.isEmpty())
+        {
+            remove(key);
+        }
+        return res;
     }
 
 }

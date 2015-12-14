@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -116,6 +115,18 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
         {
             add(entry.getKey(), entry.getValue());
         }
+    }
+
+    @Override
+    public boolean removeItem(M key, L value)
+    {
+        List<L> list = get(key);
+        boolean res = list.remove(value);
+        if (list.isEmpty())
+        {
+            remove(key);
+        }
+        return res;
     }
 
 }
