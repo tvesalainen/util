@@ -37,18 +37,22 @@ public class PropertyDispatcherTest
      * Test of getInstance method, of class PropertyDispatcher.
      */
     @Test
-    public void testGetInstance()
+    public void test1()
     {
         PS ps = new PS();
         PD pd = PD.getInstance(PD.class);
         assertNotNull(pd);
         
-        pd.addObserver(ps, "string", "i");
+        pd.addObserver(ps, "string", "i", "d");
+        pd.removeObserver(ps, "d");
+        pd.setD(12.3);
+        assertNull(ps.get("d"));
         pd.setI(123);
-        assertEquals(null, ps.get("i"));
+        assertNull(ps.get("i"));
         pd.setString("qwerty");
         assertNull(ps.get("string"));
         pd.commit(null);
+        assertNull(ps.get("d"));
         assertEquals(123, ps.get("i"));
         assertEquals("qwerty", ps.get("string"));
         pd.setI(456);

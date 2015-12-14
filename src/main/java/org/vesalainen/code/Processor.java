@@ -317,7 +317,36 @@ public class Processor extends AbstractProcessor
                             }
                             else
                             {
-                                cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                if (
+                                        name.equals("removeObserver") && 
+                                        parameters.size() == 2 &&
+                                        PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
+                                        sa.equals(parameters.get(1).asType().toString()) &&
+                                        returnType.getKind() == VOID
+                                        )
+                                {
+                                    Name arg0 = parameters.get(0).getSimpleName();
+                                    Name arg1 = parameters.get(1).getSimpleName();
+                                    cm.println("super.removeObserver("+arg0+");");
+                                    cm.println("for (String p : "+arg1+")");
+                                    cm.println("{");
+                                    CodePrinter cao = cm.createSub("}");
+                                    cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
+                                    cao.println("for (Prop pr : Prop.values())");
+                                    cao.println("{");
+                                    CodePrinter caoo = cao.createSub("}");
+                                    caoo.println("if (pr.name().startsWith(str))");
+                                    caoo.println("{");
+                                    CodePrinter caooo = caoo.createSub("}");
+                                    caooo.println("observers.remove(pr);");
+                                    caooo.flush();
+                                    caoo.flush();
+                                    cao.flush();
+                                }
+                                else
+                                {
+                                    cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                }
                             }
                         }
                     }

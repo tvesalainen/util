@@ -91,6 +91,21 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
         }
     }
     /**
+     * Remove a PropertySetter observer for properties that have given prefix. As
+     * a consequence ALL properties are removed if empty prefix is used.
+     * @param observer 
+     * @param prefixes 
+     */
+    public abstract void removeObserver(PropertySetter observer, String... prefixes);
+    protected void removeObserver(PropertySetter observer)
+    {
+        if (observer instanceof Transactional)
+        {
+            Transactional tr = (Transactional) observer;
+            transactionalObservers.remove(tr);
+        }
+    }
+    /**
      * Creates a instance of a class PropertyDispatcher subclass.
      * @param <T> Type of PropertyDispatcher subclass
      * @param cls PropertyDispatcher subclass class
