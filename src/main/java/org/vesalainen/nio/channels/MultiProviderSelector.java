@@ -55,7 +55,7 @@ public class MultiProviderSelector extends AbstractSelector
     private IOException ioException;
     private final Semaphore semaphore = new Semaphore(0);
     private final Semaphore wrapperSemaphore = new Semaphore(0);
-    private AtomicInteger wrapperPermissions = new AtomicInteger();
+    private final AtomicInteger wrapperPermissions = new AtomicInteger();
     private final ReentrantLock lock = new ReentrantLock();
     private boolean wait;
     private final JavaLogging log;
@@ -111,7 +111,7 @@ public class MultiProviderSelector extends AbstractSelector
                 map.put(provider, selector);
                 SelectorWrapper sw = new SelectorWrapper(selector);
                 wrapperMap.put(selector, sw);
-                Thread thread = new Thread(sw);
+                Thread thread = new Thread(sw, MultiProviderSelector.class.getSimpleName());
                 threadMap.put(selector, thread);
                 sk = ch.register(selector, ops);
                 wrapperPermissions.incrementAndGet();
