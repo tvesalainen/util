@@ -26,7 +26,7 @@ import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * A class that stores AutoCloseable objects. This class implements AutoCloseable.
- * When this classes close methods is called it will close all stored object.
+ * When this classes close methods is called it will close all stored objects.
  * 
  * <p>This class has weak references to stored object. Therefore it is not necessary
  * to remove objects not-in-use.
@@ -44,6 +44,7 @@ public class AutoCloseableList<T extends AutoCloseable> extends JavaLogging impl
 
     public AutoCloseableList(Collection<T> collection)
     {
+        setLogger(this.getClass());
         for (T t : collection)
         {
             add(t);
