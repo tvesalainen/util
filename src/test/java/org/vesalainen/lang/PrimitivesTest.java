@@ -796,4 +796,10 @@ public class PrimitivesTest
         }
     }
 
+    @Test
+    public void testextra()
+    {
+        assertEquals(4100.0013F, Primitives.parseFloat("$GPRMC,065010,A,1555.6283,N,04100.0013,W,4.9,265,241215,17,W*43", 28, 38), 1e-15);
+        
+    }
 }
