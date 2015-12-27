@@ -64,6 +64,14 @@ public class NavisTest
     }
     
     @Test
+    public void testNormalizeAngle()
+    {
+        assertEquals(45, Navis.normalizeAngle(45), Epsilon);
+        assertEquals(10, Navis.normalizeAngle(370), Epsilon);
+        assertEquals(350, Navis.normalizeAngle(-10), Epsilon);
+    }
+    
+    @Test
     public void testFathom()
     {
         assertEquals(1.8288, Navis.fathomsToMeters(1), Epsilon);
