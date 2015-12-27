@@ -180,6 +180,19 @@ public class Navis
         return speed;
     }
     /**
+     * Normalizes angle to be in 0 - 360
+     * @param deg
+     * @return 
+     */
+    public static final double normalizeAngle(double deg)
+    {
+        while (deg < 0)
+        {
+            deg += 360;
+        }
+        return deg % 360;
+    }
+    /**
      * Converts fathoms to meters
      * @param fathom
      * @return 
