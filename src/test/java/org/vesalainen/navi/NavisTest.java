@@ -37,6 +37,34 @@ public class NavisTest
     }
 
     @Test
+    public void testDeltaLatitude1()
+    {
+        assertEquals(1, Navis.deltaLatitude(60, 0), Epsilon);
+        assertEquals(0, Navis.deltaLatitude(60, 270), Epsilon);
+        assertEquals(-1, Navis.deltaLatitude(60, 180), Epsilon);
+        assertEquals(0.5, Navis.deltaLatitude(60, 60), Epsilon);
+    }
+    
+    @Test
+    public void testDeltaLongitude1()
+    {
+        assertEquals(0, Navis.deltaLongitude(60, 60, 0), Epsilon);
+        assertEquals(2, Navis.deltaLongitude(60, 60, 90), Epsilon);
+        assertEquals(-2, Navis.deltaLongitude(60, 60, 270), Epsilon);
+        assertEquals(-1.0/30.0, Navis.deltaLongitude(60, 1, 270), Epsilon);
+        assertEquals(1.0, Navis.deltaLongitude(60, 60, 30), Epsilon);
+    }
+    
+    @Test
+    public void testDeltaLongitude2()
+    {
+        assertEquals(0, Navis.deltaLongitude(0, 60, 0), Epsilon);
+        assertEquals(1, Navis.deltaLongitude(0, 60, 90), Epsilon);
+        assertEquals(-1, Navis.deltaLongitude(0, 60, 270), Epsilon);
+        assertEquals(0.5, Navis.deltaLongitude(0, 60, 30), Epsilon);
+    }
+    
+    @Test
     public void testBearing1()
     {
         WP wp1 = new WP(0, 60, 25);
@@ -69,6 +97,7 @@ public class NavisTest
         assertEquals(45, Navis.normalizeAngle(45), Epsilon);
         assertEquals(10, Navis.normalizeAngle(370), Epsilon);
         assertEquals(350, Navis.normalizeAngle(-10), Epsilon);
+        assertEquals(350, Navis.normalizeAngle(-370), Epsilon);
     }
     
     @Test

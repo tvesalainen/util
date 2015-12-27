@@ -34,6 +34,23 @@ public class Navis
     public static final double HoursInSecond = TimeUnit.HOURS.toSeconds(1);
     public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSecond;
     /**
+     * Return latitude change after moving distance at bearing
+     * @param latitude
+     * @param distance  NM
+     * @param bearing   Degrees
+     * @return 
+     */
+    public static final double deltaLatitude(double distance, double bearing)
+    {
+        return (Math.cos(Math.toRadians(bearing))*distance)/60;
+    }
+    public static final double deltaLongitude(double latitude, double distance, double bearing)
+    {
+        double departure = departure(latitude);
+        double sin = Math.sin(Math.toRadians(bearing));
+        return (sin*distance)/(60*departure);
+    }
+    /**
      * Return average departure of two waypoints
      * @param loc1
      * @param loc2
@@ -93,6 +110,18 @@ public class Navis
      */
     public static final double bearing(double lat1, double lon1, double lat2, double lon2)
     {
+        return Math.toDegrees(radBearing(lat1, lon1, lat2, lon2));
+    }
+    /**
+     * Returns bearing from (lat1, lon1) to (lat2, lon2) in radians
+     * @param lat1
+     * @param lon1
+     * @param lat2
+     * @param lon2
+     * @return 
+     */
+    public static final double radBearing(double lat1, double lon1, double lat2, double lon2)
+    {
         checkLatitude(lat1);
         checkLongitude(lon1);
         checkLatitude(lat2);
@@ -105,7 +134,7 @@ public class Navis
         {
             dd += 2*Math.PI;
         }
-        return Math.toDegrees(dd);
+        return dd;
     }
     /**
      * Return distance between wp1 and wp2 in NM
@@ -186,8 +215,9 @@ public class Navis
      */
     public static final double normalizeAngle(double deg)
     {
-        while (deg < 0)
+        if (deg < 0)
         {
+            deg %= 360;
             deg += 360;
         }
         return deg % 360;
