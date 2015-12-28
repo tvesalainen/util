@@ -111,12 +111,21 @@ public class Vessel
             centerLongitude = Double.NaN;
         }
     }
+    public static final double estimatedDistance(Vessel v1, Vessel v2, long et)
+    {
+        return distance(
+                v1.estimatedLatitude(et),
+                v1.estimatedLongitude(et),
+                v2.estimatedLatitude(et),
+                v2.estimatedLongitude(et)
+        );
+    }
     /**
      * Returns estimated latitude at et
      * @param et
      * @return 
      */
-    public double estimateLatitude(long et)
+    public final double estimatedLatitude(long et)
     {
         checkState();
         if (rateOfTurn == 0)
@@ -135,7 +144,7 @@ public class Vessel
      * @param et
      * @return 
      */
-    public double estimateLongitude(long et)
+    public final double estimatedLongitude(long et)
     {
         checkState();
         if (rateOfTurn == 0)

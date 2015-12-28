@@ -35,11 +35,11 @@ public class VesselTest
     {
         Vessel v = new Vessel();
         v.update(0, 60, 25, 8, 90, 0);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60, v.estimateLatitude(q), Epsilon);
-        assertEquals(25+2.0/30.0, v.estimateLongitude(q), Epsilon);
+        assertEquals(60, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25+2.0/30.0, v.estimatedLongitude(q), Epsilon);
     }
     
     @Test
@@ -52,11 +52,11 @@ public class VesselTest
         assertEquals(expRad, v.getRadius(), Epsilon);
         assertEquals(60-d, v.getCenterLatitude(), Epsilon);
         assertEquals(25, v.getCenterLongitude(), Epsilon);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
-        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
+        assertEquals(60-d, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimatedLongitude(q), Epsilon);
     }
     
     @Test
@@ -69,11 +69,11 @@ public class VesselTest
         assertEquals(expRad, v.getRadius(), Epsilon);
         assertEquals(60+d, v.getCenterLatitude(), Epsilon);
         assertEquals(25, v.getCenterLongitude(), Epsilon);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60+d, v.estimateLatitude(q), Epsilon);
-        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
+        assertEquals(60+d, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimatedLongitude(q), Epsilon);
     }
     
     @Test
@@ -81,11 +81,11 @@ public class VesselTest
     {
         Vessel v = new Vessel();
         v.update(0, 60, 25, 8, 180, 0);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60-2.0/60.0, v.estimateLatitude(q), Epsilon);
-        assertEquals(25, v.estimateLongitude(q), Epsilon);
+        assertEquals(60-2.0/60.0, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25, v.estimatedLongitude(q), Epsilon);
     }
     
     @Test
@@ -98,11 +98,11 @@ public class VesselTest
         assertEquals(expRad, v.getRadius(), Epsilon);
         assertEquals(60, v.getCenterLatitude(), Epsilon);
         assertEquals(25-d*2, v.getCenterLongitude(), Epsilon);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
-        assertEquals(25-d*2, v.estimateLongitude(q), Epsilon);
+        assertEquals(60-d, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25-d*2, v.estimatedLongitude(q), Epsilon);
     }
     
     @Test
@@ -115,11 +115,11 @@ public class VesselTest
         assertEquals(expRad, v.getRadius(), Epsilon);
         assertEquals(60, v.getCenterLatitude(), Epsilon);
         assertEquals(25+d*2, v.getCenterLongitude(), Epsilon);
-        assertEquals(60, v.estimateLatitude(0), Epsilon);
-        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        assertEquals(60, v.estimatedLatitude(0), Epsilon);
+        assertEquals(25, v.estimatedLongitude(0), Epsilon);
         long q = 15*60000;
-        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
-        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
+        assertEquals(60-d, v.estimatedLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimatedLongitude(q), Epsilon);
     }
     
 }
