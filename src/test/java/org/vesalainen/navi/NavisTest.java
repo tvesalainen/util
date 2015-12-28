@@ -92,6 +92,24 @@ public class NavisTest
     }
     
     @Test
+    public void testAddLongitude()
+    {
+        assertEquals(26, Navis.addLongitude(25, 1), Epsilon);
+        assertEquals(-24, Navis.addLongitude(-25, 1), Epsilon);
+        assertEquals(-179, Navis.addLongitude(179, 2), Epsilon);
+        assertEquals(-1, Navis.addLongitude(1, -2), Epsilon);
+    }
+    @Test
+    public void testGHA()
+    {
+        assertEquals(45, Navis.longitudeToGHA(-45), Epsilon);
+        assertEquals(-45, Navis.ghaToLongitude(45), Epsilon);
+        assertEquals(359, Navis.longitudeToGHA(1), Epsilon);
+        assertEquals(1, Navis.ghaToLongitude(359), Epsilon);
+        assertEquals(181, Navis.longitudeToGHA(179), Epsilon);
+        assertEquals(179, Navis.ghaToLongitude(181), Epsilon);
+    }
+    @Test
     public void testNormalizeAngle()
     {
         assertEquals(45, Navis.normalizeAngle(45), Epsilon);

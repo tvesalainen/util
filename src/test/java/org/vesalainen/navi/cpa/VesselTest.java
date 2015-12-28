@@ -31,25 +31,95 @@ public class VesselTest
     }
 
     @Test
-    public void test1()
+    public void test90_0_1()
     {
         Vessel v = new Vessel();
-        v.update(0, 60, 25, 6, 90, 6);
-        double expRad = 3/Math.PI;
-        assertEquals(expRad, v.getRadius(), Epsilon);
-        assertEquals(60-(expRad/60), v.getCenterLatitude(), Epsilon);
-        assertEquals(25, v.getCenterLongitude(), Epsilon);
+        v.update(0, 60, 25, 8, 90, 0);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60, v.estimateLatitude(q), Epsilon);
+        assertEquals(25+2.0/30.0, v.estimateLongitude(q), Epsilon);
     }
     
     @Test
-    public void test2()
+    public void test90_1()
+    {
+        Vessel v = new Vessel();
+        v.update(0, 60, 25, 2*Math.PI, 90, 6);
+        double expRad = 1.0;
+        double d = expRad/60;
+        assertEquals(expRad, v.getRadius(), Epsilon);
+        assertEquals(60-d, v.getCenterLatitude(), Epsilon);
+        assertEquals(25, v.getCenterLongitude(), Epsilon);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
+    }
+    
+    @Test
+    public void test90_2()
+    {
+        Vessel v = new Vessel();
+        v.update(0, 60, 25, 2*Math.PI, 90, -6);
+        double expRad = 1.0;
+        double d = expRad/60;
+        assertEquals(expRad, v.getRadius(), Epsilon);
+        assertEquals(60+d, v.getCenterLatitude(), Epsilon);
+        assertEquals(25, v.getCenterLongitude(), Epsilon);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60+d, v.estimateLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
+    }
+    
+    @Test
+    public void test180_0_1()
+    {
+        Vessel v = new Vessel();
+        v.update(0, 60, 25, 8, 180, 0);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60-2.0/60.0, v.estimateLatitude(q), Epsilon);
+        assertEquals(25, v.estimateLongitude(q), Epsilon);
+    }
+    
+    @Test
+    public void test180_1()
     {
         Vessel v = new Vessel();
         v.update(0, 60, 25, 2*Math.PI, 180, 6);
         double expRad = 1.0;
+        double d = expRad/60;
         assertEquals(expRad, v.getRadius(), Epsilon);
         assertEquals(60, v.getCenterLatitude(), Epsilon);
-        assertEquals(25-(expRad/30.0), v.getCenterLongitude(), Epsilon);
+        assertEquals(25-d*2, v.getCenterLongitude(), Epsilon);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
+        assertEquals(25-d*2, v.estimateLongitude(q), Epsilon);
+    }
+    
+    @Test
+    public void test180_2()
+    {
+        Vessel v = new Vessel();
+        v.update(0, 60, 25, 2*Math.PI, 180, -6);
+        double expRad = 1.0;
+        double d = expRad/60;
+        assertEquals(expRad, v.getRadius(), Epsilon);
+        assertEquals(60, v.getCenterLatitude(), Epsilon);
+        assertEquals(25+d*2, v.getCenterLongitude(), Epsilon);
+        assertEquals(60, v.estimateLatitude(0), Epsilon);
+        assertEquals(25, v.estimateLongitude(0), Epsilon);
+        long q = 15*60000;
+        assertEquals(60-d, v.estimateLatitude(q), Epsilon);
+        assertEquals(25+d*2, v.estimateLongitude(q), Epsilon);
     }
     
 }

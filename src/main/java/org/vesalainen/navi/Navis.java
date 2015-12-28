@@ -31,11 +31,10 @@ public class Navis
     public static final double NMInMeters = 1852;
     public static final double FeetInMeters = 0.3048;
     public static final double FathomInMeters = 1.8288;
-    public static final double HoursInSecond = TimeUnit.HOURS.toSeconds(1);
-    public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSecond;
+    public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
+    public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
     /**
      * Return latitude change after moving distance at bearing
-     * @param latitude
      * @param distance  NM
      * @param bearing   Degrees
      * @return 
@@ -44,6 +43,13 @@ public class Navis
     {
         return (Math.cos(Math.toRadians(bearing))*distance)/60;
     }
+    /**
+     * Return longitude change after moving distance at bearing
+     * @param latitude
+     * @param distance
+     * @param bearing
+     * @return 
+     */
     public static final double deltaLongitude(double latitude, double distance, double bearing)
     {
         double departure = departure(latitude);
@@ -209,6 +215,50 @@ public class Navis
         return speed;
     }
     /**
+     * Adds delta to longitude. Positive delta is to east
+     * @param longitude
+     * @param delta
+     * @return 
+     */
+    public static final double addLongitude(double longitude, double delta)
+    {
+        double gha = longitudeToGHA(longitude);
+        gha -= delta;
+        return ghaToLongitude(normalizeAngle(gha));
+    }
+    /**
+     * Converts longitude (-180-180) to global hour angle (0-360)
+     * @param longitude
+     * @return 
+     */
+    public static final double longitudeToGHA(double longitude)
+    {
+        if (longitude < 0)
+        {
+            return -longitude;
+        }
+        else
+        {
+            return 360-longitude;
+        }
+    }
+    /**
+     * Converts global hour angle to longitude
+     * @param gha
+     * @return 
+     */
+    public static final double ghaToLongitude(double gha)
+    {
+        if (gha < 180)
+        {
+            return -gha;
+        }
+        else
+        {
+            return 360-gha;
+        }
+    }
+    /**
      * Normalizes angle to be in 0 - 360
      * @param deg
      * @return 
@@ -277,7 +327,7 @@ public class Navis
         return NMInMetersPerHoursInSecond/ms;
     }
 
-    private static final double HoursInSecondPerKilo = HoursInSecond / Kilo;
+    private static final double HoursInSecondPerKilo = HoursInSeconds / Kilo;
     /**
      * Converts m/s to Km/h
      * @param metersPerSecond

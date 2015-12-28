@@ -16,7 +16,7 @@
  */
 package org.vesalainen.navi.cpa;
 
-import org.vesalainen.navi.Navis;
+import static org.vesalainen.navi.Navis.*;
 
 /**
  * A base class for calculating collision point of two vessels that are possibly
@@ -32,16 +32,16 @@ public class Vessel
     protected double latitude;
     protected double longitude;
     protected double speed;         // knots
-    protected double bearing;       // degrees
+    protected double bearing = Double.NaN;       // degrees
     protected double rateOfTurn;    // degrees / minute; negative to port
     // previous update
     protected long prevTime;
     protected double prevLatitude;
     protected double prevLongitude;
     // calculated
-    protected double centerLatitude;
-    protected double centerLongitude;
-    protected double radius;
+    protected double centerLatitude = Double.NaN;
+    protected double centerLongitude = Double.NaN;
+    protected double radius = Double.NaN;
     /**
      * Updates values and calculates speed and bearing. After that calculates other
      * data.
@@ -60,8 +60,8 @@ public class Vessel
             this.time = time;
             this.latitude = latitude;
             this.longitude = longitude;
-            this.speed = Navis.speed(prevTime, prevLatitude, prevLongitude, time, latitude, longitude);
-            this.bearing = Navis.bearing(prevLatitude, prevLongitude, latitude, longitude);
+            this.speed = speed(prevTime, prevLatitude, prevLongitude, time, latitude, longitude);
+            this.bearing = bearing(prevLatitude, prevLongitude, latitude, longitude);
             this.rateOfTurn = rateOfTurn;
             calc();
         }
@@ -95,13 +95,85 @@ public class Vessel
 
     private void calc()
     {
-        double hoursForFullCircle = (360 / Math.abs(rateOfTurn))/60;
-        radius = speed*hoursForFullCircle/Pi2;
-        double b = Navis.normalizeAngle(bearing+90*Math.signum(rateOfTurn));
-        centerLatitude = latitude+Navis.deltaLatitude(radius, b);
-        centerLongitude = longitude+Navis.deltaLongitude(latitude, radius, b);
+        double arot = Math.abs(rateOfTurn);
+        if (arot > 0)
+        {
+            double hoursForFullCircle = (360 / arot)/60;
+            radius = speed*hoursForFullCircle/Pi2;
+            double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
+            centerLatitude = latitude+deltaLatitude(radius, b);
+            centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
+        }
+        else
+        {
+            radius = Double.NaN;
+            centerLatitude = Double.NaN;
+            centerLongitude = Double.NaN;
+        }
     }
-
+    /**
+     * Returns estimated latitude at et
+     * @param et
+     * @return 
+     */
+    public double estimateLatitude(long et)
+    {
+        checkState();
+        if (rateOfTurn == 0)
+        {
+            double dist = calcDist(et);
+            return latitude+deltaLatitude(dist, bearing);
+        }
+        else
+        {
+            double deg = calcDeg(et);
+            return centerLatitude+deltaLatitude(radius, deg);
+        }
+    }
+    /**
+     * Return estimated longitude at et
+     * @param et
+     * @return 
+     */
+    public double estimateLongitude(long et)
+    {
+        checkState();
+        if (rateOfTurn == 0)
+        {
+            double dist = calcDist(et);
+            return addLongitude(longitude, deltaLongitude(latitude, dist, bearing));
+        }
+        else
+        {
+            double deg = calcDeg(et);
+            return addLongitude(centerLongitude, deltaLongitude(latitude, radius, deg));
+        }
+    }
+    private double calcDist(long et)
+    {
+        if (et < time)
+        {
+            throw new IllegalArgumentException("cannot estimate past");
+        }
+        double dh = (et-time)/3600000.0;
+        return speed*dh;
+    }
+    private double calcDeg(long et)
+    {
+        if (et < time)
+        {
+            throw new IllegalArgumentException("cannot estimate past");
+        }
+        double dm = (et-time)/60000.0;
+        return normalizeAngle(bearing-90*Math.signum(rateOfTurn)+rateOfTurn*dm);
+    }
+    private void checkState()
+    {
+        if (Double.isNaN(bearing))
+        {
+            throw new IllegalStateException("not updated");
+        }
+    }
     public double getRadius()
     {
         return radius;
