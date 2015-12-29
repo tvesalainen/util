@@ -1,0 +1,146 @@
+/*
+ * Line2D.java
+ *
+ * Created on 15. tammikuuta 2005, 9:55
+ */
+
+package org.vesalainen.math;
+
+/**
+ * Line implementation
+ * 
+ * <p>If line is vertical slope = infinity, a = constant x
+ * @author  tkv
+ */
+public class AbstractLine implements Line
+{
+    protected double a;
+    protected double slope;
+    
+    public AbstractLine(double slope, Point p)
+    {
+        this.slope = slope;
+        if (Double.isInfinite(slope))
+        {
+            this.a = p.getX();
+        }
+        else
+        {
+            this.a = p.getY() - slope*p.getX();
+        }
+    }
+    
+    public AbstractLine(Point p1, Point p2)
+    {
+        if (p2.getX() != p1.getX())
+        {
+            this.slope = (p2.getY() - p1.getY()) / (p2.getX() - p1.getX());
+            this.a = p1.getY() - slope*p1.getX();
+        }
+        else
+        {
+            this.slope = Double.POSITIVE_INFINITY;
+            this.a = p1.getX();
+        }
+    }
+    /**
+     * <p>Returns y for x If slope != infinity
+     * <p>Returns infinity If slope == infinity and x == constant x
+     * <p>Returns nan If slope == infinity and x != constant x
+     * @param x
+     * @return 
+     */
+    @Override
+    public double getY(double x)
+    {
+        if (!Double.isInfinite(slope))
+        {
+            return slope*x + a;
+        }
+        else
+        {
+            if (x == a)
+            {
+                return Double.POSITIVE_INFINITY;
+            }
+            else
+            {
+                return Double.NaN;
+            }
+        }
+    }
+    /**
+     * <p>Returns a If slope != infinity
+     * <p>Returns constant x If slope == infinity
+     * @return 
+     */
+    @Override
+    public double getA()
+    {
+        return a;
+    }
+    /**
+     * Returns slope. For vertical lines infinity
+     * @return 
+     */
+    @Override
+    public double getSlope()
+    {
+        return slope;
+    }
+    /**
+     * Returns the crosspoint of lines l1 and l2. If lines don't cross returns null.
+     * 
+     * <p>Note returns null if lines are parallel and also when lines ate equal.!
+     * @param l1
+     * @param l2
+     * @return 
+     */
+    public static Point crossPoint(Line l1, Line l2)
+    {
+        if (Double.isInfinite(l1.getSlope()))
+        {
+            if (Double.isInfinite(l2.getSlope()))
+            {
+                return null;
+            }
+            else
+            {
+                return new AbstractPoint(l1.getA(), l2.getY(l1.getA()));
+            }
+        }
+        if (Double.isInfinite(l2.getSlope()))
+        {
+            return new AbstractPoint(l2.getA(), l1.getY(l2.getA()));
+        }
+        double x1 = 0;
+        double y1 = l1.getY(x1);
+        
+        double x2 = 10;
+        double y2 = l1.getY(x2);
+        
+        double x3 = 0;
+        double y3 = l2.getY(x3);
+        
+        double x4 = 10;
+        double y4 = l2.getY(x4);
+        
+        double dd = det(x1-x2, y1-y2, x3-x4, y3-y4);
+        if (dd == 0)
+        {
+            return null;
+        }
+        double x1y1x2y2 = det(x1, y1, x2, y2);
+        double x3y3x4y4 = det(x3, y3, x4, y4);
+        double xu = det(x1y1x2y2, x1-x2, x3y3x4y4, x3-x4);
+        double yu = det(x1y1x2y2, y1-y2, x3y3x4y4, y3-y4);
+        return new AbstractPoint(xu/dd, yu/dd);
+        
+    }
+    
+    private static double det(double a11, double a12, double a21, double a22)
+    {
+        return  a11*a22-a12*a21;
+    }
+    
+}
