@@ -39,6 +39,10 @@ public class CubicBezierCurve implements Serializable
      */
     public CubicBezierCurve(Point... controlPoints)
     {
+        if (controlPoints.length < 4)
+        {
+            throw new IllegalArgumentException("controlPoints length < 4");
+        }
         P = controlPoints;
     }
     /**
@@ -48,6 +52,10 @@ public class CubicBezierCurve implements Serializable
      */
     public CubicBezierCurve(int start, Point... controlPoints)
     {
+        if (controlPoints.length < start+4)
+        {
+            throw new IllegalArgumentException("controlPoints length < 4");
+        }
         P = controlPoints;
         this.start = start;
     }

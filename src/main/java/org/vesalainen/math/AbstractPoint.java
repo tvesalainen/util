@@ -343,6 +343,12 @@ public class AbstractPoint implements Point, Serializable
         }
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return "AbstractPoint{" + "x=" + x + ", y=" + y + '}';
+    }
     
     private static class XComparator implements Comparator<Point>
     {

@@ -40,6 +40,8 @@ public class AbstractLineTest
         assertEquals(1, l1.getSlope(), Epsilon);
         assertEquals(0, l1.getA(), Epsilon);
         assertEquals(2, l1.getY(2), Epsilon);
+        AbstractLine l1_s = new AbstractLine(1, p2);
+        assertEquals(l1, l1_s);
         AbstractLine l2 = new AbstractLine(p2, p3);
         assertEquals(-1, l2.getSlope(), Epsilon);
         assertEquals(2, l2.getA(), Epsilon);

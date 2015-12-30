@@ -231,5 +231,11 @@ public class AbstractLine implements Line
         }
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return "AbstractLine{" + "a=" + a + ", slope=" + slope + '}';
+    }
     
 }
