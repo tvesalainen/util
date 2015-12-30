@@ -27,7 +27,7 @@ import java.io.Serializable;
 public class CubicBezierCurve implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    private CurvePoint[] P;
+    private Point[] P;
     private int start;
 
     protected CubicBezierCurve()
@@ -37,7 +37,7 @@ public class CubicBezierCurve implements Serializable
      * Creates a CubicBezierCurve
      * @param controlPoints 4 control points starting at 0
      */
-    public CubicBezierCurve(CurvePoint... controlPoints)
+    public CubicBezierCurve(Point... controlPoints)
     {
         P = controlPoints;
     }
@@ -46,7 +46,7 @@ public class CubicBezierCurve implements Serializable
      * @param start index
      * @param controlPoints 4 control points starting at start
      */
-    public CubicBezierCurve(int start, CurvePoint... controlPoints)
+    public CubicBezierCurve(int start, Point... controlPoints)
     {
         P = controlPoints;
         this.start = start;
@@ -56,17 +56,17 @@ public class CubicBezierCurve implements Serializable
      * @param t Param t in [0,1]
      * @return A CurvePoint in Bezier Curve
      */
-    public CurvePoint eval(double t)
+    public Point eval(double t)
     {
         if (t < 0 || t > 1)
         {
             throw new IllegalArgumentException("t="+t+" not in [0,1]");
         }
-        return CurvePoint.add(
-                CurvePoint.mul(Math.pow(1-t, 3), P[start]),
-                CurvePoint.mul(3*Math.pow(1-t, 2)*t, P[start+1]),
-                CurvePoint.mul(3*(1-t)*t*t, P[start+2]),
-                CurvePoint.mul(t*t*t, P[start+3])
+        return AbstractPoint.add(
+                AbstractPoint.mul(Math.pow(1-t, 3), P[start]),
+                AbstractPoint.mul(3*Math.pow(1-t, 2)*t, P[start+1]),
+                AbstractPoint.mul(3*(1-t)*t*t, P[start+2]),
+                AbstractPoint.mul(t*t*t, P[start+3])
                 );
     }
     /**
@@ -74,48 +74,25 @@ public class CubicBezierCurve implements Serializable
      */
     public void curveStart()
     {
-        double d0 = CurvePoint.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = CurvePoint.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = CurvePoint.angle(P[start+3], P[start+2]);    // P3 -> P2
+        double d0 = AbstractPoint.angle(P[start], P[start+3]);      // P0 -> P3
+        double d1 = AbstractPoint.angle(P[start+3], P[start]);      // P3 -> P0
+        double d2 = AbstractPoint.angle(P[start+3], P[start+2]);    // P3 -> P2
         double a1 = d1 - d2;
         double a2 = d0 + a1;
-        double di = CurvePoint.distance(P[start+3], P[start+2]);
-        P[start+1] = CurvePoint.move(P[start], a2, di);
+        double di = AbstractPoint.distance(P[start+3], P[start+2]);
+        P[start+1] = AbstractPoint.move(P[start], a2, di);
     }
     /**
      * Experimental! makes the end curve like the start
      */
     public void curveEnd()
     {
-        double d0 = CurvePoint.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = CurvePoint.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = CurvePoint.angle(P[start], P[start+1]);    // P0 -> P1
+        double d0 = AbstractPoint.angle(P[start], P[start+3]);      // P0 -> P3
+        double d1 = AbstractPoint.angle(P[start+3], P[start]);      // P3 -> P0
+        double d2 = AbstractPoint.angle(P[start], P[start+1]);    // P0 -> P1
         double a1 = d2 - d0;
         double a2 = d0 + a1;
-        double di = CurvePoint.distance(P[start], P[start+1]);
-        P[start+2] = CurvePoint.move(P[start+3], a2, di);
-    }
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args)
-    {
-        try
-        {
-           CubicBezierCurve cbc = new CubicBezierCurve(
-                   new CurvePoint(2,3),
-                   new CurvePoint(0,5),
-                   new CurvePoint(-1,-2),
-                   new CurvePoint(2,1)
-                   );
-           for (double t = 0;t<1;t += 0.1)
-           {
-            System.err.println(cbc.eval(t));
-           }
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
+        double di = AbstractPoint.distance(P[start], P[start+1]);
+        P[start+2] = AbstractPoint.move(P[start+3], a2, di);
     }
 }
