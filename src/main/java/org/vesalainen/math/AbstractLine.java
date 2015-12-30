@@ -16,8 +16,30 @@ public class AbstractLine implements Line
 {
     protected double a;
     protected double slope;
-    
+    /**
+     * Creates AbstractLine with slope and going through p
+     * @param slope
+     * @param p 
+     */
     public AbstractLine(double slope, Point p)
+    {
+        set(slope, p);
+    }
+    /**
+     * Creates AbstractLine going through p1 nd p2
+     * @param p1
+     * @param p2 
+     */
+    public AbstractLine(Point p1, Point p2)
+    {
+        set(p1, p2);
+    }
+    /**
+     * Populates line
+     * @param slope
+     * @param p 
+     */
+    public final void set(double slope, Point p)
     {
         this.slope = slope;
         if (Double.isInfinite(slope))
@@ -29,8 +51,12 @@ public class AbstractLine implements Line
             this.a = p.getY() - slope*p.getX();
         }
     }
-    
-    public AbstractLine(Point p1, Point p2)
+    /**
+     * Populates line
+     * @param p1
+     * @param p2 
+     */
+    public final void set(Point p1, Point p2)
     {
         if (p2.getX() != p1.getX())
         {
@@ -43,6 +69,8 @@ public class AbstractLine implements Line
             this.a = p1.getX();
         }
     }
+    
+
     /**
      * <p>Returns y for x If slope != infinity
      * <p>Returns infinity If slope == infinity and x == constant x
@@ -98,6 +126,23 @@ public class AbstractLine implements Line
      */
     public static Point crossPoint(Line l1, Line l2)
     {
+        return crossPoint(l1, l2, null);
+    }
+    /**
+     * Returns the crosspoint of lines l1 and l2. If lines don't cross returns null.
+     * 
+     * <p>Note returns null if lines are parallel and also when lines ate equal.!
+     * 
+     * <p>If p != null returns populated p. 
+     * <p>If returns null p is not updated.
+     * 
+     * @param l1
+     * @param l2
+     * @param p
+     * @return 
+     */
+    public static Point crossPoint(Line l1, Line l2, AbstractPoint p)
+    {
         if (Double.isInfinite(l1.getSlope()))
         {
             if (Double.isInfinite(l2.getSlope()))
@@ -106,12 +151,12 @@ public class AbstractLine implements Line
             }
             else
             {
-                return new AbstractPoint(l1.getA(), l2.getY(l1.getA()));
+                return cyclePoint(p, l1.getA(), l2.getY(l1.getA()));
             }
         }
         if (Double.isInfinite(l2.getSlope()))
         {
-            return new AbstractPoint(l2.getA(), l1.getY(l2.getA()));
+            return cyclePoint(p, l2.getA(), l1.getY(l2.getA()));
         }
         double x1 = 0;
         double y1 = l1.getY(x1);
@@ -134,13 +179,57 @@ public class AbstractLine implements Line
         double x3y3x4y4 = det(x3, y3, x4, y4);
         double xu = det(x1y1x2y2, x1-x2, x3y3x4y4, x3-x4);
         double yu = det(x1y1x2y2, y1-y2, x3y3x4y4, y3-y4);
-        return new AbstractPoint(xu/dd, yu/dd);
+        return cyclePoint(p, xu/dd, yu/dd);
         
     }
-    
+    private static Point cyclePoint(AbstractPoint p, double x, double y)
+    {
+        if (p == null)
+        {
+            return new AbstractPoint(x, y);
+        }
+        else
+        {
+            p.set(x, y);
+            return p;
+        }
+    }
+            
     private static double det(double a11, double a12, double a21, double a22)
     {
         return  a11*a22-a12*a21;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 89 * hash + (int) (Double.doubleToLongBits(this.a) ^ (Double.doubleToLongBits(this.a) >>> 32));
+        hash = 89 * hash + (int) (Double.doubleToLongBits(this.slope) ^ (Double.doubleToLongBits(this.slope) >>> 32));
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final AbstractLine other = (AbstractLine) obj;
+        if (Double.doubleToLongBits(this.a) != Double.doubleToLongBits(other.a))
+        {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.slope) != Double.doubleToLongBits(other.slope))
+        {
+            return false;
+        }
+        return true;
     }
     
 }
