@@ -29,9 +29,13 @@ public class CubicBezierCurve implements Serializable
     private static final long serialVersionUID = 1L;
     private Point[] P;
     private int start;
-
-    protected CubicBezierCurve()
+    /**
+     * Creates a CubicBezierCurve by point coordinates
+     * @param p Point coordinates x1, y1, x2, y2, x3, y3, x4, y4
+     */
+    public CubicBezierCurve(double... p)
     {
+        this(makeArr(p));
     }
     /**
      * Creates a CubicBezierCurve
@@ -66,16 +70,37 @@ public class CubicBezierCurve implements Serializable
      */
     public Point eval(double t)
     {
+        return eval(t, new AbstractPoint());
+    }
+    public Point eval(double t, AbstractPoint p)
+    {
         if (t < 0 || t > 1)
         {
             throw new IllegalArgumentException("t="+t+" not in [0,1]");
         }
-        return AbstractPoint.add(
-                AbstractPoint.mul(Math.pow(1-t, 3), P[start]),
-                AbstractPoint.mul(3*Math.pow(1-t, 2)*t, P[start+1]),
-                AbstractPoint.mul(3*(1-t)*t*t, P[start+2]),
-                AbstractPoint.mul(t*t*t, P[start+3])
-                );
+        p.set(0, 0);
+        double c0 = Math.pow(1-t, 3);
+        double c1 = 3*Math.pow(1-t, 2)*t;
+        double c2 = 3*(1-t)*t*t;
+        double c3 = t*t*t;
+        p.add(c0*P[start].getX(), c0*P[start].getY());
+        p.add(c1*P[start+1].getX(), c1*P[start+1].getY());
+        p.add(c2*P[start+2].getX(), c2*P[start+2].getY());
+        p.add(c3*P[start+3].getX(), c3*P[start+3].getY());
+        return p;
+    }
+    private static Point[] makeArr(double... p)
+    {
+        if (p.length != 8)
+        {
+            throw new IllegalArgumentException("4 controlPoints need 8 values");
+        }
+        Point[] cp = new Point[4];
+        for (int ii=0;ii<4;ii++)
+        {
+            cp[ii] = new AbstractPoint(p[2*ii], p[2*ii+1]);
+        }
+        return cp;
     }
     /**
      * Experimental! makes the start curve like the end
