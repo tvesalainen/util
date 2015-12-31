@@ -64,7 +64,7 @@ public class CubicBezierCurve implements Serializable
         this.start = start;
     }
     /**
-     * Evaluates points in Bezier Curve
+     * Evaluates point in Bezier Curve.
      * @param t Param t in [0,1]
      * @return A CurvePoint in Bezier Curve
      */
@@ -72,6 +72,13 @@ public class CubicBezierCurve implements Serializable
     {
         return eval(t, new AbstractPoint());
     }
+    /**
+     * Evaluates point in Bezier Curve. Returned Point is the same as given in 
+     * parameter p.
+     * @param t
+     * @param p
+     * @return 
+     */
     public Point eval(double t, AbstractPoint p)
     {
         if (t < 0 || t > 1)
