@@ -156,6 +156,21 @@ public class AbstractView
         updatePoint(x+radius, y+radius);
     }
     /**
+     * Adds margin to visible screen. 
+     * @param m Margin m*width/height
+     */
+    public void margin(double m)
+    {
+        double w = xMax-xMin;
+        double h = yMax-yMin;
+        setRect(
+                xMin-w*m,
+                xMax+w*m,
+                yMin-w*m,
+                yMax+w*m
+        );
+    }
+    /**
      * Updates the limits if point is not inside visible screen.
      * @param x
      * @param y 

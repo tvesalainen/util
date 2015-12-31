@@ -29,6 +29,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
+import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
 
 /**
@@ -91,13 +92,18 @@ public class Plotter extends AbstractView
         double x = d[0];
         double y = d[1];
         updatePoint(x, y);
-        drawables.add(new Point(color, x, y));
+        drawables.add(new Pnt(color, x, y));
+    }
+    
+    public void drawPoint(Point p)
+    {
+        drawPoint(p.getX(), p.getY());
     }
     
     public void drawPoint(double x, double y)
     {
         updatePoint(x, y);
-        drawables.add(new Point(color, x, y));
+        drawables.add(new Pnt(color, x, y));
     }
     
     public void drawPolygon(Polygon polygon)
@@ -112,6 +118,16 @@ public class Plotter extends AbstractView
         drawables.add(new Poly(color, polygon));
     }
     
+    public void drawLine(Point p1, Point p2)
+    {
+        drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+    public void drawLine(double x1, double y1, double x2, double y2)
+    {
+        updatePoint(x1, y1);
+        updatePoint(x2, y2);
+        drawables.add(new Lin(color, x1, y1, x2, y2));
+    }
     public void drawLines(Polygon polygon)
     {
         updatePolygon(polygon);
@@ -123,7 +139,27 @@ public class Plotter extends AbstractView
         updatePolygon(polygon);
         drawables.add(new Lines(color, polygon));
     }
-    
+    public void drawCoordinates()
+    {
+        Color safe = color;
+        int minx = (int) (xMin-1);
+        int maxx = (int) (xMax+1);
+        int miny = (int) (yMin-1);
+        int maxy = (int) (yMax+1);
+        color = Color.LIGHT_GRAY;
+        for (int x=minx;x<=maxx;x++)
+        {
+            drawLine(x, miny, x, maxy);
+        }
+        for (int y=miny;y<=maxy;y++)
+        {
+            drawLine(minx, y, maxx, y);
+        }
+        color = Color.BLACK;
+        drawLine(minx, 0, maxx, 0);
+        drawLine(0, miny, 0, maxy);
+        color = safe;
+    }
     @Override
     public void setScreen(double width, double height)
     {
@@ -173,11 +209,11 @@ public class Plotter extends AbstractView
             graphics2D.setColor(color);
         }
     }
-    private class Point extends Drawable
+    private class Pnt extends Drawable
     {
         double x;
         double y;
-        public Point(Color color, double x, double y)
+        public Pnt(Color color, double x, double y)
         {
             super(color);
             this.x = x;
@@ -193,7 +229,7 @@ public class Plotter extends AbstractView
             graphics2D.drawOval(sx-2, sy-2, 4, 4);
         }
     }
-    private class Circl extends Point
+    private class Circl extends Pnt
     {
         double r;
 
@@ -248,6 +284,33 @@ public class Plotter extends AbstractView
                     y1 = y2;
                 }
             }
+        }
+    }
+    private class Lin extends Drawable
+    {
+        double x1;
+        double y1;
+        double x2;
+        double y2;
+
+        public Lin(Color color, double x1, double y1, double x2, double y2)
+        {
+            super(color);
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+        
+        @Override
+        protected void draw(Graphics2D graphics2D)
+        {
+            super.draw(graphics2D);
+            int sx1 = (int)toScreenX(x1);
+            int sy1 = (int)toScreenX(y1); 
+            int sx2 = (int)toScreenX(x2); 
+            int sy2 = (int)toScreenX(y2);
+            graphics2D.drawLine(sx1, sy1, sx2, sy2);
         }
     }
     private class Lines extends Drawable

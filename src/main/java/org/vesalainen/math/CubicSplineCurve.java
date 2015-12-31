@@ -13,27 +13,45 @@ import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
 
 /**
- *
+ * CubicSplineCurve is a utility for interpolating points between known points
+ * x0, y0, ... xi, yi, ... xn, yn.
  * @author tkv
  * @see http://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf
+ * @see org.vesalainen.math.CubicBezierCurve
  */
 public class CubicSplineCurve implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    public static final double EPSILON = 0.00001;
+    public static final double Epsilon = 1e-5;
+    private double epsilon = Epsilon;
     private Point[] S;
     private Point[] P;
-    protected CubicBezierCurve[] cbc;
-    public CubicSplineCurve(Point... points)
-    {
-        init(points);
-    }
+    private CubicBezierCurve[] cbc;
+    // temporary
+    private AbstractPoint tmpPoint = new AbstractPoint();
+    private AbstractPoint tmpKey = new AbstractPoint();
+    private CubicSplineCurveKey tmpCSCKey = new CubicSplineCurveKey();
+    
     public CubicSplineCurve(List<Point> points)
     {
-        init(points.toArray(new Point[points.size()]));
+        this(Epsilon, points.toArray(new Point[points.size()]));
     }
-    private void init(Point... points)
+    public CubicSplineCurve(double epsilon, List<Point> points)
     {
+        this(epsilon, points.toArray(new Point[points.size()]));
+    }
+    public CubicSplineCurve(Point... points)
+    {
+        this(Epsilon, points);
+    }
+    /**
+     * Creates a CubicSplineCurve
+     * @param epsilon X coordinate cannot differ more in eval
+     * @param points 
+     */
+    public CubicSplineCurve(double epsilon, Point... points)
+    {
+        this.epsilon = epsilon;
         S = points;
         Point[] B = new Point[S.length];
         B[0] = S[0];
@@ -87,7 +105,7 @@ public class CubicSplineCurve implements Serializable
         return S[S.length-1];
     }
 
-    public Point eval(CubicSplineCurveKey key)
+    private Point eval(CubicSplineCurveKey key)
     {
         if (key.t == 0)
         {
@@ -95,9 +113,9 @@ public class CubicSplineCurve implements Serializable
         }
         return eval(key.bezierIndex, key.t);
     }
-    public Point eval(int piece, double t)
+    private Point eval(int piece, double t)
     {
-        return cbc[piece].eval(t);
+        return cbc[piece].eval(t, tmpPoint);
     }
     /**
      * @return Returns the original points.
@@ -198,8 +216,8 @@ public class CubicSplineCurve implements Serializable
 
     public Iterator<Point> iterator(double startX, double endX, double interval)
     {
-        CubicSplineCurveKey start = this.getNearestKey(startX, EPSILON);
-        CubicSplineCurveKey end = this.getNearestKey(endX, EPSILON);
+        CubicSplineCurveKey start = getNearestKey(startX, epsilon, new CubicSplineCurveKey());
+        CubicSplineCurveKey end = getNearestKey(endX, epsilon, new CubicSplineCurveKey());
         return new Iter(this, interval, start, end);
     }
 
@@ -248,15 +266,43 @@ public class CubicSplineCurve implements Serializable
             return res;
         }
 
+        @Override
         public void remove()
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported.");
         }
 
     }
     /**
+     * Returns y for x. This is convenient method. Use getNearest to get exact
+     * evaluated point.
+     * @param x
+     * @return 
+     * @see org.vesalainen.math.CubicSplineCurve#getNearest(double, double) 
+     */
+    public double get(double x)
+    {
+        return get(x, epsilon);
+    }
+    /**
+     * Returns y for x. This is convenient method. Use getNearest to get exact
+     * evaluated point.
+     * @param x
+     * @param epsilon Evaluated points x cannot differ more
+     * @return 
+     * @see org.vesalainen.math.CubicSplineCurve#getNearest(double, double) 
+     */
+    public double get(double x, double epsilon)
+    {
+        Point nearest = getNearest(x, epsilon);
+        return nearest.getY();
+    }
+    /**
      * Searches the nearest Point in curve
      * Note! The curve has to be bijection. I.e. for each x there must be one y
+     * 
+     * <p>Note! The returned point is only valid till the next call for get or 
+     * getNearest.
      * @param x x coordinate
      * @param epsilon Returned Points x-coordinate can not differ more
      * than epsilon from given x
@@ -265,25 +311,31 @@ public class CubicSplineCurve implements Serializable
      */
     public Point getNearest(double x, double epsilon)
     {
-        CubicSplineCurveKey key = getNearestKey(x, epsilon);
+        return getNearest(x, epsilon, tmpCSCKey);
+    }
+    private Point getNearest(double x, double epsilon, CubicSplineCurveKey cscKey)
+    {
+        CubicSplineCurveKey key = getNearestKey(x, epsilon, cscKey);
         return eval(key);
     }
-    public CubicSplineCurveKey getNearestKey(double x, double epsilon)
+    private CubicSplineCurveKey getNearestKey(double x, double epsilon, CubicSplineCurveKey key)
     {
         // Eliminate memory rubbish
-        if (Math.abs(S[0].getX() - x) < EPSILON)
+        if (Math.abs(S[0].getX() - x) < epsilon)
         {
             x = S[0].getX();
         }
-        if (Math.abs(S[S.length-1].getX() - x) < EPSILON)
+        if (Math.abs(S[S.length-1].getX() - x) < epsilon)
         {
             x = S[S.length-1].getX();
         }
-        Point key = new AbstractPoint(x, 0);
-        int idx = AbstractPoint.searchX(S, key);
-        if (idx >= 0 && AbstractPoint.compareX(S[idx], key) == 0)
+        tmpKey.set(x, 0);
+        int idx = AbstractPoint.searchX(S, tmpKey);
+        if (idx >= 0 && AbstractPoint.compareX(S[idx], tmpKey) == 0)
         {
-            return new CubicSplineCurveKey(idx, 0);
+            key.bezierIndex = idx;
+            key.t = 0;
+            return key;
         }
         if (idx < 0)
         {
@@ -309,7 +361,9 @@ public class CubicSplineCurve implements Serializable
             change /= 2;
             res = eval(idx - 1, t);
         }
-        return new CubicSplineCurveKey(idx-1, t);
+        key.bezierIndex = idx-1;
+        key.t = t;
+        return key;
     }
 
     public class CubicSplineCurveKey
@@ -317,7 +371,11 @@ public class CubicSplineCurve implements Serializable
         protected int bezierIndex;
         protected double t;
 
-        protected CubicSplineCurveKey(int bezierIndex, double t)
+        public CubicSplineCurveKey()
+        {
+        }
+
+        private CubicSplineCurveKey(int bezierIndex, double t)
         {
             this.bezierIndex = bezierIndex;
             this.t = t;

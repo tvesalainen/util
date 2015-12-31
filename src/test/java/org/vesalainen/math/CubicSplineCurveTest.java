@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +84,7 @@ public class CubicSplineCurveTest
         }
     }
     
-    //@Test
+    @Test
     public void test3()
     {
         try
@@ -96,12 +97,15 @@ public class CubicSplineCurveTest
             list.add(new AbstractPoint(3, 4));
             list.add(new AbstractPoint(4, 3));
             CubicSplineCurve csc = new CubicSplineCurve(list);
-            for (double x=0;x<=4;x+=0.1)
+            Iterator<Point> iterator = csc.iterator(0.1);
+            while (iterator.hasNext())
             {
-                Point t = csc.getNearest(x, Epsilon);
+                Point t = iterator.next();
                 System.err.println(t);
                 p.drawPoint(t.getX(), t.getY());
             }
+            p.drawCoordinates();
+            p.margin(0.01);
             p.plot("test", "jpg");
         }
         catch (IOException ex)
