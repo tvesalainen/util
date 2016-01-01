@@ -106,7 +106,7 @@ public class CubicSplineCurveTest
             }
             p.drawCoordinates();
             p.margin(0.01);
-            p.plot("test", "jpg");
+            p.plotToDocFiles(CubicSplineCurve.class, "test3", "png");
         }
         catch (IOException ex)
         {

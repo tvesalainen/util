@@ -15,6 +15,8 @@ import org.ejml.ops.CommonOps;
 /**
  * CubicSplineCurve is a utility for interpolating points between known points
  * x0, y0, ... xi, yi, ... xn, yn.
+ * <p>Example curve through (0, 1) (1, 3) (2, 2) (3, 4) (4, 3)
+ * <p><img src="doc-files/test3.png">
  * @author tkv
  * @see http://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf
  * @see org.vesalainen.math.CubicBezierCurve

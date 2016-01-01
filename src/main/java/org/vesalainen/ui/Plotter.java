@@ -128,6 +128,12 @@ public class Plotter extends AbstractView
         updatePoint(x2, y2);
         drawables.add(new Lin(color, x1, y1, x2, y2));
     }
+    public void drawCoordinateLine(double x1, double y1, double x2, double y2)
+    {
+        updatePoint(x1, y1);
+        updatePoint(x2, y2);
+        drawables.add(0, new Lin(color, x1, y1, x2, y2));
+    }
     public void drawLines(Polygon polygon)
     {
         updatePolygon(polygon);
@@ -146,18 +152,18 @@ public class Plotter extends AbstractView
         int maxx = (int) (xMax+1);
         int miny = (int) (yMin-1);
         int maxy = (int) (yMax+1);
+        color = Color.BLACK;
+        drawCoordinateLine(minx, 0, maxx, 0);
+        drawCoordinateLine(0, miny, 0, maxy);
         color = Color.LIGHT_GRAY;
         for (int x=minx;x<=maxx;x++)
         {
-            drawLine(x, miny, x, maxy);
+            drawCoordinateLine(x, miny, x, maxy);
         }
         for (int y=miny;y<=maxy;y++)
         {
-            drawLine(minx, y, maxx, y);
+            drawCoordinateLine(minx, y, maxx, y);
         }
-        color = Color.BLACK;
-        drawLine(minx, 0, maxx, 0);
-        drawLine(0, miny, 0, maxy);
         color = safe;
     }
     @Override
@@ -165,7 +171,16 @@ public class Plotter extends AbstractView
     {
         throw new UnsupportedOperationException("Screen coordinates must be set in constructor");
     }
-    
+
+    public void plotToDocFiles(Class<?> cls, String filename, String ext) throws IOException
+    {
+        String dirName = String.format("src/main/resources/%s/doc-files", 
+                cls.getPackage().getName().replace('.', '/'));
+        File dir = new File(dirName);
+        dir.mkdirs();
+        File file = new File(dir, filename+"."+ext);
+        plot(file, ext);
+    }
     public void plot(String filename, String ext) throws IOException
     {
         File file;
@@ -307,9 +322,9 @@ public class Plotter extends AbstractView
         {
             super.draw(graphics2D);
             int sx1 = (int)toScreenX(x1);
-            int sy1 = (int)toScreenX(y1); 
+            int sy1 = (int)toScreenY(y1); 
             int sx2 = (int)toScreenX(x2); 
-            int sy2 = (int)toScreenX(y2);
+            int sy2 = (int)toScreenY(y2);
             graphics2D.drawLine(sx1, sy1, sx2, sy2);
         }
     }
