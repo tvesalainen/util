@@ -15,6 +15,7 @@ import org.ejml.ops.CommonOps;
 /**
  * CubicSplineCurve is a utility for interpolating points between known points
  * x0, y0, ... xi, yi, ... xn, yn.
+ * <p>This class is not very efficient. Small epsilons will slow down performance.
  * <p>Example curve through (0, 1) (1, 3) (2, 2) (3, 4) (4, 3)
  * <p><img src="doc-files/test3.png">
  * @author tkv
@@ -45,6 +46,23 @@ public class CubicSplineCurve implements Serializable
     public CubicSplineCurve(Point... points)
     {
         this(Epsilon, points);
+    }
+    public CubicSplineCurve(double... points)
+    {
+        this(Epsilon, createPoints(points));
+    }
+    private static Point[] createPoints(double... points)
+    {
+        if ((points.length % 2) != 0)
+        {
+            throw new IllegalArgumentException("point count must be even");
+        }
+        Point[] pa = new Point[points.length/2];
+        for (int ii=0;ii<pa.length;ii++)
+        {
+            pa[ii] = new AbstractPoint(points[2*ii], points[2*ii+1]);
+        }
+        return pa;
     }
     /**
      * Creates a CubicSplineCurve

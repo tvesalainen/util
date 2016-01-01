@@ -90,19 +90,13 @@ public class CubicSplineCurveTest
         try
         {
             Plotter p = new Plotter(1000, 1000);
-            List<Point> list = new ArrayList<Point>();
-            list.add(new AbstractPoint(0, 1));
-            list.add(new AbstractPoint(1, 3));
-            list.add(new AbstractPoint(2, 2));
-            list.add(new AbstractPoint(3, 4));
-            list.add(new AbstractPoint(4, 3));
-            CubicSplineCurve csc = new CubicSplineCurve(list);
+            CubicSplineCurve csc = new CubicSplineCurve(0, 1, 1, 3, 2, 2, 3, 4, 4, 3);
             Iterator<Point> iterator = csc.iterator(0.1);
             while (iterator.hasNext())
             {
                 Point t = iterator.next();
                 System.err.println(t);
-                p.drawPoint(t.getX(), t.getY());
+                p.drawPoint(t);
             }
             p.drawCoordinates();
             p.margin(0.01);
