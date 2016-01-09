@@ -50,6 +50,29 @@ public class EnumSetFlagger
         return flag;
     }
     /**
+     * Returns bit flag constructed from EnumSet. Flags bit position is according
+     * to Enum ordinal.
+     * 
+     * <p>Throws IllegalArgumentException if flag overflows
+     * @param <E> Enum type
+     * @param eSet 
+     * @return 
+     */
+    public static <E extends Enum<E>> long getLongFlag(EnumSet<E> eSet)
+    {
+        long flag = 0;
+        for (Enum<E> en : eSet)
+        {
+            long ordinal = en.ordinal();
+            if (ordinal >= Long.SIZE)
+            {
+                throw new IllegalArgumentException(eSet+" contains too many enums for long");
+            }
+            flag |= 1 << ordinal;
+        }
+        return flag;
+    }
+    /**
      * Returns EnumSet constructed from bit flag. Bit flags bit position is
      * according to Enum ordinal.
      * 
@@ -67,6 +90,34 @@ public class EnumSetFlagger
         if (enumConstants.length > Integer.SIZE)
         {
             throw new IllegalArgumentException(elementType+" contains too many enums for int");
+        }
+        for (int ii=0;ii<enumConstants.length;ii++)
+        {
+            if ((flag & (1<<ii)) != 0)
+            {
+                set.add(enumConstants[ii]);
+            }
+        }
+        return set;
+    }
+    /**
+     * Returns EnumSet constructed from bit flag. Bit flags bit position is
+     * according to Enum ordinal.
+     * 
+     * <p>Throws IllegalArgumentException if enum contains too many values
+     * to fit flag.
+     * @param <E>
+     * @param elementType
+     * @param flag
+     * @return 
+     */
+    public static <E extends Enum<E>> EnumSet<E> getSet(Class<E> elementType, long flag)
+    {
+        EnumSet<E> set = EnumSet.noneOf(elementType);
+        E[] enumConstants = elementType.getEnumConstants();
+        if (enumConstants.length > Long.SIZE)
+        {
+            throw new IllegalArgumentException(elementType+" contains too many enums for long");
         }
         for (int ii=0;ii<enumConstants.length;ii++)
         {
