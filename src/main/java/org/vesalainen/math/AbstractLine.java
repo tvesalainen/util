@@ -23,17 +23,40 @@ public class AbstractLine implements Line
      */
     public AbstractLine(double slope, Point p)
     {
-        set(slope, p);
+        this(slope, p.getX(), p.getY());
     }
     /**
-     * Creates AbstractLine going through p1 nd p2
+     * Creates AbstractLine with slope and going through (x, y)
+     * @param slope
+     * @param x
+     * @param y 
+     */
+    public AbstractLine(double slope, double x, double y)
+    {
+        set(slope, x, y);
+    }
+    
+    /**
+     * Creates AbstractLine going through p1 and p2
      * @param p1
      * @param p2 
      */
     public AbstractLine(Point p1, Point p2)
     {
-        set(p1, p2);
+        this(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
+    /**
+     * Creates AbstractLine going through (x1, y1) and (x2, y2)
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2 
+     */
+    public AbstractLine(double x1, double y1, double x2, double y2)
+    {
+        set(x1, y1, x2, y2);
+    }
+    
     /**
      * Populates line
      * @param slope
@@ -41,14 +64,18 @@ public class AbstractLine implements Line
      */
     public final void set(double slope, Point p)
     {
+        set(slope, p.getX(), p.getY());
+    }
+    public final void set(double slope, double x, double y)
+    {
         this.slope = slope;
         if (Double.isInfinite(slope))
         {
-            this.a = p.getX();
+            this.a = x;
         }
         else
         {
-            this.a = p.getY() - slope*p.getX();
+            this.a = y - slope*x;
         }
     }
     /**
@@ -58,18 +85,21 @@ public class AbstractLine implements Line
      */
     public final void set(Point p1, Point p2)
     {
-        if (p2.getX() != p1.getX())
+        set(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+    public final void set(double x1, double y1, double x2, double y2)
+    {
+        if (x2 != x1)
         {
-            this.slope = (p2.getY() - p1.getY()) / (p2.getX() - p1.getX());
-            this.a = p1.getY() - slope*p1.getX();
+            this.slope = (y2 - y1) / (x2 - x1);
+            this.a = y1 - slope*x1;
         }
         else
         {
             this.slope = Double.POSITIVE_INFINITY;
-            this.a = p1.getX();
+            this.a = x1;
         }
     }
-    
 
     /**
      * <p>Returns y for x If slope != infinity
