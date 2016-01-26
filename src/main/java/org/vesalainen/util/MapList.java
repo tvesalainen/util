@@ -47,7 +47,7 @@ public interface MapList<M, L> extends Map<M,List<L>>
      */
     void addAll(Map<M,L> map);
     /**
-     * Returns mapped list or empty list if not found.
+     * Returns mapped list or immutable empty list if not found.
      * @param key
      * @return 
      */

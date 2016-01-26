@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,6 @@ import java.util.Map;
 public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L>
 {
     private Comparator<L> comparator;
-    private final List<L> emptyList = new ArrayList<>();
 
     public HashMapList()
     {
@@ -98,7 +98,7 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
         List<L> list = super.get(key);
         if (list == null)
         {
-            return emptyList;
+            return Collections.EMPTY_LIST;
         }
         else
         {
