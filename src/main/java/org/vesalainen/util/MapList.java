@@ -66,7 +66,7 @@ public interface MapList<M, L> extends Map<M,List<L>>
      * map.
      * @param key
      * @param value
-     * @return 
+     * @return True if item was removed from list.
      */
     boolean removeItem(M key, L value);
 }
