@@ -16,7 +16,10 @@
  */
 package org.vesalainen.util;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Lists class contains methods to construct often used lists
@@ -60,25 +63,36 @@ public class Lists
      */
     public static final String print(String start, String delim, String quotStart, String quotEnd, String end, Collection<?> collection)
     {
-        StringBuilder sb = new StringBuilder();
-        append(start, sb);
+        try
+        {
+            StringBuilder out = new StringBuilder();
+            print(out, start, delim, quotStart, quotEnd, end, collection);
+            return out.toString();
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    public static final void print(Appendable out, String start, String delim, String quotStart, String quotEnd, String end, Collection<?> collection) throws IOException
+    {
+        append(start, out);
         boolean first = true;
         for (Object ob : collection)
         {
             if (!first)
             {
-                append(delim, sb);
+                append(delim, out);
             }
             else
             {
                 first=false;
             }
-            append(quotStart, sb);
-            sb.append(ob.toString());
-            append(quotEnd, sb);
+            append(quotStart, out);
+            out.append(ob.toString());
+            append(quotEnd, out);
         }
-        append(end, sb);
-        return sb.toString();
+        append(end, out);
     }
     /**
      * Returns array items delimited
@@ -103,27 +117,38 @@ public class Lists
      */
     public static final String print(String start, String delim, String quotStart, String quotEnd, String end, Object... array)
     {
-        StringBuilder sb = new StringBuilder();
-        append(start, sb);
+        try
+        {
+            StringBuilder out = new StringBuilder();
+            print(out, start, delim, quotStart, quotEnd, end, array);
+            return out.toString();
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    public static final void print(Appendable out, String start, String delim, String quotStart, String quotEnd, String end, Object... array) throws IOException
+    {
+        append(start, out);
         boolean first = true;
         for (Object ob : array)
         {
             if (!first)
             {
-                append(delim, sb);
+                append(delim, out);
             }
             else
             {
                 first=false;
             }
-            append(quotStart, sb);
-            sb.append(ob.toString());
-            append(quotEnd, sb);
+            append(quotStart, out);
+            out.append(ob.toString());
+            append(quotEnd, out);
         }
-        append(end, sb);
-        return sb.toString();
+        append(end, out);
     }
-    private static final void append(String str, StringBuilder out)
+    private static void append(String str, Appendable out) throws IOException
     {
         if (str != null)
         {
