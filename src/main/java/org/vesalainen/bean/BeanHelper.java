@@ -4,6 +4,7 @@
  */
 package org.vesalainen.bean;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -157,9 +158,14 @@ public class BeanHelper
         Method method = getMethod(base, pseudoField);
         return method.getReturnType();
     }
+    public static final <T extends Annotation> T getAnnotation(Object base, String pseudoField, Class<T> annotationClass) throws BeanHelperException
+    {
+        Method method = getMethod(base, pseudoField);
+        return method.getDeclaredAnnotation(annotationClass);
+    }
     /**
      * Set's field content to value in object. If field is primitive and value is null
-     * returns false. Otherwice true
+     * returns false. Otherwise true
      * @param base
      * @param pseudoField
      * @param value
