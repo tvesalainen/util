@@ -41,6 +41,19 @@ public class Lists
         }
     }
     /**
+     * Removes items from collection
+     * @param <T>
+     * @param collection
+     * @param items 
+     */
+    public static final <T> void remove(Collection<T> collection, T... items)
+    {
+        for (T t : items)
+        {
+            collection.remove(t);
+        }
+    }
+    /**
      * Returns collection items delimited
      * @param delim
      * @param collection
