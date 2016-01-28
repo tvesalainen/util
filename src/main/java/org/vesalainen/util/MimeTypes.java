@@ -225,18 +225,24 @@ public class MimeTypes
     
     /**
      * 
-     * @return Returns MIME TYPE for filename extension. Returns DEFAULT if extension is unknown.
+     * @return Returns MIME TYPE for filename extension. Returns null if extension is unknown.
+     * <p>If fileExtension contains '.' only right  part of string is used.
      * @param fileExtension File extension. Extension for file README.txt is 'txt'
      */
     
     public static String getMimeType(String fileExtension)
     {
+        int idx = fileExtension.lastIndexOf('.');
+        if (idx != -1)
+        {
+            fileExtension = fileExtension.substring(idx+1);
+        }
         String type = mimeTable.get(fileExtension.toLowerCase());
         if (type != null)
         {
             return type;
         }
-        return DEFAULT;
+        return null;
     }
     
     /**
