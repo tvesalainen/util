@@ -242,7 +242,7 @@ public class MimeTypes
         {
             return type;
         }
-        return null;
+        return DEFAULT;
     }
     
     /**
