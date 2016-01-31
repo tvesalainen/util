@@ -19,9 +19,10 @@ package org.vesalainen.bean;
 /**
  * BeanField implementation where base object comes from  ThreadLocal
  * @author tkv
- * @param <T>
+ * @param <T> Base class type
+ * @param <D> Field type
  */
-public class ThreadLocalBeanField<T> extends AbstractBeanField<T>
+public class ThreadLocalBeanField<T,D> extends AbstractBeanField<T,D>
 {
     private final ThreadLocal<T> local;
 

@@ -24,8 +24,9 @@ import org.vesalainen.util.ConvertUtility;
  * An utility to access objects field using getX(), isX() and setX() methods
  * @author tkv
  * @param <T> Base class type
+ * @param <D> Field type
  */
-public abstract class AbstractBeanField<T> implements BeanField
+public abstract class AbstractBeanField<T,D> implements BeanField<D>
 {
     private Class<?> type;
     private Method getter;
@@ -94,11 +95,11 @@ public abstract class AbstractBeanField<T> implements BeanField
      * @return 
      */
     @Override
-    public Object get()
+    public D get()
     {
         try
         {
-            return getter.invoke(getBase());
+            return (D) getter.invoke(getBase());
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {

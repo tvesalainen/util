@@ -19,9 +19,10 @@ package org.vesalainen.bean;
 /**
  * Simple implementation where base object can be changed
  * @author tkv
- * @param <T>
+ * @param <T> Base class type
+ * @param <D> Field type
  */
-public class SimpleBeanField<T> extends AbstractBeanField<T>
+public class SimpleBeanField<T,D> extends AbstractBeanField<T,D>
 {
     private T base;
 

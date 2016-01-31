@@ -19,15 +19,16 @@ package org.vesalainen.bean;
 /**
  *
  * @author tkv
+ * @param <D>
  */
-public interface BeanField
+public interface BeanField<D>
 {
 
     /**
      * Get value.
      * @return
      */
-    Object get();
+    D get();
 
     /**
      * Set value using type conversions

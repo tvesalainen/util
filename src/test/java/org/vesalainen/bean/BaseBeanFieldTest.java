@@ -34,12 +34,12 @@ public class BaseBeanFieldTest
     public void test()
     {
         Base base = new Base();
-        SimpleBeanField<Base> bbf1 = new SimpleBeanField<>(base, "integer");
-        SimpleBeanField<Base> bbfs = new SimpleBeanField<>(base, "string");
+        SimpleBeanField<Base,Integer> bbf1 = new SimpleBeanField<>(base, "integer");
+        SimpleBeanField<Base,String> bbfs = new SimpleBeanField<>(base, "string");
         bbf1.set(1234);
-        assertEquals(1234, bbf1.get());
+        assertEquals(1234, (int)bbf1.get());
         bbf1.set("4321");
-        assertEquals(4321, bbf1.get());
+        assertEquals(4321, (int)bbf1.get());
         bbfs.set(1234);
         assertEquals("1234", bbfs.get());
     }
