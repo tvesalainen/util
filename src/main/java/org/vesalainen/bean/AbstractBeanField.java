@@ -28,9 +28,9 @@ import org.vesalainen.util.ConvertUtility;
  */
 public abstract class AbstractBeanField<T,D> implements BeanField<D>
 {
-    private Class<?> type;
-    private Method getter;
-    private Method setter;
+    protected Class<?> type;
+    protected Method getter;
+    protected Method setter;
     /**
      * Creates an AbstractBeanField
      * @param obj Base object
