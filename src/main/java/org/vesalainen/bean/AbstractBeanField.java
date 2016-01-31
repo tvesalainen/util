@@ -25,7 +25,7 @@ import org.vesalainen.util.ConvertUtility;
  * @author tkv
  * @param <T> Base class type
  */
-public abstract class AbstractBeanField<T>
+public abstract class AbstractBeanField<T> implements BeanField
 {
     private Class<?> type;
     private Method getter;
@@ -77,6 +77,7 @@ public abstract class AbstractBeanField<T>
      * @param value 
      * @see org.vesalainen.util.ConvertUtility#convert(java.lang.Class, java.lang.Object) 
      */
+    @Override
     public void set(Object value)
     {
         try
@@ -92,6 +93,7 @@ public abstract class AbstractBeanField<T>
      * Get value.
      * @return 
      */
+    @Override
     public Object get()
     {
         try
