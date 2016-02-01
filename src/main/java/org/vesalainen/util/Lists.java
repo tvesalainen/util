@@ -17,9 +17,9 @@
 package org.vesalainen.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
  * Lists class contains methods to construct often used lists
@@ -27,6 +27,18 @@ import java.util.logging.Logger;
  */
 public class Lists
 {
+    /**
+     * Creates a list that is populated with items
+     * @param <T>
+     * @param items
+     * @return 
+     */
+    public static final <T> List<T> create(T... items)
+    {
+        List<T> list = new ArrayList<>();
+        populate(list, items);
+        return list;
+    }
     /**
      * Populates collection with items
      * @param <T>
