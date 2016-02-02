@@ -539,7 +539,7 @@ public class BeanHelper
             if (
                     method.getName().startsWith("get") &&
                     method.getParameterCount() == 0 &&
-                    Void.class.equals(method.getReturnType())
+                    !Void.class.equals(method.getReturnType())
                     )
             {
                 set.add(getField(method));
