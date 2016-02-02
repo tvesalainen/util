@@ -534,7 +534,7 @@ public class BeanHelper
     public static final Set<String> getFields(Class<?> cls)
     {
         Set<String> set = new HashSet<>();
-        for (Method method : cls.getMethods())
+        for (Method method : cls.getDeclaredMethods())
         {
             if (
                     method.getName().startsWith("get") &&
