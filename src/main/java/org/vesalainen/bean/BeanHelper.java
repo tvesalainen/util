@@ -517,5 +517,34 @@ public class BeanHelper
     {
         return str.substring(0, 1).toUpperCase()+str.substring(1);
     }
-
+    /**
+     * Returns fieldname for method. getX -&gt; 'x'
+     * @param method
+     * @return 
+     */
+    public static final String getField(Method method)
+    {
+        return field(method.getName());
+    }
+    /**
+     * Returns Set of classes fieldnames.
+     * @param cls
+     * @return 
+     */
+    public static final Set<String> getFields(Class<?> cls)
+    {
+        Set<String> set = new HashSet<>();
+        for (Method method : cls.getMethods())
+        {
+            if (
+                    method.getName().startsWith("get") &&
+                    method.getParameterCount() == 0 &&
+                    Void.class.equals(method.getReturnType())
+                    )
+            {
+                set.add(getField(method));
+            }
+        }
+        return set;
+    }
 }
