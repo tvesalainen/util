@@ -224,40 +224,40 @@ public class ConvertUtility
                     Boolean b = (Boolean) object;
                     return (T) b;
                 }
-                if (byte.class.equals(expectedReturnType) && object instanceof Byte)
+                if (byte.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Byte b = (Byte) object;
+                    Number b = (Number) object;
                     return (T) b;
                 }
-                if (char.class.equals(expectedReturnType) && object instanceof Character)
+                if (char.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Character c = (Character) object;
-                    return (T) c;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
-                if (short.class.equals(expectedReturnType) && object instanceof Short)
+                if (short.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Short s = (Short) object;
-                    return (T) s;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
-                if (int.class.equals(expectedReturnType) && object instanceof Integer)
+                if (int.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Integer i = (Integer) object;
-                    return (T) i;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
-                if (long.class.equals(expectedReturnType) && object instanceof Long)
+                if (long.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Long l = (Long) object;
-                    return (T) l;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
-                if (float.class.equals(expectedReturnType) && object instanceof Float)
+                if (float.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Float f = (Float) object;
-                    return (T) f;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
-                if (double.class.equals(expectedReturnType) && object instanceof Double)
+                if (double.class.equals(expectedReturnType) && object instanceof Number)
                 {
-                    Double d = (Double) object;
-                    return (T) d;
+                    Number b = (Number) object;
+                    return (T) b;
                 }
             }
             if (object instanceof String)
