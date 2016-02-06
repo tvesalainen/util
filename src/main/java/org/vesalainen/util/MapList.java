@@ -18,7 +18,6 @@ package org.vesalainen.util;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * MapList is a convenience interface for classes handling mapped lists. List creation is automatic.
@@ -35,6 +34,10 @@ public interface MapList<K, V> extends MapCollection<K,List<V>,V>
      * @param value 
      */
     void add(K key, int index, V value);
+
+    @Override
+    public List<V> get(Object key);
+    
     /**
      * Replaces mapped list with collection. New list is in collection iterator order.
      * New list is returned.
