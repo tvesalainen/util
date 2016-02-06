@@ -27,23 +27,23 @@ import java.util.Map;
 /**
  * HashMap and ArrayList based implementation of MapList
  * @author tkv
- * @param <M> Map key type
- * @param <L> List value type
+ * @param <K> Map key type
+ * @param <V> List value type
  */
-public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L>
+public class HashMapList<K,V> extends HashMap<K,List<V>> implements MapList<K, V>
 {
-    private Comparator<L> comparator;
+    private Comparator<V> comparator;
 
     public HashMapList()
     {
     }
 
-    public HashMapList(Comparator<L> comparator)
+    public HashMapList(Comparator<V> comparator)
     {
         this.comparator = comparator;
     }
 
-    private List<L> createList()
+    private List<V> createList()
     {
         if (comparator != null)
         {
@@ -55,15 +55,15 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
         }
     }
     @Override
-    public void add(M key, L value)
+    public void add(K key, V value)
     {
         add(key, -1, value);
     }
     
     @Override
-    public void add(M key, int index, L value)
+    public void add(K key, int index, V value)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             list = createList();
@@ -79,9 +79,9 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
         }
     }
     @Override
-    public List<L> set(M key, Collection<L> value)
+    public List<V> set(K key, Collection<V> value)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             list = createList();
@@ -93,9 +93,9 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
     }
 
     @Override
-    public List<L> get(Object key)
+    public List<V> get(Object key)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             return Collections.EMPTY_LIST;
@@ -107,18 +107,18 @@ public class HashMapList<M,L> extends HashMap<M,List<L>> implements MapList<M, L
     }
 
     @Override
-    public void addAll(Map<M, L> map)
+    public void addAll(Map<K, V> map)
     {
-        for (Entry<M, L> entry : map.entrySet())
+        for (Entry<K, V> entry : map.entrySet())
         {
             add(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public boolean removeItem(M key, L value)
+    public boolean removeItem(K key, V value)
     {
-        List<L> list = get(key);
+        List<V> list = get(key);
         boolean res = list.remove(value);
         if (list.isEmpty())
         {
