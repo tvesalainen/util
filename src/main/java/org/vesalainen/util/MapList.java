@@ -23,36 +23,36 @@ import java.util.Map;
 /**
  * MapList is a convenience interface for classes handling mapped lists. List creation is automatic.
  * @author Timo Vesalainen
- * @param <M> Map key type
- * @param <L> List value type
+ * @param <K> Map key type
+ * @param <V> List value type
  */
-public interface MapList<M, L> extends Map<M,List<L>>
+public interface MapList<K, V> extends Map<K,List<V>>
 {
     /**
      * Adds value to mapped list. 
      * @param key
      * @param value 
      */
-    void add(M key, L value);
+    void add(K key, V value);
     /**
      * Inserts value to mapped list at index. 
      * @param key
      * @param index
      * @param value 
      */
-    void add(M key, int index, L value);
+    void add(K key, int index, V value);
     /**
      * Adds all maps key value pairs.
      * @param map 
      */
-    void addAll(Map<M,L> map);
+    void addAll(Map<K,V> map);
     /**
      * Returns mapped list or immutable empty list if not found.
      * @param key
      * @return 
      */
     @Override
-    List<L> get(Object key);
+    List<V> get(Object key);
     /**
      * Replaces mapped list with collection. New list is in collection iterator order.
      * New list is returned.
@@ -60,7 +60,7 @@ public interface MapList<M, L> extends Map<M,List<L>>
      * @param value
      * @return 
      */
-    List<L> set(M key, Collection<L> value);
+    List<V> set(K key, Collection<V> value);
     /**
      * Removes the first item from list. If list becomes empty it is removed from 
      * map.
@@ -68,5 +68,5 @@ public interface MapList<M, L> extends Map<M,List<L>>
      * @param value
      * @return True if item was removed from list.
      */
-    boolean removeItem(M key, L value);
+    boolean removeItem(K key, V value);
 }
