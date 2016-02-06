@@ -26,26 +26,26 @@ import java.util.Map;
 /**
  * EnumMap and ArrayList based implementation of MapList
  * @author tkv
- * @param <M> Map key type
- * @param <L> List value type
+ * @param <K> Map key type
+ * @param <V> List value type
  */
-public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> implements MapList<M, L>
+public class EnumMapList<K extends Enum<K>,V> extends EnumMap<K,List<V>> implements MapList<K, V>
 {
-    private Comparator<L> comparator;
-    private final List<L> emptyList = new ArrayList<>();
+    private Comparator<V> comparator;
+    private final List<V> emptyList = new ArrayList<>();
 
-    public EnumMapList(Class<M> keyType)
+    public EnumMapList(Class<K> keyType)
     {
         super(keyType);
     }
 
-    public EnumMapList(Class<M> keyType, Comparator<L> comparator)
+    public EnumMapList(Class<K> keyType, Comparator<V> comparator)
     {
         super(keyType);
         this.comparator = comparator;
     }
 
-    private List<L> createList()
+    private List<V> createList()
     {
         if (comparator != null)
         {
@@ -57,15 +57,15 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
         }
     }
     @Override
-    public void add(M key, L value)
+    public void add(K key, V value)
     {
         add(key, -1, value);
     }
     
     @Override
-    public void add(M key, int index, L value)
+    public void add(K key, int index, V value)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             list = createList();
@@ -81,9 +81,9 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
         }
     }
     @Override
-    public List<L> set(M key, Collection<L> value)
+    public List<V> set(K key, Collection<V> value)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             list = createList();
@@ -95,9 +95,9 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
     }
 
     @Override
-    public List<L> get(Object key)
+    public List<V> get(Object key)
     {
-        List<L> list = super.get(key);
+        List<V> list = super.get(key);
         if (list == null)
         {
             return emptyList;
@@ -109,18 +109,18 @@ public class EnumMapList<M extends Enum<M>,L> extends EnumMap<M,List<L>> impleme
     }
 
     @Override
-    public void addAll(Map<M, L> map)
+    public void addAll(Map<K, V> map)
     {
-        for (Entry<M, L> entry : map.entrySet())
+        for (Entry<K, V> entry : map.entrySet())
         {
             add(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public boolean removeItem(M key, L value)
+    public boolean removeItem(K key, V value)
     {
-        List<L> list = get(key);
+        List<V> list = get(key);
         boolean res = list.remove(value);
         if (list.isEmpty())
         {
