@@ -23,35 +23,35 @@ import java.util.Set;
 /**
  * MapList is a convenience interface for classes handling mapped sets. Set creation is automatic.
  * @author Timo Vesalainen
- * @param <M> Map key type
- * @param <S> Set value type
+ * @param <K> Map key type
+ * @param <V> Set value type
  */
-public interface MapSet<M, S> extends Map<M,Set<S>>
+public interface MapSet<K, V> extends MapCollection<K,Set<V>>
 {
     /**
      * Adds a value to mapped set
      * @param key
      * @param value 
      */
-    void add(M key, S value);
+    void add(K key, V value);
     /**
      * Adds values to mapped set.
      * @param key
      * @param value 
      */
-    void addAll(M key, Collection<S> value);
+    void addAll(K key, Collection<V> value);
     /**
      * Adds all maps key value pairs.
      * @param map 
      */
-    void addAll(Map<M,S> map);
+    void addAll(Map<K,V> map);
     /**
      * Return true is mapped set contains value.
      * @param key
      * @param value
      * @return 
      */
-    boolean contains(M key, S value);
+    boolean contains(K key, V value);
     /**
      * Replaces mapped Set with collection.
      * New set is returned.
@@ -59,7 +59,7 @@ public interface MapSet<M, S> extends Map<M,Set<S>>
      * @param value
      * @return 
      */
-    Set<S> set(M key, Collection<S> value);
+    Set<V> set(K key, Collection<V> value);
     /**
      * Removes the item from set. If set becomes empty it is removed from 
      * map.
@@ -67,5 +67,5 @@ public interface MapSet<M, S> extends Map<M,Set<S>>
      * @param value
      * @return 
      */
-    boolean removeItem(M key, S value);
+    boolean removeItem(K key, V value);
 }
