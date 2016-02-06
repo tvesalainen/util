@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,32 +27,8 @@ import java.util.Set;
  * @param <K> Map key type
  * @param <V> Set value type
  */
-public interface MapSet<K, V> extends MapCollection<K,Set<V>>
+public interface MapSet<K, V> extends MapCollection<K,Set<V>,V>
 {
-    /**
-     * Adds a value to mapped set
-     * @param key
-     * @param value 
-     */
-    void add(K key, V value);
-    /**
-     * Adds values to mapped set.
-     * @param key
-     * @param value 
-     */
-    void addAll(K key, Collection<V> value);
-    /**
-     * Adds all maps key value pairs.
-     * @param map 
-     */
-    void addAll(Map<K,V> map);
-    /**
-     * Return true is mapped set contains value.
-     * @param key
-     * @param value
-     * @return 
-     */
-    boolean contains(K key, V value);
     /**
      * Replaces mapped Set with collection.
      * New set is returned.
@@ -59,13 +36,6 @@ public interface MapSet<K, V> extends MapCollection<K,Set<V>>
      * @param value
      * @return 
      */
+    @Override
     Set<V> set(K key, Collection<V> value);
-    /**
-     * Removes the item from set. If set becomes empty it is removed from 
-     * map.
-     * @param key
-     * @param value
-     * @return 
-     */
-    boolean removeItem(K key, V value);
 }

@@ -129,4 +129,24 @@ public class EnumMapList<K extends Enum<K>,V> extends EnumMap<K,List<V>> impleme
         return res;
     }
 
+    @Override
+    public void addAll(K key, Collection<V> collection)
+    {
+        for (V value : collection)
+        {
+            add(key, value);
+        }
+    }
+
+    @Override
+    public boolean contains(K key, V value)
+    {
+        List<V> list = get(key);
+        if (list == null)
+        {
+            return false;
+        }
+        return list.contains(value);
+    }
+
 }

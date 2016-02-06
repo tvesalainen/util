@@ -26,14 +26,8 @@ import java.util.Map;
  * @param <K> Map key type
  * @param <V> List value type
  */
-public interface MapList<K, V> extends Map<K,List<V>>
+public interface MapList<K, V> extends MapCollection<K,List<V>,V>
 {
-    /**
-     * Adds value to mapped list. 
-     * @param key
-     * @param value 
-     */
-    void add(K key, V value);
     /**
      * Inserts value to mapped list at index. 
      * @param key
@@ -42,31 +36,12 @@ public interface MapList<K, V> extends Map<K,List<V>>
      */
     void add(K key, int index, V value);
     /**
-     * Adds all maps key value pairs.
-     * @param map 
-     */
-    void addAll(Map<K,V> map);
-    /**
-     * Returns mapped list or immutable empty list if not found.
-     * @param key
-     * @return 
-     */
-    @Override
-    List<V> get(Object key);
-    /**
      * Replaces mapped list with collection. New list is in collection iterator order.
      * New list is returned.
      * @param key
      * @param value
      * @return 
      */
+    @Override
     List<V> set(K key, Collection<V> value);
-    /**
-     * Removes the first item from list. If list becomes empty it is removed from 
-     * map.
-     * @param key
-     * @param value
-     * @return True if item was removed from list.
-     */
-    boolean removeItem(K key, V value);
 }

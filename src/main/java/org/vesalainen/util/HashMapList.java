@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * HashMap and ArrayList based implementation of MapList
@@ -127,4 +128,23 @@ public class HashMapList<K,V> extends HashMap<K,List<V>> implements MapList<K, V
         return res;
     }
 
+    @Override
+    public void addAll(K key, Collection<V> collection)
+    {
+        for (V value : collection)
+        {
+            add(key, value);
+        }
+    }
+
+    @Override
+    public boolean contains(K key, V value)
+    {
+        List<V> list = get(key);
+        if (list == null)
+        {
+            return false;
+        }
+        return list.contains(value);
+    }
 }

@@ -19,6 +19,7 @@ package org.vesalainen.util;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ import java.util.Set;
  * @param <K> Map key type.
  * @param <V> Set value type
  */
-public class HashMapSet<K,V> extends HashMap<K,Set<V>> implements MapSet<K, V>
+public class HashMapSet<K,V> extends HashMap<K,Set<V>> implements MapSet<K, V>, MapCollection<K,Set<V>,V>
 {
 
     protected Set<V> createSet()
