@@ -22,10 +22,10 @@ import java.util.TreeSet;
 /**
  * HashMap and TreeSet based implementation of MapSet
  * @author tkv
- * @param <M> Map key type
- * @param <S> Set value type
+ * @param <K> Map key type
+ * @param <V> Set value type
  */
-public class HashMapTreeSet<M,S> extends HashMapSet<M,S>
+public class HashMapTreeSet<K,V> extends HashMapSet<K,V>
 {
 
     @Override
