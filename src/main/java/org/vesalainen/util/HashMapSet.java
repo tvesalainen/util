@@ -25,20 +25,20 @@ import java.util.Set;
 /**
  * HashMap and HashSet based implementation of MapSet
  * @author tkv
- * @param <M> Map key type.
- * @param <S> Set value type
+ * @param <K> Map key type.
+ * @param <V> Set value type
  */
-public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
+public class HashMapSet<K,V> extends HashMap<K,Set<V>> implements MapSet<K, V>
 {
 
-    protected Set<S> createSet()
+    protected Set<V> createSet()
     {
         return new HashSet<>();
     }
     @Override
-    public boolean contains(M key, S value)
+    public boolean contains(K key, V value)
     {
-        Set<S> set = get(key);
+        Set<V> set = get(key);
         if (set == null)
         {
             return false;
@@ -47,9 +47,9 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
     }
 
     @Override
-    public void add(M key, S value)
+    public void add(K key, V value)
     {
-        Set<S> set = get(key);
+        Set<V> set = get(key);
         if (set == null)
         {
             set = createSet();
@@ -59,9 +59,9 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
     }
 
     @Override
-    public void addAll(M key, Collection<S> value)
+    public void addAll(K key, Collection<V> value)
     {
-        Set<S> set = get(key);
+        Set<V> set = get(key);
         if (set == null)
         {
             set = createSet();
@@ -74,9 +74,9 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
     }
 
     @Override
-    public Set<S> set(M key, Collection<S> value)
+    public Set<V> set(K key, Collection<V> value)
     {
-        Set<S> set = get(key);
+        Set<V> set = get(key);
         if (set == null)
         {
             set = createSet();
@@ -91,18 +91,18 @@ public class HashMapSet<M,S> extends HashMap<M,Set<S>> implements MapSet<M, S>
     }
 
     @Override
-    public void addAll(Map<M, S> map)
+    public void addAll(Map<K, V> map)
     {
-        for (Entry<M, S> entry : map.entrySet())
+        for (Entry<K, V> entry : map.entrySet())
         {
             add(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public boolean removeItem(M key, S value)
+    public boolean removeItem(K key, V value)
     {
-        Set<S> set = get(key);
+        Set<V> set = get(key);
         boolean res = set.remove(value);
         if (set.isEmpty())
         {
