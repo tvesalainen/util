@@ -32,5 +32,6 @@ public enum UnitCategory
     Frequency,
     Mass,
     Time,
-    Volume
+    Volume,
+    Acceleration
 }

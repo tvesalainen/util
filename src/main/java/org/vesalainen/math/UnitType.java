@@ -22,6 +22,7 @@ package org.vesalainen.math;
  */
 public enum UnitType
 {
+    GRAVITY(UnitCategory.Acceleration, "g"),
     PASCAL(UnitCategory.Pressure, "Pascal"),
     BAR(UnitCategory.Pressure, "Bar"),
     DEGREE(UnitCategory.PlaneAngle, "Degree"),
