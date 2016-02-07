@@ -54,5 +54,8 @@ public enum UnitType
         return category;
     }
     
-    
+    public String getUnit()
+    {
+        return unit;
+    }
 }
