@@ -22,27 +22,30 @@ package org.vesalainen.math;
  */
 public enum UnitType
 {
-    PASCAL(UnitCategory.Pressure),
-    BAR(UnitCategory.Pressure),
-    DEGREE(UnitCategory.PlaneAngle),
-    FAHRENHEIT(UnitCategory.Temperature),
-    CELSIUS(UnitCategory.Temperature),
-    FATHOM(UnitCategory.Length),
-    METER(UnitCategory.Length),
-    KILOMETER(UnitCategory.Length),
-    NM(UnitCategory.Length),
-    KNOT(UnitCategory.Speed),
-    MS(UnitCategory.Speed),
-    KMH(UnitCategory.Speed),
-    DEG(UnitCategory.Coordinate),
-    DEGMIN(UnitCategory.Coordinate),
-    DEGMINSEC(UnitCategory.Coordinate)
+    PASCAL(UnitCategory.Pressure, "Pascal"),
+    BAR(UnitCategory.Pressure, "Bar"),
+    DEGREE(UnitCategory.PlaneAngle, "Degree"),
+    RADIAN(UnitCategory.PlaneAngle, "Radian"),
+    FAHRENHEIT(UnitCategory.Temperature, "Fahrenheit"),
+    CELSIUS(UnitCategory.Temperature, "Celcius"),
+    FATHOM(UnitCategory.Length, "Fathom"),
+    METER(UnitCategory.Length, "m"),
+    KILOMETER(UnitCategory.Length, "Km"),
+    NM(UnitCategory.Length, "NM"),
+    KNOT(UnitCategory.Speed, "Knots"),
+    MS(UnitCategory.Speed, "m/s"),
+    KMH(UnitCategory.Speed, "Km/h"),
+    DEG(UnitCategory.Coordinate, "˚"),
+    DEGMIN(UnitCategory.Coordinate, ""),
+    DEGMINSEC(UnitCategory.Coordinate, "")
     ;
     private final UnitCategory category;
+    private final String unit;
 
-    private UnitType(UnitCategory category)
+    private UnitType(UnitCategory category, String unit)
     {
         this.category = category;
+        this.unit = unit;
     }
 
     public UnitCategory getCategory()
