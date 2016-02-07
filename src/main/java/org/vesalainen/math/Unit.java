@@ -16,39 +16,16 @@
  */
 package org.vesalainen.math;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
- *
+ * This annotation can be used in setting units 
  * @author tkv
  */
-public enum Unit
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Unit
 {
-    PASCAL(UnitCategory.Pressure),
-    BAR(UnitCategory.Pressure),
-    DEGREE(UnitCategory.PlaneAngle),
-    FAHRENHEIT(UnitCategory.Temperature),
-    CELSIUS(UnitCategory.Temperature),
-    FATHOM(UnitCategory.Length),
-    METER(UnitCategory.Length),
-    KILOMETER(UnitCategory.Length),
-    NM(UnitCategory.Length),
-    KNOT(UnitCategory.Speed),
-    MS(UnitCategory.Speed),
-    KMH(UnitCategory.Speed),
-    DEG(UnitCategory.Coordinate),
-    DEGMIN(UnitCategory.Coordinate),
-    DEGMINSEC(UnitCategory.Coordinate)
-    ;
-    private final UnitCategory category;
-
-    private Unit(UnitCategory category)
-    {
-        this.category = category;
-    }
-
-    public UnitCategory getCategory()
-    {
-        return category;
-    }
-    
-    
+    UnitType value();
+    double multiplier() default 1.0;
 }
