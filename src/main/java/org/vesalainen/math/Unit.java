@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
+package org.vesalainen.math;
 
 /**
  *
@@ -22,13 +22,15 @@ package org.vesalainen.navi;
  */
 public enum Unit
 {
-    DEGREE(UnitCategory.Angle),
+    PASCAL(UnitCategory.Pressure),
+    BAR(UnitCategory.Pressure),
+    DEGREE(UnitCategory.PlaneAngle),
     FAHRENHEIT(UnitCategory.Temperature),
     CELSIUS(UnitCategory.Temperature),
-    FATHOM(UnitCategory.Distance),
-    METER(UnitCategory.Distance),
-    KILOMETER(UnitCategory.Distance),
-    NM(UnitCategory.Distance),
+    FATHOM(UnitCategory.Length),
+    METER(UnitCategory.Length),
+    KILOMETER(UnitCategory.Length),
+    NM(UnitCategory.Length),
     KNOT(UnitCategory.Speed),
     MS(UnitCategory.Speed),
     KMH(UnitCategory.Speed),

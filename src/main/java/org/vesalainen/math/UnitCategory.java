@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
+package org.vesalainen.math;
 
 /**
  *
@@ -23,8 +23,14 @@ package org.vesalainen.navi;
 public enum UnitCategory
 {
     Coordinate,
-    Distance,
+    Length,
     Speed,
-    Angle,
-    Temperature
+    PlaneAngle,
+    Temperature,
+    Pressure,
+    Energy,
+    Frequency,
+    Mass,
+    Time,
+    Volume
 }
