@@ -28,8 +28,8 @@ import java.util.TreeMap;
 /**
  *
  * @author tkv
- * @param <K>
- * @param <V>
+ * @param <K> Key type
+ * @param <V> Value type
  */
 public class TreeMapList<K,V> extends AbstractMapList<K,V> implements NavigableMap<K,List<V>>
 {
@@ -91,7 +91,7 @@ public class TreeMapList<K,V> extends AbstractMapList<K,V> implements NavigableM
     @Override
     public Entry<K, List<V>> higherEntry(K key)
     {
-        return navigableMap.higherEntry(key);
+            return navigableMap.higherEntry(key);
     }
 
     @Override
