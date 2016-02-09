@@ -16,8 +16,13 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -26,8 +31,9 @@ import java.util.TreeMap;
  * @param <K>
  * @param <V>
  */
-public class TreeMapList<K,V> extends AbstractMapList<K,V>
+public class TreeMapList<K,V> extends AbstractMapList<K,V> implements NavigableMap<K,List<V>>
 {
+    protected NavigableMap<K,List<V>> navigableMap;
     /**
      * Creates a TreeMapList with natural ordering.
      */
@@ -43,6 +49,169 @@ public class TreeMapList<K,V> extends AbstractMapList<K,V>
     public TreeMapList(Comparator<K> mapComparator, Comparator<V> listComparator)
     {
         super(new TreeMap<K,List<V>>(mapComparator), listComparator);
+        navigableMap = (TreeMap<K, List<V>>) map;
+    }
+
+    @Override
+    public Entry<K, List<V>> lowerEntry(K key)
+    {
+        return navigableMap.lowerEntry(key);
+    }
+
+    @Override
+    public K lowerKey(K key)
+    {
+        return navigableMap.lowerKey(key);
+    }
+
+    @Override
+    public Entry<K, List<V>> floorEntry(K key)
+    {
+        return navigableMap.floorEntry(key);
+    }
+
+    @Override
+    public K floorKey(K key)
+    {
+        return navigableMap.floorKey(key);
+    }
+
+    @Override
+    public Entry<K, List<V>> ceilingEntry(K key)
+    {
+        return navigableMap.ceilingEntry(key);
+    }
+
+    @Override
+    public K ceilingKey(K key)
+    {
+        return navigableMap.ceilingKey(key);
+    }
+
+    @Override
+    public Entry<K, List<V>> higherEntry(K key)
+    {
+        return navigableMap.higherEntry(key);
+    }
+
+    @Override
+    public K higherKey(K key)
+    {
+        return navigableMap.higherKey(key);
+    }
+
+    @Override
+    public Entry<K, List<V>> firstEntry()
+    {
+        return navigableMap.firstEntry();
+    }
+
+    @Override
+    public Entry<K, List<V>> lastEntry()
+    {
+        return navigableMap.lastEntry();
+    }
+
+    @Override
+    public Entry<K, List<V>> pollFirstEntry()
+    {
+        return navigableMap.pollFirstEntry();
+    }
+
+    @Override
+    public Entry<K, List<V>> pollLastEntry()
+    {
+        return navigableMap.pollLastEntry();
+    }
+
+    @Override
+    public NavigableMap<K, List<V>> descendingMap()
+    {
+        return navigableMap.descendingMap();
+    }
+
+    @Override
+    public NavigableSet<K> navigableKeySet()
+    {
+        return navigableMap.navigableKeySet();
+    }
+
+    @Override
+    public NavigableSet<K> descendingKeySet()
+    {
+        return navigableMap.descendingKeySet();
+    }
+
+    @Override
+    public NavigableMap<K, List<V>> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive)
+    {
+        return navigableMap.subMap(fromKey, fromInclusive, toKey, toInclusive);
+    }
+
+    @Override
+    public NavigableMap<K, List<V>> headMap(K toKey, boolean inclusive)
+    {
+        return navigableMap.headMap(toKey, inclusive);
+    }
+
+    @Override
+    public NavigableMap<K, List<V>> tailMap(K fromKey, boolean inclusive)
+    {
+        return navigableMap.tailMap(fromKey, inclusive);
+    }
+
+    @Override
+    public SortedMap<K, List<V>> subMap(K fromKey, K toKey)
+    {
+        return navigableMap.subMap(fromKey, toKey);
+    }
+
+    @Override
+    public SortedMap<K, List<V>> headMap(K toKey)
+    {
+        return navigableMap.headMap(toKey);
+    }
+
+    @Override
+    public SortedMap<K, List<V>> tailMap(K fromKey)
+    {
+        return navigableMap.tailMap(fromKey);
+    }
+
+    @Override
+    public Comparator<? super K> comparator()
+    {
+        return navigableMap.comparator();
+    }
+
+    @Override
+    public K firstKey()
+    {
+        return navigableMap.firstKey();
+    }
+
+    @Override
+    public K lastKey()
+    {
+        return navigableMap.lastKey();
+    }
+
+    @Override
+    public Set<K> keySet()
+    {
+        return navigableMap.keySet();
+    }
+
+    @Override
+    public Collection<List<V>> values()
+    {
+        return navigableMap.values();
+    }
+
+    @Override
+    public Set<Entry<K, List<V>>> entrySet()
+    {
+        return navigableMap.entrySet();
     }
 
 }
