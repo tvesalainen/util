@@ -16,10 +16,8 @@
  */
 package org.vesalainen.util;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,87 +27,17 @@ import java.util.Set;
  * @param <K> Map key type.
  * @param <V> Set value type
  */
-public class HashMapSet<K,V> extends HashMap<K,Set<V>> implements MapSet<K, V>, MapCollection<K,Set<V>,V>
+public class HashMapSet<K,V> extends AbstractMapSet<K,V>
 {
 
+    public HashMapSet()
+    {
+        super(new HashMap<K,Set<V>>());
+    }
+
+    @Override
     protected Set<V> createSet()
     {
         return new HashSet<>();
     }
-    @Override
-    public boolean contains(K key, V value)
-    {
-        Set<V> set = get(key);
-        if (set == null)
-        {
-            return false;
-        }
-        return set.contains(value);
-    }
-
-    @Override
-    public void add(K key, V value)
-    {
-        Set<V> set = get(key);
-        if (set == null)
-        {
-            set = createSet();
-            put(key, set);
-        }
-        set.add(value);
-    }
-
-    @Override
-    public void addAll(K key, Collection<V> value)
-    {
-        Set<V> set = get(key);
-        if (set == null)
-        {
-            set = createSet();
-            put(key, set);
-        }
-        if (value != null)
-        {
-            set.addAll(value);
-        }
-    }
-
-    @Override
-    public Set<V> set(K key, Collection<V> value)
-    {
-        Set<V> set = get(key);
-        if (set == null)
-        {
-            set = createSet();
-            put(key, set);
-        }
-        set.clear();
-        if (value != null)
-        {
-            set.addAll(value);
-        }
-        return set;
-    }
-
-    @Override
-    public void addAll(Map<K, V> map)
-    {
-        for (Entry<K, V> entry : map.entrySet())
-        {
-            add(entry.getKey(), entry.getValue());
-        }
-    }
-
-    @Override
-    public boolean removeItem(K key, V value)
-    {
-        Set<V> set = get(key);
-        boolean res = set.remove(value);
-        if (set.isEmpty())
-        {
-            remove(key);
-        }
-        return res;
-    }
-
 }

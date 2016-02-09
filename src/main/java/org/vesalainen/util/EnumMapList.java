@@ -16,12 +16,9 @@
  */
 package org.vesalainen.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * EnumMap and ArrayList based implementation of MapList
@@ -29,124 +26,24 @@ import java.util.Map;
  * @param <K> Map key type
  * @param <V> List value type
  */
-public class EnumMapList<K extends Enum<K>,V> extends EnumMap<K,List<V>> implements MapList<K, V>
+public class EnumMapList<K extends Enum<K>,V> extends AbstractMapList<K,V>
 {
-    private Comparator<V> comparator;
-    private final List<V> emptyList = new ArrayList<>();
-
+    /**
+     * Creates a EnumMapList with no ordering for list.
+     * @param keyType Enum key type
+     */
     public EnumMapList(Class<K> keyType)
     {
-        super(keyType);
+        this(keyType, null);
     }
-
+    /**
+     * Creates a EnumMapList
+     * @param keyType Enum key type
+     * @param comparator Comparator for List. If null no ordering.
+     */
     public EnumMapList(Class<K> keyType, Comparator<V> comparator)
     {
-        super(keyType);
-        this.comparator = comparator;
-    }
-
-    private List<V> createList()
-    {
-        if (comparator != null)
-        {
-            return new OrderedList<>(comparator);
-        }
-        else
-        {
-            return new ArrayList<>();
-        }
-    }
-    @Override
-    public void add(K key, V value)
-    {
-        add(key, -1, value);
-    }
-    
-    @Override
-    public void add(K key, int index, V value)
-    {
-        List<V> list = super.get(key);
-        if (list == null)
-        {
-            list = createList();
-            put(key, list);
-        }
-        if (index != -1)
-        {
-            list.add(index, value);
-        }
-        else
-        {
-            list.add(value);
-        }
-    }
-    @Override
-    public List<V> set(K key, Collection<V> value)
-    {
-        List<V> list = super.get(key);
-        if (list == null)
-        {
-            list = createList();
-            put(key, list);
-        }
-        list.clear();
-        list.addAll(value);
-        return list;
-    }
-
-    @Override
-    public List<V> get(Object key)
-    {
-        List<V> list = super.get(key);
-        if (list == null)
-        {
-            return emptyList;
-        }
-        else
-        {
-            return list;
-        }
-    }
-
-    @Override
-    public void addAll(Map<K, V> map)
-    {
-        for (Entry<K, V> entry : map.entrySet())
-        {
-            add(entry.getKey(), entry.getValue());
-        }
-    }
-
-    @Override
-    public boolean removeItem(K key, V value)
-    {
-        List<V> list = get(key);
-        boolean res = list.remove(value);
-        if (list.isEmpty())
-        {
-            remove(key);
-        }
-        return res;
-    }
-
-    @Override
-    public void addAll(K key, Collection<V> collection)
-    {
-        for (V value : collection)
-        {
-            add(key, value);
-        }
-    }
-
-    @Override
-    public boolean contains(K key, V value)
-    {
-        List<V> list = get(key);
-        if (list == null)
-        {
-            return false;
-        }
-        return list.contains(value);
+        super(new EnumMap<K,List<V>>(keyType), comparator);
     }
 
 }

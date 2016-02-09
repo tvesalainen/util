@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Comparator;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -47,4 +48,26 @@ public class HashMapListTest
         assertEquals(0, lst.size());
     }
     
+    @Test
+    public void test2()
+    {
+        HashMapList<String,String> hml = new HashMapList<>(new Reverse());
+        hml.add("a", "1");
+        hml.add("a", "2");
+        List<String> lst = hml.get("a");
+        assertEquals(2, lst.size());
+        assertEquals("2", lst.get(0));
+        assertEquals("1", lst.get(1));
+    }
+    
+    private static class Reverse implements Comparator<String>
+    {
+
+        @Override
+        public int compare(String o1, String o2)
+        {
+            return o1.compareTo(o2);
+        }
+        
+    }
 }

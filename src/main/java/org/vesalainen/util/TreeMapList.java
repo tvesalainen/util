@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Timo Vesalainen
+ * Copyright (C) 2016 tkv
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,33 +16,33 @@
  */
 package org.vesalainen.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * HashMap and ArrayList based implementation of MapList
+ *
  * @author tkv
- * @param <K> Map key type
- * @param <V> List value type
+ * @param <K>
+ * @param <V>
  */
-public class HashMapList<K,V> extends AbstractMapList<K,V>
+public class TreeMapList<K,V> extends AbstractMapList<K,V>
 {
-    public HashMapList()
+    /**
+     * Creates a TreeMapList with natural ordering.
+     */
+    public TreeMapList()
     {
-        this(null);
+        this(null, null);
     }
     /**
-     * 
-     * @param comparator Comparator for List
+     * Creates a TreeMapList
+     * @param mapComparator Comparator for keys. If null uses natural order
+     * @param listComparator Comparator for List entries. If null uses no ordering
      */
-    public HashMapList(Comparator<V> comparator)
+    public TreeMapList(Comparator<K> mapComparator, Comparator<V> listComparator)
     {
-        super(new HashMap<K,List<V>>(), comparator);
+        super(new TreeMap<K,List<V>>(mapComparator), listComparator);
     }
 
 }
