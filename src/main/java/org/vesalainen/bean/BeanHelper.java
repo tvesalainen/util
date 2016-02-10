@@ -164,8 +164,17 @@ public class BeanHelper
     }
     public static final Class getType(Object base, String pseudoField) throws BeanHelperException
     {
-        Method method = getMethod(base, pseudoField);
-        return method.getReturnType();
+        Class<? extends Object> type = base.getClass();
+        try
+        {
+            Field field = type.getField(pseudoField);
+            return field.getType();
+        }
+        catch (NoSuchFieldException | SecurityException ex)
+        {
+            Method method = getMethod(base, pseudoField);
+            return method.getReturnType();
+        }
     }
     public static final <T extends Annotation> T getAnnotation(Object base, String pseudoField, Class<T> annotationClass) throws BeanHelperException
     {
