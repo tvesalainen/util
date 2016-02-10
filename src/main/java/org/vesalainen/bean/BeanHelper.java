@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.vesalainen.util.ConvertUtility;
@@ -80,43 +82,52 @@ public class BeanHelper
 
     /**
      * Returns object's field's value
-     * @param object
+     * @param base
      * @param pseudoField
      * @return
      * @throws SecurityException
      * @throws IllegalArgumentException
      */
-    public static final Object getFieldValue(Object object, String pseudoField) throws BeanHelperException
+    public static final Object getFieldValue(Object base, String pseudoField) throws BeanHelperException
     {
-        String methodName = BeanHelper.getter(pseudoField);
+        Class<? extends Object> type = base.getClass();
         try
         {
-            Method method = object.getClass().getMethod(methodName);
-            return method.invoke(object);
+            Field field = type.getField(pseudoField);
+            return field.get(base);
         }
-        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+        catch (IllegalAccessException |IllegalArgumentException | NoSuchFieldException | SecurityException exx)
         {
-            throw new BeanHelperException(methodName+" not found in "+object.getClass().getName(), ex);
-        }
-        catch (NoSuchMethodException ex)
-        {
+            String methodName = BeanHelper.getter(pseudoField);
             try
             {
-                methodName = BeanHelper.isser(pseudoField);
-                Method method = object.getClass().getMethod(methodName);
-                return method.invoke(object);
+                Method method = type.getMethod(methodName);
+                return method.invoke(base);
             }
-            catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex1)
+            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
             {
-                throw new BeanHelperException(methodName+" not found in "+object.getClass().getName(), ex);
+                throw new BeanHelperException(methodName+" not found in "+base.getClass().getName(), ex);
+            }
+            catch (NoSuchMethodException ex)
+            {
+                try
+                {
+                    methodName = BeanHelper.isser(pseudoField);
+                    Method method = base.getClass().getMethod(methodName);
+                    return method.invoke(base);
+                }
+                catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex1)
+                {
+                    throw new BeanHelperException(methodName+" not found in "+base.getClass().getName(), ex);
+                }
             }
         }
     }
-    public static final boolean setFieldValue(Object base, String pseudoField, Object cv, int index) throws BeanHelperException, ConvertUtilityException
+    public static final void setFieldValue(Object base, String pseudoField, Object cv, int index) throws BeanHelperException, ConvertUtilityException
     {
         if (index == -1)
         {
-            return setFieldValue(base, pseudoField, cv);
+            setFieldValue(base, pseudoField, cv);
         }
         else
         {
@@ -125,7 +136,6 @@ public class BeanHelper
             {
                 List list = (List) value;
                 list.set(index, cv);
-                return true;
             }
             else
             {
@@ -133,7 +143,6 @@ public class BeanHelper
                 {
                     Object[] arr = (Object[]) value;
                     arr[index] = cv;
-                    return true;
                 }
                 else
                 {
@@ -160,11 +169,20 @@ public class BeanHelper
     }
     public static final <T extends Annotation> T getAnnotation(Object base, String pseudoField, Class<T> annotationClass) throws BeanHelperException
     {
-        Method method = getMethod(base, pseudoField);
-        return method.getDeclaredAnnotation(annotationClass);
+        Class<? extends Object> type = base.getClass();
+        try
+        {
+            Field field = type.getField(pseudoField);
+            return field.getAnnotation(annotationClass);
+        }
+        catch (NoSuchFieldException | SecurityException ex)
+        {
+            Method method = getMethod(base, pseudoField);
+            return method.getDeclaredAnnotation(annotationClass);
+        }
     }
     /**
-     * Set's field content to value in object. If field is primitive and value is null
+     * Set's field content to value in object.
      * returns false. Otherwise true
      * @param base
      * @param pseudoField
@@ -173,28 +191,33 @@ public class BeanHelper
      * @throws SecurityException
      * @throws IllegalArgumentException
      */
-    public static final boolean setFieldValue(Object base, String pseudoField, Object value) throws BeanHelperException, ConvertUtilityException
+    public static final void setFieldValue(Object base, String pseudoField, Object value) throws BeanHelperException, ConvertUtilityException
     {
         try
         {
-            if (getType(base, pseudoField).isPrimitive() && value == null)
+            Class<? extends Object> type = base.getClass();
+            try
             {
-                return false;
+                Field field = type.getField(pseudoField);
+                field.set(base, ConvertUtility.convert(field.getType(), value));
             }
-            String methodName = BeanHelper.setter(pseudoField);
-            for (Method method : base.getClass().getMethods())
+            catch (NoSuchFieldException | SecurityException ex)
             {
-                if (methodName.equals(method.getName()))
+                String methodName = BeanHelper.setter(pseudoField);
+                for (Method method : type.getMethods())
                 {
-                    Class<?>[] paramTypes = method.getParameterTypes();
-                    if (paramTypes.length == 1)
+                    if (methodName.equals(method.getName()))
                     {
-                        method.invoke(base, ConvertUtility.convert(paramTypes[0], value));
-                        return true;
+                        Class<?>[] paramTypes = method.getParameterTypes();
+                        if (paramTypes.length == 1)
+                        {
+                            method.invoke(base, ConvertUtility.convert(paramTypes[0], value));
+                            return;
+                        }
                     }
                 }
+                throw new BeanHelperException("no setter for", base, pseudoField);
             }
-            throw new BeanHelperException("no setter for", base, pseudoField);
         }
         catch (InvocationTargetException | IllegalArgumentException | IllegalAccessException ex)
         {

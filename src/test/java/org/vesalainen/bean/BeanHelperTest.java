@@ -71,15 +71,5 @@ public class BeanHelperTest
             this.name = name;
         }
 
-        public long getNumber()
-        {
-            return number;
-        }
-
-        public void setNumber(long number)
-        {
-            this.number = number;
-        }
-        
     }
 }
