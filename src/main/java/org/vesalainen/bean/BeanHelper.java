@@ -577,6 +577,10 @@ public class BeanHelper
                 set.add(getField(method));
             }
         }
+        for (Field field : cls.getFields())
+        {
+            set.add(field.getName());
+        }
         return set;
     }
 }
