@@ -16,8 +16,11 @@
  */
 package org.vesalainen.bean;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.ConvertUtility;
 
 /**
@@ -29,6 +32,7 @@ import org.vesalainen.util.ConvertUtility;
 public abstract class AbstractBeanField<T,D> implements BeanField<D>
 {
     protected Class<?> type;
+    protected Field field;
     protected Method getter;
     protected Method setter;
     /**
@@ -49,27 +53,35 @@ public abstract class AbstractBeanField<T,D> implements BeanField<D>
     {
         try
         {
+            field = cls.getField(fieldname);
+            type = field.getType();
+        }
+        catch (NoSuchFieldException | SecurityException exx)
+        {
             try
-            {
-                getter = cls.getMethod(BeanHelper.getter(fieldname));
-            }
-            catch (NoSuchMethodException ex)
             {
                 try
                 {
-                    getter = cls.getMethod(BeanHelper.isser(fieldname));
+                    getter = cls.getMethod(BeanHelper.getter(fieldname));
                 }
-                catch (NoSuchMethodException ex1)
+                catch (NoSuchMethodException ex)
                 {
-                    throw new IllegalArgumentException(ex);
+                    try
+                    {
+                        getter = cls.getMethod(BeanHelper.isser(fieldname));
+                    }
+                    catch (NoSuchMethodException ex1)
+                    {
+                        throw new IllegalArgumentException(ex);
+                    }
                 }
+                type = getter.getReturnType();
+                setter = cls.getMethod(BeanHelper.setter(fieldname), type);
             }
-            type = getter.getReturnType();
-            setter = cls.getMethod(BeanHelper.setter(fieldname), type);
-        }
-        catch (SecurityException | NoSuchMethodException ex)
-        {
-            throw new IllegalArgumentException(ex);
+            catch (SecurityException | NoSuchMethodException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
         }
         
     }
@@ -83,7 +95,15 @@ public abstract class AbstractBeanField<T,D> implements BeanField<D>
     {
         try
         {
-            setter.invoke(getBase(), ConvertUtility.convert(type, value));
+            Object v = ConvertUtility.convert(type, value);
+            if (field != null)
+            {
+                field.set(getBase(), v);
+            }
+            else
+            {
+                setter.invoke(getBase(), v);
+            }
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
@@ -99,7 +119,14 @@ public abstract class AbstractBeanField<T,D> implements BeanField<D>
     {
         try
         {
-            return (D) getter.invoke(getBase());
+            if (field != null)
+            {
+                return (D) field.get(getBase());
+            }
+            else
+            {
+                return (D) getter.invoke(getBase());
+            }
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
