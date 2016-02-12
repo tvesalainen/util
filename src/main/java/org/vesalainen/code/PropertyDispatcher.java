@@ -82,7 +82,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      * @param prefixes 
      */
     public abstract void addObserver(PropertySetter observer, String... prefixes);
-    protected void addObserver(PropertySetter observer)
+    protected synchronized void addObserver(PropertySetter observer)
     {
         if (observer instanceof Transactional)
         {
@@ -97,7 +97,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      * @param prefixes 
      */
     public abstract void removeObserver(PropertySetter observer, String... prefixes);
-    protected void removeObserver(PropertySetter observer)
+    protected synchronized void removeObserver(PropertySetter observer)
     {
         if (observer instanceof Transactional)
         {

@@ -37,6 +37,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -194,8 +195,16 @@ public class Processor extends AbstractProcessor
                 List<? extends VariableElement> parameters = m.getParameters();
                 TypeMirror returnType = m.getReturnType();
                 cp.println("@Override");
-                CodePrinter cm = cp.createMethod(EnumSet.of(PUBLIC), m);
                 String name = m.getSimpleName().toString();
+                EnumSet<Modifier> modifiers = EnumSet.of(PUBLIC);
+                switch (name)
+                {
+                    case "addObserver":
+                    case "removeObserver":
+                        modifiers.add(SYNCHRONIZED);
+                        break;
+                }
+                CodePrinter cm = cp.createMethod(modifiers, m);
                 if (
                         name.startsWith("set") && 
                         parameters.size() == 1 &&
