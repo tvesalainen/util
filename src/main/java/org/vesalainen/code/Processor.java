@@ -201,6 +201,7 @@ public class Processor extends AbstractProcessor
                 {
                     case "addObserver":
                     case "removeObserver":
+                    case "commit":
                         modifiers.add(SYNCHRONIZED);
                         break;
                 }
