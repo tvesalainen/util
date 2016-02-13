@@ -531,13 +531,18 @@ public class BeanHelper
         return "set"+upper(field);
     }
     /**
-     * (g/s)etField -> field
+     * <p>(g/s)etField -> field
+     * <p>Field -> field
      * @param etter
      * @return
      */
     public static final String field(String etter)
     {
-        return lower(etter.substring(3));
+        if (etter.startsWith("get") || etter.startsWith("set"))
+        {
+            etter = etter.substring(3);
+        }
+        return lower(etter);
     }
 
     private static String lower(String str)
