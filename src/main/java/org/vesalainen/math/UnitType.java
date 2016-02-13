@@ -148,8 +148,12 @@ public enum UnitType
         this.unit = unit;
     }
 
-    public double convert(double value, UnitType to)
+    public double convertTo(double value, UnitType to)
     {
+        if (equals(to))
+        {
+            return value;
+        }
         if (!category.equals(to.getCategory()))
         {
             throw new IllegalArgumentException(this+" cannot be converted to "+to);
