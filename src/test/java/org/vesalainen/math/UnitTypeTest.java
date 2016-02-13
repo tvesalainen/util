@@ -36,7 +36,7 @@ public class UnitTypeTest
     {
         try
         {
-            UnitType.FOOT.convert(1, UnitType.KNOT);
+            UnitType.FOOT.convertTo(1, UnitType.KNOT);
             fail();
         }
         catch (IllegalArgumentException ex)
@@ -47,41 +47,41 @@ public class UnitTypeTest
     @Test
     public void test1()
     {
-        assertEquals(1852, UnitType.NM.convert(1, UnitType.METER), Epsilon);
-        assertEquals(0.3333333333333, UnitType.FOOT.convert(1, UnitType.YARD), Epsilon);
-        assertEquals(12, UnitType.FOOT.convert(1, UnitType.INCH), Epsilon);
-        assertEquals(1.6093427125258297, UnitType.MH.convert(1, UnitType.KMH), Epsilon);
+        assertEquals(1852, UnitType.NM.convertTo(1, UnitType.METER), Epsilon);
+        assertEquals(0.3333333333333, UnitType.FOOT.convertTo(1, UnitType.YARD), Epsilon);
+        assertEquals(12, UnitType.FOOT.convertTo(1, UnitType.INCH), Epsilon);
+        assertEquals(1.6093427125258297, UnitType.MH.convertTo(1, UnitType.KMH), Epsilon);
     }
     @Test
     public void testFahrenheit()
     {
-        assertEquals(32, UnitType.CELSIUS.convert(0, UnitType.FAHRENHEIT), Epsilon);
-        assertEquals(0, UnitType.FAHRENHEIT.convert(32, UnitType.CELSIUS), Epsilon);
-        assertEquals(30.2, UnitType.CELSIUS.convert(-1, UnitType.FAHRENHEIT), Epsilon);
-        assertEquals(-1, UnitType.FAHRENHEIT.convert(30.2, UnitType.CELSIUS), Epsilon);
-        assertEquals(-58, UnitType.CELSIUS.convert(-50, UnitType.FAHRENHEIT), Epsilon);
+        assertEquals(32, UnitType.CELSIUS.convertTo(0, UnitType.FAHRENHEIT), Epsilon);
+        assertEquals(0, UnitType.FAHRENHEIT.convertTo(32, UnitType.CELSIUS), Epsilon);
+        assertEquals(30.2, UnitType.CELSIUS.convertTo(-1, UnitType.FAHRENHEIT), Epsilon);
+        assertEquals(-1, UnitType.FAHRENHEIT.convertTo(30.2, UnitType.CELSIUS), Epsilon);
+        assertEquals(-58, UnitType.CELSIUS.convertTo(-50, UnitType.FAHRENHEIT), Epsilon);
     }
     @Test
     public void testKelvin()
     {
-        assertEquals(273.15, UnitType.CELSIUS.convert(0, UnitType.KELVIN), Epsilon);
-        assertEquals(0, UnitType.KELVIN.convert(273.15, UnitType.CELSIUS), Epsilon);
+        assertEquals(273.15, UnitType.CELSIUS.convertTo(0, UnitType.KELVIN), Epsilon);
+        assertEquals(0, UnitType.KELVIN.convertTo(273.15, UnitType.CELSIUS), Epsilon);
     }
     @Test
     public void testDegree()
     {
-        assertEquals(2*Math.PI, UnitType.DEGREE.convert(360, UnitType.RADIAN), Epsilon);
-        assertEquals(180, UnitType.RADIAN.convert(Math.PI, UnitType.DEGREE), Epsilon);
+        assertEquals(2*Math.PI, UnitType.DEGREE.convertTo(360, UnitType.RADIAN), Epsilon);
+        assertEquals(180, UnitType.RADIAN.convertTo(Math.PI, UnitType.DEGREE), Epsilon);
     }
     @Test
     public void testPressure()
     {
-        assertEquals(1e-5, UnitType.PASCAL.convert(1, UnitType.BAR), Epsilon);
-        assertEquals(9.8692e-6, UnitType.PASCAL.convert(1, UnitType.ATM), Epsilon);
+        assertEquals(1e-5, UnitType.PASCAL.convertTo(1, UnitType.BAR), Epsilon);
+        assertEquals(9.8692e-6, UnitType.PASCAL.convertTo(1, UnitType.ATM), Epsilon);
     }
     @Test
     public void testAcceleration()
     {
-        assertEquals(9.80665, UnitType.GFORCEEARTH.convert(1, UnitType.MSS), Epsilon);
+        assertEquals(9.80665, UnitType.GFORCEEARTH.convertTo(1, UnitType.MSS), Epsilon);
     }
 }
