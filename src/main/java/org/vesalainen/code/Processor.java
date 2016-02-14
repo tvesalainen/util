@@ -197,14 +197,6 @@ public class Processor extends AbstractProcessor
                 cp.println("@Override");
                 String name = m.getSimpleName().toString();
                 EnumSet<Modifier> modifiers = EnumSet.of(PUBLIC);
-                switch (name)
-                {
-                    case "addObserver":
-                    case "removeObserver":
-                    case "commit":
-                        modifiers.add(SYNCHRONIZED);
-                        break;
-                }
                 CodePrinter cm = cp.createMethod(modifiers, m);
                 if (
                         name.startsWith("set") && 
@@ -229,11 +221,15 @@ public class Processor extends AbstractProcessor
                             returnType.getKind() == VOID
                             )
                     {
-                        cm.println("Arrays.fill(ind, 0);");
-                        cm.println("Prop[] values = Prop.values();");
-                        cm.println("for (int ii=0;ii<ordInd;ii++)");
+                        cm.println("readLock.lock();");
+                        cm.println("try");
                         cm.println("{");
-                        CodePrinter cc = cm.createSub("}");
+                        CodePrinter ct = cm.createSub("}");
+                        ct.println("Arrays.fill(ind, 0);");
+                        ct.println("Prop[] values = Prop.values();");
+                        ct.println("for (int ii=0;ii<ordInd;ii++)");
+                        ct.println("{");
+                        CodePrinter cc = ct.createSub("}");
                         cc.println("switch (values[ord[ii]])");
                         cc.println("{");
                         CodePrinter cs = cc.createSub("}");
@@ -273,12 +269,18 @@ public class Processor extends AbstractProcessor
                         csw.flush();
                         cs.flush();
                         cc.flush();
-                        cm.println("for (Transactional tr : transactionalObservers)");
-                        cm.println("{");
-                        CodePrinter ctr = cm.createSub("}");
+                        ct.println("for (Transactional tr : transactionalObservers)");
+                        ct.println("{");
+                        CodePrinter ctr = ct.createSub("}");
                         ctr.println("tr.commit("+parameters.get(0).getSimpleName()+");");
                         ctr.flush();
-                        cm.println("clear();");
+                        ct.println("clear();");
+                        ct.flush();
+                        cm.println("finally");
+                        cm.println("{");
+                        CodePrinter cf = cm.createSub("}");
+                        cf.println("readLock.unlock();");
+                        cf.flush();
                     }
                     else
                     {
@@ -320,9 +322,13 @@ public class Processor extends AbstractProcessor
                                     Name arg0 = parameters.get(0).getSimpleName();
                                     Name arg1 = parameters.get(1).getSimpleName();
                                     cm.println("super.addObserver("+arg0+");");
-                                    cm.println("for (String p : "+arg1+")");
+                                    cm.println("writeLock.lock();");
+                                    cm.println("try");
                                     cm.println("{");
-                                    CodePrinter cao = cm.createSub("}");
+                                    CodePrinter ct = cm.createSub("}");
+                                    ct.println("for (String p : "+arg1+")");
+                                    ct.println("{");
+                                    CodePrinter cao = ct.createSub("}");
                                     cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
                                     cao.println("for (Prop pr : Prop.values())");
                                     cao.println("{");
@@ -334,6 +340,12 @@ public class Processor extends AbstractProcessor
                                     caooo.flush();
                                     caoo.flush();
                                     cao.flush();
+                                    ct.flush();
+                                    cm.println("finally");
+                                    cm.println("{");
+                                    CodePrinter cf = cm.createSub("}");
+                                    cf.println("writeLock.unlock();");
+                                    cf.flush();
                                 }
                                 else
                                 {
@@ -348,9 +360,13 @@ public class Processor extends AbstractProcessor
                                         Name arg0 = parameters.get(0).getSimpleName();
                                         Name arg1 = parameters.get(1).getSimpleName();
                                         cm.println("super.removeObserver("+arg0+");");
-                                        cm.println("for (String p : "+arg1+")");
+                                        cm.println("writeLock.lock();");
+                                        cm.println("try");
                                         cm.println("{");
-                                        CodePrinter cao = cm.createSub("}");
+                                        CodePrinter ct = cm.createSub("}");
+                                        ct.println("for (String p : "+arg1+")");
+                                        ct.println("{");
+                                        CodePrinter cao = ct.createSub("}");
                                         cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
                                         cao.println("for (Prop pr : Prop.values())");
                                         cao.println("{");
@@ -362,6 +378,12 @@ public class Processor extends AbstractProcessor
                                         caooo.flush();
                                         caoo.flush();
                                         cao.flush();
+                                        ct.flush();
+                                        cm.println("finally");
+                                        cm.println("{");
+                                        CodePrinter cf = cm.createSub("}");
+                                        cf.println("writeLock.unlock();");
+                                        cf.flush();
                                     }
                                     else
                                     {
