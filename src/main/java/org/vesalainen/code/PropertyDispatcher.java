@@ -19,6 +19,7 @@ package org.vesalainen.code;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -68,7 +69,7 @@ import org.vesalainen.util.Transactional;
 public abstract class PropertyDispatcher extends AbstractDispatcher
 {
     protected List<Transactional> transactionalObservers = new ArrayList<>();
-    protected ReentrantLock lock = new ReentrantLock();
+    protected Semaphore semaphore = new Semaphore(1);
     /**
      * Creates a PropertyDispatcher. This is called by generated sub class.
      * @param sizes Defines how many method class per type can be stored. Default

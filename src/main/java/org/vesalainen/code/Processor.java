@@ -278,7 +278,7 @@ public class Processor extends AbstractProcessor
                         cm.println("finally");
                         cm.println("{");
                         CodePrinter cf = cm.createSub("}");
-                        cf.println("lock.unlock();");
+                        cf.println("semaphore.release();");
                         cf.flush();
                     }
                     else
@@ -300,12 +300,21 @@ public class Processor extends AbstractProcessor
                                     returnType.getKind() == VOID
                                     )
                             {
-                                cm.println("clear();");
-                                cm.println("for (Transactional tr : transactionalObservers)");
+                                cm.println("try");
                                 cm.println("{");
-                                CodePrinter ctr = cm.createSub("}");
+                                CodePrinter ct = cm.createSub("}");
+                                ct.println("clear();");
+                                ct.println("for (Transactional tr : transactionalObservers)");
+                                ct.println("{");
+                                CodePrinter ctr = ct.createSub("}");
                                 ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
                                 ctr.flush();
+                                ct.flush();
+                                cm.println("finally");
+                                cm.println("{");
+                                CodePrinter cf = cm.createSub("}");
+                                cf.println("semaphore.release();");
+                                cf.flush();
                             }
                             else
                             {
@@ -316,7 +325,16 @@ public class Processor extends AbstractProcessor
                                         returnType.getKind() == VOID
                                         )
                                 {
-                                    cm.println("lock.lock();");
+                                    cm.println("try");
+                                    cm.println("{");
+                                    CodePrinter cs = cm.createSub("}");
+                                    cs.println("semaphore.acquire();");
+                                    cs.flush();
+                                    cm.println("catch (InterruptedException ex)");
+                                    cm.println("{");
+                                    CodePrinter cc = cm.createSub("}");
+                                    cc.println("throw new IllegalArgumentException(ex);");
+                                    cc.flush();
                                 }
                                 else
                                 {
@@ -331,7 +349,16 @@ public class Processor extends AbstractProcessor
                                     {
                                         Name arg0 = parameters.get(0).getSimpleName();
                                         Name arg1 = parameters.get(1).getSimpleName();
-                                        cm.println("lock.lock();");
+                                        cm.println("try");
+                                        cm.println("{");
+                                        CodePrinter cs = cm.createSub("}");
+                                        cs.println("semaphore.acquire();");
+                                        cs.flush();
+                                        cm.println("catch (InterruptedException ex)");
+                                        cm.println("{");
+                                        CodePrinter cc = cm.createSub("}");
+                                        cc.println("throw new IllegalArgumentException(ex);");
+                                        cc.flush();
                                         cm.println("try");
                                         cm.println("{");
                                         CodePrinter ct = cm.createSub("}");
@@ -354,7 +381,7 @@ public class Processor extends AbstractProcessor
                                         cm.println("finally");
                                         cm.println("{");
                                         CodePrinter cf = cm.createSub("}");
-                                        cf.println("lock.unlock();");
+                                        cf.println("semaphore.release();");
                                         cf.flush();
                                     }
                                     else
@@ -369,7 +396,16 @@ public class Processor extends AbstractProcessor
                                         {
                                             Name arg0 = parameters.get(0).getSimpleName();
                                             Name arg1 = parameters.get(1).getSimpleName();
-                                            cm.println("lock.lock();");
+                                            cm.println("try");
+                                            cm.println("{");
+                                            CodePrinter cs = cm.createSub("}");
+                                            cs.println("semaphore.acquire();");
+                                            cs.flush();
+                                            cm.println("catch (InterruptedException ex)");
+                                            cm.println("{");
+                                            CodePrinter cc = cm.createSub("}");
+                                            cc.println("throw new IllegalArgumentException(ex);");
+                                            cc.flush();
                                             cm.println("try");
                                             cm.println("{");
                                             CodePrinter ct = cm.createSub("}");
@@ -392,7 +428,7 @@ public class Processor extends AbstractProcessor
                                             cm.println("finally");
                                             cm.println("{");
                                             CodePrinter cf = cm.createSub("}");
-                                            cf.println("lock.unlock();");
+                                            cf.println("semaphore.release();");
                                             cf.flush();
                                         }
                                         else
@@ -575,7 +611,18 @@ public class Processor extends AbstractProcessor
                         }
                         else
                         {
-                            cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                            if (
+                                    name.equals("start") && 
+                                    parameters.size() == 1 &&
+                                    "java.lang.String".equals(parameters.get(0).asType().toString()) &&
+                                    returnType.getKind() == VOID
+                                    )
+                            {
+                            }
+                            else
+                            {
+                                cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                            }
                         }
                     }
                 }
