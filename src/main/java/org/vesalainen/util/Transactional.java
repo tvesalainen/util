@@ -19,21 +19,25 @@ package org.vesalainen.util;
 /**
  * An interface for transactional changes
  * 
- * <p>Start of transaction is implicit.
+ * <p>Start of transaction is by start method
  * 
  * @author Timo Vesalainen
  */
 public interface Transactional
 {
     /**
-     * Undo changes after last commit or rollback.
-     * @param reason 
+     * Start transaction that will end in commit or rollback methods.
      */
-    public void rollback(String reason);
+    void start();
     /**
-     * Confirm changes after last commit or rollback.
+     * Undo changes after start.
      * @param reason 
      */
-    public void commit(String reason);
+    void rollback(String reason);
+    /**
+     * Confirm changes after start.
+     * @param reason 
+     */
+    void commit(String reason);
 
 }
