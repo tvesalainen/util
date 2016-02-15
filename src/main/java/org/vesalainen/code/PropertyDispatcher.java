@@ -19,6 +19,7 @@ package org.vesalainen.code;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -67,9 +68,7 @@ import org.vesalainen.util.Transactional;
 public abstract class PropertyDispatcher extends AbstractDispatcher
 {
     protected List<Transactional> transactionalObservers = new ArrayList<>();
-    protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-    protected ReadLock readLock = rwLock.readLock();
-    protected WriteLock writeLock = rwLock.writeLock();
+    protected ReentrantLock lock = new ReentrantLock();
     /**
      * Creates a PropertyDispatcher. This is called by generated sub class.
      * @param sizes Defines how many method class per type can be stored. Default
@@ -81,6 +80,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
     {
         super(sizes);
     }
+    
     /**
      * Adds a PropertySetter observer for properties that have given prefix. As
      * a consequence ALL properties are added if empty prefix is used.
@@ -92,16 +92,8 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
     {
         if (observer instanceof Transactional)
         {
-            writeLock.lock();
-            try
-            {
-                Transactional tr = (Transactional) observer;
-                transactionalObservers.add(tr);
-            }
-            finally
-            {
-                writeLock.unlock();
-            }
+            Transactional tr = (Transactional) observer;
+            transactionalObservers.add(tr);
         }
     }
     /**
@@ -115,16 +107,8 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
     {
         if (observer instanceof Transactional)
         {
-            writeLock.lock();
-            try
-            {
-                Transactional tr = (Transactional) observer;
-                transactionalObservers.remove(tr);
-            }
-            finally
-            {
-                writeLock.unlock();
-            }
+            Transactional tr = (Transactional) observer;
+            transactionalObservers.remove(tr);
         }
     }
     /**

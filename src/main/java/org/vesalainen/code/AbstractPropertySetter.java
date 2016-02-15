@@ -87,6 +87,11 @@ public class AbstractPropertySetter implements PropertySetter, Transactional
     }
 
     @Override
+    public void start(String reason)
+    {
+    }
+
+    @Override
     public void rollback(String reason)
     {
     }
@@ -99,7 +104,7 @@ public class AbstractPropertySetter implements PropertySetter, Transactional
     @Override
     public String[] getPrefixes()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

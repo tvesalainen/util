@@ -27,8 +27,9 @@ public interface Transactional
 {
     /**
      * Start transaction that will end in commit or rollback methods.
+     * @param reason
      */
-    void start();
+    void start(String reason);
     /**
      * Undo changes after start.
      * @param reason 

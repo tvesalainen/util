@@ -137,6 +137,11 @@ public class TrIntfImpl implements TrIntf
     }
 
     @Override
+    public void start(String reason)
+    {
+    }
+
+    @Override
     public void rollback(String reason)
     {
     }

@@ -221,7 +221,6 @@ public class Processor extends AbstractProcessor
                             returnType.getKind() == VOID
                             )
                     {
-                        cm.println("readLock.lock();");
                         cm.println("try");
                         cm.println("{");
                         CodePrinter ct = cm.createSub("}");
@@ -279,7 +278,7 @@ public class Processor extends AbstractProcessor
                         cm.println("finally");
                         cm.println("{");
                         CodePrinter cf = cm.createSub("}");
-                        cf.println("readLock.unlock();");
+                        cf.println("lock.unlock();");
                         cf.flush();
                     }
                     else
@@ -310,47 +309,20 @@ public class Processor extends AbstractProcessor
                             }
                             else
                             {
-                                String sa = String.class.getCanonicalName()+"[]";
                                 if (
-                                        name.equals("addObserver") && 
-                                        parameters.size() == 2 &&
-                                        PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
-                                        sa.equals(parameters.get(1).asType().toString()) &&
+                                        name.equals("start") && 
+                                        parameters.size() == 1 &&
+                                        "java.lang.String".equals(parameters.get(0).asType().toString()) &&
                                         returnType.getKind() == VOID
                                         )
                                 {
-                                    Name arg0 = parameters.get(0).getSimpleName();
-                                    Name arg1 = parameters.get(1).getSimpleName();
-                                    cm.println("super.addObserver("+arg0+");");
-                                    cm.println("writeLock.lock();");
-                                    cm.println("try");
-                                    cm.println("{");
-                                    CodePrinter ct = cm.createSub("}");
-                                    ct.println("for (String p : "+arg1+")");
-                                    ct.println("{");
-                                    CodePrinter cao = ct.createSub("}");
-                                    cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
-                                    cao.println("for (Prop pr : Prop.values())");
-                                    cao.println("{");
-                                    CodePrinter caoo = cao.createSub("}");
-                                    caoo.println("if (pr.name().startsWith(str))");
-                                    caoo.println("{");
-                                    CodePrinter caooo = caoo.createSub("}");
-                                    caooo.println("observers.add(pr, "+arg0+");");
-                                    caooo.flush();
-                                    caoo.flush();
-                                    cao.flush();
-                                    ct.flush();
-                                    cm.println("finally");
-                                    cm.println("{");
-                                    CodePrinter cf = cm.createSub("}");
-                                    cf.println("writeLock.unlock();");
-                                    cf.flush();
+                                    cm.println("lock.lock();");
                                 }
                                 else
                                 {
+                                    String sa = String.class.getCanonicalName()+"[]";
                                     if (
-                                            name.equals("removeObserver") && 
+                                            name.equals("addObserver") && 
                                             parameters.size() == 2 &&
                                             PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
                                             sa.equals(parameters.get(1).asType().toString()) &&
@@ -359,11 +331,11 @@ public class Processor extends AbstractProcessor
                                     {
                                         Name arg0 = parameters.get(0).getSimpleName();
                                         Name arg1 = parameters.get(1).getSimpleName();
-                                        cm.println("super.removeObserver("+arg0+");");
-                                        cm.println("writeLock.lock();");
+                                        cm.println("lock.lock();");
                                         cm.println("try");
                                         cm.println("{");
                                         CodePrinter ct = cm.createSub("}");
+                                        ct.println("super.addObserver("+arg0+");");
                                         ct.println("for (String p : "+arg1+")");
                                         ct.println("{");
                                         CodePrinter cao = ct.createSub("}");
@@ -374,7 +346,7 @@ public class Processor extends AbstractProcessor
                                         caoo.println("if (pr.name().startsWith(str))");
                                         caoo.println("{");
                                         CodePrinter caooo = caoo.createSub("}");
-                                        caooo.println("observers.removeItem(pr, "+arg0+");");
+                                        caooo.println("observers.add(pr, "+arg0+");");
                                         caooo.flush();
                                         caoo.flush();
                                         cao.flush();
@@ -382,12 +354,51 @@ public class Processor extends AbstractProcessor
                                         cm.println("finally");
                                         cm.println("{");
                                         CodePrinter cf = cm.createSub("}");
-                                        cf.println("writeLock.unlock();");
+                                        cf.println("lock.unlock();");
                                         cf.flush();
                                     }
                                     else
                                     {
-                                        cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                        if (
+                                                name.equals("removeObserver") && 
+                                                parameters.size() == 2 &&
+                                                PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
+                                                sa.equals(parameters.get(1).asType().toString()) &&
+                                                returnType.getKind() == VOID
+                                                )
+                                        {
+                                            Name arg0 = parameters.get(0).getSimpleName();
+                                            Name arg1 = parameters.get(1).getSimpleName();
+                                            cm.println("lock.lock();");
+                                            cm.println("try");
+                                            cm.println("{");
+                                            CodePrinter ct = cm.createSub("}");
+                                            ct.println("super.removeObserver("+arg0+");");
+                                            ct.println("for (String p : "+arg1+")");
+                                            ct.println("{");
+                                            CodePrinter cao = ct.createSub("}");
+                                            cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
+                                            cao.println("for (Prop pr : Prop.values())");
+                                            cao.println("{");
+                                            CodePrinter caoo = cao.createSub("}");
+                                            caoo.println("if (pr.name().startsWith(str))");
+                                            caoo.println("{");
+                                            CodePrinter caooo = caoo.createSub("}");
+                                            caooo.println("observers.removeItem(pr, "+arg0+");");
+                                            caooo.flush();
+                                            caoo.flush();
+                                            cao.flush();
+                                            ct.flush();
+                                            cm.println("finally");
+                                            cm.println("{");
+                                            CodePrinter cf = cm.createSub("}");
+                                            cf.println("lock.unlock();");
+                                            cf.flush();
+                                        }
+                                        else
+                                        {
+                                            cm.println("throw new UnsupportedOperationException(\"not supported.\");");
+                                        }
                                     }
                                 }
                             }

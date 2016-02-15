@@ -46,6 +46,7 @@ public class PropertyDispatcherTest
         pd.addObserver(ps, "string", "i", "d");
         assertTrue(pd.hasObservers());
         pd.removeObserver(ps, "d");
+        pd.start(null);
         pd.setD(12.3);
         assertNull(ps.get("d"));
         pd.setI(123);
@@ -53,6 +54,7 @@ public class PropertyDispatcherTest
         pd.setString("qwerty");
         assertNull(ps.get("string"));
         pd.commit(null);
+        pd.start(null);
         assertNull(ps.get("d"));
         assertEquals(123, ps.get("i"));
         assertEquals("qwerty", ps.get("string"));
