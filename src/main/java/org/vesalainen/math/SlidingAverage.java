@@ -22,16 +22,56 @@ package org.vesalainen.math;
  */
 public class SlidingAverage extends AbstractSlidingAverage
 {
-
+    protected double[] ring;
+    protected double sum;
     public SlidingAverage(int size)
     {
         super(size);
+        ring = new double[size];
     }
 
     @Override
     protected boolean isRemovable(int index)
     {
-        return end-begin >= ring.length;
+        return end-begin >= size;
+    }
+
+    @Override
+    protected void assign(int index, double value)
+    {
+        ring[index] = value;
+        sum += value;
+    }
+
+    @Override
+    protected void remove(int index)
+    {
+        sum -= ring[index];
+    }
+
+    @Override
+    public double fast()
+    {
+        return sum/(end-begin);
+    }
+
+    @Override
+    public double average()
+    {
+        double s = 0;
+        for (int ii=begin;ii<end;ii++)
+        {
+            s += ring[ii%size];
+        }
+        return s/(end-begin);
+    }
+
+    @Override
+    protected void grow()
+    {
+        int newSize = newSize();
+        ring = (double[]) newArray(ring, size, new double[newSize]);
+        size = newSize;
     }
     
 }

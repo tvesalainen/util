@@ -22,23 +22,39 @@ import org.vesalainen.math.AbstractSlidingAverage;
  * TimeSlidingAverage calculates average for given time.
  * @author tkv
  */
-public class TimeSlidingAverage extends AbstractSlidingAverage
+public class TimeSlidingAngleAverage extends AbstractSlidingAverage
 {
     protected final long time;
-    protected double[] ring;
+    protected double[] cos;
+    protected double[] sin;
     protected long[] times;
-    protected double sum;
+    protected double cosSum;
+    protected double sinSum;
     /**
-     * Creates TimeSlidingAverage
-     * @param size Initial size of ring buffer
+     * Creates TimeSlidingAngleAverage
+     * @param size Initial size of buffers
      * @param millis Average time
      */
-    public TimeSlidingAverage(int size, long millis)
+    public TimeSlidingAngleAverage(int size, long millis)
     {
         super(size);
         this.time = millis;
-        this.ring = new double[size];
+        this.cos = new double[size];
+        this.sin = new double[size];
         this.times = new long[size];
+    }
+    /**
+     * Adds new angle 
+     * @param value In Degrees
+     */
+    @Override
+    public void add(double value)
+    {
+        if (value < 0 || value > 360)
+        {
+            throw new IllegalArgumentException(value+" not degree");
+        }
+        super.add(value);
     }
 
     @Override
@@ -51,7 +67,8 @@ public class TimeSlidingAverage extends AbstractSlidingAverage
     protected void grow()
     {
         int newSize = newSize();
-        ring = (double[]) newArray(ring, size, new double[newSize]);
+        sin = (double[]) newArray(sin, size, new double[newSize]);
+        cos = (double[]) newArray(cos, size, new double[newSize]);
         times = (long[]) newArray(times, times.length, new long[newSize]);
         size = newSize;
     }
@@ -59,32 +76,42 @@ public class TimeSlidingAverage extends AbstractSlidingAverage
     @Override
     protected void assign(int index, double value)
     {
-        ring[index] = value;
-        sum += value;
+        double rad = Math.toRadians(value);
+        double s = Math.sin(rad);
+        sin[index] = s;
+        double c = Math.cos(rad);
+        cos[index] = c;
+        sinSum += s;
+        cosSum += c;
         times[index] = System.currentTimeMillis();
     }
 
     @Override
     protected void remove(int index)
     {
-        sum -= ring[index];
+        sinSum -= sin[index];
+        cosSum -= cos[index];
     }
 
     @Override
     public double fast()
     {
-        return sum/(end-begin);
+        int count = end-begin;
+        return Math.toDegrees(Math.atan2(sinSum/count, cosSum/count));
     }
 
     @Override
     public double average()
     {
+        int count = end-begin;
         double s = 0;
+        double c = 0;
         for (int ii=begin;ii<end;ii++)
         {
-            s += ring[ii%size];
+            s += sin[ii%size];
+            c += cos[ii%size];
         }
-        return s/(end-begin);
+        return Math.toDegrees(Math.atan2(s/count, c/count));
     }
 
 }

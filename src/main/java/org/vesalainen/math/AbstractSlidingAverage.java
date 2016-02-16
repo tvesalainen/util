@@ -23,10 +23,9 @@ package org.vesalainen.math;
 public abstract class AbstractSlidingAverage
 {
     protected int initialSize;
-    protected double[] ring;
+    protected int size;
     protected int begin;
     protected int end;
-    protected double sum;
     /**
      * Creates an AbstractSlidingAverage
      * @param size Size of the ring buffer
@@ -34,7 +33,7 @@ public abstract class AbstractSlidingAverage
     protected AbstractSlidingAverage(int size)
     {
         this.initialSize = size;
-        this.ring = new double[size];
+        this.size = size;
     }
     /**
      * Adds new value to sliding average
@@ -44,20 +43,22 @@ public abstract class AbstractSlidingAverage
     {
         eliminate();
         int count = end-begin;
-        if (count >= ring.length)
+        if (count >= size)
         {
             grow();
         }
-        ring[end%ring.length] = value;
+        assign(end%size, value);
         end++;
-        sum += value;
     }
+    protected abstract void assign(int index, double value);
+    protected abstract void remove(int index);
+            
     private void eliminate()
     {
         int count = end-begin;
-        while (count > 0 && isRemovable(begin%ring.length))
+        while (count > 0 && isRemovable(begin%size))
         {
-            sum -= ring[begin%ring.length];
+            remove(begin%size);
             begin++;
             count--;
         }
@@ -66,35 +67,20 @@ public abstract class AbstractSlidingAverage
      * Returns average without actually calculating cell by cell
      * @return 
      */
-    public double fast()
-    {
-        return sum/(end-begin);
-    }
+    public abstract double fast();
     /**
      * Returns average by calculating cell by cell
      * @return 
      */
-    public double average()
-    {
-        double s = 0;
-        int size = ring.length;
-        for (int ii=begin;ii<end;ii++)
-        {
-            s += ring[ii%size];
-        }
-        return s/(end-begin);
-    }
+    public abstract double average();
     /**
      * Called when ring buffer needs more space
      */
-    protected void grow()
-    {
-        ring = (double[]) newArray(ring, ring.length, new double[newSize()]);
-    }
+    protected abstract void grow();
+    
     protected int newSize()
     {
-        int len = ring.length;
-        return Math.max(begin%ring.length, initialSize)+len;
+        return Math.max(begin%size, initialSize)+size;
     }
     /**
      * Returns new oldLen ring buffer

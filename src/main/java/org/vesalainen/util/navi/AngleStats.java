@@ -16,9 +16,6 @@
  */
 package org.vesalainen.util.navi;
 
-import org.vesalainen.util.navi.Degree;
-import org.vesalainen.util.navi.Angle;
-
 /**
  *
  * @author tkv
