@@ -17,7 +17,7 @@
 package org.vesalainen.math;
 
 /**
- *
+ * Base class for sliding average calculation
  * @author tkv
  */
 public abstract class AbstractSlidingAverage
@@ -27,14 +27,32 @@ public abstract class AbstractSlidingAverage
     protected int begin;
     protected int end;
     protected double sum;
-
+    /**
+     * Creates an AbstractSlidingAverage
+     * @param size Size of the ring buffer
+     */
     protected AbstractSlidingAverage(int size)
     {
         this.initialSize = size;
         this.ring = new double[size];
     }
-    
+    /**
+     * Adds new value to sliding average
+     * @param value 
+     */
     public void add(double value)
+    {
+        eliminate();
+        int count = end-begin;
+        if (count >= ring.length)
+        {
+            grow();
+        }
+        ring[end%ring.length] = value;
+        end++;
+        sum += value;
+    }
+    private void eliminate()
     {
         int count = end-begin;
         while (count > 0 && isRemovable(begin%ring.length))
@@ -43,13 +61,6 @@ public abstract class AbstractSlidingAverage
             begin++;
             count--;
         }
-        if (count >= ring.length)
-        {
-            grow();
-        }
-        ring[end%ring.length] = value;
-        end++;
-        sum += value;
     }
     /**
      * Returns average without actually calculating cell by cell
@@ -59,7 +70,10 @@ public abstract class AbstractSlidingAverage
     {
         return sum/(end-begin);
     }
-    
+    /**
+     * Returns average by calculating cell by cell
+     * @return 
+     */
     public double average()
     {
         double s = 0;
@@ -70,17 +84,38 @@ public abstract class AbstractSlidingAverage
         }
         return s/(end-begin);
     }
-    
-    private void grow()
+    /**
+     * Called when ring buffer needs more space
+     */
+    protected void grow()
     {
-        int sb = begin%ring.length;
-        int se = end%ring.length;
-        int add = Math.max(sb, initialSize);
-        double[] old = ring;
-        ring = new double[ring.length+add];
-        System.arraycopy(old, se, ring, se, old.length-se);
-        System.arraycopy(old, 0, ring, old.length, sb);
+        ring = (double[]) newArray(ring, ring.length, new double[newSize()]);
     }
-
+    protected int newSize()
+    {
+        int len = ring.length;
+        return Math.max(begin%ring.length, initialSize)+len;
+    }
+    /**
+     * Returns new oldLen ring buffer
+     * @param old
+     * @param oldLen
+     * @param arr
+     * @return 
+     */
+    protected Object newArray(Object old, int oldLen, Object arr)
+    {
+        int sb = begin%oldLen;
+        int se = end%oldLen;
+        System.arraycopy(old, se, arr, se, oldLen-se);
+        System.arraycopy(old, 0, arr, oldLen, sb);
+        return arr;
+    }
+    /**
+     * Return true if value at index used anymore.
+     * @param index
+     * @return 
+     */
     protected abstract boolean isRemovable(int index);
+
 }

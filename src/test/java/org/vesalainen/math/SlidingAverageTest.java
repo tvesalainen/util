@@ -37,16 +37,16 @@ public class SlidingAverageTest
         SlidingAverage sa = new SlidingAverage(2);
         sa.add(1);
         assertEquals(1, sa.fast(), Epsilon);
-        assertEquals(1, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(3);
         assertEquals(2, sa.fast(), Epsilon);
-        assertEquals(2, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(5);
         assertEquals(4, sa.fast(), Epsilon);
-        assertEquals(4, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(7);
         assertEquals(6, sa.fast(), Epsilon);
-        assertEquals(6, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
     }
     
 }

@@ -37,16 +37,16 @@ public class AbstractSlidingAverageTest
         SA sa = new SA(2);
         sa.add(1);
         assertEquals(1, sa.fast(), Epsilon);
-        assertEquals(1, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(3);
         assertEquals(3, sa.fast(), Epsilon);
-        assertEquals(3, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(5);
         assertEquals(4, sa.fast(), Epsilon);
-        assertEquals(4, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.add(7);
         assertEquals(5, sa.fast(), Epsilon);
-        assertEquals(5, sa.average(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
     }
     
     static class SA extends AbstractSlidingAverage
