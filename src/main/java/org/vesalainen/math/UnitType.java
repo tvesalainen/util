@@ -115,6 +115,10 @@ public enum UnitType
      */
     KMH(UnitCategory.Speed, 0.277778, "Km/h"),
     /**
+     * Beaufort
+     */
+    BEAUFORT(UnitCategory.Speed, 0.837, "B"),
+    /**
      * Coordinate degrees
      */
     DEG(UnitCategory.Coordinate, Double.NaN, "˚"),
@@ -161,6 +165,16 @@ public enum UnitType
         if (Double.isNaN(multiplier) || Double.isNaN(to.multiplier))
         {
             throw new UnsupportedOperationException("conversion from "+this+" to "+to+" not supported");
+        }
+        if (equals(BEAUFORT))
+        {
+            double ms = to.convertTo(value, MS);
+            return multiplier*Math.pow(ms, 3.0/2.0);
+        }
+        if (to.equals(BEAUFORT))
+        {
+            double ms = convertTo(value, MS);
+            return Math.round(0.5+Math.pow(ms/multiplier, 2.0/3.0));
         }
         return (value+offset)*multiplier/to.multiplier-to.offset;
     }

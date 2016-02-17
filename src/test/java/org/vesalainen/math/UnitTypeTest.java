@@ -32,7 +32,7 @@ public class UnitTypeTest
     }
 
     @Test
-    public void test0()
+    public void testErr()
     {
         try
         {
@@ -45,7 +45,7 @@ public class UnitTypeTest
     }
     
     @Test
-    public void test1()
+    public void testLength()
     {
         assertEquals(1852, UnitType.NM.convertTo(1, UnitType.METER), Epsilon);
         assertEquals(0.3333333333333, UnitType.FOOT.convertTo(1, UnitType.YARD), Epsilon);
@@ -83,5 +83,15 @@ public class UnitTypeTest
     public void testAcceleration()
     {
         assertEquals(9.80665, UnitType.GFORCEEARTH.convertTo(1, UnitType.MSS), Epsilon);
+    }
+    @Test
+    public void testBeaufort()
+    {
+        assertEquals(0.837, UnitType.BEAUFORT.convertTo(1, UnitType.MS), Epsilon);
+        assertEquals(1, UnitType.MS.convertTo(0.837, UnitType.BEAUFORT), Epsilon);
+        assertEquals(2.367393503412561, UnitType.BEAUFORT.convertTo(2, UnitType.MS), Epsilon);
+        assertEquals(2, UnitType.MS.convertTo(2.367393503412561, UnitType.BEAUFORT), Epsilon);
+        assertEquals(26.468264015609332, UnitType.BEAUFORT.convertTo(10, UnitType.MS), Epsilon);
+        assertEquals(10, UnitType.MS.convertTo(26.468264015609332, UnitType.BEAUFORT), Epsilon);
     }
 }
