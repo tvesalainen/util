@@ -40,12 +40,14 @@ public class GreatCircle
     {
         double φ1 = Math.toRadians(lat1);
         double φ2 = Math.toRadians(lat2);
-        double Δφ = Math.toRadians(lat2-lat1);
-        double Δλ = Math.toRadians(lon2-lon1);
+        double λ1 = Math.toRadians(lon1);
+        double λ2 = Math.toRadians(lon2);
+        double Δφ = φ2 - φ1;
+        double Δλ = λ2 - λ1;
 
-        double a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        double a = Math.sin(Δφ/2) * Math.sin(Δφ/2)
+          + Math.cos(φ1) * Math.cos(φ2)
+          * Math.sin(Δλ/2) * Math.sin(Δλ/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
         return METER.convertTo(R * c, NM);        
