@@ -174,7 +174,9 @@ public enum UnitType
         if (to.equals(BEAUFORT))
         {
             double ms = convertTo(value, MS);
-            return Math.round(0.5+Math.pow(ms/multiplier, 2.0/3.0));
+            double d = ms/multiplier;
+            double pow = Math.pow(d, 2.0/3.0);
+            return Math.round(Math.pow(ms/to.multiplier, 2.0/3.0));
         }
         return (value+offset)*multiplier/to.multiplier-to.offset;
     }
