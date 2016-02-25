@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ProtocolFamily;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.StandardProtocolFamily;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
