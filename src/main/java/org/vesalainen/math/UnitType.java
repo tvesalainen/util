@@ -53,7 +53,7 @@ public enum UnitType
     /**
      * Radians
      */
-    RADIAN(UnitCategory.PlaneAngle, Math.toDegrees(1), "Radian"),
+    RADIAN(UnitCategory.PlaneAngle, Math.toDegrees(1), "Rad"),
     /**
      * Celsius
      */
