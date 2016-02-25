@@ -136,7 +136,7 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
         {
             return 0;
         }
-        if (!loop && locals.contains(sa))
+        if (!loop && locals.contains(sa.getAddress()))
         {
             // reject local send if OS doesn't support IP_MULTICAST_LOOP option
             dst.position(p1);
