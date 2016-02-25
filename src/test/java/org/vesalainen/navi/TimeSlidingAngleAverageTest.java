@@ -44,7 +44,7 @@ public class TimeSlidingAngleAverageTest
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
             Thread.sleep(300);
             tsaa.add(350);
-            assertEquals(0, tsaa.fast(), Epsilon);
+            assertEquals(360, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
             Thread.sleep(300);
             tsaa.add(30);
