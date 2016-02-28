@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import org.vesalainen.math.sliding.SlidingAngleAverage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

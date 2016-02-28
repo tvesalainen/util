@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
+package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.AbstractSlidingAverage;
+import org.vesalainen.math.sliding.AbstractSlidingAverage;
 
 /**
  * TimeSlidingAverage calculates average for given time.

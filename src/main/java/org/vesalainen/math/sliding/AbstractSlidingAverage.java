@@ -14,18 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
+package org.vesalainen.math.sliding;
 
 /**
  * Base class for sliding average calculation
  * @author tkv
  */
-public abstract class AbstractSlidingAverage
+public abstract class AbstractSlidingAverage extends AbstractSliding
 {
-    protected int initialSize;
-    protected int size;
-    protected int begin;
-    protected int end;
     /**
      * Creates an AbstractSlidingAverage
      * @param size Size of the ring buffer
@@ -39,6 +35,7 @@ public abstract class AbstractSlidingAverage
      * Adds new value to sliding average
      * @param value 
      */
+    @Override
     public void add(double value)
     {
         eliminate();
@@ -50,10 +47,9 @@ public abstract class AbstractSlidingAverage
         assign(end%size, value);
         end++;
     }
-    protected abstract void assign(int index, double value);
-    protected abstract void remove(int index);
             
-    private void eliminate()
+    @Override
+    protected void eliminate()
     {
         int count = end-begin;
         while (count > 0 && isRemovable(begin%size))
@@ -73,35 +69,5 @@ public abstract class AbstractSlidingAverage
      * @return 
      */
     public abstract double average();
-    /**
-     * Called when ring buffer needs more space
-     */
-    protected abstract void grow();
-    
-    protected int newSize()
-    {
-        return Math.max(begin%size, initialSize)+size;
-    }
-    /**
-     * Returns new oldLen ring buffer
-     * @param old
-     * @param oldLen
-     * @param arr
-     * @return 
-     */
-    protected Object newArray(Object old, int oldLen, Object arr)
-    {
-        int sb = begin%oldLen;
-        int se = end%oldLen;
-        System.arraycopy(old, se, arr, se, oldLen-se);
-        System.arraycopy(old, 0, arr, oldLen, sb);
-        return arr;
-    }
-    /**
-     * Return true if value at index used anymore.
-     * @param index
-     * @return 
-     */
-    protected abstract boolean isRemovable(int index);
 
 }

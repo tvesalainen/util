@@ -14,34 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
-
-import org.vesalainen.math.AbstractSlidingAngleAverage;
+package org.vesalainen.math.sliding;
 
 /**
  * TimeSlidingAverage calculates average for given time.
  * @author tkv
  */
-public class TimeSlidingAngleAverage extends AbstractSlidingAngleAverage
+public class SlidingAngleAverage extends AbstractSlidingAngleAverage
 {
-    protected final long time;
-    protected long[] times;
     /**
      * Creates TimeSlidingAngleAverage
      * @param size Initial size of buffers
-     * @param millis Average time
      */
-    public TimeSlidingAngleAverage(int size, long millis)
+    public SlidingAngleAverage(int size)
     {
         super(size);
-        this.time = millis;
-        this.times = new long[size];
-    }
-
-    @Override
-    protected boolean isRemovable(int index)
-    {
-        return System.currentTimeMillis() - times[index] > time;
     }
 
     @Override
@@ -50,15 +37,14 @@ public class TimeSlidingAngleAverage extends AbstractSlidingAngleAverage
         int newSize = newSize();
         sin = (double[]) newArray(sin, size, new double[newSize]);
         cos = (double[]) newArray(cos, size, new double[newSize]);
-        times = (long[]) newArray(times, times.length, new long[newSize]);
         size = newSize;
     }
 
+
     @Override
-    protected void assign(int index, double value)
+    protected boolean isRemovable(int index)
     {
-        super.assign(index, value);
-        times[index] = System.currentTimeMillis();
+        return end-begin >= size;
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import org.vesalainen.math.sliding.TimeSlidingAverage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
