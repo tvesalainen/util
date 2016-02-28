@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
+package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.TimeSlidingAngleAverage;
+import org.vesalainen.math.sliding.TimedSlidingAngleAverage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class TimeSlidingAngleAverageTest
     {
         try
         {
-            TimeSlidingAngleAverage tsaa = new TimeSlidingAngleAverage(2, 1000);
+            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
             tsaa.add(10);
             assertEquals(10, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
@@ -65,7 +65,7 @@ public class TimeSlidingAngleAverageTest
     @Test
     public void test2()
     {
-            TimeSlidingAngleAverage tsaa = new TimeSlidingAngleAverage(2, 1000);
+            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
             tsaa.add(170);
             assertEquals(170, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
@@ -76,7 +76,7 @@ public class TimeSlidingAngleAverageTest
     @Test
     public void test3()
     {
-            TimeSlidingAngleAverage tsaa = new TimeSlidingAngleAverage(2, 1000);
+            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
             tsaa.add(80);
             assertEquals(80, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);

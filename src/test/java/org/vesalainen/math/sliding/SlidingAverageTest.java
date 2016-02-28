@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
+package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.SlidingAngleAverage;
+import org.vesalainen.math.sliding.SlidingAverage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,21 +24,30 @@ import static org.junit.Assert.*;
  *
  * @author tkv
  */
-public class SlidingAngleAverageTest
+public class SlidingAverageTest
 {
     private static final double Epsilon = 1e-10;
     
-    public SlidingAngleAverageTest()
+    public SlidingAverageTest()
     {
     }
 
     @Test
-    public void test()
+    public void test1()
     {
-        SlidingAngleAverage saa = new SlidingAngleAverage(3);
-        saa.add(338);
-        assertEquals(338, saa.fast(), Epsilon);
-        assertEquals(saa.average(), saa.fast(), Epsilon);
+        SlidingAverage sa = new SlidingAverage(2);
+        sa.add(1);
+        assertEquals(1, sa.fast(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
+        sa.add(3);
+        assertEquals(2, sa.fast(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
+        sa.add(5);
+        assertEquals(4, sa.fast(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
+        sa.add(7);
+        assertEquals(6, sa.fast(), Epsilon);
+        assertEquals(sa.fast(), sa.average(), Epsilon);
     }
     
 }

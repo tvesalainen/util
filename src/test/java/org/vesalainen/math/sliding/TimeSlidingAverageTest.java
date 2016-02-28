@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.navi;
+package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.TimeSlidingAverage;
+import org.vesalainen.math.sliding.TimedSlidingAverage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class TimeSlidingAverageTest
     {
         try
         {
-            TimeSlidingAverage tsa = new TimeSlidingAverage(2, 1000);
+            TimedSlidingAverage tsa = new TimedSlidingAverage(2, 1000);
             tsa.add(1);
             Thread.sleep(300);
             assertEquals(1, tsa.fast(), Epsilon);
