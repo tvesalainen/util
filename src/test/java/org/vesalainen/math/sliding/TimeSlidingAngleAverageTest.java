@@ -16,7 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.TimedSlidingAngleAverage;
+import org.vesalainen.math.sliding.TimeoutSlidingAngleAverage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class TimeSlidingAngleAverageTest
     {
         try
         {
-            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
+            TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
             tsaa.add(10);
             assertEquals(10, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
@@ -65,7 +65,7 @@ public class TimeSlidingAngleAverageTest
     @Test
     public void test2()
     {
-            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
+            TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
             tsaa.add(170);
             assertEquals(170, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
@@ -76,7 +76,7 @@ public class TimeSlidingAngleAverageTest
     @Test
     public void test3()
     {
-            TimedSlidingAngleAverage tsaa = new TimedSlidingAngleAverage(2, 1000);
+            TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
             tsaa.add(80);
             assertEquals(80, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);

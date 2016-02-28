@@ -17,45 +17,24 @@
 package org.vesalainen.math.sliding;
 
 /**
- * Base class for sliding average calculation
+ * In this class max is calculated for size last samples.
  * @author tkv
  */
-public abstract class AbstractSlidingAverage extends AbstractSliding
+public class SlidingMax extends AbstractSlidingBound
 {
     /**
-     * Creates an AbstractSlidingAverage
-     * @param size Initial size of the ring buffer
+     * 
+     * @param size Initial size and max number of samples
      */
-    protected AbstractSlidingAverage(int size)
+    public SlidingMax(int size)
     {
         super(size);
     }
-    /**
-     * Adds new value to sliding average
-     * @param value 
-     */
-    @Override
-    public void add(double value)
-    {
-        eliminate();
-        int count = end-begin;
-        if (count >= size)
-        {
-            grow();
-        }
-        assign(end%size, value);
-        end++;
-    }
-            
-    /**
-     * Returns average without actually calculating cell by cell
-     * @return 
-     */
-    public abstract double fast();
-    /**
-     * Returns average by calculating cell by cell
-     * @return 
-     */
-    public abstract double average();
 
+    @Override
+    protected boolean exceedsBounds(int index, double value)
+    {
+        return ring[(index-1) % size] < value;
+    }
+    
 }

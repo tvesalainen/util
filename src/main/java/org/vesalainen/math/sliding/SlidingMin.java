@@ -17,33 +17,21 @@
 package org.vesalainen.math.sliding;
 
 /**
- * SlidingAngleAverage calculates average angle.
+ * In this class min is calculated for size last samples.
  * @author tkv
  */
-public class SlidingAngleAverage extends AbstractSlidingAngleAverage
+public class SlidingMin extends AbstractSlidingBound
 {
-    /**
-     * @param size Initial size of buffers
-     */
-    public SlidingAngleAverage(int size)
+
+    public SlidingMin(int size)
     {
         super(size);
     }
 
     @Override
-    protected void grow()
+    protected boolean exceedsBounds(int index, double value)
     {
-        int newSize = newSize();
-        sin = (double[]) newArray(sin, size, new double[newSize]);
-        cos = (double[]) newArray(cos, size, new double[newSize]);
-        size = newSize;
+        return ring[(index-1) % size] > ring[index % size];
     }
-
-
-    @Override
-    protected boolean isRemovable(int index)
-    {
-        return end-begin >= size;
-    }
-
+    
 }

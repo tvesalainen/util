@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.TimedSlidingAverage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -39,7 +38,7 @@ public class TimeSlidingAverageTest
     {
         try
         {
-            TimedSlidingAverage tsa = new TimedSlidingAverage(2, 1000);
+            TimeoutSlidingAverage tsa = new TimeoutSlidingAverage(2, 1000);
             tsa.add(1);
             Thread.sleep(300);
             assertEquals(1, tsa.fast(), Epsilon);

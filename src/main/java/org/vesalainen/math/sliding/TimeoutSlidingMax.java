@@ -17,33 +17,26 @@
 package org.vesalainen.math.sliding;
 
 /**
- * SlidingAngleAverage calculates average angle.
+ * A class for counting max value for given time.
  * @author tkv
  */
-public class SlidingAngleAverage extends AbstractSlidingAngleAverage
+public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound
 {
     /**
+     * 
      * @param size Initial size of buffers
+     * @param timeout Sample timeout in millis 
      */
-    public SlidingAngleAverage(int size)
+    public TimeoutSlidingMax(int size, long timeout)
     {
-        super(size);
+        super(size, timeout);
     }
-
+    
     @Override
-    protected void grow()
+    protected boolean exceedsBounds(int index, double value)
     {
-        int newSize = newSize();
-        sin = (double[]) newArray(sin, size, new double[newSize]);
-        cos = (double[]) newArray(cos, size, new double[newSize]);
-        size = newSize;
+        return ring[(index-1) % size] < ring[index % size];
     }
-
-
-    @Override
-    protected boolean isRemovable(int index)
-    {
-        return end-begin >= size;
-    }
-
+    
+   
 }

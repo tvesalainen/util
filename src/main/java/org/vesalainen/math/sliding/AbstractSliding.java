@@ -17,7 +17,8 @@
 package org.vesalainen.math.sliding;
 
 /**
- *
+ * Abstract base class for sliding expression calculations. Sliding calculations means 
+ * calculating expression for number of last samples or samples that are not older than given time.
  * @author tkv
  */
 public abstract class AbstractSliding
@@ -26,9 +27,14 @@ public abstract class AbstractSliding
     protected int size;
     protected int begin;
     protected int end;
-
-    public AbstractSliding()
+    /**
+     * 
+     * @param size Inital size of ring buffer
+     */
+    protected AbstractSliding(int size)
     {
+        this.initialSize = size;
+        this.size = size;
     }
 
     /**
@@ -36,18 +42,41 @@ public abstract class AbstractSliding
      * @param value
      */
     public abstract void add(double value);
-
+    /**
+     * Assign value to inner storage
+     * @param index Mod size
+     * @param value 
+     */
     protected abstract void assign(int index, double value);
-
+    /**
+     * Remove item at index
+     * @param index Mod index
+     */
     protected abstract void remove(int index);
-
-    protected abstract void eliminate();
+    /**
+     * Eliminate values that are no longer used in calculation
+     */
+    protected void eliminate()
+    {
+        int count = end-begin;
+        while (count > 0 && isRemovable(begin%size))
+        {
+            remove(begin%size);
+            begin++;
+            count--;
+        }
+    }
 
     /**
      * Called when ring buffer needs more space
      */
     protected abstract void grow();
-
+    /**
+     * Returns new size for ringbuffer. This implementations returns 
+     * Math.max(begin % size, initialSize) + size;
+     * <p>Important! newSize cannot be less than in default implementation.
+     * @return 
+     */
     protected int newSize()
     {
         return Math.max(begin % size, initialSize) + size;
@@ -70,7 +99,7 @@ public abstract class AbstractSliding
     }
 
     /**
-     * Return true if value at index used anymore.
+     * Return true if value at index is not needed anymore.
      * @param index
      * @return
      */

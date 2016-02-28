@@ -17,7 +17,7 @@
 package org.vesalainen.math.sliding;
 
 /**
- *
+ * Base class for sliding angle average calculation
  * @author tkv
  */
 public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
@@ -67,14 +67,22 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
         sinSum -= sin[index];
         cosSum -= cos[index];
     }
-
+    /**
+     * Returns fast average. Fast calculation adds and subtracts values from
+     * sum field. This might cause difference in time to actual calculating
+     * sample by sample.
+     * @return 
+     */
     @Override
     public double fast()
     {
         int count = end - begin;
         return toDegrees(sinSum / count, cosSum / count);
     }
-
+    /**
+     * Returns sample by sample calculated average.
+     * @return 
+     */
     @Override
     public double average()
     {

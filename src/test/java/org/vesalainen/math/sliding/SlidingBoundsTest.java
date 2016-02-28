@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -90,32 +92,111 @@ public class SlidingBoundsTest
     }
     
     @Test
+    public void testTimedSlidingMax()
+    {
+        try
+        {
+            // 10 9 8 7 6 9 10 11 9 8 7
+            // --------
+            //    -------
+            //      -------
+            //        --------
+            //          ---------
+            //            ---------
+            //              ----------
+            TimeoutSlidingMax sm = new TimeoutSlidingMax(3, 1000);
+            sm.add(10);
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(9);
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(8);
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(7);
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(6);
+            Thread.sleep(300);
+            assertEquals(9, sm.getBound(), Epsilon);
+            sm.add(9);
+            Thread.sleep(300);
+            assertEquals(9, sm.getBound(), Epsilon);
+            sm.add(10);
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(11);
+            Thread.sleep(300);
+            assertEquals(11, sm.getBound(), Epsilon);
+            sm.add(9);
+            Thread.sleep(300);
+            assertEquals(11, sm.getBound(), Epsilon);
+            sm.add(8);
+            Thread.sleep(300);
+            assertEquals(11, sm.getBound(), Epsilon);
+            sm.add(7);
+            Thread.sleep(300);
+            assertEquals(11, sm.getBound(), Epsilon);
+        }
+        catch (InterruptedException ex)
+        {
+            Logger.getLogger(SlidingBoundsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    @Test
     public void testTimedSlidingMin()
     {
-        // 10 9 8 7 6 9 10 11 9 8 7
-        TimedSlidingMax sm = new TimedSlidingMax(3, 100);
-        sm.add(10);
-        assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(9);
-        assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(8);
-        assertEquals(8, sm.getBound(), Epsilon);
-        sm.add(7);
-        assertEquals(7, sm.getBound(), Epsilon);
-        sm.add(6);
-        assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(9);
-        assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(10);
-        assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(11);
-        assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(9);
-        assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(8);
-        assertEquals(8, sm.getBound(), Epsilon);
-        sm.add(7);
-        assertEquals(7, sm.getBound(), Epsilon);
+        try
+        {
+            // 10 9 8 7 6 9 10 11 9 8 7
+            // -------- 1200
+            //    ------- 1200-1500
+            //      ------- 1500-1800
+            //        -------- 1800-2100
+            //          --------- 2100-2400
+            //            --------- 2400-2700
+            //              ---------- 2700-3000
+            TimeoutSlidingMin sm = new TimeoutSlidingMin(3, 1000);
+            sm.add(10); // 0
+            Thread.sleep(300);
+            assertEquals(10, sm.getBound(), Epsilon);
+            sm.add(9);  // 300
+            Thread.sleep(300);
+            assertEquals(9, sm.getBound(), Epsilon);
+            sm.add(8);  // 600
+            Thread.sleep(300);
+            assertEquals(8, sm.getBound(), Epsilon);
+            sm.add(7);  // 900
+            Thread.sleep(300);
+            assertEquals(7, sm.getBound(), Epsilon);
+            sm.add(6);  // 1200
+            Thread.sleep(300);
+            assertEquals(6, sm.getBound(), Epsilon);
+            sm.add(9);  // 1500
+            Thread.sleep(300);
+            assertEquals(6, sm.getBound(), Epsilon);
+            sm.add(10); // 1800
+            Thread.sleep(300);
+            assertEquals(6, sm.getBound(), Epsilon);
+            sm.add(11); // 2100
+            Thread.sleep(300);
+            assertEquals(6, sm.getBound(), Epsilon);
+            sm.add(9);  // 2400
+            Thread.sleep(300);
+            assertEquals(9, sm.getBound(), Epsilon);
+            sm.add(8);  // 2700
+            Thread.sleep(300);
+            assertEquals(8, sm.getBound(), Epsilon);
+            sm.add(7);  // 3000
+            Thread.sleep(300);
+            assertEquals(7, sm.getBound(), Epsilon);
+        }
+        catch (InterruptedException ex)
+        {
+            Logger.getLogger(SlidingBoundsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

@@ -17,13 +17,17 @@
 package org.vesalainen.math.sliding;
 
 /**
- *
+ * 
  * @author tkv
  */
 public class SlidingAverage extends AbstractSlidingAverage
 {
     protected double[] ring;
     protected double sum;
+    /**
+     * 
+     * @param size Initial size of ring buffer
+     */
     public SlidingAverage(int size)
     {
         super(size);

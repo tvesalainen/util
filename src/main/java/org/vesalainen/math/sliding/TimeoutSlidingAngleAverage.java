@@ -16,32 +16,30 @@
  */
 package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.AbstractSlidingAngleAverage;
-
 /**
- * TimeSlidingAverage calculates average for given time.
+ * TimeoutSlidingAverage calculates angle average for given timeout.
  * @author tkv
  */
-public class TimeSlidingAngleAverage extends AbstractSlidingAngleAverage
+public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage
 {
-    protected final long time;
+    protected final long timeout;
     protected long[] times;
     /**
-     * Creates TimeSlidingAngleAverage
+     * Creates TimeoutSlidingAngleAverage
      * @param size Initial size of buffers
-     * @param millis Average time
+     * @param timeout Sample timeout
      */
-    public TimeSlidingAngleAverage(int size, long millis)
+    public TimeoutSlidingAngleAverage(int size, long timeout)
     {
         super(size);
-        this.time = millis;
+        this.timeout = timeout;
         this.times = new long[size];
     }
 
     @Override
     protected boolean isRemovable(int index)
     {
-        return System.currentTimeMillis() - times[index] > time;
+        return System.currentTimeMillis() - times[index] > timeout;
     }
 
     @Override
