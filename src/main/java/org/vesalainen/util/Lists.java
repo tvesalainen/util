@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Lists class contains methods to construct often used lists
@@ -27,6 +28,42 @@ import java.util.List;
  */
 public class Lists
 {
+    private static final ThreadLocal<Locale> threadLocale = new ThreadLocal<>();
+    private static final ThreadLocal<String> threadFormat = new ThreadLocal<>();
+    /**
+     * Set Format string and locale for calling thread. List items are formatted
+     * using these. It is good practice to call removeFormat after use.
+     * @param locale 
+     * @see #removeFormat() 
+     * @see java.lang.String#format(java.util.Locale, java.lang.String, java.lang.Object...) 
+     */
+    public static final void setFormat(String format, Locale locale)
+    {
+        threadFormat.set(format);
+        threadLocale.set(locale);
+    }
+    /**
+     * Remove format and locale set in setFormat method.
+     * @see #setFormat(java.lang.String, java.util.Locale) 
+     */
+    public static final void removeFormat()
+    {
+        threadFormat.remove();
+        threadLocale.remove();
+    }
+    private static String format(Object ob)
+    {
+        String format = threadFormat.get();
+        Locale locale = threadLocale.get();
+        if (format != null && locale != null)
+        {
+            return String.format(locale, format, ob);
+        }
+        else
+        {
+            return ob.toString();
+        }
+    }
     /**
      * Creates a list that is populated with items
      * @param <T>
@@ -114,7 +151,7 @@ public class Lists
                 first=false;
             }
             append(quotStart, out);
-            out.append(ob.toString());
+            out.append(format(ob));
             append(quotEnd, out);
         }
         append(end, out);
@@ -168,7 +205,7 @@ public class Lists
                 first=false;
             }
             append(quotStart, out);
-            out.append(ob.toString());
+            out.append(format(ob));
             append(quotEnd, out);
         }
         append(end, out);

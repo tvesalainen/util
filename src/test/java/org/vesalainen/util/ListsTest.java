@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -66,6 +67,19 @@ public class ListsTest
         String exp = "a1, a2, a3";
         String got = Lists.print(", ", "a1", "a2", "a3");
         assertEquals(exp, got);
+    }
+    
+    @Test
+    public void testFormat()
+    {
+        String exp = "1.00, 2.00, 3.00";
+        String exp2 = "1.0, 2.0, 3.0";
+        Lists.setFormat("%.2f", Locale.US);
+        String got = Lists.print(", ", 1.0, 2.0, 3.0);
+        assertEquals(exp, got);
+        Lists.removeFormat();
+        got = Lists.print(", ", 1.0, 2.0, 3.0);
+        assertEquals(exp2, got);
     }
     
 }
