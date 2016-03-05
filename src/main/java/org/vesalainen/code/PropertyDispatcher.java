@@ -17,9 +17,13 @@
 
 package org.vesalainen.code;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -180,6 +184,17 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      */
     public static <T extends PropertyDispatcher> T getInstance(Class<T> cls)
     {
+        return getInstance(cls, null);
+    }
+    /**
+     * Creates a instance of a class PropertyDispatcher subclass.
+     * @param <T> Type of PropertyDispatcher subclass
+     * @param cls PropertyDispatcher subclass class
+     * @param dispatcher
+     * @return 
+     */
+    public static <T extends PropertyDispatcher> T getInstance(Class<T> cls, PropertySetterDispatcher dispatcher)
+    {
         try
         {
             PropertyDispatcherClass annotation = cls.getAnnotation(PropertyDispatcherClass.class);
@@ -188,10 +203,18 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
                 throw new IllegalArgumentException("@"+PropertyDispatcherClass.class.getSimpleName()+" missing in cls");
             }
             Class<?> c = Class.forName(annotation.value());
-            T t =(T) c.newInstance();
-            return t;
+            if (dispatcher == null)
+            {
+                T t =(T) c.newInstance();
+                return t;
+            }
+            else
+            {
+                Constructor<?> constructor = c.getConstructor(PropertySetterDispatcher.class);
+                return (T) constructor.newInstance(dispatcher);
+            }
         }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
+        catch (InvocationTargetException | SecurityException | NoSuchMethodException | ClassNotFoundException | InstantiationException | IllegalAccessException ex)
         {
             throw new IllegalArgumentException(ex);
         }

@@ -25,8 +25,13 @@ package org.vesalainen.code;
 public abstract class PD extends PropertyDispatcher implements TrIntf
 {
 
-    protected PD(int[] sizes)
+    public PD(int[] sizes)
     {
         super(sizes);
+    }
+
+    protected PD(int[] sizes, PropertySetterDispatcher dispatcher)
+    {
+        super(sizes, dispatcher);
     }
 }

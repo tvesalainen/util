@@ -39,7 +39,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import static javax.lang.model.element.Modifier.*;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -138,11 +137,11 @@ public class Processor extends AbstractProcessor
             List<? extends ExecutableElement> methods = getMethods(cls);
             List<? extends TypeMirror> interfaces = cls.getInterfaces();
             mp.println("package "+pgk+";");
-            mp.println("import org.vesalainen.util.EnumMapList;");
             mp.println("import org.vesalainen.util.Transactional;");
-            mp.println("import org.vesalainen.code.PropertySetter;");
             mp.println("import java.util.Arrays;");
             mp.println("import javax.annotation.Generated;");
+            mp.println("import org.vesalainen.code.PropertySetterDispatcher;");
+
             mp.println("@Generated(");
             mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
             mp.println("\t, comments=\"Generated for "+cls+"\"");
@@ -183,11 +182,19 @@ public class Processor extends AbstractProcessor
             
             cp.println("public "+classname+"()");
             cp.println("{");
-            CodePrinter cons = cp.createSub("}");
-            cons.print("super(new int[] {");
-            cons.print(", ", sizes);
-            cons.println("});");
-            cons.flush();
+            CodePrinter cons1 = cp.createSub("}");
+            cons1.print("super(new int[] {");
+            cons1.print(", ", sizes);
+            cons1.println("});");
+            cons1.flush();
+            
+            cp.println("public "+classname+"(PropertySetterDispatcher dispatcher)");
+            cp.println("{");
+            CodePrinter cons2 = cp.createSub("}");
+            cons2.print("super(new int[] {");
+            cons2.print(", ", sizes);
+            cons2.println("}, dispatcher);");
+            cons2.flush();
             for (ExecutableElement m : methods)
             {
                 List<? extends VariableElement> parameters = m.getParameters();

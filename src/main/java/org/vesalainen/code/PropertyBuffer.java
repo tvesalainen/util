@@ -181,6 +181,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
                 }
                 idx++;
                 idx %= capacity;
+                count++;
             }
             catch (InterruptedException ex)
             {
