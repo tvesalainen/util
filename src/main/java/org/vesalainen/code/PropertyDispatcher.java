@@ -76,7 +76,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      */
     protected PropertyDispatcher(int[] sizes)
     {
-        this(sizes, new PropertySetterDispatcher());
+        this(sizes, new SimplePropertySetterDispatcher());
     }
     /**
      * Creates a PropertyDispatcher. This is called by generated sub class.
