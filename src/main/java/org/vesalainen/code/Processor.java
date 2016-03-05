@@ -181,8 +181,6 @@ public class Processor extends AbstractProcessor
             cp.print(", ", en);
             cp.println("};");
             
-            cp.println("private final EnumMapList<Prop,PropertySetter> observers = new EnumMapList<>(Prop.class);");
-            
             cp.println("public "+classname+"()");
             cp.println("{");
             CodePrinter cons = cp.createSub("}");
@@ -205,8 +203,9 @@ public class Processor extends AbstractProcessor
                         )
                 {
                     String enumname = getEnum(m);
+                    String property = getProperty(m);
                     VariableElement ve = parameters.get(0);
-                    cm.println("if (observers.containsKey(Prop."+enumname+"))");
+                    cm.println("if (observers.containsProperty(\""+property+"\"))");
                     cm.println("{");
                     CodePrinter ifobs = cm.createSub("}");
                     ifobs.println("set(Prop."+enumname+".ordinal(), "+ve.getSimpleName()+");");
@@ -252,11 +251,7 @@ public class Processor extends AbstractProcessor
                                 String code = jt.getCode();
                                 int ordinal = jt.ordinal();
                                 csw.println(code+"[] a = ("+code+"[])arr["+ordinal+"];");
-                                csw.println("for (PropertySetter ps : observers.get(Prop."+aEnum+"))");
-                                csw.println("{");
-                                CodePrinter csf = csw.createSub("}");
-                                csf.println("ps.set(\""+prop+"\", a[ind["+ordinal+"]]);");
-                                csf.flush();
+                                csw.println("observers.set(\""+prop+"\", a[ind["+ordinal+"]]);");
                                 csw.println("ind["+ordinal+"]++;");
                                 csw.println("break;");
                                 csw.flush();
@@ -284,17 +279,32 @@ public class Processor extends AbstractProcessor
                     else
                     {
                         if (
-                                name.equals("hasObservers") && 
-                                parameters.size() == 0 &&
-                                returnType.getKind() == BOOLEAN
+                                name.equals("rollback") && 
+                                parameters.size() == 1 &&
+                                "java.lang.String".equals(parameters.get(0).asType().toString()) &&
+                                returnType.getKind() == VOID
                                 )
                         {
-                            cm.println("return !observers.isEmpty();");
+                            cm.println("try");
+                            cm.println("{");
+                            CodePrinter ct = cm.createSub("}");
+                            ct.println("clear();");
+                            ct.println("for (Transactional tr : transactionalObservers)");
+                            ct.println("{");
+                            CodePrinter ctr = ct.createSub("}");
+                            ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
+                            ctr.flush();
+                            ct.flush();
+                            cm.println("finally");
+                            cm.println("{");
+                            CodePrinter cf = cm.createSub("}");
+                            cf.println("semaphore.release();");
+                            cf.flush();
                         }
                         else
                         {
                             if (
-                                    name.equals("rollback") && 
+                                    name.equals("start") && 
                                     parameters.size() == 1 &&
                                     "java.lang.String".equals(parameters.get(0).asType().toString()) &&
                                     returnType.getKind() == VOID
@@ -302,141 +312,18 @@ public class Processor extends AbstractProcessor
                             {
                                 cm.println("try");
                                 cm.println("{");
-                                CodePrinter ct = cm.createSub("}");
-                                ct.println("clear();");
-                                ct.println("for (Transactional tr : transactionalObservers)");
-                                ct.println("{");
-                                CodePrinter ctr = ct.createSub("}");
-                                ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
-                                ctr.flush();
-                                ct.flush();
-                                cm.println("finally");
+                                CodePrinter cs = cm.createSub("}");
+                                cs.println("semaphore.acquire();");
+                                cs.flush();
+                                cm.println("catch (InterruptedException ex)");
                                 cm.println("{");
-                                CodePrinter cf = cm.createSub("}");
-                                cf.println("semaphore.release();");
-                                cf.flush();
+                                CodePrinter cc = cm.createSub("}");
+                                cc.println("throw new IllegalArgumentException(ex);");
+                                cc.flush();
                             }
                             else
                             {
-                                if (
-                                        name.equals("start") && 
-                                        parameters.size() == 1 &&
-                                        "java.lang.String".equals(parameters.get(0).asType().toString()) &&
-                                        returnType.getKind() == VOID
-                                        )
-                                {
-                                    cm.println("try");
-                                    cm.println("{");
-                                    CodePrinter cs = cm.createSub("}");
-                                    cs.println("semaphore.acquire();");
-                                    cs.flush();
-                                    cm.println("catch (InterruptedException ex)");
-                                    cm.println("{");
-                                    CodePrinter cc = cm.createSub("}");
-                                    cc.println("throw new IllegalArgumentException(ex);");
-                                    cc.flush();
-                                }
-                                else
-                                {
-                                    String sa = String.class.getCanonicalName()+"[]";
-                                    if (
-                                            name.equals("addObserver") && 
-                                            parameters.size() == 2 &&
-                                            PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
-                                            sa.equals(parameters.get(1).asType().toString()) &&
-                                            returnType.getKind() == VOID
-                                            )
-                                    {
-                                        Name arg0 = parameters.get(0).getSimpleName();
-                                        Name arg1 = parameters.get(1).getSimpleName();
-                                        cm.println("try");
-                                        cm.println("{");
-                                        CodePrinter cs = cm.createSub("}");
-                                        cs.println("semaphore.acquire();");
-                                        cs.flush();
-                                        cm.println("catch (InterruptedException ex)");
-                                        cm.println("{");
-                                        CodePrinter cc = cm.createSub("}");
-                                        cc.println("throw new IllegalArgumentException(ex);");
-                                        cc.flush();
-                                        cm.println("try");
-                                        cm.println("{");
-                                        CodePrinter ct = cm.createSub("}");
-                                        ct.println("super.addObserver("+arg0+");");
-                                        ct.println("for (String p : "+arg1+")");
-                                        ct.println("{");
-                                        CodePrinter cao = ct.createSub("}");
-                                        cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
-                                        cao.println("for (Prop pr : Prop.values())");
-                                        cao.println("{");
-                                        CodePrinter caoo = cao.createSub("}");
-                                        caoo.println("if (pr.name().startsWith(str))");
-                                        caoo.println("{");
-                                        CodePrinter caooo = caoo.createSub("}");
-                                        caooo.println("observers.add(pr, "+arg0+");");
-                                        caooo.flush();
-                                        caoo.flush();
-                                        cao.flush();
-                                        ct.flush();
-                                        cm.println("finally");
-                                        cm.println("{");
-                                        CodePrinter cf = cm.createSub("}");
-                                        cf.println("semaphore.release();");
-                                        cf.flush();
-                                    }
-                                    else
-                                    {
-                                        if (
-                                                name.equals("removeObserver") && 
-                                                parameters.size() == 2 &&
-                                                PropertySetter.class.getCanonicalName().equals(parameters.get(0).asType().toString()) &&
-                                                sa.equals(parameters.get(1).asType().toString()) &&
-                                                returnType.getKind() == VOID
-                                                )
-                                        {
-                                            Name arg0 = parameters.get(0).getSimpleName();
-                                            Name arg1 = parameters.get(1).getSimpleName();
-                                            cm.println("try");
-                                            cm.println("{");
-                                            CodePrinter cs = cm.createSub("}");
-                                            cs.println("semaphore.acquire();");
-                                            cs.flush();
-                                            cm.println("catch (InterruptedException ex)");
-                                            cm.println("{");
-                                            CodePrinter cc = cm.createSub("}");
-                                            cc.println("throw new IllegalArgumentException(ex);");
-                                            cc.flush();
-                                            cm.println("try");
-                                            cm.println("{");
-                                            CodePrinter ct = cm.createSub("}");
-                                            ct.println("super.removeObserver("+arg0+");");
-                                            ct.println("for (String p : "+arg1+")");
-                                            ct.println("{");
-                                            CodePrinter cao = ct.createSub("}");
-                                            cao.println("String str = p.isEmpty() ? \"\" : Character.toUpperCase(p.charAt(0))+p.substring(1);");
-                                            cao.println("for (Prop pr : Prop.values())");
-                                            cao.println("{");
-                                            CodePrinter caoo = cao.createSub("}");
-                                            caoo.println("if (pr.name().startsWith(str))");
-                                            caoo.println("{");
-                                            CodePrinter caooo = caoo.createSub("}");
-                                            caooo.println("observers.removeItem(pr, "+arg0+");");
-                                            caooo.flush();
-                                            caoo.flush();
-                                            cao.flush();
-                                            ct.flush();
-                                            cm.println("finally");
-                                            cm.println("{");
-                                            CodePrinter cf = cm.createSub("}");
-                                            cf.println("semaphore.release();");
-                                            cf.flush();
-                                        }
-                                        else
-                                        {
-                                            cm.println("throw new UnsupportedOperationException(\"not supported.\");");
-                                        }
-                                    }
-                                }
+                                cm.println("throw new UnsupportedOperationException(\"not supported.\");");
                             }
                         }
                     }
@@ -771,6 +658,12 @@ public class Processor extends AbstractProcessor
         TypeMirror type = ve.asType();
         String typeString = type.toString().replace('.', '_').replace('<', '_').replace('>', '_');
         return name.substring(3)+'_'+typeString;
+    }
+
+    private String getProperty(ExecutableElement m)
+    {
+        String name = m.getSimpleName().toString();
+        return Character.toLowerCase(name.charAt(3))+name.substring(4);
     }
 
     private String getter(TypeKind kind)
