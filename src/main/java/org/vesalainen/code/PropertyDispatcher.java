@@ -20,10 +20,6 @@ package org.vesalainen.code;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -70,6 +66,7 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
 {
     protected List<Transactional> transactionalObservers = new ArrayList<>();
     protected Semaphore semaphore = new Semaphore(1);
+    protected PropertySetterDispatcher observers;
     /**
      * Creates a PropertyDispatcher. This is called by generated sub class.
      * @param sizes Defines how many method class per type can be stored. Default
@@ -79,16 +76,50 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      */
     protected PropertyDispatcher(int[] sizes)
     {
+        this(sizes, new PropertySetterDispatcher());
+    }
+    /**
+     * Creates a PropertyDispatcher. This is called by generated sub class.
+     * @param sizes Defines how many method class per type can be stored. Default
+     * implementation allows interfaces all methods being called once. Size per type
+     * is in the same order as in JavaType enum.
+     * @param observers
+     * @see org.vesalainen.code.JavaType
+     */
+    protected PropertyDispatcher(int[] sizes, PropertySetterDispatcher observers)
+    {
         super(sizes);
+        this.observers = observers;
     }
     
     /**
-     * Adds a PropertySetter observer for properties that have given prefix. As
-     * a consequence ALL properties are added if empty prefix is used.
+     * Adds a PropertySetter observer for properties.
      * @param observer 
-     * @param prefixes 
+     * @param properties 
      */
-    public abstract void addObserver(PropertySetter observer, String... prefixes);
+    public void addObserver(PropertySetter observer, String... properties)
+    {
+        try
+        {
+            semaphore.acquire();
+        }
+        catch (InterruptedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+        try
+        {
+            addObserver(observer);
+            for (String p : properties)
+            {
+                observers.addObserver(p, observer);
+            }
+        }
+        finally
+        {
+            semaphore.release();
+        }
+    }
     protected void addObserver(PropertySetter observer)
     {
         if (observer instanceof Transactional)
@@ -98,12 +129,33 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
         }
     }
     /**
-     * Remove a PropertySetter observer for properties that have given prefix. As
-     * a consequence ALL properties are removed if empty prefix is used.
+     * Remove a PropertySetter observer for properties.
      * @param observer 
-     * @param prefixes 
+     * @param properties 
      */
-    public abstract void removeObserver(PropertySetter observer, String... prefixes);
+    public void removeObserver(PropertySetter observer, String... properties)
+    {
+        try
+        {
+            semaphore.acquire();
+        }
+        catch (InterruptedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+        try
+        {
+            removeObserver(observer);
+            for (String p : properties)
+            {
+                observers.removeObserver(p, observer);
+            }
+        }
+        finally
+        {
+            semaphore.release();
+        }
+    }
     protected void removeObserver(PropertySetter observer)
     {
         if (observer instanceof Transactional)
@@ -116,7 +168,10 @@ public abstract class PropertyDispatcher extends AbstractDispatcher
      * Return true if no observers
      * @return 
      */
-    public abstract boolean hasObservers();
+    public boolean hasObservers()
+    {
+        return !observers.isEmpty();
+    }
     /**
      * Creates a instance of a class PropertyDispatcher subclass.
      * @param <T> Type of PropertyDispatcher subclass
