@@ -56,8 +56,7 @@ public class SlidingAverageTest
     public void test2()
     {
         SlidingAverage sa = new SlidingAverage(2);
-        double[] da = new double[] {1, 3, 5, 7};
-        DoubleStream ds = Arrays.stream(da);
+        DoubleStream ds = DoubleStream.of(1, 3, 5, 7);
         ds.forEach(sa);
         assertEquals(6, sa.fast(), Epsilon);
         assertEquals(sa.fast(), sa.average(), Epsilon);
@@ -68,8 +67,7 @@ public class SlidingAverageTest
     public void test3()
     {
         SlidingAverage sa = new SlidingAverage(3);
-        double[] da = new double[] {1, 3, 5, 7};
-        DoubleStream ds = Arrays.stream(da);
+        DoubleStream ds = DoubleStream.of(1, 3, 5, 7);
         ds.forEach(sa);
         assertEquals(5, sa.fast(), Epsilon);
         assertEquals(sa.fast(), sa.average(), Epsilon);

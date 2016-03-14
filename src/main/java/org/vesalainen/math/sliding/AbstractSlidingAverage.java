@@ -89,7 +89,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
         return s/(end-begin);
     }
     /**
-     * Returns values as stream
+     * Returns values as stream in the same order as entered
      * @return 
      */
     public DoubleStream stream()
