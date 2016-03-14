@@ -22,6 +22,8 @@ package org.vesalainen.math.sliding;
  */
 public abstract class AbstractSlidingAverage extends AbstractSliding
 {
+    protected double[] ring;
+    protected double sum;
     /**
      * Creates an AbstractSlidingAverage
      * @param size Initial size of the ring buffer
@@ -29,13 +31,14 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
     protected AbstractSlidingAverage(int size)
     {
         super(size);
+        ring = new double[size];
     }
     /**
      * Adds new value to sliding average
      * @param value 
      */
     @Override
-    public void add(double value)
+    public void accept(double value)
     {
         eliminate();
         int count = end-begin;
@@ -47,15 +50,41 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
         end++;
     }
             
+    @Override
+    protected void assign(int index, double value)
+    {
+        ring[index] = value;
+        sum += value;
+    }
+
+    @Override
+    protected void remove(int index)
+    {
+        sum -= ring[index];
+    }
+
     /**
      * Returns average without actually calculating cell by cell
      * @return 
      */
-    public abstract double fast();
+    public double fast()
+    {
+        return sum/(end-begin);
+    }
+
     /**
      * Returns average by calculating cell by cell
      * @return 
      */
-    public abstract double average();
+    public double average()
+    {
+        double s = 0;
+        for (int ii=begin;ii<end;ii++)
+        {
+            s += ring[ii%size];
+        }
+        return s/(end-begin);
+    }
+
 
 }

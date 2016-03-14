@@ -38,27 +38,27 @@ public class SlidingBoundsTest
     {
         // 10 9 8 7 6 9 10 11 9 8 7
         SlidingMax sm = new SlidingMax(3);
-        sm.add(10);
+        sm.accept(10);
         assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(8);
+        sm.accept(8);
         assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(7);
+        sm.accept(7);
         assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(6);
+        sm.accept(6);
         assertEquals(8, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(10);
+        sm.accept(10);
         assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(11);
+        sm.accept(11);
         assertEquals(11, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(11, sm.getBound(), Epsilon);
-        sm.add(8);
+        sm.accept(8);
         assertEquals(11, sm.getBound(), Epsilon);
-        sm.add(7);
+        sm.accept(7);
         assertEquals(9, sm.getBound(), Epsilon);
     }
     
@@ -67,27 +67,27 @@ public class SlidingBoundsTest
     {
         // 10 9 8 7 6 9 10 11 9 8 7
         SlidingMin sm = new SlidingMin(3);
-        sm.add(10);
+        sm.accept(10);
         assertEquals(10, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(8);
+        sm.accept(8);
         assertEquals(8, sm.getBound(), Epsilon);
-        sm.add(7);
+        sm.accept(7);
         assertEquals(7, sm.getBound(), Epsilon);
-        sm.add(6);
+        sm.accept(6);
         assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(10);
+        sm.accept(10);
         assertEquals(6, sm.getBound(), Epsilon);
-        sm.add(11);
+        sm.accept(11);
         assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(9);
+        sm.accept(9);
         assertEquals(9, sm.getBound(), Epsilon);
-        sm.add(8);
+        sm.accept(8);
         assertEquals(8, sm.getBound(), Epsilon);
-        sm.add(7);
+        sm.accept(7);
         assertEquals(7, sm.getBound(), Epsilon);
     }
     
@@ -105,37 +105,37 @@ public class SlidingBoundsTest
             //            ---------
             //              ----------
             TimeoutSlidingMax sm = new TimeoutSlidingMax(3, 1000);
-            sm.add(10);
+            sm.accept(10);
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(9);
+            sm.accept(9);
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(8);
+            sm.accept(8);
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(7);
+            sm.accept(7);
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(6);
+            sm.accept(6);
             Thread.sleep(300);
             assertEquals(9, sm.getBound(), Epsilon);
-            sm.add(9);
+            sm.accept(9);
             Thread.sleep(300);
             assertEquals(9, sm.getBound(), Epsilon);
-            sm.add(10);
+            sm.accept(10);
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(11);
+            sm.accept(11);
             Thread.sleep(300);
             assertEquals(11, sm.getBound(), Epsilon);
-            sm.add(9);
+            sm.accept(9);
             Thread.sleep(300);
             assertEquals(11, sm.getBound(), Epsilon);
-            sm.add(8);
+            sm.accept(8);
             Thread.sleep(300);
             assertEquals(11, sm.getBound(), Epsilon);
-            sm.add(7);
+            sm.accept(7);
             Thread.sleep(300);
             assertEquals(11, sm.getBound(), Epsilon);
         }
@@ -159,37 +159,37 @@ public class SlidingBoundsTest
             //            --------- 2400-2700
             //              ---------- 2700-3000
             TimeoutSlidingMin sm = new TimeoutSlidingMin(3, 1000);
-            sm.add(10); // 0
+            sm.accept(10); // 0
             Thread.sleep(300);
             assertEquals(10, sm.getBound(), Epsilon);
-            sm.add(9);  // 300
+            sm.accept(9);  // 300
             Thread.sleep(300);
             assertEquals(9, sm.getBound(), Epsilon);
-            sm.add(8);  // 600
+            sm.accept(8);  // 600
             Thread.sleep(300);
             assertEquals(8, sm.getBound(), Epsilon);
-            sm.add(7);  // 900
+            sm.accept(7);  // 900
             Thread.sleep(300);
             assertEquals(7, sm.getBound(), Epsilon);
-            sm.add(6);  // 1200
+            sm.accept(6);  // 1200
             Thread.sleep(300);
             assertEquals(6, sm.getBound(), Epsilon);
-            sm.add(9);  // 1500
+            sm.accept(9);  // 1500
             Thread.sleep(300);
             assertEquals(6, sm.getBound(), Epsilon);
-            sm.add(10); // 1800
+            sm.accept(10); // 1800
             Thread.sleep(300);
             assertEquals(6, sm.getBound(), Epsilon);
-            sm.add(11); // 2100
+            sm.accept(11); // 2100
             Thread.sleep(300);
             assertEquals(6, sm.getBound(), Epsilon);
-            sm.add(9);  // 2400
+            sm.accept(9);  // 2400
             Thread.sleep(300);
             assertEquals(9, sm.getBound(), Epsilon);
-            sm.add(8);  // 2700
+            sm.accept(8);  // 2700
             Thread.sleep(300);
             assertEquals(8, sm.getBound(), Epsilon);
-            sm.add(7);  // 3000
+            sm.accept(7);  // 3000
             Thread.sleep(300);
             assertEquals(7, sm.getBound(), Epsilon);
         }

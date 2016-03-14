@@ -23,9 +23,7 @@ package org.vesalainen.math.sliding;
 public class TimeoutSlidingAverage extends AbstractSlidingAverage
 {
     protected final long timeout;
-    protected double[] ring;
     protected long[] times;
-    protected double sum;
     /**
      * Creates TimeoutSlidingAverage
      * @param size Initial size of ring buffer
@@ -35,7 +33,6 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage
     {
         super(size);
         this.timeout = timeout;
-        this.ring = new double[size];
         this.times = new long[size];
     }
 
@@ -57,32 +54,8 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage
     @Override
     protected void assign(int index, double value)
     {
-        ring[index] = value;
-        sum += value;
+        super.assign(index, value);
         times[index] = System.currentTimeMillis();
-    }
-
-    @Override
-    protected void remove(int index)
-    {
-        sum -= ring[index];
-    }
-
-    @Override
-    public double fast()
-    {
-        return sum/(end-begin);
-    }
-
-    @Override
-    public double average()
-    {
-        double s = 0;
-        for (int ii=begin;ii<end;ii++)
-        {
-            s += ring[ii%size];
-        }
-        return s/(end-begin);
     }
 
 }

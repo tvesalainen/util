@@ -40,13 +40,13 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
      * @param value In Degrees
      */
     @Override
-    public void add(double value)
+    public void accept(double value)
     {
         if (value < 0 || value > 360)
         {
             throw new IllegalArgumentException(value + " not degree");
         }
-        super.add(value);
+        super.accept(value);
     }
 
     @Override

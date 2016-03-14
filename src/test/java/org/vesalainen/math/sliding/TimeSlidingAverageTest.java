@@ -39,20 +39,20 @@ public class TimeSlidingAverageTest
         try
         {
             TimeoutSlidingAverage tsa = new TimeoutSlidingAverage(2, 1000);
-            tsa.add(1);
+            tsa.accept(1);
             Thread.sleep(300);
             assertEquals(1, tsa.fast(), Epsilon);
             assertEquals(tsa.fast(), tsa.average(), Epsilon);
-            tsa.add(3);
+            tsa.accept(3);
             Thread.sleep(300);
             assertEquals(2, tsa.fast(), Epsilon);
             assertEquals(tsa.fast(), tsa.average(), Epsilon);
-            tsa.add(5);
+            tsa.accept(5);
             Thread.sleep(300);
             assertEquals(3, tsa.fast(), Epsilon);
             assertEquals(tsa.fast(), tsa.average(), Epsilon);
             Thread.sleep(300);
-            tsa.add(7);
+            tsa.accept(7);
             assertEquals(5, tsa.fast(), Epsilon);
             assertEquals(tsa.fast(), tsa.average(), Epsilon);
         }

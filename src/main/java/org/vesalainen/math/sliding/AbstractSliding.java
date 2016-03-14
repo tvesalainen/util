@@ -16,12 +16,14 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.function.DoubleConsumer;
+
 /**
  * Abstract base class for sliding expression calculations. Sliding calculations means 
  * calculating expression for number of last samples or samples that are not older than given time.
  * @author tkv
  */
-public abstract class AbstractSliding
+public abstract class AbstractSliding implements DoubleConsumer
 {
     protected int initialSize;
     protected int size;
@@ -29,7 +31,7 @@ public abstract class AbstractSliding
     protected int end;
     /**
      * 
-     * @param size Inital size of ring buffer
+     * @param size Initial size of ring buffer
      */
     protected AbstractSliding(int size)
     {
@@ -37,11 +39,6 @@ public abstract class AbstractSliding
         this.size = size;
     }
 
-    /**
-     * Adds new value
-     * @param value
-     */
-    public abstract void add(double value);
     /**
      * Assign value to inner storage
      * @param index Mod size

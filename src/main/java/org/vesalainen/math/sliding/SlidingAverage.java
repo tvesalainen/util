@@ -22,8 +22,6 @@ package org.vesalainen.math.sliding;
  */
 public class SlidingAverage extends AbstractSlidingAverage
 {
-    protected double[] ring;
-    protected double sum;
     /**
      * 
      * @param size Initial size of ring buffer
@@ -31,43 +29,12 @@ public class SlidingAverage extends AbstractSlidingAverage
     public SlidingAverage(int size)
     {
         super(size);
-        ring = new double[size];
     }
 
     @Override
     protected boolean isRemovable(int index)
     {
         return end-begin >= size;
-    }
-
-    @Override
-    protected void assign(int index, double value)
-    {
-        ring[index] = value;
-        sum += value;
-    }
-
-    @Override
-    protected void remove(int index)
-    {
-        sum -= ring[index];
-    }
-
-    @Override
-    public double fast()
-    {
-        return sum/(end-begin);
-    }
-
-    @Override
-    public double average()
-    {
-        double s = 0;
-        for (int ii=begin;ii<end;ii++)
-        {
-            s += ring[ii%size];
-        }
-        return s/(end-begin);
     }
 
     @Override

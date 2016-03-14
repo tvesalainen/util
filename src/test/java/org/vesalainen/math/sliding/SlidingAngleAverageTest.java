@@ -36,7 +36,7 @@ public class SlidingAngleAverageTest
     public void test()
     {
         SlidingAngleAverage saa = new SlidingAngleAverage(3);
-        saa.add(338);
+        saa.accept(338);
         assertEquals(338, saa.fast(), Epsilon);
         assertEquals(saa.average(), saa.fast(), Epsilon);
     }

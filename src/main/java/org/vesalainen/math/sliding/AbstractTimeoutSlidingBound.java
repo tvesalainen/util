@@ -40,7 +40,7 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
      * @param value 
      */
     @Override
-    public void add(double value)
+    public void accept(double value)
     {
         eliminate();
         if (end-begin >= size)

@@ -45,7 +45,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding
      * @param value 
      */
     @Override
-    public void add(double value)
+    public void accept(double value)
     {
         eliminate();
         assign(end % size, value);

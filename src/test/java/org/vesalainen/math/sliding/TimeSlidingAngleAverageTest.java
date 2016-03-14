@@ -40,19 +40,19 @@ public class TimeSlidingAngleAverageTest
         try
         {
             TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
-            tsaa.add(10);
+            tsaa.accept(10);
             assertEquals(10, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
             Thread.sleep(300);
-            tsaa.add(350);
+            tsaa.accept(350);
             assertEquals(360, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
             Thread.sleep(300);
-            tsaa.add(30);
+            tsaa.accept(30);
             assertEquals(10, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
             Thread.sleep(300);
-            tsaa.add(10);
+            tsaa.accept(10);
             assertEquals(10, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
         }
@@ -66,10 +66,10 @@ public class TimeSlidingAngleAverageTest
     public void test2()
     {
             TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
-            tsaa.add(170);
+            tsaa.accept(170);
             assertEquals(170, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-            tsaa.add(190);
+            tsaa.accept(190);
             assertEquals(180, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
     }
@@ -77,10 +77,10 @@ public class TimeSlidingAngleAverageTest
     public void test3()
     {
             TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
-            tsaa.add(80);
+            tsaa.accept(80);
             assertEquals(80, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-            tsaa.add(100);
+            tsaa.accept(100);
             assertEquals(90, tsaa.fast(), Epsilon);
             assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
     }
