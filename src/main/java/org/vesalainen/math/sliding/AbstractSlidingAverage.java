@@ -16,6 +16,9 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.Arrays;
+import java.util.stream.DoubleStream;
+
 /**
  * Base class for sliding average calculation
  * @author tkv
@@ -85,6 +88,28 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
         }
         return s/(end-begin);
     }
-
-
+    /**
+     * Returns values as stream
+     * @return 
+     */
+    public DoubleStream stream()
+    {
+        if (begin == end)
+        {
+            return DoubleStream.empty();
+        }
+        else
+        {
+            int b = begin % size;
+            int e = end % size;
+            if (b < e)
+            {
+                return Arrays.stream(ring, b, e);
+            }
+            else
+            {
+                return DoubleStream.concat(Arrays.stream(ring, e, size), Arrays.stream(ring, 0, b));
+            }
+        }
+    }
 }
