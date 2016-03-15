@@ -87,9 +87,18 @@ public class Scaler
     {
         List<String> labels = new ArrayList<>();
         PrimitiveIterator.OfDouble i0 = iterator(0);
-        String format = String.format("%%.%df", exp < 0 ? -exp : 0);
+        String format = getFormat();
         i0.forEachRemaining((double d) -> labels.add(String.format(locale, format, d)));
         return labels;
+    }
+    /**
+     * Return format string for formatting 0-level labels
+     * @return 
+     * @see java.lang.String#format(java.lang.String, java.lang.Object...) 
+     */
+    public String getFormat()
+    {
+        return String.format("%%.%df", exp < 0 ? -exp : 0);
     }
     /**
      * Returns iterator for markers between min and max. 0-level returns less
