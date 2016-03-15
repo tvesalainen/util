@@ -17,40 +17,165 @@
 
 package org.vesalainen.ui;
 
-import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
+import java.util.function.DoubleConsumer;
 
 /**
- *
+ * Utility for creating scales. For example if samples are between 0 - 30 the 
+ * 0-level scale is 0, 10, 20, 30. 1-level 0, 1, 2, 3, .... Additionally it is
+ * possible to get 5-scales by putting five=true. 
  * @author Timo Vesalainen
  */
-public abstract class Scaler implements Iterable<Scaler>, Iterator<Scaler>
+public class Scaler
 {
+    private double min;
+    private double max;
+    private boolean updated;
+    private int exp;
 
     public Scaler(double min, double max)
     {
-        double delta = max-min;
-        String format = String.format("%e", delta);
-        int exponent = Math.getExponent(delta);
-        double pow = Math.pow(2, exponent);
-        double ulp = Math.ulp(delta);
+        this.min = min;
+        this.max = max;
+        updated = true;
     }
 
-    @Override
-    public Iterator<Scaler> iterator()
+    void calc()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (updated)
+        {
+            if (max < min)
+            {
+                throw new IllegalArgumentException("max="+max+" < min="+min);
+            }
+            exp = 0;
+            double delta = max-min;
+            while (delta >= 10.0 || delta < 1.0)
+            {
+                if (delta >= 10.0)
+                {
+                    delta /= 10;
+                    exp++;
+                }
+                else
+                {
+                    delta *= 10;
+                    exp--;
+                }
+            }
+            updated = false;
+        }
     }
-
-    @Override
-    public boolean hasNext()
+    /**
+     * Returns iterator for markers between min and max. 0-level returns less
+     * than 10.
+     * @param level >= 0
+     * @return 
+     */
+    public PrimitiveIterator.OfDouble iterator(int level)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return iterator(level, false);
     }
-
-    @Override
-    public Scaler next()
+    /**
+     * Returns iterator for markers between min and max. 0-level returns less
+     * than 10.
+     * @param level >= 0
+     * @param five If true the step between markers is halved.
+     * @return 
+     */
+    public PrimitiveIterator.OfDouble iterator(int level, boolean five)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        calc();
+        double step = Math.pow(10, exp-level);
+        double np = Math.pow(10, -(exp-level));
+        double begin = Math.ceil(min*np)*step;
+        double end = Math.floor(max*np)*step;
+        if (five)
+        {
+            step /= 2.0;
+            if (begin-step > min)
+            {
+                begin -= step;
+            }
+            return new Iter(begin, end, step);
+        }
+        else
+        {
+            return new Iter(begin, end, step);
+        }
     }
     
+    public double getMin()
+    {
+        return min;
+    }
+
+    public void setMin(double min)
+    {
+        this.min = min;
+        updated = true;
+    }
+
+    public double getMax()
+    {
+        return max;
+    }
+
+    public void setMax(double max)
+    {
+        this.max = max;
+        updated = true;
+    }
+
+    private class Iter implements PrimitiveIterator.OfDouble
+    {
+        private final double begin;
+        private final double end;
+        private final double step;
+        private double next;
+
+        public Iter(double begin, double end, double step)
+        {
+            this.begin = begin;
+            this.end = end;
+            this.step = step;
+            this.next = begin;
+        }
+        
+        @Override
+        public double nextDouble()
+        {
+            if (!hasNext())
+            {
+                throw new NoSuchElementException();
+            }
+            double res = next;
+            next += step;
+            return res;
+        }
+
+        @Override
+        public void forEachRemaining(DoubleConsumer action)
+        {
+            while (next <= end)
+            {
+                action.accept(next);
+                next += step;
+            }
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return next <= end;
+        }
+
+        @Override
+        public Double next()
+        {
+            return nextDouble();
+        }
+        
+    }
 }
