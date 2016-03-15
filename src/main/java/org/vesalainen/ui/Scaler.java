@@ -163,14 +163,12 @@ public class Scaler
 
     private class Iter implements PrimitiveIterator.OfDouble
     {
-        private final double begin;
         private final double end;
         private final double step;
         private double next;
 
         public Iter(double begin, double end, double step)
         {
-            this.begin = begin;
             this.end = end;
             this.step = step;
             this.next = begin;
