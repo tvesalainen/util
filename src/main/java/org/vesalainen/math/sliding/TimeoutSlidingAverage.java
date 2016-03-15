@@ -16,6 +16,10 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.Arrays;
+import java.util.stream.DoubleStream;
+import java.util.stream.LongStream;
+
 /**
  * TimeoutSlidingAverage calculates average for given timeout.
  * @author tkv
@@ -57,5 +61,28 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage
         super.assign(index, value);
         times[index] = System.currentTimeMillis();
     }
-
+    /**
+     * Returns a stream of sample times
+     * @return 
+     */
+    public LongStream timeStream()
+    {
+        if (begin == end)
+        {
+            return LongStream.empty();
+        }
+        else
+        {
+            int b = begin % size;
+            int e = end % size;
+            if (b < e)
+            {
+                return Arrays.stream(times, b, e);
+            }
+            else
+            {
+                return LongStream.concat(Arrays.stream(times, e, size), Arrays.stream(times, 0, b));
+            }
+        }
+    }
 }
