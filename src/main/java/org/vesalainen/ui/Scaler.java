@@ -17,6 +17,9 @@
 
 package org.vesalainen.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 import java.util.function.DoubleConsumer;
@@ -68,6 +71,27 @@ public class Scaler
         }
     }
     /**
+     * Returns labels for 0-level using default locale
+     * @return 
+     */
+    public List<String> getLabels()
+    {
+        return getLabels(Locale.getDefault());
+    }
+    /**
+     * Returns labels for 0-level
+     * @param locale
+     * @return 
+     */
+    public List<String> getLabels(Locale locale)
+    {
+        List<String> labels = new ArrayList<>();
+        PrimitiveIterator.OfDouble i0 = iterator(0);
+        String format = String.format("%%.%df", exp < 0 ? -exp : 0);
+        i0.forEachRemaining((double d) -> labels.add(String.format(locale, format, d)));
+        return labels;
+    }
+    /**
      * Returns iterator for markers between min and max. 0-level returns less
      * than 10.
      * @param level >= 0
@@ -75,25 +99,25 @@ public class Scaler
      */
     public PrimitiveIterator.OfDouble iterator(int level)
     {
-        return iterator(level, false);
+        return iterator(level, 1.0);
     }
     /**
      * Returns iterator for markers between min and max. 0-level returns less
      * than 10.
      * @param level >= 0
-     * @param five If true the step between markers is halved.
+     * @param stepMultiplier 
      * @return 
      */
-    public PrimitiveIterator.OfDouble iterator(int level, boolean five)
+    public PrimitiveIterator.OfDouble iterator(int level, double stepMultiplier)
     {
         calc();
         double step = Math.pow(10, exp-level);
         double np = Math.pow(10, -(exp-level));
         double begin = Math.ceil(min*np)*step;
         double end = Math.floor(max*np)*step;
-        if (five)
+        if (stepMultiplier != 1.0)
         {
-            step /= 2.0;
+            step *= stepMultiplier;
             if (begin-step > min)
             {
                 begin -= step;

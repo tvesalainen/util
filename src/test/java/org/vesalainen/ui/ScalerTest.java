@@ -17,9 +17,12 @@
 
 package org.vesalainen.ui;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.PrimitiveIterator;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.Lists;
 
 /**
  *
@@ -76,7 +79,7 @@ public class ScalerTest
         assertEquals(20, i0.nextDouble(), Epsilon);
         assertEquals(30, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
-        PrimitiveIterator.OfDouble i5 = sc.iterator(0, true);
+        PrimitiveIterator.OfDouble i5 = sc.iterator(0, 0.5);
         assertEquals(0, i5.nextDouble(), Epsilon);
         assertEquals(5, i5.nextDouble(), Epsilon);
         assertEquals(10, i5.nextDouble(), Epsilon);
@@ -98,5 +101,21 @@ public class ScalerTest
         assertEquals(0.005, i0.nextDouble(), Epsilon);
         assertEquals(0.006, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
+    }
+
+    @Test
+    public void test4()
+    {
+        List<String> exp = Lists.create("0.002", "0.003", "0.004", "0.005", "0.006");
+        Scaler sc = new Scaler(0.001234, 0.00678);
+        assertEquals(exp, sc.getLabels(Locale.US));
+    }
+    
+    @Test
+    public void test5()
+    {
+        List<String> exp = Lists.create("1000", "2000", "3000", "4000", "5000");
+        Scaler sc = new Scaler(100, 5200);
+        assertEquals(exp, sc.getLabels(Locale.US));
     }
 }
