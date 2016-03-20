@@ -221,6 +221,7 @@ public class MimeTypes
         mimeTable.put("dot", "application/msword");
         mimeTable.put("ser", "application/x-java-serialized-object");
         mimeTable.put("json", "application/json");
+        mimeTable.put("svg", "image/svg+xml");
     }
     
     /**
