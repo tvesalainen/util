@@ -17,6 +17,7 @@
 package org.vesalainen.code;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -28,7 +29,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
     protected Thread thread;
     protected PropertySetter observer;
     protected int capacity;
-    protected int count;
+    protected AtomicInteger count = new AtomicInteger();
     protected int index;
     protected JavaType[] typeArr;
     protected String[] propertyArr;
@@ -46,7 +47,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
     {
         this.observer = observer;
         this.capacity = capacity;
-        this.count = capacity;
+        this.count.set(capacity);
         typeArr = new JavaType[capacity];
         propertyArr = new String[capacity];
     }
@@ -181,7 +182,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
                 }
                 idx++;
                 idx %= capacity;
-                count++;
+                count.incrementAndGet();
             }
             catch (InterruptedException ex)
             {
@@ -192,7 +193,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
 
     private void setType(String property, JavaType javaType)
     {
-        if (count <= 0)
+        if (count.get() <= 0)
         {
             throw new IllegalStateException("capacity reached");
         }
@@ -263,7 +264,7 @@ public class PropertyBuffer implements PropertySetter, Runnable
     {
         index++;
         index %= capacity;
-        count--;
+        count.decrementAndGet();
         semaphore.release();
     }
     
