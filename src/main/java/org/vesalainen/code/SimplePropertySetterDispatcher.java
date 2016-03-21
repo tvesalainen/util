@@ -17,6 +17,9 @@
 package org.vesalainen.code;
 
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
 
@@ -28,6 +31,9 @@ import org.vesalainen.util.MapList;
 public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
 {
     private final MapList<String,PropertySetter> mapList = new HashMapList<>();
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final ReadLock readLock = rwLock.readLock();
+    private final WriteLock writeLock = rwLock.writeLock();
     
     @Override
     public String[] getPrefixes()
@@ -39,93 +45,181 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
     @Override
     public void addObserver(String key, PropertySetter ps)
     {
-        mapList.add(key, ps);
+        writeLock.lock();
+        try
+        {
+            mapList.add(key, ps);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     
     @Override
     public void removeObserver(String key, PropertySetter ps)
     {
-        mapList.removeItem(key, ps);
+        writeLock.lock();
+        try
+        {
+            mapList.removeItem(key, ps);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     
     @Override
     public void set(String property, boolean arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, byte arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, char arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, short arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, int arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, long arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, float arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, double arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
     @Override
     public void set(String property, Object arg)
     {
-        for (PropertySetter ps : mapList.get(property))
+        readLock.lock();
+        try
         {
-            ps.set(property, arg);
+            for (PropertySetter ps : mapList.get(property))
+            {
+                ps.set(property, arg);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
