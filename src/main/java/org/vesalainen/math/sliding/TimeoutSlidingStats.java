@@ -17,31 +17,51 @@
 package org.vesalainen.math.sliding;
 
 /**
- * A class for counting max value for given time.
+ *
  * @author tkv
  */
-public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound
+public class TimeoutSlidingStats extends TimeoutSlidingAverage
 {
-    /**
-     * 
-     * @param size Initial size of buffers
-     * @param timeout Sample timeout in millis 
-     */
-    public TimeoutSlidingMax(int size, long timeout)
+    protected TimeoutSlidingMin min;
+    protected TimeoutSlidingMax max;
+    
+    public TimeoutSlidingStats(int size, long timeout)
     {
         super(size, timeout);
-    }
-
-    public TimeoutSlidingMax(Timeouting parent)
-    {
-        super(parent);
+        min = new TimeoutSlidingMin(this);
+        max = new TimeoutSlidingMax(this);
     }
 
     @Override
-    protected boolean exceedsBounds(int index, double value)
+    public void accept(double value)
     {
-        return ring[(index-1) % size] < ring[index % size];
+        super.accept(value);
+        min.accept(value);
+        max.accept(value);
+    }
+
+    @Override
+    protected void grow()
+    {
+        super.grow();
+        min.grow();
+        max.grow();
     }
     
-   
+    /**
+     * Returns Minimum value
+     * @return 
+     */
+    public double getMin()
+    {
+        return min.getBound();
+    }
+    /**
+     * Returns maximum value
+     * @return 
+     */
+    public double getMax()
+    {
+        return max.getBound();
+    }
 }

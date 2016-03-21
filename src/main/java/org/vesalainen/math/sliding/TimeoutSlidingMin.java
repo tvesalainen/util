@@ -31,7 +31,12 @@ public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound
     {
         super(size, timeout);
     }
-    
+
+    public TimeoutSlidingMin(Timeouting parent)
+    {
+        super(parent);
+    }
+
     @Override
     protected boolean exceedsBounds(int index, double value)
     {

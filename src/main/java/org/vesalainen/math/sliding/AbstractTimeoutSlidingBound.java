@@ -20,10 +20,11 @@ package org.vesalainen.math.sliding;
  * Base class for timeout sliding bound calculation. Each sample has given timeout.
  * @author tkv
  */
-public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
+public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound implements Timeouting
 {
     protected final long timeout;
     protected long[] times;
+    protected Timeouting parent;
     /**
      * 
      * @param size Initial ringbuffer size
@@ -36,6 +37,18 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
         this.times = new long[size];
     }
     /**
+     * 
+     * @param parent
+     */
+    public AbstractTimeoutSlidingBound(Timeouting parent)
+    {
+        super(parent.getSize());
+        this.parent = parent;
+        this.timeout = parent.getTimeout();
+        this.times = parent.getTimes();
+    }
+    
+    /**
      * Add new value
      * @param value 
      */
@@ -43,15 +56,16 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
     public void accept(double value)
     {
         eliminate();
-        if (end-begin >= size)
+        if (parent == null && end-begin >= size)
         {
             grow();
         }
         assign(end % size, value);
-        while (end > begin && exceedsBounds(end, value))
+        int e = end;
+        while (e > begin && exceedsBounds(e, value))
         {
-            end--;
-            assign(end % size, value);
+            e--;
+            assign(e % size, value);
         }
         end++;
     }
@@ -61,7 +75,14 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
     {
         int newSize = newSize();
         ring = (double[]) newArray(ring, size, new double[newSize]);
-        times = (long[]) newArray(times, times.length, new long[newSize]);
+        if (parent == null)
+        {
+            times = (long[]) newArray(times, times.length, new long[newSize]);
+        }
+        else
+        {
+            times = parent.getTimes();
+        }
         size = newSize;
     }
 
@@ -69,7 +90,10 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
     protected void assign(int index, double value)
     {
         ring[index] = value;
-        times[index] = System.currentTimeMillis();
+        if (parent == null)
+        {
+            times[index] = System.currentTimeMillis();
+        }
     }
 
     @Override
@@ -78,4 +102,22 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound
         return System.currentTimeMillis() - times[index] > timeout;
     }
 
+    @Override
+    public long[] getTimes()
+    {
+        return times;
+    }
+
+    @Override
+    public int getSize()
+    {
+        return size;
+    }
+
+    @Override
+    public long getTimeout()
+    {
+        return timeout;
+    }
+    
 }

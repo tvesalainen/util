@@ -17,31 +17,12 @@
 package org.vesalainen.math.sliding;
 
 /**
- * A class for counting max value for given time.
+ *
  * @author tkv
  */
-public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound
+public interface Timeouting
 {
-    /**
-     * 
-     * @param size Initial size of buffers
-     * @param timeout Sample timeout in millis 
-     */
-    public TimeoutSlidingMax(int size, long timeout)
-    {
-        super(size, timeout);
-    }
-
-    public TimeoutSlidingMax(Timeouting parent)
-    {
-        super(parent);
-    }
-
-    @Override
-    protected boolean exceedsBounds(int index, double value)
-    {
-        return ring[(index-1) % size] < ring[index % size];
-    }
-    
-   
+    int getSize();
+    long getTimeout();
+    long[] getTimes();
 }
