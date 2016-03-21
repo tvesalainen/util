@@ -17,7 +17,7 @@
 package org.vesalainen.math.sliding;
 
 /**
- *
+ * TimeoutSlidingStats is a combined class for average, min, max calculations.
  * @author tkv
  */
 public class TimeoutSlidingStats extends TimeoutSlidingAverage
