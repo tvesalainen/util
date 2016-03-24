@@ -16,11 +16,13 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.function.DoubleConsumer;
+
 /**
  *
  * @author tkv
  */
-public interface Average
+public interface Average extends DoubleConsumer
 {
 
     /**
