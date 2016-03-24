@@ -23,7 +23,7 @@ import java.util.stream.DoubleStream;
  * Base class for sliding average calculation
  * @author tkv
  */
-public abstract class AbstractSlidingAverage extends AbstractSliding
+public abstract class AbstractSlidingAverage extends AbstractSliding implements Average
 {
     protected double[] ring;
     protected double sum;
@@ -70,6 +70,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
      * Returns average without actually calculating cell by cell
      * @return 
      */
+    @Override
     public double fast()
     {
         return sum/(end-begin);
@@ -79,6 +80,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding
      * Returns average by calculating cell by cell
      * @return 
      */
+    @Override
     public double average()
     {
         double s = 0;

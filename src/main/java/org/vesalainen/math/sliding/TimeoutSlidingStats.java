@@ -20,7 +20,7 @@ package org.vesalainen.math.sliding;
  * TimeoutSlidingStats is a combined class for average, min, max calculations.
  * @author tkv
  */
-public class TimeoutSlidingStats extends TimeoutSlidingAverage
+public class TimeoutSlidingStats extends TimeoutSlidingAverage implements TimeoutStats
 {
     protected TimeoutSlidingMin min;
     protected TimeoutSlidingMax max;
@@ -52,6 +52,7 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage
      * Returns Minimum value
      * @return 
      */
+    @Override
     public double getMin()
     {
         return min.getBound();
@@ -60,6 +61,7 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage
      * Returns maximum value
      * @return 
      */
+    @Override
     public double getMax()
     {
         return max.getBound();
