@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math;
 
+import java.util.function.DoubleUnaryOperator;
+
 /**
  *
  * @author tkv
@@ -29,11 +31,11 @@ public enum UnitType
     /**
      * <i>g</i>0 Standard acceleration
      */
-    GFORCEEARTH(UnitCategory.Acceleration, 9.80665, "g"),
+    GForceEarth(UnitCategory.Acceleration, 9.80665, "g"),
     /**
      * Pascal
      */
-    PASCAL(UnitCategory.Pressure, 1.0, "Pa"),
+    Pascal(UnitCategory.Pressure, 1.0, "Pa"),
     /**
      * hPa 
      */
@@ -47,53 +49,57 @@ public enum UnitType
      */
     ATM(UnitCategory.Pressure, 101325.0, "atm"),
     /**
-     * Degree
+     * Degree 0 - 360
      */
-    DEGREE(UnitCategory.PlaneAngle, 1.0, "\u00B0"),
+    Degree(UnitCategory.PlaneAngle, 1.0, "\u00B0"),
+    /**
+     * Degree -180 - 180
+     */
+    DegreeNeg(UnitCategory.PlaneAngle, "\u00B0", (double v)->{return v > 180 ? v-360 : v;}, (double v)->{return v < 0 ? 360+v : v;}),
     /**
      * Radians
      */
-    RADIAN(UnitCategory.PlaneAngle, Math.toDegrees(1), "Rad"),
+    Radian(UnitCategory.PlaneAngle, Math.toDegrees(1), "Rad"),
     /**
      * Celsius
      */
-    CELSIUS(UnitCategory.Temperature, 1.0, "\u00B0C"),
+    Celsius(UnitCategory.Temperature, 1.0, "\u00B0C"),
     /**
      * Fahrenheit
      */
-    FAHRENHEIT(UnitCategory.Temperature, 0.5555555555555556, -32, "Fahrenheit"),
+    Fahrenheit(UnitCategory.Temperature, "Fahrenheit", (double v)->{return v*1.8+32.0;}, (double v)->{return (v-32.0)/1.8;}),
     /**
      * Kelvin
      */
-    KELVIN(UnitCategory.Temperature, 1.0, -273.15, "Kelvin"),
+    Kelvin(UnitCategory.Temperature, "Kelvin", (double v)->{return v+273.15;}, (double v)->{return v-273.15;}),
     /**
      * Fathom
      */
-    FATHOM(UnitCategory.Length, 1.8288, "Fathom"),
+    Fathom(UnitCategory.Length, 1.8288, "Fathom"),
     /**
      * Meter
      */
-    METER(UnitCategory.Length, 1.0, "m"),
+    Meter(UnitCategory.Length, 1.0, "m"),
     /**
      * Mile
      */
-    MILE(UnitCategory.Length, 1609.34, "Mile"),
+    Mile(UnitCategory.Length, 1609.34, "Mile"),
     /**
      * Foot
      */
-    FOOT(UnitCategory.Length, 0.3048, "Foot"),
+    Foot(UnitCategory.Length, 0.3048, "Foot"),
     /**
      * Yard
      */
-    YARD(UnitCategory.Length, 0.9144, "Yard"),
+    Yard(UnitCategory.Length, 0.9144, "Yard"),
     /**
      * Inch
      */
-    INCH(UnitCategory.Length, 0.0254, "Inch"),
+    Inch(UnitCategory.Length, 0.0254, "Inch"),
     /**
      * Kilometer
      */
-    KILOMETER(UnitCategory.Length, 1000.0, "Km"),
+    KiloMeter(UnitCategory.Length, 1000.0, "Km"),
     /**
      * Nautical mile
      */
@@ -105,7 +111,7 @@ public enum UnitType
     /**
      * Knot
      */
-    KNOT(UnitCategory.Speed, 0.514444, "Knots"),
+    Knot(UnitCategory.Speed, 0.514444, "Knots"),
     /**
      * m/s
      */
@@ -117,39 +123,41 @@ public enum UnitType
     /**
      * Beaufort
      */
-    BEAUFORT(UnitCategory.Speed, 0.837, "B"),
+    Beaufort(UnitCategory.Speed, "B", (double v)->{return Math.round(Math.pow(v/0.837, 2.0/3.0));}, (double v)->{return 0.837*Math.pow(v, 3.0/2.0);}),
     /**
      * Coordinate degrees
      */
-    DEG(UnitCategory.Coordinate, Double.NaN, "˚"),
+    Deg(UnitCategory.Coordinate, 1, "˚"),
     /**
      * Coordinate degrees and minutes
      */
-    DEGMIN(UnitCategory.Coordinate, Double.NaN, ""),
+    DegMin(UnitCategory.Coordinate, 1, ""),
     /**
      * Coordinate degrees, minutes and seconds
      */
-    DEGMINSEC(UnitCategory.Coordinate, Double.NaN, "")
+    DegMinSec(UnitCategory.Coordinate, 1, "")
     ;
     private final UnitCategory category;
-    private final double multiplier;
-    private final double offset;
     private final String unit;
-
-    private UnitType(UnitCategory category, double multiplier, double offset, String unit)
-    {
-        this.category = category;
-        this.multiplier = multiplier;
-        this.offset = offset;
-        this.unit = unit;
-    }
+    private DoubleUnaryOperator fromSI;
+    private DoubleUnaryOperator toSI;
 
     private UnitType(UnitCategory category, double multiplier, String unit)
     {
+        this(category, unit, (double v)->{ return v/multiplier;}, (double v)->{ return v*multiplier;});
+    }
+
+    private UnitType(UnitCategory category, double multiplier, double offset, String unit)
+    {
+        this(category, unit, (double v)->{ return v/multiplier-offset;}, (double v)->{ return v*multiplier+offset;});
+    }
+
+    private UnitType(UnitCategory category, String unit, DoubleUnaryOperator fromSI, DoubleUnaryOperator toSI)
+    {
         this.category = category;
-        this.multiplier = multiplier;
-        this.offset = 0;
         this.unit = unit;
+        this.fromSI = fromSI;
+        this.toSI = toSI;
     }
 
     public double convertTo(double value, UnitType to)
@@ -158,27 +166,21 @@ public enum UnitType
         {
             return value;
         }
-        if (!category.equals(to.getCategory()))
+        check(this, to);
+        return to.fromSI.applyAsDouble(toSI.applyAsDouble(value));
+    }
+    
+    public static double convert(double value, UnitType from, UnitType to)
+    {
+        return from.convertTo(value, to);
+    }
+    
+    private static void check(UnitType from, UnitType to)
+    {
+        if (!from.category.equals(to.getCategory()))
         {
-            throw new IllegalArgumentException(this+" cannot be converted to "+to);
+            throw new IllegalArgumentException(from+" cannot be converted to "+to);
         }
-        if (Double.isNaN(multiplier) || Double.isNaN(to.multiplier))
-        {
-            throw new UnsupportedOperationException("conversion from "+this+" to "+to+" not supported");
-        }
-        if (equals(BEAUFORT))
-        {
-            double ms = to.convertTo(value, MS);
-            return multiplier*Math.pow(ms, 3.0/2.0);
-        }
-        if (to.equals(BEAUFORT))
-        {
-            double ms = convertTo(value, MS);
-            double d = ms/multiplier;
-            double pow = Math.pow(d, 2.0/3.0);
-            return Math.round(Math.pow(ms/to.multiplier, 2.0/3.0));
-        }
-        return (value+offset)*multiplier/to.multiplier-to.offset;
     }
     
     public UnitCategory getCategory()

@@ -50,7 +50,7 @@ public class GreatCircle
           * Math.sin(Δλ/2) * Math.sin(Δλ/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return METER.convertTo(R * c, NM);        
+        return Meter.convertTo(R * c, NM);        
     }
     /**
      * Returns GC initial bearing between (lat1, lon1) and (lat2, lon2)
@@ -60,7 +60,7 @@ public class GreatCircle
      * @param lon2
      * @return Degree
      */
-    @Unit(DEGREE)
+    @Unit(Degree)
     public static final double initialBearing(double lat1, double lon1, double lat2, double lon2)
     {
         double φ1 = Math.toRadians(lat1);

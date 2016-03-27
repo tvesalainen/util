@@ -52,11 +52,11 @@ public class CoordinateFormat
     {
         switch (unit)
         {
-            case DEG:
+            case Deg:
                 return deg(coordinate, locale, chars);
-            case DEGMIN:
+            case DegMin:
                 return degmin(coordinate, locale, chars);
-            case DEGMINSEC:
+            case DegMinSec:
                 return degminsec(coordinate, locale, chars);
             default:
                 throw new UnsupportedOperationException(unit+" no supported");

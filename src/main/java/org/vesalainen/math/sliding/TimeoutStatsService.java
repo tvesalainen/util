@@ -58,6 +58,7 @@ public class TimeoutStatsService implements PropertySetter
                 {
                     boolean isAngle = preferences.getBoolean(compositeProp, false);
                     addObserver(compositeProp, null, isAngle);
+                    preferences.remove(compositeProp);
                 }
             }
             catch (BackingStoreException ex) 

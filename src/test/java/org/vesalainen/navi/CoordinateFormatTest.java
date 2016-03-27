@@ -35,12 +35,12 @@ public class CoordinateFormatTest
     @Test
     public void test1()
     {
-        assertEquals("N 60.500000°", CoordinateFormat.formatLatitude(60.5, Locale.US, UnitType.DEG));
-        assertEquals("S 60° 30,000'", CoordinateFormat.formatLatitude(-60.5, Locale.forLanguageTag("FI"), UnitType.DEGMIN));
-        assertEquals("N 60° 30' 0.0\"", CoordinateFormat.formatLatitude(60.5, Locale.US, UnitType.DEGMINSEC));
-        assertEquals("W 25.500000°", CoordinateFormat.formatLongitude(-25.5, Locale.US, UnitType.DEG));
-        assertEquals("E 25° 30.000'", CoordinateFormat.formatLongitude(25.5, Locale.US, UnitType.DEGMIN));
-        assertEquals("W 25° 30' 0.0\"", CoordinateFormat.formatLongitude(-25.5, Locale.US, UnitType.DEGMINSEC));
+        assertEquals("N 60.500000°", CoordinateFormat.formatLatitude(60.5, Locale.US, UnitType.Deg));
+        assertEquals("S 60° 30,000'", CoordinateFormat.formatLatitude(-60.5, Locale.forLanguageTag("FI"), UnitType.DegMin));
+        assertEquals("N 60° 30' 0.0\"", CoordinateFormat.formatLatitude(60.5, Locale.US, UnitType.DegMinSec));
+        assertEquals("W 25.500000°", CoordinateFormat.formatLongitude(-25.5, Locale.US, UnitType.Deg));
+        assertEquals("E 25° 30.000'", CoordinateFormat.formatLongitude(25.5, Locale.US, UnitType.DegMin));
+        assertEquals("W 25° 30' 0.0\"", CoordinateFormat.formatLongitude(-25.5, Locale.US, UnitType.DegMinSec));
     }
     
 }
