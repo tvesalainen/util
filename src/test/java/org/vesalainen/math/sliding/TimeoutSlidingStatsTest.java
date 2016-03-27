@@ -44,9 +44,17 @@ public class TimeoutSlidingStatsTest
             //              ----------
             TimeoutSlidingStats sm = new TimeoutSlidingStats(3, 1000);
             sm.accept(10);
+            long t1 = System.currentTimeMillis();
+            assertEquals(10, sm.last(), Epsilon);
+            assertEquals(t1, sm.lastTime(), 100L);
             Thread.sleep(300);
             assertEquals(10, sm.getMax(), Epsilon);
             sm.accept(9);
+            long t2 = System.currentTimeMillis();
+            assertEquals(10, sm.previous(), Epsilon);
+            assertEquals(t1, sm.previousTime(), 100L);
+            assertEquals(9, sm.last(), Epsilon);
+            assertEquals(t2, sm.lastTime(), 100L);
             Thread.sleep(300);
             assertEquals(10, sm.getMax(), Epsilon);
             sm.accept(8);

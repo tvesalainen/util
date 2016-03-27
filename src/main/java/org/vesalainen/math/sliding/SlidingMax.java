@@ -20,7 +20,7 @@ package org.vesalainen.math.sliding;
  * In this class max is calculated for size last samples.
  * @author tkv
  */
-public class SlidingMax extends AbstractSlidingBound
+public class SlidingMax extends AbstractSlidingBound implements Max
 {
     /**
      * 
@@ -35,6 +35,12 @@ public class SlidingMax extends AbstractSlidingBound
     protected boolean exceedsBounds(int index, double value)
     {
         return ring[(index-1) % size] < value;
+    }
+
+    @Override
+    public double getMax()
+    {
+        return getBound();
     }
     
 }

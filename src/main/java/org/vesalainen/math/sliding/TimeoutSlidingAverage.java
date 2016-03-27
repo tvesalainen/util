@@ -23,7 +23,7 @@ import java.util.stream.LongStream;
  * TimeoutSlidingAverage calculates average for given timeout.
  * @author tkv
  */
-public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Timeouting
+public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Timeouting, TimeArray
 {
     protected final long timeout;
     protected long[] times;
@@ -101,6 +101,24 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     public long getTimeout()
     {
         return timeout;
+    }
+
+    public long lastTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[(end+size-1) % size];
+    }
+
+    public long previousTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[(end+size-2) % size];
     }
     
 }

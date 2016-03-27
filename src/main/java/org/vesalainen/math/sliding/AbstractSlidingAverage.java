@@ -17,13 +17,14 @@
 package org.vesalainen.math.sliding;
 
 import java.util.Arrays;
+import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
 
 /**
  * Base class for sliding average calculation
  * @author tkv
  */
-public abstract class AbstractSlidingAverage extends AbstractSliding implements Average
+public abstract class AbstractSlidingAverage extends AbstractSliding implements DoubleConsumer, ValueArray, Average
 {
     protected double[] ring;
     protected double sum;
@@ -94,6 +95,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
      * Returns values as stream in the same order as entered
      * @return 
      */
+    @Override
     public DoubleStream stream()
     {
         if (begin == end)
@@ -114,4 +116,31 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
             }
         }
     }
+
+    @Override
+    public double count()
+    {
+        return end-begin;
+    }
+
+    @Override
+    public double last()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return ring[(end+size-1) % size];
+    }
+
+    @Override
+    public double previous()
+    {
+        if (count() < 2)
+        {
+            throw new IllegalStateException("count() < 2");
+        }
+        return ring[(end+size-2) % size];
+    }
+    
 }

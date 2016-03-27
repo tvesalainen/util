@@ -16,11 +16,15 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.Arrays;
+import java.util.function.DoubleConsumer;
+import java.util.stream.DoubleStream;
+
 /**
  * Base class for sliding bound calculation
  * @author tkv
  */
-public abstract class AbstractSlidingBound extends AbstractSliding
+public abstract class AbstractSlidingBound extends AbstractSliding implements DoubleConsumer, ValueArray
 {
     protected double[] ring;
     /**
@@ -102,5 +106,57 @@ public abstract class AbstractSlidingBound extends AbstractSliding
      * @return 
      */
     protected abstract boolean exceedsBounds(int index, double value);
+    
+    /**
+     * Returns values as stream in the same order as entered
+     * @return 
+     */
+    @Override
+    public DoubleStream stream()
+    {
+        if (begin == end)
+        {
+            return DoubleStream.empty();
+        }
+        else
+        {
+            int b = begin % size;
+            int e = end % size;
+            if (b < e)
+            {
+                return Arrays.stream(ring, b, e);
+            }
+            else
+            {
+                return DoubleStream.concat(Arrays.stream(ring, e, size), Arrays.stream(ring, 0, b));
+            }
+        }
+    }
+
+    @Override
+    public double count()
+    {
+        return end-begin;
+    }
+
+    @Override
+    public double last()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return ring[(end+size-1) % size];
+    }
+
+    @Override
+    public double previous()
+    {
+        if (count() < 2)
+        {
+            throw new IllegalStateException("count() < 2");
+        }
+        return ring[(end+size-2) % size];
+    }
     
 }

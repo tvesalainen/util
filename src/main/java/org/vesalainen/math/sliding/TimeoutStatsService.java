@@ -35,7 +35,7 @@ public class TimeoutStatsService implements PropertySetter
 {
     private final PropertySetterDispatcher dispatcher;
     private final Map<String,Map<Integer,TimeoutStats>> map = new HashMap<>();
-    private final MapList<TimeoutStats,StatsObserver> observerMap = new HashMapList<>();
+    private final MapList<TimeArray,StatsObserver> observerMap = new HashMapList<>();
     private Preferences preferences;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
@@ -132,7 +132,7 @@ public class TimeoutStatsService implements PropertySetter
             if (statsMap != null)
             {
                 int seconds = Integer.parseUnsignedInt(sp[1]);
-                TimeoutStats ts = statsMap.get(seconds);
+                TimeArray ts = statsMap.get(seconds);
                 if (ts != null)
                 {
                     observerMap.removeItem(ts, observer);
@@ -245,6 +245,6 @@ public class TimeoutStatsService implements PropertySetter
     
     public interface StatsObserver
     {
-        void changed(TimeoutStats stats);
+        void changed(TimeArray stats);
     }
 }

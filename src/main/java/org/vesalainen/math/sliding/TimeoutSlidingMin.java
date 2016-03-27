@@ -20,7 +20,7 @@ package org.vesalainen.math.sliding;
  * A class for counting min value for given time.
  * @author tkv
  */
-public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound
+public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound implements Min
 {
     /**
      * 
@@ -41,6 +41,12 @@ public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound
     protected boolean exceedsBounds(int index, double value)
     {
         return ring[(index-1) % size] > ring[index % size];
+    }
+
+    @Override
+    public double getMin()
+    {
+        return getBound();
     }
     
    

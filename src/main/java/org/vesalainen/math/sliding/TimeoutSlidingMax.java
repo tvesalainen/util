@@ -20,7 +20,7 @@ package org.vesalainen.math.sliding;
  * A class for counting max value for given time.
  * @author tkv
  */
-public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound
+public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound implements Max
 {
     /**
      * 
@@ -41,6 +41,12 @@ public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound
     protected boolean exceedsBounds(int index, double value)
     {
         return ring[(index-1) % size] < ring[index % size];
+    }
+
+    @Override
+    public double getMax()
+    {
+        return getBound();
     }
     
    

@@ -16,9 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.Arrays;
 import java.util.stream.DoubleStream;
-import org.vesalainen.math.sliding.SlidingAverage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -39,12 +37,17 @@ public class SlidingAverageTest
     {
         SlidingAverage sa = new SlidingAverage(2);
         sa.accept(1);
+        assertEquals(1, sa.last(), Epsilon);
         assertEquals(1, sa.fast(), Epsilon);
         assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.accept(3);
+        assertEquals(3, sa.last(), Epsilon);
+        assertEquals(1, sa.previous(), Epsilon);
         assertEquals(2, sa.fast(), Epsilon);
         assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.accept(5);
+        assertEquals(5, sa.last(), Epsilon);
+        assertEquals(3, sa.previous(), Epsilon);
         assertEquals(4, sa.fast(), Epsilon);
         assertEquals(sa.fast(), sa.average(), Epsilon);
         sa.accept(7);

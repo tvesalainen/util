@@ -16,28 +16,32 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.stream.DoubleStream;
+
 /**
- * In this class min is calculated for size last samples.
+ *
  * @author tkv
  */
-public class SlidingMin extends AbstractSlidingBound implements Min
+public interface ValueArray
 {
-
-    public SlidingMin(int size)
-    {
-        super(size);
-    }
-
-    @Override
-    protected boolean exceedsBounds(int index, double value)
-    {
-        return ring[(index-1) % size] > ring[index % size];
-    }
-
-    @Override
-    public double getMin()
-    {
-        return getBound();
-    }
-    
+    /**
+     * Returns the number of samples
+     * @return 
+     */
+    double count();
+    /**
+     * Returns last sample
+     * @return 
+     */
+    double last();
+    /**
+     * Returns previous sample value
+     * @return 
+     */
+    double previous();
+    /**
+     * Returns values as stream in the same order as entered
+     * @return 
+     */
+    DoubleStream stream();
 }

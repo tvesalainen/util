@@ -16,11 +16,14 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.Arrays;
+import java.util.stream.LongStream;
+
 /**
  * TimeoutSlidingAverage calculates angle average for given timeout.
  * @author tkv
  */
-public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage
+public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage implements TimeArray
 {
     protected final long timeout;
     protected long[] times;
@@ -59,4 +62,50 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage
         times[index] = System.currentTimeMillis();
     }
 
+    /**
+     * Returns a stream of sample times
+     * @return 
+     */
+    @Override
+    public LongStream timeStream()
+    {
+        if (begin == end)
+        {
+            return LongStream.empty();
+        }
+        else
+        {
+            int b = begin % size;
+            int e = end % size;
+            if (b < e)
+            {
+                return Arrays.stream(times, b, e);
+            }
+            else
+            {
+                return LongStream.concat(Arrays.stream(times, e, size), Arrays.stream(times, 0, b));
+            }
+        }
+    }
+
+    @Override
+    public long lastTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[(end+size-1) % size];
+    }
+
+    @Override
+    public long previousTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[(end+size-2) % size];
+    }
+    
 }

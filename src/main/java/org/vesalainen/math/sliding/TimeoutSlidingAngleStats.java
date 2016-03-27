@@ -16,9 +16,6 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.Arrays;
-import java.util.stream.LongStream;
-
 /**
  *
  * @author tkv
@@ -91,30 +88,22 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
         angles = (double[]) newArray(angles, s, new double[size]);
     }
 
-    /**
-     * Returns a stream of sample times
-     * @return 
-     */
-    @Override
-    public LongStream timeStream()
+    public long lastTime()
     {
-        if (begin == end)
+        if (count() < 1)
         {
-            return LongStream.empty();
+            throw new IllegalStateException("count() < 1");
         }
-        else
-        {
-            int b = begin % size;
-            int e = end % size;
-            if (b < e)
-            {
-                return Arrays.stream(times, b, e);
-            }
-            else
-            {
-                return LongStream.concat(Arrays.stream(times, e, size), Arrays.stream(times, 0, b));
-            }
-        }
+        return times[(end+size-1) % size];
     }
 
+    public long previousTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[(end+size-2) % size];
+    }
+    
 }

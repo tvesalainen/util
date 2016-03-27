@@ -22,7 +22,7 @@ import java.util.function.DoubleConsumer;
  *
  * @author tkv
  */
-public interface Average extends DoubleConsumer
+public interface Average
 {
 
     /**
@@ -36,5 +36,4 @@ public interface Average extends DoubleConsumer
      * @return
      */
     double fast();
-    
 }

@@ -17,27 +17,14 @@
 package org.vesalainen.math.sliding;
 
 /**
- * In this class min is calculated for size last samples.
+ *
  * @author tkv
  */
-public class SlidingMin extends AbstractSlidingBound implements Min
+public interface Max
 {
-
-    public SlidingMin(int size)
-    {
-        super(size);
-    }
-
-    @Override
-    protected boolean exceedsBounds(int index, double value)
-    {
-        return ring[(index-1) % size] > ring[index % size];
-    }
-
-    @Override
-    public double getMin()
-    {
-        return getBound();
-    }
-    
+    /**
+     * Returns maximum value
+     * @return
+     */
+    double getMax();
 }

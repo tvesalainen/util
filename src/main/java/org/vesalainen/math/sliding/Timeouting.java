@@ -20,7 +20,7 @@ package org.vesalainen.math.sliding;
  *
  * @author tkv
  */
-public interface Timeouting
+interface Timeouting
 {
     int getSize();
     long getTimeout();

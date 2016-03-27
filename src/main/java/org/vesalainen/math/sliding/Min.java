@@ -22,14 +22,9 @@ import java.util.stream.DoubleStream;
  *
  * @author tkv
  */
-public interface Stats extends Average
+public interface Min
 {
 
-    /**
-     * Returns maximum value
-     * @return
-     */
-    double getMax();
 
     /**
      * Returns Minimum value
@@ -37,9 +32,4 @@ public interface Stats extends Average
      */
     double getMin();
     
-    /**
-     * Returns values as stream in the same order as entered
-     * @return 
-     */
-    DoubleStream stream();
 }

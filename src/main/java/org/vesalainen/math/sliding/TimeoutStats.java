@@ -16,17 +16,13 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.stream.LongStream;
+import java.util.function.DoubleConsumer;
 
 /**
  *
  * @author tkv
  */
-public interface TimeoutStats extends Stats
+public interface TimeoutStats extends DoubleConsumer, Average, Min, Max, ValueArray, TimeArray
 {
-    /**
-     * Returns a stream of sample times
-     * @return 
-     */
-    LongStream timeStream();
+    
 }
