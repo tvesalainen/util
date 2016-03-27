@@ -245,6 +245,6 @@ public class TimeoutStatsService implements PropertySetter
     
     public interface StatsObserver
     {
-        void changed(TimeArray stats);
+        void changed(TimeoutStats stats);
     }
 }
