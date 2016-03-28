@@ -16,8 +16,11 @@
  */
 package org.vesalainen.navi;
 
+import java.io.IOException;
+import java.util.Formatter;
 import java.util.Locale;
 import org.vesalainen.math.UnitType;
+import org.vesalainen.util.ThreadLocalFormatter;
 
 /**
  *
@@ -25,70 +28,162 @@ import org.vesalainen.math.UnitType;
  */
 public class CoordinateFormat
 {
+    private static final char[] NS = new char[] {'N', 'S'};
+    private static final char[] EW = new char[] {'E', 'W'};
+    
     /**
      * Formats latitude
      * @param latitude
-     * @param locale
      * @param unit
      * @return 
      */
-    public static String formatLatitude(double latitude, Locale locale, UnitType unit)
+    public static String formatLatitude(double latitude, UnitType unit)
     {
-        return format(latitude, locale, unit, 'N', 'S');
+        return formatLatitude(Locale.getDefault(), latitude, unit);
+    }
+    /**
+     * Formats latitude
+     * @param locale
+     * @param latitude
+     * @param unit
+     * @return 
+     */
+    public static String formatLatitude(Locale locale, double latitude, UnitType unit)
+    {
+        return format(locale, latitude, unit, NS);
+    }
+    /**
+     * Formats latitude
+     * @param out
+     * @param latitude
+     * @param unit
+     * @throws IOException 
+     */
+    public static void formatLatitude(Appendable out, double latitude, UnitType unit) throws IOException
+    {
+        formatLatitude(out, Locale.getDefault(), latitude, unit);
+    }
+    /**
+     * Formats latitude
+     * @param out
+     * @param locale
+     * @param latitude
+     * @param unit
+     * @throws IOException 
+     */
+    public static void formatLatitude(Appendable out, Locale locale, double latitude, UnitType unit) throws IOException
+    {
+        format(out, locale, latitude, unit, NS);
     }
     /**
      * Formats longitude
      * @param longitude
-     * @param locale
      * @param unit
      * @return 
      */
-    public static String formatLongitude(double longitude, Locale locale, UnitType unit)
+    public static String formatLongitude(double longitude, UnitType unit)
     {
-        return format(longitude, locale, unit, 'E', 'W');
+        return formatLongitude(Locale.getDefault(), longitude, unit);
+    }
+    /**
+     * Formats longitude
+     * @param locale
+     * @param longitude
+     * @param unit
+     * @return 
+     */
+    public static String formatLongitude(Locale locale, double longitude, UnitType unit)
+    {
+        return format(locale, longitude, unit, EW);
+    }
+    /**
+     * Formats longitude
+     * @param out
+     * @param longitude
+     * @param unit
+     * @throws IOException 
+     */
+    public static void formatLongitude(Appendable out, double longitude, UnitType unit) throws IOException
+    {
+        formatLongitude(out, Locale.getDefault(), longitude, unit);
+    }
+    /**
+     * Formats longitude
+     * @param out
+     * @param locale
+     * @param longitude
+     * @param unit
+     * @throws IOException 
+     */
+    public static void formatLongitude(Appendable out, Locale locale, double longitude, UnitType unit) throws IOException
+    {
+        format(out, locale, longitude, unit, EW);
     }
     
-    public static String format(double coordinate, Locale locale, UnitType unit, char... chars)
+    public static String format(Locale locale, double coordinate, UnitType unit, char... chars)
+    {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            format(sb, locale, coordinate, unit, chars);
+            return sb.toString();
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    public static void format(Appendable out, Locale locale, double coordinate, UnitType unit, char... chars) throws IOException
     {
         switch (unit)
         {
             case Deg:
-                return deg(coordinate, locale, chars);
+                deg(out, locale, coordinate, chars);
+                break;
             case DegMin:
-                return degmin(coordinate, locale, chars);
+                degmin(out, locale, coordinate, chars);
+                break;
             case DegMinSec:
-                return degminsec(coordinate, locale, chars);
+                degminsec(out, locale, coordinate, chars);
+                break;
             default:
                 throw new UnsupportedOperationException(unit+" no supported");
         }
     }
     
-    public static String degmin(double value, Locale locale, char... chars)
+    public static void degmin(Appendable out, Locale locale, double value, char... chars) throws IOException
     {
         char ns = value > 0 ? chars[0] : chars[1];
         double min = Math.abs(value);
         int deg = (int) min;
         min = min-deg;
-        return String.format(locale,
+        Formatter formatter = ThreadLocalFormatter.getFormatter();
+        formatter.format(locale,
                 "%c %d\u00b0 %.3f'", 
                 ns,
                 deg,
                 min*60
         );
+        CharSequence cs = (CharSequence) formatter.out();
+        out.append(cs);
     }
 
-    public static String deg(double value, Locale locale, char... chars)
+    public static void deg(Appendable out, Locale locale, double value, char... chars) throws IOException
     {
         char ns = value > 0 ? chars[0] : chars[1];
         double min = Math.abs(value);
-        return String.format(locale,
+        Formatter formatter = ThreadLocalFormatter.getFormatter();
+        formatter.format(locale,
                 "%c %.6f\u00b0", 
                 ns,
                 min
         );
+        CharSequence cs = (CharSequence) formatter.out();
+        out.append(cs);
     }
 
-    public static String degminsec(double value, Locale locale, char... chars)
+    public static void degminsec(Appendable out, Locale locale, double value, char... chars) throws IOException
     {
         char ns = value > 0 ? chars[0] : chars[1];
         double m = Math.abs(value);
@@ -96,12 +191,15 @@ public class CoordinateFormat
         m = m-deg;
         int min = (int) (m*60);
         double sec = m-(double)min/60.0;
-        return String.format(locale,
+        Formatter formatter = ThreadLocalFormatter.getFormatter();
+        formatter.format(locale,
                 "%c %d\u00b0 %d' %.1f\"", 
                 ns,
                 deg,
                 min,
                 sec*3600
         );
+        CharSequence cs = (CharSequence) formatter.out();
+        out.append(cs);
     }
 }
