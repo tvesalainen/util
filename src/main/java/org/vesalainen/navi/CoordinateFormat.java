@@ -59,7 +59,7 @@ public class CoordinateFormat
      * @param unit
      * @throws IOException 
      */
-    public static void formatLatitude(Appendable out, double latitude, UnitType unit) throws IOException
+    public static void formatLatitude(Appendable out, double latitude, UnitType unit)
     {
         formatLatitude(out, Locale.getDefault(), latitude, unit);
     }
@@ -71,7 +71,7 @@ public class CoordinateFormat
      * @param unit
      * @throws IOException 
      */
-    public static void formatLatitude(Appendable out, Locale locale, double latitude, UnitType unit) throws IOException
+    public static void formatLatitude(Appendable out, Locale locale, double latitude, UnitType unit)
     {
         format(out, locale, latitude, unit, NS);
     }
@@ -103,7 +103,7 @@ public class CoordinateFormat
      * @param unit
      * @throws IOException 
      */
-    public static void formatLongitude(Appendable out, double longitude, UnitType unit) throws IOException
+    public static void formatLongitude(Appendable out, double longitude, UnitType unit)
     {
         formatLongitude(out, Locale.getDefault(), longitude, unit);
     }
@@ -115,7 +115,7 @@ public class CoordinateFormat
      * @param unit
      * @throws IOException 
      */
-    public static void formatLongitude(Appendable out, Locale locale, double longitude, UnitType unit) throws IOException
+    public static void formatLongitude(Appendable out, Locale locale, double longitude, UnitType unit)
     {
         format(out, locale, longitude, unit, EW);
     }
@@ -134,7 +134,7 @@ public class CoordinateFormat
         }
     }
     
-    public static void format(Appendable out, Locale locale, double coordinate, UnitType unit, char... chars) throws IOException
+    public static void format(Appendable out, Locale locale, double coordinate, UnitType unit, char... chars)
     {
         switch (unit)
         {
@@ -152,54 +152,75 @@ public class CoordinateFormat
         }
     }
     
-    public static void degmin(Appendable out, Locale locale, double value, char... chars) throws IOException
+    public static void degmin(Appendable out, Locale locale, double value, char... chars)
     {
-        char ns = value > 0 ? chars[0] : chars[1];
-        double min = Math.abs(value);
-        int deg = (int) min;
-        min = min-deg;
-        Formatter formatter = ThreadLocalFormatter.getFormatter();
-        formatter.format(locale,
-                "%c %d\u00b0 %.3f'", 
-                ns,
-                deg,
-                min*60
-        );
-        CharSequence cs = (CharSequence) formatter.out();
-        out.append(cs);
+        try
+        {
+            char ns = value > 0 ? chars[0] : chars[1];
+            double min = Math.abs(value);
+            int deg = (int) min;
+            min = min-deg;
+            Formatter formatter = ThreadLocalFormatter.getFormatter();
+            formatter.format(locale,
+                    "%c %d\u00b0 %.3f'",
+                    ns,
+                    deg,
+                    min*60
+            );
+            CharSequence cs = (CharSequence) formatter.out();
+            out.append(cs);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public static void deg(Appendable out, Locale locale, double value, char... chars) throws IOException
+    public static void deg(Appendable out, Locale locale, double value, char... chars)
     {
-        char ns = value > 0 ? chars[0] : chars[1];
-        double min = Math.abs(value);
-        Formatter formatter = ThreadLocalFormatter.getFormatter();
-        formatter.format(locale,
-                "%c %.6f\u00b0", 
-                ns,
-                min
-        );
-        CharSequence cs = (CharSequence) formatter.out();
-        out.append(cs);
+        try
+        {
+            char ns = value > 0 ? chars[0] : chars[1];
+            double min = Math.abs(value);
+            Formatter formatter = ThreadLocalFormatter.getFormatter();
+            formatter.format(locale,
+                    "%c %.6f\u00b0",
+                    ns,
+                    min
+            );
+            CharSequence cs = (CharSequence) formatter.out();
+            out.append(cs);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
-    public static void degminsec(Appendable out, Locale locale, double value, char... chars) throws IOException
+    public static void degminsec(Appendable out, Locale locale, double value, char... chars)
     {
-        char ns = value > 0 ? chars[0] : chars[1];
-        double m = Math.abs(value);
-        int deg = (int) m;
-        m = m-deg;
-        int min = (int) (m*60);
-        double sec = m-(double)min/60.0;
-        Formatter formatter = ThreadLocalFormatter.getFormatter();
-        formatter.format(locale,
-                "%c %d\u00b0 %d' %.1f\"", 
-                ns,
-                deg,
-                min,
-                sec*3600
-        );
-        CharSequence cs = (CharSequence) formatter.out();
-        out.append(cs);
+        try
+        {
+            char ns = value > 0 ? chars[0] : chars[1];
+            double m = Math.abs(value);
+            int deg = (int) m;
+            m = m-deg;
+            int min = (int) (m*60);
+            double sec = m-(double)min/60.0;
+            Formatter formatter = ThreadLocalFormatter.getFormatter();
+            formatter.format(locale,
+                    "%c %d\u00b0 %d' %.1f\"",
+                    ns,
+                    deg,
+                    min,
+                    sec*3600
+            );
+            CharSequence cs = (CharSequence) formatter.out();
+            out.append(cs);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 }

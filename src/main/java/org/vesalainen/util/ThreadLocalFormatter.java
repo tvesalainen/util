@@ -33,31 +33,43 @@ public class ThreadLocalFormatter
      * @param out
      * @param locale
      * @param format
-     * @param args
-     * @throws IOException 
+     * @param args 
      * @see java.util.Formatter#format(java.util.Locale, java.lang.String, java.lang.Object...) 
      */
-    public static void format(Appendable out, Locale locale, String format, Object... args) throws IOException
+    public static void format(Appendable out, Locale locale, String format, Object... args)
     {
-        Formatter formatter = getFormatter();
-        formatter.format(locale, format, args);
-        CharSequence cs = (CharSequence) formatter.out();
-        out.append(cs);
+        try
+        {
+            Formatter formatter = getFormatter();
+            formatter.format(locale, format, args);
+            CharSequence cs = (CharSequence) formatter.out();
+            out.append(cs);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
     /**
      * 
      * @param out
      * @param format
-     * @param args
-     * @throws IOException 
+     * @param args 
      * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
      */
-    public static void format(Appendable out, String format, Object... args) throws IOException
+    public static void format(Appendable out, String format, Object... args)
     {
-        Formatter formatter = getFormatter();
-        formatter.format(format, args);
-        CharSequence cs = (CharSequence) formatter.out();
-        out.append(cs);
+        try
+        {
+            Formatter formatter = getFormatter();
+            formatter.format(format, args);
+            CharSequence cs = (CharSequence) formatter.out();
+            out.append(cs);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
     /**
      * Returns thread-local formatter. Inner Appendable is StringBuider which's
