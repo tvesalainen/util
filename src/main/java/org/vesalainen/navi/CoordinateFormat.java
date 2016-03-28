@@ -56,8 +56,7 @@ public class CoordinateFormat
      * Formats latitude
      * @param out
      * @param latitude
-     * @param unit
-     * @throws IOException 
+     * @param unit 
      */
     public static void formatLatitude(Appendable out, double latitude, UnitType unit)
     {
@@ -68,8 +67,7 @@ public class CoordinateFormat
      * @param out
      * @param locale
      * @param latitude
-     * @param unit
-     * @throws IOException 
+     * @param unit 
      */
     public static void formatLatitude(Appendable out, Locale locale, double latitude, UnitType unit)
     {
@@ -100,8 +98,7 @@ public class CoordinateFormat
      * Formats longitude
      * @param out
      * @param longitude
-     * @param unit
-     * @throws IOException 
+     * @param unit 
      */
     public static void formatLongitude(Appendable out, double longitude, UnitType unit)
     {
@@ -112,8 +109,7 @@ public class CoordinateFormat
      * @param out
      * @param locale
      * @param longitude
-     * @param unit
-     * @throws IOException 
+     * @param unit 
      */
     public static void formatLongitude(Appendable out, Locale locale, double longitude, UnitType unit)
     {
@@ -122,16 +118,9 @@ public class CoordinateFormat
     
     public static String format(Locale locale, double coordinate, UnitType unit, char... chars)
     {
-        try
-        {
-            StringBuilder sb = new StringBuilder();
-            format(sb, locale, coordinate, unit, chars);
-            return sb.toString();
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        StringBuilder sb = new StringBuilder();
+        format(sb, locale, coordinate, unit, chars);
+        return sb.toString();
     }
     
     public static void format(Appendable out, Locale locale, double coordinate, UnitType unit, char... chars)
