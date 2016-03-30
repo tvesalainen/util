@@ -30,6 +30,11 @@ public interface TimeArray extends ValueArray
      */
     LongStream timeStream();
     /**
+     * Returns time of first sample
+     * @return 
+     */
+    long firstTime();
+    /**
      * Returns time of last sample
      * @return 
      */

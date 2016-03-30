@@ -156,6 +156,16 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     }
 
     @Override
+    public long firstTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[begin % size];
+    }
+
+    @Override
     public long lastTime()
     {
         if (count() < 1)

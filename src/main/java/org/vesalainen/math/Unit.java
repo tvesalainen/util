@@ -27,5 +27,4 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Unit
 {
     UnitType value();
-    double multiplier() default 1.0;
 }

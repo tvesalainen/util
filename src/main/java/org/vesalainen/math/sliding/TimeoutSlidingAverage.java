@@ -103,6 +103,17 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
         return timeout;
     }
 
+    @Override
+    public long firstTime()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return times[begin % size];
+    }
+
+    @Override
     public long lastTime()
     {
         if (count() < 1)
@@ -112,6 +123,7 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
         return times[(end+size-1) % size];
     }
 
+    @Override
     public long previousTime()
     {
         if (count() < 1)
