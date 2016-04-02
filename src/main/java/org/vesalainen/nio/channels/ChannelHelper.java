@@ -18,8 +18,6 @@ package org.vesalainen.nio.channels;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
