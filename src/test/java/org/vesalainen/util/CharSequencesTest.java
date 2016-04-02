@@ -84,4 +84,21 @@ public class CharSequencesTest
         String s2 = "qwertyuikjhgfdsazxcvbnmkoi";
         assertFalse(CharSequences.equals(s1, s2));
     }
+    
+    @Test
+    public void test8()
+    {
+        String s1 = "\r\n\r\ncontent";
+        int exp = s1.indexOf('c');
+        assertEquals(exp, CharSequences.indexOf(s1, 'c'));
+    }
+    
+    @Test
+    public void test9()
+    {
+        String s1 = "\r\n\r\ncontent";
+        int exp = s1.indexOf('c', 6);
+        assertEquals(exp, CharSequences.indexOf(s1, 'c', 6));
+    }
+    
 }
