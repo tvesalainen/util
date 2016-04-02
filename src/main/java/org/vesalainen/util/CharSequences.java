@@ -17,7 +17,7 @@
 package org.vesalainen.util;
 
 /**
- *
+ * A Utility class that contains helper methods for implementing CharSequence.
  * @author tkv
  */
 public class CharSequences
@@ -138,5 +138,25 @@ public class CharSequences
             }
         }
         return true;
+    }
+    /**
+     * Calculates hashCode for CharSequence
+     * @param seq
+     * @return 
+     * @see java.lang.Object#hashCode() 
+     */
+    public static int hashCode(CharSequence seq)
+    {
+        int len = seq.length();
+        int hash = len;
+        for (int ii=0;ii<6;ii++)
+        {
+            hash *= seq.charAt(hash%len);
+            if (hash <= 0)
+            {
+                break;
+            }
+        }
+        return hash;
     }
 }

@@ -101,4 +101,15 @@ public class CharSequencesTest
         assertEquals(exp, CharSequences.indexOf(s1, 'c', 6));
     }
     
+    @Test
+    public void test10()
+    {
+        String s1 = "qwertyuikjhgfdsazxcvbnmkoiu";
+        StringBuilder sb = new StringBuilder();
+        sb.append(s1);
+        int h1 = CharSequences.hashCode(s1);
+        int h2 = CharSequences.hashCode(sb);
+        assertEquals(h1, h2);
+    }
+    
 }
