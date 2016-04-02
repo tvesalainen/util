@@ -119,25 +119,30 @@ public class CharSequences
      * @return 
      * @see java.lang.Object#equals(java.lang.Object) 
      */
-    public static boolean equals(CharSequence cs1, CharSequence cs2)
+    public static boolean equals(CharSequence cs1, Object other)
     {
-        if (cs1 == cs2)
+        if (cs1 == other)
         {
             return true;
         }
-        if (cs1.length() != cs2.length())
+        if (other instanceof CharSequence)
         {
-            return false;
-        }
-        int len = cs1.length();
-        for (int ii=0;ii<len;ii++)
-        {
-            if (cs1.charAt(ii) != cs2.charAt(ii))
+            CharSequence cs2 = (CharSequence) other;
+            if (cs1.length() != cs2.length())
             {
                 return false;
             }
+            int len = cs1.length();
+            for (int ii=0;ii<len;ii++)
+            {
+                if (cs1.charAt(ii) != cs2.charAt(ii))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     }
     /**
      * Calculates hashCode for CharSequence
