@@ -30,6 +30,51 @@ import java.nio.channels.WritableByteChannel;
  */
 public class ChannelHelper
 {
+    public static void writeAll(GatheringByteChannel ch, ByteBuffer... bbs) throws IOException
+    {
+        writeAll(ch, bbs, 0, bbs.length);
+    }
+    public static void writeAll(GatheringByteChannel ch, ByteBuffer[] bbs, int offset, int length) throws IOException
+    {
+        long all = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            all += bbs[ii].remaining();
+        }
+        int count = 0;
+        while (all > 0)
+        {
+            long rc = ch.write(bbs, offset, length);
+            if (rc == 0)
+            {
+                count++;
+            }
+            else
+            {
+                all -= rc;
+            }
+            if (count > 100)
+            {
+                throw new IOException("Couldn't write all.");
+            }
+        }
+    }
+    public static void writeAll(WritableByteChannel ch, ByteBuffer bb) throws IOException
+    {
+        int count = 0;
+        while (bb.hasRemaining())
+        {
+            int rc = ch.write(bb);
+            if (rc == 0)
+            {
+                count++;
+            }
+            if (count > 100)
+            {
+                throw new IOException("Couldn't write all.");
+            }
+        }
+    }
     public static OutputStream getGatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
     {
         return new ByteBufferOutputStream(srcs, offset, length);
