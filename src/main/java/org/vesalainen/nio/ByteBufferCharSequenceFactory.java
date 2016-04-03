@@ -62,6 +62,33 @@ public class ByteBufferCharSequenceFactory
     }
     /**
      * Creates or reuses a ByteBufferCharSequence object.
+     * Selection is 0 - position
+     * @return 
+     */
+    public ByteBufferCharSequence afterRead()
+    {
+        return create(0, bb.position());
+    }
+    /**
+     * Creates or reuses a ByteBufferCharSequence object.
+     * Selection is position - limit
+     * @return 
+     */
+    public ByteBufferCharSequence positionToLimit()
+    {
+        return create(bb.position(), bb.limit());
+    }
+    /**
+     * Creates or reuses a ByteBufferCharSequence object.
+     * Selection is 0 - limit
+     * @return 
+     */
+    public ByteBufferCharSequence all()
+    {
+        return create(0, bb.limit());
+    }
+    /**
+     * Creates or reuses a ByteBufferCharSequence object.
      * @param position
      * @param limit
      * @return 
