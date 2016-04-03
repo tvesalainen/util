@@ -19,7 +19,7 @@ package org.vesalainen.nio;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.nio.ByteBufferCharSequenceFactory.ByteBufferCharSequence;
+import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.util.CharSequences;
 
 /**

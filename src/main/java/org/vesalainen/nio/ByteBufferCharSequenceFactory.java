@@ -16,15 +16,9 @@
  */
 package org.vesalainen.nio;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.GatheringByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
-import org.vesalainen.nio.channels.ChannelHelper;
-import org.vesalainen.util.CharSequences;
 
 /**
  * A factory to create ByteBufferCharSequence views to ByteBuffer. These views
@@ -51,6 +45,12 @@ public class ByteBufferCharSequenceFactory
     {
         this.bb = bb;
     }
+
+    ByteBuffer getBb()
+    {
+        return bb;
+    }
+    
     /**
      * After reset all ByteBufferCharSequence instances created by create or concat
      * methods of this factory are reused. Their behavior is undefined.
@@ -62,30 +62,12 @@ public class ByteBufferCharSequenceFactory
     }
     /**
      * Creates or reuses a ByteBufferCharSequence object.
-     * Selection is 0 - position
-     * @return 
-     */
-    public ByteBufferCharSequence afterRead()
-    {
-        return create(0, bb.position());
-    }
-    /**
-     * Creates or reuses a ByteBufferCharSequence object.
      * Selection is position - limit
      * @return 
      */
-    public ByteBufferCharSequence positionToLimit()
+    public ByteBufferCharSequence allRemaining()
     {
         return create(bb.position(), bb.limit());
-    }
-    /**
-     * Creates or reuses a ByteBufferCharSequence object.
-     * Selection is 0 - limit
-     * @return 
-     */
-    public ByteBufferCharSequence all()
-    {
-        return create(0, bb.limit());
     }
     /**
      * Creates or reuses a ByteBufferCharSequence object.
@@ -98,7 +80,7 @@ public class ByteBufferCharSequenceFactory
         ByteBufferCharSequence seq = null;
         if (freshStack.isEmpty())
         {
-            seq = new ByteBufferCharSequence(bb);
+            seq = new ByteBufferCharSequence(this);
         }
         else
         {
@@ -110,131 +92,13 @@ public class ByteBufferCharSequenceFactory
     }
     /**
      * Creates or reuses a ByteBufferCharSequence object. Objects is concatenation
-     * of arguments. Argument s2 must immediately follow s1, otherwise  
-     * IllegalArgumentException is thrown.
+     * of arguments and everything between them.
      * @param s1
      * @param s2
      * @return 
      */
     public ByteBufferCharSequence concat(ByteBufferCharSequence s1, ByteBufferCharSequence s2)
     {
-        if (s1.bb.limit() != s2.bb.position())
-        {
-            throw new IllegalArgumentException("sequences are not next to each other");
-        }
-        return create(s1.bb.position(), s2.bb.limit());
-    }
-    /**
-     * Writes seq content to channel
-     * @param channel
-     * @param seq
-     * @throws IOException 
-     */
-    public static void writeAll(WritableByteChannel channel, ByteBufferCharSequence seq) throws IOException
-    {
-        ChannelHelper.writeAll(channel, seq.bb);
-        seq.reset();
-    }
-    /**
-     * Writes seqs content to channel
-     * @param channel
-     * @param seqs
-     * @throws IOException 
-     */
-    public static void writeAll(GatheringByteChannel channel, ByteBufferCharSequence... seqs) throws IOException
-    {
-        int length = seqs.length;
-        ByteBuffer[] bba = new ByteBuffer[length];
-        for (int ii=0;ii<length;ii++)
-        {
-            bba[ii] = seqs[ii].bb;
-        }
-        ChannelHelper.writeAll(channel, bba);
-        for (int ii=0;ii<length;ii++)
-        {
-            seqs[ii].reset();
-        }
-    }
-    /**
-     * Writes seqs content to channel
-     * @param channel
-     * @param seqs
-     * @throws IOException 
-     */
-    public static void writeAll(GatheringByteChannel channel, Collection<ByteBufferCharSequence> seqs) throws IOException
-    {
-        int length = seqs.size();
-        ByteBuffer[] bba = new ByteBuffer[length];
-        int ii=0;
-        for (ByteBufferCharSequence seq : seqs)
-        {
-            bba[ii++] = seq.bb;
-        }
-        ChannelHelper.writeAll(channel, bba);
-        seqs.stream().forEach((seq) -> seq.reset());
-    }
-    /**
-     * A CharSequence implementation backed by ByteBuffer
-     */
-    public class ByteBufferCharSequence implements CharSequence
-    {
-        private ByteBuffer bb;
-        private int position;
-        private int limit;
-
-        private ByteBufferCharSequence(ByteBuffer bb)
-        {
-            this.bb = bb.slice();
-        }
-
-        private void set(int position, int limit)
-        {
-            bb.clear();
-            bb.position(position);
-            bb.limit(limit);
-            this.position = position;
-            this.limit = limit;
-        }
-        private void reset()
-        {
-            bb.clear();
-            bb.position(position);
-            bb.limit(limit);
-        }
-        @Override
-        public int length()
-        {
-            return bb.remaining();
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            return (char) bb.get(position + index);
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end)
-        {
-            return create(position + start, position + end);
-        }
-        @Override
-        public String toString()
-        {
-            return CharSequences.toString(this);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return CharSequences.hashCode(this);
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return CharSequences.equals(this, obj);
-        }
-
+        return create(s1.getPosition(), s2.getLimit());
     }
 }
