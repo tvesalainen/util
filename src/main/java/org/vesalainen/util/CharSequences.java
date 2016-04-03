@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.util.function.IntPredicate;
+
 /**
  * A Utility class that contains helper methods for implementing CharSequence.
  * @author tkv
@@ -89,7 +91,17 @@ public class CharSequences
      */
     public static int indexOf(CharSequence seq, char c)
     {
-        return indexOf(seq, c, 0);
+        return indexOf(seq, (x)->{return x==c;});
+    }
+    /**
+     * Returns index on char where p matches
+     * @param seq
+     * @param p
+     * @return 
+     */
+    public static int indexOf(CharSequence seq, IntPredicate p)
+    {
+        return indexOf(seq, p, 0);
     }
     /**
      * Returns index of char, starting from fromIndex, or -1 if char not found
@@ -101,10 +113,21 @@ public class CharSequences
      */
     public static int indexOf(CharSequence seq, char c, int fromIndex)
     {
+        return indexOf(seq, (x)->{return x==c;}, fromIndex);
+    }
+    /**
+     * Returns index on char where p matches
+     * @param seq
+     * @param p
+     * @param fromIndex
+     * @return 
+     */
+    public static int indexOf(CharSequence seq, IntPredicate p, int fromIndex)
+    {
         int len = seq.length();
         for (int ii=fromIndex;ii<len;ii++)
         {
-            if (seq.charAt(ii) == c)
+            if (p.test(seq.charAt(ii)))
             {
                 return ii;
             }
