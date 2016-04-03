@@ -78,4 +78,14 @@ public class ByteBufferCharSequenceFactoryTest
         assertTrue(CharSequences.equals("012345678", s1));
         assertTrue(CharSequences.equals(s1, s2));
     }
+    @Test
+    public void test4()
+    {
+        ByteBuffer bb = ByteBuffer.wrap("012345678901234567890123456789".getBytes());
+        ByteBufferCharSequenceFactory bbcsf = new ByteBufferCharSequenceFactory(bb);
+        ByteBufferCharSequence s1 = bbcsf.create(0, 9);
+        CharSequence sc = CharSequences.getConstant("012345678");
+        assertEquals(s1, sc);
+        assertEquals(s1.hashCode(), sc.hashCode());
+    }
 }

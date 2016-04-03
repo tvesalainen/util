@@ -30,7 +30,13 @@ import org.vesalainen.util.CharSequences;
  * A factory to create ByteBufferCharSequence views to ByteBuffer. These views
  * can be reused by using reset(). There are also write methods to write content 
  * to Channels.
+ * 
+ * <p>CharSequence implementations use hashCode method implemented in CharSequences. 
+ * Classes with 
+ * same hashCode implementation can be used in HashMaps etc.
+ * in CharSequences. 
  * @author tkv
+ * @see org.vesalainen.util.CharSequences#hashCode(java.lang.CharSequence) 
  */
 public class ByteBufferCharSequenceFactory
 {

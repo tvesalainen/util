@@ -164,4 +164,62 @@ public class CharSequences
         }
         return hash;
     }
+    /**
+     * Returns String backed CharSequence implementation. These CharSequences
+     * use same equals and hashCode as ByteBufferCharSequence and can be used together
+     * in same HashMap, for example.
+     * @param str
+     * @return 
+     * @see org.vesalainen.nio.ByteBufferCharSequenceFactory
+     */
+    public static CharSequence getConstant(String str)
+    {
+        return new SeqConstant(str);
+    }
+    private static class SeqConstant implements CharSequence
+    {
+        private final String str;
+
+        private SeqConstant(String str)
+        {
+            this.str = str;
+        }
+
+        @Override
+        public int length()
+        {
+            return str.length();
+        }
+
+        @Override
+        public char charAt(int index)
+        {
+            return str.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end)
+        {
+            return str.subSequence(start, end);
+        }
+
+        @Override
+        public String toString()
+        {
+            return str;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return CharSequences.hashCode(str);
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return CharSequences.equals(str, obj);
+        }
+
+    }
 }
