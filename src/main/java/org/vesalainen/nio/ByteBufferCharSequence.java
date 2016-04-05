@@ -20,16 +20,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.CharSequences;
 
 /**
  * A CharSequence implementation backed by ByteBuffer
+ * <p>Charset is US_ASCII
  */
 public class ByteBufferCharSequence implements CharSequence
 {
-    private final ByteBufferCharSequenceFactory factory;
+    private ByteBufferCharSequenceFactory factory;
     private ByteBuffer bb;
     private int position;
     private int limit;
@@ -38,6 +40,16 @@ public class ByteBufferCharSequence implements CharSequence
     {
         this.factory = factory;
         this.bb = factory.getBb().slice();
+    }
+
+    public ByteBufferCharSequence(String str)
+    {
+        this(ByteBuffer.wrap(str.getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    public ByteBufferCharSequence(ByteBuffer bb)
+    {
+        this.bb = bb;
     }
 
     void set(int position, int limit)
@@ -86,7 +98,16 @@ public class ByteBufferCharSequence implements CharSequence
     @Override
     public CharSequence subSequence(int start, int end)
     {
-        return factory.create(position + start, position + end);
+        if (factory != null)
+        {
+            return factory.create(position + start, position + end);
+        }
+        else
+        {
+            ByteBufferCharSequence s = new ByteBufferCharSequence(bb.slice());
+            s.set(position + start, position + end);
+            return s;
+        }
     }
 
     @Override

@@ -29,6 +29,8 @@ import java.util.Deque;
  * Classes with 
  * same hashCode implementation can be used in HashMaps etc.
  * in CharSequences. 
+ * 
+ * <p>Charset is US_ASCII
  * @author tkv
  * @see org.vesalainen.util.CharSequences#hashCode(java.lang.CharSequence) 
  */
