@@ -39,7 +39,7 @@ public class ChannelHelper
         long all = 0;
         for (int ii=0;ii<length;ii++)
         {
-            all += bbs[ii].remaining();
+            all += bbs[offset+ii].remaining();
         }
         int count = 0;
         while (all > 0)

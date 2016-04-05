@@ -164,6 +164,6 @@ public class ByteBufferCharSequence implements CharSequence
             bba[ii++] = seq.bb;
         }
         ChannelHelper.writeAll(channel, bba);
-        seqs.stream().forEach((org.vesalainen.nio.ByteBufferCharSequence seq) -> seq.reset());
+        seqs.stream().forEach((ByteBufferCharSequence seq) -> seq.reset());
     }
 }
