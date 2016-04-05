@@ -19,7 +19,6 @@ package org.vesalainen.nio;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.util.CharSequences;
 
 /**
@@ -44,6 +43,7 @@ public class ByteBufferCharSequenceFactoryTest
         assertTrue(CharSequences.equals("90123456789012", s2));
         ByteBufferCharSequence s3 = bbcsf.concat(s1, s2);
         assertTrue(CharSequences.equals("01234567890123456789012", s3));
+        assertTrue(CharSequences.equals("123", s3.subSequence("123")));
     }
     
     @Test

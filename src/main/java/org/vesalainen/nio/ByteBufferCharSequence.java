@@ -67,7 +67,22 @@ public class ByteBufferCharSequence implements CharSequence
     {
         return (char) bb.get(position + index);
     }
-
+    /**
+     * Returns subSequence of this with the same content as given. 
+     * @param seq
+     * @return 
+     * @throws IllegalArgumentException If given content nt found
+     */
+    public CharSequence subSequence(CharSequence seq)
+    {
+        int idx = CharSequences.indexOf(this, seq);
+        if (idx == -1)
+        {
+            throw new IllegalArgumentException(seq+" not found");
+        }
+        return subSequence(idx, idx+seq.length());
+    }
+    
     @Override
     public CharSequence subSequence(int start, int end)
     {
