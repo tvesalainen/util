@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.function.IntPredicate;
+import org.vesalainen.util.function.IntBiPredicate;
 
 /**
  * A Utility class that contains helper methods for implementing CharSequence.
@@ -47,6 +48,10 @@ public class CharSequences
     {
         return indexOf(seq, pattern, 0);
     }
+    public static int indexOf(CharSequence seq, CharSequence pattern, IntBiPredicate p)
+    {
+        return indexOf(seq, pattern, (int a, int b)->{return a==b;}, 0);
+    }
     /**
      * Returns index of pattern, starting at fromIndex, or -1 if pattern not found
      * @param seq
@@ -57,13 +62,17 @@ public class CharSequences
      */
     public static int indexOf(CharSequence seq, CharSequence pattern, int fromIndex)
     {
+        return indexOf(seq, pattern, (int a, int b)->{return a==b;}, fromIndex);
+    }
+    public static int indexOf(CharSequence seq, CharSequence pattern, IntBiPredicate p, int fromIndex)
+    {
         int len = seq.length();
         int pi=0;
         int pl=pattern.length();
         int ll = len-pl;
         for (int ii=fromIndex;ii<len;ii++)
         {
-            if (seq.charAt(ii) == pattern.charAt(pi))
+            if (p.test(seq.charAt(ii), pattern.charAt(pi)))
             {
                 pi++;
                 if (pi == pl)

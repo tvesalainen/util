@@ -50,6 +50,8 @@ public class ByteBufferCharSequence implements CharSequence
     public ByteBufferCharSequence(ByteBuffer bb)
     {
         this.bb = bb;
+        this.position = bb.position();
+        this.limit = bb.limit();
     }
 
     void set(int position, int limit)
