@@ -16,7 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +40,15 @@ public class WeakList<T> implements List<T>
 {
     private final List<WeakReference<T>> list = new ArrayList<>();
     private boolean gc;
+
+    public WeakList()
+    {
+    }
+
+    public WeakList(Collection<T> col)
+    {
+        addAll(col);
+    }
     
     @Override
     public int size()
