@@ -16,7 +16,8 @@
  */
 package org.vesalainen.util;
 
-import java.util.function.IntFunction;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 import org.vesalainen.util.function.IntBiPredicate;

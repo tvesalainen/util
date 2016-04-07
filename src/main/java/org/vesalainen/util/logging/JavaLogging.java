@@ -33,6 +33,7 @@ public class JavaLogging extends BaseLogging
 
     public JavaLogging()
     {
+        setLogger("");
     }
 
     public JavaLogging(Class<?> cls)
