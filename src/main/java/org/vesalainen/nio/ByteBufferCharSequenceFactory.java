@@ -19,6 +19,7 @@ package org.vesalainen.nio;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.IntUnaryOperator;
 
 /**
  * A factory to create ByteBufferCharSequence views to ByteBuffer. These views
@@ -39,18 +40,36 @@ public class ByteBufferCharSequenceFactory
     private final ByteBuffer bb;
     private final Deque<ByteBufferCharSequence> freshStack = new ArrayDeque<>();
     private final Deque<ByteBufferCharSequence> usedStack = new ArrayDeque<>();
+    private final IntUnaryOperator op;
     /**
      * Creates ByteBufferCharSequenceFactory backed by ByteBuffer.
      * @param bb 
      */
     public ByteBufferCharSequenceFactory(ByteBuffer bb)
     {
+        this(bb, (x)->{return x;});
+    }
+    /**
+     * 
+     * @param bb
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     */
+    public ByteBufferCharSequenceFactory(ByteBuffer bb, IntUnaryOperator op)
+    {
         this.bb = bb;
+        this.op = op;
     }
 
     ByteBuffer getBb()
     {
         return bb;
+    }
+
+    IntUnaryOperator getOp()
+    {
+        return op;
     }
     
     /**

@@ -16,7 +16,9 @@
  */
 package org.vesalainen.util;
 
+import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
+import java.util.function.IntUnaryOperator;
 import org.vesalainen.util.function.IntBiPredicate;
 
 /**
@@ -153,6 +155,19 @@ public class CharSequences
      */
     public static boolean equals(CharSequence cs1, Object other)
     {
+        return equals(cs1, other, (x)->{return x;});
+    }
+    /**
+     * Return true if cs1 and cs2 are same object or if their length and content
+     * @param cs1
+     * @param other
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     * @return 
+     */
+    public static boolean equals(CharSequence cs1, Object other, IntUnaryOperator op)
+    {
         if (cs1 == other)
         {
             return true;
@@ -167,7 +182,7 @@ public class CharSequences
             int len = cs1.length();
             for (int ii=0;ii<len;ii++)
             {
-                if (cs1.charAt(ii) != cs2.charAt(ii))
+                if (op.applyAsInt(cs1.charAt(ii)) != op.applyAsInt(cs2.charAt(ii)))
                 {
                     return false;
                 }
@@ -184,11 +199,23 @@ public class CharSequences
      */
     public static int hashCode(CharSequence seq)
     {
+        return hashCode(seq, (x)->{return x;});
+    }
+    /**
+     * Calculates hashCode for CharSequence
+     * @param seq
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     * @return 
+     */
+    public static int hashCode(CharSequence seq, IntUnaryOperator op)
+    {
         int len = seq.length();
         int hash = len;
         for (int ii=0;ii<6;ii++)
         {
-            hash *= seq.charAt(hash%len);
+            hash *= op.applyAsInt(seq.charAt(hash%len));
             if (hash <= 0)
             {
                 break;
@@ -208,13 +235,33 @@ public class CharSequences
     {
         return new SeqConstant(str);
     }
+    /**
+     * Returns String backed CharSequence implementation. These CharSequences
+     * use same equals and hashCode as ByteBufferCharSequence and can be used together
+     * in same HashMap, for example if op's equals.
+     * @param str
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     * @return 
+     */
+    public static CharSequence getConstant(String str, IntUnaryOperator op)
+    {
+        return new SeqConstant(str, op);
+    }
     private static class SeqConstant implements CharSequence
     {
         private final String str;
+        private final IntUnaryOperator op;
 
         private SeqConstant(String str)
         {
+            this(str, (x)->{return x;});
+        }
+        private SeqConstant(String str, IntUnaryOperator op)
+        {
             this.str = str;
+            this.op = op;
         }
 
         @Override
@@ -244,13 +291,13 @@ public class CharSequences
         @Override
         public int hashCode()
         {
-            return CharSequences.hashCode(str);
+            return CharSequences.hashCode(str, op);
         }
 
         @Override
         public boolean equals(Object obj)
         {
-            return CharSequences.equals(str, obj);
+            return CharSequences.equals(str, obj, op);
         }
 
     }

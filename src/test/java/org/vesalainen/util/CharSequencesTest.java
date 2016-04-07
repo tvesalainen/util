@@ -70,6 +70,14 @@ public class CharSequencesTest
     }
     
     @Test
+    public void test5_b()
+    {
+        String s1 = "qwertyuikjhgfdsazxcvbnmkoiu";
+        String s2 = s1.toUpperCase();
+        assertTrue(CharSequences.equals(s1, s2, Character::toLowerCase));
+    }
+    
+    @Test
     public void test6()
     {
         String s1 = "qwertyuikjhgfdsazxcvbnmkoiu";
@@ -109,6 +117,17 @@ public class CharSequencesTest
         sb.append(s1);
         int h1 = CharSequences.hashCode(s1);
         int h2 = CharSequences.hashCode(sb);
+        assertEquals(h1, h2);
+    }
+    
+    @Test
+    public void test10_b()
+    {
+        String s1 = "qwertyuikjhgfdsazxcvbnmkoiu";
+        StringBuilder sb = new StringBuilder();
+        sb.append(s1.toUpperCase());
+        int h1 = CharSequences.hashCode(s1, Character::toLowerCase);
+        int h2 = CharSequences.hashCode(sb, Character::toLowerCase);
         assertEquals(h1, h2);
     }
     

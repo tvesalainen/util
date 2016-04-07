@@ -88,4 +88,14 @@ public class ByteBufferCharSequenceFactoryTest
         assertEquals(s1, sc);
         assertEquals(s1.hashCode(), sc.hashCode());
     }
+    @Test
+    public void test5()
+    {
+        ByteBuffer bb = ByteBuffer.wrap("abcdefghijklmnopqrstuwxyzåäö".getBytes());
+        ByteBufferCharSequenceFactory bbcsf = new ByteBufferCharSequenceFactory(bb, Character::toLowerCase);
+        ByteBufferCharSequence s1 = bbcsf.create(0, 9);
+        CharSequence sc = CharSequences.getConstant("ABCDEFGHI", Character::toLowerCase);
+        assertEquals(s1, sc);
+        assertEquals(s1.hashCode(), sc.hashCode());
+    }
 }

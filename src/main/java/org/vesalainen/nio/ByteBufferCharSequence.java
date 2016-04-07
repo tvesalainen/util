@@ -22,6 +22,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.function.IntUnaryOperator;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.CharSequences;
 
@@ -35,23 +36,57 @@ public class ByteBufferCharSequence implements CharSequence
     private ByteBuffer bb;
     private int position;
     private int limit;
-
+    private final IntUnaryOperator op;
+    /**
+     * 
+     * @param factory 
+     */
     ByteBufferCharSequence(ByteBufferCharSequenceFactory factory)
     {
         this.factory = factory;
         this.bb = factory.getBb().slice();
+        this.op = factory.getOp();
     }
-
+    /**
+     * 
+     * @param str 
+     */
     public ByteBufferCharSequence(String str)
     {
-        this(ByteBuffer.wrap(str.getBytes(StandardCharsets.US_ASCII)));
+        this(str, (x)->{return x;});
     }
-
+    /**
+     * 
+     * @param str
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     */
+    public ByteBufferCharSequence(String str, IntUnaryOperator op)
+    {
+        this(ByteBuffer.wrap(str.getBytes(StandardCharsets.US_ASCII)), op);
+    }
+    /**
+     * 
+     * @param bb 
+     */
     public ByteBufferCharSequence(ByteBuffer bb)
+    {
+        this(bb, (x)->{return x;});
+    }
+    /**
+     * 
+     * @param bb
+     * @param op An operator for converting characters in equals and hashCode.
+     * Default implementation is identity. Using e.g. Character::toLowerCase
+     * implements case insensitive equals and hashCode.
+     */
+    public ByteBufferCharSequence(ByteBuffer bb, IntUnaryOperator op)
     {
         this.bb = bb;
         this.position = bb.position();
         this.limit = bb.limit();
+        this.op = op;
     }
 
     void set(int position, int limit)
@@ -106,7 +141,7 @@ public class ByteBufferCharSequence implements CharSequence
         }
         else
         {
-            ByteBufferCharSequence s = new ByteBufferCharSequence(bb.slice());
+            ByteBufferCharSequence s = new ByteBufferCharSequence(bb.slice(), op);
             s.set(position + start, position + end);
             return s;
         }
@@ -121,13 +156,13 @@ public class ByteBufferCharSequence implements CharSequence
     @Override
     public int hashCode()
     {
-        return CharSequences.hashCode(this);
+        return CharSequences.hashCode(this, op);
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        return CharSequences.equals(this, obj);
+        return CharSequences.equals(this, obj, op);
     }
 
     public int getPosition()
