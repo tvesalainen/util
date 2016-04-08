@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class ListsTest
     public void test1()
     {
         List<String> list = new ArrayList<>();
-        Lists.populate(list, "a1", "a2", "a3");
+        Collections.addAll(list, "a1", "a2", "a3");
         String exp = "{`a1´, `a2´, `a3´}";
         String got = Lists.print("{", ", ", "`", "´", "}", list);
         assertEquals(exp, got);
@@ -47,7 +48,7 @@ public class ListsTest
     public void test1_1()
     {
         List<String> list = new ArrayList<>();
-        Lists.populate(list, "a1", "a2", "a3");
+        Collections.addAll(list, "a1", "a2", "a3");
         String exp = "a1, a2, a3";
         String got = Lists.print(", ", list);
         assertEquals(exp, got);
@@ -82,4 +83,15 @@ public class ListsTest
         assertEquals(exp2, got);
     }
     
+    @Test
+    public void testEquals()
+    {
+        Integer[] arr = new Integer[] {1, 1, 2, 3, null, 8};
+        List<Integer> list = Lists.create(arr);
+        assertTrue(Lists.equals(list, arr));
+        list.set(4, 5);
+        assertFalse(Lists.equals(list, arr));
+        list.add(9);
+        assertFalse(Lists.equals(list, arr));
+    }
 }

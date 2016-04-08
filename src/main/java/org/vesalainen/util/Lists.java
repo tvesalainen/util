@@ -19,8 +19,10 @@ package org.vesalainen.util;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Lists class contains methods to construct often used lists
@@ -73,21 +75,20 @@ public class Lists
     public static final <T> List<T> create(T... items)
     {
         List<T> list = new ArrayList<>();
-        populate(list, items);
+        Collections.addAll(list, items);
         return list;
     }
     /**
+     * @deprecated Replace with Collections.addAll
      * Populates collection with items
      * @param <T>
      * @param collection
      * @param items 
+     * @see java.util.Collections#addAll(java.util.Collection, java.lang.Object...) 
      */
     public static final <T> void populate(Collection<T> collection, T... items)
     {
-        for (T t : items)
-        {
-            collection.add(t);
-        }
+        Collections.addAll(collection, items);
     }
     /**
      * Removes items from collection
@@ -216,5 +217,28 @@ public class Lists
         {
             out.append(str);
         }
+    }
+    /**
+     * Returns true if list has equal items as array in same order.
+     * @param <T>
+     * @param list
+     * @param array
+     * @return 
+     */
+    public static <T> boolean equals(List<T> list, T... array)
+    {
+        if (list.size() != array.length)
+        {
+            return false;
+        }
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (!Objects.equals(list.get(ii), array[ii]))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
