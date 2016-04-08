@@ -44,7 +44,7 @@ public class ByteBufferCharSequence implements CharSequence
     ByteBufferCharSequence(ByteBufferCharSequenceFactory factory)
     {
         this.factory = factory;
-        this.bb = factory.getBb().slice();
+        this.bb = factory.getBb().asReadOnlyBuffer();
         this.op = factory.getOp();
     }
     /**
@@ -141,7 +141,7 @@ public class ByteBufferCharSequence implements CharSequence
         }
         else
         {
-            ByteBufferCharSequence s = new ByteBufferCharSequence(bb.slice(), op);
+            ByteBufferCharSequence s = new ByteBufferCharSequence(bb.asReadOnlyBuffer(), op);
             s.set(position + start, position + end);
             return s;
         }
