@@ -16,6 +16,9 @@
  */
 package org.vesalainen.util;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -139,5 +142,15 @@ public class CharSequencesTest
         assertEquals("qwerty", CharSequences.trim("qwerty"));
         assertTrue("qwerty" == CharSequences.trim("qwerty"));
         assertEquals("", CharSequences.trim(""));
+    }
+    @Test
+    public void testSplit()
+    {
+        assertEquals(4, CharSequences.split(",,,", ',').count());
+        List<CharSequence> list = CharSequences.split("W/\"xyzzy\", W/\"r2d2xxxx\", W/\"c3piozzzz\"", ',').collect(Collectors.toList());
+        assertEquals(3, list.size());
+        assertEquals("W/\"xyzzy\"", list.get(0));
+        assertEquals(" W/\"r2d2xxxx\"", list.get(1));
+        assertEquals(" W/\"c3piozzzz\"", list.get(2));
     }
 }

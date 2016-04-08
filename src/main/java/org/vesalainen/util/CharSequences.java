@@ -16,8 +16,12 @@
  */
 package org.vesalainen.util;
 
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.vesalainen.util.function.IntBiPredicate;
 
 /**
@@ -339,5 +343,86 @@ public class CharSequences
             return CharSequences.equals(str, obj, op);
         }
 
+    }
+    /**
+     * Returns stream splitted with character
+     * @param seq
+     * @param cc
+     * @return 
+     */
+    public static Stream<CharSequence> split(CharSequence seq, char cc)
+    {
+        return StreamSupport.stream(new SpliteratorImpl(seq, (x)->{return x==cc;}), false);
+    }
+    /**
+     * Returns stream splitted with function
+     * @param seq
+     * @param p
+     * @return 
+     */
+    public static Stream<CharSequence> split(CharSequence seq, IntPredicate p)
+    {
+        return StreamSupport.stream(new SpliteratorImpl(seq, p), false);
+    }
+    private static class SpliteratorImpl implements Spliterator<CharSequence>
+    {
+        private final CharSequence seq;
+        private final IntPredicate p;
+        private final int length;
+        private int start;
+        private int end;
+
+        public SpliteratorImpl(CharSequence seq, IntPredicate p)
+        {
+            this.seq = seq;
+            this.p = p;
+            this.length = seq.length();
+        }
+        
+        @Override
+        public boolean tryAdvance(Consumer<? super CharSequence> action)
+        {
+            if (start > length)
+            {
+                return false;
+            }
+            if (start == length)
+            {
+                if (p.test(seq.charAt(start-1)))    // ends with delim
+                {
+                    action.accept(seq.subSequence(start-1, start-1));
+                    start++;
+                    return true;
+                }
+                return false;
+            }
+            end = start;
+            while (end < length && !p.test(seq.charAt(end)))
+            {
+                end++;
+            }
+            action.accept(seq.subSequence(start, end));
+            start = end+1;
+            return true;
+        }
+
+        @Override
+        public Spliterator<CharSequence> trySplit()
+        {
+            return null;
+        }
+
+        @Override
+        public long estimateSize()
+        {
+            return 1;
+        }
+
+        @Override
+        public int characteristics()
+        {
+            return 0;
+        }
+        
     }
 }
