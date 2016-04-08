@@ -131,4 +131,13 @@ public class CharSequencesTest
         assertEquals(h1, h2);
     }
     
+    @Test
+    public void testTrim()
+    {
+        assertEquals("qwerty", CharSequences.trim("\t\r\n  qwerty\t\t\r\n  \t"));
+        assertEquals("", CharSequences.trim("\t\r\n  \t\t\r\n  \t"));
+        assertEquals("qwerty", CharSequences.trim("qwerty"));
+        assertTrue("qwerty" == CharSequences.trim("qwerty"));
+        assertEquals("", CharSequences.trim(""));
+    }
 }

@@ -16,8 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.util.Spliterator;
-import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 import org.vesalainen.util.function.IntBiPredicate;
@@ -28,6 +26,46 @@ import org.vesalainen.util.function.IntBiPredicate;
  */
 public class CharSequences
 {
+    /**
+     * Returns CharSequence where white spaces are removed from start and end
+     * or return same if nothing to trim.
+     * @param seq
+     * @return 
+     * @see java.lang.Character#isWhitespace(int) 
+     */
+    public static CharSequence trim(CharSequence seq)
+    {
+        return trim(seq, Character::isWhitespace);
+    }
+    /**
+     * Returns CharSequence where trimming is done by p.
+     * @param seq
+     * @param p
+     * @return 
+     */
+    public static CharSequence trim(CharSequence seq, IntPredicate p)
+    {
+        int length = seq.length();
+        int start = 0;
+        while (start < length && p.test(seq.charAt(start)))
+        {
+            start++;
+        }
+        int end = seq.length()-1;
+        while (end > start && p.test(seq.charAt(end)))
+        {
+            end--;
+        }
+        end++;
+        if (end - start == length)
+        {
+            return seq;
+        }
+        else
+        {
+            return seq.subSequence(start, end);
+        }
+    }
     /**
      * Converts CharSequence to String
      * @param seq
