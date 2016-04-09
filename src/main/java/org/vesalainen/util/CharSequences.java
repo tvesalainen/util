@@ -267,16 +267,51 @@ public class CharSequences
         return hash;
     }
     /**
-     * Returns String backed CharSequence implementation. These CharSequences
+     * Returns String backed CharSequence concatenation. These CharSequences
      * use same equals and hashCode as ByteBufferCharSequence and can be used together
      * in same HashMap, for example.
-     * @param str
+     * @param ob 
+     * @param obs
      * @return 
      * @see org.vesalainen.nio.ByteBufferCharSequenceFactory
      */
     public static CharSequence getConstant(String str)
     {
         return new SeqConstant(str);
+    }
+    /**
+     * Returns concatenated CharSequnce constructed by toString methods. 
+     * @param ob
+     * @param obs
+     * @return 
+     */
+    public static CharSequence concat(Object ob, Object... obs)
+    {
+        return concat((x)->{return x;}, ob, obs);
+    }
+    /**
+     * Returns concatenated CharSequnce constructed by toString methods. 
+     * @param op
+     * @param ob
+     * @param obs
+     * @return 
+     */
+    public static CharSequence concat(IntUnaryOperator op, Object ob, Object... obs)
+    {
+        if (obs.length == 0)
+        {
+            return new SeqConstant(ob.toString(), op);
+        }
+        else
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ob.toString());
+            for (Object o : obs)
+            {
+                sb.append(o.toString());
+            }
+            return new SeqConstant(sb.toString(), op);
+        }
     }
     /**
      * Returns String backed CharSequence implementation. These CharSequences
