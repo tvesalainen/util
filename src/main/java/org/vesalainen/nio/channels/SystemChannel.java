@@ -34,12 +34,14 @@ public class SystemChannel
     public static final GatheringByteChannel out = new OutChannel(System.out);
     public static final ScatteringByteChannel in = new InChannel(System.in);
     
-    private static class InChannel implements ScatteringByteChannel
+    static class InChannel implements ScatteringByteChannel
     {
-        private ScatteringByteChannel channel;
+        protected InputStream in;
+        protected ScatteringByteChannel channel;
 
-        public InChannel(InputStream in)
+        InChannel(InputStream in)
         {
+            this.in = in;
             channel = ChannelHelper.getScatteringByteChannel(Channels.newChannel(in));
         }
 
@@ -73,12 +75,14 @@ public class SystemChannel
         }
         
     }
-    private static class OutChannel implements GatheringByteChannel
+    static class OutChannel implements GatheringByteChannel
     {
-        private GatheringByteChannel channel;
+        protected OutputStream out;
+        protected GatheringByteChannel channel;
 
-        private OutChannel(OutputStream out)
+        OutChannel(OutputStream out)
         {
+            this.out = out;
             channel = ChannelHelper.getGatheringByteChannel(Channels.newChannel(out));
         }
 
