@@ -19,7 +19,7 @@ package org.vesalainen.util.function;
 /**
  *
  * @author tkv
- * @deprecated Compiler doesn't complaint but causes crash.
+ * @deprecated Compiler doesn't complain but causes crash.
  */
 public class Funcs
 {
