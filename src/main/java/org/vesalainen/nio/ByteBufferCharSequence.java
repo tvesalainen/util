@@ -27,7 +27,8 @@ import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.CharSequences;
 
 /**
- * A CharSequence implementation backed by ByteBuffer
+ * A CharSequence implementation backed by ByteBuffer. Implemented CharSequence
+ * is between position and limit.
  * <p>Charset is US_ASCII
  */
 public class ByteBufferCharSequence implements CharSequence

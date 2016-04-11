@@ -82,6 +82,14 @@ public class ByteBufferCharSequenceFactory
         usedStack.clear();
     }
     /**
+     * Return CharSequence between 0 and position.
+     * @return 
+     */
+    public CharSequence peekRead()
+    {
+        return new PeekReadCharSequence(this);
+    }
+    /**
      * Creates or reuses a ByteBufferCharSequence object.
      * Selection is position - limit
      * @return 
