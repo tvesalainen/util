@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -57,15 +58,11 @@ public class WeakList<T> implements List<T>
      */
     public void lock()
     {
-        if (lock == null)
-        {
-            lock = new HashSet<>();
-        }
-        if (!lock.isEmpty())
+        if (lock != null)
         {
             throw new IllegalStateException("lock when locked");
         }
-        stream().forEach((x)->lock.add(x));
+        lock = stream().collect(Collectors.toSet());
     }
     /**
      * Unlocks items.
@@ -76,7 +73,7 @@ public class WeakList<T> implements List<T>
         {
             throw new IllegalStateException("unlock when not locked");
         }
-        lock.clear();
+        lock = null;
     }
     @Override
     public int size()
@@ -117,6 +114,10 @@ public class WeakList<T> implements List<T>
     @Override
     public boolean add(T e)
     {
+        if (lock != null)
+        {
+            lock.add(e);
+        }
         return list.add(new WeakReference<T>(e));
     }
     /**
@@ -136,6 +137,10 @@ public class WeakList<T> implements List<T>
     @Override
     public boolean remove(Object o)
     {
+        if (lock != null)
+        {
+            lock.remove(o);
+        }
         Iterator<WeakReference<T>> iterator = list.iterator();
         while (iterator.hasNext())
         {
@@ -202,6 +207,10 @@ public class WeakList<T> implements List<T>
     @Override
     public void clear()
     {
+        if (lock != null)
+        {
+            lock.clear();
+        }
         list.clear();
     }
 
