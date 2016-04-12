@@ -104,7 +104,7 @@ public class ByteBufferCharSequence implements CharSequence
         this.limit = limit;
     }
 
-    void reset()
+    public void reset()
     {
         bb.clear();
         bb.position(position);
