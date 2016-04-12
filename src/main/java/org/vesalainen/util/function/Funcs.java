@@ -19,7 +19,6 @@ package org.vesalainen.util.function;
 /**
  *
  * @author tkv
- * @deprecated Compiler doesn't complain but causes crash.
  */
 public class Funcs
 {
@@ -39,23 +38,23 @@ public class Funcs
     {
         return arg;
     }
-    public int same(int arg)
+    public static int same(int arg)
     {
         return arg;
     }
-    public long same(long arg)
+    public static long same(long arg)
     {
         return arg;
     }
-    public float same(float arg)
+    public static float same(float arg)
     {
         return arg;
     }
-    public double same(double arg)
+    public static double same(double arg)
     {
         return arg;
     }
-    public Object same(Object arg)
+    public static Object same(Object arg)
     {
         return arg;
     }
