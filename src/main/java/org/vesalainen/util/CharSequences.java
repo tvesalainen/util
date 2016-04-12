@@ -22,6 +22,7 @@ import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.vesalainen.util.function.Funcs;
 import org.vesalainen.util.function.IntBiPredicate;
 
 /**
@@ -198,7 +199,7 @@ public class CharSequences
      */
     public static boolean equals(CharSequence cs1, Object other)
     {
-        return equals(cs1, other, (x)->{return x;});
+        return equals(cs1, other, Funcs::same);
     }
     /**
      * Return true if cs1 and cs2 are same object or if their length and content
