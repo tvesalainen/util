@@ -90,6 +90,11 @@ public class ByteBufferCharSequence implements CharSequence
         this.op = op;
     }
 
+    public ByteBuffer getByteBuffer()
+    {
+        return bb;
+    }
+    
     void set(int position, int limit)
     {
         bb.clear();
