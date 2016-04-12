@@ -19,10 +19,12 @@ package org.vesalainen.util;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -40,6 +42,7 @@ public class WeakList<T> implements List<T>
 {
     private final List<WeakReference<T>> list = new ArrayList<>();
     private boolean gc;
+    private Set<T> lock;
 
     public WeakList()
     {
@@ -49,7 +52,32 @@ public class WeakList<T> implements List<T>
     {
         addAll(col);
     }
-    
+    /**
+     * Locks items against garbage collection between lock and unlock.
+     */
+    public void lock()
+    {
+        if (lock == null)
+        {
+            lock = new HashSet<>();
+        }
+        if (!lock.isEmpty())
+        {
+            throw new IllegalStateException("lock when locked");
+        }
+        stream().forEach((x)->lock.add(x));
+    }
+    /**
+     * Unlocks items.
+     */
+    public void unlock()
+    {
+        if (lock == null)
+        {
+            throw new IllegalStateException("unlock when not locked");
+        }
+        lock.clear();
+    }
     @Override
     public int size()
     {
