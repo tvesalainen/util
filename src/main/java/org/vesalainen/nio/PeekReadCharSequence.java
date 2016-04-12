@@ -35,7 +35,7 @@ public class PeekReadCharSequence implements CharSequence
      */
     PeekReadCharSequence(ByteBufferCharSequenceFactory factory)
     {
-        this.bb = factory.getBb().asReadOnlyBuffer();
+        this.bb = factory.getBb();
         this.op = factory.getOp();
     }
     /**
