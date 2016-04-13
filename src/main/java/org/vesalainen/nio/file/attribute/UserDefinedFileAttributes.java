@@ -85,6 +85,10 @@ public class UserDefinedFileAttributes
             throw new IllegalArgumentException(ex);
         }
     }
+    public boolean has(String name) throws IOException
+    {
+        return view.list().contains(name);
+    }
     public List<String> list() throws IOException
     {
         return view.list();
@@ -115,7 +119,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
-    public void set(String name, boolean value) throws IOException
+    public void setBoolean(String name, boolean value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
@@ -125,7 +129,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
-    public void set(String name, int value) throws IOException
+    public void setInt(String name, int value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
@@ -135,7 +139,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
-    public void set(String name, long value) throws IOException
+    public void setLong(String name, long value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
@@ -145,7 +149,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
-    public void set(String name, double value) throws IOException
+    public void setDouble(String name, double value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
