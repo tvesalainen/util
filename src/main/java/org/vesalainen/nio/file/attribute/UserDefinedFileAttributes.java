@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.vesalainen.util.ThreadSafeTemporary;
@@ -83,6 +84,22 @@ public class UserDefinedFileAttributes
         {
             throw new IllegalArgumentException(ex);
         }
+    }
+    public List<String> list() throws IOException
+    {
+        return view.list();
+    }
+    public void delete(String name) throws IOException
+    {
+        view.delete(name);
+    }
+    public int write(String name, ByteBuffer src) throws IOException
+    {
+        return view.write(name, src);
+    }
+    public int read(String name, ByteBuffer dst) throws IOException
+    {
+        return view.read(name, dst);
     }
     public void setString(String name, String value) throws IOException
     {
