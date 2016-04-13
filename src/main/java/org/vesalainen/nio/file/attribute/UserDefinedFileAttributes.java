@@ -93,6 +93,10 @@ public class UserDefinedFileAttributes
     {
         view.delete(name);
     }
+    public int size(String name) throws IOException
+    {
+        return view.size(name);
+    }
     public int write(String name, ByteBuffer src) throws IOException
     {
         return view.write(name, src);
