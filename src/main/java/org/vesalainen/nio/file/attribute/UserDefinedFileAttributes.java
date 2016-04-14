@@ -16,8 +16,6 @@
  */
 package org.vesalainen.nio.file.attribute;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,8 +30,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
@@ -92,6 +88,13 @@ public class UserDefinedFileAttributes
     public List<String> list() throws IOException
     {
         return view.list();
+    }
+    public void deleteAll() throws IOException
+    {
+        for (String name : list())
+        {
+            delete(name);
+        }
     }
     public void delete(String name) throws IOException
     {
@@ -223,6 +226,7 @@ public class UserDefinedFileAttributes
         ObjectInputStream in = inStore.get();
         return in.readObject();
     }
+
     private static class BBIS extends InputStream
     {
         private final ByteBuffer bb;
