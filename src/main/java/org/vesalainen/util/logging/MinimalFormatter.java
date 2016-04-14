@@ -18,6 +18,8 @@ package org.vesalainen.util.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Clock;
+import java.util.function.Supplier;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -27,6 +29,16 @@ import java.util.logging.LogRecord;
  */
 public class MinimalFormatter extends Formatter
 {
+    private Supplier<Clock> clockFactory;
+    
+    public MinimalFormatter()
+    {
+    }
+
+    public MinimalFormatter(Supplier<Clock> clockFactory)
+    {
+        this.clockFactory = clockFactory;
+    }
     
     @Override
     public String format(LogRecord record)
@@ -35,7 +47,7 @@ public class MinimalFormatter extends Formatter
         if (thrown == null)
         {
             return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n", 
-                    record.getMillis(),
+                    getMillis(record),
                     record.getMessage()
             );
         }
@@ -46,11 +58,23 @@ public class MinimalFormatter extends Formatter
             pw.flush();
             thrown.printStackTrace(pw);
             return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n%3$s\n\n", 
-                    record.getMillis(),
+                    getMillis(record),
                     record.getMessage(),
                     sw.toString()
             );
         }
     }
     
+    private long getMillis(LogRecord record)
+    {
+        if (clockFactory != null)
+        {
+            long offset = Clock.systemUTC().millis() - clockFactory.get().millis();
+            return record.getMillis()-offset;
+        }
+        else
+        {
+            return record.getMillis();
+        }
+    }
 }
