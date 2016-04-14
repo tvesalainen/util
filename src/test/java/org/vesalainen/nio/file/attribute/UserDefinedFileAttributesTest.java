@@ -58,16 +58,16 @@ public class UserDefinedFileAttributesTest
         udfa.setObject("test", exp);
         assertEquals(exp, udfa.getObject("test"));
         
-        udfa.set("boolean", true);
+        udfa.setBoolean("boolean", true);
         assertTrue(udfa.getBoolean("boolean"));
         
-        udfa.set("int", 1234);
+        udfa.setInt("int", 1234);
         assertEquals(1234, udfa.getInt("int"));
         
-        udfa.set("long", 12345678L);
+        udfa.setLong("long", 12345678L);
         assertEquals(12345678L, udfa.getLong("long"));
         
-        udfa.set("double", 1234.56789);
+        udfa.setDouble("double", 1234.56789);
         assertEquals(1234.56789, udfa.getDouble("double"), 1e-10);
     }
     
