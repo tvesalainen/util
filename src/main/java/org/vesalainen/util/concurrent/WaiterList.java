@@ -16,19 +16,23 @@
  */
 package org.vesalainen.util.concurrent;
 
+import java.util.Deque;
+import java.util.Spliterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 /**
  * 
  * @author tkv
  * @param <T>
  */
-public class WaiterList<T> extends ConcurrentLinkedDeque<T>
+public class WaiterList<T>
 {
-    public enum Result {Ok, Timeout, Interrupted};
+    public enum Reason {Release, Timeout, Interrupt};
+    private Deque<T> list = new ConcurrentLinkedDeque<>();
     private final Semaphore semaphore = new Semaphore(0);
     private final ReentrantLock lock = new ReentrantLock();
     /**
@@ -37,7 +41,7 @@ public class WaiterList<T> extends ConcurrentLinkedDeque<T>
      * @param waiter
      * @return 
      */
-    public Result wait(T waiter)
+    public Reason wait(T waiter)
     {
         return wait(waiter, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
@@ -49,26 +53,26 @@ public class WaiterList<T> extends ConcurrentLinkedDeque<T>
      * @param unit
      * @return 
      */
-    public Result wait(T waiter, long timeout, TimeUnit unit)
+    public Reason wait(T waiter, long timeout, TimeUnit unit)
     {
         try
         {
-            Locks.locked(lock, waiter, (w)->{add(w);});
+            Locks.locked(lock, waiter, (w)->{list.add(w);});
             if (semaphore.tryAcquire(timeout, unit))
             {
-                remove(waiter);
-                return Result.Ok;
+                list.remove(waiter);
+                return Reason.Release;
             }
             else
             {
-                remove(waiter);
-                return Result.Timeout;
+                list.remove(waiter);
+                return Reason.Timeout;
             }
         }
         catch (InterruptedException ex)
         {
-            remove(waiter);
-            return Result.Interrupted;
+            list.remove(waiter);
+            return Reason.Interrupt;
         }
     }
     /**
@@ -76,6 +80,22 @@ public class WaiterList<T> extends ConcurrentLinkedDeque<T>
      */
     public void releaseAll()
     {
-        Locks.locked(lock, semaphore, (s)->{s.release(size());s.drainPermits();});  // it is possible that deque was changed during release
+        Locks.locked(lock, semaphore, (s)->{s.release(list.size());s.drainPermits();});  // it is possible that deque was changed during release
+    }
+    public Stream<T> stream()
+    {
+        return list.stream();
+    }
+    public Spliterator<T> spliterator()
+    {
+        return list.spliterator();
+    }
+    public int size()
+    {
+        return list.size();
+    }
+    public boolean isEmpty()
+    {
+        return list.isEmpty();
     }
 }
