@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * This class is for case where several threads are waiting an event. When that
  * event occurs, all threads are released. During the waiting time waiter items
  * are accessible using stream, parallelStream and spliterator methods.
+ * 
  * <p>After releaseAll all wait methods return Reason.Release and all other methods
  * throw IllegalStateException.
  * @author tkv
@@ -69,7 +70,6 @@ public class WaiterList<T>
             Locks.locked(lock, waiter, (w)->{list.add(w);});
             if (semaphore.tryAcquire(timeout, unit))
             {
-                list.remove(waiter);
                 return Reason.Release;
             }
             else
