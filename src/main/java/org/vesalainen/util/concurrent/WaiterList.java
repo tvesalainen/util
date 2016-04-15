@@ -25,7 +25,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 /**
- * 
+ * This class is for case where several threads are waiting an event. When that
+ * event occurs, all threads are released. During the waiting time waiter items
+ * are accessible using stream, parallelStream and spliterator methods.
+ * <p>After releaseAll all wait methods return Reason.Release and all other methods
+ * throw IllegalStateException.
  * @author tkv
  * @param <T>
  */
@@ -33,8 +37,8 @@ public class WaiterList<T>
 {
     public enum Reason {Release, Timeout, Interrupt};
     private Deque<T> list = new ConcurrentLinkedDeque<>();
-    private final Semaphore semaphore = new Semaphore(0);
-    private final ReentrantLock lock = new ReentrantLock();
+    private Semaphore semaphore = new Semaphore(0);
+    private ReentrantLock lock = new ReentrantLock();
     /**
      * Adds waiter to queue and waits until releaseAll method call or thread is 
      * interrupted.
@@ -48,6 +52,7 @@ public class WaiterList<T>
     /**
      * Adds waiter to queue and waits until releaseAll method call or thread is 
      * interrupted or timeout.
+     * <p>If releaseAll is called already return Release.
      * @param waiter
      * @param timeout
      * @param unit
@@ -55,6 +60,10 @@ public class WaiterList<T>
      */
     public Reason wait(T waiter, long timeout, TimeUnit unit)
     {
+        if (list == null)
+        {
+            return Reason.Release;
+        }
         try
         {
             Locks.locked(lock, waiter, (w)->{list.add(w);});
@@ -80,22 +89,53 @@ public class WaiterList<T>
      */
     public void releaseAll()
     {
-        Locks.locked(lock, semaphore, (s)->{s.release(list.size());s.drainPermits();});  // it is possible that deque was changed during release
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
+        Locks.locked(lock, semaphore, (s)->{s.release(Integer.MAX_VALUE);});
+        list = null;
+        semaphore = null;
+        lock = null;
     }
     public Stream<T> stream()
     {
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
         return list.stream();
+    }
+    public Stream<T> parallelStream()
+    {
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
+        return list.parallelStream();
     }
     public Spliterator<T> spliterator()
     {
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
         return list.spliterator();
     }
     public int size()
     {
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
         return list.size();
     }
     public boolean isEmpty()
     {
+        if (list == null)
+        {
+            throw new IllegalStateException("releaseAll is called already");
+        }
         return list.isEmpty();
     }
 }
