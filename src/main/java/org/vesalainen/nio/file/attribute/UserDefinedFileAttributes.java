@@ -112,6 +112,48 @@ public class UserDefinedFileAttributes
     {
         return view.read(name, dst);
     }
+    public void set(String name, byte[] array) throws IOException
+    {
+        set(name, array, 0, array.length);
+    }
+    public void set(String name, byte[] array, int offset, int length) throws IOException
+    {
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        bb.put(array, offset, length);
+        bb.flip();
+        view.write(name, bb);
+    }
+    public byte[] get(String name) throws IOException
+    {
+        byte[] arr = new byte[size(name)];
+        ByteBuffer wrap = ByteBuffer.wrap(arr);
+        view.read(name, wrap);
+        return arr;
+    }
+    public boolean arraysEquals(String name, byte[] array) throws IOException
+    {
+        return arraysEquals(name, array, 0, array.length);
+    }
+    public boolean arraysEquals(String name, byte[] array, int offset, int length) throws IOException
+    {
+        if (length != size(name))
+        {
+            return false;
+        }
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        for (int ii=0;ii<length;ii++)
+        {
+            if (array[offset+ii] != bb.get())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     public void setString(String name, String value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
