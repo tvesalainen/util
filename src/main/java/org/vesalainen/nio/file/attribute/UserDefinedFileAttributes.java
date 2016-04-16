@@ -156,6 +156,10 @@ public class UserDefinedFileAttributes
     }
     public static boolean equals(String name, UserDefinedFileAttributes u1, UserDefinedFileAttributes u2) throws IOException
     {
+        if (!u1.has(name) || !u2.has(name))
+        {
+            return false;
+        }
         if (u1.size(name) != u2.size(name))
         {
             return false;
