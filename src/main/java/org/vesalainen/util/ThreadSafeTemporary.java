@@ -36,13 +36,18 @@ public class ThreadSafeTemporary<T>
     
     public T get()
     {
+        T t = null;
         WeakReference<T> wr = threadLocal.get();
         if (wr == null)
         {
-            wr = new WeakReference<>(factory.get());
+            t = factory.get();
+            wr = new WeakReference<>(t);
             threadLocal.set(wr);
         }
-        T t = wr.get();
+        else
+        {
+            t = wr.get();
+        }
         if (t == null)
         {
             t = factory.get();

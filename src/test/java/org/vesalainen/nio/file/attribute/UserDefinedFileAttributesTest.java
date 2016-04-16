@@ -16,7 +16,6 @@
  */
 package org.vesalainen.nio.file.attribute;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,10 +53,6 @@ public class UserDefinedFileAttributesTest
         udfa.setString("test", exp);
         assertEquals(exp, udfa.getString("test"));
         
-        exp = "qwerty";
-        udfa.setObject("test", exp);
-        assertEquals(exp, udfa.getObject("test"));
-        
         udfa.setBoolean("boolean", true);
         assertTrue(udfa.getBoolean("boolean"));
         
@@ -71,4 +66,15 @@ public class UserDefinedFileAttributesTest
         assertEquals(1234.56789, udfa.getDouble("double"), 1e-10);
     }
     
+    @Test
+    public void test1() throws IOException, ClassNotFoundException
+    {
+        UserDefinedFileAttributes udfa = new UserDefinedFileAttributes(temp, 100);
+        for (int ii=0;ii<10;ii++)
+        {
+            udfa.setInt("int", ii);
+            assertEquals(ii, udfa.getInt("int"));
+        }
+        
+    }
 }

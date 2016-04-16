@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -40,8 +41,6 @@ public class UserDefinedFileAttributes
 {
     private final UserDefinedFileAttributeView view;
     private ThreadSafeTemporary<ByteBuffer> bbStore;
-    private ThreadSafeTemporary<ObjectInputStream> inStore;
-    private ThreadSafeTemporary<ObjectOutputStream> outStore;
 
     public UserDefinedFileAttributes(File file, int maxSize, LinkOption... options)
     {
@@ -55,32 +54,8 @@ public class UserDefinedFileAttributes
     {
         this.view = view;
         this.bbStore = new ThreadSafeTemporary<>(()->{return ByteBuffer.allocate(maxSize);});
-        this.inStore = new ThreadSafeTemporary<>(()->{return createInput();});
-        this.outStore = new ThreadSafeTemporary<>(()->{return createOutput();});
     }
 
-    private ObjectInputStream createInput()
-    {
-        try
-        {
-            return new ObjectInputStream(new BBIS(bbStore.get()));
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
-    }
-    private ObjectOutputStream createOutput()
-    {
-        try
-        {
-            return new ObjectOutputStream(new BBOS(bbStore.get()));
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
-    }
     public boolean has(String name) throws IOException
     {
         return view.list().contains(name);
@@ -170,21 +145,13 @@ public class UserDefinedFileAttributes
     }
     public void setString(String name, String value) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeUTF(value);
-        out.flush();
-        bb.flip();
-        view.write(name, bb);
+        set(name, value.getBytes(StandardCharsets.UTF_8));
     }
     public void setBoolean(String name, boolean value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeBoolean(value);
-        out.flush();
+        bb.put((byte) (value ? 1 : 0));
         bb.flip();
         view.write(name, bb);
     }
@@ -192,9 +159,7 @@ public class UserDefinedFileAttributes
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeInt(value);
-        out.flush();
+        bb.putInt(value);
         bb.flip();
         view.write(name, bb);
     }
@@ -202,9 +167,7 @@ public class UserDefinedFileAttributes
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeLong(value);
-        out.flush();
+        bb.putLong(value);
         bb.flip();
         view.write(name, bb);
     }
@@ -212,59 +175,50 @@ public class UserDefinedFileAttributes
     {
         ByteBuffer bb = bbStore.get();
         bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeDouble(value);
-        out.flush();
-        bb.flip();
-        view.write(name, bb);
-    }
-    public void setObject(String name, Serializable value) throws IOException
-    {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        ObjectOutputStream out = outStore.get();
-        out.writeObject(value);
-        out.flush();
+        bb.putDouble(value);
         bb.flip();
         view.write(name, bb);
     }
     public String getString(String name) throws IOException
     {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readUTF();
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        return new String(bb.array(), 0, bb.limit(), StandardCharsets.UTF_8);
     }
     public boolean getBoolean(String name) throws IOException
     {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readBoolean();
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        return bb.get() == 1;
     }
     public int getInt(String name) throws IOException
     {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readInt();
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        return bb.getInt();
     }
     public long getLong(String name) throws IOException
     {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readLong();
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        return bb.getLong();
     }
     public double getDouble(String name) throws IOException
     {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readDouble();
+        ByteBuffer bb = bbStore.get();
+        bb.clear();
+        view.read(name, bb);
+        bb.flip();
+        return bb.getDouble();
     }
-    public Object getObject(String name) throws IOException, ClassNotFoundException
-    {
-        ByteBuffer bb = read(name);
-        ObjectInputStream in = inStore.get();
-        return in.readObject();
-    }
-
     private ByteBuffer read(String name) throws IOException
     {
         ByteBuffer bb = bbStore.get();
@@ -274,50 +228,4 @@ public class UserDefinedFileAttributes
         return bb;
     }
 
-    private static class BBIS extends InputStream
-    {
-        private final ByteBuffer bb;
-
-        public BBIS(ByteBuffer bb)
-        {
-            this.bb = bb;
-        }
-        
-        @Override
-        public int read() throws IOException
-        {
-            if (bb.hasRemaining())
-            {
-                return bb.get();
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        
-    }
-    private static class BBOS extends OutputStream
-    {
-        private final ByteBuffer bb;
-
-        public BBOS(ByteBuffer bb)
-        {
-            this.bb = bb;
-        }
-
-        @Override
-        public void write(int b) throws IOException
-        {
-            try
-            {
-                bb.put((byte) b);
-            }
-            catch (BufferOverflowException ex)
-            {
-                throw new IOException(ex);
-            }
-        }
-        
-    }
 }
