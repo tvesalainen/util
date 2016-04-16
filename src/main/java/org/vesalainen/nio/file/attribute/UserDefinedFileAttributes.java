@@ -154,6 +154,16 @@ public class UserDefinedFileAttributes
         }
         return true;
     }
+    public static boolean equals(String name, UserDefinedFileAttributes u1, UserDefinedFileAttributes u2) throws IOException
+    {
+        if (u1.size(name) != u2.size(name))
+        {
+            return false;
+        }
+        ByteBuffer b1 = u1.read(name);
+        ByteBuffer b2 = u2.read(name);
+        return b1.equals(b2);
+    }
     public void setString(String name, String value) throws IOException
     {
         ByteBuffer bb = bbStore.get();
@@ -216,57 +226,48 @@ public class UserDefinedFileAttributes
     }
     public String getString(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        view.read(name, bb);
-        bb.flip();
+        ByteBuffer bb = read(name);
         ObjectInputStream in = inStore.get();
         return in.readUTF();
     }
     public boolean getBoolean(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        view.read(name, bb);
-        bb.flip();
+        ByteBuffer bb = read(name);
         ObjectInputStream in = inStore.get();
         return in.readBoolean();
     }
     public int getInt(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        view.read(name, bb);
-        bb.flip();
+        ByteBuffer bb = read(name);
         ObjectInputStream in = inStore.get();
         return in.readInt();
     }
     public long getLong(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        view.read(name, bb);
-        bb.flip();
+        ByteBuffer bb = read(name);
         ObjectInputStream in = inStore.get();
         return in.readLong();
     }
     public double getDouble(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
-        bb.clear();
-        view.read(name, bb);
-        bb.flip();
+        ByteBuffer bb = read(name);
         ObjectInputStream in = inStore.get();
         return in.readDouble();
     }
     public Object getObject(String name) throws IOException, ClassNotFoundException
     {
+        ByteBuffer bb = read(name);
+        ObjectInputStream in = inStore.get();
+        return in.readObject();
+    }
+
+    private ByteBuffer read(String name) throws IOException
+    {
         ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
-        ObjectInputStream in = inStore.get();
-        return in.readObject();
+        return bb;
     }
 
     private static class BBIS extends InputStream
