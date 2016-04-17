@@ -26,11 +26,68 @@ import org.vesalainen.util.function.Funcs;
 import org.vesalainen.util.function.IntBiPredicate;
 
 /**
- * A Utility class that contains helper methods for implementing CharSequence.
+ * A Utility class that contains helper methods for CharSequences.
  * @author tkv
  */
 public class CharSequences
 {
+    public static boolean startsWith(CharSequence seq, CharSequence pattern)
+    {
+        return startsWith(seq, pattern, Funcs::same);
+    }
+    public static boolean startsWith(CharSequence seq, CharSequence pattern, IntUnaryOperator op)
+    {
+        if (pattern.length() > seq.length())
+        {
+            return false;
+        }
+        int length = pattern.length();
+        for (int ii=0;ii<length;ii++)
+        {
+            if (op.applyAsInt(seq.charAt(ii)) != op.applyAsInt(pattern.charAt(ii)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public static boolean endsWith(CharSequence seq, CharSequence pattern)
+    {
+        return endsWith(seq, pattern, Funcs::same);
+    }
+    public static boolean endsWith(CharSequence seq, CharSequence pattern, IntUnaryOperator op)
+    {
+        if (pattern.length() > seq.length())
+        {
+            return false;
+        }
+        int ls = seq.length();
+        int lp = pattern.length();
+        for (int ii=1;ii<=lp;ii++)
+        {
+            if (op.applyAsInt(seq.charAt(ls-ii)) != op.applyAsInt(pattern.charAt(lp-ii)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public static boolean startsWith(CharSequence seq, char cc)
+    {
+        return startsWith(seq, cc, (c)->{return c==cc;});
+    }
+    public static boolean startsWith(CharSequence seq, char cc, IntPredicate p)
+    {
+        return p.test(seq.charAt(0));
+    }
+    public static boolean endsWith(CharSequence seq, char cc)
+    {
+        return endsWith(seq, cc, (c)->{return c==cc;});
+    }
+    public static boolean endsWith(CharSequence seq, char cc, IntPredicate p)
+    {
+        return p.test(seq.charAt(seq.length()-1));
+    }
     /**
      * Returns CharSequence where white spaces are removed from start and end
      * or return same if nothing to trim.
@@ -270,9 +327,8 @@ public class CharSequences
     /**
      * Returns String backed CharSequence concatenation. These CharSequences
      * use same equals and hashCode as ByteBufferCharSequence and can be used together
-     * in same HashMap, for example.
-     * @param ob 
-     * @param obs
+     * in same HashMap, for example. 
+     * @param str
      * @return 
      * @see org.vesalainen.nio.ByteBufferCharSequenceFactory
      */
