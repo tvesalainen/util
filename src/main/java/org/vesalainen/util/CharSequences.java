@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.vesalainen.util.function.Funcs;
 import org.vesalainen.util.function.IntBiPredicate;
+import org.vesalainen.util.stream.Streams;
 
 /**
  * A Utility class that contains helper methods for CharSequences.
@@ -31,6 +32,27 @@ import org.vesalainen.util.function.IntBiPredicate;
  */
 public class CharSequences
 {
+    /**
+     * Compares two CharSequences
+     * @param s1
+     * @param s2
+     * @return 
+     */
+    public static int compare(CharSequence s1, CharSequence s2)
+    {
+        return compare(s1, s2, Funcs::same);
+    }
+    /**
+     * Compares two CharSequences with codepoint mapping
+     * @param s1
+     * @param s2
+     * @param op Codepoint mapping before comparison.
+     * @return 
+     */
+    public static int compare(CharSequence s1, CharSequence s2, IntUnaryOperator op)
+    {
+        return Streams.compare(s1.codePoints().map(op), s2.codePoints().map(op));
+    }
     public static boolean startsWith(CharSequence seq, CharSequence pattern)
     {
         return startsWith(seq, pattern, Funcs::same);

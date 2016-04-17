@@ -19,8 +19,12 @@ package org.vesalainen.util.stream;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.PrimitiveIterator;
 import java.util.function.BiPredicate;
+import java.util.function.IntBinaryOperator;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.vesalainen.util.function.IntBiPredicate;
 
 /**
  * Stream helpers
@@ -28,6 +32,62 @@ import java.util.stream.Stream;
  */
 public class Streams
 {
+    /**
+     * Compares two streams using natural order
+     * @param <T>
+     * @param s1
+     * @param s2
+     * @return 
+     */
+    public static <T> int compare(IntStream s1, IntStream s2)
+    {
+        return compare(s1, s2, null);
+    }
+    /**
+     * Compares two streams using given comparator
+     * @param <T>
+     * @param s1
+     * @param s2
+     * @param comp
+     * @return 
+     */
+    public static <T> int compare(IntStream s1, IntStream s2, IntBinaryOperator comp)
+    {
+        PrimitiveIterator.OfInt os1 = s1.iterator();
+        PrimitiveIterator.OfInt os2 = s2.iterator();
+        while (os1.hasNext() && os2.hasNext())
+        {
+            int n1 = os1.next();
+            int n2 = os2.next();
+            int c;
+            if (comp == null)
+            {
+                c = n1 - n2;
+            }
+            else
+            {
+                c = comp.applyAsInt(n1, n2);
+            }
+            if (c != 0)
+            {
+                return c;
+            }
+        }
+        boolean hn1 = os1.hasNext();
+        boolean hn2 = os2.hasNext();
+        if (hn1 == hn2)
+        {
+            return 0;
+        }
+        if (hn1)
+        {
+            return 1;
+        }
+        else
+        {
+            return -1;
+        }
+    }
     /**
      * Compares two streams using natural order
      * @param <T>
@@ -49,18 +109,8 @@ public class Streams
      */
     public static <T> int compare(Stream<T> s1, Stream<T> s2, Comparator<T> comp)
     {
-        Iterator<T> os1;
-        Iterator<T> os2;
-        if (comp != null)
-        {
-            os1 = s1.sorted(comp).iterator();
-            os2 = s2.sorted(comp).iterator();
-        }
-        else
-        {
-            os1 = s1.sorted().iterator();
-            os2 = s2.sorted().iterator();
-        }
+        Iterator<T> os1 = s1.iterator();
+        Iterator<T> os2 = s2.iterator();
         Comparable<T> comparable = null;
         while (os1.hasNext() && os2.hasNext())
         {
@@ -97,7 +147,7 @@ public class Streams
         }
     }
     /**
-     * Tests if two streams are equal using natural order and equals.
+     * Tests if two streams are equal using equals.
      * @param <T>
      * @param s1
      * @param s2
@@ -106,23 +156,10 @@ public class Streams
      */
     public static <T> boolean equals(Stream<T> s1, Stream<T> s2)
     {
-        return equals(s1, s2, null, Objects::equals);
+        return equals(s1, s2, Objects::equals);
     }
     /**
-     * Tests if two streams are equal using given comparator and equals.
-     * @param <T>
-     * @param s1
-     * @param s2
-     * @param comp
-     * @return 
-     * @see java.util.Objects#equals(java.lang.Object, java.lang.Object) 
-     */
-    public static <T> boolean equals(Stream<T> s1, Stream<T> s2, Comparator<T> comp)
-    {
-        return equals(s1, s2, comp, Objects::equals);
-    }
-    /**
-     * Tests if two streams are equal using natural order and given equals.
+     * Tests if two streams are equal using given equals.
      * @param <T>
      * @param s1
      * @param s2
@@ -131,31 +168,8 @@ public class Streams
      */
     public static <T> boolean equals(Stream<T> s1, Stream<T> s2, BiPredicate<T,T> eq)
     {
-        return equals(s1, s2, null, eq);
-    }
-    /**
-     * Tests if two streams are equal using given comparator and given equals.
-     * @param <T>
-     * @param s1
-     * @param s2
-     * @param comp
-     * @param eq
-     * @return 
-     */
-    public static <T> boolean equals(Stream<T> s1, Stream<T> s2, Comparator<T> comp, BiPredicate<T,T> eq)
-    {
-        Iterator<T> os1;
-        Iterator<T> os2;
-        if (comp != null)
-        {
-            os1 = s1.sorted(comp).iterator();
-            os2 = s2.sorted(comp).iterator();
-        }
-        else
-        {
-            os1 = s1.sorted().iterator();
-            os2 = s2.sorted().iterator();
-        }
+        Iterator<T> os1 = s1.iterator();
+        Iterator<T> os2 = s2.iterator();
         while (os1.hasNext() && os2.hasNext())
         {
             if (!eq.test(os1.next(), os2.next()))

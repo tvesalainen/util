@@ -37,7 +37,7 @@ public class StreamsTest
     {
         List<Integer> l1 = Lists.create(4, 5, 2, 8, 5, 2);
         List<Integer> l2 = Lists.create(2, 4, 2, 8, 5, 5);
-        assertTrue(Streams.equals(l1.stream(), l2.stream()));
+        assertTrue(Streams.equals(l1.stream().sorted(), l2.stream().sorted()));
     }
     
     @Test
@@ -52,7 +52,7 @@ public class StreamsTest
     public void test3()
     {
         List<Integer> l1 = Lists.create(4, 5, 2, 8, 5, 2);
-        List<Integer> l2 = Lists.create(2, 9, 2, 8, 5, 5);
+        List<Integer> l2 = Lists.create(4, 5, 2, 7, 5, 2);
         assertFalse(Streams.equals(l1.stream(), l2.stream()));
     }
     
@@ -61,7 +61,7 @@ public class StreamsTest
     {
         List<Integer> l1 = Lists.create(4, 5, 2, 8, 5, 2);
         List<Integer> l2 = Lists.create(2, 4, 2, 8, 5, 5);
-        assertEquals(0, Streams.compare(l1.stream(), l2.stream()));
+        assertEquals(0, Streams.compare(l1.stream().sorted(), l2.stream().sorted()));
     }
     
     @Test

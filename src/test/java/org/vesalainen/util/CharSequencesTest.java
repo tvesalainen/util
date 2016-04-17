@@ -170,4 +170,24 @@ public class CharSequencesTest
         assertFalse(CharSequences.endsWith("qwerty", "ww"));
         assertFalse(CharSequences.endsWith("qwerty", "asdfghjkl"));
     }
+    @Test
+    public void testCompare()
+    {
+        assertTrue(comp("qwerty", "qwerty"));
+        assertTrue(comp("qwertya", "qwerty"));
+        assertTrue(comp("qwert", "qwerty"));
+        assertTrue(comp("abc", "zdf"));
+        assertTrue(comp("åöä", "abc"));
+    }
+    private boolean comp(String s1, String s2)
+    {
+        return compSign(CharSequences.compare(s1, s2), s1.compareTo(s2));
+    }
+    private boolean compSign(int c1, int c2)
+    {
+        return 
+                (c1 < 0 && c2 < 0) ||
+                (c1 > 0 && c2 > 0) ||
+                (c1 == 0 && c2 == 0);
+    }
 }
