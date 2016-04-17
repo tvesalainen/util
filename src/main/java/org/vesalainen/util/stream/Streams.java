@@ -29,6 +29,74 @@ import java.util.stream.Stream;
 public class Streams
 {
     /**
+     * Compares two streams using natural order
+     * @param <T>
+     * @param s1
+     * @param s2
+     * @return 
+     */
+    public static <T> int compare(Stream<T> s1, Stream<T> s2)
+    {
+        return compare(s1, s2, null);
+    }
+    /**
+     * Compares two streams using given comparator
+     * @param <T>
+     * @param s1
+     * @param s2
+     * @param comp
+     * @return 
+     */
+    public static <T> int compare(Stream<T> s1, Stream<T> s2, Comparator<T> comp)
+    {
+        Iterator<T> os1;
+        Iterator<T> os2;
+        if (comp != null)
+        {
+            os1 = s1.sorted(comp).iterator();
+            os2 = s2.sorted(comp).iterator();
+        }
+        else
+        {
+            os1 = s1.sorted().iterator();
+            os2 = s2.sorted().iterator();
+        }
+        Comparable<T> comparable = null;
+        while (os1.hasNext() && os2.hasNext())
+        {
+            T n1 = os1.next();
+            T n2 = os2.next();
+            int c;
+            if (comp == null)
+            {
+                comparable = (Comparable<T>) n1;
+                c = comparable.compareTo(n2);
+            }
+            else
+            {
+                c = comp.compare(n1, n2);
+            }
+            if (c != 0)
+            {
+                return c;
+            }
+        }
+        boolean hn1 = os1.hasNext();
+        boolean hn2 = os2.hasNext();
+        if (hn1 == hn2)
+        {
+            return 0;
+        }
+        if (hn1)
+        {
+            return 1;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    /**
      * Tests if two streams are equal using natural order and equals.
      * @param <T>
      * @param s1

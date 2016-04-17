@@ -56,4 +56,44 @@ public class StreamsTest
         assertFalse(Streams.equals(l1.stream(), l2.stream()));
     }
     
+    @Test
+    public void test11()
+    {
+        List<Integer> l1 = Lists.create(4, 5, 2, 8, 5, 2);
+        List<Integer> l2 = Lists.create(2, 4, 2, 8, 5, 5);
+        assertEquals(0, Streams.compare(l1.stream(), l2.stream()));
+    }
+    
+    @Test
+    public void test12()
+    {
+        List<Integer> l1 = Lists.create(1, 2, 3, 4, 5, 6);
+        List<Integer> l2 = Lists.create(1, 2, 3, 4, 5);
+        assertEquals(1, Streams.compare(l1.stream(), l2.stream()));
+    }
+    
+    @Test
+    public void test13()
+    {
+        List<Integer> l1 = Lists.create(1, 2, 3, 4, 5, 6);
+        List<Integer> l2 = Lists.create(2, 2, 3, 4, 5);
+        assertEquals(-1, Streams.compare(l1.stream(), l2.stream()));
+    }
+    
+    @Test
+    public void test14()
+    {
+        List<Integer> l1 = Lists.create(1, 2, 3, 4, 6);
+        List<Integer> l2 = Lists.create(1, 2, 3, 4, 5);
+        assertEquals(1, Streams.compare(l1.stream(), l2.stream()));
+    }
+    
+    @Test
+    public void test15()
+    {
+        List<Integer> l1 = Lists.create(1, 2, 3, 4, 6);
+        List<Integer> l2 = Lists.create(1, 2, 3, 4, 5);
+        assertEquals(1, Streams.compare(l1.stream(), l2.stream(), (Integer i1, Integer i2)->{return i1.compareTo(i2);}));
+    }
+    
 }
