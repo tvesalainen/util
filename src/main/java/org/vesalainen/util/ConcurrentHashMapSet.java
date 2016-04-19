@@ -16,12 +16,12 @@
  */
 package org.vesalainen.util;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * ConcurrentHashMap and HashSet based implementation of MapSet
+ * ConcurrentHashMap and ConcurrentSkipListSet based implementation of MapSet
  * @author tkv
  * @param <K> Map key type.
  * @param <V> Set value type
@@ -37,6 +37,6 @@ public class ConcurrentHashMapSet<K,V> extends AbstractMapSet<K,V>
     @Override
     protected Set<V> createSet()
     {
-        return new HashSet<>();
+        return new ConcurrentSkipListSet<>();
     }
 }
