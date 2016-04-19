@@ -16,8 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import org.vesalainen.util.DoubleMap.DoubleReference;
 
 /**
@@ -26,8 +26,9 @@ import org.vesalainen.util.DoubleMap.DoubleReference;
  * @author tkv
  * @param <K>
  */
-public class DoubleMap<K> extends PrimitiveMap<K,DoubleReference>
+public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     public DoubleMap()
     {

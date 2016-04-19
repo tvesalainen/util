@@ -25,11 +25,11 @@ import java.util.Set;
  * @param <K>
  * @param <V>
  */
-public class PrimitiveMap<K,V>
+public abstract class AbstractPrimitiveMap<K,V>
 {
     protected final Map<K, V> map;
 
-    protected PrimitiveMap(Map<K, V> map)
+    protected AbstractPrimitiveMap(Map<K, V> map)
     {
         this.map = map;
     }

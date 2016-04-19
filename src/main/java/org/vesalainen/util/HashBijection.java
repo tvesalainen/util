@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,8 +25,9 @@ import java.util.Set;
  *
  * @author tkv
  */
-public class HashBijection<T,S> implements Bijection<T,S>
+public class HashBijection<T,S> implements Bijection<T,S>, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private final Map<T,S> m1 = new HashMap<>();
     private final Map<S,T> m2 = new HashMap<>();
 

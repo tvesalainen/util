@@ -16,12 +16,15 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
+
 /**
  * A Container class for object
  * @author tkv
  */
-public class Wrap<T>
+public class Wrap<T> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private T value;
 
     public Wrap()

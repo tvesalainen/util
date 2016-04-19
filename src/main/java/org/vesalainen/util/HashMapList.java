@@ -16,13 +16,10 @@
  */
 package org.vesalainen.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * HashMap and ArrayList based implementation of MapList
@@ -30,8 +27,9 @@ import java.util.Map;
  * @param <K> Map key type
  * @param <V> List value type
  */
-public class HashMapList<K,V> extends AbstractMapList<K,V>
+public class HashMapList<K,V> extends AbstractMapList<K,V> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     public HashMapList()
     {
         this(null);

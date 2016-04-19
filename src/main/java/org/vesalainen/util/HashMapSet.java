@@ -16,9 +16,9 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,8 +27,9 @@ import java.util.Set;
  * @param <K> Map key type.
  * @param <V> Set value type
  */
-public class HashMapSet<K,V> extends AbstractMapSet<K,V>
+public class HashMapSet<K,V> extends AbstractMapSet<K,V> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     public HashMapSet()
     {

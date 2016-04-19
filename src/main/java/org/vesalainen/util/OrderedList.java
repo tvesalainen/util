@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -25,8 +26,9 @@ import java.util.Comparator;
  * @author tkv
  * @param <T>
  */
-public class OrderedList<T> extends ArrayList<T>
+public class OrderedList<T> extends ArrayList<T> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private final Comparator<T> comp;
 
     public OrderedList(Comparator<T> comp)

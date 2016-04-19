@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -31,8 +32,9 @@ import java.util.TreeMap;
  * @param <K> Key type
  * @param <V> Value type
  */
-public class TreeMapList<K,V> extends AbstractMapList<K,V> implements NavigableMap<K,List<V>>
+public class TreeMapList<K,V> extends AbstractMapList<K,V> implements NavigableMap<K,List<V>>, Serializable
 {
+    private static final long serialVersionUID = 1L;
     protected NavigableMap<K,List<V>> navigableMap;
     /**
      * Creates a TreeMapList with natural ordering.

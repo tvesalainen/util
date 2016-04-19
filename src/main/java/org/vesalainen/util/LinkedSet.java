@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,8 +30,9 @@ import java.util.SortedSet;
  * is in add order.
  * @author tkv
  */
-public class LinkedSet<T> implements NavigableSet<T>
+public class LinkedSet<T> implements NavigableSet<T>, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private LinkedList<T> list;
 
     public LinkedSet()

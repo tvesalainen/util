@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
@@ -26,8 +27,9 @@ import java.util.List;
  * @param <K> Map key type
  * @param <V> List value type
  */
-public class EnumMapList<K extends Enum<K>,V> extends AbstractMapList<K,V>
+public class EnumMapList<K extends Enum<K>,V> extends AbstractMapList<K,V> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     /**
      * Creates a EnumMapList with no ordering for list.
      * @param keyType Enum key type

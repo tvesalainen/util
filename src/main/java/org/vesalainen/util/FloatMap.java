@@ -16,8 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import org.vesalainen.util.FloatMap.FloatReference;
 
 /**
@@ -26,8 +26,9 @@ import org.vesalainen.util.FloatMap.FloatReference;
  * @author tkv
  * @param <K>
  */
-public class FloatMap<K> extends PrimitiveMap<K,FloatReference>
+public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     public FloatMap()
     {

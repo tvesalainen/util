@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -25,8 +26,9 @@ import java.util.TreeSet;
  * @param <K> Map key type
  * @param <V> Set value type
  */
-public class HashMapTreeSet<K,V> extends HashMapSet<K,V>
+public class HashMapTreeSet<K,V> extends HashMapSet<K,V> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     @Override
     protected Set createSet()

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,8 +36,9 @@ import java.util.SortedMap;
  * @param <K>
  * @param <V>
  */
-public class LinkedMap<K,V> implements NavigableMap<K,V>
+public class LinkedMap<K,V> implements NavigableMap<K,V>, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private final LinkedSet<K> keySet = new LinkedSet<>();
     private final LinkedSet<Entry<K,V>> entrySet = new LinkedSet<>();
     private final List<V> values = new ArrayList<>();
