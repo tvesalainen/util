@@ -39,6 +39,14 @@ public class Primitives
     private static final long LongLimit = Long.MAX_VALUE/10-10;
 
     private enum FloatState {Significand, Decimal, Exponent};
+    public static int signum(int value)
+    {
+        return value < 0 ? -1 : value > 0 ? 1 : 0;
+    }
+    public static long signum(long value)
+    {
+        return value < 0 ? -1 : value > 0 ? 1 : 0;
+    }
     /**
      * Returns char from input.
      * @param cs

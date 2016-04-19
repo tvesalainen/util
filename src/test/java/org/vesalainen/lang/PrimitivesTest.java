@@ -802,4 +802,15 @@ public class PrimitivesTest
         assertEquals(4100.0013F, Primitives.parseFloat("$GPRMC,065010,A,1555.6283,N,04100.0013,W,4.9,265,241215,17,W*43", 28, 38), 1e-15);
         
     }
+    @Test
+    public void testSignum()
+    {
+        assertEquals(-1 , Primitives.signum(-1234));
+        assertEquals(0 , Primitives.signum(0));
+        assertEquals(1 , Primitives.signum(1234));
+        
+        assertEquals(-1L , Primitives.signum(-1234L));
+        assertEquals(0L , Primitives.signum(0L));
+        assertEquals(1L , Primitives.signum(1234L));
+    }
 }
