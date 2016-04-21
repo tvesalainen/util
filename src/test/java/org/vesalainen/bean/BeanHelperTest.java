@@ -16,8 +16,13 @@
  */
 package org.vesalainen.bean;
 
+import java.lang.annotation.Documented;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.Lists;
 
 /**
  *
@@ -43,13 +48,70 @@ public class BeanHelperTest
         BeanHelper.setFieldValue(tc, "number", 123L);
         assertEquals(123, tc.number);
         assertEquals(123L, BeanHelper.getFieldValue(tc, "number"));
+        assertEquals(3, BeanHelper.getFieldValue(tc, "list.2"));
+        assertEquals(4, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(int.class, BeanHelper.getType(tc, "list.size"));
+        assertEquals("test1", BeanHelper.getFieldValue(tc, "inners.0.test"));
+        assertEquals(String.class, BeanHelper.getType(tc, "inners.1.test"));
+        XmlRootElement root = BeanHelper.getAnnotation(tc, "inners.0", XmlRootElement.class);
+        assertEquals("test", root.name());
+        
+        BeanHelper.setFieldValue(tc, "inners.1.test", "testaa");
+        assertEquals("testaa", BeanHelper.getFieldValue(tc, "inners.1.test"));
+        
+        BeanHelper.setFieldValue(tc, "list.2", 123);
+        assertEquals(123, BeanHelper.getFieldValue(tc, "list.2"));
+        
+        BeanHelper.doFor(tc, "list", (List<Integer> x)->x.add(54321));
+        assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(54321, BeanHelper.getFieldValue(tc, "list.4"));
     }
     
+    @XmlRootElement(name = "test")
+    static class InnerClass
+    {
+        private String test;
+
+        public InnerClass(String test)
+        {
+            this.test = test;
+        }
+
+        public String getTest()
+        {
+            return test;
+        }
+
+        public void setTest(String test)
+        {
+            this.test = test;
+        }
+        
+    }
     static class TestClass
     {
         private int count;
         private String name;
         public long number;
+        protected List<Integer> list = Lists.create(1, 2, 3, 4);
+        protected List<InnerClass> inners;
+
+        public TestClass()
+        {
+            inners = new ArrayList<>();
+            inners.add(new InnerClass("test1"));
+            inners.add(new InnerClass("test2"));
+        }
+
+        public List<InnerClass> getInners()
+        {
+            return inners;
+        }
+
+        public List<Integer> getList()
+        {
+            return list;
+        }
 
         public int getCount()
         {
