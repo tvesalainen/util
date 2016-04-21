@@ -42,7 +42,7 @@ public class SystemChannel
         InChannel(InputStream in)
         {
             this.in = in;
-            channel = ChannelHelper.getScatteringByteChannel(Channels.newChannel(in));
+            channel = ChannelHelper.newScatteringByteChannel(Channels.newChannel(in));
         }
 
         @Override
@@ -83,7 +83,7 @@ public class SystemChannel
         OutChannel(OutputStream out)
         {
             this.out = out;
-            channel = ChannelHelper.getGatheringByteChannel(Channels.newChannel(out));
+            channel = ChannelHelper.newGatheringByteChannel(Channels.newChannel(out));
         }
 
         @Override
