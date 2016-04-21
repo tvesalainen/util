@@ -18,7 +18,10 @@ package org.vesalainen.nio.channels;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.Channels;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
@@ -75,17 +78,59 @@ public class ChannelHelper
             }
         }
     }
-    public static OutputStream getGatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
+    public static OutputStream newGatheringOutputStream(ByteBuffer[] srcs, int offset, int length)
     {
         return new ByteBufferOutputStream(srcs, offset, length);
     }
-    public static GatheringByteChannel getGatheringByteChannel(WritableByteChannel channel)
+    public static GatheringByteChannel newGatheringByteChannel(WritableByteChannel channel)
     {
         return new GatheringByteChannelImpl(channel);
     }
-    public static ScatteringByteChannel getScatteringByteChannel(ReadableByteChannel channel)
+    public static ScatteringByteChannel newScatteringByteChannel(ReadableByteChannel channel)
     {
         return new ScatteringByteChannelImpl(channel);
+    }
+    public static ByteChannel newByteChannel(Socket socket) throws IOException
+    {
+        return new ByteChannelImpl(socket);
+    }
+    public static class ByteChannelImpl implements ByteChannel
+    {
+        private Socket socket;
+        private final ReadableByteChannel in;
+        private final WritableByteChannel out;
+
+        public ByteChannelImpl(Socket socket) throws IOException
+        {
+            this.socket = socket;
+            in = Channels.newChannel(socket.getInputStream());
+            out = Channels.newChannel(socket.getOutputStream());
+        }
+        
+        @Override
+        public int read(ByteBuffer dst) throws IOException
+        {
+            return in.read(dst);
+        }
+
+        @Override
+        public boolean isOpen()
+        {
+            return !socket.isClosed();
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            socket.close();
+        }
+
+        @Override
+        public int write(ByteBuffer src) throws IOException
+        {
+            return out.write(src);
+        }
+        
     }
     public static class ScatteringByteChannelImpl implements ScatteringByteChannel
     {
