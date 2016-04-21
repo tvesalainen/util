@@ -16,7 +16,6 @@
  */
 package org.vesalainen.bean;
 
-import java.lang.annotation.Documented;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -65,6 +64,8 @@ public class BeanHelperTest
         BeanHelper.doFor(tc, "list", (List<Integer> x)->x.add(54321));
         assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
         assertEquals(54321, BeanHelper.getFieldValue(tc, "list.4"));
+        
+        BeanHelper.walk(tc, (String n, Object o)->System.err.println(n));
     }
     
     @XmlRootElement(name = "test")

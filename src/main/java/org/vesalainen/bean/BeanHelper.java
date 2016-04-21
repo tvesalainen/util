@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -97,6 +98,66 @@ public class BeanHelper
             }
             throw new IllegalArgumentException(ob+" not list type");
         }
+    }
+    public static final void walk(Object base, BiConsumer<String,Object> consumer)
+    {
+        walk("", base, consumer);
+    }
+    private static final void walk(String prefix, Object base, BiConsumer<String,Object> consumer)
+    {
+        for (String fld : getFields(base.getClass()))
+        {
+            Object value = getFieldValue(base, fld);
+            String name = prefix+fld;
+            consumer.accept(name, value);
+            if (value.getClass().isArray())
+            {
+                Object[] arr = (Object[]) value;
+                int index = 0;
+                for (Object o : arr)
+                {
+                    consumer.accept(name+".["+index+"]", value);
+                    if (check(o))
+                    {
+                        walk(name+".["+index+"].", o, consumer);
+                    }
+                    index++;
+                }
+            }
+            else
+            {
+                if (value instanceof List)
+                {
+                    int index = 0;
+                    List list = (List) value;
+                    for (Object o : list)
+                    {
+                        consumer.accept(name+".["+index+"]", value);
+                        if (check(o))
+                        {
+                            walk(name+".["+index+"].", o, consumer);
+                        }
+                        index++;
+                    }
+                }
+                else
+                {
+                    if (check(value))
+                    {
+                        walk(name+".", value, consumer);
+                    }
+                }
+            }
+        }
+    }
+    private static boolean check(Object ob)
+    {
+        Class<? extends Object> cls = ob.getClass();
+        if (cls.isPrimitive() || cls.getName().startsWith("java."))
+        {
+            return false;
+        }
+        return true;
     }
     public static final <T> void doFor(Object base, String pseudoField, Consumer<T> consumer)
     {
