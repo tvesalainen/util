@@ -61,7 +61,7 @@ public class RingByteBufferTest
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             WritableByteChannel oc = Channels.newChannel(baos);
-            GatheringByteChannel gbc = ChannelHelper.getGatheringByteChannel(oc);
+            GatheringByteChannel gbc = ChannelHelper.newGatheringByteChannel(oc);
             
             String str1 = "pellentesque";
             String str2 = "sollicitudin";
@@ -123,11 +123,11 @@ public class RingByteBufferTest
 
             ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
             WritableByteChannel oc1 = Channels.newChannel(baos1);
-            GatheringByteChannel gbc1 = ChannelHelper.getGatheringByteChannel(oc1);
+            GatheringByteChannel gbc1 = ChannelHelper.newGatheringByteChannel(oc1);
             
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
             WritableByteChannel oc2 = Channels.newChannel(baos2);
-            GatheringByteChannel gbc2 = ChannelHelper.getGatheringByteChannel(oc2);
+            GatheringByteChannel gbc2 = ChannelHelper.newGatheringByteChannel(oc2);
             
             SimpleMatcher matcher1 = new SimpleMatcher("$??RMC*\r\n", StandardCharsets.US_ASCII);
             SimpleMatcher matcher2 = new SimpleMatcher("$??DPT*\r\n", StandardCharsets.US_ASCII);
