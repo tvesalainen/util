@@ -17,15 +17,16 @@
 package org.vesalainen.nio.channels;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.Channels;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
  *
@@ -94,6 +95,117 @@ public class ChannelHelper
     {
         return new ByteChannelImpl(socket);
     }
+    public static ReadableByteChannel newReadableByteChannel(InputStream in)
+    {
+        return new ReadableByteChannelImpl(in);
+    }
+    public static WritableByteChannel newWritableByteChannel(OutputStream out)
+    {
+        return new WritableByteChannelImpl(out);
+    }
+    public static class WritableByteChannelImpl implements WritableByteChannel
+    {
+        private static final int BufferSize = 4096;
+        private OutputStream out;
+        private boolean closed;
+        private ThreadSafeTemporary<byte[]> bufferStore = new ThreadSafeTemporary<>(()->{return new byte[BufferSize];});
+
+        public WritableByteChannelImpl(OutputStream out)
+        {
+            this.out = out;
+        }
+
+        @Override
+        public int write(ByteBuffer src) throws IOException
+        {
+            if (src.hasArray())
+            {
+                byte[] array = src.array();
+                int position = src.position();
+                int remaining = src.remaining();
+                out.write(array, position, remaining);
+                src.position(position + remaining);
+                return remaining;
+            }
+            else
+            {
+                byte[] array = bufferStore.get();
+                int remaining = src.remaining();
+                int length = Math.min(remaining, array.length);
+                src.get(array, 0, length);
+                out.write(array, 0, length);
+                return length;
+            }
+        }
+
+        @Override
+        public boolean isOpen()
+        {
+            return !closed;
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            out.close();
+            closed = true;
+        }
+        
+    }
+    public static class ReadableByteChannelImpl implements ReadableByteChannel
+    {
+        private static final int BufferSize = 4096;
+        private InputStream in;
+        private boolean closed;
+        private ThreadSafeTemporary<byte[]> bufferStore = new ThreadSafeTemporary<>(()->{return new byte[BufferSize];});
+
+        public ReadableByteChannelImpl(InputStream in)
+        {
+            this.in = in;
+        }
+        
+        @Override
+        public int read(ByteBuffer dst) throws IOException
+        {
+            if (dst.hasArray())
+            {
+                byte[] array = dst.array();
+                int position = dst.position();
+                int remaining = dst.remaining();
+                int rc = in.read(array, position, remaining);
+                if (rc > 0)
+                {
+                    dst.position(position + rc);
+                }
+                return rc;
+            }
+            else
+            {
+                byte[] array = bufferStore.get();
+                int remaining = dst.remaining();
+                int rc = in.read(array, 0, Math.min(remaining, array.length));
+                if (rc > 0)
+                {
+                    dst.put(array, 0, rc);
+                }
+                return rc;
+            }
+        }
+
+        @Override
+        public boolean isOpen()
+        {
+            return !closed;
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            in.close();
+            closed = true;
+        }
+        
+    }
     public static class ByteChannelImpl implements ByteChannel
     {
         private Socket socket;
@@ -103,8 +215,8 @@ public class ChannelHelper
         public ByteChannelImpl(Socket socket) throws IOException
         {
             this.socket = socket;
-            in = Channels.newChannel(socket.getInputStream());
-            out = Channels.newChannel(socket.getOutputStream());
+            in = newReadableByteChannel(socket.getInputStream());
+            out = newWritableByteChannel(socket.getOutputStream());
         }
         
         @Override
