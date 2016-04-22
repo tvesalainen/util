@@ -41,53 +41,53 @@ public class BeanHelperTest
         TestClass tc = new TestClass();
         BeanHelper.setFieldValue(tc, "count", 123);
         assertEquals(123, tc.count);
-        assertEquals(123, BeanHelper.getFieldValue(tc, "count"));
+        assertEquals(123, BeanHelper.getValue(tc, "count"));
         BeanHelper.setFieldValue(tc, "name", "Nimi");
         assertEquals("Nimi", tc.name);
-        assertEquals("Nimi", BeanHelper.getFieldValue(tc, "name"));
+        assertEquals("Nimi", BeanHelper.getValue(tc, "name"));
         BeanHelper.setFieldValue(tc, "name", null);
         assertNull(tc.name);
         BeanHelper.setFieldValue(tc, "number", 123L);
         assertEquals(123, tc.number);
-        assertEquals(123L, BeanHelper.getFieldValue(tc, "number"));
-        assertEquals(3, BeanHelper.getFieldValue(tc, "list.2"));
-        assertEquals(4, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(123L, BeanHelper.getValue(tc, "number"));
+        assertEquals(3, BeanHelper.getValue(tc, "list.2"));
+        assertEquals(4, BeanHelper.getValue(tc, "list.size"));
         assertEquals(int.class, BeanHelper.getType(tc, "list.size"));
-        assertEquals("test1", BeanHelper.getFieldValue(tc, "inners.0.test"));
+        assertEquals("test1", BeanHelper.getValue(tc, "inners.0.test"));
         assertEquals(String.class, BeanHelper.getType(tc, "inners.1.test"));
         XmlRootElement root = BeanHelper.getAnnotation(tc, "inners.0", XmlRootElement.class);
         assertEquals("test", root.name());
         
         BeanHelper.setFieldValue(tc, "inners.1.test", "testaa");
-        assertEquals("testaa", BeanHelper.getFieldValue(tc, "inners.1.test"));
+        assertEquals("testaa", BeanHelper.getValue(tc, "inners.1.test"));
         
         BeanHelper.setFieldValue(tc, "list.2", 123);
-        assertEquals(123, BeanHelper.getFieldValue(tc, "list.2"));
+        assertEquals(123, BeanHelper.getValue(tc, "list.2"));
         
         BeanHelper.doFor(tc, "list", (List<Integer> x)->x.add(54321));
-        assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
-        assertEquals(54321, BeanHelper.getFieldValue(tc, "list.4"));
+        assertEquals(5, BeanHelper.getValue(tc, "list.size"));
+        assertEquals(54321, BeanHelper.getValue(tc, "list.4"));
         
         BeanHelper.walk(tc, (String n, Object o)->BeanHelper.getType(tc, n));
         
         assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
         
         BeanHelper.addList(tc, "list", 987654);
-        assertEquals(6, BeanHelper.getFieldValue(tc, "list.size"));
-        assertEquals(987654, BeanHelper.getFieldValue(tc, "list.5"));
+        assertEquals(6, BeanHelper.getValue(tc, "list.size"));
+        assertEquals(987654, BeanHelper.getValue(tc, "list.5"));
 
         BeanHelper.removeList(tc, "list.5");
-        assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(5, BeanHelper.getValue(tc, "list.size"));
         
         BeanHelper.applyList(tc, "list.0-");
-        assertEquals(4, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(4, BeanHelper.getValue(tc, "list.size"));
         
         BeanHelper.applyList(tc, "inners+");
-        assertEquals(3, BeanHelper.getFieldValue(tc, "inners.size"));
+        assertEquals(3, BeanHelper.getValue(tc, "inners.size"));
         
         BeanHelper.applyList(tc, "inners+", (c)->{return null;});
-        assertEquals(4, BeanHelper.getFieldValue(tc, "inners.size"));
-        assertNull(BeanHelper.getFieldValue(tc, "inners.3"));
+        assertEquals(4, BeanHelper.getValue(tc, "inners.size"));
+        assertNull(BeanHelper.getValue(tc, "inners.3"));
     }
     
     @XmlRootElement(name = "test")
