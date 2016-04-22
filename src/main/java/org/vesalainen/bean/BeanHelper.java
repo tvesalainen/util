@@ -96,29 +96,15 @@ public class BeanHelper
         for (String fld : getFields(base.getClass()))
         {
             Object value = getFieldValue(base, fld);
-            String name = prefix + fld;
-            consumer.accept(name, value);
-            if (value.getClass().isArray())
+            if (value != null)
             {
-                Object[] arr = (Object[]) value;
-                int index = 0;
-                for (Object o : arr)
+                String name = prefix + fld;
+                consumer.accept(name, value);
+                if (value.getClass().isArray())
                 {
-                    consumer.accept(name + "." + index, value);
-                    if (check(o))
-                    {
-                        walk(name + "." + index + ".", o, consumer);
-                    }
-                    index++;
-                }
-            }
-            else
-            {
-                if (value instanceof List)
-                {
+                    Object[] arr = (Object[]) value;
                     int index = 0;
-                    List list = (List) value;
-                    for (Object o : list)
+                    for (Object o : arr)
                     {
                         consumer.accept(name + "." + index, value);
                         if (check(o))
@@ -130,9 +116,26 @@ public class BeanHelper
                 }
                 else
                 {
-                    if (check(value))
+                    if (value instanceof List)
                     {
-                        walk(name + ".", value, consumer);
+                        int index = 0;
+                        List list = (List) value;
+                        for (Object o : list)
+                        {
+                            consumer.accept(name + "." + index, value);
+                            if (check(o))
+                            {
+                                walk(name + "." + index + ".", o, consumer);
+                            }
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        if (check(value))
+                        {
+                            walk(name + ".", value, consumer);
+                        }
                     }
                 }
             }
@@ -423,7 +426,7 @@ public class BeanHelper
             List list = (List) fieldValue;
             Class[] pt = getParameterTypes(base, fieldname);
             Object value = factory.apply(pt[0]);
-            if (!pt[0].isAssignableFrom(value.getClass()))
+            if (value != null && !pt[0].isAssignableFrom(value.getClass()))
             {
                 throw new IllegalArgumentException(pt[0]+" not assignable from "+value);
             }
@@ -434,12 +437,18 @@ public class BeanHelper
             throw new IllegalArgumentException(fieldValue+" not List");
         }
     }
-    public static final void setFieldValue(Object base, String fieldname, Object value)
+    public static final void setFieldValue(Object base, String fieldname, Object v)
     {
+        Class<?> type = BeanHelper.getType(base, fieldname);
+        if (v != null)
+        {
+            v = ConvertUtility.convert(type, v);
+        }
+        Object value = v;
         doFor(
             base, 
             fieldname, 
-            ConvertUtility.openBox(value.getClass()),
+            type,
             (Object[] a, int i)->{a[i]=value;return null;},
             (List l, int i)->{l.set(i, value);return null;},
             (Object b, Field f)->{try
@@ -735,12 +744,26 @@ public class BeanHelper
 
     private static String lower(String str)
     {
-        return str.substring(0, 1).toLowerCase() + str.substring(1);
+        if (str.length() > 0)
+        {
+            return str.substring(0, 1).toLowerCase() + str.substring(1);
+        }
+        else
+        {
+            return str;
+        }
     }
 
     private static String upper(String str)
     {
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
+        if (str.length() > 0)
+        {
+            return str.substring(0, 1).toUpperCase() + str.substring(1);
+        }
+        else
+        {
+            return str;
+        }
     }
 
     /**

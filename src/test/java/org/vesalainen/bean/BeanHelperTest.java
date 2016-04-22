@@ -45,6 +45,8 @@ public class BeanHelperTest
         BeanHelper.setFieldValue(tc, "name", "Nimi");
         assertEquals("Nimi", tc.name);
         assertEquals("Nimi", BeanHelper.getFieldValue(tc, "name"));
+        BeanHelper.setFieldValue(tc, "name", null);
+        assertNull(tc.name);
         BeanHelper.setFieldValue(tc, "number", 123L);
         assertEquals(123, tc.number);
         assertEquals(123L, BeanHelper.getFieldValue(tc, "number"));
@@ -83,6 +85,9 @@ public class BeanHelperTest
         BeanHelper.applyList(tc, "inners+");
         assertEquals(3, BeanHelper.getFieldValue(tc, "inners.size"));
         
+        BeanHelper.applyList(tc, "inners+", (c)->{return null;});
+        assertEquals(4, BeanHelper.getFieldValue(tc, "inners.size"));
+        assertNull(BeanHelper.getFieldValue(tc, "inners.3"));
     }
     
     @XmlRootElement(name = "test")
