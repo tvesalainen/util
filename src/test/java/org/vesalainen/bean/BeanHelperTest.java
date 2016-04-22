@@ -16,6 +16,7 @@
  */
 package org.vesalainen.bean;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,7 +36,7 @@ public class BeanHelperTest
     }
 
     @Test
-    public void test1()
+    public void test1() throws NoSuchFieldException
     {
         TestClass tc = new TestClass();
         BeanHelper.setFieldValue(tc, "count", 123);
@@ -65,13 +66,33 @@ public class BeanHelperTest
         assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
         assertEquals(54321, BeanHelper.getFieldValue(tc, "list.4"));
         
-        BeanHelper.walk(tc, (String n, Object o)->System.err.println(n));
+        BeanHelper.walk(tc, (String n, Object o)->BeanHelper.getType(tc, n));
+        
+        assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
+        
+        BeanHelper.addList(tc, "list", 987654);
+        assertEquals(6, BeanHelper.getFieldValue(tc, "list.size"));
+        assertEquals(987654, BeanHelper.getFieldValue(tc, "list.5"));
+
+        BeanHelper.removeList(tc, "list.5");
+        assertEquals(5, BeanHelper.getFieldValue(tc, "list.size"));
+        
+        BeanHelper.applyList(tc, "list.0-");
+        assertEquals(4, BeanHelper.getFieldValue(tc, "list.size"));
+        
+        BeanHelper.applyList(tc, "inners+");
+        assertEquals(3, BeanHelper.getFieldValue(tc, "inners.size"));
+        
     }
     
     @XmlRootElement(name = "test")
     static class InnerClass
     {
         private String test;
+
+        public InnerClass()
+        {
+        }
 
         public InnerClass(String test)
         {
@@ -95,7 +116,7 @@ public class BeanHelperTest
         private String name;
         public long number;
         protected List<Integer> list = Lists.create(1, 2, 3, 4);
-        protected List<InnerClass> inners;
+        public List<InnerClass> inners;
 
         public TestClass()
         {

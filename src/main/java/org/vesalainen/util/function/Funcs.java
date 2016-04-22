@@ -22,6 +22,14 @@ package org.vesalainen.util.function;
  */
 public class Funcs
 {
+    public static <T,U> T same(T t, U u)
+    {
+        return t;
+    }
+    public static <T,U,V> T same(T t, U u, V v)
+    {
+        return t;
+    }
     public static boolean same(boolean arg)
     {
         return arg;

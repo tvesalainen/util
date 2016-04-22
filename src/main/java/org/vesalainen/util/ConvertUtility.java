@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -409,8 +408,12 @@ public class ConvertUtility
             throw new ConvertUtilityException(expectedReturnType, object, ex1);
         }
     }
-
-    private static Class<?> openBox(Class<?> cls)
+    /**
+     * Returns primitive type for boxed type
+     * @param cls
+     * @return 
+     */
+    public static final Class<?> openBox(Class<?> cls)
     {
         switch (cls.getName())
         {

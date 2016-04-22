@@ -8,75 +8,61 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.ConvertUtilityException;
+import org.vesalainen.util.function.IndexFunction;
 
 /**
  * Base object is always the same bean object. Expressions are relative to base
- * when they don't start with '.'.
- * If for example the base bean is page. Expression 'count' is the same as
- * page.count. 'list[1].toString()' is page.list[1].toString().
+ * when they don't start with '.'. If for example the base bean is page.
+ * Expression 'count' is the same as page.count. 'list[1].toString()' is
+ * page.list[1].toString().
  *
  * If expression starts with '.' it is relative to the annotated element. If
  * expression starts with '..' it is relative to the parent of that field.
+ *
  * @author tkv
  */
 public class BeanHelper
 {
-    private static final Pattern FIELDEXPR = Pattern.compile("([^\\}\\(\\)]+)");
-    private static final Pattern METHODEXPR = Pattern.compile("([^\\}\\(\\)]+)\\(\\)");
-    private static final Pattern ARRAYEXPR = Pattern.compile("([^\\}\\(\\)]+)\\[([0-9]+)\\]");
-
-    private static final Pattern FIELD = Pattern.compile("([^\\(\\)\\[\\]]+)");
-    private static final Pattern METHOD = Pattern.compile("([^\\(\\)]+)\\(\\)");
 
     private static final Pattern INDEX = Pattern.compile("[0-9]+");
 
-    private static Object resolvBase(Object base, String expr)
+    public static final Object resolvType(Object base, Object object, Function<Object,Object> defaultFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
-        String[] parts = expr.split("\\.");
-        int len = parts.length-1;
-        for (int ii=0;ii<len;ii++)
+        if (object instanceof Field)
         {
-            base = getObject(base, parts[ii]);
+                Field field = (Field) object;
+                return fieldFunc.apply(base, field);
         }
-        return base;
-    }
-    private static Object base(Object base, String expr)
-    {
-        try
+        if (object instanceof Method)
         {
-            Matcher matcher = METHODEXPR.matcher(expr);
-            if (matcher.matches())
-            {
-                return getObject(base, matcher.group(1));
-            }
-            matcher = ARRAYEXPR.matcher(expr);
-            if (matcher.matches())
-            {
-                int index = Integer.parseInt(matcher.group(2));
-                return getObject(base, matcher.group(1), index);
-            }
-            return getObject(base, expr);
+            Method method = (Method) object;
+            return methodFunc.apply(base, method);
         }
-        catch (SecurityException | IllegalArgumentException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        return defaultFunc.apply(object);
     }
     public static final Object getFieldValue(Object base, String pseudoField, int index) throws BeanHelperException
     {
-        return null;
+        throw new UnsupportedOperationException("not supported");
     }
+
     public static final Object getObject(Object base, String pseudoField, int index) throws BeanHelperException
     {
         if (index == -1)
@@ -96,19 +82,21 @@ public class BeanHelper
                 List list = (List) ob;
                 return list.get(index);
             }
-            throw new IllegalArgumentException(ob+" not list type");
+            throw new IllegalArgumentException(ob + " not list type");
         }
     }
-    public static final void walk(Object base, BiConsumer<String,Object> consumer)
+
+    public static final void walk(Object base, BiConsumer<String, Object> consumer)
     {
         walk("", base, consumer);
     }
-    private static final void walk(String prefix, Object base, BiConsumer<String,Object> consumer)
+
+    private static final void walk(String prefix, Object base, BiConsumer<String, Object> consumer)
     {
         for (String fld : getFields(base.getClass()))
         {
             Object value = getFieldValue(base, fld);
-            String name = prefix+fld;
+            String name = prefix + fld;
             consumer.accept(name, value);
             if (value.getClass().isArray())
             {
@@ -116,10 +104,10 @@ public class BeanHelper
                 int index = 0;
                 for (Object o : arr)
                 {
-                    consumer.accept(name+".["+index+"]", value);
+                    consumer.accept(name + "." + index, value);
                     if (check(o))
                     {
-                        walk(name+".["+index+"].", o, consumer);
+                        walk(name + "." + index + ".", o, consumer);
                     }
                     index++;
                 }
@@ -132,10 +120,10 @@ public class BeanHelper
                     List list = (List) value;
                     for (Object o : list)
                     {
-                        consumer.accept(name+".["+index+"]", value);
+                        consumer.accept(name + "." + index, value);
                         if (check(o))
                         {
-                            walk(name+".["+index+"].", o, consumer);
+                            walk(name + "." + index + ".", o, consumer);
                         }
                         index++;
                     }
@@ -144,12 +132,13 @@ public class BeanHelper
                 {
                     if (check(value))
                     {
-                        walk(name+".", value, consumer);
+                        walk(name + ".", value, consumer);
                     }
                 }
             }
         }
     }
+
     private static boolean check(Object ob)
     {
         Class<? extends Object> cls = ob.getClass();
@@ -159,22 +148,64 @@ public class BeanHelper
         }
         return true;
     }
+
     public static final <T> void doFor(Object base, String pseudoField, Consumer<T> consumer)
     {
         T t = (T) getFieldValue(base, pseudoField);
         consumer.accept(t);
     }
+
     public static final Object getFieldValue(Object base, String pseudoField)
     {
-        base = resolvBase(base, pseudoField);
-        int idx = pseudoField.lastIndexOf('.');
+        return doFor(base, pseudoField, null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
+    }
+
+    private static Object getFieldValue(Object base, Field field)
+    {
+        try
+        {
+            return field.get(base);
+        }
+        catch (IllegalArgumentException | IllegalAccessException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    private static Object getMethodValue(Object base, Method method)
+    {
+        try
+        {
+            return method.invoke(base);
+        }
+        catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    private static Object getValue(Object[] arr, int index)
+    {
+        return arr[index];
+    }
+    private static Object getValue(List list, int index)
+    {
+        return list.get(index);
+    }
+    public static Object doFor(Object base, String fieldname, Class type, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
+    {
+        String[] parts = fieldname.split("\\.");
+        int len = parts.length - 1;
+        for (int ii = 0; ii < len; ii++)
+        {
+            base = doIt(base, parts[ii], null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
+        }
+        int idx = fieldname.lastIndexOf('.');
         if (idx != -1)
         {
-            pseudoField = pseudoField.substring(idx+1);
+            fieldname = fieldname.substring(idx + 1);
         }
-        return getObject(base, pseudoField);
+        return doIt(base, fieldname, type, arrayFunc, listFunc, fieldFunc, methodFunc);
     }
-    private static Object getObject(Object base, String fieldname)
+    private static Object doIt(Object base, String fieldname, Class argType, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         if (INDEX.matcher(fieldname).matches())
         {
@@ -182,52 +213,64 @@ public class BeanHelper
             if (base.getClass().isArray())
             {
                 Object[] arr = (Object[]) base;
-                return arr[index];
+                return arrayFunc.apply(arr, index);
             }
             if (base instanceof List)
             {
                 List list = (List) base;
-                return list.get(index);
+                return listFunc.apply(list, index);
             }
-            throw new IllegalArgumentException(base+" not list type");
+            throw new IllegalArgumentException(base + " not list type");
         }
         Class<? extends Object> type = base.getClass();
         try
         {
             try
             {
-                Field field = type.getField(fieldname);
-                return field.get(base);
+                return fieldFunc.apply(base, type.getField(fieldname));
             }
             catch (NoSuchFieldException exx)
             {
-                try
+                if (argType != null)
                 {
-                    Method method = type.getMethod(fieldname);
-                    return method.invoke(base);
-                }
-                catch (NoSuchMethodException ex)
-                {
-                    String methodName = BeanHelper.getter(fieldname);
                     try
                     {
-                        Method method = type.getMethod(methodName);
-                        return method.invoke(base);
+                        return methodFunc.apply(base, type.getMethod(fieldname, argType));
                     }
-                    catch (NoSuchMethodException ex2)
+                    catch (NoSuchMethodException ex)
                     {
-                        methodName = BeanHelper.isser(fieldname);
-                        Method method = base.getClass().getMethod(methodName);
-                        return method.invoke(base);
+                        String methodName = BeanHelper.setter(fieldname);
+                        return methodFunc.apply(base, type.getMethod(methodName, argType));
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        return methodFunc.apply(base, type.getMethod(fieldname));
+                    }
+                    catch (NoSuchMethodException ex)
+                    {
+                        String methodName = BeanHelper.getter(fieldname);
+                        try
+                        {
+                            return methodFunc.apply(base, type.getMethod(methodName));
+                        }
+                        catch (NoSuchMethodException ex2)
+                        {
+                            methodName = BeanHelper.isser(fieldname);
+                            return methodFunc.apply(base, type.getMethod(methodName));
+                        }
                     }
                 }
             }
         }
-        catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex)
+        catch (IllegalArgumentException | NoSuchMethodException ex)
         {
-            throw new BeanHelperException(fieldname+" not found in "+base.getClass().getName(), ex);
+            throw new BeanHelperException(fieldname + " not found in " + base.getClass().getName(), ex);
         }
     }
+
     public static final void setFieldValue(Object base, String pseudoField, Object cv, int index) throws BeanHelperException, ConvertUtilityException
     {
         if (index == -1)
@@ -256,129 +299,169 @@ public class BeanHelper
             }
         }
     }
+
+    public static final Class[] getParameterTypes(Object base, String fieldname) throws BeanHelperException
+    {
+        Type type = (Type) doFor(
+            base, 
+            fieldname, 
+            null,
+            (Object[] a, int i)->{return a[i].getClass().getGenericSuperclass();},
+            (List l, int i)->{return l.get(i).getClass().getGenericSuperclass();},
+            (Object o, Field f)->{return f.getGenericType();}, 
+            (Object o, Method m)->{return m.getGenericReturnType();});
+        if (type instanceof ParameterizedType)
+        {
+            ParameterizedType pt = (ParameterizedType) type;
+            Type[] ata = pt.getActualTypeArguments();
+            if (ata.length > 0)
+            {
+                Class[] ca = new Class[ata.length];
+                for (int ii=0;ii<ca.length;ii++)
+                {
+                    ca[ii] = (Class) ata[ii];
+                }
+                return ca;
+            }
+        }
+        return null;
+    }
+
+    private static Class getFieldType(Object base, Field field)
+    {
+        return field.getType();
+    }
+    private static Class getMethodType(Object base, Method method)
+    {
+        return method.getReturnType();
+    }
+    private static Class getObjectType(Object[] arr, int index)
+    {
+        return arr[index].getClass();
+    }
+    private static Class getObjectType(List list, int index)
+    {
+        return list.get(index).getClass();
+    }
     public static final Class getType(Object base, String pseudoField) throws BeanHelperException
     {
-        base = resolvBase(base, pseudoField);
-        int idx = pseudoField.lastIndexOf('.');
-        if (idx != -1)
-        {
-            pseudoField = pseudoField.substring(idx+1);
-        }
-        return type(base, pseudoField);
+        return (Class) doFor(base, pseudoField, null, BeanHelper::getObjectType, BeanHelper::getObjectType, BeanHelper::getFieldType, BeanHelper::getMethodType);
     }
-    public static final Class type(Object base, String pseudoField) throws BeanHelperException
+    private static Object getFieldAnnotation(Object annotationClass, Field field)
     {
-        Class<? extends Object> type = base.getClass();
+        return field.getAnnotation((Class)annotationClass);
+    }
+    private static Object getMethodAnnotation(Object annotationClass, Method method)
+    {
+        return method.getAnnotation((Class)annotationClass);
+    }
+    public static final <T extends Annotation> T getAnnotation(Object base, String fieldname, Class<T> annotationClass)
+    {
+        return (T) doFor(
+            base, 
+            fieldname, 
+            null,
+            (Object[] a, int i)->{return a[i].getClass().getAnnotation(annotationClass);},
+            (List l, int i)->{return l.get(i).getClass().getAnnotation(annotationClass);},
+            BeanHelper::getFieldAnnotation, 
+            BeanHelper::getMethodAnnotation);
+    }
+    static final <T> T defaultFactory(Class<T> cls)
+    {
         try
         {
-            Field field = type.getField(pseudoField);
-            return field.getType();
+            return cls.newInstance();
         }
-        catch (NoSuchFieldException | SecurityException ex)
+        catch (InstantiationException | IllegalAccessException ex)
         {
-            Method method = getMethod(base, pseudoField);
-            return method.getReturnType();
+            throw new IllegalArgumentException(ex);
         }
     }
-    public static final <T extends Annotation> T getAnnotation(Object base, String pseudoField, Class<T> annotationClass) throws BeanHelperException
+    public static final <T> void applyList(Object base, String fieldname)
     {
-        base = resolvBase(base, pseudoField);
-        int idx = pseudoField.lastIndexOf('.');
-        if (idx != -1)
-        {
-            pseudoField = pseudoField.substring(idx+1);
-        }
-        return annotation(base, pseudoField, annotationClass);
+        applyList(base, fieldname, BeanHelper::defaultFactory);
     }
-    public static final <T extends Annotation> T annotation(Object base, String fieldname, Class<T> annotationClass) throws BeanHelperException
+    public static final <T> void applyList(Object base, String fieldname, Function<Class<T>,T> factory)
     {
-        if (INDEX.matcher(fieldname).matches())
+        if (fieldname.endsWith("+"))
         {
-            int index = Integer.parseInt(fieldname);
-            if (base.getClass().isArray())
-            {
-                Object[] arr = (Object[]) base;
-                return arr[index].getClass().getAnnotation(annotationClass);
-            }
-            if (base instanceof List)
-            {
-                List list = (List) base;
-                return list.get(index).getClass().getAnnotation(annotationClass);
-            }
-            throw new IllegalArgumentException(base+" not list type");
+            addList(base, fieldname.substring(0, fieldname.length()-1), factory);
         }
-        Class<? extends Object> type = base.getClass();
-        try
+        else
         {
-            Field field = type.getField(fieldname);
-            return field.getAnnotation(annotationClass);
-        }
-        catch (NoSuchFieldException | SecurityException ex)
-        {
-            Method method = getMethod(base, fieldname);
-            return method.getReturnType().getDeclaredAnnotation(annotationClass);
+            if (fieldname.endsWith("-"))
+            {
+                removeList(base, fieldname.substring(0, fieldname.length()-1));
+            }
+            else
+            {
+                throw new IllegalArgumentException("nothing to apply");
+            }
         }
     }
-    public static final void setFieldValue(Object base, String pseudoField, Object value) throws BeanHelperException, ConvertUtilityException
+    public static final void removeList(Object base, String fieldname)
     {
-        base = resolvBase(base, pseudoField);
-        int idx = pseudoField.lastIndexOf('.');
-        if (idx != -1)
-        {
-            pseudoField = pseudoField.substring(idx+1);
-        }
-        setValue(base, pseudoField, value);
+        doFor(
+            base, 
+            fieldname, 
+            null,
+            (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
+            (List l, int i)->{l.remove(i);return null;},
+            (Object b, Field f)->{throw  new UnsupportedOperationException("not supported");},
+            (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
+        );
     }
-    private static final void setValue(Object base, String fieldname, Object value) throws BeanHelperException, ConvertUtilityException
+    public static final <T> void addList(Object base, String fieldname, T value)
     {
-        if (INDEX.matcher(fieldname).matches())
+        addList(base, fieldname, (Class<T> c)->{return value;});
+    }
+    public static final <T> void addList(Object base, String fieldname, Function<Class<T>,T> factory)
+    {
+        Object fieldValue = getFieldValue(base, fieldname);
+        if (fieldValue instanceof List)
         {
-            int index = Integer.parseInt(fieldname);
-            if (base.getClass().isArray())
+            List list = (List) fieldValue;
+            Class[] pt = getParameterTypes(base, fieldname);
+            Object value = factory.apply(pt[0]);
+            if (!pt[0].isAssignableFrom(value.getClass()))
             {
-                Object[] arr = (Object[]) base;
-                arr[index] = value;
-                return;
+                throw new IllegalArgumentException(pt[0]+" not assignable from "+value);
             }
-            if (base instanceof List)
-            {
-                List list = (List) base;
-                list.set(index, value);
-                return;
-            }
-            throw new IllegalArgumentException(base+" not list type");
+            list.add(value);
         }
-        try
+        else
         {
-            Class<? extends Object> type = base.getClass();
-            try
-            {
-                Field field = type.getField(fieldname);
-                field.set(base, ConvertUtility.convert(field.getType(), value));
-            }
-            catch (NoSuchFieldException | SecurityException ex)
-            {
-                String methodName = BeanHelper.setter(fieldname);
-                for (Method method : type.getMethods())
-                {
-                    if (methodName.equals(method.getName()))
-                    {
-                        Class<?>[] paramTypes = method.getParameterTypes();
-                        if (paramTypes.length == 1)
-                        {
-                            method.invoke(base, ConvertUtility.convert(paramTypes[0], value));
-                            return;
-                        }
-                    }
-                }
-                throw new BeanHelperException("no setter for", base, fieldname);
-            }
-        }
-        catch (InvocationTargetException | IllegalArgumentException | IllegalAccessException ex)
-        {
-            throw new BeanHelperException(base, fieldname, ex);
+            throw new IllegalArgumentException(fieldValue+" not List");
         }
     }
+    public static final void setFieldValue(Object base, String fieldname, Object value)
+    {
+        doFor(
+            base, 
+            fieldname, 
+            ConvertUtility.openBox(value.getClass()),
+            (Object[] a, int i)->{a[i]=value;return null;},
+            (List l, int i)->{l.set(i, value);return null;},
+            (Object b, Field f)->{try
+            {
+                f.set(b, value);return null;
+            }
+            catch (IllegalArgumentException | IllegalAccessException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+            }, 
+            (Object b, Method m)->{try
+            {
+                m.invoke(b, value);return null;
+            }
+            catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+            });
+    }
+
     public static final Object invoke(Object base, String expression) throws BeanHelperException
     {
         try
@@ -391,6 +474,7 @@ public class BeanHelper
             throw new BeanHelperException(base, expression, ex);
         }
     }
+
     public static final Object invoke(Object base, Method method) throws BeanHelperException
     {
         try
@@ -402,8 +486,10 @@ public class BeanHelper
             throw new BeanHelperException(base, method, ex);
         }
     }
+
     /**
      * Returns AnnotatedElement for expression. Example: model.getList().size()
+     *
      * @param base
      * @param pseudoField
      * @return
@@ -455,10 +541,11 @@ public class BeanHelper
         }
         throw new BeanHelperException(clazz, name, ex);
     }
+
     /**
-     * If object == null return's false
-     * If object is array or List return's true
+     * If object == null return's false If object is array or List return's true
      * Otherwise return's false
+     *
      * @param object
      * @return
      */
@@ -484,6 +571,7 @@ public class BeanHelper
             }
         }
     }
+
     /**
      * @param object
      * @return
@@ -510,25 +598,31 @@ public class BeanHelper
         set.add(object);
         return set;
     }
+
     public static final Object[] castArray(Object[] arr, Object[] object)
     {
         assert arr.length == object.length;
         System.arraycopy(object, 0, arr, 0, arr.length);
         return arr;
     }
+
     public static final Object[] getObjectArray(Object object) throws BeanHelperException, ConvertUtilityException
     {
         if (object == null)
         {
-            return new Object[]{null};
+            return new Object[]
+            {
+                null
+            };
         }
         return getObjectArray(object.getClass(), object);
     }
+
     /**
-     * If object == null return's empty array
-     * If object is array return's the array
-     * If object is List return an array containing list elements
+     * If object == null return's empty array If object is array return's the
+     * array If object is List return an array containing list elements
      * Otherwise return's an array containing the object
+     *
      * @param type
      * @param object
      * @return
@@ -557,7 +651,9 @@ public class BeanHelper
             {
                 if (object == null)
                 {
-                    return new Object[]{};
+                    return new Object[]
+                    {
+                    };
                 }
                 else
                 {
@@ -568,7 +664,10 @@ public class BeanHelper
                     }
                     else
                     {
-                        return new Object[]{object};
+                        return new Object[]
+                        {
+                            object
+                        };
                     }
                 }
             }
@@ -577,6 +676,7 @@ public class BeanHelper
 
     /**
      * field -> getField
+     *
      * @param field
      * @param fieldName
      * @return
@@ -593,26 +693,34 @@ public class BeanHelper
             return getter(fieldName);
         }
     }
+
     public static final String getter(String fieldName)
     {
-        return "get"+upper(fieldName);
+        return "get" + upper(fieldName);
     }
+
     public static final String isser(String fieldName)
     {
-        return "is"+upper(fieldName);
+        return "is" + upper(fieldName);
     }
+
     /**
      * field -> setField
+     *
      * @param field
      * @return
      */
     public static final String setter(String field)
     {
-        return "set"+upper(field);
+        return "set" + upper(field);
     }
+
     /**
-     * <p>(g/s)etField -> field
-     * <p>Field -> field
+     * <p>
+     * (g/s)etField -> field
+     * <p>
+     * Field -> field
+     *
      * @param etter
      * @return
      */
@@ -627,37 +735,39 @@ public class BeanHelper
 
     private static String lower(String str)
     {
-        return str.substring(0, 1).toLowerCase()+str.substring(1);
+        return str.substring(0, 1).toLowerCase() + str.substring(1);
     }
 
     private static String upper(String str)
     {
-        return str.substring(0, 1).toUpperCase()+str.substring(1);
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
+
     /**
      * Returns fieldname for method. getX -&gt; 'x'
+     *
      * @param method
-     * @return 
+     * @return
      */
     public static final String getField(Method method)
     {
         return field(method.getName());
     }
+
     /**
      * Returns Set of classes fieldnames.
+     *
      * @param cls
-     * @return 
+     * @return
      */
     public static final Set<String> getFields(Class<?> cls)
     {
         Set<String> set = new HashSet<>();
         for (Method method : cls.getDeclaredMethods())
         {
-            if (
-                    method.getName().startsWith("get") &&
-                    method.getParameterCount() == 0 &&
-                    !Void.class.equals(method.getReturnType())
-                    )
+            if (method.getName().startsWith("get")
+                    && method.getParameterCount() == 0
+                    && !Void.class.equals(method.getReturnType()))
             {
                 set.add(getField(method));
             }
