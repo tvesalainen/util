@@ -344,7 +344,15 @@ public class BeanHelper
             BeanHelper::getFieldAnnotation, 
             BeanHelper::getMethodAnnotation);
     }
-    static final <T> T defaultFactory(Class<T> cls)
+    /**
+     * Default object factory that calls newInstance method. Checked exceptions
+     * are wrapped in IllegalArgumentException.
+     * @param <T>
+     * @param cls Target class
+     * @param hint Hint for factory
+     * @return 
+     */
+    public static final <T> T defaultFactory(Class<T> cls, String hint)
     {
         try
         {
@@ -355,21 +363,49 @@ public class BeanHelper
             throw new IllegalArgumentException(ex);
         }
     }
+    /**
+     * Applies bean action by using default factory.
+     * 
+     * <p>Bean actions are:
+     * <p>List item property remove by adding '-' to the end of pattern.
+     * <p>E.g. list.3- - list.remove(3)
+     * <p>List item creation to the end of the list.
+     * <p>E.g. list+ - add(factory.get(cls, null))
+     * <p>E.g. list+hint - add(factory.get(cls, hint))
+     * @param <T>
+     * @param base
+     * @param fieldname 
+     */
     public static final <T> void applyList(Object base, String fieldname)
     {
         applyList(base, fieldname, BeanHelper::defaultFactory);
     }
-    public static final <T> void applyList(Object base, String fieldname, Function<Class<T>,T> factory)
+    /**
+     * Applies bean action by using given factory
+     * <p>Bean actions are:
+     * <p>List item property remove by adding '-' to the end of pattern.
+     * <p>E.g. list.3- - list.remove(3)
+     * <p>List item creation to the end of the list.
+     * <p>E.g. list+ - add(factory.get(cls, null))
+     * <p>E.g. list+hint - add(factory.get(cls, hint))
+     * @param <T>
+     * @param bean
+     * @param property
+     * @param factory 
+     */
+    public static final <T> void applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
     {
-        if (fieldname.endsWith("+"))
+        int plusIdx = property.lastIndexOf('+');
+        if (plusIdx != -1)
         {
-            addList(base, fieldname.substring(0, fieldname.length()-1), factory);
+            String hint = property.substring(0, plusIdx+1);
+            addList(bean, property.substring(0, plusIdx), hint, factory);
         }
         else
         {
-            if (fieldname.endsWith("-"))
+            if (property.endsWith("-"))
             {
-                removeList(base, fieldname.substring(0, fieldname.length()-1));
+                removeList(bean, property.substring(0, property.length()-1));
             }
             else
             {
@@ -377,11 +413,16 @@ public class BeanHelper
             }
         }
     }
-    public static final void removeList(Object base, String fieldname)
+    /**
+     * Removes pattern item from list
+     * @param bean
+     * @param property 
+     */
+    public static final void removeList(Object bean, String property)
     {
         doFor(
-            base, 
-            fieldname, 
+            bean, 
+            property, 
             null,
             (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
             (List l, int i)->{l.remove(i);return null;},
@@ -389,18 +430,33 @@ public class BeanHelper
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
         );
     }
-    public static final <T> void addList(Object base, String fieldname, T value)
+    /**
+     * Adds pattern item to end of list
+     * @param <T>
+     * @param bean
+     * @param property
+     * @param value 
+     */
+    public static final <T> void addList(Object bean, String property, T value)
     {
-        addList(base, fieldname, (Class<T> c)->{return value;});
+        addList(bean, property, null, (Class<T> c, String h)->{return value;});
     }
-    public static final <T> void addList(Object base, String fieldname, Function<Class<T>,T> factory)
+    /**
+     * Adds pattern item to end of list giving factory hint and factory
+     * @param <T>
+     * @param bean
+     * @param property
+     * @param hint
+     * @param factory 
+     */
+    public static final <T> void addList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
     {
-        Object fieldValue = getValue(base, fieldname);
+        Object fieldValue = getValue(bean, property);
         if (fieldValue instanceof List)
         {
             List list = (List) fieldValue;
-            Class[] pt = getParameterTypes(base, fieldname);
-            Object value = factory.apply(pt[0]);
+            Class[] pt = getParameterTypes(bean, property);
+            Object value = factory.apply(pt[0], hint);
             if (value != null && !pt[0].isAssignableFrom(value.getClass()))
             {
                 throw new IllegalArgumentException(pt[0]+" not assignable from "+value);
@@ -412,17 +468,23 @@ public class BeanHelper
             throw new IllegalArgumentException(fieldValue+" not List");
         }
     }
-    public static final void setFieldValue(Object base, String fieldname, Object v)
+    /**
+     * Set value
+     * @param bean
+     * @param property
+     * @param v 
+     */
+    public static final void setValue(Object bean, String property, Object v)
     {
-        Class<?> type = BeanHelper.getType(base, fieldname);
+        Class<?> type = BeanHelper.getType(bean, property);
         if (v != null)
         {
             v = ConvertUtility.convert(type, v);
         }
         Object value = v;
         doFor(
-            base, 
-            fieldname, 
+            bean, 
+            property, 
             type,
             (Object[] a, int i)->{a[i]=value;return null;},
             (List l, int i)->{l.set(i, value);return null;},
@@ -444,218 +506,6 @@ public class BeanHelper
                 throw new IllegalArgumentException(ex);
             }
             });
-    }
-
-    public static final Object invoke(Object base, String expression) throws BeanHelperException
-    {
-        try
-        {
-            Method method = (Method) getMethod(base, expression);
-            return method.invoke(base);
-        }
-        catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
-        {
-            throw new BeanHelperException(base, expression, ex);
-        }
-    }
-
-    public static final Object invoke(Object base, Method method) throws BeanHelperException
-    {
-        try
-        {
-            return method.invoke(base);
-        }
-        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
-        {
-            throw new BeanHelperException(base, method, ex);
-        }
-    }
-
-    /**
-     * Returns AnnotatedElement for expression. Example: model.getList().size()
-     *
-     * @param base
-     * @param pseudoField
-     * @return
-     * @throws IllegalArgumentException
-     */
-    public static final Method getMethod(Object base, String pseudoField) throws BeanHelperException
-    {
-        try
-        {
-            try
-            {
-                return base.getClass().getMethod(pseudoField);
-            }
-            catch (NoSuchMethodException ex)
-            {
-                try
-                {
-                    String name = getter(pseudoField);
-                    return base.getClass().getMethod(name);
-                }
-                catch (NoSuchMethodException ex2)
-                {
-                    String name = isser(pseudoField);
-                    return base.getClass().getMethod(name);
-                }
-            }
-        }
-        catch (IllegalArgumentException | NoSuchMethodException | SecurityException ex)
-        {
-            throw new BeanHelperException(base, pseudoField, ex);
-        }
-    }
-
-    public static final Field getField(Class clazz, String name) throws BeanHelperException
-    {
-        Class sc = clazz;
-        NoSuchFieldException ex = null;
-        while (sc != null)
-        {
-            try
-            {
-                return sc.getDeclaredField(name);
-            }
-            catch (NoSuchFieldException ex1)
-            {
-                ex = ex1;
-                sc = sc.getSuperclass();
-            }
-        }
-        throw new BeanHelperException(clazz, name, ex);
-    }
-
-    /**
-     * If object == null return's false If object is array or List return's true
-     * Otherwise return's false
-     *
-     * @param object
-     * @return
-     */
-    public static final boolean isArrayType(Object object)
-    {
-        if (object == null)
-        {
-            return false;
-        }
-        if (object.getClass().isArray())
-        {
-            return true;
-        }
-        else
-        {
-            if (object instanceof List)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    /**
-     * @param object
-     * @return
-     * @throws BeanHelperException
-     */
-    public static final Collection getObjectCollection(Object object) throws BeanHelperException
-    {
-        if (object == null)
-        {
-            return new HashSet();
-        }
-        if (object instanceof Collection)
-        {
-            return (Collection) object;
-        }
-        if (object.getClass().isArray())
-        {
-            Set set = new HashSet();
-            Object[] arr = (Object[]) object;
-            Collections.addAll(set, arr);
-            return set;
-        }
-        Set set = new HashSet();
-        set.add(object);
-        return set;
-    }
-
-    public static final Object[] castArray(Object[] arr, Object[] object)
-    {
-        assert arr.length == object.length;
-        System.arraycopy(object, 0, arr, 0, arr.length);
-        return arr;
-    }
-
-    public static final Object[] getObjectArray(Object object) throws BeanHelperException, ConvertUtilityException
-    {
-        if (object == null)
-        {
-            return new Object[]
-            {
-                null
-            };
-        }
-        return getObjectArray(object.getClass(), object);
-    }
-
-    /**
-     * If object == null return's empty array If object is array return's the
-     * array If object is List return an array containing list elements
-     * Otherwise return's an array containing the object
-     *
-     * @param type
-     * @param object
-     * @return
-     */
-    public static final Object[] getObjectArray(Class type, Object object) throws BeanHelperException, ConvertUtilityException
-    {
-        if (type.isArray())
-        {
-            return (Object[]) ConvertUtility.convert(Object.class, object);
-        }
-        else
-        {
-            if (type.isEnum())
-            {
-                try
-                {
-                    Method values = type.getMethod("values");
-                    return (Object[]) values.invoke(null);
-                }
-                catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex)
-                {
-                    throw new BeanHelperException("Enum", ex);
-                }
-            }
-            else
-            {
-                if (object == null)
-                {
-                    return new Object[]
-                    {
-                    };
-                }
-                else
-                {
-                    if (object instanceof List)
-                    {
-                        List list = (List) object;
-                        return list.toArray();
-                    }
-                    else
-                    {
-                        return new Object[]
-                        {
-                            object
-                        };
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -753,7 +603,7 @@ public class BeanHelper
     }
 
     /**
-     * Returns Set of classes fieldnames.
+     * Returns Set of classes patterns.
      *
      * @param cls
      * @return

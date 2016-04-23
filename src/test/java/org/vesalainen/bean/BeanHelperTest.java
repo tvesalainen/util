@@ -39,15 +39,15 @@ public class BeanHelperTest
     public void test1() throws NoSuchFieldException
     {
         TestClass tc = new TestClass();
-        BeanHelper.setFieldValue(tc, "count", 123);
+        BeanHelper.setValue(tc, "count", 123);
         assertEquals(123, tc.count);
         assertEquals(123, BeanHelper.getValue(tc, "count"));
-        BeanHelper.setFieldValue(tc, "name", "Nimi");
+        BeanHelper.setValue(tc, "name", "Nimi");
         assertEquals("Nimi", tc.name);
         assertEquals("Nimi", BeanHelper.getValue(tc, "name"));
-        BeanHelper.setFieldValue(tc, "name", null);
+        BeanHelper.setValue(tc, "name", null);
         assertNull(tc.name);
-        BeanHelper.setFieldValue(tc, "number", 123L);
+        BeanHelper.setValue(tc, "number", 123L);
         assertEquals(123, tc.number);
         assertEquals(123L, BeanHelper.getValue(tc, "number"));
         assertEquals(3, BeanHelper.getValue(tc, "list.2"));
@@ -58,10 +58,10 @@ public class BeanHelperTest
         XmlRootElement root = BeanHelper.getAnnotation(tc, "inners.0", XmlRootElement.class);
         assertEquals("test", root.name());
         
-        BeanHelper.setFieldValue(tc, "inners.1.test", "testaa");
+        BeanHelper.setValue(tc, "inners.1.test", "testaa");
         assertEquals("testaa", BeanHelper.getValue(tc, "inners.1.test"));
         
-        BeanHelper.setFieldValue(tc, "list.2", 123);
+        BeanHelper.setValue(tc, "list.2", 123);
         assertEquals(123, BeanHelper.getValue(tc, "list.2"));
         
         BeanHelper.doFor(tc, "list", (List<Integer> x)->x.add(54321));
@@ -85,7 +85,7 @@ public class BeanHelperTest
         BeanHelper.applyList(tc, "inners+");
         assertEquals(3, BeanHelper.getValue(tc, "inners.size"));
         
-        BeanHelper.applyList(tc, "inners+", (c)->{return null;});
+        BeanHelper.applyList(tc, "inners+do it right", (Class<Object> c, String h)->{return null;});
         assertEquals(4, BeanHelper.getValue(tc, "inners.size"));
         assertNull(BeanHelper.getValue(tc, "inners.3"));
     }
