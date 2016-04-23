@@ -9,11 +9,13 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -21,6 +23,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.LinkedSet;
 import org.vesalainen.util.function.IndexFunction;
@@ -54,77 +59,6 @@ public class BeanHelper
             return methodFunc.apply(bean, method);
         }
         return defaultFunc.apply(object);
-    }
-    /**
-     * Walks through bean object. For every property consumer is called with
-     * property access string
-     * @param bean
-     * @param consumer 
-     */
-    public static final void walk(Object bean, BiConsumer<String, Object> consumer)
-    {
-        walk("", bean, consumer);
-    }
-
-    private static final void walk(String prefix, Object bean, BiConsumer<String, Object> consumer)
-    {
-        for (String fld : getProperties(bean.getClass()))
-        {
-            Object value = getValue(bean, fld);
-            if (value != null)
-            {
-                String name = prefix + fld;
-                consumer.accept(name, value);
-                if (value.getClass().isArray())
-                {
-                    Object[] arr = (Object[]) value;
-                    int index = 0;
-                    for (Object o : arr)
-                    {
-                        consumer.accept(name + "." + index, value);
-                        if (check(o))
-                        {
-                            walk(name + "." + index + ".", o, consumer);
-                        }
-                        index++;
-                    }
-                }
-                else
-                {
-                    if (value instanceof List)
-                    {
-                        int index = 0;
-                        List list = (List) value;
-                        for (Object o : list)
-                        {
-                            consumer.accept(name + "." + index, value);
-                            if (check(o))
-                            {
-                                walk(name + "." + index + ".", o, consumer);
-                            }
-                            index++;
-                        }
-                    }
-                    else
-                    {
-                        if (check(value))
-                        {
-                            walk(name + ".", value, consumer);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static boolean check(Object ob)
-    {
-        Class<? extends Object> cls = ob.getClass();
-        if (cls.isPrimitive() || cls.getName().startsWith("java."))
-        {
-            return false;
-        }
-        return true;
     }
     /**
      * Executes consumer for property.
@@ -669,7 +603,7 @@ public class BeanHelper
     {
         return property(method.getName());
     }
-
+    private static final int ModifierMask = Modifier.ABSTRACT | Modifier.INTERFACE | Modifier.NATIVE | Modifier.STATIC;
     /**
      * Returns Set of classes patterns.
      *
@@ -681,29 +615,35 @@ public class BeanHelper
         Set<String> set = new LinkedSet<>();
         for (Method method : cls.getMethods())
         {
-            String name = method.getName();
-            if ((name.startsWith("get") || name.startsWith("is"))
-                    && method.getParameterCount() == 0)
+            if ((method.getModifiers() & ModifierMask) == 0)
             {
-                String property = getProperty(method);
-                Class<?> returnType = method.getReturnType();
-                if (!List.class.isAssignableFrom(returnType))
+                String name = method.getName();
+                if ((name.startsWith("get") || name.startsWith("is"))
+                        && method.getParameterCount() == 0)
                 {
-                    try
+                    String property = getProperty(method);
+                    Class<?> returnType = method.getReturnType();
+                    if (!List.class.isAssignableFrom(returnType))
                     {
-                        cls.getMethod(setter(property), returnType);
+                        try
+                        {
+                            cls.getMethod(setter(property), returnType);
+                        }
+                        catch (NoSuchMethodException ex)
+                        {
+                            continue;
+                        }
                     }
-                    catch (NoSuchMethodException ex)
-                    {
-                        continue;
-                    }
+                    set.add(property);
                 }
-                set.add(property);
             }
         }
         for (Field field : cls.getFields())
         {
-            set.add(field.getName());
+            if ((field.getModifiers() & ModifierMask) == 0)
+            {
+                set.add(field.getName());
+            }
         }
         return set;
     }
@@ -714,8 +654,112 @@ public class BeanHelper
      */
     public static final Set<String> getProperties(Object bean)
     {
-        Set<String> set = new LinkedSet<>();
-        walk(bean, (String s,Object o)->set.add(s));
-        return set;
+        return stream(bean).collect(Collectors.toSet());
+    }
+    /**
+     * Return stream of bean patterns
+     * @param bean
+     * @return 
+     */
+    public static final Stream<String> stream(Object bean)
+    {
+        return StreamSupport.stream(spliterator(bean), false);
+    }
+    /**
+     * Return spliterator of bean patterns
+     * <p>Note! tryAdvance method is not implemented.
+     * @param bean
+     * @return 
+     */
+    public static final Spliterator<String> spliterator(Object bean)
+    {
+        return new SpliteratorImpl(bean);
+    }
+    private static class SpliteratorImpl implements Spliterator<String>
+    {
+        private Object bean;
+
+        public SpliteratorImpl(Object bean)
+        {
+            this.bean = bean;
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super String> action)
+        {
+            walk(bean, action);
+        }
+        
+        private void walk(Object bean, Consumer<? super String> consumer)
+        {
+            walk("", bean, consumer);
+        }
+
+        private void walk(String prefix, Object bean, Consumer<? super String> consumer)
+        {
+            for (String fld : getProperties(bean.getClass()))
+            {
+                String name = prefix + fld;
+                consumer.accept(name);
+                Object value = getValue(bean, fld);
+                if (value != null)
+                {
+                    if (value.getClass().isArray())
+                    {
+                        Object[] arr = (Object[]) value;
+                        int index = 0;
+                        for (Object o : arr)
+                        {
+                            consumer.accept(name + "." + index);
+                            walk(name + "." + index + ".", o, consumer);
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        if (value instanceof List)
+                        {
+                            int index = 0;
+                            List list = (List) value;
+                            for (Object o : list)
+                            {
+                                consumer.accept(name + "." + index);
+                                walk(name + "." + index + ".", o, consumer);
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            walk(name + ".", value, consumer);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super String> action)
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Spliterator<String> trySplit()
+        {
+            return null;
+        }
+
+        @Override
+        public long estimateSize()
+        {
+            return bean.getClass().getDeclaredFields().length*2;
+        }
+
+        @Override
+        public int characteristics()
+        {
+            return 0;
+        }
+        
     }
 }

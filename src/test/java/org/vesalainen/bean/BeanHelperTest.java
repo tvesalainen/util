@@ -68,7 +68,9 @@ public class BeanHelperTest
         assertEquals(5, BeanHelper.getValue(tc, "list.size"));
         assertEquals(54321, BeanHelper.getValue(tc, "list.4"));
         
-        BeanHelper.walk(tc, (String n, Object o)->BeanHelper.getType(tc, n));
+        BeanHelper.stream(tc).forEach((String n)->BeanHelper.getType(tc, n));
+        BeanHelper.stream(tc).forEach((String n)->System.err.println(n));
+        assertEquals(14, BeanHelper.stream(tc).count());
         
         assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
         
