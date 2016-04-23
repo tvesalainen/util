@@ -12,16 +12,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,8 +39,11 @@ import org.vesalainen.util.function.IndexFunction;
  */
 public class BeanHelper
 {
-
-    private static final Pattern INDEX = Pattern.compile("[0-9]+");
+    private static final char Del = '.';
+    private static final String RegexDel = "\\.";
+    private static final char Plus = '+';
+    private static final char Minus = '-';
+    private static final Pattern Index = Pattern.compile("[0-9]+");
 
     private static final Object resolvType(Object bean, Object object, Function<Object,Object> defaultFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
@@ -115,13 +114,13 @@ public class BeanHelper
     }
     private static Object doFor(Object bean, String property, Class type, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
-        String[] parts = property.split("\\.");
+        String[] parts = property.split(RegexDel);
         int len = parts.length - 1;
         for (int ii = 0; ii < len; ii++)
         {
             bean = doIt(bean, parts[ii], null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
         }
-        int idx = property.lastIndexOf('.');
+        int idx = property.lastIndexOf(Del);
         if (idx != -1)
         {
             property = property.substring(idx + 1);
@@ -130,7 +129,7 @@ public class BeanHelper
     }
     private static Object doIt(Object bean, String property, Class argType, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
-        if (INDEX.matcher(property).matches())
+        if (Index.matcher(property).matches())
         {
             int index = Integer.parseInt(property);
             if (bean.getClass().isArray())
@@ -648,6 +647,40 @@ public class BeanHelper
         return set;
     }
     /**
+     * Return string before last '.'
+     * @param pattern
+     * @return 
+     */
+    public static final String prefix(String pattern)
+    {
+        int idx = pattern.lastIndexOf(Del);
+        if (idx != -1)
+        {
+            return pattern.substring(0, idx);
+        }
+        else
+        {
+            return "";
+        }
+    }
+    /**
+     * Return string after last '.'
+     * @param pattern
+     * @return 
+     */
+    public static final String suffix(String pattern)
+    {
+        int idx = pattern.lastIndexOf(Del);
+        if (idx != -1)
+        {
+            return pattern.substring(idx+1);
+        }
+        else
+        {
+            return pattern;
+        }
+    }
+    /**
      * Return set of objects patterns
      * @param bean
      * @return 
@@ -710,8 +743,8 @@ public class BeanHelper
                         int index = 0;
                         for (Object o : arr)
                         {
-                            consumer.accept(name + "." + index);
-                            walk(name + "." + index + ".", o, consumer);
+                            consumer.accept(name + Del + index);
+                            walk(name + Del + index + Del, o, consumer);
                             index++;
                         }
                     }
@@ -723,14 +756,14 @@ public class BeanHelper
                             List list = (List) value;
                             for (Object o : list)
                             {
-                                consumer.accept(name + "." + index);
-                                walk(name + "." + index + ".", o, consumer);
+                                consumer.accept(name + Del + index);
+                                walk(name + Del + index + Del, o, consumer);
                                 index++;
                             }
                         }
                         else
                         {
-                            walk(name + ".", value, consumer);
+                            walk(name + Del, value, consumer);
                         }
                     }
                 }

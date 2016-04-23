@@ -36,6 +36,14 @@ public class BeanHelperTest
     }
 
     @Test
+    public void test0() throws NoSuchFieldException
+    {
+        assertEquals("prefix.1", BeanHelper.prefix("prefix.1.2"));
+        assertEquals("", BeanHelper.prefix("prefix"));
+        assertEquals("prefix", BeanHelper.suffix("prefix"));
+        assertEquals("suffix", BeanHelper.suffix("prefix.suffix"));
+    }
+    @Test
     public void test1() throws NoSuchFieldException
     {
         TestClass tc = new TestClass();
