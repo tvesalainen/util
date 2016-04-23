@@ -5,6 +5,7 @@
 package org.vesalainen.bean;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,8 +18,11 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.vesalainen.util.ConvertUtility;
+import org.vesalainen.util.LinkedSet;
 import org.vesalainen.util.function.IndexFunction;
 
 /**
@@ -145,11 +149,11 @@ public class BeanHelper
         return doFor(bean, property, null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
     }
 
-    private static Object getFieldValue(Object base, Field field)
+    private static Object getFieldValue(Object base, Class cls, String property) throws NoSuchFieldException
     {
         try
         {
-            return field.get(base);
+            return cls.getField(property).get(base);
         }
         catch (IllegalArgumentException | IllegalAccessException ex)
         {
@@ -175,7 +179,7 @@ public class BeanHelper
     {
         return list.get(index);
     }
-    private static Object doFor(Object bean, String property, Class type, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
+    private static Object doFor(Object bean, String property, Class type, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         String[] parts = property.split("\\.");
         int len = parts.length - 1;
@@ -190,7 +194,7 @@ public class BeanHelper
         }
         return doIt(bean, property, type, arrayFunc, listFunc, fieldFunc, methodFunc);
     }
-    private static Object doIt(Object bean, String property, Class argType, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
+    private static Object doIt(Object bean, String property, Class argType, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         if (INDEX.matcher(property).matches())
         {
@@ -212,7 +216,7 @@ public class BeanHelper
         {
             try
             {
-                return fieldFunc.apply(bean, type.getField(property));
+                return fieldFunc.apply(bean, type, property);
             }
             catch (NoSuchFieldException exx)
             {
@@ -269,7 +273,7 @@ public class BeanHelper
             null,
             (Object[] a, int i)->{return a[i].getClass().getGenericSuperclass();},
             (List l, int i)->{return l.get(i).getClass().getGenericSuperclass();},
-            (Object o, Field f)->{return f.getGenericType();}, 
+            (Object o, Class c, String p)->{return getField(c, p).getGenericType();}, 
             (Object o, Method m)->{return m.getGenericReturnType();});
         if (type instanceof ParameterizedType)
         {
@@ -287,10 +291,38 @@ public class BeanHelper
         }
         return null;
     }
-
-    private static Class getFieldType(Object bean, Field field)
+    /**
+     * Returns Declared field either from given class or it's super class
+     * @param cls
+     * @param fieldname
+     * @return
+     * @throws NoSuchFieldException 
+     */
+    public static Field getField(Class cls, String fieldname) throws NoSuchFieldException
     {
-        return field.getType();
+        while (true)
+        {
+            try
+            {
+                return cls.getDeclaredField(fieldname);
+            }
+            catch (NoSuchFieldException ex)
+            {
+                cls = cls.getSuperclass();
+                if (Object.class.equals(cls))
+                {
+                    throw ex;
+                }
+            }
+            catch (SecurityException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+    private static Class getFieldType(Object bean, Class cls, String property) throws NoSuchFieldException
+    {
+        return getField(cls, property).getType();
     }
     private static Class getMethodType(Object bean, Method method)
     {
@@ -314,9 +346,9 @@ public class BeanHelper
     {
         return (Class) doFor(bean, property, null, BeanHelper::getObjectType, BeanHelper::getObjectType, BeanHelper::getFieldType, BeanHelper::getMethodType);
     }
-    private static Object getFieldAnnotation(Object annotationClass, Field field)
+    private static Object getFieldAnnotation(Object annotationClass, Class cls, String property) throws NoSuchFieldException
     {
-        return field.getAnnotation((Class)annotationClass);
+        return getField(cls, property).getAnnotation((Class)annotationClass);
     }
     private static Object getMethodAnnotation(Object annotationClass, Method method)
     {
@@ -340,6 +372,41 @@ public class BeanHelper
             (List l, int i)->{return l.get(i).getClass().getAnnotation(annotationClass);},
             BeanHelper::getFieldAnnotation, 
             BeanHelper::getMethodAnnotation);
+    }
+    /**
+     * Return propertys annotations
+     * @param <T>
+     * @param bean
+     * @param property
+     * @return 
+     */
+    public static final <T extends Annotation> T[] getAnnotations(Object bean, String property)
+    {
+        return (T[]) doFor(
+            bean, 
+            property, 
+            null,
+            (Object[] a, int i)->{return a[i].getClass().getAnnotations();},
+            (List l, int i)->{return l.get(i).getClass().getAnnotations();},
+            (Object b, Class c, String p)->{return getField(c, p).getAnnotations();}, 
+            (Object b, Method m)->{return m.getAnnotations();});
+    }
+    /**
+     * Returns AnnotatedElement for property
+     * @param bean
+     * @param property
+     * @return 
+     */
+    public static final AnnotatedElement getAnnotatedElement(Object bean, String property)
+    {
+        return (AnnotatedElement) doFor(
+            bean, 
+            property, 
+            null,
+            (Object[] a, int i)->{return a[i].getClass();},
+            (List l, int i)->{return l.get(i).getClass();},
+            (Object b, Class c, String p)->{return getField(c, p);}, 
+            (Object b, Method m)->{return m;});
     }
     /**
      * Default object factory that calls newInstance method. Checked exceptions
@@ -423,7 +490,7 @@ public class BeanHelper
             null,
             (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
             (List l, int i)->{l.remove(i);return null;},
-            (Object b, Field f)->{throw  new UnsupportedOperationException("not supported");},
+            (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
         );
     }
@@ -485,9 +552,9 @@ public class BeanHelper
             type,
             (Object[] a, int i)->{a[i]=value;return null;},
             (List l, int i)->{l.set(i, value);return null;},
-            (Object b, Field f)->{try
+            (Object b, Class c, String p)->{try
             {
-                f.set(b, value);return null;
+                c.getField(p).set(b, value);return null;
             }
             catch (IllegalArgumentException | IllegalAccessException ex)
             {
@@ -506,7 +573,7 @@ public class BeanHelper
     }
 
     /**
-     * field -> getField
+     * property -> getProperty
      *
      * @param field
      * @param fieldName
@@ -536,30 +603,34 @@ public class BeanHelper
     }
 
     /**
-     * field -> setField
+     * property -> setField
      *
-     * @param field
+     * @param property
      * @return
      */
-    public static final String setter(String field)
+    public static final String setter(String property)
     {
-        return "set" + upper(field);
+        return "set" + upper(property);
     }
 
     /**
      * <p>
-     * (g/s)etField -> field
-     * <p>
-     * Field -> field
+     * (g/s)etField -> property
+ <p>
+     * Field -> property
      *
      * @param etter
      * @return
      */
-    public static final String field(String etter)
+    public static final String property(String etter)
     {
         if (etter.startsWith("get") || etter.startsWith("set"))
         {
             etter = etter.substring(3);
+        }
+        if (etter.startsWith("is"))
+        {
+            etter = etter.substring(2);
         }
         return lower(etter);
     }
@@ -594,9 +665,9 @@ public class BeanHelper
      * @param method
      * @return
      */
-    public static final String getField(Method method)
+    public static final String getProperty(Method method)
     {
-        return field(method.getName());
+        return property(method.getName());
     }
 
     /**
@@ -607,14 +678,27 @@ public class BeanHelper
      */
     public static final Set<String> getProperties(Class<?> cls)
     {
-        Set<String> set = new HashSet<>();
-        for (Method method : cls.getDeclaredMethods())
+        Set<String> set = new LinkedSet<>();
+        for (Method method : cls.getMethods())
         {
-            if (method.getName().startsWith("get")
-                    && method.getParameterCount() == 0
-                    && !Void.class.equals(method.getReturnType()))
+            String name = method.getName();
+            if ((name.startsWith("get") || name.startsWith("is"))
+                    && method.getParameterCount() == 0)
             {
-                set.add(getField(method));
+                String property = getProperty(method);
+                Class<?> returnType = method.getReturnType();
+                if (!List.class.isAssignableFrom(returnType))
+                {
+                    try
+                    {
+                        cls.getMethod(setter(property), returnType);
+                    }
+                    catch (NoSuchMethodException ex)
+                    {
+                        continue;
+                    }
+                }
+                set.add(property);
             }
         }
         for (Field field : cls.getFields())
@@ -630,7 +714,7 @@ public class BeanHelper
      */
     public static final Set<String> getProperties(Object bean)
     {
-        Set<String> set = new HashSet<>();
+        Set<String> set = new LinkedSet<>();
         walk(bean, (String s,Object o)->set.add(s));
         return set;
     }

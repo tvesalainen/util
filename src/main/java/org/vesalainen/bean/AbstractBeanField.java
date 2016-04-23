@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import org.vesalainen.util.ConvertUtility;
 
 /**
- * An utility to access objects field using getX(), isX() and setX() methods
+ * An utility to access objects property using getX(), isX() and setX() methods
  * @author tkv
  * @param <T> Base class type
  * @param <D> Field type
