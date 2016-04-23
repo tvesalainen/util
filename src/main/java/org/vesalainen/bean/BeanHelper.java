@@ -10,8 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +19,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.vesalainen.util.ConvertUtility;
-import org.vesalainen.util.ConvertUtilityException;
 import org.vesalainen.util.function.IndexFunction;
 
 /**
@@ -67,7 +64,7 @@ public class BeanHelper
 
     private static final void walk(String prefix, Object bean, BiConsumer<String, Object> consumer)
     {
-        for (String fld : getFields(bean.getClass()))
+        for (String fld : getProperties(bean.getClass()))
         {
             Object value = getValue(bean, fld);
             if (value != null)
@@ -608,7 +605,7 @@ public class BeanHelper
      * @param cls
      * @return
      */
-    public static final Set<String> getFields(Class<?> cls)
+    public static final Set<String> getProperties(Class<?> cls)
     {
         Set<String> set = new HashSet<>();
         for (Method method : cls.getDeclaredMethods())
@@ -624,6 +621,17 @@ public class BeanHelper
         {
             set.add(field.getName());
         }
+        return set;
+    }
+    /**
+     * Return set of objects patterns
+     * @param bean
+     * @return 
+     */
+    public static final Set<String> getProperties(Object bean)
+    {
+        Set<String> set = new HashSet<>();
+        walk(bean, (String s,Object o)->set.add(s));
         return set;
     }
 }
