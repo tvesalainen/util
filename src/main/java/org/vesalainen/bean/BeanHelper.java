@@ -664,6 +664,31 @@ public class BeanHelper
         }
     }
     /**
+     * Return true if string after last '.' is numeric
+     * @param pattern
+     * @return 
+     */
+    public static final boolean isListItem(String pattern)
+    {
+        int idx = pattern.lastIndexOf(Del);
+        if (idx != -1)
+        {
+            try
+            {
+                Integer.parseInt(pattern.substring(idx+1));
+                return true;
+            }
+            catch (NumberFormatException ex)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    /**
      * Return string after last '.'
      * @param pattern
      * @return 

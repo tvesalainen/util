@@ -16,7 +16,6 @@
  */
 package org.vesalainen.bean;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -42,6 +41,9 @@ public class BeanHelperTest
         assertEquals("", BeanHelper.prefix("prefix"));
         assertEquals("prefix", BeanHelper.suffix("prefix"));
         assertEquals("suffix", BeanHelper.suffix("prefix.suffix"));
+        assertTrue(BeanHelper.isListItem("prefix.1.2"));
+        assertFalse(BeanHelper.isListItem("2"));
+        assertFalse(BeanHelper.isListItem("prefix"));
     }
     @Test
     public void test1() throws NoSuchFieldException
