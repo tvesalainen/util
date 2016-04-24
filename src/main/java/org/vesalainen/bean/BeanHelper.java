@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
@@ -469,36 +470,51 @@ public class BeanHelper
      */
     public static final void setValue(Object bean, String property, Object v)
     {
-        Class<?> type = BeanHelper.getType(bean, property);
-        if (v != null)
+        Object vv = BeanHelper.getValue(bean, property);
+        if (v != null && v.getClass().isArray() &&  vv != null && (vv instanceof Collection))
         {
-            v = ConvertUtility.convert(type, v);
+            Collection col = (Collection) vv;
+            Object[] arr = (Object[]) v;
+            Class[] pt = BeanHelper.getParameterTypes(bean, property);
+            col.clear();
+            for (Object o : arr)
+            {
+                col.add(ConvertUtility.convert(pt[0], o));
+            }
         }
-        Object value = v;
-        doFor(
-            bean, 
-            property, 
-            type,
-            (Object[] a, int i)->{a[i]=value;return null;},
-            (List l, int i)->{l.set(i, value);return null;},
-            (Object b, Class c, String p)->{try
+        else
+        {
+            Class<?> type = BeanHelper.getType(bean, property);
+            if (v != null)
             {
-                c.getField(p).set(b, value);return null;
+                v = ConvertUtility.convert(type, v);
             }
-            catch (IllegalArgumentException | IllegalAccessException ex)
-            {
-                throw new IllegalArgumentException(ex);
-            }
-            }, 
-            (Object b, Method m)->{try
-            {
-                m.invoke(b, value);return null;
-            }
-            catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex)
-            {
-                throw new IllegalArgumentException(ex);
-            }
-            });
+            Object value = v;
+            doFor(
+                bean, 
+                property, 
+                type,
+                (Object[] a, int i)->{a[i]=value;return null;},
+                (List l, int i)->{l.set(i, value);return null;},
+                (Object b, Class c, String p)->{try
+                {
+                    c.getField(p).set(b, value);return null;
+                }
+                catch (IllegalArgumentException | IllegalAccessException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+                }, 
+                (Object b, Method m)->{try
+                {
+                    m.invoke(b, value);return null;
+                }
+                catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+                });
+        }
     }
 
     /**

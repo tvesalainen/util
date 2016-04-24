@@ -17,12 +17,14 @@
 package org.vesalainen.bean;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.bean.BeanHelperTest.TestClass.En;
 import org.vesalainen.util.Lists;
 
 /**
@@ -82,7 +84,7 @@ public class BeanHelperTest
         
         BeanHelper.stream(tc).forEach((String n)->BeanHelper.getType(tc, n));
         BeanHelper.stream(tc).forEach((String n)->System.err.println(n));
-        assertEquals(14, BeanHelper.stream(tc).count());
+        assertEquals(16, BeanHelper.stream(tc).count());
         
         assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
         
@@ -109,6 +111,18 @@ public class BeanHelperTest
         
     }
     
+    @Test
+    public void test2() throws NoSuchFieldException
+    {
+        TestClass tc = new TestClass();
+
+        BeanHelper.setValue(tc, "en", En.E3);
+        assertEquals(En.E3, BeanHelper.getValue(tc, "en"));
+        
+        BeanHelper.setValue(tc, "es", new En[]{En.E3});
+        assertEquals(EnumSet.of(En.E3), BeanHelper.getValue(tc, "es"));
+        
+    }
     @XmlRootElement(name = "test")
     static class InnerClass
     {
@@ -137,6 +151,9 @@ public class BeanHelperTest
     }
     static class TestClass
     {
+        enum En {E1, E2, E3, E4};
+        protected En en;
+        protected EnumSet<En> es = EnumSet.noneOf(En.class);
         private int cnt;
         private String name;
         public long number;
@@ -148,6 +165,26 @@ public class BeanHelperTest
             inners = new ArrayList<>();
             inners.add(new InnerClass("test1"));
             inners.add(new InnerClass("test2"));
+        }
+
+        public EnumSet<En> getEs()
+        {
+            return es;
+        }
+
+        public void setEs(EnumSet<En> es)
+        {
+            this.es = es;
+        }
+
+        public En getEn()
+        {
+            return en;
+        }
+
+        public void setEn(En en)
+        {
+            this.en = en;
         }
 
         public List<InnerClass> getInners()
