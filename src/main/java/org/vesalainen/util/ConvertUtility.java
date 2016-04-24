@@ -21,6 +21,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -316,6 +325,38 @@ public class ConvertUtility
                         return (T) new Color(ci);
                     }
                 }
+                if (ZonedDateTime.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) ZonedDateTime.parse(string);
+                }
+                if (Duration.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) Duration.parse(string);
+                }
+                if (LocalDate.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) LocalDate.parse(string);
+                }
+                if (LocalDateTime.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) LocalDateTime.parse(string);
+                }
+                if (LocalTime.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) LocalTime.parse(string);
+                }
+                if (Period.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) Period.parse(string);
+                }
+                if (Year.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) Year.parse(string);
+                }
+                if (YearMonth.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) YearMonth.parse(string);
+                }
                 try
                 {
                     // try to find valueOf method
@@ -398,6 +439,62 @@ public class ConvertUtility
                 {
                     Color color = (Color) object;
                     return (T) String.format("#%06x", color.getRGB() & 0xffffff);
+                }
+            }
+            if (object instanceof Duration)
+            {
+                Duration d = (Duration) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.toString();
+                }
+            }
+            if (object instanceof LocalDate)
+            {
+                LocalDate d = (LocalDate) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                }
+            }
+            if (object instanceof ZonedDateTime)
+            {
+                ZonedDateTime d = (ZonedDateTime) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.format(DateTimeFormatter.ISO_DATE_TIME);
+                }
+            }
+            if (object instanceof LocalDateTime)
+            {
+                LocalDateTime d = (LocalDateTime) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+            }
+            if (object instanceof LocalTime)
+            {
+                LocalTime d = (LocalTime) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.format(DateTimeFormatter.ISO_LOCAL_TIME);
+                }
+            }
+            if (object instanceof Year)
+            {
+                Year d = (Year) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.toString();
+                }
+            }
+            if (object instanceof YearMonth)
+            {
+                YearMonth d = (YearMonth) object;
+                if (expectedReturnType.equals(String.class))
+                {
+                    return (T) d.toString();
                 }
             }
             try
