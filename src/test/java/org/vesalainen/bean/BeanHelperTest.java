@@ -17,6 +17,15 @@
 package org.vesalainen.bean;
 
 import java.awt.Color;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -125,6 +134,47 @@ public class BeanHelperTest
         
         BeanHelper.setValue(tc, "color", String.format("#%06x", Color.GREEN.getRGB() & 0xffffff));
         assertEquals(Color.GREEN, BeanHelper.getValue(tc, "color"));
+    }
+    @Test
+    public void testDates() throws NoSuchFieldException
+    {
+        Dates d = new Dates();
+
+        BeanHelper.setValue(d, "duration", "PT20.345S");
+        assertEquals(Duration.ofMillis(20345), BeanHelper.getValue(d, "duration"));
+        
+        BeanHelper.setValue(d, "localDate", "2016-04-04");
+        assertEquals(LocalDate.of(2016, Month.APRIL, 4), BeanHelper.getValue(d, "localDate"));
+        
+        BeanHelper.setValue(d, "localDateTime", "2007-12-03T10:15:30");
+        assertEquals(LocalDateTime.of(2007, Month.DECEMBER, 3, 10, 15, 30), BeanHelper.getValue(d, "localDateTime"));
+        
+        BeanHelper.setValue(d, "localTime", "10:15:30");
+        assertEquals(LocalTime.of(10, 15, 30), BeanHelper.getValue(d, "localTime"));
+        
+        BeanHelper.setValue(d, "period", "P1Y2M3W4D");
+        assertEquals(Period.of(1, 2, 25), BeanHelper.getValue(d, "period"));
+        
+        BeanHelper.setValue(d, "year", "2016");
+        assertEquals(Year.of(2016), BeanHelper.getValue(d, "year"));
+        
+        BeanHelper.setValue(d, "yearMonth", "2016-02");
+        assertEquals(YearMonth.of(2016, Month.FEBRUARY), BeanHelper.getValue(d, "yearMonth"));
+        
+        BeanHelper.setValue(d, "zonedDateTime", "2007-12-03T10:15:30Z");
+        assertEquals(ZonedDateTime.parse("2007-12-03T10:15:30Z"), BeanHelper.getValue(d, "zonedDateTime"));
+        
+    }
+    static class Dates
+    {
+        public Duration duration;
+        public LocalDate localDate;
+        public LocalDateTime localDateTime;
+        public LocalTime localTime;
+        public Period period;
+        public Year year;
+        public YearMonth yearMonth;
+        public ZonedDateTime zonedDateTime;
     }
     @XmlRootElement(name = "test")
     static class InnerClass
