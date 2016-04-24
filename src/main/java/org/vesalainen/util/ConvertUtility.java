@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.awt.Color;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -307,6 +308,14 @@ public class ConvertUtility
                 {
                     return (T) Enum.valueOf((Class<Enum>) expectedReturnType, string);
                 }
+                if (Color.class.isAssignableFrom(expectedReturnType))
+                {
+                    if (string.startsWith("#"))
+                    {
+                        int ci = Integer.parseInt(string.substring(1), 16);
+                        return (T) new Color(ci);
+                    }
+                }
                 try
                 {
                     // try to find valueOf method
@@ -381,6 +390,14 @@ public class ConvertUtility
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(date);
                     return (T)calendar;
+                }
+            }
+            if (object instanceof Color)
+            {
+                if (expectedReturnType.equals(Color.class))
+                {
+                    Color color = (Color) object;
+                    return (T) String.format("#%06x", color.getRGB() & 0xffffff);
                 }
             }
             try

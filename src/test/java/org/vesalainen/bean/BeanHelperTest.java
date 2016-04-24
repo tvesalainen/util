@@ -16,6 +16,7 @@
  */
 package org.vesalainen.bean;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -84,7 +85,7 @@ public class BeanHelperTest
         
         BeanHelper.stream(tc).forEach((String n)->BeanHelper.getType(tc, n));
         BeanHelper.stream(tc).forEach((String n)->System.err.println(n));
-        assertEquals(16, BeanHelper.stream(tc).count());
+        assertEquals(17, BeanHelper.stream(tc).count());
         
         assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
         
@@ -122,6 +123,8 @@ public class BeanHelperTest
         BeanHelper.setValue(tc, "es", new En[]{En.E3});
         assertEquals(EnumSet.of(En.E3), BeanHelper.getValue(tc, "es"));
         
+        BeanHelper.setValue(tc, "color", String.format("#%06x", Color.GREEN.getRGB() & 0xffffff));
+        assertEquals(Color.GREEN, BeanHelper.getValue(tc, "color"));
     }
     @XmlRootElement(name = "test")
     static class InnerClass
@@ -159,12 +162,23 @@ public class BeanHelperTest
         public long number;
         protected List<Integer> list = Lists.create(1, 2, 3, 4);
         public List<InnerClass> inners;
+        private Color color;
 
         public TestClass()
         {
             inners = new ArrayList<>();
             inners.add(new InnerClass("test1"));
             inners.add(new InnerClass("test2"));
+        }
+
+        public Color getColor()
+        {
+            return color;
+        }
+
+        public void setColor(Color color)
+        {
+            this.color = color;
         }
 
         public EnumSet<En> getEs()
