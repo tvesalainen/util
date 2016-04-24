@@ -18,6 +18,8 @@ package org.vesalainen.bean;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -50,7 +52,7 @@ public class BeanHelperTest
     {
         TestClass tc = new TestClass();
         BeanHelper.setValue(tc, "count", 123);
-        assertEquals(123, tc.count);
+        assertEquals(123, tc.cnt);
         assertEquals(123, BeanHelper.getValue(tc, "count"));
         BeanHelper.setValue(tc, "name", "Nimi");
         assertEquals("Nimi", tc.name);
@@ -100,11 +102,17 @@ public class BeanHelperTest
         BeanHelper.applyList(tc, "inners+do it right", (Class<Object> c, String h)->{return null;});
         assertEquals(4, BeanHelper.getValue(tc, "inners.size"));
         assertNull(BeanHelper.getValue(tc, "inners.3"));
+        
+        assertEquals("el", BeanHelper.getAnnotation(tc, "inners.0.test", XmlElement.class).name());
+        assertEquals("at", BeanHelper.getAnnotation(tc, "count", XmlAttribute.class).name());
+        
+        
     }
     
     @XmlRootElement(name = "test")
     static class InnerClass
     {
+        @XmlElement(name = "el")
         private String test;
 
         public InnerClass()
@@ -129,7 +137,7 @@ public class BeanHelperTest
     }
     static class TestClass
     {
-        private int count;
+        private int cnt;
         private String name;
         public long number;
         protected List<Integer> list = Lists.create(1, 2, 3, 4);
@@ -152,14 +160,15 @@ public class BeanHelperTest
             return list;
         }
 
+        @XmlAttribute(name = "at")
         public int getCount()
         {
-            return count;
+            return cnt;
         }
 
         public void setCount(int count)
         {
-            this.count = count;
+            this.cnt = count;
         }
 
         public String getName()

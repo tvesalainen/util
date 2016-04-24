@@ -279,10 +279,6 @@ public class BeanHelper
     {
         return (Class) doFor(bean, property, null, BeanHelper::getObjectType, BeanHelper::getObjectType, BeanHelper::getFieldType, BeanHelper::getMethodType);
     }
-    private static Object getFieldAnnotation(Object annotationClass, Class cls, String property) throws NoSuchFieldException
-    {
-        return getField(cls, property).getAnnotation((Class)annotationClass);
-    }
     private static Object getMethodAnnotation(Object annotationClass, Method method)
     {
         return method.getAnnotation((Class)annotationClass);
@@ -303,8 +299,8 @@ public class BeanHelper
             null,
             (Object[] a, int i)->{return a[i].getClass().getAnnotation(annotationClass);},
             (List l, int i)->{return l.get(i).getClass().getAnnotation(annotationClass);},
-            BeanHelper::getFieldAnnotation, 
-            BeanHelper::getMethodAnnotation);
+            (Object b, Class c, String p)->{return getField(c, p).getAnnotation(annotationClass);}, 
+            (Object b, Method m)->{return m.getAnnotation(annotationClass);});
     }
     /**
      * Return propertys annotations
