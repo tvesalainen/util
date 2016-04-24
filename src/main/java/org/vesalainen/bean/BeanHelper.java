@@ -271,7 +271,7 @@ public class BeanHelper
         return list.get(index).getClass();
     }
     /**
-     * Return propertys type.
+     * Return property type.
      * @param bean
      * @param property
      * @return
@@ -285,7 +285,7 @@ public class BeanHelper
         return method.getAnnotation((Class)annotationClass);
     }
     /**
-     * Returns propertys annotation.
+     * Returns property annotation.
      * @param <T>
      * @param bean
      * @param property
@@ -302,6 +302,30 @@ public class BeanHelper
             (List l, int i)->{return l.get(i).getClass().getAnnotation(annotationClass);},
             (Object b, Class c, String p)->{return getField(c, p).getAnnotation(annotationClass);}, 
             (Object b, Method m)->{return m.getAnnotation(annotationClass);});
+    }
+    /**
+     * Return true if property exists.
+     * @param bean
+     * @param property
+     * @return 
+     */
+    public static final boolean hasProperty(Object bean, String property)
+    {
+        try
+        {
+            return (boolean) doFor(
+                bean, 
+                property, 
+                null,
+                (Object[] a, int i)->{return true;},
+                (List l, int i)->{return true;},
+                (Object b, Class c, String p)->{getField(c, p);return true;}, 
+                (Object b, Method m)->{return true;});
+        }
+        catch (BeanHelperException ex)
+        {
+            return false;
+        }
     }
     /**
      * Return propertys annotations

@@ -134,6 +134,10 @@ public class BeanHelperTest
         
         BeanHelper.setValue(tc, "color", String.format("#%06x", Color.GREEN.getRGB() & 0xffffff));
         assertEquals(Color.GREEN, BeanHelper.getValue(tc, "color"));
+
+        assertTrue(BeanHelper.hasProperty(tc, "es"));
+        assertFalse(BeanHelper.hasProperty(tc, "nowhere"));
+        
     }
     @Test
     public void testDates() throws NoSuchFieldException
