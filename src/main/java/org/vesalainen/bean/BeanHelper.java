@@ -472,7 +472,7 @@ public class BeanHelper
     {
         Object vv = BeanHelper.getValue(bean, property);
         if (v != null && v.getClass().isArray() &&  vv != null && (vv instanceof Collection))
-        {
+        {   // array assignment to Collection
             Collection col = (Collection) vv;
             Object[] arr = (Object[]) v;
             Class[] pt = BeanHelper.getParameterTypes(bean, property);
@@ -484,6 +484,14 @@ public class BeanHelper
         }
         else
         {
+            if (v != null && v.getClass().isArray())
+            {   // array with single menber
+                Object[] arr = (Object[]) v;
+                if (arr.length == 1)
+                {
+                    v = arr[0];
+                }
+            }
             Class<?> type = BeanHelper.getType(bean, property);
             if (v != null)
             {
