@@ -13,9 +13,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -23,6 +27,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.xml.bind.annotation.XmlAccessOrder;
+import javax.xml.bind.annotation.XmlAccessorOrder;
+import javax.xml.bind.annotation.XmlType;
+import org.vesalainen.util.ArrayBasedComparator;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.LinkedSet;
 import org.vesalainen.util.function.IndexFunction;
@@ -303,6 +311,7 @@ public class BeanHelper
             (Object b, Class c, String p)->{return getField(c, p).getAnnotation(annotationClass);}, 
             (Object b, Method m)->{return m.getAnnotation(annotationClass);});
     }
+    
     /**
      * Return true if property exists.
      * @param bean
@@ -649,13 +658,15 @@ public class BeanHelper
     private static final int ModifierMask = Modifier.ABSTRACT | Modifier.INTERFACE | Modifier.NATIVE | Modifier.STATIC;
     /**
      * Returns Set of classes patterns.
-     *
+     * <p>Annotations XmlAccessorOrder and XmlType are checked for correct ordering.
      * @param cls
      * @return
+     * @see javax.xml.bind.annotation.XmlAccessorOrder
+     * @see javax.xml.bind.annotation.XmlType
      */
-    public static final Set<String> getProperties(Class<?> cls)
+    public static final NavigableSet<String> getProperties(Class<?> cls)
     {
-        Set<String> set = new LinkedSet<>();
+        NavigableSet<String> set = setFor(cls);
         for (Method method : cls.getMethods())
         {
             if ((method.getModifiers() & ModifierMask) == 0)
@@ -689,6 +700,32 @@ public class BeanHelper
             }
         }
         return set;
+    }
+    private static NavigableSet<String> setFor(Class<?> cls)
+    {
+        XmlType xmlType = cls.getAnnotation(XmlType.class);
+        if (xmlType != null)
+        {
+            String[] propOrder = xmlType.propOrder();
+            if (propOrder != null && propOrder.length > 1)
+            {
+                return new TreeSet<>(new ArrayBasedComparator<>(propOrder));
+            }
+        }
+        XmlAccessorOrder xmlAccessorOrder = cls.getAnnotation(XmlAccessorOrder.class);
+        if (xmlAccessorOrder == null)
+        {
+            xmlAccessorOrder = cls.getPackage().getAnnotation(XmlAccessorOrder.class);
+        }
+        if (xmlAccessorOrder != null)
+        {
+            XmlAccessOrder xmlAccessOrder = xmlAccessorOrder.value();
+            if (xmlAccessOrder != null && xmlAccessOrder.equals(XmlAccessOrder.ALPHABETICAL))
+            {
+                return new TreeSet<>();
+            }
+        }
+        return new LinkedSet<>();
     }
     /**
      * Return string before last '.'

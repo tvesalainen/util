@@ -29,6 +29,8 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import javax.xml.bind.annotation.XmlAccessOrder;
+import javax.xml.bind.annotation.XmlAccessorOrder;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -169,6 +171,13 @@ public class BeanHelperTest
         assertEquals(ZonedDateTime.parse("2007-12-03T10:15:30Z"), BeanHelper.getValue(d, "zonedDateTime"));
         
     }
+    @Test
+    public void testAnnotations() throws NoSuchFieldException
+    {
+        XmlAccessorOrder annotation = Dates2.class.getAnnotation(XmlAccessorOrder.class);
+        assertEquals(XmlAccessOrder.ALPHABETICAL, annotation.value());
+    }
+    @XmlAccessorOrder(XmlAccessOrder.ALPHABETICAL)
     static class Dates
     {
         public Duration duration;
@@ -179,6 +188,10 @@ public class BeanHelperTest
         public Year year;
         public YearMonth yearMonth;
         public ZonedDateTime zonedDateTime;
+    }
+    static class Dates2 extends Dates
+    {
+        
     }
     @XmlRootElement(name = "test")
     static class InnerClass
