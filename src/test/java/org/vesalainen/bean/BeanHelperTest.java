@@ -120,7 +120,7 @@ public class BeanHelperTest
         assertEquals("el", BeanHelper.getAnnotation(tc, "inners.0.test", XmlElement.class).name());
         assertEquals("at", BeanHelper.getAnnotation(tc, "count", XmlAttribute.class).name());
         
-        
+        assertEquals("inners.0.test", BeanHelper.getPattern(tc, tc.inners.get(0).getTest()));
     }
     
     @Test

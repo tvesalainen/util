@@ -12,9 +12,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -796,6 +800,16 @@ public class BeanHelper
         return stream(bean).collect(Collectors.toSet());
     }
     /**
+     * Returns targets pattern or null if target not found.
+     * @param bean
+     * @param target
+     * @return 
+     */
+    public static String getPattern(Object bean, Object target)
+    {
+        return stream(bean).filter((s)->{return target.equals(getValue(bean, s));}).findFirst().orElse(null);
+    }
+    /**
      * Return stream of bean patterns
      * @param bean
      * @return 
@@ -816,6 +830,7 @@ public class BeanHelper
     }
     private static class SpliteratorImpl implements Spliterator<String>
     {
+        private Deque<Ctx> stack;
         private Object bean;
 
         public SpliteratorImpl(Object bean)
@@ -828,7 +843,7 @@ public class BeanHelper
         {
             walk(bean, action);
         }
-        
+
         private void walk(Object bean, Consumer<? super String> consumer)
         {
             walk("", bean, consumer);
@@ -879,7 +894,59 @@ public class BeanHelper
         @Override
         public boolean tryAdvance(Consumer<? super String> action)
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (stack == null)
+            {
+                stack = new ArrayDeque<>();
+                stack.push(new Ctx("", bean));
+            }
+            while (!stack.isEmpty())
+            {
+                Ctx c = stack.peek();
+                if (c.oit != null && c.oit.hasNext())
+                {
+                    action.accept(c.name + Del + c.idx);
+                    Object next = c.oit.next();
+                    stack.push(new Ctx(c.name+Del+c.idx+Del, next));
+                    c.idx++;
+                    return true;
+                }
+                if (c.fit == null)
+                {
+                    c.fit = getProperties(c.ob.getClass()).iterator();
+                }
+                if (c.fit.hasNext())
+                {
+                    String fld = c.fit.next();
+                    c.name = c.prefix + fld;
+                    action.accept(c.name);
+                    Object value = getValue(c.ob, fld);
+                    if (value != null)
+                    {
+                        if (value.getClass().isArray())
+                        {
+                            Object[] arr = (Object[]) value;
+                            c.oit = Arrays.asList(arr).iterator();
+                            c.idx = 0;
+                        }
+                        else
+                        {
+                            if (value instanceof List)
+                            {
+                                List list = (List) value;
+                                c.oit = list.iterator();
+                                c.idx = 0;
+                            }
+                            else
+                            {
+                                stack.push(new Ctx(c.name + Del, value));
+                            }
+                        }
+                    }
+                    return true;
+                }
+                stack.pop();
+            }
+            return false;
         }
 
         @Override
@@ -900,5 +967,21 @@ public class BeanHelper
             return 0;
         }
         
+    }
+    private static class Ctx
+    {
+        private String prefix;
+        private Object ob;
+        private Iterator<String> fit;
+        private Iterator<Object> oit;
+        private int idx;
+        private String name;
+
+        public Ctx(String p, Object o)
+        {
+            this.prefix = p;
+            this.ob = o;
+        }
+
     }
 }
