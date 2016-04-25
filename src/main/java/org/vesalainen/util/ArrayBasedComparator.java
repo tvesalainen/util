@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * A Comparator that orders items in same order as given array. Items which
- * don't have equal in order array are put last without ordering.
+ * don't have equal in order array are put first without ordering.
  * @author tkv
  * @param <T>
  */
@@ -44,8 +44,8 @@ public class ArrayBasedComparator<T> implements Comparator<T>
     @Override
     public int compare(T o1, T o2)
     {
-        int i1 = map.getOrDefault(o1, Integer.MAX_VALUE);
-        int i2 = map.getOrDefault(o2, Integer.MAX_VALUE);
+        int i1 = map.getOrDefault(o1, -1);
+        int i2 = map.getOrDefault(o2, -1);
         return i1 - i2;
     }
     

@@ -37,7 +37,7 @@ public class ArrayBasedComparatorTest
     {
         ArrayBasedComparator<Integer> abc = new ArrayBasedComparator<>(3, 1, 2);
         Integer[] us = new Integer[] { 1, 2, 2, 3, 4, 1};
-        Integer[] exp = new Integer[] { 3, 1, 1, 2, 2, 4};
+        Integer[] exp = new Integer[] { 4, 3, 1, 1, 2, 2};
         Arrays.sort(us, abc);
         assertArrayEquals(exp, us);
     }
