@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessorOrder;
 import javax.xml.bind.annotation.XmlType;
 import org.vesalainen.util.ArrayBasedComparator;
+import org.vesalainen.util.ArrayIterator;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.LinkedSet;
 import org.vesalainen.util.function.IndexFunction;
@@ -925,7 +926,7 @@ public class BeanHelper
                         if (value.getClass().isArray())
                         {
                             Object[] arr = (Object[]) value;
-                            c.oit = Arrays.asList(arr).iterator();
+                            c.oit = new ArrayIterator<>(arr);
                             c.idx = 0;
                         }
                         else
