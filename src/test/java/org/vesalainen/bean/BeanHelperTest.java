@@ -29,6 +29,8 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessorOrder;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -140,6 +142,17 @@ public class BeanHelperTest
         assertTrue(BeanHelper.hasProperty(tc, "es"));
         assertFalse(BeanHelper.hasProperty(tc, "nowhere"));
         
+    }
+    @Test
+    @SuppressWarnings("empty-statement")
+    public void testWalks() throws NoSuchFieldException
+    {
+        TestClass tc = new TestClass();
+        List<String> l1 = BeanHelper.stream(tc).collect(Collectors.toList());
+        Spliterator<String> spliterator = BeanHelper.spliterator(tc);
+        List<String> l2 = new ArrayList<>();
+        while (spliterator.tryAdvance((s)->l2.add(s)));
+        assertEquals(l1, l2);
     }
     @Test
     public void testDates() throws NoSuchFieldException
