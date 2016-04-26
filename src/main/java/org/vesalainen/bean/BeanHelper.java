@@ -13,11 +13,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
@@ -712,7 +709,7 @@ public class BeanHelper
         if (xmlType != null)
         {
             String[] propOrder = xmlType.propOrder();
-            if (propOrder != null && propOrder.length > 1)
+            if (propOrder != null && propOrder.length > 0)
             {
                 return new TreeSet<>(new ArrayBasedComparator<>(propOrder));
             }
