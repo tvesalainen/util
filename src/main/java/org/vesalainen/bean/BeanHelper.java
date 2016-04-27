@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlAccessorOrder;
 import javax.xml.bind.annotation.XmlType;
 import org.vesalainen.util.ArrayBasedComparator;
 import org.vesalainen.util.ArrayIterator;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.LinkedSet;
 import org.vesalainen.util.function.IndexFunction;
@@ -765,7 +766,7 @@ public class BeanHelper
         }
         return new LinkedSet<>();
     }
-    private boolean separator(int cc)
+    private static boolean separator(int cc)
     {
         switch (cc)
         {
@@ -779,13 +780,13 @@ public class BeanHelper
         }
     }
     /**
-     * Return string before last '.'
+     * Return string before last '.'/'+'/'-'/'-'
      * @param pattern
      * @return 
      */
     public static final String prefix(String pattern)
     {
-        int idx = pattern.lastIndexOf(Del);
+        int idx = CharSequences.lastIndexOf(pattern, BeanHelper::separator);
         if (idx != -1)
         {
             return pattern.substring(0, idx);
@@ -821,13 +822,13 @@ public class BeanHelper
         }
     }
     /**
-     * Return string after last '.'
+     * Return string after last '.'/'+'/'-'/'-'
      * @param pattern
      * @return 
      */
     public static final String suffix(String pattern)
     {
-        int idx = pattern.lastIndexOf(Del);
+        int idx = CharSequences.lastIndexOf(pattern, BeanHelper::separator);
         if (idx != -1)
         {
             return pattern.substring(idx+1);
