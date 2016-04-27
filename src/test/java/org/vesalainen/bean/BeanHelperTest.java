@@ -109,16 +109,16 @@ public class BeanHelperTest
         BeanHelper.removeList(tc, "list.5");
         assertEquals(5, BeanHelper.getValue(tc, "list.size"));
         
-        BeanHelper.applyList(tc, "list.0-");
+        BeanHelper.applyList(tc, "list.0"+BeanHelper.Rem);
         assertEquals(4, BeanHelper.getValue(tc, "list.size"));
         
-        BeanHelper.applyList(tc, "list.0=", (Class<Integer> c, String h)->{return 0;});
+        BeanHelper.applyList(tc, "list.0"+BeanHelper.Assign, (Class<Integer> c, String h)->{return 0;});
         assertEquals(4, BeanHelper.getValue(tc, "list.size"));
         
-        BeanHelper.applyList(tc, "inners+");
+        BeanHelper.applyList(tc, "inners"+BeanHelper.Add);
         assertEquals(3, BeanHelper.getValue(tc, "inners.size"));
         
-        BeanHelper.applyList(tc, "inners+do it right", (Class<Object> c, String h)->{return null;});
+        BeanHelper.applyList(tc, "inners"+BeanHelper.Add+"do it right", (Class<Object> c, String h)->{return null;});
         assertEquals(4, BeanHelper.getValue(tc, "inners.size"));
         assertNull(BeanHelper.getValue(tc, "inners.3"));
         

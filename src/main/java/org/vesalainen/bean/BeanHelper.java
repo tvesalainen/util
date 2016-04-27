@@ -51,11 +51,12 @@ import org.vesalainen.util.function.IndexFunction;
  */
 public class BeanHelper
 {
-    private static final char Del = '.';
-    private static final String RegexDel = "\\.";
-    private static final char Add = '+';
-    private static final String Remove = "-";
-    private static final char Assign = '=';
+    public static final char Lim = '.';
+    public static final String RegexDel = "\\"+Lim;
+    public static final char Add = '+';
+    public static final char Rem = '#';
+    public static final String Remove = Rem+"";
+    public static final char Assign = '=';
     private static final Pattern Index = Pattern.compile("[0-9]+");
 
     private static final Object resolvType(Object bean, Object object, Function<Object,Object> defaultFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
@@ -133,7 +134,7 @@ public class BeanHelper
         {
             bean = doIt(bean, parts[ii], null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
         }
-        int idx = property.lastIndexOf(Del);
+        int idx = property.lastIndexOf(Lim);
         if (idx != -1)
         {
             property = property.substring(idx + 1);
@@ -770,17 +771,17 @@ public class BeanHelper
     {
         switch (cc)
         {
-            case '.':
-            case '+':
-            case '-':
-            case '=':
+            case Lim:
+            case Add:
+            case Rem:
+            case Assign:
                 return true;
             default:
                 return false;
         }
     }
     /**
-     * Return string before last '.'/'+'/'-'/'-'
+     * Return string before last reparator
      * @param pattern
      * @return 
      */
@@ -797,13 +798,13 @@ public class BeanHelper
         }
     }
     /**
-     * Return true if string after last '.' is numeric
+     * Return true if string after last separator is numeric
      * @param pattern
      * @return 
      */
     public static final boolean isListItem(String pattern)
     {
-        int idx = pattern.lastIndexOf(Del);
+        int idx = pattern.lastIndexOf(Lim);
         if (idx != -1)
         {
             try
@@ -912,8 +913,8 @@ public class BeanHelper
                         int index = 0;
                         for (Object o : arr)
                         {
-                            consumer.accept(name + Del + index);
-                            walk(name + Del + index + Del, o, consumer);
+                            consumer.accept(name + Lim + index);
+                            walk(name + Lim + index + Lim, o, consumer);
                             index++;
                         }
                     }
@@ -925,14 +926,14 @@ public class BeanHelper
                             List list = (List) value;
                             for (Object o : list)
                             {
-                                consumer.accept(name + Del + index);
-                                walk(name + Del + index + Del, o, consumer);
+                                consumer.accept(name + Lim + index);
+                                walk(name + Lim + index + Lim, o, consumer);
                                 index++;
                             }
                         }
                         else
                         {
-                            walk(name + Del, value, consumer);
+                            walk(name + Lim, value, consumer);
                         }
                     }
                 }
@@ -952,9 +953,9 @@ public class BeanHelper
                 Ctx c = stack.peek();
                 if (c.oit != null && c.oit.hasNext())
                 {
-                    action.accept(c.name + Del + c.idx);
+                    action.accept(c.name + Lim + c.idx);
                     Object next = c.oit.next();
-                    stack.push(new Ctx(c.name+Del+c.idx+Del, next));
+                    stack.push(new Ctx(c.name+Lim+c.idx+Lim, next));
                     c.idx++;
                     return true;
                 }
@@ -986,7 +987,7 @@ public class BeanHelper
                             }
                             else
                             {
-                                stack.push(new Ctx(c.name + Del, value));
+                                stack.push(new Ctx(c.name + Lim, value));
                             }
                         }
                     }
