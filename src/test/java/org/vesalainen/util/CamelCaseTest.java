@@ -37,6 +37,9 @@ public class CamelCaseTest
         assertEquals("CamelCaseTest", CamelCase.camelCase("   Camel  Case  Test   "));
         assertEquals("CamelCaseTest", CamelCase.camelCase("camel case test"));
         assertEquals("CamelCaseTest", CamelCase.camelCase("camel123- case - test"));
+        assertEquals("Camel", CamelCase.camelCase("camel"));
+        assertEquals("C", CamelCase.camelCase("c"));
+        assertEquals("", CamelCase.camelCase(""));
     }
     
     @Test
