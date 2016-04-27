@@ -268,6 +268,39 @@ public class CharSequences
         }
         return -1;
     }
+
+    
+    
+    /**
+     * Returns last index of char or -1 if char not found
+     * @param seq
+     * @param c
+     * @return 
+     * @see java.lang.String#indexOf(int) 
+     */
+    public static int lastIndexOf(CharSequence seq, char c)
+    {
+        return lastIndexOf(seq, (x)->{return x==c;});
+    }
+    /**
+     * Returns last index on char where p matches
+     * @param seq
+     * @param p
+     * @param fromIndex
+     * @return 
+     */
+    public static int lastIndexOf(CharSequence seq, IntPredicate p)
+    {
+        int len = seq.length();
+        for (int ii=len-1;ii>=0;ii--)
+        {
+            if (p.test(seq.charAt(ii)))
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
     /**
      * Return true if cs1 and cs2 are same object or if their length and content
      * equals.

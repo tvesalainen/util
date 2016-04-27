@@ -765,6 +765,19 @@ public class BeanHelper
         }
         return new LinkedSet<>();
     }
+    private boolean separator(int cc)
+    {
+        switch (cc)
+        {
+            case '.':
+            case '+':
+            case '-':
+            case '=':
+                return true;
+            default:
+                return false;
+        }
+    }
     /**
      * Return string before last '.'
      * @param pattern

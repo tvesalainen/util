@@ -134,6 +134,14 @@ public class CharSequencesTest
     }
     
     @Test
+    public void testlastIndexOf()
+    {
+        assertEquals(3, CharSequences.lastIndexOf("012345", '3'));
+        assertEquals(-1, CharSequences.lastIndexOf("012345", 'a'));
+        assertEquals(5, CharSequences.lastIndexOf("012345", '5'));
+        assertEquals(0, CharSequences.lastIndexOf("012345", '0'));
+    }
+    @Test
     public void testTrim()
     {
         assertEquals("qwerty", CharSequences.trim("\t\r\n  qwerty\t\t\r\n  \t"));
