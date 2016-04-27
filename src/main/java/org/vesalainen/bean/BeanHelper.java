@@ -407,10 +407,11 @@ public class BeanHelper
      * @param <T>
      * @param base
      * @param fieldname 
+     * @return true if pattern was applied
      */
-    public static final <T> void applyList(Object base, String fieldname)
+    public static final <T> boolean applyList(Object base, String fieldname)
     {
-        applyList(base, fieldname, BeanHelper::defaultFactory);
+        return applyList(base, fieldname, BeanHelper::defaultFactory);
     }
     /**
      * Applies bean action by using given factory
@@ -424,8 +425,9 @@ public class BeanHelper
      * @param bean
      * @param property
      * @param factory 
+     * @return true if pattern was applied
      */
-    public static final <T> void applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
+    public static final <T> boolean applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
     {
         int addIdx = property.lastIndexOf(Add);
         if (addIdx != -1)
@@ -449,10 +451,11 @@ public class BeanHelper
                 }
                 else
                 {
-                    throw new IllegalArgumentException("nothing to apply");
+                    return false;
                 }
             }
         }
+        return true;
     }
     /**
      * Removes pattern item from list
