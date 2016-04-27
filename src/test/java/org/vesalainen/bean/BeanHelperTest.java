@@ -112,6 +112,9 @@ public class BeanHelperTest
         BeanHelper.applyList(tc, "list.0-");
         assertEquals(4, BeanHelper.getValue(tc, "list.size"));
         
+        BeanHelper.applyList(tc, "list.0=", (Class<Integer> c, String h)->{return 0;});
+        assertEquals(4, BeanHelper.getValue(tc, "list.size"));
+        
         BeanHelper.applyList(tc, "inners+");
         assertEquals(3, BeanHelper.getValue(tc, "inners.size"));
         

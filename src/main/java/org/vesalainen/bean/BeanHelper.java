@@ -52,8 +52,9 @@ public class BeanHelper
 {
     private static final char Del = '.';
     private static final String RegexDel = "\\.";
-    private static final char Plus = '+';
-    private static final char Minus = '-';
+    private static final char Add = '+';
+    private static final String Remove = "-";
+    private static final char Assign = '=';
     private static final Pattern Index = Pattern.compile("[0-9]+");
 
     private static final Object resolvType(Object bean, Object object, Function<Object,Object> defaultFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
@@ -397,10 +398,12 @@ public class BeanHelper
      * 
      * <p>Bean actions are:
      * <p>List item property remove by adding '-' to the end of pattern.
-     * <p>E.g. list.3- - list.remove(3)
+     * <p>E.g. list.3- same as list.remove(3)
+     * <p>List item property assign by adding '=' to the end of pattern
+     * <p>E.g. list.3=hint same as list.set(3, factory.get(cls, hint))
      * <p>List item creation to the end of the list.
-     * <p>E.g. list+ - add(factory.get(cls, null))
-     * <p>E.g. list+hint - add(factory.get(cls, hint))
+     * <p>E.g. list+ same as add(factory.get(cls, null))
+     * <p>E.g. list+hint same as add(factory.get(cls, hint))
      * @param <T>
      * @param base
      * @param fieldname 
@@ -424,21 +427,30 @@ public class BeanHelper
      */
     public static final <T> void applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
     {
-        int plusIdx = property.lastIndexOf('+');
-        if (plusIdx != -1)
+        int addIdx = property.lastIndexOf(Add);
+        if (addIdx != -1)
         {
-            String hint = property.substring(0, plusIdx+1);
-            addList(bean, property.substring(0, plusIdx), hint, factory);
+            String hint = property.substring(0, addIdx+1);
+            addList(bean, property.substring(0, addIdx), hint, factory);
         }
         else
         {
-            if (property.endsWith("-"))
+            int assignIdx = property.lastIndexOf(Assign);
+            if (assignIdx != -1)
             {
-                removeList(bean, property.substring(0, property.length()-1));
+                String hint = property.substring(0, assignIdx+1);
+                assignList(bean, property.substring(0, assignIdx), hint, factory);
             }
             else
             {
-                throw new IllegalArgumentException("nothing to apply");
+                if (property.endsWith(Remove))
+                {
+                    removeList(bean, property.substring(0, property.length()-1));
+                }
+                else
+                {
+                    throw new IllegalArgumentException("nothing to apply");
+                }
             }
         }
     }
@@ -471,7 +483,7 @@ public class BeanHelper
         addList(bean, property, null, (Class<T> c, String h)->{return value;});
     }
     /**
-     * Adds pattern item to end of list giving factory hint and factory
+     * Adds pattern item to end of list using given factory and hint
      * @param <T>
      * @param bean
      * @param property
@@ -496,6 +508,27 @@ public class BeanHelper
         {
             throw new IllegalArgumentException(fieldValue+" not List");
         }
+    }
+    /**
+     * Assign pattern item a new value using given factory (and hint)
+     * @param <T>
+     * @param bean
+     * @param property
+     * @param hint
+     * @param factory 
+     */
+    public static final <T> void assignList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
+    {
+        Class[] pt = getParameterTypes(bean, prefix(property));
+        doFor(
+            bean, 
+            property, 
+            null,
+            (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
+            (List l, int i)->{l.set(i, factory.apply(pt[0], hint));return null;},
+            (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
+            (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
+        );
     }
     /**
      * Set value
