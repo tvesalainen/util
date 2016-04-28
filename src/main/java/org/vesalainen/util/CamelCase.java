@@ -119,7 +119,7 @@ public class CamelCase
         @Override
         public boolean tryAdvance(Consumer<? super String> action)
         {
-            while (index < length && !Character.isLetter(text.charAt(index)))
+            while (index < length && !Character.isLetterOrDigit(text.charAt(index)))
             {
                 index++;
             }
@@ -128,7 +128,7 @@ public class CamelCase
                 return false;
             }
             int start = index;
-            while (index < length && Character.isAlphabetic(text.charAt(index)))
+            while (index < length && Character.isLetterOrDigit(text.charAt(index)))
             {
                 if (index - start > 0)
                 {
