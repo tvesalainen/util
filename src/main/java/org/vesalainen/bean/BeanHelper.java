@@ -434,7 +434,7 @@ public class BeanHelper
         int addIdx = property.lastIndexOf(Add);
         if (addIdx != -1)
         {
-            String hint = property.substring(0, addIdx+1);
+            String hint = property.substring(addIdx+1);
             addList(bean, property.substring(0, addIdx), hint, factory);
         }
         else
@@ -442,7 +442,7 @@ public class BeanHelper
             int assignIdx = property.lastIndexOf(Assign);
             if (assignIdx != -1)
             {
-                String hint = property.substring(0, assignIdx+1);
+                String hint = property.substring(assignIdx+1);
                 assignList(bean, property.substring(0, assignIdx), hint, factory);
             }
             else
