@@ -399,7 +399,7 @@ public class BeanHelper
      * Applies bean action by using default factory.
      * 
      * <p>Bean actions are:
-     * <p>List item property remove by adding '-' to the end of pattern.
+     * <p>List item property remove by adding '#' to the end of pattern.
      * <p>E.g. list.3- same as list.remove(3)
      * <p>List item property assign by adding '=' to the end of pattern
      * <p>E.g. list.3=hint same as list.set(3, factory.get(cls, hint))
@@ -418,7 +418,7 @@ public class BeanHelper
     /**
      * Applies bean action by using given factory
      * <p>Bean actions are:
-     * <p>List item property remove by adding '-' to the end of pattern.
+     * <p>List item property remove by adding '#' to the end of pattern.
      * <p>E.g. list.3- - list.remove(3)
      * <p>List item creation to the end of the list.
      * <p>E.g. list+ - add(factory.get(cls, null))
@@ -850,7 +850,7 @@ public class BeanHelper
         }
     }
     /**
-     * Return string after last '.'/'+'/'-'/'-'
+     * Return string after last '.'/'+'/'#'
      * @param pattern
      * @return 
      */
