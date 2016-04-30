@@ -31,7 +31,7 @@ public class ExpressionParserTest
     }
 
     @Test
-    public void test()
+    public void test1()
     {
         ExpressionParser ep = new ExpressionParser((s)->{return s;});
         assertEquals("qwerty", ep.replace("${qwerty}"));
@@ -39,4 +39,10 @@ public class ExpressionParserTest
         assertEquals("qwerty", ep.replace("${qw${er${t}}y}"));
     }
     
+    @Test
+    public void test2()
+    {
+        ExpressionParser ep = new ExpressionParser("abc");
+        assertEquals("12345", ep.replace("12${length}45"));
+    }
 }

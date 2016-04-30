@@ -18,6 +18,8 @@ package org.vesalainen.bean;
 
 import java.util.Map;
 import java.util.function.Function;
+import org.vesalainen.util.ConvertUtility;
+import static org.vesalainen.util.ConvertUtility.convert;
 
 /**
  * A parser class for ${key} expressions. Mapper function is used to replace
@@ -36,6 +38,10 @@ public class ExpressionParser
     {
         this((s)->{return map.get(s);});
     }
+    public ExpressionParser(Object bean)
+    {
+        this((s)->{return ExpressionParser.getValue(bean, s);});
+    }
     /**
      * Creator using functional interface
      * @param mapper 
@@ -43,6 +49,15 @@ public class ExpressionParser
     public ExpressionParser(Function<String, String> mapper)
     {
         this.mapper = mapper;
+    }
+    private static String getValue(Object bean, String property)
+    {
+        String s = ConvertUtility.convert(String.class, BeanHelper.getValue(bean, property));
+        if (s != null)
+        {
+            return s;
+        }
+        return "";
     }
     /**
      * Return string where ${key} expressions are replaced.
