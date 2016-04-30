@@ -460,6 +460,33 @@ public class BeanHelper
         return true;
     }
     /**
+     * Return true for add action
+     * @param property
+     * @return 
+     */
+    public static final boolean isAdd(String property)
+    {
+        return property.lastIndexOf(Add) != -1;
+    }
+    /**
+     * Return true for assign action
+     * @param property
+     * @return 
+     */
+    public static final boolean isAssign(String property)
+    {
+        return property.lastIndexOf(Assign) != -1;
+    }
+    /**
+     * Return true for remove action
+     * @param property
+     * @return 
+     */
+    public static final boolean isRemove(String property)
+    {
+        return property.lastIndexOf(Remove) != -1;
+    }
+    /**
      * Removes pattern item from list
      * @param bean
      * @param property 
