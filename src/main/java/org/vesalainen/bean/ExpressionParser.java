@@ -16,10 +16,12 @@
  */
 package org.vesalainen.bean;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.ConvertUtility;
-import static org.vesalainen.util.ConvertUtility.convert;
 
 /**
  * A parser class for ${key} expressions. Mapper function is used to replace
@@ -66,21 +68,38 @@ public class ExpressionParser
      */
     public String replace(String text)
     {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            replace(text, sb);
+            return sb.toString();
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+    /**
+     * Appends string where ${key} expressions are replaced.
+     * @param text
+     * @param out
+     * @throws IOException 
+     */
+    public void replace(String text, Appendable out) throws IOException
+    {
         int idx = text.indexOf("${");
         if (idx != -1)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append(text.substring(0, idx));
+            out.append(text.substring(0, idx));
             int end = findEnd(text, idx+2);
             String key = replace(text.substring(idx+2, end));
-            sb.append(mapper.apply(key));
-            sb.append(replace(text.substring(end+1)));
-            return sb.toString();
+            out.append(mapper.apply(key));
+            out.append(replace(text.substring(end+1)));
             
         }
         else
         {
-            return text;
+            out.append(text);
         }
     }
 
