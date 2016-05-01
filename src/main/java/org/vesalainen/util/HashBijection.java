@@ -34,8 +34,16 @@ public class HashBijection<T,S> implements Bijection<T,S>, Serializable
     @Override
     public void put(T t, S s)
     {
-        m1.put(t, s);
-        m2.put(s, t);
+        S oldS = m1.put(t, s);
+        if (oldS != null)
+        {
+            m2.remove(oldS);
+        }
+        T oldT = m2.put(s, t);
+        if (oldT != null)
+        {
+            m1.remove(oldT);
+        }
     }
 
     @Override
