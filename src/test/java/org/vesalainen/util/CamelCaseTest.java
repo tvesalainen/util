@@ -54,4 +54,9 @@ public class CamelCaseTest
     {
         assertEquals("camelCaseTest", CamelCase.property("   CamelCaseTest   "));
     }
+    @Test
+    public void testAllUpper()
+    {
+        assertEquals("CAMEL", CamelCase.title("CAMEL"));
+    }
 }

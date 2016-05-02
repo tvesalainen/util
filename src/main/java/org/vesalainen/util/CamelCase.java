@@ -132,7 +132,7 @@ public class CamelCase
             {
                 if (index - start > 0)
                 {
-                    if (Character.isUpperCase(text.charAt(index)))
+                    if (Character.isUpperCase(text.charAt(index)) && Character.isLowerCase(text.charAt(index-1)))
                     {
                         action.accept(upper(text.substring(start, index)));
                         return true;
