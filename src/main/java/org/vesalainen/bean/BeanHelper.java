@@ -371,8 +371,8 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{return a[i].getClass();},
-            (List l, int i)->{return l.get(i).getClass();},
+            (Object[] a, int i)->{return a[i]!=null?a[i].getClass():null;},
+            (List l, int i)->{Object o = l.get(i);return o!=null?o.getClass():null;},
             (Object b, Class c, String p)->{return getField(c, p);}, 
             (Object b, Method m)->{return m;});
     }
