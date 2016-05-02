@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
 
 /**
@@ -66,7 +67,7 @@ public class ExpressionParser
      * @param text
      * @return 
      */
-    public String replace(String text)
+    public String replace(CharSequence text)
     {
         try
         {
@@ -85,16 +86,16 @@ public class ExpressionParser
      * @param out
      * @throws IOException 
      */
-    public void replace(String text, Appendable out) throws IOException
+    public void replace(CharSequence text, Appendable out) throws IOException
     {
-        int idx = text.indexOf("${");
+        int idx = CharSequences.indexOf(text, "${");
         if (idx != -1)
         {
-            out.append(text.substring(0, idx));
+            out.append(text.subSequence(0, idx));
             int end = findEnd(text, idx+2);
-            String key = replace(text.substring(idx+2, end));
+            String key = replace(text.subSequence(idx+2, end));
             out.append(mapper.apply(key));
-            out.append(replace(text.substring(end+1)));
+            out.append(replace(text.subSequence(end+1, text.length())));
             
         }
         else
@@ -103,7 +104,7 @@ public class ExpressionParser
         }
     }
 
-    private int findEnd(String text, int start)
+    private int findEnd(CharSequence text, int start)
     {
         int len = text.length();
         boolean dollar = false;
@@ -132,6 +133,6 @@ public class ExpressionParser
                     dollar = false;
             }
         }
-        throw new IllegalArgumentException(text.substring(start));
+        throw new IllegalArgumentException(text.subSequence(start, text.length()).toString());
     }
 }
