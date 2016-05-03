@@ -53,7 +53,7 @@ public class ExpressionParser
     {
         this.mapper = mapper;
     }
-    private static String getValue(Object bean, String property)
+    public static String getValue(Object bean, String property)
     {
         String s = ConvertUtility.convert(String.class, BeanHelper.getValue(bean, property));
         if (s != null)
