@@ -6,6 +6,7 @@ package org.vesalainen.bean;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -148,7 +149,12 @@ public class BeanHelper
             int index = Integer.parseInt(property);
             if (bean.getClass().isArray())
             {
-                Object[] arr = (Object[]) bean;
+                int len = Array.getLength(bean);
+                Object[] arr = new Object[len];
+                for (int ii = 0;ii<len;ii++)    // TODO  
+                {
+                    arr[index] = Array.get(bean, index);
+                }
                 return arrayFunc.apply(arr, index);
             }
             if (bean instanceof List)
@@ -744,18 +750,25 @@ public class BeanHelper
                 {
                     String property = getProperty(method);
                     Class<?> returnType = method.getReturnType();
-                    if (!List.class.isAssignableFrom(returnType))
+                    if (
+                            returnType.isArray() ||
+                            List.class.isAssignableFrom(returnType)
+                            )
+                    {
+                        set.add(property);
+                    }
+                    else
                     {
                         try
                         {
                             cls.getMethod(setter(property), returnType);
+                            set.add(property);
                         }
                         catch (NoSuchMethodException ex)
                         {
                             continue;
                         }
                     }
-                    set.add(property);
                 }
             }
         }
@@ -936,10 +949,10 @@ public class BeanHelper
                 {
                     if (value.getClass().isArray())
                     {
-                        Object[] arr = (Object[]) value;
-                        int index = 0;
-                        for (Object o : arr)
+                        int len = Array.getLength(value);
+                        for (int index = 0;index<len;index++)
                         {
+                            Object o = Array.get(value, index);
                             consumer.accept(name + Lim + index);
                             walk(name + Lim + index + Lim, o, consumer);
                             index++;
@@ -1000,7 +1013,12 @@ public class BeanHelper
                     {
                         if (value.getClass().isArray())
                         {
-                            Object[] arr = (Object[]) value;
+                            int len = Array.getLength(value);
+                            Object[] arr = new Object[len];
+                            for (int index = 0;index<len;index++)
+                            {
+                                arr[index] = Array.get(value, index);
+                            }
                             c.oit = new ArrayIterator<>(arr);
                             c.idx = 0;
                         }
