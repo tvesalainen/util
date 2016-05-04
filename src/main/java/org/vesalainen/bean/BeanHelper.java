@@ -420,7 +420,7 @@ public class BeanHelper
      * @param fieldname 
      * @return true if pattern was applied
      */
-    public static final <T> boolean applyList(Object base, String fieldname)
+    public static final <T> T applyList(Object base, String fieldname)
     {
         return applyList(base, fieldname, BeanHelper::defaultFactory);
     }
@@ -438,13 +438,13 @@ public class BeanHelper
      * @param factory 
      * @return true if pattern was applied
      */
-    public static final <T> boolean applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
+    public static final <T> T applyList(Object bean, String property, BiFunction<Class<T>,String,T> factory)
     {
         int addIdx = property.lastIndexOf(Add);
         if (addIdx != -1)
         {
             String hint = property.substring(addIdx+1);
-            addList(bean, property.substring(0, addIdx), hint, factory);
+            return addList(bean, property.substring(0, addIdx), hint, factory);
         }
         else
         {
@@ -452,21 +452,20 @@ public class BeanHelper
             if (assignIdx != -1)
             {
                 String hint = property.substring(assignIdx+1);
-                assignList(bean, property.substring(0, assignIdx), hint, factory);
+                return assignList(bean, property.substring(0, assignIdx), hint, factory);
             }
             else
             {
                 if (property.endsWith(Remove))
                 {
-                    removeList(bean, property.substring(0, property.length()-1));
+                    return (T)removeList(bean, property.substring(0, property.length()-1));
                 }
                 else
                 {
-                    return false;
+                    return null;
                 }
             }
         }
-        return true;
     }
     /**
      * Return true for add action
@@ -500,14 +499,14 @@ public class BeanHelper
      * @param bean
      * @param property 
      */
-    public static final void removeList(Object bean, String property)
+    public static final Object removeList(Object bean, String property)
     {
-        doFor(
+        return doFor(
             bean, 
             property, 
             null,
             (Object a, int i)->{throw  new UnsupportedOperationException("not supported");},
-            (List l, int i)->{l.remove(i);return null;},
+            (List l, int i)->{return l.remove(i);},
             (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
         );
@@ -531,19 +530,20 @@ public class BeanHelper
      * @param hint
      * @param factory 
      */
-    public static final <T> void addList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
+    public static final <T> T addList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
     {
         Object fieldValue = getValue(bean, property);
         if (fieldValue instanceof List)
         {
             List list = (List) fieldValue;
             Class[] pt = getParameterTypes(bean, property);
-            Object value = factory.apply(pt[0], hint);
+            T value = (T)factory.apply(pt[0], hint);
             if (value != null && !pt[0].isAssignableFrom(value.getClass()))
             {
                 throw new IllegalArgumentException(pt[0]+" not assignable from "+value);
             }
             list.add(value);
+            return value;
         }
         else
         {
@@ -558,19 +558,21 @@ public class BeanHelper
      * @param hint
      * @param factory 
      */
-    public static final <T> void assignList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
+    public static final <T> T assignList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
     {
         Class[] pt = getParameterTypes(bean, prefix(property));
         Class type = pt != null && pt.length > 0 ? pt[0] : null;
+        T value = (T) factory.apply(type, hint);
         doFor(
             bean, 
             property, 
             null,
             (Object a, int i)->{Array.set(a, i, factory.apply(type, hint));return null;},
-            (List l, int i)->{l.set(i, factory.apply(type, hint));return null;},
+            (List l, int i)->{l.set(i, value);return null;},
             (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
         );
+        return value;
     }
     /**
      * Set value
