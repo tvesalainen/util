@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.lang.reflect.Array;
 import java.util.Iterator;
 
 /**
@@ -25,24 +26,35 @@ import java.util.Iterator;
  */
 public class ArrayIterator<T> implements Iterator<T>
 {
-    private final T[] array;
+    private final Object array;
     private int index;
+    private int length;
 
     public ArrayIterator(T[] array)
     {
         this.array = array;
+        this.length = array.length;
+    }
+    public ArrayIterator(Object array)
+    {
+        if (!array.getClass().isArray())
+        {
+            throw new IllegalArgumentException(array+" is not array");
+        }
+        this.array = array;
+        this.length = Array.getLength(array);
     }
     
     @Override
     public boolean hasNext()
     {
-        return (index < array.length);
+        return (index < length);
     }
 
     @Override
     public T next()
     {
-        return array[index++];
+        return (T) Array.get(array, index++);
     }
     
 }

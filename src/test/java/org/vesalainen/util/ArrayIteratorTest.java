@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.lang.reflect.Array;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -42,6 +43,20 @@ public class ArrayIteratorTest
         assertEquals(arr[index++], ai.next());
         assertTrue(ai.hasNext());
         assertEquals(arr[index++], ai.next());
+        assertFalse(ai.hasNext());
+    }
+    @Test
+    public void test2()
+    {
+        Object arr = new String[] {"qwerty", "asdfgh", "zxcvbn"};
+        ArrayIterator<String> ai = new ArrayIterator<>(arr);
+        int index = 0;
+        assertTrue(ai.hasNext());
+        assertEquals(Array.get(arr, index++), ai.next());
+        assertTrue(ai.hasNext());
+        assertEquals(Array.get(arr, index++), ai.next());
+        assertTrue(ai.hasNext());
+        assertEquals(Array.get(arr, index++), ai.next());
         assertFalse(ai.hasNext());
     }
 }
