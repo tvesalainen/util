@@ -15,6 +15,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -119,15 +120,15 @@ public class BeanHelper
             throw new IllegalArgumentException(ex);
         }
     }
-    private static Object getValue(Object[] arr, int index)
+    private static Object getValue(Object arr, int index)
     {
-        return arr[index];
+        return Array.get(arr, index);
     }
     private static Object getValue(List list, int index)
     {
         return list.get(index);
     }
-    private static Object doFor(Object bean, String property, Class type, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
+    private static Object doFor(Object bean, String property, Class type, IndexFunction<Object,Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         String[] parts = property.split(RegexDel);
         int len = parts.length - 1;
@@ -142,20 +143,14 @@ public class BeanHelper
         }
         return doIt(bean, property, type, arrayFunc, listFunc, fieldFunc, methodFunc);
     }
-    private static Object doIt(Object bean, String property, Class argType, IndexFunction<Object[],Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
+    private static Object doIt(Object bean, String property, Class argType, IndexFunction<Object,Object> arrayFunc, IndexFunction<List,Object> listFunc, FieldFunction fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         if (Index.matcher(property).matches())
         {
             int index = Integer.parseInt(property);
             if (bean.getClass().isArray())
             {
-                int len = Array.getLength(bean);
-                Object[] arr = new Object[len];
-                for (int ii = 0;ii<len;ii++)    // TODO  
-                {
-                    arr[index] = Array.get(bean, index);
-                }
-                return arrayFunc.apply(arr, index);
+                return arrayFunc.apply(bean, index);
             }
             if (bean instanceof List)
             {
@@ -224,7 +219,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{return a[i].getClass().getGenericSuperclass();},
+            (Object a, int i)->{Object o = Array.get(a, i);return o!=null?o.getClass().getGenericSuperclass():null;},
             (List l, int i)->{return l.get(i).getClass().getGenericSuperclass();},
             (Object o, Class c, String p)->{return getField(c, p).getGenericType();}, 
             (Object o, Method m)->{return m.getGenericReturnType();});
@@ -281,9 +276,17 @@ public class BeanHelper
     {
         return method.getReturnType();
     }
-    private static Class getObjectType(Object[] arr, int index)
+    private static Class getObjectType(Object arr, int index)
     {
-        return arr[index].getClass();
+        Object value = Array.get(arr, index);
+        if (value != null)
+        {
+            return value.getClass();
+        }
+        else
+        {
+            return null;
+        }
     }
     private static Class getObjectType(List list, int index)
     {
@@ -317,7 +320,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{return a[i].getClass().getAnnotation(annotationClass);},
+            (Object a, int i)->{Object o=Array.get(a, i);return o!=null?o.getClass().getAnnotation(annotationClass):null;},
             (List l, int i)->{return l.get(i).getClass().getAnnotation(annotationClass);},
             (Object b, Class c, String p)->{return getField(c, p).getAnnotation(annotationClass);}, 
             (Object b, Method m)->{return m.getAnnotation(annotationClass);});
@@ -337,7 +340,7 @@ public class BeanHelper
                 bean, 
                 property, 
                 null,
-                (Object[] a, int i)->{return true;},
+                (Object a, int i)->{return true;},
                 (List l, int i)->{return true;},
                 (Object b, Class c, String p)->{getField(c, p);return true;}, 
                 (Object b, Method m)->{return true;});
@@ -360,7 +363,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{return a[i].getClass().getAnnotations();},
+            (Object a, int i)->{Object o=Array.get(a, i);return o!=null?o.getClass().getAnnotations():null;},
             (List l, int i)->{return l.get(i).getClass().getAnnotations();},
             (Object b, Class c, String p)->{return getField(c, p).getAnnotations();}, 
             (Object b, Method m)->{return m.getAnnotations();});
@@ -377,7 +380,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{return a[i]!=null?a[i].getClass():null;},
+            (Object a, int i)->{Object o=Array.get(a, i);return o!=null?o.getClass():null;},
             (List l, int i)->{Object o = l.get(i);return o!=null?o.getClass():null;},
             (Object b, Class c, String p)->{return getField(c, p);}, 
             (Object b, Method m)->{return m;});
@@ -503,7 +506,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
+            (Object a, int i)->{throw  new UnsupportedOperationException("not supported");},
             (List l, int i)->{l.remove(i);return null;},
             (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
@@ -558,12 +561,13 @@ public class BeanHelper
     public static final <T> void assignList(Object bean, String property, String hint, BiFunction<Class<T>,String,T> factory)
     {
         Class[] pt = getParameterTypes(bean, prefix(property));
+        Class type = pt != null && pt.length > 0 ? pt[0] : null;
         doFor(
             bean, 
             property, 
             null,
-            (Object[] a, int i)->{throw  new UnsupportedOperationException("not supported");},
-            (List l, int i)->{l.set(i, factory.apply(pt[0], hint));return null;},
+            (Object a, int i)->{Array.set(a, i, factory.apply(type, hint));return null;},
+            (List l, int i)->{l.set(i, factory.apply(type, hint));return null;},
             (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
         );
@@ -580,22 +584,21 @@ public class BeanHelper
         if (v != null && v.getClass().isArray() &&  vv != null && (vv instanceof Collection))
         {   // array assignment to Collection
             Collection col = (Collection) vv;
-            Object[] arr = (Object[]) v;
             Class[] pt = BeanHelper.getParameterTypes(bean, property);
             col.clear();
-            for (Object o : arr)
+            int len = Array.getLength(v);
+            for (int ii=0;ii<len;ii++)
             {
-                col.add(ConvertUtility.convert(pt[0], o));
+                col.add(ConvertUtility.convert(pt[0], Array.get(v, ii)));
             }
         }
         else
         {
             if (v != null && v.getClass().isArray())
             {   // array with single menber
-                Object[] arr = (Object[]) v;
-                if (arr.length == 1)
+                if (Array.getLength(v) == 1)
                 {
-                    v = arr[0];
+                    v = Array.get(v, 0);
                 }
             }
             Class<?> type = BeanHelper.getType(bean, property);
@@ -608,7 +611,7 @@ public class BeanHelper
                 bean, 
                 property, 
                 type,
-                (Object[] a, int i)->{a[i]=value;return null;},
+                (Object a, int i)->{Array.set(a, i, value);return null;},
                 (List l, int i)->{l.set(i, value);return null;},
                 (Object b, Class c, String p)->{try
                 {
@@ -737,8 +740,12 @@ public class BeanHelper
      * @see javax.xml.bind.annotation.XmlAccessorOrder
      * @see javax.xml.bind.annotation.XmlType
      */
-    public static final NavigableSet<String> getProperties(Class<?> cls)
+    public static final Set<String> getProperties(Class<?> cls)
     {
+        if (cls.isPrimitive() || cls.isAnnotation() || cls.isEnum() || String.class.equals(cls))
+        {
+            return Collections.EMPTY_SET;
+        }
         NavigableSet<String> set = setFor(cls);
         for (Method method : cls.getMethods())
         {
@@ -955,7 +962,6 @@ public class BeanHelper
                             Object o = Array.get(value, index);
                             consumer.accept(name + Lim + index);
                             walk(name + Lim + index + Lim, o, consumer);
-                            index++;
                         }
                     }
                     else
@@ -1013,13 +1019,7 @@ public class BeanHelper
                     {
                         if (value.getClass().isArray())
                         {
-                            int len = Array.getLength(value);
-                            Object[] arr = new Object[len];
-                            for (int index = 0;index<len;index++)
-                            {
-                                arr[index] = Array.get(value, index);
-                            }
-                            c.oit = new ArrayIterator<>(arr);
+                            c.oit = new ArrayIterator<>(value);
                             c.idx = 0;
                         }
                         else

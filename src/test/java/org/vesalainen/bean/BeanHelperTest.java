@@ -98,7 +98,7 @@ public class BeanHelperTest
         
         BeanHelper.stream(tc).forEach((String n)->BeanHelper.getType(tc, n));
         BeanHelper.stream(tc).forEach((String n)->System.err.println(n));
-        assertEquals(17, BeanHelper.stream(tc).count());
+        assertEquals(22, BeanHelper.stream(tc).count());
         
         assertEquals(InnerClass.class, BeanHelper.getParameterTypes(tc, "inners")[0]);
         
@@ -126,6 +126,11 @@ public class BeanHelperTest
         assertEquals("at", BeanHelper.getAnnotation(tc, "count", XmlAttribute.class).name());
         
         assertEquals("inners.0.test", BeanHelper.getPattern(tc, tc.inners.get(0).getTest()));
+        
+        assertEquals(1L, BeanHelper.getValue(tc, "longArray.0"));
+        
+        BeanHelper.applyList(tc, "longArray.1=", (Class<Long> c, String h)->{return 5L;});
+        assertEquals(5L, BeanHelper.getValue(tc, "longArray.1"));
     }
     
     @Test
@@ -246,12 +251,18 @@ public class BeanHelperTest
         protected List<Integer> list = Lists.create(1, 2, 3, 4);
         public List<InnerClass> inners;
         private Color color;
+        private long[] longArray = new long[] {1, 2, 3, 4};
 
         public TestClass()
         {
             inners = new ArrayList<>();
             inners.add(new InnerClass("test1"));
             inners.add(new InnerClass("test2"));
+        }
+
+        public long[] getLongArray()
+        {
+            return longArray;
         }
 
         public Color getColor()
