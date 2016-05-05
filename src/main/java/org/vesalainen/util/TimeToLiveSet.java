@@ -35,7 +35,7 @@ import java.util.stream.StreamSupport;
  */
 public class TimeToLiveSet<T> implements Iterable<T>
 {
-    private Map<T,Long> map = new HashMap<>();
+    private LongMap<T> map = new LongMap<>();
     private Clock clock;
     private long defaultTimeout;
     /**
@@ -93,9 +93,9 @@ public class TimeToLiveSet<T> implements Iterable<T>
      */
     public boolean isAlive(T item)
     {
-        Long expires = map.get(item);
-        if (expires != null)
+        try
         {
+            long expires = map.getLong(item);
             if (expires < clock.millis())
             {
                 map.remove(item);
@@ -105,6 +105,9 @@ public class TimeToLiveSet<T> implements Iterable<T>
             {
                 return true;
             }
+        }
+        catch (IllegalArgumentException ex)
+        {
         }
         return false;
     }
