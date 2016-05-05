@@ -24,13 +24,10 @@ import org.vesalainen.util.Transactional;
  * exception for every not handled property
  * @author Timo Vesalainen
  */
-public class AbstractPropertySetter implements PropertySetter, Transactional
+public abstract class AbstractPropertySetter implements PropertySetter, Transactional
 {
 
-    protected void setProperty(String property, Object arg)
-    {
-        throw new UnsupportedOperationException("Not supported for boolean property '"+property+"'");
-    }
+    protected abstract void setProperty(String property, Object arg);
 
     @Override
     public void set(String property, boolean arg)
