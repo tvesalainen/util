@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.vesalainen.util.LongMap.LongReference;
 
 /**
  * A set for items that become stale after timeout
@@ -160,15 +161,15 @@ public class TimeToLiveSet<T> implements Iterable<T>
     }
     private class SpliteratorImpl implements Spliterator<T>
     {
-        private Iterator<Entry<T,Long>> iterator = map.entrySet().iterator();
+        private Iterator<Entry<T, LongReference>> iterator = map.entrySet().iterator();
         
         @Override
         public boolean tryAdvance(Consumer<? super T> action)
         {
             while (iterator.hasNext())
             {
-                Entry<T, Long> entry = iterator.next();
-                if (entry.getValue() >= clock.millis())
+                Entry<T, LongReference> entry = iterator.next();
+                if (entry.getValue().getValue() >= clock.millis())
                 {
                     action.accept(entry.getKey());
                     return true;
