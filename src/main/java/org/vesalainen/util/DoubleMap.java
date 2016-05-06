@@ -18,7 +18,7 @@ package org.vesalainen.util;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import org.vesalainen.util.DoubleMap.DoubleReference;
+import java.util.Map;
 
 /**
  * DoubleMap is a map-like class that can be used to store mappings to primitive
@@ -29,11 +29,22 @@ import org.vesalainen.util.DoubleMap.DoubleReference;
 public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implements Serializable
 {
     private static final long serialVersionUID = 1L;
-
+    /**
+     * Creates DoubleMap backed by HashMap
+     */
     public DoubleMap()
     {
         super(new HashMap<>());
     }
+    /**
+     * Creates a DoubleMap backed by given map.
+     * @param map 
+     */
+    public DoubleMap(Map<K, DoubleReference> map)
+    {
+        super(map);
+    }
+    
     /**
      * Associates value to key
      * @param key
@@ -44,10 +55,13 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
         DoubleReference w = map.get(key);
         if (w == null)
         {
-            w = new DoubleReference();
+            w = new DoubleReference(value);
             map.put(key, w);
         }
-        w.value = value;
+        else
+        {
+            w.value = value;
+        }
     }
 
     /**
@@ -63,24 +77,5 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
             return w.value;
         }
         return Double.NaN;
-    }
-    /**
-     * A Reference to primitive value.
-     * <p>Although this class seems immutable, It's value can change as an effect 
-     * of put operation.
-     */
-    public final class DoubleReference
-    {
-        private double value;
-
-        private DoubleReference()
-        {
-        }
-
-        public double getValue()
-        {
-            return value;
-        }
-        
     }
 }

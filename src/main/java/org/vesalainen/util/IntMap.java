@@ -21,18 +21,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * LongMap is a map-like class that can be used to store mappings to primitive
+ * IntMap is a map-like class that can be used to store mappings to primitive
  * type.
  * @author tkv
  * @param <K>
  */
-public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements Serializable
+public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements Serializable
 {
     private static final long serialVersionUID = 1L;
     /**
      * Creates a LongMap backed by HashMap
      */
-    public LongMap()
+    public IntMap()
     {
         super(new HashMap<>());
     }
@@ -40,7 +40,7 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
      * Create a LongMap backed by given map
      * @param map 
      */
-    public LongMap(Map<K, LongReference> map)
+    public IntMap(Map<K, IntReference> map)
     {
         super(map);
     }
@@ -50,12 +50,12 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
      * @param key
      * @param value 
      */
-    public void put(K key, long value)
+    public void put(K key, int value)
     {
-        LongReference w = map.get(key);
+        IntReference w = map.get(key);
         if (w == null)
         {
-            w = new LongReference(value);
+            w = new IntReference(value);
             map.put(key, w);
         }
         else
@@ -64,13 +64,13 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
         }
     }
     /**
-     * Returns long value associated with key or throws IllegalArgumentException
+     * Returns int value associated with key or throws IllegalArgumentException
      * @param key
      * @return 
      */
-    public long getLong(K key)
+    public int getInt(K key)
     {
-        LongReference w = map.get(key);
+        IntReference w = map.get(key);
         if (w != null)
         {
             return w.value;

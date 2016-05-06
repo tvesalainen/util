@@ -17,26 +17,26 @@
 package org.vesalainen.util;
 
 import java.time.Clock;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.vesalainen.util.LongMap.LongReference;
 
 /**
  * A set for items that become stale after timeout
+ * <p>This set is backed up by ConcurrentHashMap
  * @author tkv
  * @param <T>
+ * @see java.util.concurrent.ConcurrentHashMap
  */
 public class TimeToLiveSet<T> implements Iterable<T>
 {
-    private LongMap<T> map = new LongMap<>();
+    private LongMap<T> map = new LongMap<>(new ConcurrentHashMap<>());
     private Clock clock;
     private long defaultTimeout;
     /**
@@ -169,7 +169,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
             while (iterator.hasNext())
             {
                 Entry<T, LongReference> entry = iterator.next();
-                if (entry.getValue().getValue() >= clock.millis())
+                if (entry.getValue().value >= clock.millis())
                 {
                     action.accept(entry.getKey());
                     return true;

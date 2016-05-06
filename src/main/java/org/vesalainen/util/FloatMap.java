@@ -18,10 +18,10 @@ package org.vesalainen.util;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import org.vesalainen.util.FloatMap.FloatReference;
+import org.vesalainen.util.FloatReference;
 
 /**
- * DoubleMap is a map-like class that can be used to store mappings to primitive
+ * FloatMap is a map-like class that can be used to store mappings to primitive
  * type.
  * @author tkv
  * @param <K>
@@ -44,10 +44,13 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
         FloatReference w = map.get(key);
         if (w == null)
         {
-            w = new FloatReference();
+            w = new FloatReference(value);
             map.put(key, w);
         }
-        w.value = value;
+        else
+        {
+            w.value = value;
+        }
     }
 
     /**
@@ -63,24 +66,5 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
             return w.value;
         }
         return Float.NaN;
-    }
-    /**
-     * A Reference to primitive value.
-     * <p>Although this class seems immutable, It's value can change as an effect 
-     * of put operation.
-     */
-    public final class FloatReference
-    {
-        private float value;
-
-        private FloatReference()
-        {
-        }
-
-        public double getValue()
-        {
-            return value;
-        }
-        
     }
 }
