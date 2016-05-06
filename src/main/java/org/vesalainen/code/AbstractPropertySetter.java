@@ -27,7 +27,10 @@ import org.vesalainen.util.Transactional;
 public abstract class AbstractPropertySetter implements PropertySetter, Transactional
 {
 
-    protected abstract void setProperty(String property, Object arg);
+    protected void setProperty(String property, Object arg)
+    {
+        throw new UnsupportedOperationException("Not supported for property '"+property+"'");
+    }
 
     @Override
     public void set(String property, boolean arg)
