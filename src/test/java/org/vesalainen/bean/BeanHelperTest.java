@@ -131,6 +131,9 @@ public class BeanHelperTest
         
         BeanHelper.applyList(tc, "longArray.1=", (Class<Long> c, String h)->{return 5L;});
         assertEquals(5L, BeanHelper.getValue(tc, "longArray.1"));
+        
+        assertEquals(1, BeanHelper.getParameterTypes(tc, "longArray").length);
+        assertEquals(long.class, BeanHelper.getParameterTypes(tc, "longArray")[0]);
     }
     
     @Test

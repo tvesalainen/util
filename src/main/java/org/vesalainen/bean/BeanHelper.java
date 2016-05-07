@@ -240,6 +240,10 @@ public class BeanHelper
         if (type instanceof Class)
         {
             Class cls = (Class) type;
+            if (cls.isArray())
+            {
+                cls = cls.getComponentType();
+            }
             return new Class[] {cls};
         }
         return null;
