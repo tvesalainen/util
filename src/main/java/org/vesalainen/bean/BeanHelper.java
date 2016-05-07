@@ -219,7 +219,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object a, int i)->{Object o = Array.get(a, i);return o!=null?o.getClass().getGenericSuperclass():null;},
+            (Object a, int i)->{Object o = Array.get(a, i);return o!=null?o.getClass().getComponentType():null;},
             (List l, int i)->{return l.get(i).getClass().getGenericSuperclass();},
             (Object o, Class c, String p)->{return getField(c, p).getGenericType();}, 
             (Object o, Method m)->{return m.getGenericReturnType();});
@@ -567,7 +567,7 @@ public class BeanHelper
             bean, 
             property, 
             null,
-            (Object a, int i)->{Array.set(a, i, factory.apply(type, hint));return null;},
+            (Object a, int i)->{Array.set(a, i, value);return null;},
             (List l, int i)->{l.set(i, value);return null;},
             (Object b, Class c, String p)->{throw  new UnsupportedOperationException("not supported");},
             (Object b, Method m)->{throw  new UnsupportedOperationException("not supported");}
