@@ -237,6 +237,11 @@ public class BeanHelper
                 return ca;
             }
         }
+        if (type instanceof Class)
+        {
+            Class cls = (Class) type;
+            return new Class[] {cls};
+        }
         return null;
     }
     /**
