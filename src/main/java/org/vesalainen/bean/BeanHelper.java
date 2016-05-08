@@ -477,6 +477,38 @@ public class BeanHelper
         }
     }
     /**
+     * Return prefix of apply pattern or pattern if not apply-pattern.
+     * @param property
+     * @return 
+     */
+    public static final String applyPrefix(String property)
+    {
+        int addIdx = property.lastIndexOf(Add);
+        if (addIdx != -1)
+        {
+            return property.substring(0, addIdx);
+        }
+        else
+        {
+            int assignIdx = property.lastIndexOf(Assign);
+            if (assignIdx != -1)
+            {
+                return property.substring(0, assignIdx);
+            }
+            else
+            {
+                if (property.endsWith(Remove))
+                {
+                    return property.substring(0, property.length()-1);
+                }
+                else
+                {
+                    return property;
+                }
+            }
+        }
+    }
+    /**
      * Return true for add action
      * @param property
      * @return 

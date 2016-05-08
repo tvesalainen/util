@@ -17,6 +17,7 @@
 package org.vesalainen.bean;
 
 import java.util.Arrays;
+import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -45,12 +46,37 @@ public class PatternComparatorTest
             "f3",
         };
         Arrays.sort(sa, pc);
-        assertEquals("a+hint", sa[0]);
-        assertEquals("b=hint", sa[1]);
+        assertEquals("b=hint", sa[0]);
+        assertEquals("a+hint", sa[1]);
         assertEquals("f1", sa[2]);
         assertEquals("f2", sa[3]);
         assertEquals("f3", sa[4]);
         assertEquals("b#", sa[5]);
+    }
+    
+    @Test
+    public void test2()
+    {
+        PatternComparator pc = new PatternComparator();
+        String[] exp = new String[] 
+        {
+            "a#",
+            "a.0=hint",
+            "a.0.x",
+            "a.0.x#",
+            "a.0.x.0-",
+            "a.0-",
+        };
+        String[] sa = new String[] 
+        {
+            "a#",
+            "a.0=hint",
+            "a.0.x",
+            "a.0.x#",
+            "a.0.x.0-",
+            "a.0-",
+        };
+        assertArrayEquals(exp, sa);
     }
     
 }

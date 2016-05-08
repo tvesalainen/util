@@ -19,9 +19,11 @@ package org.vesalainen.bean;
 import java.util.Comparator;
 
 /**
- * A comparator that puts patterns in following order: add, assign, normal and remove.
+ * A comparator that puts patterns in following order: assign, add, normal and remove.
  * Patterns which have same category are sorted in natural order. This means that
  * this comparator is consistent with equals.
+ * 
+ * <p>Intended use is to sort apply patterns so that bean changes are consistent.
  * @author tkv
  */
 public class PatternComparator implements Comparator<String>
@@ -35,7 +37,14 @@ public class PatternComparator implements Comparator<String>
         int t2 = type(o2);
         if (t1 == t2)
         {
-            return o1.compareTo(o2);
+            if (t1 == 2)
+            {
+                return o1.compareTo(o2);
+            }
+            else
+            {
+                return BeanHelper.applyPrefix(o2).compareTo(BeanHelper.applyPrefix(o1));
+            }
         }
         else
         {
@@ -45,11 +54,11 @@ public class PatternComparator implements Comparator<String>
     
     private int type(String p)
     {
-        if (BeanHelper.isAdd(p))
+        if (BeanHelper.isAssign(p))
         {
             return 0;
         }
-        if (BeanHelper.isAssign(p))
+        if (BeanHelper.isAdd(p))
         {
             return 1;
         }
