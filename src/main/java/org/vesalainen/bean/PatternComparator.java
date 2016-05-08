@@ -26,7 +26,8 @@ import java.util.Comparator;
  */
 public class PatternComparator implements Comparator<String>
 {
-
+    public static final PatternComparator Comparator = new PatternComparator();
+    
     @Override
     public int compare(String o1, String o2)
     {
