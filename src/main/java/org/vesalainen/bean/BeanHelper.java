@@ -509,6 +509,15 @@ public class BeanHelper
         }
     }
     /**
+     * Return true if pattern is add, assign or remove
+     * @param pattern
+     * @return 
+     */
+    public static final boolean isApplyPattern(String pattern)
+    {
+        return isAdd(pattern) || isAssign(pattern) || isRemove(pattern);
+    }
+    /**
      * Return true for add action
      * @param property
      * @return 
