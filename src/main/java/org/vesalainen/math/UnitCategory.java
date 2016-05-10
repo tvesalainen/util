@@ -33,5 +33,6 @@ public enum UnitCategory
     Mass,
     Time,
     Volume,
-    Acceleration
+    Acceleration,
+    Unknown
 }

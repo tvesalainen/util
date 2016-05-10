@@ -135,7 +135,11 @@ public enum UnitType
     /**
      * Coordinate degrees, minutes and seconds
      */
-    DegMinSec(UnitCategory.Coordinate, 1, "")
+    DegMinSec(UnitCategory.Coordinate, 1, ""),
+    /**
+     * Unitless
+     */
+    Unitless(UnitCategory.Unknown, 1, "")
     ;
     private final UnitCategory category;
     private final String unit;
