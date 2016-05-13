@@ -56,14 +56,6 @@ public class PropertyBuffer implements PropertySetter, Runnable
     {
         thread = new Thread(this, PropertyBuffer.class.getSimpleName());
         thread.start();
-        try
-        {
-            semaphore.acquire();
-        }
-        catch (InterruptedException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
     }
     
     public void stop()
@@ -153,7 +145,6 @@ public class PropertyBuffer implements PropertySetter, Runnable
     public void run()
     {
         int idx = 0;
-        semaphore.release();
         while (true)
         {
             try
