@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.vesalainen.util.MapList;
  */
 public class TimeoutStatsService implements PropertySetter
 {
+    private Clock clock;
     private final PropertySetterDispatcher dispatcher;
     private final Map<String,Map<Integer,TimeoutStats>> map = new HashMap<>();
     private final MapList<TimeArray,StatsObserver> observerMap = new HashMapList<>();
@@ -48,6 +50,12 @@ public class TimeoutStatsService implements PropertySetter
 
     public TimeoutStatsService(PropertySetterDispatcher dispatcher, String preferencePath)
     {
+        this(Clock.systemUTC(), dispatcher, preferencePath);
+    }
+    
+    public TimeoutStatsService(Clock clock, PropertySetterDispatcher dispatcher, String preferencePath)
+    {
+        this.clock = clock;
         this.dispatcher = dispatcher;
         if (preferencePath != null)
         {
@@ -96,11 +104,11 @@ public class TimeoutStatsService implements PropertySetter
             {
                 if (isAngle)
                 {
-                    ts = new TimeoutSlidingAngleStats(seconds, seconds*1000);
+                    ts = new TimeoutSlidingAngleStats(clock, seconds, seconds*1000);
                 }
                 else
                 {
-                    ts = new TimeoutSlidingStats(seconds, seconds*1000);
+                    ts = new TimeoutSlidingStats(clock, seconds, seconds*1000);
                 }
                 statsMap.put(seconds, ts);
             }

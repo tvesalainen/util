@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+
 /**
  *
  * @author tkv
@@ -29,7 +31,11 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
     
     public TimeoutSlidingAngleStats(int size, long timeout)
     {
-        super(size, timeout);
+        this(Clock.systemUTC(), size, timeout);
+    }
+    public TimeoutSlidingAngleStats(Clock clock, int size, long timeout)
+    {
+        super(clock, size, timeout);
         angles = new double[size];
     }
 
