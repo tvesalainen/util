@@ -16,7 +16,10 @@
  */
 package org.vesalainen.math.sliding;
 
-import org.vesalainen.math.sliding.TimeoutSlidingAngleAverage;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -37,29 +40,26 @@ public class TimeSlidingAngleAverageTest
     @Test
     public void test1()
     {
-        try
-        {
-            TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(2, 1000);
-            tsaa.accept(10);
-            assertEquals(10, tsaa.fast(), Epsilon);
-            assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-            Thread.sleep(300);
-            tsaa.accept(350);
-            assertEquals(360, tsaa.fast(), Epsilon);
-            assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-            Thread.sleep(300);
-            tsaa.accept(30);
-            assertEquals(10, tsaa.fast(), Epsilon);
-            assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-            Thread.sleep(300);
-            tsaa.accept(10);
-            assertEquals(10, tsaa.fast(), Epsilon);
-            assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(TimeSlidingAngleAverageTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
+        TimeoutSlidingAngleAverage tsaa = new TimeoutSlidingAngleAverage(clock, 2, 1000);
+        tsaa.accept(10);
+        assertEquals(10, tsaa.fast(), Epsilon);
+        assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsaa.clock(clock);
+        tsaa.accept(350);
+        assertEquals(360, tsaa.fast(), Epsilon);
+        assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsaa.clock(clock);
+        tsaa.accept(30);
+        assertEquals(10, tsaa.fast(), Epsilon);
+        assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsaa.clock(clock);
+        tsaa.accept(10);
+        assertEquals(10, tsaa.fast(), Epsilon);
+        assertEquals(tsaa.average(), tsaa.fast(), Epsilon);
     }
     
     @Test

@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+
 /**
  *
  * @author tkv
@@ -25,4 +27,6 @@ interface Timeouting
     int getSize();
     long getTimeout();
     long[] getTimes();
+    Clock clock();
+    void clock(Clock clock);
 }

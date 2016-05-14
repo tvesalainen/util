@@ -16,6 +16,10 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -36,30 +40,28 @@ public class TimeSlidingAverageTest
     @Test
     public void test1()
     {
-        try
-        {
-            TimeoutSlidingAverage tsa = new TimeoutSlidingAverage(2, 1000);
-            tsa.accept(1);
-            Thread.sleep(300);
-            assertEquals(1, tsa.fast(), Epsilon);
-            assertEquals(tsa.fast(), tsa.average(), Epsilon);
-            tsa.accept(3);
-            Thread.sleep(300);
-            assertEquals(2, tsa.fast(), Epsilon);
-            assertEquals(tsa.fast(), tsa.average(), Epsilon);
-            tsa.accept(5);
-            Thread.sleep(300);
-            assertEquals(3, tsa.fast(), Epsilon);
-            assertEquals(tsa.fast(), tsa.average(), Epsilon);
-            Thread.sleep(300);
-            tsa.accept(7);
-            assertEquals(5, tsa.fast(), Epsilon);
-            assertEquals(tsa.fast(), tsa.average(), Epsilon);
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(TimeSlidingAverageTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
+        TimeoutSlidingAverage tsa = new TimeoutSlidingAverage(clock, 2, 1000);
+        tsa.accept(1);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsa.clock(clock);
+        assertEquals(1, tsa.fast(), Epsilon);
+        assertEquals(tsa.fast(), tsa.average(), Epsilon);
+        tsa.accept(3);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsa.clock(clock);
+        assertEquals(2, tsa.fast(), Epsilon);
+        assertEquals(tsa.fast(), tsa.average(), Epsilon);
+        tsa.accept(5);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsa.clock(clock);
+        assertEquals(3, tsa.fast(), Epsilon);
+        assertEquals(tsa.fast(), tsa.average(), Epsilon);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        tsa.clock(clock);
+        tsa.accept(7);
+        assertEquals(5, tsa.fast(), Epsilon);
+        assertEquals(tsa.fast(), tsa.average(), Epsilon);
     }
     
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
@@ -27,7 +28,8 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
 {
     protected final long timeout;
     protected long[] times;
-    protected Timeouting parent;
+    Timeouting parent;
+    protected Clock clock;
     /**
      * 
      * @param size Initial ringbuffer size
@@ -35,7 +37,18 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
      */
     protected AbstractTimeoutSlidingBound(int size, long timeout)
     {
+        this(Clock.systemUTC(), size, timeout);
+    }
+    /**
+     * 
+     * @param clock
+     * @param size Initial ringbuffer size
+     * @param timeout Sample timeout in millis.
+     */
+    protected AbstractTimeoutSlidingBound(Clock clock, int size, long timeout)
+    {
         super(size);
+        this.clock = clock;
         this.timeout = timeout;
         this.times = new long[size];
     }
@@ -43,9 +56,10 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
      * 
      * @param parent
      */
-    public AbstractTimeoutSlidingBound(Timeouting parent)
+    AbstractTimeoutSlidingBound(Timeouting parent)
     {
         super(parent.getSize());
+        this.clock = parent.clock();
         this.parent = parent;
         this.timeout = parent.getTimeout();
         this.times = parent.getTimes();
@@ -95,14 +109,14 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
         ring[index] = value;
         if (parent == null)
         {
-            times[index] = System.currentTimeMillis();
+            times[index] = clock().millis();
         }
     }
 
     @Override
     protected boolean isRemovable(int index)
     {
-        return System.currentTimeMillis() - times[index] > timeout;
+        return clock().millis() - times[index] > timeout;
     }
 
     @Override
@@ -183,6 +197,22 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
             throw new IllegalStateException("count() < 1");
         }
         return times[(end+size-2) % size];
+    }
+
+    @Override
+    public Clock clock()
+    {
+        if (parent != null)
+        {
+            return parent.clock();
+        }
+        return clock;
+    }
+
+    @Override
+    public void clock(Clock clock)
+    {
+        this.clock = clock;
     }
     
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
@@ -27,6 +28,7 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage impl
 {
     protected final long timeout;
     protected long[] times;
+    protected Clock clock;
     /**
      * Creates TimeoutSlidingAngleAverage
      * @param size Initial size of buffers
@@ -34,7 +36,18 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage impl
      */
     public TimeoutSlidingAngleAverage(int size, long timeout)
     {
+        this(Clock.systemUTC(), size, timeout);
+    }
+    /**
+     * Creates TimeoutSlidingAngleAverage
+     * @param clock
+     * @param size Initial size of buffers
+     * @param timeout Sample timeout
+     */
+    public TimeoutSlidingAngleAverage(Clock clock, int size, long timeout)
+    {
         super(size);
+        this.clock = clock;
         this.timeout = timeout;
         this.times = new long[size];
     }
@@ -42,7 +55,7 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage impl
     @Override
     protected boolean isRemovable(int index)
     {
-        return System.currentTimeMillis() - times[index] > timeout;
+        return clock.millis()- times[index] > timeout;
     }
 
     @Override
@@ -59,7 +72,7 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage impl
     protected void assign(int index, double value)
     {
         super.assign(index, value);
-        times[index] = System.currentTimeMillis();
+        times[index] = clock.millis();
     }
 
     /**
@@ -116,6 +129,16 @@ public class TimeoutSlidingAngleAverage extends AbstractSlidingAngleAverage impl
             throw new IllegalStateException("count() < 1");
         }
         return times[(end+size-2) % size];
+    }
+    
+    public Clock clock()
+    {
+        return clock;
+    }
+
+    public void clock(Clock clock)
+    {
+        this.clock = clock;
     }
     
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
@@ -27,6 +28,7 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
 {
     protected final long timeout;
     protected long[] times;
+    protected Clock clock;
     /**
      * Creates TimeoutSlidingAverage
      * @param size Initial size of ring buffer
@@ -34,7 +36,18 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
      */
     public TimeoutSlidingAverage(int size, long timeout)
     {
+        this(Clock.systemUTC(), size, timeout);
+    }
+    /**
+     * Creates TimeoutSlidingAverage
+     * @param clock
+     * @param size Initial size of ring buffer
+     * @param timeout Sample timeout
+     */
+    public TimeoutSlidingAverage(Clock clock, int size, long timeout)
+    {
         super(size);
+        this.clock = clock;
         this.timeout = timeout;
         this.times = new long[size];
     }
@@ -42,7 +55,7 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     @Override
     protected boolean isRemovable(int index)
     {
-        return System.currentTimeMillis() - times[index] > timeout;
+        return clock.millis() - times[index] > timeout;
     }
 
     @Override
@@ -58,12 +71,13 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     protected void assign(int index, double value)
     {
         super.assign(index, value);
-        times[index] = System.currentTimeMillis();
+        times[index] = clock.millis();
     }
     /**
      * Returns a stream of sample times
      * @return 
      */
+    @Override
     public LongStream timeStream()
     {
         if (begin == end)
@@ -131,6 +145,17 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
             throw new IllegalStateException("count() < 1");
         }
         return times[(end+size-2) % size];
+    }
+    
+    @Override
+    public Clock clock()
+    {
+        return clock;
+    }
+    @Override
+    public void clock(Clock clock)
+    {
+        this.clock = clock;
     }
     
 }
