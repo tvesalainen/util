@@ -18,7 +18,6 @@ package org.vesalainen.util;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import org.vesalainen.util.FloatReference;
 
 /**
  * FloatMap is a map-like class that can be used to store mappings to primitive
@@ -52,7 +51,17 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
             w.value = value;
         }
     }
-
+    /**
+     * Associates values of another primitive map
+     * @param m 
+     */
+    public void putAll(FloatMap<K> m)
+    {
+        m.entrySet().stream().forEach((e) ->
+        {
+            map.put(e.getKey(), e.getValue());
+        });
+    }
     /**
      * Returns double value associated to key or NaN if none exists
      * @param key

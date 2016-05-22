@@ -63,7 +63,17 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
             w.value = value;
         }
     }
-
+    /**
+     * Associates values of another primitive map
+     * @param m 
+     */
+    public void putAll(DoubleMap<K> m)
+    {
+        m.entrySet().stream().forEach((e) ->
+        {
+            map.put(e.getKey(), e.getValue());
+        });
+    }
     /**
      * Returns double value associated to key or NaN if none exists
      * @param key

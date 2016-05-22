@@ -64,6 +64,17 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
         }
     }
     /**
+     * Associates values of another primitive map
+     * @param m 
+     */
+    public void putAll(LongMap<K> m)
+    {
+        m.entrySet().stream().forEach((e) ->
+        {
+            map.put(e.getKey(), e.getValue());
+        });
+    }
+    /**
      * Returns long value associated with key or throws IllegalArgumentException
      * @param key
      * @return 

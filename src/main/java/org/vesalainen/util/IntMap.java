@@ -37,7 +37,7 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
         super(new HashMap<>());
     }
     /**
-     * Create a LongMap backed by given map
+     * Create a IntMap backed by given map
      * @param map 
      */
     public IntMap(Map<K, IntReference> map)
@@ -62,6 +62,17 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
         {
             w.value = value;
         }
+    }
+    /**
+     * Associates values of another primitive map
+     * @param m 
+     */
+    public void putAll(IntMap<K> m)
+    {
+        m.entrySet().stream().forEach((e) ->
+        {
+            map.put(e.getKey(), e.getValue());
+        });
     }
     /**
      * Returns int value associated with key or throws IllegalArgumentException
