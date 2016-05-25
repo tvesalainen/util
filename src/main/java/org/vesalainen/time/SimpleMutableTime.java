@@ -28,6 +28,14 @@ import org.vesalainen.util.IntReference;
 public class SimpleMutableTime implements MutableTime
 {
     private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
+    /**
+     * Returns the inner field map.
+     * @return 
+     */
+    public IntMap<ChronoField> getFields()
+    {
+        return fields;
+    }
     
     @Override
     public int get(ChronoField chronoField)
@@ -46,6 +54,10 @@ public class SimpleMutableTime implements MutableTime
     public void set(ChronoField chronoField, int amount)
     {
         checkField(chronoField);
+        if (ChronoField.YEAR.equals(chronoField))
+        {
+            amount = convertTo4DigitYear(amount);
+        }
         chronoField.checkValidIntValue(amount);
         fields.put(chronoField, amount);
     }

@@ -39,11 +39,11 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
     private static final long SecondInMillis = 1000;
     private static final long MinuteInMillis = SecondInMillis*60;
     private static final long HourInMillis = MinuteInMillis*60;
-    private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
-    private  Clock clock;
-    private boolean needCalc;
-    private long dateMillis;
-    private long updated;
+    protected IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
+    protected Clock clock;
+    protected boolean needCalc;
+    protected long dateMillis;
+    protected long updated;
 
     public MutableClock()
     {
@@ -121,13 +121,6 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
             get(ChronoField.MILLI_OF_SECOND)*1000000,
             clock.getZone());
     }
-    private void setZonedDateTime(ZonedDateTime zdt)
-    {
-        for (ChronoField cf : SupportedFields)
-        {
-            set(cf, zdt.get(cf));
-        }
-    }
     @Override
     public boolean isSupported(TemporalField field)
     {
@@ -192,6 +185,10 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
     public void set(ChronoField chronoField, int amount)
     {
         checkField(chronoField);
+        if (ChronoField.YEAR.equals(chronoField))
+        {
+            amount = convertTo4DigitYear(amount);
+        }
         chronoField.checkValidIntValue(amount);
         int value = -1;
         if (fields.containsKey(chronoField))

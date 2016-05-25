@@ -16,6 +16,7 @@
  */
 package org.vesalainen.time;
 
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.GregorianCalendar;
 
@@ -82,6 +83,19 @@ public interface MutableTime
         setMinute(mt.getMinute());
         setSecond(mt.getSecond());
         setMilliSecond(mt.getMilliSecond());
+    }
+    /**
+     * Sets fields from ZonedDateTime.
+     * <p>
+     * Note! Zone is ignored.
+     * @param zonedDateTime 
+     */
+    default void setZonedDateTime(ZonedDateTime zonedDateTime)
+    {
+        for (ChronoField cf : SupportedFields)
+        {
+            set(cf, zonedDateTime.get(cf));
+        }
     }
     /**
      * Returns true if given MutableTime equals to this
