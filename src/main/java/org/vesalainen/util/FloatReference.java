@@ -25,11 +25,13 @@ public final class FloatReference extends PrimitiveReference
 
     public float getValue()
     {
+        assert !isRecycled();
         return value;
     }
 
     public void setValue(float value)
     {
+        assert !isRecycled();
         this.value = value;
     }
     

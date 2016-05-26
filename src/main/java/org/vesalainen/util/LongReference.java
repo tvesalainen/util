@@ -26,11 +26,13 @@ public final class LongReference extends PrimitiveReference
 
     public long getValue()
     {
+        assert !isRecycled();
         return value;
     }
 
     public void setValue(long value)
     {
+        assert !isRecycled();
         this.value = value;
     }
 

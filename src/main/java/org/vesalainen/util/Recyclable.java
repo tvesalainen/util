@@ -17,10 +17,23 @@
 package org.vesalainen.util;
 
 /**
- *
+ * Recyclable object can be recycled with Recycler.
  * @author tkv
+ * @see org.vesalainen.util.Recycler
  */
 public interface Recyclable
 {
+    /**
+     * Clears objects fields;
+     */
     void clear();
+    /**
+     * Return true if object is recycled. This can be used e.g. in assert to 
+     * check that used object is not recycled.
+     * @return 
+     */
+    default boolean isRecycled()
+    {
+        return Recycler.isRecycled(this);
+    }
 }

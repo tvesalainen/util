@@ -25,11 +25,13 @@ public final class DoubleReference extends PrimitiveReference
 
     public double getValue()
     {
+        assert !isRecycled();
         return value;
     }
 
     public void setValue(double value)
     {
+        assert !isRecycled();
         this.value = value;
     }
 

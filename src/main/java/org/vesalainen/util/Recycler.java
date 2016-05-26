@@ -22,18 +22,33 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
- *
+ * Recycler class is used to recycle Recyclable objects.
+ * <p>This kind of recycling is for special cases only. Implementation has to take
+ * care that recycled object is not referenced. This kind of recycling can leed
+ * to hard to find bugs.
  * @author tkv
  */
 public class Recycler
 {
     private static final MapList<Class<?>,Recyclable> mapList = new HashMapList<>();
     private static final Lock lock = new ReentrantLock();
-    
+    /**
+     * Returns new or recycled uninitialized object.
+     * @param <T>
+     * @param cls
+     * @return 
+     */
     public static final <T extends Recyclable> T get(Class<T> cls)
     {
         return get(cls, null);
     }
+    /**
+     * Returns new or recycled initialized object.
+     * @param <T>
+     * @param cls
+     * @param initializer
+     * @return 
+     */
     public static final <T extends Recyclable> T get(Class<T> cls, Consumer<T> initializer)
     {
         T recyclable = null;
@@ -67,9 +82,17 @@ public class Recycler
         }
         return (T) recyclable;
     }
-    
+    /**
+     * Add object to be recycled.
+     * @param <T>
+     * @param recyclable 
+     */
     public static final <T extends Recyclable> void recycle(T recyclable)
     {
+        if (recyclable.isRecycled())
+        {
+            throw new IllegalArgumentException("recycling "+recyclable+" again");
+        }
         recyclable.clear();
         lock.lock();
         try
@@ -80,5 +103,10 @@ public class Recycler
         {
             lock.unlock();
         }
+    }
+    
+    static final <T extends Recyclable> boolean isRecycled(T recyclable)
+    {
+        return mapList.contains(recyclable.getClass(), recyclable);
     }
 }
