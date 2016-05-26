@@ -61,4 +61,19 @@ public class SimpleMutableTime implements MutableTime
         chronoField.checkValidIntValue(amount);
         fields.put(chronoField, amount);
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", 
+                getYear(),
+                getMonth(),
+                getDay(),
+                getHour(),
+                getMinute(),
+                getSecond(),
+                getMilliSecond()
+                );
+    }
+
 }

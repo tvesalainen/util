@@ -218,4 +218,18 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", 
+                getYear(),
+                getMonth(),
+                getDay(),
+                getHour(),
+                getMinute(),
+                getSecond(),
+                getMilliSecond()
+                );
+    }
+
 }
