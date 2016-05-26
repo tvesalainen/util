@@ -36,16 +36,15 @@ public class FloatGenerator<T>
      * Provides new item to the generator 
      * @param value
      */
-    public void provide(float value)
+    public boolean provide(float value)
     {
-        try
+        FloatReference ref = Recycler.get(FloatReference.class, (FloatReference r)->r.setValue(value));
+        boolean res = queue.offer(ref);
+        if (!res)
         {
-            queue.put(Recycler.get(FloatReference.class, (FloatReference r)->r.setValue(value)));
+            Recycler.recycle(ref);
         }
-        catch (InterruptedException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        return res;
     }
     /**
      * Returns item provided in different thread
