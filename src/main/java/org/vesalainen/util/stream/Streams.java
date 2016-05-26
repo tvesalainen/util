@@ -22,9 +22,11 @@ import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.function.BiPredicate;
 import java.util.function.IntBinaryOperator;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.vesalainen.util.function.IntBiPredicate;
+import org.vesalainen.util.Recyclable;
+import org.vesalainen.util.Recycler;
 
 /**
  * Stream helpers
@@ -32,6 +34,26 @@ import org.vesalainen.util.function.IntBiPredicate;
  */
 public class Streams
 {
+    /**
+     * Creates a predicate which recycles failing item. This is intended to use
+     * in Stream filters
+     * @param <T>
+     * @param predicate
+     * @return 
+     * @see java.util.stream.Stream#filter(java.util.function.Predicate) 
+     */
+    public static final <T extends Recyclable> Predicate<T> recyclingPredicate(Predicate<T> predicate)
+    {
+        return (t)->
+        {
+            boolean result = predicate.test(t);
+            if (!result)
+            {
+                Recycler.recycle(t);
+            }
+            return result;
+        };
+    }
     /**
      * Compares two streams using natural order
      * @param <T>

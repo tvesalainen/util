@@ -25,7 +25,7 @@ import java.util.Set;
  * @param <K>
  * @param <V>
  */
-public abstract class AbstractPrimitiveMap<K,V>
+public abstract class AbstractPrimitiveMap<K,V extends PrimitiveReference>
 {
     protected final Map<K, V> map;
 
@@ -41,6 +41,10 @@ public abstract class AbstractPrimitiveMap<K,V>
     
     public void clear()
     {
+        map.values().stream().forEach((pr) ->
+        {
+            Recycler.recycle(pr);
+        });
         map.clear();
     }
 
@@ -61,7 +65,11 @@ public abstract class AbstractPrimitiveMap<K,V>
 
     public void remove(K key)
     {
-        map.remove(key);
+        V ref = map.remove(key);
+        if (ref != null)
+        {
+            Recycler.recycle(ref);
+        }
     }
 
     public int size()

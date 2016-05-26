@@ -55,7 +55,7 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
         DoubleReference w = map.get(key);
         if (w == null)
         {
-            w = new DoubleReference(value);
+            w = Recycler.get(DoubleReference.class, (DoubleReference r)->r.setValue(value));
             map.put(key, w);
         }
         else

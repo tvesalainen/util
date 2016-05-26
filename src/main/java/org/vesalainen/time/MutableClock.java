@@ -31,7 +31,8 @@ import org.vesalainen.util.IntMap;
 import org.vesalainen.util.IntReference;
 
 /**
- *
+ * A mutable clock implementation. Clock fields can be changed. Depending on
+ * base clock the clock is running or fixed.
  * @author tkv
  */
 public class MutableClock extends Clock implements TemporalAccessor, MutableTime
@@ -44,12 +45,17 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
     protected boolean needCalc;
     protected long dateMillis;
     protected long updated;
-
+    /**
+     * Creates a MutableClock with systemUTC clock
+     */
     public MutableClock()
     {
         this(Clock.systemUTC());
     }
-
+    /**
+     * Creates a MutableClock with given clock.
+     * @param clock 
+     */
     public MutableClock(Clock clock)
     {
         this.clock = clock;
@@ -161,7 +167,10 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
         }
         throw new UnsupportedTemporalTypeException(field.toString());
     }
-
+    /**
+     * Sets time by using milli seconds from epoch.
+     * @param millis 
+     */
     public void setMillis(long millis)
     {
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC);

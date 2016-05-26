@@ -20,14 +20,9 @@ package org.vesalainen.util;
  * A Reference to primitive value.
  * of put operation.
  */
-public final class LongReference
+public final class LongReference extends PrimitiveReference
 {
     long value;
-
-    public LongReference(long value)
-    {
-        this.value = value;
-    }
 
     public long getValue()
     {
@@ -43,6 +38,12 @@ public final class LongReference
     public String toString()
     {
         return "value=" + value;
+    }
+    
+    @Override
+    public void clear()
+    {
+        value = 0;
     }
     
 }

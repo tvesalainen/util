@@ -20,14 +20,9 @@ package org.vesalainen.util;
  * A Reference to primitive value.
  * of put operation.
  */
-public final class IntReference
+public final class IntReference extends PrimitiveReference
 {
     int value;
-
-    public IntReference(int value)
-    {
-        this.value = value;
-    }
 
     public int getValue()
     {
@@ -43,6 +38,12 @@ public final class IntReference
     public String toString()
     {
         return "value=" + value;
+    }
+    
+    @Override
+    public void clear()
+    {
+        value = 0;
     }
     
 }

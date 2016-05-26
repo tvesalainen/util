@@ -19,14 +19,9 @@ package org.vesalainen.util;
 /**
  * A Reference to primitive value.
  */
-public final class DoubleReference
+public final class DoubleReference extends PrimitiveReference
 {
     double value;
-
-    public DoubleReference(double value)
-    {
-        this.value = value;
-    }
 
     public double getValue()
     {
@@ -42,6 +37,12 @@ public final class DoubleReference
     public String toString()
     {
         return "value=" + value;
+    }
+    
+    @Override
+    public void clear()
+    {
+        value = 0;
     }
     
 }

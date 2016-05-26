@@ -43,7 +43,7 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
         FloatReference w = map.get(key);
         if (w == null)
         {
-            w = new FloatReference(value);
+            w = Recycler.get(FloatReference.class, (FloatReference r)->r.setValue(value));
             map.put(key, w);
         }
         else

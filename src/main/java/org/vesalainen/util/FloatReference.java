@@ -19,14 +19,9 @@ package org.vesalainen.util;
 /**
  * A Reference to primitive value.
  */
-public final class FloatReference
+public final class FloatReference extends PrimitiveReference
 {
     float value;
-
-    public FloatReference(float value)
-    {
-        this.value = value;
-    }
 
     public float getValue()
     {
@@ -42,6 +37,12 @@ public final class FloatReference
     public String toString()
     {
         return "value=" + value;
+    }
+
+    @Override
+    public void clear()
+    {
+        value = 0;
     }
     
 }
