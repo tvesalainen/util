@@ -28,7 +28,7 @@ public final class FloatReference
         this.value = value;
     }
 
-    public double getValue()
+    public float getValue()
     {
         return value;
     }
