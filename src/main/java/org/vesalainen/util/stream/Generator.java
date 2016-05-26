@@ -17,8 +17,6 @@
 package org.vesalainen.util.stream;
 
 import java.util.concurrent.SynchronousQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class is intended to generate Streams from observers. Observer calls 
@@ -33,19 +31,13 @@ public class Generator<T>
 {
     private SynchronousQueue<T> queue = new SynchronousQueue<>();
     /**
-     * Provides new item to the generator
+     * Provides new item to the generator. Return true if item was consumed. 
+     * False if another thread was not waiting for the item.
      * @param t 
      */
-    public void provide(T t)
+    public boolean provide(T t)
     {
-        try
-        {
-            queue.put(t);
-        }
-        catch (InterruptedException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        return queue.offer(t);
     }
     /**
      * Returns item provided in different thread
