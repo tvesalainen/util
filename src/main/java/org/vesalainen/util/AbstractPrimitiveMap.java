@@ -17,7 +17,6 @@
 package org.vesalainen.util;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -68,6 +67,12 @@ public abstract class AbstractPrimitiveMap<K,V>
     public int size()
     {
         return map.size();
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "size=" + size();
     }
     
 }
