@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -75,5 +76,10 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
             return w.value;
         }
         return Float.NaN;
+    }
+    @Override
+    public Collection<FloatReference> values()
+    {
+        return map.values();
     }
 }

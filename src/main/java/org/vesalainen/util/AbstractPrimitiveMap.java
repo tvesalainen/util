@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,6 +62,8 @@ public abstract class AbstractPrimitiveMap<K,V extends PrimitiveReference>
         return map.keySet();
     }
 
+    public abstract Collection<? extends PrimitiveReference> values();
+    
     public void remove(K key)
     {
         map.remove(key);

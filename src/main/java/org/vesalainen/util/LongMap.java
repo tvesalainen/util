@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,5 +88,10 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
             return w.value;
         }
         throw new IllegalArgumentException(key+" not found");
+    }
+    @Override
+    public Collection<LongReference> values()
+    {
+        return map.values();
     }
 }

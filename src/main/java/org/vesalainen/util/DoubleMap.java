@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,5 +88,11 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
             return w.value;
         }
         return Double.NaN;
+    }
+
+    @Override
+    public Collection<DoubleReference> values()
+    {
+        return map.values();
     }
 }

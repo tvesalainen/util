@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,5 +88,10 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
             return w.value;
         }
         throw new IllegalArgumentException(key+" not found");
+    }
+    @Override
+    public Collection<IntReference> values()
+    {
+        return map.values();
     }
 }
