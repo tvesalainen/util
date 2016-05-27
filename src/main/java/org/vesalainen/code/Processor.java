@@ -270,9 +270,9 @@ public class Processor extends AbstractProcessor
                         csw.flush();
                         cs.flush();
                         cc.flush();
-                        ct.println("for (Transactional tr : transactionalObservers)");
+                        ct.println("transactionalObservers.stream().forEach((tr) ->");
                         ct.println("{");
-                        CodePrinter ctr = ct.createSub("}");
+                        CodePrinter ctr = ct.createSub("});");
                         ctr.println("tr.commit("+parameters.get(0).getSimpleName()+");");
                         ctr.flush();
                         ct.println("clear();");
@@ -296,9 +296,9 @@ public class Processor extends AbstractProcessor
                             cm.println("{");
                             CodePrinter ct = cm.createSub("}");
                             ct.println("clear();");
-                            ct.println("for (Transactional tr : transactionalObservers)");
+                            ct.println("transactionalObservers.stream().forEach((tr) ->");
                             ct.println("{");
-                            CodePrinter ctr = ct.createSub("}");
+                            CodePrinter ctr = ct.createSub("});");
                             ctr.println("tr.rollback("+parameters.get(0).getSimpleName()+");");
                             ctr.flush();
                             ct.flush();
@@ -321,6 +321,11 @@ public class Processor extends AbstractProcessor
                                 cm.println("{");
                                 CodePrinter cs = cm.createSub("}");
                                 cs.println("semaphore.acquire();");
+                                cs.println("transactionalObservers.stream().forEach((tr) ->");
+                                cs.println("{");
+                                CodePrinter ctr = cs.createSub("});");
+                                ctr.println("tr.start("+parameters.get(0).getSimpleName()+");");
+                                ctr.flush();
                                 cs.flush();
                                 cm.println("catch (InterruptedException ex)");
                                 cm.println("{");
