@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,15 @@ public final class Recycler
     private static ArrayBlockingQueue<Recyclable> queue;
     private static Runner runner = new Runner();
     private static final JavaLogging log = new JavaLogging(Recycler.class);
+    private static int Size = 1024;
+    /**
+     * Set size of inner queue. Default is 1024.
+     * @param Size 
+     */
+    public static void setSize(int Size)
+    {
+        Recycler.Size = Size;
+    }
 
     /**
      * Returns new or recycled uninitialized object.
@@ -92,6 +102,30 @@ public final class Recycler
         return (T) recyclable;
     }
     /**
+     * Add objects to be recycled.
+     * @param <T>
+     * @param recyclables 
+     */
+    public static final <T extends Recyclable> void recycle(Collection<T> recyclables)
+    {
+        recyclables.stream().forEach((recyclable) ->
+        {
+            recycle(recyclable);
+        });
+    }
+    /**
+     * Add objects to be recycled.
+     * @param <T>
+     * @param recyclables 
+     */
+    public static final <T extends Recyclable> void recycle(T... recyclables)
+    {
+        for (Recyclable recyclable : recyclables)
+        {
+            recycle(recyclable);
+        }
+    }
+    /**
      * Add object to be recycled.
      * @param <T>
      * @param recyclable 
@@ -103,7 +137,7 @@ public final class Recycler
         {
             if (queue == null)
             {
-                queue = new ArrayBlockingQueue<>(1024);
+                queue = new ArrayBlockingQueue<>(Size);
                 Thread thread = new Thread(runner, Recycler.class.getSimpleName());
                 thread.start();
                 log.info("start thread %s", Recycler.class.getSimpleName());
