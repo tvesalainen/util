@@ -17,7 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -140,11 +140,16 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     {
         return map.containsValue(value);
     }
-
+    /**
+     * Returns mapped set. Returns empty set if no mapping exists.
+     * @param key
+     * @return 
+     */
     @Override
     public Set<V> get(Object key)
     {
-        return map.get(key);
+        Set<V> set = map.get(key);
+        return set != null ? set : Collections.EMPTY_SET;
     }
 
     @Override
