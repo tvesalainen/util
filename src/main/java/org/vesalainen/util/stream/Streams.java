@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -34,6 +35,21 @@ import org.vesalainen.util.Recycler;
  */
 public class Streams
 {
+    /**
+     * Creates a consumer which recycles item after use. This is intended to use
+     * in Stream forEach
+     * @param <T>
+     * @param consumer
+     * @return 
+     */
+    public static final <T extends Recyclable> Consumer<T> recyclingConsumer(Consumer<T> consumer)
+    {
+        return (t)->
+        {
+            consumer.accept(t);
+            Recycler.recycle(t);
+        };
+    }
     /**
      * Creates a predicate which recycles failing item. This is intended to use
      * in Stream filters
