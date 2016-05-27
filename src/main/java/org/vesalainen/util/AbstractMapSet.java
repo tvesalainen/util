@@ -44,7 +44,7 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     @Override
     public boolean contains(K key, V value)
     {
-        Set<V> set = get(key);
+        Set<V> set = map.get(key);
         if (set == null)
         {
             return false;
@@ -55,7 +55,7 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     @Override
     public void add(K key, V value)
     {
-        Set<V> set = get(key);
+        Set<V> set = map.get(key);
         if (set == null)
         {
             set = createSet();
@@ -67,7 +67,7 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     @Override
     public void addAll(K key, Collection<V> value)
     {
-        Set<V> set = get(key);
+        Set<V> set = map.get(key);
         if (set == null)
         {
             set = createSet();
@@ -82,7 +82,7 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     @Override
     public Set<V> set(K key, Collection<V> value)
     {
-        Set<V> set = get(key);
+        Set<V> set = map.get(key);
         if (set == null)
         {
             set = createSet();
@@ -108,13 +108,17 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
     @Override
     public boolean removeItem(K key, V value)
     {
-        Set<V> set = get(key);
-        boolean res = set.remove(value);
-        if (set.isEmpty())
+        Set<V> set = map.get(key);
+        if (set != null)
         {
-            remove(key);
+            boolean res = set.remove(value);
+            if (set.isEmpty())
+            {
+                remove(key);
+            }
+            return res;
         }
-        return res;
+        return false;
     }
 
     @Override

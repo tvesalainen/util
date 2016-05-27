@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collections;
 import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -43,7 +44,7 @@ public class HashMapSetTest
         lst = hms.get("a");
         assertEquals(1, lst.size());
         hms.removeItem("a", "1");
-        assertNull(hms.get("a"));
+        assertEquals(Collections.EMPTY_SET, hms.get("a"));
     }
     
     

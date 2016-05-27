@@ -21,7 +21,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.HashMapSet;
 import org.vesalainen.util.MapList;
+import org.vesalainen.util.MapSet;
 
 /**
  * SimplePropertySetterDispatcher is a PropertySetter which can dispatch property
@@ -30,25 +32,25 @@ import org.vesalainen.util.MapList;
  */
 public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
 {
-    private final MapList<String,PropertySetter> mapList;
+    private final MapSet<String,PropertySetter> mapSet;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReadLock readLock = rwLock.readLock();
     private final WriteLock writeLock = rwLock.writeLock();
 
     public SimplePropertySetterDispatcher()
     {
-        this(new HashMapList<>());
+        this(new HashMapSet<>());
     }
 
-    public SimplePropertySetterDispatcher(MapList<String, PropertySetter> mapList)
+    public SimplePropertySetterDispatcher(MapSet<String, PropertySetter> mapSet)
     {
-        this.mapList = mapList;
+        this.mapSet = mapSet;
     }
     
     @Override
     public String[] getPrefixes()
     {
-        Set<String> keySet = mapList.keySet();
+        Set<String> keySet = mapSet.keySet();
         return keySet.toArray(new String[keySet.size()]);
     }
 
@@ -58,7 +60,7 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         writeLock.lock();
         try
         {
-            mapList.add(key, ps);
+            mapSet.add(key, ps);
         }
         finally
         {
@@ -72,7 +74,7 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         writeLock.lock();
         try
         {
-            mapList.removeItem(key, ps);
+            mapSet.removeItem(key, ps);
         }
         finally
         {
@@ -86,10 +88,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -103,10 +105,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -120,10 +122,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -137,10 +139,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -154,10 +156,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -171,10 +173,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -188,10 +190,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -205,10 +207,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -222,10 +224,10 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
         readLock.lock();
         try
         {
-            for (PropertySetter ps : mapList.get(property))
+            mapSet.get(property).stream().forEach((ps) ->
             {
                 ps.set(property, arg);
-            }
+            });
         }
         finally
         {
@@ -236,12 +238,12 @@ public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
     @Override
     public boolean isEmpty()
     {
-        return mapList.isEmpty();
+        return mapSet.isEmpty();
     }
     
     @Override
     public boolean containsProperty(String property)
     {
-        return mapList.containsKey(property);
+        return mapSet.containsKey(property);
     }
 }
