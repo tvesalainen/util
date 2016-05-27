@@ -30,10 +30,20 @@ import org.vesalainen.util.MapList;
  */
 public class SimplePropertySetterDispatcher implements PropertySetterDispatcher
 {
-    private final MapList<String,PropertySetter> mapList = new HashMapList<>();
+    private final MapList<String,PropertySetter> mapList;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReadLock readLock = rwLock.readLock();
     private final WriteLock writeLock = rwLock.writeLock();
+
+    public SimplePropertySetterDispatcher()
+    {
+        this(new HashMapList<>());
+    }
+
+    public SimplePropertySetterDispatcher(MapList<String, PropertySetter> mapList)
+    {
+        this.mapList = mapList;
+    }
     
     @Override
     public String[] getPrefixes()
