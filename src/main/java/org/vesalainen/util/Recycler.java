@@ -17,9 +17,12 @@
 package org.vesalainen.util;
 
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * Recycler class is used to recycle Recyclable objects.
@@ -28,10 +31,14 @@ import java.util.function.Consumer;
  * to hard to find bugs.
  * @author tkv
  */
-public class Recycler
+public final class Recycler
 {
     private static final MapList<Class<?>,Recyclable> mapList = new HashMapList<>();
     private static final Lock lock = new ReentrantLock();
+    private static ArrayBlockingQueue<Recyclable> queue;
+    private static Runner runner = new Runner();
+    private static final JavaLogging log = new JavaLogging(Recycler.class);
+
     /**
      * Returns new or recycled uninitialized object.
      * @param <T>
@@ -59,6 +66,7 @@ public class Recycler
             if (list != null && !list.isEmpty())
             {
                 recyclable = (T) list.remove(list.size()-1);
+                log.finest("get recycled %s", recyclable);
             }
         }
         finally
@@ -70,6 +78,7 @@ public class Recycler
             try
             {
                 recyclable = cls.newInstance();
+                log.finest("get new %s", recyclable);
             }
             catch (InstantiationException | IllegalAccessException ex)
             {
@@ -89,15 +98,24 @@ public class Recycler
      */
     public static final <T extends Recyclable> void recycle(T recyclable)
     {
-        if (recyclable.isRecycled())
-        {
-            throw new IllegalArgumentException("recycling "+recyclable+" again");
-        }
-        recyclable.clear();
         lock.lock();
         try
         {
-            mapList.add(recyclable.getClass(), recyclable);
+            if (queue == null)
+            {
+                queue = new ArrayBlockingQueue<>(1024);
+                Thread thread = new Thread(runner, Recycler.class.getSimpleName());
+                thread.start();
+                log.info("start thread %s", Recycler.class.getSimpleName());
+            }
+            if (!queue.offer(recyclable))
+            {
+                log.warning("failed to recycle %s, queue is full", recyclable);
+            }
+            else
+            {
+                log.finest("put to recycle queue %s", recyclable);
+            }
         }
         finally
         {
@@ -108,5 +126,46 @@ public class Recycler
     static final <T extends Recyclable> boolean isRecycled(T recyclable)
     {
         return mapList.contains(recyclable.getClass(), recyclable);
+    }
+
+    private static class Runner implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            while (true)
+            {
+                try
+                {
+                    Recyclable recyclable = queue.poll(1, TimeUnit.MINUTES);
+                    lock.lock();
+                    try
+                    {
+                        if (recyclable == null)
+                        {
+                            queue = null;
+                            log.info("stop thread ", Recycler.class.getSimpleName());
+                            return;
+                        }
+                        if (recyclable.isRecycled())
+                        {
+                            queue = null;
+                            log.severe("recycling %s again", recyclable);
+                            throw new IllegalArgumentException("recycling "+recyclable+" again");
+                        }
+                        recyclable.clear();
+                        mapList.add(recyclable.getClass(), recyclable);
+                        log.finest("recycled %s", recyclable);
+                    }
+                    finally
+                    {
+                        lock.unlock();
+                    }
+                }
+                catch (InterruptedException ex)
+                {
+                }
+            }
+        }
     }
 }
