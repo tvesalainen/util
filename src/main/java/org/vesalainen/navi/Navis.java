@@ -170,6 +170,13 @@ public class Navis
         checkLongitude(lon1);
         checkLatitude(lat2);
         checkLongitude(lon2);
+        if (
+                (Math.abs(lat1 - lat2) > 100) ||
+                (Math.abs(lon1 - lon2) > 100)
+                )
+        {
+            return GreatCircle.distance(lat1, lon1, lat2, lon2);
+        }
         double dep = departure(lat1, lat2);
         return 60*Math.hypot(
                 lat1-lat2,

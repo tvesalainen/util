@@ -102,13 +102,18 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableTime
             needCalc = false;
         }
         long millis = 0;
-        millis += clock.millis() - updated;
+        millis += clock.millis() - getUpdated();
         millis += dateMillis;
         millis += get(ChronoField.HOUR_OF_DAY)*HourInMillis;
         millis += get(ChronoField.MINUTE_OF_HOUR)*MinuteInMillis;
         millis += get(ChronoField.SECOND_OF_MINUTE)*SecondInMillis;
         millis += get(ChronoField.MILLI_OF_SECOND);
         return millis;
+    }
+
+    protected long getUpdated()
+    {
+        return updated;
     }
 
     /**

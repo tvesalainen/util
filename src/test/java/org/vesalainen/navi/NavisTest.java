@@ -18,12 +18,6 @@ package org.vesalainen.navi;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.navi.Fathom;
-import org.vesalainen.util.navi.Feet;
-import org.vesalainen.util.navi.KilometersInHour;
-import org.vesalainen.util.navi.Knots;
-import org.vesalainen.util.navi.Scalar;
-import org.vesalainen.util.navi.Velocity;
 
 /**
  *
@@ -98,6 +92,11 @@ public class NavisTest
         assertEquals(-24, Navis.addLongitude(-25, 1), Epsilon);
         assertEquals(-179, Navis.addLongitude(179, 2), Epsilon);
         assertEquals(-1, Navis.addLongitude(1, -2), Epsilon);
+    }
+    @Test
+    public void testDistance()
+    {
+        assertEquals(120, Navis.distance(0, 179, 0, -179), 0.1);
     }
     @Test
     public void testGHA()

@@ -34,6 +34,7 @@ public class Generator<T>
      * Provides new item to the generator. Return true if item was consumed. 
      * False if another thread was not waiting for the item.
      * @param t 
+     * @return  
      */
     public boolean provide(T t)
     {

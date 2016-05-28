@@ -19,6 +19,8 @@ package org.vesalainen.util.logging;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -29,6 +31,8 @@ import java.util.logging.Logger;
  */
 public class JavaLogging extends BaseLogging
 {
+    private static final Map<String,JavaLogging> map = new WeakHashMap();
+    
     private Logger logger;
 
     public JavaLogging()
@@ -61,6 +65,20 @@ public class JavaLogging extends BaseLogging
         setLogger(logger);
     }
 
+    public static JavaLogging getLogger(Class<?> cls)
+    {
+        return getLogger(cls.getName().replace('$', '.'));
+    }
+    public static JavaLogging getLogger(String name)
+    {
+        JavaLogging log = map.get(name);
+        if (log == null)
+        {
+            log = new JavaLogging(name);
+            map.put(name, log);
+        }
+        return log;
+    }
     public final void setLogger(Logger logger)
     {
         this.logger = logger;
