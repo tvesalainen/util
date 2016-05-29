@@ -35,6 +35,7 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     private SynchronousQueue<T> queue = new SynchronousQueue<>();
     private long estimatedSize;
     private int characteristics;
+    private boolean initialized;
 
     public ObserverSpliterator()
     {
@@ -46,7 +47,13 @@ public class ObserverSpliterator<T> implements Spliterator<T>
         this.estimatedSize = estimatedSize;
         this.characteristics = characteristics;
     }
-    
+    /**
+     * Called at start of iteration. A place to put code for lazy initialisation.
+     * Default implementation does nothing.
+     */
+    protected void init()
+    {
+    }
     /**
      * Offers new item. Return true if item was consumed. 
      * False if another thread was not waiting for the item.
@@ -63,6 +70,11 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     {
         try
         {
+            if (!initialized)
+            {
+                init();
+                initialized = true;
+            }
             action.accept(queue.take());
             return true;
         }
@@ -75,6 +87,11 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     @Override
     public Spliterator<T> trySplit()
     {
+        if (!initialized)
+        {
+            init();
+            initialized = true;
+        }
         T item = queue.poll();
         if (item != null)
         {
