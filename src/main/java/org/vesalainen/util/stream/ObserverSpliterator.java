@@ -34,7 +34,7 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     private SynchronousQueue<T> queue = new SynchronousQueue<>();
     private long estimatedSize;
     private int characteristics;
-    private Consumer initializer;
+    private Consumer<ObserverSpliterator> initializer;
     /**
      * Creates infinite ObserverSpliterator without initializer.
      */
@@ -48,7 +48,7 @@ public class ObserverSpliterator<T> implements Spliterator<T>
      * @param characteristics
      * @param initializer 
      */
-    public ObserverSpliterator(long estimatedSize, int characteristics, Consumer initializer)
+    public ObserverSpliterator(long estimatedSize, int characteristics, Consumer<ObserverSpliterator> initializer)
     {
         this.estimatedSize = estimatedSize;
         this.characteristics = characteristics;
