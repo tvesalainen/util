@@ -17,7 +17,6 @@
 package org.vesalainen.util.stream;
 
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
 
@@ -35,24 +34,25 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     private SynchronousQueue<T> queue = new SynchronousQueue<>();
     private long estimatedSize;
     private int characteristics;
-    private boolean initialized;
-
+    private Consumer initializer;
+    /**
+     * Creates infinite ObserverSpliterator without initializer.
+     */
     public ObserverSpliterator()
     {
-        this(Long.MAX_VALUE, 0);
+        this(Long.MAX_VALUE, 0, null);
     }
-
-    public ObserverSpliterator(long estimatedSize, int characteristics)
+    /**
+     * Creates ObserverSpliterator with initializer
+     * @param estimatedSize
+     * @param characteristics
+     * @param initializer 
+     */
+    public ObserverSpliterator(long estimatedSize, int characteristics, Consumer initializer)
     {
         this.estimatedSize = estimatedSize;
         this.characteristics = characteristics;
-    }
-    /**
-     * Called at start of iteration. A place to put code for lazy initialisation.
-     * Default implementation does nothing.
-     */
-    protected void init()
-    {
+        this.initializer = initializer;
     }
     /**
      * Offers new item. Return true if item was consumed. 
@@ -70,10 +70,10 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     {
         try
         {
-            if (!initialized)
+            if (initializer != null)
             {
-                init();
-                initialized = true;
+                initializer.accept(this);
+                initializer = null;
             }
             action.accept(queue.take());
             return true;
@@ -87,10 +87,10 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     @Override
     public Spliterator<T> trySplit()
     {
-        if (!initialized)
+        if (initializer != null)
         {
-            init();
-            initialized = true;
+            initializer.accept(this);
+            initializer = null;
         }
         T item = queue.poll();
         if (item != null)
