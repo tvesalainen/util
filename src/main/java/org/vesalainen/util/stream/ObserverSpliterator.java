@@ -19,7 +19,10 @@ package org.vesalainen.util.stream;
 import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is intended to generate Streams from observers. Observer calls 
@@ -37,12 +40,15 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     private int characteristics;
     private Consumer<ObserverSpliterator> initializer;
     private Comparator<T> comparator;
+    private long offerTimeout;
+    private long takeTimeout;
+    private TimeUnit timeUnit;
     /**
      * Creates infinite ObserverSpliterator without initializer.
      */
     public ObserverSpliterator()
     {
-        this(Long.MAX_VALUE, 0, null, null);
+        this(Long.MAX_VALUE, 0, 0, Long.MAX_VALUE, TimeUnit.MILLISECONDS, null, null);
     }
     /**
      * Creates ObserverSpliterator with initializer
@@ -50,10 +56,13 @@ public class ObserverSpliterator<T> implements Spliterator<T>
      * @param characteristics
      * @param initializer 
      */
-    public ObserverSpliterator(long estimatedSize, int characteristics, Comparator<T> comparator, Consumer<ObserverSpliterator> initializer)
+    public ObserverSpliterator(long estimatedSize, int characteristics, long offerTimeout, long takeTimeout, TimeUnit timeUnit, Comparator<T> comparator, Consumer<ObserverSpliterator> initializer)
     {
         this.estimatedSize = estimatedSize;
         this.characteristics = characteristics;
+        this.offerTimeout = offerTimeout;
+        this.takeTimeout = takeTimeout;
+        this.timeUnit = timeUnit;
         this.comparator = comparator;
         this.initializer = initializer;
     }
@@ -65,7 +74,14 @@ public class ObserverSpliterator<T> implements Spliterator<T>
      */
     public boolean offer(T t)
     {
-        return queue.offer(t);
+        try
+        {
+            return queue.offer(t, offerTimeout, timeUnit);
+        }
+        catch (InterruptedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @Override
@@ -78,8 +94,16 @@ public class ObserverSpliterator<T> implements Spliterator<T>
                 initializer.accept(this);
                 initializer = null;
             }
-            action.accept(queue.take());
-            return true;
+            T item = queue.poll(takeTimeout, timeUnit);
+            if (item != null)
+            {
+                action.accept(item);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         catch (InterruptedException ex)
         {

@@ -43,6 +43,8 @@ public class Plotter extends AbstractView
     private Color color = Color.BLACK;
     private final List<Drawable> drawables = new ArrayList<>();
     private File dir;
+    private double lastX = Double.NaN;
+    private double lastY = Double.NaN;
 
     public Plotter(int width, int height)
     {
@@ -117,7 +119,23 @@ public class Plotter extends AbstractView
         updatePolygon(polygon);
         drawables.add(new Poly(color, polygon));
     }
-    
+    public void lineTo(double x, double y)
+    {
+        if (Double.isNaN(lastX))
+        {
+            moveTo(x, y);
+        }
+        else
+        {
+            drawLine(lastX, lastY, x, y);
+            moveTo(x, y);
+        }
+    }
+    public void moveTo(double x, double y)
+    {
+        lastX = x;
+        lastY = y;
+    }
     public void drawLine(Point p1, Point p2)
     {
         drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
