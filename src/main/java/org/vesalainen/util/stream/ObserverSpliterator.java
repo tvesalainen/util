@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util.stream;
 
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
@@ -35,12 +36,13 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     private long estimatedSize;
     private int characteristics;
     private Consumer<ObserverSpliterator> initializer;
+    private Comparator<T> comparator;
     /**
      * Creates infinite ObserverSpliterator without initializer.
      */
     public ObserverSpliterator()
     {
-        this(Long.MAX_VALUE, 0, null);
+        this(Long.MAX_VALUE, 0, null, null);
     }
     /**
      * Creates ObserverSpliterator with initializer
@@ -48,10 +50,11 @@ public class ObserverSpliterator<T> implements Spliterator<T>
      * @param characteristics
      * @param initializer 
      */
-    public ObserverSpliterator(long estimatedSize, int characteristics, Consumer<ObserverSpliterator> initializer)
+    public ObserverSpliterator(long estimatedSize, int characteristics, Comparator<T> comparator, Consumer<ObserverSpliterator> initializer)
     {
         this.estimatedSize = estimatedSize;
         this.characteristics = characteristics;
+        this.comparator = comparator;
         this.initializer = initializer;
     }
     /**
@@ -111,4 +114,11 @@ public class ObserverSpliterator<T> implements Spliterator<T>
     {
         return characteristics;
     }
+
+    @Override
+    public Comparator<? super T> getComparator()
+    {
+        return comparator;
+    }
+    
 }
