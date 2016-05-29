@@ -16,43 +16,82 @@
  */
 package org.vesalainen.util.stream;
 
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.SynchronousQueue;
+import java.util.function.Consumer;
 
 /**
  * This class is intended to generate Streams from observers. Observer calls 
- * provide while generate is used as supplier.
- * <p>This class simplifies SynchronousQueue by wrapping exceptions and hiding not
+ offer while generate is used as supplier.
+ <p>This class simplifies SynchronousQueue by wrapping exceptions and hiding not
  * needed methods.
  * @author tkv
  * @param <T>
  * @see java.util.stream.Stream#generate(java.util.function.Supplier) 
  */
-public class Generator<T>
+public class ObserverSpliterator<T> implements Spliterator<T>
 {
     private SynchronousQueue<T> queue = new SynchronousQueue<>();
+    private long estimatedSize;
+    private int characteristics;
+
+    public ObserverSpliterator()
+    {
+        this(Long.MAX_VALUE, 0);
+    }
+
+    public ObserverSpliterator(long estimatedSize, int characteristics)
+    {
+        this.estimatedSize = estimatedSize;
+        this.characteristics = characteristics;
+    }
+    
     /**
-     * Provides new item to the generator. Return true if item was consumed. 
+     * Offers new item. Return true if item was consumed. 
      * False if another thread was not waiting for the item.
      * @param t 
      * @return  
      */
-    public boolean provide(T t)
+    public boolean offer(T t)
     {
         return queue.offer(t);
     }
-    /**
-     * Returns item provided in different thread
-     * @return 
-     */
-    public T generate()
+
+    @Override
+    public boolean tryAdvance(Consumer<? super T> action)
     {
         try
         {
-            return queue.take();
+            action.accept(queue.take());
+            return true;
         }
         catch (InterruptedException ex)
         {
-            throw new IllegalArgumentException(ex);
+            return false;
         }
+    }
+
+    @Override
+    public Spliterator<T> trySplit()
+    {
+        T item = queue.poll();
+        if (item != null)
+        {
+            return new SingleSpliterator<>(item);
+        }
+        return null;
+    }
+
+    @Override
+    public long estimateSize()
+    {
+        return estimatedSize;
+    }
+
+    @Override
+    public int characteristics()
+    {
+        return characteristics;
     }
 }
