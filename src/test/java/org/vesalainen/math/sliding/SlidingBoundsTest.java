@@ -16,6 +16,10 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -94,109 +98,119 @@ public class SlidingBoundsTest
     @Test
     public void testTimedSlidingMax()
     {
-        try
-        {
-            // 10 9 8 7 6 9 10 11 9 8 7
-            // --------
-            //    -------
-            //      -------
-            //        --------
-            //          ---------
-            //            ---------
-            //              ----------
-            TimeoutSlidingMax sm = new TimeoutSlidingMax(3, 1000);
-            sm.accept(10);
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(9);
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(8);
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(7);
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(6);
-            Thread.sleep(300);
-            assertEquals(9, sm.getBound(), Epsilon);
-            sm.accept(9);
-            Thread.sleep(300);
-            assertEquals(9, sm.getBound(), Epsilon);
-            sm.accept(10);
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(11);
-            Thread.sleep(300);
-            assertEquals(11, sm.getBound(), Epsilon);
-            sm.accept(9);
-            Thread.sleep(300);
-            assertEquals(11, sm.getBound(), Epsilon);
-            sm.accept(8);
-            Thread.sleep(300);
-            assertEquals(11, sm.getBound(), Epsilon);
-            sm.accept(7);
-            Thread.sleep(300);
-            assertEquals(11, sm.getBound(), Epsilon);
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(SlidingBoundsTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // 10 9 8 7 6 9 10 11 9 8 7
+        // --------
+        //    -------
+        //      -------
+        //        --------
+        //          ---------
+        //            ---------
+        //              ----------
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
+        TimeoutSlidingMax sm = new TimeoutSlidingMax(clock, 3, 1000);
+        sm.accept(10);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(9);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(8);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(7);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(6);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(9, sm.getBound(), Epsilon);
+        sm.accept(9);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(9, sm.getBound(), Epsilon);
+        sm.accept(10);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(11);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(11, sm.getBound(), Epsilon);
+        sm.accept(9);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(11, sm.getBound(), Epsilon);
+        sm.accept(8);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(11, sm.getBound(), Epsilon);
+        sm.accept(7);
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(11, sm.getBound(), Epsilon);
     }
     
     @Test
     public void testTimedSlidingMin()
     {
-        try
-        {
-            // 10 9 8 7 6 9 10 11 9 8 7
-            // -------- 1200
-            //    ------- 1200-1500
-            //      ------- 1500-1800
-            //        -------- 1800-2100
-            //          --------- 2100-2400
-            //            --------- 2400-2700
-            //              ---------- 2700-3000
-            TimeoutSlidingMin sm = new TimeoutSlidingMin(3, 1000);
-            sm.accept(10); // 0
-            Thread.sleep(300);
-            assertEquals(10, sm.getBound(), Epsilon);
-            sm.accept(9);  // 300
-            Thread.sleep(300);
-            assertEquals(9, sm.getBound(), Epsilon);
-            sm.accept(8);  // 600
-            Thread.sleep(300);
-            assertEquals(8, sm.getBound(), Epsilon);
-            sm.accept(7);  // 900
-            Thread.sleep(300);
-            assertEquals(7, sm.getBound(), Epsilon);
-            sm.accept(6);  // 1200
-            Thread.sleep(300);
-            assertEquals(6, sm.getBound(), Epsilon);
-            sm.accept(9);  // 1500
-            Thread.sleep(300);
-            assertEquals(6, sm.getBound(), Epsilon);
-            sm.accept(10); // 1800
-            Thread.sleep(300);
-            assertEquals(6, sm.getBound(), Epsilon);
-            sm.accept(11); // 2100
-            Thread.sleep(300);
-            assertEquals(6, sm.getBound(), Epsilon);
-            sm.accept(9);  // 2400
-            Thread.sleep(300);
-            assertEquals(9, sm.getBound(), Epsilon);
-            sm.accept(8);  // 2700
-            Thread.sleep(300);
-            assertEquals(8, sm.getBound(), Epsilon);
-            sm.accept(7);  // 3000
-            Thread.sleep(300);
-            assertEquals(7, sm.getBound(), Epsilon);
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(SlidingBoundsTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // 10 9 8 7 6 9 10 11 9 8 7
+        // -------- 1200
+        //    ------- 1200-1500
+        //      ------- 1500-1800
+        //        -------- 1800-2100
+        //          --------- 2100-2400
+        //            --------- 2400-2700
+        //              ---------- 2700-3000
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
+        TimeoutSlidingMin sm = new TimeoutSlidingMin(clock, 3, 1000);
+        sm.accept(10); // 0
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(10, sm.getBound(), Epsilon);
+        sm.accept(9);  // 300
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(9, sm.getBound(), Epsilon);
+        sm.accept(8);  // 600
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(8, sm.getBound(), Epsilon);
+        sm.accept(7);  // 900
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(7, sm.getBound(), Epsilon);
+        sm.accept(6);  // 1200
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(6, sm.getBound(), Epsilon);
+        sm.accept(9);  // 1500
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(6, sm.getBound(), Epsilon);
+        sm.accept(10); // 1800
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(6, sm.getBound(), Epsilon);
+        sm.accept(11); // 2100
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(6, sm.getBound(), Epsilon);
+        sm.accept(9);  // 2400
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(9, sm.getBound(), Epsilon);
+        sm.accept(8);  // 2700
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(8, sm.getBound(), Epsilon);
+        sm.accept(7);  // 3000
+        clock = Clock.offset(clock, Duration.ofMillis(300));
+        sm.clock(clock);
+        assertEquals(7, sm.getBound(), Epsilon);
     }
     
 }

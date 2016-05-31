@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+
 /**
  * A class for counting max value for given time.
  * @author tkv
@@ -29,7 +31,11 @@ public class TimeoutSlidingMax extends AbstractTimeoutSlidingBound implements Ma
      */
     public TimeoutSlidingMax(int size, long timeout)
     {
-        super(size, timeout);
+        this(Clock.systemUTC(), size, timeout);
+    }
+    public TimeoutSlidingMax(Clock clock, int size, long timeout)
+    {
+        super(clock, size, timeout);
     }
 
     public TimeoutSlidingMax(Timeouting parent)

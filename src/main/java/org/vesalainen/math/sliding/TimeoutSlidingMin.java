@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+
 /**
  * A class for counting min value for given time.
  * @author tkv
@@ -29,7 +31,11 @@ public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound implements Mi
      */
     public TimeoutSlidingMin(int size, long timeout)
     {
-        super(size, timeout);
+        this(Clock.systemUTC(), size, timeout);
+    }
+    public TimeoutSlidingMin(Clock clock, int size, long timeout)
+    {
+        super(clock, size, timeout);
     }
 
     public TimeoutSlidingMin(Timeouting parent)

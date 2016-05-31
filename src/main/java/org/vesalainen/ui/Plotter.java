@@ -220,6 +220,7 @@ public class Plotter extends AbstractView
         }
         try (FileOutputStream fos = new FileOutputStream(file))
         {
+            System.err.println(Arrays.toString(ImageIO.getWriterMIMETypes()));
             ImageIO.write(image, ext, fos);
         }
         catch (IOException ex)
