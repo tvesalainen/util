@@ -38,13 +38,12 @@ import org.vesalainen.math.Polygon;
  */
 public class Plotter extends AbstractView
 {
-    private final BufferedImage image;
-    private final Graphics2D graphics2D;
     private Color color = Color.BLACK;
     private final List<Drawable> drawables = new ArrayList<>();
     private File dir;
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
+    private final Color background;
 
     public Plotter(int width, int height)
     {
@@ -53,15 +52,11 @@ public class Plotter extends AbstractView
     public Plotter(int width, int height, Color background)
     {
         super.setScreen(width, height);
-        image = new BufferedImage((int)width, (int)height, BufferedImage.TYPE_4BYTE_ABGR);
-        graphics2D = image.createGraphics();
-        graphics2D.setBackground(background);
-        graphics2D.clearRect(0, 0, (int)width, (int)height);
+        this.background = background;
     }
 
     public void clear()
     {
-        graphics2D.clearRect(0, 0, (int)width, (int)height);
         drawables.clear();
     }
     
@@ -214,13 +209,18 @@ public class Plotter extends AbstractView
     }
     public void plot(File file, String ext) throws IOException
     {
+        BufferedImage image = new BufferedImage((int)width, (int)height, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics2D graphics2D = image.createGraphics();
+        graphics2D.setBackground(background);
+        graphics2D.clearRect(0, 0, (int)width, (int)height);
+        Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
         for (Drawable d : drawables)
         {
-            d.draw(graphics2D);
+            d.draw(g2d);
         }
         try (FileOutputStream fos = new FileOutputStream(file))
         {
-            System.err.println(Arrays.toString(ImageIO.getWriterMIMETypes()));
+            //System.err.println(Arrays.toString(ImageIO.getWriterMIMETypes()));  // [image/vnd.wap.wbmp, image/png, image/x-png, image/jpeg, image/bmp, image/gif]
             ImageIO.write(image, ext, fos);
         }
         catch (IOException ex)
@@ -238,9 +238,9 @@ public class Plotter extends AbstractView
             this.color = color;
         }
         
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            graphics2D.setColor(color);
+            drawer.color(color);
         }
     }
     private class Pnt extends Drawable
@@ -255,12 +255,12 @@ public class Plotter extends AbstractView
         }
         
         @Override
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            super.draw(graphics2D);
+            super.draw(drawer);
             int sx = (int) toScreenX(x);
             int sy = (int) toScreenY(y);
-            graphics2D.drawOval(sx-2, sy-2, 4, 4);
+            drawer.ellipse(sx-2, sy-2, 2, 2);
         }
     }
     private class Circl extends Pnt
@@ -274,14 +274,13 @@ public class Plotter extends AbstractView
         }
         
         @Override
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            super.draw(graphics2D);
+            super.draw(drawer);
             int sx = (int) toScreenX(x);
             int sy = (int) toScreenY(y);
             int sr = (int) scaleToScreen(r);
-            int sr2 = 2*sr;
-            graphics2D.drawOval(sx-sr, sy-sr, sr2, sr2);
+            drawer.ellipse(sx-sr, sy-sr, sr, sr);
         }
     }
     private class Poly extends Drawable
@@ -301,19 +300,19 @@ public class Plotter extends AbstractView
         }
         
         @Override
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            super.draw(graphics2D);
+            super.draw(drawer);
             int len = data.length/2;
             if (len >= 2)
             {
-                int x1 = (int) toScreenX(data[2*(len-1)]);
-                int y1 = (int) toScreenY(data[2*(len-1)+1]);
+                double x1 = toScreenX(data[2*(len-1)]);
+                double y1 = toScreenY(data[2*(len-1)+1]);
                 for (int r=0;r<len;r++)
                 {
-                    int x2 = (int) toScreenX(data[2*r]);
-                    int y2 = (int) toScreenY(data[2*r+1]);
-                    graphics2D.drawLine(x1, y1, x2, y2);
+                    double x2 = toScreenX(data[2*r]);
+                    double y2 = toScreenY(data[2*r+1]);
+                    drawer.line(x1, y1, x2, y2);
                     x1 = x2;
                     y1 = y2;
                 }
@@ -337,14 +336,14 @@ public class Plotter extends AbstractView
         }
         
         @Override
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            super.draw(graphics2D);
-            int sx1 = (int)toScreenX(x1);
-            int sy1 = (int)toScreenY(y1); 
-            int sx2 = (int)toScreenX(x2); 
-            int sy2 = (int)toScreenY(y2);
-            graphics2D.drawLine(sx1, sy1, sx2, sy2);
+            super.draw(drawer);
+            double sx1 = toScreenX(x1);
+            double sy1 = toScreenY(y1); 
+            double sx2 = toScreenX(x2); 
+            double sy2 = toScreenY(y2);
+            drawer.line(sx1, sy1, sx2, sy2);
         }
     }
     private class Lines extends Drawable
@@ -364,19 +363,19 @@ public class Plotter extends AbstractView
         }
         
         @Override
-        protected void draw(Graphics2D graphics2D)
+        protected void draw(Drawer drawer)
         {
-            super.draw(graphics2D);
+            super.draw(drawer);
             int len = data.length/2;
             if (len >= 2)
             {
-                int x1 = (int) toScreenX(data[0]);
-                int y1 = (int) toScreenY(data[1]);
+                double x1 = toScreenX(data[0]);
+                double y1 = toScreenY(data[1]);
                 for (int r=1;r<len;r++)
                 {
-                    int x2 = (int) toScreenX(data[2*r]);
-                    int y2 = (int) toScreenY(data[2*r+1]);
-                    graphics2D.drawLine(x1, y1, x2, y2);
+                    double x2 = toScreenX(data[2*r]);
+                    double y2 = toScreenY(data[2*r+1]);
+                    drawer.line(x1, y1, x2, y2);
                     x1 = x2;
                     y1 = y2;
                 }
