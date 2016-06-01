@@ -122,11 +122,13 @@ public class AbstractView
     }
     public void updatePolygon(DenseMatrix64F polygon)
     {
-        int len = polygon.numRows;
-        double[] d = polygon.data;
-        for (int r=0;r<len;r++)
+        updatePolygon(polygon.data, polygon.numRows);
+    }
+    public void updatePolygon(double[] data, int length)
+    {
+        for (int r=0;r<length;r++)
         {
-            updatePoint(d[2*r], d[2*r+1]);
+            updatePoint(data[2*r], data[2*r+1]);
         }
     }
     public void updateRect(Rect bounds)

@@ -25,7 +25,31 @@ import java.awt.Color;
 public interface Drawer
 {
     void color(Color color);
-    void circle(double x, double y, double r);
+    default void circle(double x, double y, double r)
+    {
+        ellipse(x, y, r, r);
+    }
     void ellipse(double x, double y, double rx, double ry);
     void line(double x1, double y1, double x2, double y2);
+    default void polyline(double[] x, double[] y)
+    {
+        if (x.length != y.length)
+        {
+            throw new IllegalArgumentException("dimensions differ");
+        }
+        if (x.length > 1)
+        {
+            int len = x.length;
+            double x1 = x[0];
+            double y1 = y[0];
+            for (int ii=1;ii<len;ii++)
+            {
+                double x2 = x[ii];
+                double y2 = y[ii];
+                line(x1, y1, x2, y2);
+                x1 = x2;
+                y1 = y2;
+            }
+        }
+    }
 }
