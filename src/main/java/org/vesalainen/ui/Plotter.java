@@ -31,6 +31,7 @@ import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
+import org.vesalainen.math.Rect;
 
 /**
  *
@@ -141,6 +142,11 @@ public class Plotter extends AbstractView
         updatePoint(x2, y2);
         drawables.add(new Lin(color, x1, y1, x2, y2));
     }
+    public void drawPolyline(Polyline polyline)
+    {
+        updateRect(polyline.getBounds());
+        drawables.add(polyline);
+    }
     public void drawCoordinateLine(double x1, double y1, double x2, double y2)
     {
         updatePoint(x1, y1);
@@ -235,7 +241,7 @@ public class Plotter extends AbstractView
          }
     }
 
-    protected class Drawable
+    public static class Drawable
     {
         Color color;
 
@@ -401,5 +407,41 @@ public class Plotter extends AbstractView
                 drawer.polyline(x, y);
             }
         }
+    }
+    public static class Polyline extends Drawable
+    {
+        private List<Double> xData = new ArrayList<>();
+        private List<Double> yData = new ArrayList<>();
+        private Rect bounds = new Rect();
+        public Polyline(Color color)
+        {
+            super(color);
+        }
+        
+        public void lineTo(double x, double y)
+        {
+            xData.add(x);
+            yData.add(y);
+            bounds.update(x, y);
+        }
+
+        public Rect getBounds()
+        {
+            return bounds;
+        }
+        
+        @Override
+        public void draw(Drawer drawer)
+        {
+            double[] xArr = new double[xData.size()];
+            double[] yArr = new double[yData.size()];
+            int len = xArr.length;
+            for (int ii=0;ii<len;ii++)
+            {
+                xArr[ii] = xData.get(ii);
+                yArr[ii] = yData.get(ii);
+            }
+            drawer.polyline(xArr, yArr);
+        }        
     }
 }
