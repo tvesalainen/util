@@ -408,12 +408,17 @@ public class Plotter extends AbstractView
             }
         }
     }
-    public static class Polyline extends Drawable
+    public Polyline polyline(Color color)
+    {
+        return new Polyline(color);
+    }
+    public class Polyline extends Drawable
     {
         private List<Double> xData = new ArrayList<>();
         private List<Double> yData = new ArrayList<>();
         private Rect bounds = new Rect();
-        public Polyline(Color color)
+        
+        protected Polyline(Color color)
         {
             super(color);
         }
@@ -433,13 +438,14 @@ public class Plotter extends AbstractView
         @Override
         public void draw(Drawer drawer)
         {
+            super.draw(drawer);
             double[] xArr = new double[xData.size()];
             double[] yArr = new double[yData.size()];
             int len = xArr.length;
             for (int ii=0;ii<len;ii++)
             {
-                xArr[ii] = xData.get(ii);
-                yArr[ii] = yData.get(ii);
+                xArr[ii] = toScreenX(xData.get(ii));
+                yArr[ii] = toScreenY(yData.get(ii));
             }
             drawer.polyline(xArr, yArr);
         }        
