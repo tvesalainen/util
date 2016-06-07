@@ -60,7 +60,8 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     private final JavaLogging log;
     private final boolean loop;
     private List<InetAddress> locals;
-
+    private InetSocketAddress from;
+    
     public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct, boolean loop) throws SocketException
     {
         log = new JavaLogging(this.getClass());
@@ -130,16 +131,16 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     {
         int rem = dst.remaining();
         int p1 = dst.position();
-        InetSocketAddress sa = (InetSocketAddress) channel.receive(dst);
-        if (sa == null)
+        from = (InetSocketAddress) channel.receive(dst);
+        if (from == null)
         {
             return 0;
         }
-        if (!loop && locals.contains(sa.getAddress()))
+        if (!loop && locals.contains(from.getAddress()))
         {
             // reject local send if OS doesn't support IP_MULTICAST_LOOP option
             dst.position(p1);
-            log.warning("local send %s while IP_MULTICAST_LOOP false", sa);
+            log.warning("local send %s while IP_MULTICAST_LOOP false", from);
             return 0;
         }
         int p2 = dst.position();
@@ -156,6 +157,14 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
         int p2 = src.position();
         log(Level.FINEST, "send", src, p1, p2-p1);
         return rem-src.remaining();
+    }
+    /**
+     * Returns the last sender address.
+     * @return 
+     */
+    public InetSocketAddress getFromAddress()
+    {
+        return from;
     }
 
     private void log(Level level, String msg, ByteBuffer bb, int offset, int length)
