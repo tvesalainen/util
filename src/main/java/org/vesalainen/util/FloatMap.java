@@ -60,7 +60,7 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
     {
         m.entrySet().stream().forEach((e) ->
         {
-            map.put(e.getKey(), e.getValue());
+            put(e.getKey(), e.getValue().value);
         });
     }
     /**
