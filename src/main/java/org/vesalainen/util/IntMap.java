@@ -72,7 +72,7 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
     {
         m.entrySet().stream().forEach((e) ->
         {
-            map.put(e.getKey(), e.getValue());
+            put(e.getKey(), e.getValue().value);
         });
     }
     /**

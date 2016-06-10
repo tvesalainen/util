@@ -72,7 +72,7 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
     {
         m.entrySet().stream().forEach((e) ->
         {
-            map.put(e.getKey(), e.getValue());
+            put(e.getKey(), e.getValue().value);
         });
     }
     /**

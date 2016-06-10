@@ -72,7 +72,7 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
     {
         m.entrySet().stream().forEach((e) ->
         {
-            map.put(e.getKey(), e.getValue());
+            put(e.getKey(), e.getValue().value);
         });
     }
     /**
