@@ -23,15 +23,16 @@ package org.vesalainen.navi;
 public class TrueWind
 {
     private double boatSpeed;   // kts
+    private double driftAngle;   // radians
     private double relativeAngle;   // radians
     private double relativeSpeed;   // Kts
-    private double trueAngle;   // radians
+    private double trueAngle;   // degrees
     private double trueSpeed;   // Kts
 
     public void calc()
     {
-        double x = Math.cos(relativeAngle)*relativeSpeed - boatSpeed;
-        double y = Math.sin(relativeAngle)*relativeSpeed;
+        double x = Math.cos(relativeAngle)*relativeSpeed - Math.cos(driftAngle)*boatSpeed;
+        double y = Math.sin(relativeAngle)*relativeSpeed - Math.sin(driftAngle)*boatSpeed;
         trueSpeed = Math.hypot(x, y);
         trueAngle = Math.toDegrees(Math.atan2(y, x));
         if (trueAngle < 0)
@@ -39,6 +40,23 @@ public class TrueWind
             trueAngle += 360.0;
         }
     }
+    /**
+     * Return degrees
+     * @return 
+     */
+    public double getDriftAngle()
+    {
+        return Math.toDegrees(driftAngle);
+    }
+    /**
+     * 
+     * @param driftAngle +- degrees
+     */
+    public void setDriftAngle(double driftAngle)
+    {
+        this.driftAngle = Math.toRadians(driftAngle);
+    }
+    
     /**
      * 
      * @return Deg
@@ -83,7 +101,7 @@ public class TrueWind
     @Override
     public String toString()
     {
-        return "TrueWind{" + "boatSpeed=" + boatSpeed + ", relativeAngle=" + relativeAngle + ", relativeSpeed=" + relativeSpeed + ", trueAngle=" + trueAngle + ", trueSpeed=" + trueSpeed + '}';
+        return "TrueWind{" + "boatSpeed=" + boatSpeed + ", driftAngle="+Math.toDegrees(driftAngle)+ ", relativeAngle=" + Math.toDegrees(relativeAngle) + ", relativeSpeed=" + relativeSpeed + ", trueAngle=" + trueAngle + ", trueSpeed=" + trueSpeed + '}';
     }
     
 }

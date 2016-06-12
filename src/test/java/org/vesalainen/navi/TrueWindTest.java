@@ -150,4 +150,17 @@ public class TrueWindTest
         assertEquals(19.3, tw.getTrueSpeed(), Epsilon);
     }
     
+    @Test
+    public void test5()
+    {
+        TrueWind tw = new TrueWind();
+        tw.setBoatSpeed(5);
+        tw.setDriftAngle(30);
+        tw.setRelativeSpeed(10);
+        tw.setRelativeAngle(45);
+        tw.calc();
+        assertEquals(59.05191311, tw.getTrueAngle(), Epsilon);
+        assertEquals(5.329860914, tw.getTrueSpeed(), Epsilon);
+    }
+    
 }
