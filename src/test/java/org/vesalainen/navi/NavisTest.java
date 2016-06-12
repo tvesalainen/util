@@ -118,6 +118,26 @@ public class NavisTest
     }
     
     @Test
+    public void testNormalizeToFullAngle()
+    {
+        assertEquals(45, Navis.normalizeToFullAngle(45), Epsilon);
+        assertEquals(350, Navis.normalizeToFullAngle(-10), Epsilon);
+        assertEquals(10, Navis.normalizeToFullAngle(370), Epsilon);
+    }
+    @Test
+    public void testSigned()
+    {
+        assertEquals(-20, Navis.signed(340), Epsilon);
+        assertEquals(20, Navis.signed(20), Epsilon);
+    }
+    @Test
+    public void testAngleDiff()
+    {
+        assertEquals(-20, Navis.angleDiff(340, 320), Epsilon);
+        assertEquals(20, Navis.angleDiff(320, 340), Epsilon);
+        assertEquals(20, Navis.angleDiff(350, 10), Epsilon);
+    }
+    @Test
     public void testFathom()
     {
         assertEquals(1.8288, Navis.fathomsToMeters(1), Epsilon);

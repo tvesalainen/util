@@ -17,6 +17,8 @@
 package org.vesalainen.navi;
 
 import java.util.concurrent.TimeUnit;
+import static org.vesalainen.util.navi.Angle.FULL_CIRCLE;
+import static org.vesalainen.util.navi.Angle.normalizeToFullAngle;
 
 /**
  * Collection of navigational methods etc.
@@ -280,54 +282,66 @@ public class Navis
         return deg % 360;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts fathoms to meters
      * @param fathom
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double fathomsToMeters(double fathom)
     {
         return fathom*FathomInMeters;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts meters to fathoms
      * @param meters
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double metersToFathoms(double meters)
     {
         return meters/FathomInMeters;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts feet to  meters
      * @param feets
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double feetsToMeters(double feets)
     {
         return feets*FeetInMeters;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts meters to feet
      * @param meters
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double metersToFeets(double meters)
     {
         return meters/FeetInMeters;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts knots to m/s
      * @param knots
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double knotsToMetersPerSecond(double knots)
     {
         return NMInMetersPerHoursInSecond*knots;
     }
     /**
+     * @deprecated Use UnitType 
      * Converts m/s to knots
      * @param ms
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double metersPerSecondToKnots(double ms)
     {
@@ -336,9 +350,11 @@ public class Navis
 
     private static final double HoursInSecondPerKilo = HoursInSeconds / Kilo;
     /**
+     * @deprecated Use UnitType 
      * Converts m/s to Km/h
      * @param metersPerSecond
      * @return 
+     * @see org.vesalainen.math.UnitType#convert(double, org.vesalainen.math.UnitType, org.vesalainen.math.UnitType) 
      */
     public static final double metersPerSecondToKiloMetersInHour(double metersPerSecond)
     {
@@ -352,6 +368,54 @@ public class Navis
     public static final double kiloMetersInHourToMetersPerSecond(double kmh)
     {
         return kmh/HoursInSecondPerKilo;
+    }
+    /**
+     * Convert full angle to signed angle -180 - 180. 340 -&gt; -20
+     * @param angle
+     * @return
+     */
+    public  static final double signed(double angle)
+    {
+        angle = normalizeToFullAngle(angle);
+        if (angle > 180)
+        {
+            return angle - 360;
+        }
+        else
+        {
+            return angle;
+        }
+    }
+    /**
+     * @param angle
+     * @return angle normalized between 0 - 360 degrees
+     */
+    public  static final double normalizeToFullAngle(double angle)
+    {
+        if (angle > 360)
+        {
+            angle %= 360;
+        }
+        while (angle < 0)
+        {
+            angle = 360 + angle;
+        }
+        assert angle >= 0 && angle <= 360;
+        return angle;
+    }
+    /**
+     * @param anAngle1
+     * @param anAngle2
+     * @return Angle difference normalized between 0 - 180 degrees. If anAngle2 is right to anAngle1 returns + signed
+     */
+    public static final double angleDiff(double anAngle1, double anAngle2)
+    {
+        double angle;
+        anAngle1 = normalizeToFullAngle(anAngle1);
+        anAngle2 = normalizeToFullAngle(anAngle2);
+        angle = anAngle2 - anAngle1;
+        angle = normalizeToFullAngle(angle);
+        return signed(angle);
     }
 
     private static void checkLatitude(double latitude)
