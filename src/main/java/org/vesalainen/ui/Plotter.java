@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
@@ -423,6 +424,10 @@ public class Plotter extends AbstractView
             super(color);
         }
         
+        public void lineTo(Point p)
+        {
+            lineTo(p.getX(), p.getY());
+        }
         public void lineTo(double x, double y)
         {
             xData.add(x);
@@ -430,6 +435,10 @@ public class Plotter extends AbstractView
             bounds.update(x, y);
         }
 
+        public void lineTo(Stream<Point> stream)
+        {
+            stream.forEach(this::lineTo);
+        }
         public Rect getBounds()
         {
             return bounds;
