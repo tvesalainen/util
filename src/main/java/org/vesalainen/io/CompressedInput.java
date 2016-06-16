@@ -17,10 +17,15 @@
 package org.vesalainen.io;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.vesalainen.util.BitArray;
 
 /**
@@ -179,9 +184,48 @@ public class CompressedInput<T> extends CompressedIO<T>
             return array[index++] & 0xff;
         }
         
+        @Override
         public void reset()
         {
             index = 0;
         }
+    }
+    /**
+     * Return a stream for compressed input.
+     * <p>Note that streamed objects are always the same as given in 
+     * constructor!
+     * @return 
+     */
+    public Stream<T> stream()
+    {
+        return StreamSupport.stream(new SpliteratorImpl(), false);
+    }
+    private class SpliteratorImpl extends AbstractSpliterator<T>
+    {
+
+        public SpliteratorImpl()
+        {
+            super(Long.MAX_VALUE, 0);
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super T> action)
+        {
+            try
+            {
+                read();
+                action.accept(obj);
+                return true;
+            }
+            catch (EOFException ex)
+            {
+                return false;
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        
     }
 }
