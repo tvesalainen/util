@@ -439,6 +439,7 @@ public class Plotter extends AbstractView
         {
             stream.forEach(this::lineTo);
         }
+        
         public Rect getBounds()
         {
             return bounds;
