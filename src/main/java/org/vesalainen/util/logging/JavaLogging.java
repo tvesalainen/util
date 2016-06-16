@@ -16,14 +16,21 @@
  */
 package org.vesalainen.util.logging;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.MemoryHandler;
 
 /**
  *
@@ -139,4 +146,32 @@ public class JavaLogging extends BaseLogging
         return list;
     }
     
+    public static final void setConsoleHandler(String name, Level level)
+    {
+        setHandler(name, false, level, new MinimalFormatter(), null, new ConsoleHandler());
+    }
+    public static final void setConsoleHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter)
+    {
+        setHandler(name, useParentHandlers, level, formatter, filter, new ConsoleHandler());
+    }
+    public static final void setFileHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter, String pattern, int limit, int count, boolean append) throws IOException
+    {
+        FileHandler fileHandler = new FileHandler(pattern, limit, count, append);
+        setHandler(name, useParentHandlers, level, formatter, filter, fileHandler);
+    }
+    public static final void setMemoryHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter, Handler handler, int size, Level pushLevel)
+    {
+        MemoryHandler memoryHandler = new MemoryHandler(handler, size, pushLevel);
+        setHandler(name, useParentHandlers, level, formatter, filter, memoryHandler);
+    }
+    public static final void setHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter, Handler handler)
+    {
+        Logger logger = Logger.getLogger(name);
+        logger.setUseParentHandlers(useParentHandlers);
+        logger.setLevel(level);
+        handler.setFormatter(formatter);
+        handler.setFilter(filter);
+        handler.setLevel(level);
+        logger.addHandler(handler);
+    }
 }
