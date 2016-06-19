@@ -224,8 +224,14 @@ public class MultiProviderSelector extends AbstractSelector
                 {
                     MultiProviderSelectionKey sk = (MultiProviderSelectionKey) iterator.next();
                     deregister(sk);
-                    keys.remove(sk);
-                    keyMap.remove(sk.getRealSelectionKey());
+                    if (!keys.remove(sk))
+                    {
+                        log.warning("%s not in %s", sk, keys);
+                    }
+                    if (keyMap.remove(sk.getRealSelectionKey()) == null)
+                    {
+                        log.warning("%s not in %s", sk.getRealSelectionKey(), keyMap);
+                    }
                     sk.doCancel();
                     iterator.remove();
                 }
@@ -255,7 +261,7 @@ public class MultiProviderSelector extends AbstractSelector
                 }
                 else
                 {
-                    log.warning("selectionKey=null");
+                    log.warning("%s: MultiProviderSelectionKey=null", sk);
                 }
             }
             keyPool.clear();
