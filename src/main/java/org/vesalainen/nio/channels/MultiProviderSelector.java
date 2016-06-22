@@ -154,23 +154,59 @@ public class MultiProviderSelector extends AbstractSelector
     @Override
     public int selectNow() throws IOException
     {
-        int res = 0;
-        for (Selector selector : map.values())
+        int count = 0;
+        lock.lock();
+        try
         {
-            res += selector.selectNow();
+            handleCancelled();
+            for (Selector selector : map.values())
+            {
+                selector.selectNow();
+                Set<SelectionKey> sks = selector.selectedKeys();
+                for (SelectionKey sk : sks)
+                {
+                    MultiProviderSelectionKey mpsk = keyMap.get(sk);
+                    if (mpsk != null)
+                    {
+                        if (!selectedKeys.contains(mpsk))
+                        {
+                            selectedKeys.add(mpsk);
+                            count++;
+                        }
+                    }
+                    else
+                    {
+                        log.warning("%s: MultiProviderSelectionKey=null", sk);
+                    }
+                }
+                sks.clear();
+            }
+            log.finest("selectNow return keyCount= %d", count);
+            return count;
         }
-        return res;
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     @Override
     public int select(long timeout) throws IOException
     {
+        log.fine("select: enter select(%d)", timeout);
+        int sn = selectNow();
+        if (sn > 0)
+        {
+            log.fine("select: satisfied with selectNow() returns %d keys", sn);
+            return sn;
+        }
         int keyCount = 0;
         try
         {
             lock.lock();
             try
             {
+                log.fine("wrapperSemaphore=%s wrapperPermissions=%s before release", wrapperSemaphore, wrapperPermissions);
                 wrapperSemaphore.release(wrapperPermissions.getAndSet(0));
                 if (ioException != null)
                 {
@@ -179,11 +215,13 @@ public class MultiProviderSelector extends AbstractSelector
                 handleCancelled();
                 if (keyPool.isEmpty())
                 {
+                    log.fine("select: keyPool is empty start waiting");
                     wait = true;
                 }
                 else
                 {
                     keyCount = provision();
+                    log.fine("select: keyPool has %d entries", keyCount);
                 }
             }
             finally
@@ -196,13 +234,14 @@ public class MultiProviderSelector extends AbstractSelector
                 if (semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS))
                 {
                     long nanoTime2 = System.nanoTime();
-                    log.fine("waited %d nanos", nanoTime2-nanoTime1);
+                    log.fine("select: waited %d nanos", nanoTime2-nanoTime1);
                     keyCount = provision();
                     handleCancelled();
                 }
                 wait = false;
             }
-            log.fine("select() -> %d", keyCount);
+            log.fine("select() returns keyCount=%d", keyCount);
+            wakeup();
             return keyCount;
         }
         catch (InterruptedException ex)
@@ -223,6 +262,7 @@ public class MultiProviderSelector extends AbstractSelector
                 while (iterator.hasNext())
                 {
                     MultiProviderSelectionKey sk = (MultiProviderSelectionKey) iterator.next();
+                    log.fine("select: cancel(%s)", sk);
                     deregister(sk);
                     if (!keys.remove(sk))
                     {
@@ -302,6 +342,8 @@ public class MultiProviderSelector extends AbstractSelector
                         map.remove(selector.provider());
                         wrapperMap.remove(selector);
                         threadMap.remove(selector);
+                        wrapperPermissions.decrementAndGet();
+                        log.fine("wrapperPermissions=%s", wrapperPermissions);
                         return;
                     }
                 }
@@ -315,7 +357,7 @@ public class MultiProviderSelector extends AbstractSelector
                 {
                     wrapperSemaphore.acquire();
                     count = selector.select();
-                    fine("select(%s)=%d (%d)", this, count, selector.selectedKeys().size());
+                    fine("select: selected(%s) keyCount=%d", this, count);
                 }
                 catch (IOException ex)
                 {
@@ -324,7 +366,7 @@ public class MultiProviderSelector extends AbstractSelector
                 }
                 catch (InterruptedException ex)
                 {
-                    log(Level.OFF, ex, ex.getMessage());
+                    log(Level.SEVERE, ex, ex.getMessage());
                 }
                 lock.lock();
                 try
@@ -335,6 +377,7 @@ public class MultiProviderSelector extends AbstractSelector
                         keyPool.addAll(keys);
                         keys.clear();
                         wrapperPermissions.incrementAndGet();
+                        log.fine("wrapperPermissions=%s after select", wrapperPermissions);
                     }
                     else
                     {
