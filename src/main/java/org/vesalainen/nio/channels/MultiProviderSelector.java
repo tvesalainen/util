@@ -22,14 +22,19 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.vesalainen.util.concurrent.ConcurrentArraySet;
@@ -45,20 +50,14 @@ import org.vesalainen.util.logging.JavaLogging;
 public class MultiProviderSelector extends AbstractSelector
 {
     private Map<SelectorProvider,Selector> map = new HashMap<>();
-    private Map<Selector,SelectorWrapper> wrapperMap = new HashMap<>();
-    private Map<Selector,Thread> threadMap = new HashMap<>();
     private Set<SelectionKey> keys = new ConcurrentArraySet<>();
     private final Set<SelectionKey> unmodifiableKeys = Collections.unmodifiableSet(keys);
     private Set<SelectionKey> selectedKeys = new ConcurrentArraySet<>();
     private final Map<SelectionKey,MultiProviderSelectionKey> keyMap = new HashMap<>();
-    private Set<SelectionKey> keyPool = new ConcurrentArraySet<>();
-    private IOException ioException;
-    private final Semaphore semaphore = new Semaphore(0);
-    private final Semaphore wrapperSemaphore = new Semaphore(0);
-    private final AtomicInteger wrapperPermissions = new AtomicInteger();
     private final ReentrantLock lock = new ReentrantLock();
-    private boolean wait;
     private final JavaLogging log;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final List<SelectorWrapper> callables = new ArrayList<>();
     
     public MultiProviderSelector()
     {
@@ -70,9 +69,9 @@ public class MultiProviderSelector extends AbstractSelector
     public Selector wakeup()
     {
         log.fine("wakeup(%s", this);
-        for (SelectorWrapper sw : wrapperMap.values())
+        for (Selector selector : map.values())
         {
-            sw.selector.wakeup();
+            selector.wakeup();
         }
         return this;
     }
@@ -83,16 +82,11 @@ public class MultiProviderSelector extends AbstractSelector
         log.fine("close(%s", this);
         for (Selector selector : map.values())
         {
-            Thread thread = threadMap.get(selector);
-            thread.interrupt();
             selector.close();
         }
         map = null;
         keys = null;
         selectedKeys = null;
-        keyPool = null;
-        wrapperMap = null;
-        threadMap = null;
     }
 
     @Override
@@ -109,18 +103,11 @@ public class MultiProviderSelector extends AbstractSelector
             {
                 selector = provider.openSelector();
                 map.put(provider, selector);
-                SelectorWrapper sw = new SelectorWrapper(selector);
-                wrapperMap.put(selector, sw);
-                Thread thread = new Thread(sw, MultiProviderSelector.class.getSimpleName());
-                threadMap.put(selector, thread);
                 sk = ch.register(selector, ops);
-                wrapperPermissions.incrementAndGet();
-                thread.start();
-                log.info("start selector thread");
+                callables.add(new SelectorWrapper(selector));
             }
             else
             {
-                selector.wakeup();
                 sk = ch.register(selector, ops);
             }
             MultiProviderSelectionKey mpsk = new MultiProviderSelectionKey(this, sk);
@@ -194,59 +181,67 @@ public class MultiProviderSelector extends AbstractSelector
     public int select(long timeout) throws IOException
     {
         log.fine("select: enter select(%d)", timeout);
+        /*
         int sn = selectNow();
         if (sn > 0)
         {
             log.fine("select: satisfied with selectNow() returns %d keys", sn);
             return sn;
         }
+        */
         int keyCount = 0;
         try
         {
             lock.lock();
             try
             {
-                log.fine("wrapperSemaphore=%s wrapperPermissions=%s before release", wrapperSemaphore, wrapperPermissions);
-                wrapperSemaphore.release(wrapperPermissions.getAndSet(0));
-                if (ioException != null)
-                {
-                    throw ioException;
-                }
                 handleCancelled();
-                if (keyPool.isEmpty())
+                Iterator<SelectorWrapper> iterator = callables.iterator();
+                while (iterator.hasNext())
                 {
-                    log.fine("select: keyPool is empty start waiting");
-                    wait = true;
-                }
-                else
-                {
-                    keyCount = provision();
-                    log.fine("select: keyPool has %d entries", keyCount);
+                    SelectorWrapper sw = iterator.next();
+                    if (sw.selector.keys().isEmpty())
+                    {
+                        log.fine("removing selector %s because it has no keys anymore", sw.selector);
+                        map.remove(sw.selector.provider());
+                        iterator.remove();
+                    }
                 }
             }
             finally
             {
                 lock.unlock();
             }
-            if (wait)
+            log.fine("selector: invoking %d selectors", callables.size());
+            Selector selector = executor.invokeAny(callables, timeout, TimeUnit.MILLISECONDS);
+            log.fine("selector: %s success with %d keys", selector, selector.selectedKeys().size());
+            Set<SelectionKey> sks = selector.selectedKeys();
+            for (SelectionKey sk : sks)
             {
-                long nanoTime1 = System.nanoTime();
-                if (semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS))
+                MultiProviderSelectionKey mpsk = keyMap.get(sk);
+                if (mpsk != null)
                 {
-                    long nanoTime2 = System.nanoTime();
-                    log.fine("select: waited %d nanos", nanoTime2-nanoTime1);
-                    keyCount = provision();
-                    handleCancelled();
+                    if (!selectedKeys.contains(mpsk))
+                    {
+                        selectedKeys.add(mpsk);
+                        keyCount++;
+                    }
                 }
-                wait = false;
+                else
+                {
+                    log.warning("%s: MultiProviderSelectionKey=null", sk);
+                }
             }
-            log.fine("select() returns keyCount=%d", keyCount);
-            wakeup();
+            sks.clear();
             return keyCount;
         }
         catch (InterruptedException ex)
         {
             throw new IllegalArgumentException(ex);
+        }
+        catch (ExecutionException | TimeoutException ex)
+        {
+            return 0;
         }
     }
 
@@ -282,43 +277,13 @@ public class MultiProviderSelector extends AbstractSelector
             lock.unlock();
         }
     }
-    private int provision()
-    {
-        int count = 0;
-        lock.lock();
-        try
-        {
-            for (SelectionKey sk : keyPool)
-            {
-                MultiProviderSelectionKey mpsk = keyMap.get(sk);
-                if (mpsk != null)
-                {
-                    if (!selectedKeys.contains(mpsk))
-                    {
-                        selectedKeys.add(mpsk);
-                        count++;
-                    }
-                }
-                else
-                {
-                    log.warning("%s: MultiProviderSelectionKey=null", sk);
-                }
-            }
-            keyPool.clear();
-            return count;
-        }
-        finally
-        {
-            lock.unlock();
-        }
-    }
     @Override
     public int select() throws IOException
     {
         return select(-1);
     }
 
-    private class SelectorWrapper extends JavaLogging implements Runnable
+    private class SelectorWrapper extends JavaLogging implements Callable<Selector>
     {
         Selector selector;
 
@@ -328,78 +293,29 @@ public class MultiProviderSelector extends AbstractSelector
             setLogger(this.getClass());
         }
 
+
         @Override
-        public void run()
+        public Selector call() throws Exception
         {
-            while (isOpen())
+            try
             {
-                lock.lock();
-                try
-                {
-                    if (selector.keys().isEmpty())
-                    {
-                        info("stop selector thread");
-                        map.remove(selector.provider());
-                        wrapperMap.remove(selector);
-                        threadMap.remove(selector);
-                        wrapperPermissions.decrementAndGet();
-                        log.fine("wrapperPermissions=%s", wrapperPermissions);
-                        return;
-                    }
-                }
-                finally
-                {
-                    lock.unlock();
-                }
-                int count = 0;
-                IOException ioExc = null;
-                try
-                {
-                    wrapperSemaphore.acquire();
-                    count = selector.select();
-                    fine("select: selected(%s) keyCount=%d", this, count);
-                }
-                catch (IOException ex)
-                {
-                    log(Level.SEVERE, ex, "IOException(%s)", toString());
-                    ioExc = ex;
-                }
-                catch (InterruptedException ex)
-                {
-                    log(Level.SEVERE, ex, ex.getMessage());
-                }
-                lock.lock();
-                try
-                {
-                    if (ioExc == null)
-                    {
-                        Set<SelectionKey> keys = selector.selectedKeys();
-                        keyPool.addAll(keys);
-                        keys.clear();
-                        wrapperPermissions.incrementAndGet();
-                        log.fine("wrapperPermissions=%s after select", wrapperPermissions);
-                    }
-                    else
-                    {
-                        ioException = ioExc;
-                    }
-                }
-                finally
-                {
-                    if (wait)
-                    {
-                        semaphore.release();
-                    }
-                    lock.unlock();
-                }
+                log.fine("selector: start %s", selector);
+                selector.select();
+                log.fine("selector: end %s", selector);
+                return selector;
+            }
+            catch (Exception ex)
+            {
+                log.log(Level.INFO, ex, "%s", ex.getMessage());
+                throw ex;
             }
         }
-
+        
         @Override
         public String toString()
         {
             return "SelectorWrapper{" + "selector=" + selector + '}';
         }
-        
+
     }
 }
