@@ -181,14 +181,12 @@ public class MultiProviderSelector extends AbstractSelector
     public int select(long timeout) throws IOException
     {
         log.fine("select: enter select(%d)", timeout);
-        /*
         int sn = selectNow();
         if (sn > 0)
         {
             log.fine("select: satisfied with selectNow() returns %d keys", sn);
             return sn;
         }
-        */
         int keyCount = 0;
         try
         {
