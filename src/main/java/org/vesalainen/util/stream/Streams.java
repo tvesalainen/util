@@ -20,12 +20,15 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
+import java.util.Spliterators.AbstractIntSpliterator;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
+import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.vesalainen.util.Recyclable;
 import org.vesalainen.util.Recycler;
 
@@ -35,6 +38,49 @@ import org.vesalainen.util.Recycler;
  */
 public class Streams
 {
+    /**
+     * Returns IntStream where items are bytes from byte array.
+     * @param array
+     * @return 
+     */
+    public static final IntStream stream(byte[] array)
+    {
+        return StreamSupport.intStream(new ByteSpliterator(array), true);
+    }
+    private static class ByteSpliterator extends AbstractIntSpliterator
+    {
+        private byte[] array;
+        private int index;
+
+        public ByteSpliterator(byte[] array)
+        {
+            super(array.length, CONCURRENT | NONNULL | SIZED | SUBSIZED);
+            this.array = array;
+        }
+        
+        @Override
+        public boolean tryAdvance(IntConsumer action)
+        {
+            if (index < array.length)
+            {
+                action.accept(array[index++]);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Integer> action)
+        {
+            if (index < array.length)
+            {
+                action.accept(new Integer(array[index++]));
+                return true;
+            }
+            return false;
+        }
+        
+    }
     /**
      * Creates a consumer which recycles item after use. This is intended to use
      * in Stream forEach
