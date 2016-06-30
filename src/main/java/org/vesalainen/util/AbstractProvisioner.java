@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AbstractProvisioner to provision values to @Setting annotated methods. When 
+ * AbstractProvisioner provisions values to @Setting annotated methods. When 
  * class T is attached it's public methods are searched to find methods annotated
  * with @Setting annotation. Method has to have one parameters and it is 
  * practical to have return type void. In attach phase each annotated method is 
@@ -39,9 +39,8 @@ import java.util.Map;
  * to all attached methods.
  * 
  * @author Timo Vesalainen
- * @param <T>
  */
-public abstract class AbstractProvisioner<T>
+public abstract class AbstractProvisioner
 {
     private final MapList<String,InstanceMethod> map = new HashMapList<>();
 
@@ -50,7 +49,7 @@ public abstract class AbstractProvisioner<T>
         return map.isEmpty();
     }
     
-    public void attach(T ob)
+    public void attach(Object ob)
     {
         for (Method method : ob.getClass().getMethods())
         {
@@ -73,7 +72,7 @@ public abstract class AbstractProvisioner<T>
             }
         }
     }
-    public void detach(T ob)
+    public void detach(Object ob)
     {
         Iterator<Map.Entry<String, List<InstanceMethod>>> ki = map.entrySet().iterator();
         while (ki.hasNext())
@@ -113,10 +112,10 @@ public abstract class AbstractProvisioner<T>
     }
     private class InstanceMethod
     {
-        T instance;
+        Object instance;
         Method method;
 
-        private InstanceMethod(T instance, Method method)
+        private InstanceMethod(Object instance, Method method)
         {
             this.instance = instance;
             this.method = method;
