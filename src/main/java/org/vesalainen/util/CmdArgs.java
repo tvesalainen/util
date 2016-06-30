@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,9 +24,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * CmdArgs handles command argument processing. Command line has options and 
+ * arguments.
+ * <p>E.g.
+ * <p>
+ * <code> -f filename -s description argument1 argument2</code>
+ * <p>Options 1 is named '-f'. If it's type is java.io.File it is converted to
+ * file.
+ * <p>Option 2 is names '-s'
+ * <p>Argument 1 
+ * <p>
+ * Options can be grouped in exclusive group. E.g. hostname and port can be in one group and 
+ * filename in another. Only options of one exclusive group are allowed.
+ * <p>
+ * Last argument can be array. In that case any number of arguments are 
+ * allowed.
+ * <p>
+ * Option and argument values are available after setArgs method. Options are 
+ * also available for attachments.
  * @author tkv
  */
 public class CmdArgs extends AbstractProvisioner
@@ -37,16 +58,27 @@ public class CmdArgs extends AbstractProvisioner
     private Map<String,Object> options;
     private Map<String,Object> arguments;
     private String effectiveGroup;
+    private boolean hasArrayArgument;
+    private JavaLogging log;
     /**
      * Creates CmdArgs instance. 
      */
     public CmdArgs()
     {
+        log = new JavaLogging(CmdArgs.class);
     }
-    
+    /**
+     * Returns named option or argument value
+     * @param name
+     * @return 
+     */
     @Override
     public Object getValue(String name)
     {
+        if (arguments == null)
+        {
+            throw new IllegalStateException("setArgs not called");
+        }
         Object ob = options.get(name);
         if (ob != null)
         {
@@ -54,7 +86,30 @@ public class CmdArgs extends AbstractProvisioner
         }
         return arguments.get(name);
     }
-    
+    /**
+     * Initializes options and arguments. Reports error and exits on error.
+     * Called usually from main method.
+     * @param args
+     */
+    public void command(String... args)
+    {
+        try
+        {
+            setArgs(args);
+        }
+        catch (CmdArgsException ex)
+        {
+            Logger logger = Logger.getLogger(CmdArgs.class.getName());
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            logger.log(Level.SEVERE, ex.usage());
+            System.exit(-1);
+        }
+    }
+    /**
+     * Initializes options and arguments. Called usually from command or main method.
+     * @param args
+     * @throws CmdArgsException 
+     */
     public void setArgs(String... args) throws CmdArgsException
     {
         try
@@ -91,15 +146,45 @@ public class CmdArgs extends AbstractProvisioner
                 index++;
             }
             int len = args.length-index;
-            if (len != types.size())
+            if (hasArrayArgument)
             {
-                throw new CmdArgsException("wrong number of arguments", this);
+                if (len < types.size())
+                {
+                    throw new CmdArgsException("too few arguments", this);
+                }
+            }
+            else
+            {
+                if (len != types.size())
+                {
+                    throw new CmdArgsException("wrong number of arguments", this);
+                }
             }
             arguments = new HashMap<>();
+            int arraySize = len - types.size() + 1;
+            int arrayIndex = Integer.MAX_VALUE;
+            Object array = null;
+            Class<?> componenType = null;
+            if (hasArrayArgument)
+            {
+                arrayIndex = types.size()-1;
+                Class<?> arrayType = types.get(arrayIndex);
+                componenType = arrayType.getComponentType();
+                array = Array.newInstance(componenType, arraySize);
+                arguments.put(names.get(arrayIndex), array);
+            }
             for (int ii=0;ii<len;ii++)
             {
-                Object value = ConvertUtility.convert(types.get(ii), args[ii+index]);
-                arguments.put(names.get(ii), value);
+                if (ii < arrayIndex)
+                {
+                    Object value = ConvertUtility.convert(types.get(ii), args[ii+index]);
+                    arguments.put(names.get(ii), value);
+                }
+                else
+                {
+                    Object value = ConvertUtility.convert(componenType, args[ii+index]);
+                    Array.set(array, ii - arrayIndex, value);
+                }
             }
             for (Option o : map.values())
             {
@@ -137,7 +222,11 @@ public class CmdArgs extends AbstractProvisioner
         }
         return effectiveGroup;
     }
-    
+    /**
+     * Returns named argument value
+     * @param name
+     * @return 
+     */
     public Object getArgument(String name)
     {
         if (arguments == null)
@@ -146,6 +235,12 @@ public class CmdArgs extends AbstractProvisioner
         }
         return arguments.get(name);
     }
+    /**
+     * Return named option value.
+     * @param <T>
+     * @param name
+     * @return 
+     */
     public <T> T getOption(String name)
     {
         if (arguments == null)
@@ -188,8 +283,16 @@ public class CmdArgs extends AbstractProvisioner
         {
             throw new IllegalArgumentException(name+" is already added as option");
         }
+        if (hasArrayArgument)
+        {
+            throw new IllegalArgumentException("no argument allowed after array argument");
+        }
         types.add(cls);
         names.add(name);
+        if (cls.isArray())
+        {
+            hasArrayArgument = true;
+        }
     }
     /**
      * Add a mandatory string option
@@ -260,7 +363,10 @@ public class CmdArgs extends AbstractProvisioner
             groups.add(exclusiveGroup, opt);
         }
     }
-
+    /**
+     * Returns  usage string.
+     * @return 
+     */
     public String getUsage()
     {
         Set<Option> set = new HashSet<>();
@@ -296,9 +402,13 @@ public class CmdArgs extends AbstractProvisioner
                 append(sb, opt);
             }
         }
-        for (String n : names)
+        for (int ii=0;ii<names.size();ii++)
         {
-            sb.append(" <").append(n).append(">");
+            sb.append(" <").append(names.get(ii)).append(">");
+            if (types.get(ii).isArray())
+            {
+                sb.append("...");
+            }
         }
         return sb.toString();
     }
@@ -308,7 +418,12 @@ public class CmdArgs extends AbstractProvisioner
         sb.append("<").append(opt.description).append(">");
     }
 
-    public class Option<T>
+    private void throwIt(Throwable thr) throws Throwable
+    {
+        log.severe("cmd: %s", thr.getMessage());
+        throw thr;
+    }
+    private class Option<T>
     {
         private final Class<T> cls;
         private final String name;

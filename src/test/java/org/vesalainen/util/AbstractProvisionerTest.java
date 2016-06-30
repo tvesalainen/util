@@ -60,7 +60,7 @@ public class AbstractProvisionerTest
         }
         
     }
-    public class AbstractProvisionerImpl extends AbstractProvisioner<TestClass>
+    public class AbstractProvisionerImpl extends AbstractProvisioner
     {
 
         @Override

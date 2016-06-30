@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -30,8 +31,10 @@ import java.util.function.Function;
  * @param <K>
  * @param <V>
  */
-public abstract class AbstractMapSet<K,V> implements MapSet<K, V>
+public abstract class AbstractMapSet<K,V> implements MapSet<K, V>, Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     protected Map<K,Set<V>> map;
 
     protected AbstractMapSet(Map<K, Set<V>> map)

@@ -46,7 +46,7 @@ public class CmdArgsTest
             cmdArgs.addOption(File.class, "-f", "file");
             cmdArgs.addOption("-l", "level", null, Level.INFO);
             cmdArgs.setArgs("-s", "4096", "-f", "text.txt", "-l", "FINE", "rest1", "1234");
-            assertEquals(4096, cmdArgs.getOption("-s"));
+            assertEquals(4096, (int)cmdArgs.getOption("-s"));
             assertEquals(new File("text.txt"), cmdArgs.getOption("-f"));
             assertEquals(Level.FINE, cmdArgs.getOption("-l"));
             assertEquals("rest1", cmdArgs.getArgument("arg1"));
@@ -72,8 +72,33 @@ public class CmdArgsTest
             cmdArgs.addOption("-f", "file", "local", "log.txt");
             cmdArgs.setArgs("-h", "www.host.com", "-p", "1234", "hello");
             assertEquals("www.host.com", cmdArgs.getOption("-h"));
-            assertEquals(1234, cmdArgs.getOption("-p"));
+            assertEquals(1234, (int)cmdArgs.getOption("-p"));
+            assertEquals("hello", cmdArgs.getArgument("arg"));
             assertEquals("usage: [-h <host> -p <port>]|[-f <file>] <arg>", cmdArgs.getUsage());
+        }
+        catch (CmdArgsException ex)
+        {
+            Logger.getLogger(CmdArgsTest.class.getName()).log(Level.SEVERE, null, ex);
+            fail(ex.getMessage());
+        }
+    }
+    @Test
+    public void test3()
+    {
+        try
+        {
+            CmdArgs cmdArgs = new CmdArgs();
+            cmdArgs.addArgument("arg1");
+            cmdArgs.addArgument(String[].class, "arg2");
+            cmdArgs.addOption("-h", "host", "net", "localhost");
+            cmdArgs.addOption("-p", "port", "net", 23);
+            cmdArgs.addOption("-f", "file", "local", "log.txt");
+            cmdArgs.setArgs("-h", "www.host.com", "-p", "1234", "say", "hello", "world");
+            assertEquals("www.host.com", cmdArgs.getOption("-h"));
+            assertEquals(1234, (int)cmdArgs.getOption("-p"));
+            assertEquals("say", cmdArgs.getArgument("arg1"));
+            assertArrayEquals(new String[]{"hello", "world"}, (Object[]) cmdArgs.getArgument("arg2"));
+            assertEquals("usage: [-h <host> -p <port>]|[-f <file>] <arg1> <arg2>...", cmdArgs.getUsage());
         }
         catch (CmdArgsException ex)
         {

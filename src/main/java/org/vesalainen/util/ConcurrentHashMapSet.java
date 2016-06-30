@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -26,12 +27,13 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @param <K> Map key type.
  * @param <V> Set value type
  */
-public class ConcurrentHashMapSet<K,V> extends AbstractMapSet<K,V>
+public class ConcurrentHashMapSet<K,V> extends AbstractMapSet<K,V> implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     public ConcurrentHashMapSet()
     {
-        super(new ConcurrentHashMap<K,Set<V>>());
+        super(new ConcurrentHashMap<>());
     }
 
     @Override
