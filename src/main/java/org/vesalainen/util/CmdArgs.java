@@ -27,9 +27,8 @@ import java.util.Set;
 /**
  *
  * @author tkv
- * @param <T> Target type
  */
-public class CmdArgs<T> extends AbstractProvisioner<T>
+public class CmdArgs extends AbstractProvisioner
 {
     private final Map<String,Option> map = new HashMap<>();
     private final MapList<String,Option> groups = new HashMapList<>();
