@@ -224,16 +224,17 @@ public class CmdArgs extends AbstractProvisioner
     }
     /**
      * Returns named argument value
+     * @param <T>
      * @param name
      * @return 
      */
-    public Object getArgument(String name)
+    public <T> T getArgument(String name)
     {
         if (arguments == null)
         {
             throw new IllegalStateException("setArgs not called");
         }
-        return arguments.get(name);
+        return (T) arguments.get(name);
     }
     /**
      * Return named option value.

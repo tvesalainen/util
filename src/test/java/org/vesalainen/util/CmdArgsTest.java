@@ -50,7 +50,7 @@ public class CmdArgsTest
             assertEquals(new File("text.txt"), cmdArgs.getOption("-f"));
             assertEquals(Level.FINE, cmdArgs.getOption("-l"));
             assertEquals("rest1", cmdArgs.getArgument("arg1"));
-            assertEquals(1234L, cmdArgs.getArgument("arg2"));
+            assertEquals(1234L, (long)cmdArgs.getArgument("arg2"));
             assertEquals("usage:  -s <size> -f <file> -l <level> <arg1> <arg2>", cmdArgs.getUsage());
         }
         catch (CmdArgsException ex)

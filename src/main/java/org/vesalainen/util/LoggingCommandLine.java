@@ -87,7 +87,7 @@ public class LoggingCommandLine extends CmdArgs
                         handler = new FileHandler(getOption("-lp"), getOption("-l"), getOption("-c"), true);
                         break;
                     case "netlog":
-                        handler = new SocketHandler(getOption("-h"), getOption("p"));
+                        handler = new SocketHandler(getOption("-h"), getOption("-p"));
                         break;
                     default:
                         handler = new ConsoleHandler();
