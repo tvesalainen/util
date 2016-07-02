@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.time.Clock;
 import java.util.function.Supplier;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -43,11 +44,41 @@ public class MinimalFormatter extends Formatter
     @Override
     public String format(LogRecord record)
     {
+        String l;
+        switch (record.getLevel().getName())
+        {
+            case "SEVERE":
+                l = "SE";
+                break;
+            case "WARNING":
+                l = "WA";
+                break;
+            case "INFO":
+                l = "IN";
+                break;
+            case "CONFIG":
+                l = "CO";
+                break;
+            case "FINE":
+                l = "F1";
+                break;
+            case "FINER":
+                l = "F2";
+                break;
+            case "FINEST":
+                l = "F3";
+                break;
+            default:
+                l = "LEVEL("+record.getLevel().intValue()+")";
+                break;
+                
+        }
         Throwable thrown = record.getThrown();
         if (thrown == null)
         {
-            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n", 
+            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s %3$s\r\n", 
                     getMillis(record),
+                    l,
                     record.getMessage()
             );
         }
@@ -57,8 +88,9 @@ public class MinimalFormatter extends Formatter
             PrintWriter pw = new PrintWriter(sw);
             pw.flush();
             thrown.printStackTrace(pw);
-            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s\r\n%3$s\n\n", 
+            return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s %3$s\r\n%4$s\n\n", 
                     getMillis(record),
+                    l,
                     record.getMessage(),
                     sw.toString()
             );
