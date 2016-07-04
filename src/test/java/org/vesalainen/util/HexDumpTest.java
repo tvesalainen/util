@@ -36,7 +36,9 @@ public class HexDumpTest
         String s = "qwerty\nasdfg\t\t\n1234567890";
         String h = HexDump.toHex(s.getBytes());
         System.err.println(h);
-        assertEquals("", h);
+        assertEquals("    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n" +
+                "00: 71 77 65 72 74 79 0a 61 73 64 66 67 09 09 0a 31  q w e r t y . a s d f g . . . 1 \n" +
+                "10: 32 33 34 35 36 37 38 39 30                       2 3 4 5 6 7 8 9 0 \n", h);
     }
     
 }
