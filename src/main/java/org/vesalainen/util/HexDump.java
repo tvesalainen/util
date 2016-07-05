@@ -16,12 +16,54 @@
  */
 package org.vesalainen.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author tkv
  */
 public class HexDump
 {
+    private static final String Title = "00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f";
+    public static final byte[] fromHex(String hexDump)
+    {
+        List<Integer> list = new ArrayList<>();
+        String[] lines = hexDump.split("\n");
+        if (lines.length < 2)
+        {
+            throw new IllegalArgumentException("not a hex dump");
+        }
+        if (!lines[0].contains(Title))
+        {
+            throw new IllegalArgumentException("not a hex dump");
+        }
+        for (int ll=1;ll<lines.length;ll++)
+        {
+            String line = lines[ll];
+            int i1 = line.indexOf(':');
+            if (i1 == -1)
+            {
+                throw new IllegalArgumentException("not a hex dump");
+            }
+            int i2 = line.indexOf("  ", i1+2);
+            if (i2 == -1)
+            {
+                throw new IllegalArgumentException("not a hex dump");
+            }
+            String[] fields = line.substring(i1+2, i2).split(" ");
+            for (int ii=0;ii<fields.length;ii++)
+            {
+                list.add(Integer.parseInt(fields[ii], 16));
+            }
+        }
+        byte[] bytes = new byte[list.size()];
+        for (int ii=0;ii<bytes.length;ii++)
+        {
+            bytes[ii] = list.get(ii).byteValue();
+        }
+        return bytes;
+    }
     public static final String toHex(byte[] buf)
     {
         StringBuilder sb = new StringBuilder();
@@ -32,7 +74,8 @@ public class HexDump
         }
         sb.append("  ");
         String format = "%0"+prec+"x: ";
-        sb.append("00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n");
+        sb.append(Title);
+        sb.append('\n');
         for (int ii=0;ii<buf.length;ii+=16)
         {
             printLine(sb, format, buf, ii, Math.min(16, buf.length - ii));
@@ -69,7 +112,7 @@ public class HexDump
         {
             if (ii < length)
             {
-                if (!Character.isISOControl(Byte.toUnsignedInt(buf[offset + ii])))
+                if (isPrintable(Byte.toUnsignedInt(buf[offset + ii])))
                 {
                     sb.append((char)buf[offset + ii]);
                 }
@@ -81,6 +124,10 @@ public class HexDump
             }
         }
         sb.append('\n');
+    }
+    private static boolean isPrintable(int cc)
+    {
+        return cc >= 32 && cc <= 126;
     }
     private static void hexAppend(StringBuilder sb, byte b)
     {
