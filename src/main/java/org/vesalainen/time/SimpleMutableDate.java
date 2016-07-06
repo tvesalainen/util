@@ -21,8 +21,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 import org.vesalainen.util.IntMap;
 import org.vesalainen.util.IntReference;
 
@@ -43,7 +41,14 @@ public class SimpleMutableDate implements MutableDate
         setDate(year, month, day);
         setTime(hour, minute, second, milliSecond);
     }
-    
+    /**
+     * Returns SimpleMutableDate as 1970-01-01 00:00:00Z
+     * @return 
+     */
+    public static final SimpleMutableDate epoch()
+    {
+        return new SimpleMutableDate(1970, 1, 1, 0, 0, 0, 0);
+    }
     /**
      * Creates SimpleMutableDate and initializes it to current time UTC.
      * @return 
