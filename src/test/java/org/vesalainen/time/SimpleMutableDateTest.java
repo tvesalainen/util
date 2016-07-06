@@ -78,4 +78,10 @@ public class SimpleMutableDateTest
         assertTrue(smt1.isBefore(smt2));
         assertTrue(smt2.isAfter(smt1));
     }
+    @Test
+    public void testx()
+    {
+        int x = -6 % 4;
+        System.err.println(x);
+    }
 }
