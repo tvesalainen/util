@@ -16,6 +16,8 @@
  */
 package org.vesalainen.time;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -49,4 +51,23 @@ public class SimpleMutableTimeTest
         assertTrue(smt.equals(smt2));
     }
     
+    @Test
+    public void test2()
+    {
+        ZonedDateTime zdt = ZonedDateTime.of(1959, 1, 31, 6, 30, 0, 0, ZoneOffset.UTC);
+        long exp = zdt.toInstant().toEpochMilli();
+        SimpleMutableTime smt = new SimpleMutableTime();
+        smt.setZonedDateTime(zdt);
+        assertEquals(exp, smt.millis());
+    }
+    @Test
+    public void test3()
+    {
+        ZoneOffset zo = ZoneOffset.ofHours(3);
+        ZonedDateTime zdt = ZonedDateTime.of(1984, 4, 15, 13, 59, 12, 321000000, zo);
+        long exp = zdt.toInstant().toEpochMilli();
+        SimpleMutableTime smt = new SimpleMutableTime();
+        smt.setZonedDateTime(zdt);
+        assertEquals(exp, smt.millis(zo));
+    }
 }
