@@ -124,4 +124,30 @@ public class SimpleMutableTime implements MutableTime
                 );
     }
 
+    @Override
+    public int hashCode()
+    {
+        int hash = 0;
+        for (ChronoField cf : SupportedFields)
+        {
+            hash += get(cf);
+        }
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final SimpleMutableTime other = (SimpleMutableTime) obj;
+        return equals(other);
+    }
+
 }

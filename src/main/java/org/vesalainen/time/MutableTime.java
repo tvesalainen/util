@@ -104,14 +104,14 @@ public interface MutableTime
      */
     default boolean equals(MutableTime mt)
     {
-        return 
-            getYear() == mt.getYear() &&
-            getMonth() == mt.getMonth() &&
-            getDay() == mt.getDay() &&
-            getHour() == mt.getHour() &&
-            getMinute() == mt.getMinute() &&
-            getSecond() == mt.getSecond() &
-            getMilliSecond() == mt.getMilliSecond();
+        for (ChronoField cf : SupportedFields)
+        {
+            if (get(cf) != mt.get(cf))
+            {
+                return false;
+            }
+        }
+        return true;
     }
     /**
      * Return Year (4 digits)
