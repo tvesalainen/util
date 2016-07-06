@@ -16,15 +16,18 @@
  */
 package org.vesalainen.time;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This interface defines simple mutable access to time fields.
  * @author tkv
  */
-public interface MutableTime
+public interface MutableDate
 {
     /**
      * This interface supports only these fields. Using other ChronoFields is 
@@ -39,6 +42,83 @@ public interface MutableTime
         ChronoField.SECOND_OF_MINUTE,
         ChronoField.MILLI_OF_SECOND
     };
+    public static final long SecondInMillis = 1000;
+    public static final long MinuteInMillis = SecondInMillis*60;
+    public static final long HourInMillis = MinuteInMillis*60;
+    public static final long DayInMillis = HourInMillis*24;
+    static final Map<String,Long> millisMap = new HashMap<>();
+    /**
+     * Returns milliseconds from 1970-01-01 00:00:00 in given time-zone.
+     * @param zoneOffset
+     * @return 
+     */
+    default long millis(ZoneOffset zoneOffset)
+    {
+        int offset = - zoneOffset.getTotalSeconds()*1000;
+        String yearMonth = String.format("%d-%d", getYear(), getMonth());
+        long epochMillis;
+        if (!millisMap.containsKey(yearMonth))
+        {
+            ZonedDateTime zdt = ZonedDateTime.of(getYear(), getMonth(), 1, 0, 0, 0, 0, ZoneOffset.UTC);
+            epochMillis = zdt.toEpochSecond()*1000;
+            millisMap.put(yearMonth, epochMillis);
+        }
+        else
+        {
+            epochMillis = millisMap.get(yearMonth);
+        }
+        return
+                offset +
+                epochMillis +
+                DayInMillis*(getDay()-1) +
+                HourInMillis*getHour() +
+                MinuteInMillis*getMinute() +
+                SecondInMillis*getSecond() +
+                getMilliSecond();
+    }
+    /**
+     * Checks if the instant of this date-time is after that of the specified date-time.
+     * @param other
+     * @return 
+     */
+    default boolean isAfter(MutableDate other)
+    {
+        return millis() > other.millis();
+    }
+    /**
+     * Checks if the instant of this date-time is before that of the specified date-time.
+     * @param other
+     * @return 
+     */
+    default boolean isBefore(MutableDate other)
+    {
+        return millis() < other.millis();
+    }
+    /**
+     * Returns seconds from 1970-01-01 00:00:00Z
+     * @return 
+     */
+    default long seconds()
+    {
+        return millis()/1000;
+    }
+    /**
+     * Returns seconds from 1970-01-01 00:00:00 in given time-zone.
+     * @param zoneOffset
+     * @return 
+     */
+    default long seconds(ZoneOffset zoneOffset)
+    {
+        return millis(zoneOffset)/1000;
+    }
+    /**
+     * Returns milliseconds from 1970-01-01 00:00:00Z
+     * @return 
+     */
+    default long millis()
+    {
+        return millis(ZoneOffset.UTC);
+    }
     /**
      * Checks if chronoField is supported. Throws IllegalArgumentException if not.
      * @param chronoField 
@@ -68,13 +148,13 @@ public interface MutableTime
      */
     void set(ChronoField chronoField, int amount);
     /**
-     * Copies fields to this from given MutableTime.
+     * Copies fields to this from given MutableDate.
      * <p>
      * This implementation just calls get and set methods for every supported
      * field. 
      * @param mt 
      */
-    default void set(MutableTime mt)
+    default void set(MutableDate mt)
     {
         setYear(mt.getYear());
         setMonth(mt.getMonth());
@@ -98,11 +178,11 @@ public interface MutableTime
         }
     }
     /**
-     * Returns true if given MutableTime equals to this
+     * Returns true if given MutableDate equals to this
      * @param mt
      * @return 
      */
-    default boolean equals(MutableTime mt)
+    default boolean equals(MutableDate mt)
     {
         for (ChronoField cf : SupportedFields)
         {
@@ -277,7 +357,7 @@ public interface MutableTime
         }
     }
     /**
-     * Returns Gregorian calendar constructed from MutableTime. 
+     * Returns Gregorian calendar constructed from MutableDate. 
      * <p>
      * Note! Milli seconds are ignored.
      * @return 

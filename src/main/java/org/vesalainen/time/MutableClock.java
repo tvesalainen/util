@@ -35,7 +35,7 @@ import org.vesalainen.util.IntReference;
  * base clock the clock is running or fixed.
  * @author tkv
  */
-public class MutableClock extends Clock implements TemporalAccessor, MutableTime
+public class MutableClock extends Clock implements TemporalAccessor, MutableDate
 {
     private static final long SecondInMillis = 1000;
     private static final long MinuteInMillis = SecondInMillis*60;

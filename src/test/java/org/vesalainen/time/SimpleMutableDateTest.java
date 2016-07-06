@@ -70,4 +70,12 @@ public class SimpleMutableDateTest
         smt.setZonedDateTime(zdt);
         assertEquals(exp, smt.millis(zo));
     }
+    @Test
+    public void test4()
+    {
+        SimpleMutableDate smt1 = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate smt2 = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 14);
+        assertTrue(smt1.isBefore(smt2));
+        assertTrue(smt2.isAfter(smt1));
+    }
 }
