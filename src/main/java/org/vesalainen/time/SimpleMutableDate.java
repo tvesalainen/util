@@ -16,7 +16,7 @@
  */
 package org.vesalainen.time;
 
-import java.time.ZoneId;
+import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.vesalainen.util.IntMap;
 import org.vesalainen.util.IntReference;
-import org.vesalainen.util.LongMap;
 
 /**
  *
@@ -39,6 +38,38 @@ public class SimpleMutableDate implements MutableTime
     private static final long DayInMillis = HourInMillis*24;
     private static final Map<String,Long> millisMap = new HashMap<>();
     private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
+    /**
+     * Creates SimpleMutableDate and initializes it to current time UTC.
+     * @return 
+     */
+    public static final SimpleMutableDate now()
+    {
+        return now(ZoneOffset.UTC);
+    }
+    /**
+     * Creates SimpleMutableDate and initializes it using given clock.
+     * @param clock
+     * @return 
+     */
+    public static final SimpleMutableDate now(Clock clock)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(clock);
+        SimpleMutableDate smt = new SimpleMutableDate();
+        smt.setZonedDateTime(zdt);
+        return smt;
+    }
+    /**
+     * Creates SimpleMutableDate and initializes it to given time-zone.
+     * @param zoneOffset
+     * @return 
+     */
+    public static final SimpleMutableDate now(ZoneOffset zoneOffset)
+    {
+        ZonedDateTime zdt = ZonedDateTime.now(zoneOffset);
+        SimpleMutableDate smt = new SimpleMutableDate();
+        smt.setZonedDateTime(zdt);
+        return smt;
+    }
     /**
      * Returns milliseconds from 1970-01-01 00:00:00Z
      * @return 
