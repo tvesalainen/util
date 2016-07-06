@@ -25,17 +25,17 @@ import static org.junit.Assert.*;
  *
  * @author tkv
  */
-public class SimpleMutableTimeTest
+public class SimpleMutableDateTest
 {
     
-    public SimpleMutableTimeTest()
+    public SimpleMutableDateTest()
     {
     }
 
     @Test
     public void test1()
     {
-        SimpleMutableTime smt = new SimpleMutableTime();
+        SimpleMutableDate smt = new SimpleMutableDate();
         smt.setDate(1998, 11, 23);
         assertEquals(1998, smt.getYear());
         assertEquals(11, smt.getMonth());
@@ -46,7 +46,7 @@ public class SimpleMutableTimeTest
         assertEquals(12, smt.getSecond());
         assertEquals(13, smt.getMilliSecond());
 
-        SimpleMutableTime smt2 = new SimpleMutableTime();
+        SimpleMutableDate smt2 = new SimpleMutableDate();
         smt2.set(smt);
         assertTrue(smt.equals(smt2));
     }
@@ -56,7 +56,7 @@ public class SimpleMutableTimeTest
     {
         ZonedDateTime zdt = ZonedDateTime.of(1959, 1, 31, 6, 30, 0, 0, ZoneOffset.UTC);
         long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableTime smt = new SimpleMutableTime();
+        SimpleMutableDate smt = new SimpleMutableDate();
         smt.setZonedDateTime(zdt);
         assertEquals(exp, smt.millis());
     }
@@ -66,7 +66,7 @@ public class SimpleMutableTimeTest
         ZoneOffset zo = ZoneOffset.ofHours(3);
         ZonedDateTime zdt = ZonedDateTime.of(1984, 4, 15, 13, 59, 12, 321000000, zo);
         long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableTime smt = new SimpleMutableTime();
+        SimpleMutableDate smt = new SimpleMutableDate();
         smt.setZonedDateTime(zdt);
         assertEquals(exp, smt.millis(zo));
     }

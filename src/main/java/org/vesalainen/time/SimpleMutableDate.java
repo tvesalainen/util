@@ -31,7 +31,7 @@ import org.vesalainen.util.LongMap;
  *
  * @author tkv
  */
-public class SimpleMutableTime implements MutableTime
+public class SimpleMutableDate implements MutableTime
 {
     private static final long SecondInMillis = 1000;
     private static final long MinuteInMillis = SecondInMillis*60;
@@ -146,7 +146,7 @@ public class SimpleMutableTime implements MutableTime
         {
             return false;
         }
-        final SimpleMutableTime other = (SimpleMutableTime) obj;
+        final SimpleMutableDate other = (SimpleMutableDate) obj;
         return equals(other);
     }
 
