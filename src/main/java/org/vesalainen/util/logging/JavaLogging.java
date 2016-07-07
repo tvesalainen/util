@@ -17,6 +17,7 @@
 package org.vesalainen.util.logging;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -39,8 +40,9 @@ import java.util.logging.MemoryHandler;
 public class JavaLogging extends BaseLogging
 {
     private static final Map<String,JavaLogging> map = new WeakHashMap();
+    private static Clock clock = Clock.systemDefaultZone();
     
-    private Logger logger;
+    private static Logger logger;
 
     public JavaLogging()
     {
@@ -134,6 +136,16 @@ public class JavaLogging extends BaseLogging
         logger.log(level, msg, thrown);
     }
 
+    public static Clock getClock()
+    {
+        return clock;
+    }
+
+    public static void setClock(Clock clock)
+    {
+        JavaLogging.clock = clock;
+    }
+
     @Override
     public List<String> getLoggerNames()
     {
@@ -148,7 +160,7 @@ public class JavaLogging extends BaseLogging
     
     public static final void setConsoleHandler(String name, Level level)
     {
-        setHandler(name, false, level, new MinimalFormatter(), null, new ConsoleHandler());
+        setHandler(name, false, level, new MinimalFormatter(JavaLogging::getClock), null, new ConsoleHandler());
     }
     public static final void setConsoleHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter)
     {
@@ -166,12 +178,12 @@ public class JavaLogging extends BaseLogging
     }
     public static final void setHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter, Handler handler)
     {
-        Logger logger = Logger.getLogger(name);
-        logger.setUseParentHandlers(useParentHandlers);
-        logger.setLevel(level);
+        Logger log = Logger.getLogger(name);
+        log.setUseParentHandlers(useParentHandlers);
+        log.setLevel(level);
         handler.setFormatter(formatter);
         handler.setFilter(filter);
         handler.setLevel(level);
-        logger.addHandler(handler);
+        log.addHandler(handler);
     }
 }
