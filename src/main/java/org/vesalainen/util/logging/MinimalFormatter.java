@@ -67,6 +67,12 @@ public class MinimalFormatter extends Formatter
             case "FINEST":
                 levelId = "F3";
                 break;
+            case "VERBOSE":
+                levelId = "VE";
+                break;
+            case "DEBUG":
+                levelId = "DE";
+                break;
             default:
                 levelId = "LEVEL("+record.getLevel().intValue()+")";
                 break;
