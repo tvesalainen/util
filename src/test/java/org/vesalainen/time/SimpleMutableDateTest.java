@@ -18,6 +18,7 @@ package org.vesalainen.time;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -79,9 +80,61 @@ public class SimpleMutableDateTest
         assertTrue(smt2.isAfter(smt1));
     }
     @Test
-    public void testx()
+    public void test5()
     {
-        int x = -6 % 4;
-        System.err.println(x);
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        ZonedDateTime zdt = smt.zonedDateTime();
+        for (ChronoField cf : smt.getFields().keySet())
+        {
+            assertEquals(smt.get(cf), zdt.get(cf));
+        }
+    }
+    @Test
+    public void test6()
+    {
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate exp = smt.clone();
+        ZonedDateTime zdt = smt.zonedDateTime();
+        long millis = 10000000;
+        smt.plusMilliSeconds(millis);
+        ZonedDateTime pzdt = zdt.plusNanos(millis*1000000);
+        for (ChronoField cf : smt.getFields().keySet())
+        {
+            assertEquals(smt.get(cf), pzdt.get(cf));
+        }
+        smt.plusMilliSeconds(-millis);
+        assertEquals(exp, smt);
+    }
+    @Test
+    public void test7()
+    {
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate exp = new SimpleMutableDate(1998, 11, 13, 10, 11, 12, 13);
+        smt.plusDays(-10);
+        assertEquals(exp, smt);
+    }
+    @Test
+    public void test8()
+    {
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate exp = new SimpleMutableDate(1999, 9, 23, 10, 11, 12, 13);
+        smt.plusMonths(10);
+        assertEquals(exp, smt);
+    }
+    @Test
+    public void test9()
+    {
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate exp = new SimpleMutableDate(1997, 3, 23, 10, 11, 12, 13);
+        smt.plusMonths(-20);
+        assertEquals(exp, smt);
+    }
+    @Test
+    public void test10()
+    {
+        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDate exp = new SimpleMutableDate(1997, 11, 23, 10, 11, 12, 13);
+        smt.plusYears(-1);
+        assertEquals(exp, smt);
     }
 }

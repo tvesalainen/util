@@ -17,6 +17,7 @@
 package org.vesalainen.time;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -28,7 +29,7 @@ import org.vesalainen.util.IntReference;
  *
  * @author tkv
  */
-public class SimpleMutableDate implements MutableDate
+public class SimpleMutableDate implements MutableDate, Cloneable
 {
     private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
 
@@ -40,6 +41,132 @@ public class SimpleMutableDate implements MutableDate
     {
         setDate(year, month, day);
         setTime(hour, minute, second, milliSecond);
+    }
+
+    @Override
+    public SimpleMutableDate clone()
+    {
+        return new SimpleMutableDate(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond());
+    }
+    /**
+     * Adds delta years. Delta can be negative. Affects only year field.
+     * @param delta 
+     */
+    public void plusYears(int delta)
+    {
+        if (delta != 0)
+        {
+            setYear(getYear() + delta);
+        }
+    }
+    /**
+     * Adds delta months. Delta can be negative. Month and year fields are 
+     * affected.
+     * @param delta 
+     */
+    public void plusMonths(int delta)
+    {
+        if (delta != 0)
+        {
+            int result = getMonth() -1 + delta;
+            setMonth(Math.floorMod(result, 12) + 1);
+            plusYears(Math.floorDiv(result, 12));
+        }
+    }
+    /**
+     * Adds delta days. Delta can be negative. Month, year and day fields are 
+     * affected.
+     * @param delta 
+     */
+    public void plusDays(long delta)
+    {
+        if (delta != 0)
+        {
+            long result = getDay() + delta;
+            if (result >= 1 && result <= 28)
+            {
+                setDay((int) result);
+            }
+            else
+            {
+                ZonedDateTime zonedDateTime = zonedDateTime();
+                ZonedDateTime plusDays = zonedDateTime.plusDays(delta);
+                setZonedDateTime(plusDays);
+            }
+        }
+    }
+    /**
+     * Adds delta hours. Delta can be negative. Month, year, day and hour fields 
+     * are affected.
+     * @param delta 
+     */
+    public void plusHours(long delta)
+    {
+        if (delta != 0)
+        {
+            long result = getHour() + delta;
+            setHour((int) Math.floorMod(result, 24));
+            plusDays(Math.floorDiv(result, 24));
+        }
+    }
+    /**
+     * Adds delta minutes. Delta can be negative. Month, year, day, hour and 
+     * minute fields are affected.
+     * @param delta 
+     */
+    public void plusMinutes(long delta)
+    {
+        if (delta != 0)
+        {
+            long result = getMinute() + delta;
+            setMinute((int) Math.floorMod(result, 60));
+            plusHours(Math.floorDiv(result, 60));
+        }
+    }
+    /**
+     * Adds delta seconds. Delta can be negative. Month, year, day, hour, 
+     * minute and seconds fields are affected.
+     * @param delta 
+     */
+    public void plusSeconds(long delta)
+    {
+        if (delta != 0)
+        {
+            long result = getSecond() + delta;
+            setSecond((int) Math.floorMod(result, 60));
+            plusMinutes(Math.floorDiv(result, 60));
+        }
+    }
+    /**
+     * Adds delta milliseconds. Delta can be negative. Month, year, day, hour, 
+     * minute, seconds and milliSecond fields are affected.
+     * @param delta 
+     */
+    public void plusMilliSeconds(long delta)
+    {
+        if (delta != 0)
+        {
+            long result = getMilliSecond() + delta;
+            setMilliSecond((int) Math.floorMod(result, 1000));
+            plusSeconds(Math.floorDiv(result, 1000));
+        }
+    }
+    /**
+     * Creates ZonedDateTime with same fields and UTC ZoneId.
+     * @return 
+     */
+    public ZonedDateTime zonedDateTime()
+    {
+        return zonedDateTime(ZoneOffset.UTC);
+    }
+    /**
+     * Creates ZonedDateTime with same fields and given ZoneId.
+     * @param zoneId
+     * @return 
+     */
+    public ZonedDateTime zonedDateTime(ZoneId zoneId)
+    {
+        return ZonedDateTime.of(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond()*1000000, zoneId);
     }
     /**
      * Returns SimpleMutableDate as 1970-01-01 00:00:00Z
@@ -70,13 +197,13 @@ public class SimpleMutableDate implements MutableDate
         return smt;
     }
     /**
-     * Creates SimpleMutableDate and initializes it to given time-zone.
-     * @param zoneOffset
+     * Creates SimpleMutableDate and initializes it to given ZoneId.
+     * @param zoneId
      * @return 
      */
-    public static final SimpleMutableDate now(ZoneOffset zoneOffset)
+    public static final SimpleMutableDate now(ZoneId zoneId)
     {
-        ZonedDateTime zdt = ZonedDateTime.now(zoneOffset);
+        ZonedDateTime zdt = ZonedDateTime.now(zoneId);
         SimpleMutableDate smt = new SimpleMutableDate();
         smt.setZonedDateTime(zdt);
         return smt;
