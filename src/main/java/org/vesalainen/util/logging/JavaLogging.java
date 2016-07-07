@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Filter;
@@ -40,7 +41,7 @@ import java.util.logging.MemoryHandler;
 public class JavaLogging extends BaseLogging
 {
     private static final Map<String,JavaLogging> map = new WeakHashMap();
-    private static Clock clock = Clock.systemDefaultZone();
+    private static Supplier<Clock> clockSupplier = () -> {return Clock.systemDefaultZone();};
     
     private static Logger logger;
 
@@ -136,14 +137,9 @@ public class JavaLogging extends BaseLogging
         logger.log(level, msg, thrown);
     }
 
-    public static Clock getClock()
+    public static void setClockSupplier(Supplier<Clock> clockSupplier)
     {
-        return clock;
-    }
-
-    public static void setClock(Clock clock)
-    {
-        JavaLogging.clock = clock;
+        JavaLogging.clockSupplier = clockSupplier;
     }
 
     @Override
@@ -160,7 +156,7 @@ public class JavaLogging extends BaseLogging
     
     public static final void setConsoleHandler(String name, Level level)
     {
-        setHandler(name, false, level, new MinimalFormatter(JavaLogging::getClock), null, new ConsoleHandler());
+        setHandler(name, false, level, new MinimalFormatter(clockSupplier), null, new ConsoleHandler());
     }
     public static final void setConsoleHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter)
     {
