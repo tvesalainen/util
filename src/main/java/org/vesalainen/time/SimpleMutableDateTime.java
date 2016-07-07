@@ -29,24 +29,24 @@ import org.vesalainen.util.IntReference;
  *
  * @author tkv
  */
-public class SimpleMutableDate implements MutableDate, Cloneable
+public class SimpleMutableDateTime implements MutableDateTime, Cloneable
 {
     private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
 
-    public SimpleMutableDate()
+    public SimpleMutableDateTime()
     {
     }
 
-    public SimpleMutableDate(int year, int month, int day, int hour, int minute, int second, int milliSecond)
+    public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond)
     {
         setDate(year, month, day);
         setTime(hour, minute, second, milliSecond);
     }
 
     @Override
-    public SimpleMutableDate clone()
+    public SimpleMutableDateTime clone()
     {
-        return new SimpleMutableDate(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond());
+        return new SimpleMutableDateTime(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond());
     }
     /**
      * Adds delta years. Delta can be negative. Affects only year field.
@@ -169,42 +169,42 @@ public class SimpleMutableDate implements MutableDate, Cloneable
         return ZonedDateTime.of(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond()*1000000, zoneId);
     }
     /**
-     * Returns SimpleMutableDate as 1970-01-01 00:00:00Z
+     * Returns SimpleMutableDateTime as 1970-01-01 00:00:00Z
      * @return 
      */
-    public static final SimpleMutableDate epoch()
+    public static final SimpleMutableDateTime epoch()
     {
-        return new SimpleMutableDate(1970, 1, 1, 0, 0, 0, 0);
+        return new SimpleMutableDateTime(1970, 1, 1, 0, 0, 0, 0);
     }
     /**
-     * Creates SimpleMutableDate and initializes it to current time UTC.
+     * Creates SimpleMutableDateTime and initializes it to current time UTC.
      * @return 
      */
-    public static final SimpleMutableDate now()
+    public static final SimpleMutableDateTime now()
     {
         return now(ZoneOffset.UTC);
     }
     /**
-     * Creates SimpleMutableDate and initializes it using given clock.
+     * Creates SimpleMutableDateTime and initializes it using given clock.
      * @param clock
      * @return 
      */
-    public static final SimpleMutableDate now(Clock clock)
+    public static final SimpleMutableDateTime now(Clock clock)
     {
         ZonedDateTime zdt = ZonedDateTime.now(clock);
-        SimpleMutableDate smt = new SimpleMutableDate();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
         return smt;
     }
     /**
-     * Creates SimpleMutableDate and initializes it to given ZoneId.
+     * Creates SimpleMutableDateTime and initializes it to given ZoneId.
      * @param zoneId
      * @return 
      */
-    public static final SimpleMutableDate now(ZoneId zoneId)
+    public static final SimpleMutableDateTime now(ZoneId zoneId)
     {
         ZonedDateTime zdt = ZonedDateTime.now(zoneId);
-        SimpleMutableDate smt = new SimpleMutableDate();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
         return smt;
     }
@@ -278,7 +278,7 @@ public class SimpleMutableDate implements MutableDate, Cloneable
         {
             return false;
         }
-        final SimpleMutableDate other = (SimpleMutableDate) obj;
+        final SimpleMutableDateTime other = (SimpleMutableDateTime) obj;
         return equals(other);
     }
 

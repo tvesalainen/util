@@ -36,7 +36,7 @@ public class SimpleMutableDateTest
     @Test
     public void test1()
     {
-        SimpleMutableDate smt = new SimpleMutableDate();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setDate(1998, 11, 23);
         assertEquals(1998, smt.getYear());
         assertEquals(11, smt.getMonth());
@@ -47,7 +47,7 @@ public class SimpleMutableDateTest
         assertEquals(12, smt.getSecond());
         assertEquals(13, smt.getMilliSecond());
 
-        SimpleMutableDate smt2 = new SimpleMutableDate();
+        SimpleMutableDateTime smt2 = new SimpleMutableDateTime();
         smt2.set(smt);
         assertTrue(smt.equals(smt2));
     }
@@ -57,7 +57,7 @@ public class SimpleMutableDateTest
     {
         ZonedDateTime zdt = ZonedDateTime.of(1959, 1, 31, 6, 30, 0, 0, ZoneOffset.UTC);
         long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableDate smt = new SimpleMutableDate();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
         assertEquals(exp, smt.millis());
     }
@@ -67,22 +67,22 @@ public class SimpleMutableDateTest
         ZoneOffset zo = ZoneOffset.ofHours(3);
         ZonedDateTime zdt = ZonedDateTime.of(1984, 4, 15, 13, 59, 12, 321000000, zo);
         long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableDate smt = new SimpleMutableDate();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
         assertEquals(exp, smt.millis(zo));
     }
     @Test
     public void test4()
     {
-        SimpleMutableDate smt1 = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate smt2 = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 14);
+        SimpleMutableDateTime smt1 = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime smt2 = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 14);
         assertTrue(smt1.isBefore(smt2));
         assertTrue(smt2.isAfter(smt1));
     }
     @Test
     public void test5()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
         ZonedDateTime zdt = smt.zonedDateTime();
         for (ChronoField cf : smt.getFields().keySet())
         {
@@ -92,8 +92,8 @@ public class SimpleMutableDateTest
     @Test
     public void test6()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate exp = smt.clone();
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime exp = smt.clone();
         ZonedDateTime zdt = smt.zonedDateTime();
         long millis = 10000000;
         smt.plusMilliSeconds(millis);
@@ -108,32 +108,32 @@ public class SimpleMutableDateTest
     @Test
     public void test7()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate exp = new SimpleMutableDate(1998, 11, 13, 10, 11, 12, 13);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime exp = new SimpleMutableDateTime(1998, 11, 13, 10, 11, 12, 13);
         smt.plusDays(-10);
         assertEquals(exp, smt);
     }
     @Test
     public void test8()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate exp = new SimpleMutableDate(1999, 9, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime exp = new SimpleMutableDateTime(1999, 9, 23, 10, 11, 12, 13);
         smt.plusMonths(10);
         assertEquals(exp, smt);
     }
     @Test
     public void test9()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate exp = new SimpleMutableDate(1997, 3, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime exp = new SimpleMutableDateTime(1997, 3, 23, 10, 11, 12, 13);
         smt.plusMonths(-20);
         assertEquals(exp, smt);
     }
     @Test
     public void test10()
     {
-        SimpleMutableDate smt = new SimpleMutableDate(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDate exp = new SimpleMutableDate(1997, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
+        SimpleMutableDateTime exp = new SimpleMutableDateTime(1997, 11, 23, 10, 11, 12, 13);
         smt.plusYears(-1);
         assertEquals(exp, smt);
     }

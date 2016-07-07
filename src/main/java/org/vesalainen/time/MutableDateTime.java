@@ -27,7 +27,7 @@ import java.util.Map;
  * This interface defines simple mutable access to time fields.
  * @author tkv
  */
-public interface MutableDate
+public interface MutableDateTime
 {
     /**
      * This interface supports only these fields. Using other ChronoFields is 
@@ -81,7 +81,7 @@ public interface MutableDate
      * @param other
      * @return 
      */
-    default boolean isAfter(MutableDate other)
+    default boolean isAfter(MutableDateTime other)
     {
         return millis() > other.millis();
     }
@@ -90,7 +90,7 @@ public interface MutableDate
      * @param other
      * @return 
      */
-    default boolean isBefore(MutableDate other)
+    default boolean isBefore(MutableDateTime other)
     {
         return millis() < other.millis();
     }
@@ -148,13 +148,13 @@ public interface MutableDate
      */
     void set(ChronoField chronoField, int amount);
     /**
-     * Copies fields to this from given MutableDate.
+     * Copies fields to this from given MutableDateTime.
      * <p>
      * This implementation just calls get and set methods for every supported
      * field. 
      * @param mt 
      */
-    default void set(MutableDate mt)
+    default void set(MutableDateTime mt)
     {
         setYear(mt.getYear());
         setMonth(mt.getMonth());
@@ -178,11 +178,11 @@ public interface MutableDate
         }
     }
     /**
-     * Returns true if given MutableDate equals to this
+     * Returns true if given MutableDateTime equals to this
      * @param mt
      * @return 
      */
-    default boolean equals(MutableDate mt)
+    default boolean equals(MutableDateTime mt)
     {
         for (ChronoField cf : SupportedFields)
         {
@@ -357,7 +357,7 @@ public interface MutableDate
         }
     }
     /**
-     * Returns Gregorian calendar constructed from MutableDate. 
+     * Returns Gregorian calendar constructed from MutableDateTime. 
      * <p>
      * Note! Milli seconds are ignored.
      * @return 
