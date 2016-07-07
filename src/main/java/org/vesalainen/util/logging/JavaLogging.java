@@ -43,7 +43,7 @@ public class JavaLogging extends BaseLogging
     private static final Map<String,JavaLogging> map = new WeakHashMap();
     private static Supplier<Clock> clockSupplier = () -> {return Clock.systemDefaultZone();};
     
-    private static Logger logger;
+    private Logger logger;
 
     public JavaLogging()
     {
@@ -142,6 +142,12 @@ public class JavaLogging extends BaseLogging
         JavaLogging.clockSupplier = clockSupplier;
     }
 
+    public static Clock getClock()
+    {
+        return clockSupplier.get();
+    }
+
+    
     @Override
     public List<String> getLoggerNames()
     {
@@ -156,7 +162,7 @@ public class JavaLogging extends BaseLogging
     
     public static final void setConsoleHandler(String name, Level level)
     {
-        setHandler(name, false, level, new MinimalFormatter(clockSupplier), null, new ConsoleHandler());
+        setHandler(name, false, level, new MinimalFormatter(JavaLogging::getClock), null, new ConsoleHandler());
     }
     public static final void setConsoleHandler(String name, boolean useParentHandlers, Level level, Formatter formatter, Filter filter)
     {

@@ -19,6 +19,7 @@ package org.vesalainen.util.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Clock;
+import java.time.ZoneOffset;
 import java.util.function.Supplier;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -30,14 +31,20 @@ import java.util.logging.LogRecord;
 public class MinimalFormatter extends Formatter
 {
     private Supplier<Clock> clockFactory;
+    private Clock clock = Clock.systemDefaultZone();
+    private long systemOffset;
+    private long offset;
     
     public MinimalFormatter()
     {
+        this(null);
     }
 
     public MinimalFormatter(Supplier<Clock> clockFactory)
     {
         this.clockFactory = clockFactory;
+        ZoneOffset normalized = (ZoneOffset) Clock.systemDefaultZone().getZone().normalized();
+        systemOffset = normalized.getTotalSeconds()*1000;
     }
     
     @Override
@@ -109,7 +116,15 @@ public class MinimalFormatter extends Formatter
     {
         if (clockFactory != null)
         {
-            long offset = Clock.systemUTC().millis() - clockFactory.get().millis();
+            Clock newClock = clockFactory.get();
+            if (!newClock.equals(clock))
+            {
+                ZoneOffset zoneOffset = (ZoneOffset) newClock.getZone().normalized();
+                long zo = systemOffset - zoneOffset.getTotalSeconds()*1000;
+                long o = clock.millis() - newClock.millis();
+                offset = zo + o;
+                clock = newClock;
+            }
             return record.getMillis()-offset;
         }
         else
