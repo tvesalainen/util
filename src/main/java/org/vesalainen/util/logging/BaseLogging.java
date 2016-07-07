@@ -27,6 +27,14 @@ import static java.util.logging.Level.*;
 public abstract class BaseLogging
 {
     /**
+     * VERBOSE log level is finer that finest. (200)
+     */
+    public static final Level VERBOSE = new Verbose();
+    /**
+     * DEBUG log level is finer that VERBOSE (100)
+     */
+    public static final Level DEBUG = new Debug();
+    /**
      * Write to log SEVERE level.
      * @param format
      * @param args 
@@ -125,6 +133,34 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at VERBOSE level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
+    public void verbose(String format, Object... args)
+    {
+        if (isLoggable(VERBOSE))
+        {
+            logIt(VERBOSE, String.format(format, args));
+        }
+    }
+    /**
+     * Write to log at DEBUG level.
+     * @param format
+     * @param args 
+     * @see java.util.Formatter#format(java.lang.String, java.lang.Object...) 
+     * @see java.util.logging.Level
+     */
+    public void debug(String format, Object... args)
+    {
+        if (isLoggable(DEBUG))
+        {
+            logIt(DEBUG, String.format(format, args));
+        }
+    }
+    /**
      * Write to log
      * @param level
      * @param format
@@ -173,4 +209,23 @@ public abstract class BaseLogging
     public abstract boolean isLoggable(Level level);
     protected abstract void logIt(Level level, String msg);
     protected abstract void logIt(Level level, String msg, Throwable thrown);
+
+    private static class Verbose extends Level
+    {
+
+        public Verbose()
+        {
+            super("VERBOSE", 200);
+        }
+        
+    }
+    private static class Debug extends Level
+    {
+
+        public Debug()
+        {
+            super("DEBUG", 100);
+        }
+        
+    }
 }

@@ -76,7 +76,7 @@ public final class Recycler
             if (list != null && !list.isEmpty())
             {
                 recyclable = (T) list.remove(list.size()-1);
-                log.finest("get recycled %s", recyclable);
+                log.debug("get recycled %s", recyclable);
             }
         }
         finally
@@ -88,7 +88,7 @@ public final class Recycler
             try
             {
                 recyclable = cls.newInstance();
-                log.finest("create new recycled %s", recyclable);
+                log.debug("create new recycled %s", recyclable);
             }
             catch (InstantiationException | IllegalAccessException ex)
             {
@@ -148,7 +148,7 @@ public final class Recycler
             }
             else
             {
-                log.finest("put to recycle queue %s", recyclable);
+                log.debug("put to recycle queue %s", recyclable);
             }
         }
         finally
@@ -189,7 +189,7 @@ public final class Recycler
                         }
                         recyclable.clear();
                         mapList.add(recyclable.getClass(), recyclable);
-                        log.finest("recycled %s", recyclable);
+                        log.debug("recycled %s", recyclable);
                     }
                     finally
                     {
