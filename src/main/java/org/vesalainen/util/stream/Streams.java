@@ -20,7 +20,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
+import java.util.Spliterator;
 import java.util.Spliterators.AbstractIntSpliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
@@ -38,6 +40,52 @@ import org.vesalainen.util.Recycler;
  */
 public class Streams
 {
+    /**
+     * Converts Stream to Stream where one or more int items are mapped to 
+     * one int item. Mapping is done by func method. Func must return
+     * true after calling consumer method. Otherwise behavior is unpredictable.
+     * 
+     * @param stream
+     * @param func
+     * @return 
+     * @throws IllegalStateException if Stream ends when mapping is unfinished.
+     * @deprecated This is not tested at all!!!
+     */
+    public static final IntStream reducingStream(IntStream stream, ReducingFunction func)
+    {
+        return StreamSupport.intStream(new ReducingSpliterator(stream, func), false);
+    }
+    private static class ReducingSpliterator extends AbstractIntSpliterator
+    {
+        private PrimitiveIterator.OfInt iterator;
+        private ReducingFunction func;
+        
+        public ReducingSpliterator(IntStream stream, ReducingFunction func)
+        {
+            super(stream.spliterator().estimateSize(), stream.spliterator().characteristics());
+            this.iterator = stream.iterator();
+            this.func = func;
+        }
+
+        @Override
+        public boolean tryAdvance(IntConsumer action)
+        {
+            if (!iterator.hasNext())
+            {
+                return false;
+            }
+            while (iterator.hasNext())
+            {
+                int i = iterator.next();
+                if (func.apply(i, action))
+                {
+                    return true;
+                }
+            }
+            throw new IllegalStateException("mapping not finished");
+        }
+        
+    }
     /**
      * Returns IntStream where items are bytes from byte array.
      * @param array
