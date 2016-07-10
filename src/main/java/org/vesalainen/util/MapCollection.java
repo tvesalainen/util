@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  *
@@ -68,4 +69,12 @@ public interface MapCollection<K,C extends Collection<V>,V> extends Map<K,C>
      * @return True if item was removed from list.
      */
     boolean removeItem(K key, V value);
+    /**
+     * Returns Stream containing all values.
+     * @return 
+     */
+    default Stream<V> allValues()
+    {
+        return entrySet().stream().flatMap((e)->{return e.getValue().stream();});
+    }
 }
