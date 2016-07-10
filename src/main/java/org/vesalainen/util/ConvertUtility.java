@@ -236,37 +236,37 @@ public class ConvertUtility
                 if (byte.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Byte.valueOf(b.byteValue());
                 }
                 if (char.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Character.valueOf((char) b.shortValue());
                 }
                 if (short.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Short.valueOf(b.shortValue());
                 }
                 if (int.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Integer.valueOf(b.intValue());
                 }
                 if (long.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Long.valueOf(b.longValue());
                 }
                 if (float.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Float.valueOf(b.floatValue());
                 }
                 if (double.class.equals(expectedReturnType) && object instanceof Number)
                 {
                     Number b = (Number) object;
-                    return (T) b;
+                    return (T) Double.valueOf(b.doubleValue());
                 }
             }
             if (object instanceof String)
