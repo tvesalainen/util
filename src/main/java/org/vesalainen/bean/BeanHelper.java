@@ -799,7 +799,8 @@ public class BeanHelper
             return Collections.EMPTY_SET;
         }
         NavigableSet<String> set = setFor(cls);
-        for (Method method : cls.getMethods())
+        Method[] methods = cls.getMethods();
+        for (Method method : methods)
         {
             if ((method.getModifiers() & ModifierMask) == 0)
             {
@@ -818,14 +819,9 @@ public class BeanHelper
                     }
                     else
                     {
-                        try
+                        if (hasMethod(methods, setter(property)))
                         {
-                            cls.getMethod(setter(property), returnType);
                             set.add(property);
-                        }
-                        catch (NoSuchMethodException ex)
-                        {
-                            continue;
                         }
                     }
                 }
@@ -839,6 +835,17 @@ public class BeanHelper
             }
         }
         return set;
+    }
+    private static boolean hasMethod(Method[] methods, String setter)
+    {
+        for (Method method : methods)
+        {
+            if (setter.equals(method.getName()) && method.getParameterCount() == 1)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     private static NavigableSet<String> setFor(Class<?> cls)
     {
@@ -976,6 +983,7 @@ public class BeanHelper
     {
         return new SpliteratorImpl(bean);
     }
+
     private static class SpliteratorImpl implements Spliterator<String>
     {
         private Deque<Ctx> stack;
