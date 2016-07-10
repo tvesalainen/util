@@ -21,12 +21,16 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
+import static java.nio.file.StandardWatchEventKinds.*;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -39,17 +43,24 @@ import org.vesalainen.bean.BeanHelper;
  */
 public class JAXBCommandLine extends LoggingCommandLine implements Runnable
 {
+    private Map<String,Object> configMap = new HashMap<>();
     private String packageName;
     private final JAXBContext jaxbCtx;
     private final Object factory;
-    private List<String> patterns = new ArrayList<>();
     private File configFile;
-
-    public JAXBCommandLine(String packageName)
+    private Path relative;
+    private boolean watch;
+    /**
+     * Creates JAXBCommandLine.
+     * @param packageName JAXB package name
+     * @param watch Do we watch config file and configure automatically after modification.
+     */
+    public JAXBCommandLine(String packageName, boolean watch)
     {
         try
         {
             this.packageName = packageName;
+            this.watch = watch;
             jaxbCtx = JAXBContext.newInstance(packageName);
             Class<?> cls = Class.forName(packageName+".ObjectFactory");
             factory = cls.newInstance();
@@ -59,7 +70,11 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
             throw new IllegalArgumentException(ex);
         }
     }
-
+    /**
+     * Resolves command line arguments and starts watch thread if watch was true
+     * in constructor.
+     * @param args 
+     */
     @Override
     public void command(String... args)
     {
@@ -67,23 +82,25 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
         super.command(args);
         configFile = getArgument("xml-config-file-path");
         readConfig();
-        Thread thread = new Thread(this, configFile+" watcher");
-        thread.start();
+        if (watch)
+        {
+            Thread thread = new Thread(this, configFile+" watcher");
+            thread.start();
+        }
     }
 
     private void readConfig()
     {
         try
         {
-            patterns.clear();
             Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
             Object config = unmarshaller.unmarshal(configFile);
             BeanHelper.stream(config)
                     .forEach((String pattern)->
             {
                 Object value = BeanHelper.getValue(config, pattern);
-                setValue(pattern, value);
-                patterns.add(pattern);
+                configMap.put(pattern, value);
+                log.config("Config setValue(%s, %s)", pattern, value);
             });
         }
         catch (JAXBException ex)
@@ -91,10 +108,23 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
             throw new IllegalArgumentException(ex);
         }
     }
-
-    public List<String> getPatterns()
+    /**
+     * Overrides getValue so that also config file values are returned.
+     * @param name
+     * @return 
+     */
+    @Override
+    public Object getValue(String name)
     {
-        return patterns;
+        Object value = super.getValue(name);
+        if (value != null)
+        {
+            return value;
+        }
+        else
+        {
+            return configMap.get(name);
+        }
     }
 
     @Override
@@ -103,12 +133,32 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
         try
         {
             Path path = configFile.getParentFile().toPath();
+            relative = path.relativize(configFile.toPath());
             FileSystem fileSystem = path.getFileSystem();
             WatchService watchService = fileSystem.newWatchService();
             path.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
             while (true)
             {
                 WatchKey wk = watchService.take();
+                for (WatchEvent e : wk.pollEvents())
+                {
+                    Kind kind = e.kind();
+                    if (kind.equals(ENTRY_MODIFY))
+                    {
+                        if (relative.equals(e.context()))
+                        {
+                            try
+                            {
+                                log.fine("modified %s", e);
+                                readConfig();
+                            }
+                            catch (Exception ex)
+                            {
+                                log.log(Level.SEVERE, ex, "%s", ex.getMessage());
+                            }
+                        }
+                    }
+                }
             }
         }
         catch (IOException | InterruptedException ex)

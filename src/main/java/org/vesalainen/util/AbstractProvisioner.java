@@ -48,7 +48,11 @@ public abstract class AbstractProvisioner
     {
         return map.isEmpty();
     }
-    
+    /**
+     * Attaches all methods which are annotated with @Setting for automatic
+     * provisioning.
+     * @param ob 
+     */
     public void attach(Object ob)
     {
         for (Method method : ob.getClass().getMethods())
@@ -62,7 +66,7 @@ public abstract class AbstractProvisioner
                 {
                     throw new IllegalArgumentException("@Setting("+name+") argument count != 1");
                 }
-                InstanceMethod instanceMethod = new InstanceMethod(ob, method);
+                InstanceMethod instanceMethod = new InstanceMethod(ob, method, setting.mandatory());
                 Object value = getValue(name);
                 if (value != null)
                 {
@@ -72,6 +76,10 @@ public abstract class AbstractProvisioner
             }
         }
     }
+    /**
+     * Removes all previously made attachments to given object.
+     * @param ob 
+     */
     public void detach(Object ob)
     {
         Iterator<Map.Entry<String, List<InstanceMethod>>> ki = map.entrySet().iterator();
@@ -93,15 +101,31 @@ public abstract class AbstractProvisioner
             }
         }
     }
-
+    /**
+     * Provides value used in attach process.
+     * @param name
+     * @return 
+     */
     public abstract Object getValue(String name);
-    
+    /**
+     * Provides value for attached method
+     * @param name From @Setting
+     * @param value 
+     */
     public void setValue(String name, Object value)
     {
-        for (InstanceMethod im : map.get(name))
+        map.get(name).stream().forEach((im) ->
         {
             im.invoke(value);
-        }
+        });
+    }
+    /**
+     * Checks that all mandatory values are assigned
+     * @throws IllegalArgumentException if mandatory value is not set.
+     */
+    public void checkMandatory()
+    {
+        map.allValues().forEach((i)->i.check());
     }
     
     @Retention(RetentionPolicy.RUNTIME)
@@ -109,25 +133,44 @@ public abstract class AbstractProvisioner
     public @interface Setting
     {
         String value();
+        boolean mandatory() default false;
     }
     private class InstanceMethod
     {
-        Object instance;
-        Method method;
+        private final Object instance;
+        private final Method method;
+        private final Class<?> type;
+        private final boolean mandatory;
+        private boolean assigned;
 
-        private InstanceMethod(Object instance, Method method)
+        private InstanceMethod(Object instance, Method method, boolean mandatory)
         {
             this.instance = instance;
             this.method = method;
+            this.mandatory = mandatory;
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes.length != 1)
+            {
+                throw new IllegalArgumentException(method+" parameter count != 0");
+            }
+            this.type = parameterTypes[0];
         }
         
+        private void check()
+        {
+            if (mandatory && !assigned)
+            {
+                throw new IllegalArgumentException("mandatory @Setting at "+instance+" "+method+" not assigned");
+            }
+        }
         private void invoke(Object arg)
         {
             try
             {
-                method.invoke(instance, arg);
+                method.invoke(instance, ConvertUtility.convert(type, arg));
+                assigned = true;
             }
-            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+            catch (IllegalAccessException | InvocationTargetException ex)
             {
                 throw new IllegalArgumentException(ex);
             }
