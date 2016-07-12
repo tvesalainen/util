@@ -16,6 +16,7 @@
  */
 package org.vesalainen.time;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -34,6 +35,7 @@ public interface MutableDateTime
      * undefined.
      */
     static final ChronoField[] SupportedFields = new ChronoField[]{
+        ChronoField.OFFSET_SECONDS,
         ChronoField.YEAR,
         ChronoField.MONTH_OF_YEAR, 
         ChronoField.DAY_OF_MONTH, 
@@ -48,13 +50,11 @@ public interface MutableDateTime
     public static final long DayInMillis = HourInMillis*24;
     static final Map<String,Long> millisMap = new HashMap<>();
     /**
-     * Returns milliseconds from 1970-01-01 00:00:00 in given time-zone.
-     * @param zoneOffset
+     * Returns milliseconds from 1970-01-01 00:00:00Z
      * @return 
      */
-    default long millis(ZoneOffset zoneOffset)
+    default long millis()
     {
-        int offset = - zoneOffset.getTotalSeconds()*1000;
         String yearMonth = String.format("%d-%d", getYear(), getMonth());
         long epochMillis;
         if (!millisMap.containsKey(yearMonth))
@@ -68,7 +68,7 @@ public interface MutableDateTime
             epochMillis = millisMap.get(yearMonth);
         }
         return
-                offset +
+                -SecondInMillis*getOffsetSecond() +
                 epochMillis +
                 DayInMillis*(getDay()-1) +
                 HourInMillis*getHour() +
@@ -101,23 +101,6 @@ public interface MutableDateTime
     default long seconds()
     {
         return millis()/1000;
-    }
-    /**
-     * Returns seconds from 1970-01-01 00:00:00 in given time-zone.
-     * @param zoneOffset
-     * @return 
-     */
-    default long seconds(ZoneOffset zoneOffset)
-    {
-        return millis(zoneOffset)/1000;
-    }
-    /**
-     * Returns milliseconds from 1970-01-01 00:00:00Z
-     * @return 
-     */
-    default long millis()
-    {
-        return millis(ZoneOffset.UTC);
     }
     /**
      * Checks if chronoField is supported. Throws IllegalArgumentException if not.
@@ -156,6 +139,7 @@ public interface MutableDateTime
      */
     default void set(MutableDateTime mt)
     {
+        setOffsetSecond(mt.getOffsetSecond());
         setYear(mt.getYear());
         setMonth(mt.getMonth());
         setDay(mt.getDay());
@@ -250,6 +234,22 @@ public interface MutableDateTime
         return get(ChronoField.MILLI_OF_SECOND);
     }
     /**
+     * Returns the offset from UTC.
+     * @return 
+     */
+    default int getOffsetSecond()
+    {
+        return get(ChronoField.OFFSET_SECONDS);
+    }
+    /**
+     * Returns ZoneId
+     * @return 
+     */
+    default ZoneId getZoneId()
+    {
+        return ZoneOffset.ofTotalSeconds(getOffsetSecond());
+    }
+    /**
      * Set utc time
      * @param hour 0 - 23
      * @param minute 0 - 59
@@ -331,6 +331,23 @@ public interface MutableDateTime
     default void setYear(int year)
     {
         set(ChronoField.YEAR, convertTo4DigitYear(year));
+    }
+    /**
+     * Set offset to UTC.
+     * @param offsetSecond 
+     */
+    default void setOffsetSecond(int offsetSecond)
+    {
+        set(ChronoField.OFFSET_SECONDS, offsetSecond);
+    }
+    /**
+     * Sets ZoneID
+     * @param zoneId 
+     */
+    default void setZoneId(ZoneId zoneId)
+    {
+        ZoneOffset normalized = (ZoneOffset) zoneId.normalized();
+        setOffsetSecond(normalized.getTotalSeconds());
     }
     /**
      * Converts 2 digit year to 4 digit. If year &lt; 70 add 2000. If 

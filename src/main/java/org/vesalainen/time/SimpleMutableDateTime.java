@@ -32,21 +32,68 @@ import org.vesalainen.util.IntReference;
 public class SimpleMutableDateTime implements MutableDateTime, Cloneable
 {
     private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
-
+    /**
+     * Creates uninitialized SimpleMutableDateTime
+     */
     public SimpleMutableDateTime()
     {
+        setOffsetSecond(0);
     }
-
+    /**
+     * Creates SimpleMutableDateTime in UTC
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @param second
+     * @param milliSecond 
+     */
     public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond)
     {
+        this(year, month, day, hour, minute, second, milliSecond, 0);
+    }
+    /**
+     * Creates SimpleMutableDateTime 
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @param second
+     * @param milliSecond
+     * @param zoneId 
+     */
+    public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond, ZoneId zoneId)
+    {
+        this(year, month, day, hour, minute, second, milliSecond, ZoneIdToOffsetSecond(zoneId));
+    }
+    /**
+     * Creates SimpleMutableDateTime 
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @param second
+     * @param milliSecond
+     * @param offsetSecond 
+     */
+    public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond, int offsetSecond)
+    {
+        setOffsetSecond(offsetSecond);
         setDate(year, month, day);
         setTime(hour, minute, second, milliSecond);
     }
-
+    private static int ZoneIdToOffsetSecond(ZoneId zoneId)
+    {
+        ZoneOffset normalized = (ZoneOffset) zoneId.normalized();
+        return normalized.getTotalSeconds();
+    }
     @Override
     public SimpleMutableDateTime clone()
     {
-        return new SimpleMutableDateTime(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond());
+        return new SimpleMutableDateTime(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond(), getOffsetSecond());
     }
     /**
      * Adds delta years. Delta can be negative. Affects only year field.
@@ -245,14 +292,15 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     @Override
     public String toString()
     {
-        return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", 
+        return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d%s", 
                 getYear(),
                 getMonth(),
                 getDay(),
                 getHour(),
                 getMinute(),
                 getSecond(),
-                getMilliSecond()
+                getMilliSecond(),
+                getZoneId()
                 );
     }
 

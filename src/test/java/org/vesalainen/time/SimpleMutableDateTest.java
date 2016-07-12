@@ -69,7 +69,7 @@ public class SimpleMutableDateTest
         long exp = zdt.toInstant().toEpochMilli();
         SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
-        assertEquals(exp, smt.millis(zo));
+        assertEquals(exp, smt.millis());
     }
     @Test
     public void test4()
