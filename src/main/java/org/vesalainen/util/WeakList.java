@@ -26,6 +26,7 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,7 +97,7 @@ public class WeakList<T> implements List<T>
     @Override
     public Iterator<T> iterator()
     {
-        return stream().iterator();
+        return new IteratorImpl();
     }
 
     @Override
@@ -280,9 +281,14 @@ public class WeakList<T> implements List<T>
         return new SpliteratorImpl();
     }
     
-    private class SpliteratorImpl implements Spliterator<T>
+    private class SpliteratorImpl extends AbstractSpliterator<T>
     {
         private final Iterator<WeakReference<T>> iterator = list.iterator();
+
+        public SpliteratorImpl()
+        {
+            super(list.size(), 0);
+        }
         
         @Override
         public void forEachRemaining(Consumer<? super T> action)
@@ -324,24 +330,44 @@ public class WeakList<T> implements List<T>
             return false;
         }
 
+    }
+    private class IteratorImpl implements Iterator<T>
+    {
+        private final Iterator<WeakReference<T>> iterator = list.iterator();
+        private T next;
+        
         @Override
-        public Spliterator<T> trySplit()
+        public boolean hasNext()
         {
-            return null;
+            while (iterator.hasNext())
+            {
+                WeakReference<T> wr = iterator.next();
+                T t = wr.get();
+                if (t == null)
+                {
+                    gc = true;
+                    iterator.remove();
+                }
+                else
+                {
+                    next = t;
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
-        public long estimateSize()
+        public T next()
         {
-            return list.size();
+            return next;
         }
 
         @Override
-        public int characteristics()
+        public void remove()
         {
-            return 0;
+            iterator.remove();
         }
         
     }
-    
 }
