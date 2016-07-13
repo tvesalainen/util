@@ -17,6 +17,7 @@
 package org.vesalainen.time;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -239,6 +240,19 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public static final SimpleMutableDateTime now(Clock clock)
     {
         ZonedDateTime zdt = ZonedDateTime.now(clock);
+        SimpleMutableDateTime smt = new SimpleMutableDateTime();
+        smt.setZonedDateTime(zdt);
+        return smt;
+    }
+    /**
+     * Creates SimpleMutableDateTime and initializes it using milliseconds from 
+     * epoch.
+     * @param millis
+     * @return 
+     */
+    public static final SimpleMutableDateTime ofEpochMilli(long millis)
+    {
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC);
         SimpleMutableDateTime smt = new SimpleMutableDateTime();
         smt.setZonedDateTime(zdt);
         return smt;

@@ -43,7 +43,7 @@ public class Primitives
     {
         return value < 0 ? -1 : value > 0 ? 1 : 0;
     }
-    public static long signum(long value)
+    public static int signum(long value)
     {
         return value < 0 ? -1 : value > 0 ? 1 : 0;
     }
