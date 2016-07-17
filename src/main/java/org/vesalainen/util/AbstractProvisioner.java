@@ -55,11 +55,7 @@ public abstract class AbstractProvisioner
      */
     public void attach(Object ob)
     {
-        attach(ob.getClass());
-    }
-    public void attach(Class<?> cls)
-    {
-        for (Method method : cls.getMethods())
+        for (Method method : ob.getClass().getMethods())
         {
             Setting setting = method.getAnnotation(Setting.class);
             if (setting != null)
@@ -70,7 +66,7 @@ public abstract class AbstractProvisioner
                 {
                     throw new IllegalArgumentException("@Setting("+name+") argument count != 1");
                 }
-                InstanceMethod instanceMethod = new InstanceMethod(cls, method, setting.mandatory());
+                InstanceMethod instanceMethod = new InstanceMethod(ob, method, setting.mandatory());
                 Object value = getValue(name);
                 if (value != null)
                 {
