@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketOption;
+import static java.net.StandardSocketOptions.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.GatheringByteChannel;
@@ -91,9 +94,9 @@ public class ChannelHelper
     {
         return new ScatteringByteChannelImpl(channel);
     }
-    public static ByteChannel newByteChannel(Socket socket) throws IOException
+    public static SocketByteChannel newSocketByteChannel(Socket socket) throws IOException
     {
-        return new ByteChannelImpl(socket);
+        return new SocketByteChannel(socket);
     }
     public static ReadableByteChannel newReadableByteChannel(InputStream in)
     {
@@ -206,19 +209,51 @@ public class ChannelHelper
         }
         
     }
-    public static class ByteChannelImpl implements ByteChannel
+    public static class SocketByteChannel implements ByteChannel
     {
         private Socket socket;
         private final ReadableByteChannel in;
         private final WritableByteChannel out;
 
-        public ByteChannelImpl(Socket socket) throws IOException
+        public SocketByteChannel(Socket socket) throws IOException
         {
             this.socket = socket;
             in = newReadableByteChannel(socket.getInputStream());
             out = newWritableByteChannel(socket.getOutputStream());
         }
-        
+        public <T> void setOption(SocketOption<T> name, T value) throws SocketException
+        {
+            if (SO_KEEPALIVE.equals(name))
+            {
+                socket.setKeepAlive((Boolean)value);
+            }
+            else
+            {
+                if (SO_LINGER.equals(name))
+                {
+                    Integer v = (Integer) value;
+                    socket.setSoLinger(v >= 0, v);
+                }
+                else
+                {
+                    if (SO_REUSEADDR.equals(name))
+                    {
+                        socket.setReuseAddress((Boolean)value);
+                    }
+                    else
+                    {
+                        if (TCP_NODELAY.equals(name))
+                        {
+                            socket.setReuseAddress((Boolean)value);
+                        }
+                        else
+                        {
+                            throw new UnsupportedOperationException(name+" not supported");
+                        }
+                    }
+                }
+            }
+        }
         @Override
         public int read(ByteBuffer dst) throws IOException
         {
