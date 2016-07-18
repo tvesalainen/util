@@ -25,6 +25,8 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
@@ -220,6 +222,27 @@ public class UserDefinedFileAttributes
         view.read(name, bb);
         bb.flip();
         return bb;
+    }
+
+    @Override
+    public String toString()
+    {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("UserDefinedFileAttributes{");
+            for (String name : list())
+            {
+                sb.append(name);
+                sb.append(' ');
+            }
+            sb.append('}');
+            return sb.toString();
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
 }
