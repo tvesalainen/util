@@ -277,6 +277,12 @@ public class ChannelHelper
         {
             return out.write(src);
         }
+
+        @Override
+        public String toString()
+        {
+            return "SocketByteChannel{" + socket + '}';
+        }
         
     }
     public static class ScatteringByteChannelImpl implements ScatteringByteChannel
