@@ -122,7 +122,7 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
                     {
                         writeChannel.write(bb);
                     }
-                    finest("VC %d bytes %s -> %s", readChannel, writeChannel);
+                    finest("VC %d bytes %s -> %s", rc, readChannel, writeChannel);
                 }
             }
             catch (Exception ex)
