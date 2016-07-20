@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * VirtualCircuit implementation using two threads. Suitable for channels not
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
  * SelectableChannelVirtualCircuit.
  * @author tkv
  */
-public class ByteChannelVirtualCircuit implements VirtualCircuit
+public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCircuit
 {
     private ByteChannel ch1;
     private ByteChannel ch2;
@@ -45,6 +46,7 @@ public class ByteChannelVirtualCircuit implements VirtualCircuit
 
     public ByteChannelVirtualCircuit(ByteChannel ch1, ByteChannel ch2, int capacity, boolean direct)
     {
+        super(ByteChannelVirtualCircuit.class);
         this.ch1 = ch1;
         this.ch2 = ch2;
         this.capacity = capacity;
@@ -54,6 +56,7 @@ public class ByteChannelVirtualCircuit implements VirtualCircuit
     @Override
     public void start(ExecutorService executor) throws IOException
     {
+        finest("start VC %s / %s", ch1, ch2);
         f1 = executor.submit(new Copier(ch1, ch2));
         f2 = executor.submit(new Copier(ch2, ch1));
     }
@@ -66,13 +69,9 @@ public class ByteChannelVirtualCircuit implements VirtualCircuit
             f1.get();
             f2.get();
         }
-        catch (InterruptedException ex)
+        catch (InterruptedException | ExecutionException ex)
         {
             throw new IOException(ex);
-        }
-        catch (ExecutionException ex)
-        {
-            Logger.getLogger(ByteChannelVirtualCircuit.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -122,10 +121,12 @@ public class ByteChannelVirtualCircuit implements VirtualCircuit
                     {
                         writeChannel.write(bb);
                     }
+                    finest("VC %d bytes %s -> %s", readChannel, writeChannel);
                 }
             }
             finally
             {
+                finest("close VC %s / %s", readChannel, writeChannel);
                 readChannel.close();
                 writeChannel.close();
             }
