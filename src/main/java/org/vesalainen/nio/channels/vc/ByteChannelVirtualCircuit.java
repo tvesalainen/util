@@ -56,7 +56,6 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     @Override
     public void start(ExecutorService executor) throws IOException
     {
-        finest("start VC %s / %s", ch1, ch2);
         f1 = executor.submit(new Copier(ch1, ch2));
         f2 = executor.submit(new Copier(ch2, ch1));
     }
@@ -106,6 +105,7 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
         @Override
         public Void call() throws Exception
         {
+            finest("start VC %s / %s", readChannel, writeChannel);
             try
             {
                 while (true)
