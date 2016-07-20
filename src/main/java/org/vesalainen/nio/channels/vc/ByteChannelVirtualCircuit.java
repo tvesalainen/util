@@ -114,7 +114,8 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
                     int rc = readChannel.read(bb);
                     if (rc == -1)
                     {
-                        return null;
+                        finest("VC %s return -1", readChannel);
+                        break;
                     }
                     bb.flip();
                     while (bb.hasRemaining())
@@ -124,12 +125,17 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
                     finest("VC %d bytes %s -> %s", readChannel, writeChannel);
                 }
             }
+            catch (Exception ex)
+            {
+                log(Level.SEVERE, ex, "%s", ex.getMessage());
+            }
             finally
             {
                 finest("close VC %s / %s", readChannel, writeChannel);
                 readChannel.close();
                 writeChannel.close();
             }
+            return null;
         }
     }
 }
