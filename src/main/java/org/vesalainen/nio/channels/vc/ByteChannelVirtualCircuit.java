@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -56,8 +55,8 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     @Override
     public void start(ExecutorService executor) throws IOException
     {
-        f1 = executor.submit(new Copier(ch1, ch2));
-        f2 = executor.submit(new Copier(ch2, ch1));
+        f1 = executor.submit(new Copier(ch1, ch2, true));
+        f2 = executor.submit(new Copier(ch2, ch1, false));
     }
 
     @Override
@@ -86,11 +85,13 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
         private ReadableByteChannel readChannel;
         private WritableByteChannel writeChannel;
         private ByteBuffer bb;
+        private boolean up;
 
-        public Copier(ReadableByteChannel rc, WritableByteChannel wc)
+        public Copier(ReadableByteChannel rc, WritableByteChannel wc, boolean up)
         {
             this.readChannel = rc;
             this.writeChannel = wc;
+            this.up = up;
             if (direct)
             {
                 this.bb = ByteBuffer.allocateDirect(capacity);
@@ -122,7 +123,14 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
                     {
                         writeChannel.write(bb);
                     }
-                    finest("VC %d bytes %s -> %s", rc, readChannel, writeChannel);
+                    if (up)
+                    {
+                        finest("VC bytes %s %d --> %s", readChannel, rc, writeChannel);
+                    }
+                    else
+                    {
+                        finest("VC bytes %s <-- %d %s", writeChannel, rc, readChannel);
+                    }
                 }
             }
             catch (Exception ex)

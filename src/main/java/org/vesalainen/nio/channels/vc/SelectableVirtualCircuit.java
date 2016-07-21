@@ -112,7 +112,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         c2.register(selector, OP_READ, c1);
         try
         {
-            while (true)
+            while (!selector.keys().isEmpty())
             {
                 int count = selector.select();
                 if (count > 0)
@@ -141,26 +141,27 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         }
                         if (rc == -1)
                         {
-                            fine("%s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
-                            return null;
+                            fine("VC %s quit", source);
+                            selectionKey.cancel();
                         }
                         if (upld)
                         {
                             up += cnt;
-                            fine("%s --> %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
+                            fine("VC %s --> %d %s", source.getRemoteAddress(), cnt, target.getRemoteAddress());
                         }
                         else
                         {
                             down += cnt;
-                            fine("%s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
+                            fine("VC %s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
                         }
                     }
                 }
             }
+            return null;
         }
         finally
         {
-            fine("end: up=%d down=%d %s", up, down, c2);
+            fine("VC end: up=%d down=%d %s", up, down, c2);
             c1.close();
             c2.close();
         }
