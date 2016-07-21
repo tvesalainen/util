@@ -25,8 +25,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
@@ -36,7 +34,7 @@ import org.vesalainen.util.ThreadSafeTemporary;
 public class UserDefinedFileAttributes
 {
     private final UserDefinedFileAttributeView view;
-    private ThreadSafeTemporary<ByteBuffer> bbStore;
+    private ByteBuffer bb;
 
     public UserDefinedFileAttributes(File file, int maxSize, LinkOption... options)
     {
@@ -49,7 +47,7 @@ public class UserDefinedFileAttributes
     public UserDefinedFileAttributes(UserDefinedFileAttributeView view, int maxSize)
     {
         this.view = view;
-        this.bbStore = new ThreadSafeTemporary<>(()->{return ByteBuffer.allocate(maxSize);});
+        this.bb = ByteBuffer.allocate(maxSize);
     }
 
     public boolean has(String name) throws IOException
@@ -89,7 +87,6 @@ public class UserDefinedFileAttributes
     }
     public void set(String name, byte[] array, int offset, int length) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         bb.put(array, offset, length);
         bb.flip();
@@ -112,7 +109,6 @@ public class UserDefinedFileAttributes
         {
             return false;
         }
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -145,7 +141,6 @@ public class UserDefinedFileAttributes
     }
     public void setBoolean(String name, boolean value) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         bb.put((byte) (value ? 1 : 0));
         bb.flip();
@@ -153,7 +148,6 @@ public class UserDefinedFileAttributes
     }
     public void setInt(String name, int value) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         bb.putInt(value);
         bb.flip();
@@ -161,7 +155,6 @@ public class UserDefinedFileAttributes
     }
     public void setLong(String name, long value) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         bb.putLong(value);
         bb.flip();
@@ -169,7 +162,6 @@ public class UserDefinedFileAttributes
     }
     public void setDouble(String name, double value) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         bb.putDouble(value);
         bb.flip();
@@ -177,7 +169,6 @@ public class UserDefinedFileAttributes
     }
     public String getString(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -185,7 +176,6 @@ public class UserDefinedFileAttributes
     }
     public boolean getBoolean(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -193,7 +183,6 @@ public class UserDefinedFileAttributes
     }
     public int getInt(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -201,7 +190,6 @@ public class UserDefinedFileAttributes
     }
     public long getLong(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -209,7 +197,6 @@ public class UserDefinedFileAttributes
     }
     public double getDouble(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
@@ -217,7 +204,6 @@ public class UserDefinedFileAttributes
     }
     private ByteBuffer read(String name) throws IOException
     {
-        ByteBuffer bb = bbStore.get();
         bb.clear();
         view.read(name, bb);
         bb.flip();
