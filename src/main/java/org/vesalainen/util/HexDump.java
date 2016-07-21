@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -26,6 +27,11 @@ import java.util.List;
 public class HexDump
 {
     private static final String Title = "00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f";
+    /**
+     * Recreates byte array from hex dump.
+     * @param hexDump
+     * @return 
+     */
     public static final byte[] fromHex(String hexDump)
     {
         List<Integer> list = new ArrayList<>();
@@ -64,6 +70,22 @@ public class HexDump
         }
         return bytes;
     }
+    /**
+     * Creates readable view to byte array content.
+     * @param buf
+     * @param offset
+     * @param length
+     * @return 
+     */
+    public static final String toHex(byte[] buf, int offset, int length)
+    {
+        return toHex(Arrays.copyOfRange(buf, offset, offset+length));
+    }
+    /**
+     * Creates readable view to byte array content.
+     * @param buf
+     * @return 
+     */
     public static final String toHex(byte[] buf)
     {
         StringBuilder sb = new StringBuilder();
