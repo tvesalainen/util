@@ -29,7 +29,6 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.WritableByteChannel;
-import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
  *
@@ -111,7 +110,7 @@ public class ChannelHelper
         private static final int BufferSize = 4096;
         private OutputStream out;
         private boolean closed;
-        private ThreadSafeTemporary<byte[]> bufferStore = new ThreadSafeTemporary<>(()->{return new byte[BufferSize];});
+        private byte[] buf = new byte[BufferSize];
 
         public WritableByteChannelImpl(OutputStream out)
         {
@@ -132,11 +131,10 @@ public class ChannelHelper
             }
             else
             {
-                byte[] array = bufferStore.get();
                 int remaining = src.remaining();
-                int length = Math.min(remaining, array.length);
-                src.get(array, 0, length);
-                out.write(array, 0, length);
+                int length = Math.min(remaining, buf.length);
+                src.get(buf, 0, length);
+                out.write(buf, 0, length);
                 return length;
             }
         }
@@ -160,7 +158,7 @@ public class ChannelHelper
         private static final int BufferSize = 4096;
         private InputStream in;
         private boolean closed;
-        private ThreadSafeTemporary<byte[]> bufferStore = new ThreadSafeTemporary<>(()->{return new byte[BufferSize];});
+        private byte[] buf = new byte[BufferSize];
 
         public ReadableByteChannelImpl(InputStream in)
         {
@@ -184,12 +182,11 @@ public class ChannelHelper
             }
             else
             {
-                byte[] array = bufferStore.get();
                 int remaining = dst.remaining();
-                int rc = in.read(array, 0, Math.min(remaining, array.length));
+                int rc = in.read(buf, 0, Math.min(remaining, buf.length));
                 if (rc > 0)
                 {
-                    dst.put(array, 0, rc);
+                    dst.put(buf, 0, rc);
                 }
                 return rc;
             }
