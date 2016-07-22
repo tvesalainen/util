@@ -29,14 +29,14 @@ import java.util.Map;
 
 /**
  * AbstractProvisioner provisions values to @Setting annotated methods. When 
- * class T is attached it's public methods are searched to find methods annotated
- * with @Setting annotation. Method has to have one parameters and it is 
- * practical to have return type void. In attach phase each annotated method is 
- * called with a value returned from getValue method if that value is other than
- * null.
- * 
- * <p>After attach phase calls to setValue method will provision named values
- * to all attached methods.
+ class T is attached it's public methods are searched to find methods annotated
+ with @Setting annotation. Method has to have one parameters and it is 
+ practical to have return type void. In attachInstant phase each annotated method is 
+ called with a value returned from getValue method if that value is other than
+ null.
+ 
+ <p>After attachInstant phase calls to setValue method will provision named values
+ to all attached methods.
  * 
  * @author Timo Vesalainen
  */
@@ -49,13 +49,21 @@ public abstract class AbstractProvisioner
         return map.isEmpty();
     }
     /**
-     * Attaches all methods which are annotated with @Setting for automatic
+     * Attaches class instances all methods which are annotated with @Setting for automatic
      * provisioning.
      * @param ob 
      */
-    public void attach(Object ob)
+    public void attachInstant(Object ob)
     {
-        for (Method method : ob.getClass().getMethods())
+        attach(ob.getClass(), ob);
+    }
+    public void attachStatic(Class<?> cls)
+    {
+        attach(cls, null);
+    }                
+    private void attach(Class<?> cls, Object ob)
+    {
+        for (Method method : cls.getMethods())
         {
             Setting setting = method.getAnnotation(Setting.class);
             if (setting != null)
@@ -102,7 +110,32 @@ public abstract class AbstractProvisioner
         }
     }
     /**
-     * Provides value used in attach process.
+     * Removes all previously made attachments to static class.
+     * @param cls 
+     */
+    public void detach(Class<?> cls)
+    {
+        Iterator<Map.Entry<String, List<InstanceMethod>>> ki = map.entrySet().iterator();
+        while (ki.hasNext())
+        {
+            Map.Entry<String, List<InstanceMethod>> entry = ki.next();
+            Iterator<InstanceMethod> li = entry.getValue().iterator();
+            while (li.hasNext())
+            {
+                InstanceMethod im = li.next();
+                if (im.type.equals(cls))
+                {
+                    li.remove();
+                }
+            }
+            if (entry.getValue().isEmpty())
+            {
+                ki.remove();
+            }
+        }
+    }
+    /**
+     * Provides value used in attachInstant process.
      * @param name
      * @return 
      */
