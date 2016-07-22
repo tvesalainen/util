@@ -25,6 +25,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -42,6 +43,7 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     private boolean direct;
     private Future<Void> f1;
     private Future<Void> f2;
+    private AtomicInteger threadCount = new AtomicInteger();
 
     public ByteChannelVirtualCircuit(ByteChannel ch1, ByteChannel ch2, int capacity, boolean direct)
     {
@@ -106,6 +108,7 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
         @Override
         public Void call() throws Exception
         {
+            threadCount.incrementAndGet();
             finest("start VC %s / %s", readChannel, writeChannel);
             try
             {
@@ -139,9 +142,12 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
             }
             finally
             {
-                finest("close VC %s / %s", readChannel, writeChannel);
-                readChannel.close();
-                writeChannel.close();
+                if (threadCount.decrementAndGet() == 0)
+                {
+                    finest("close VC %s / %s", readChannel, writeChannel);
+                    readChannel.close();
+                    writeChannel.close();
+                }
             }
             return null;
         }
