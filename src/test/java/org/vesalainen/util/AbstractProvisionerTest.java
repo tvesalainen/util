@@ -39,7 +39,7 @@ public class AbstractProvisionerTest
     {
         AbstractProvisionerImpl api = new AbstractProvisionerImpl();
         TestClass testClass = new TestClass();
-        api.attach(testClass);
+        api.attachInstant(testClass);
         assertEquals("settingA", testClass.getA());
         api.setValue("settingA", "b");
         assertEquals("b", testClass.getA());
