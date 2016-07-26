@@ -17,6 +17,8 @@
 
 package org.vesalainen.lang;
 
+import java.nio.ByteBuffer;
+import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import static org.vesalainen.junit.Assertions.*;
@@ -812,5 +814,63 @@ public class PrimitivesTest
         assertEquals(-1L , Primitives.signum(-1234L));
         assertEquals(0L , Primitives.signum(0L));
         assertEquals(1L , Primitives.signum(1234L));
+    }
+    @Test
+    public void testWriteInt()
+    {
+        byte[] expArray = new byte[4];
+        int expInt = 0xffbbccdd;
+        ByteBuffer bb = ByteBuffer.wrap(expArray);
+        bb.putInt(expInt);
+        byte[] got = Primitives.writeInt(expInt);
+        assertArrayEquals(expArray, got);
+        assertEquals(expInt, Primitives.readInt(got));
+    }
+    @Test
+    public void testWriteLong()
+    {
+        byte[] expArray = new byte[8];
+        long expLong = 0xaabbccddeeff1122L;
+        ByteBuffer bb = ByteBuffer.wrap(expArray);
+        bb.putLong(expLong);
+        byte[] got = Primitives.writeLong(expLong);
+        assertArrayEquals(expArray, got);
+        long gotLong = Primitives.readLong(got);
+        assertEquals(expLong, gotLong);
+    }
+    @Test
+    public void testWriteDouble()
+    {
+        byte[] expArray = new byte[8];
+        double expDouble = 1.2345678e-23;
+        ByteBuffer bb = ByteBuffer.wrap(expArray);
+        bb.putDouble(expDouble);
+        byte[] got = Primitives.writeDouble(expDouble);
+        assertArrayEquals(expArray, got);
+        double gotDouble = Primitives.readDouble(got);
+        assertEquals(expDouble, gotDouble, 1e-10);
+    }
+    @Test
+    public void testWriteFloat()
+    {
+        byte[] expArray = new byte[4];
+        float expFloat = 1.2345678e-23F;
+        ByteBuffer bb = ByteBuffer.wrap(expArray);
+        bb.putFloat(expFloat);
+        byte[] got = Primitives.writeFloat(expFloat);
+        assertArrayEquals(expArray, got);
+        float gotDouble = Primitives.readFloat(got);
+        assertEquals(expFloat, gotDouble, 1e-10);
+    }
+    @Test
+    public void testWriteShort()
+    {
+        byte[] expArray = new byte[2];
+        short expShort = (short) 0xffbb;
+        ByteBuffer bb = ByteBuffer.wrap(expArray);
+        bb.putShort(expShort);
+        byte[] got = Primitives.writeShort(expShort);
+        assertArrayEquals(expArray, got);
+        assertEquals(expShort, Primitives.readShort(got));
     }
 }
