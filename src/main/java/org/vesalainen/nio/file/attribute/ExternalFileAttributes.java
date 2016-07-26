@@ -27,6 +27,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,6 +50,10 @@ public class ExternalFileAttributes implements UserDefinedAttributes, Serializab
         map = new HashMap<>();
     }
 
+    public ExternalFileAttributes(Path path) throws IOException
+    {
+        this(path.toFile());
+    }
     public ExternalFileAttributes(File file) throws IOException
     {
         this.file = getAttributeFile(file);
@@ -71,6 +76,15 @@ public class ExternalFileAttributes implements UserDefinedAttributes, Serializab
         }
     }
 
+    public static final boolean exists(Path path)
+    {
+        File attrFile = getAttributeFile(path.toFile());
+        return attrFile.exists();
+    }
+    public static final Path getAttributePath(Path path)
+    {
+        return getAttributeFile(path.toFile()).toPath();
+    }
     public static final File getAttributeFile(File file)
     {
         return new File(file.getAbsolutePath()+Suffix);

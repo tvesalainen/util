@@ -128,11 +128,11 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
                     }
                     if (up)
                     {
-                        finest("VC bytes %s %d --> %s", readChannel, rc, writeChannel);
+                        debug("VC bytes %s %d --> %s", readChannel, rc, writeChannel);
                     }
                     else
                     {
-                        finest("VC bytes %s <-- %d %s", writeChannel, rc, readChannel);
+                        debug("VC bytes %s <-- %d %s", writeChannel, rc, readChannel);
                     }
                 }
             }

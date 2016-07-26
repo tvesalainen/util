@@ -147,12 +147,12 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         if (upld)
                         {
                             up += cnt;
-                            fine("VC %s --> %d %s", source.getRemoteAddress(), cnt, target.getRemoteAddress());
+                            debug("VC %s --> %d %s", source.getRemoteAddress(), cnt, target.getRemoteAddress());
                         }
                         else
                         {
                             down += cnt;
-                            fine("VC %s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
+                            debug("VC %s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
                         }
                     }
                 }
