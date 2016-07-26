@@ -43,6 +43,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @return 
+     * @see java.nio.ByteBuffer#putFloat(float) 
      */
     public static final byte[] writeFloat(float value)
     {
@@ -54,6 +55,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @param array 
+     * @see java.nio.ByteBuffer#putFloat(float) 
      */
     public static final void writeFloat(float value, byte[] array)
     {
@@ -64,6 +66,7 @@ public class Primitives
      * @param value
      * @param array
      * @param offset 
+     * @see java.nio.ByteBuffer#putFloat(float) 
      */
     public static final void writeFloat(float value, byte[] array, int offset)
     {
@@ -73,6 +76,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @return 
+     * @see java.nio.ByteBuffer#getFloat() 
      */
     public static final float readFloat(byte[] array)
     {
@@ -83,6 +87,7 @@ public class Primitives
      * @param array
      * @param offset
      * @return 
+     * @see java.nio.ByteBuffer#getFloat() 
      */
     public static final float readFloat(byte[] array, int offset)
     {
@@ -92,6 +97,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @return 
+     * @see java.nio.ByteBuffer#putDouble(double) 
      */
     public static final byte[] writeDouble(double value)
     {
@@ -103,6 +109,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @param array 
+     * @see java.nio.ByteBuffer#putDouble(double) 
      */
     public static final void writeDouble(double value, byte[] array)
     {
@@ -113,6 +120,7 @@ public class Primitives
      * @param value
      * @param array
      * @param offset 
+     * @see java.nio.ByteBuffer#putDouble(double) 
      */
     public static final void writeDouble(double value, byte[] array, int offset)
     {
@@ -122,6 +130,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @return 
+     * @see java.nio.ByteBuffer#getDouble() 
      */
     public static final double readDouble(byte[] array)
     {
@@ -131,6 +140,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @param offset
+     * @see java.nio.ByteBuffer#getDouble() 
      * @return 
      */
     public static final double readDouble(byte[] array, int offset)
@@ -141,6 +151,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @return 
+     * @see java.nio.ByteBuffer#putLong(long) 
      */
     public static final byte[] writeLong(long value)
     {
@@ -152,6 +163,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @param array 
+     * @see java.nio.ByteBuffer#putLong(long) 
      */
     public static final void writeLong(long value, byte[] array)
     {
@@ -162,6 +174,7 @@ public class Primitives
      * @param value
      * @param array
      * @param offset 
+     * @see java.nio.ByteBuffer#putLong(long) 
      */
     public static final void writeLong(long value, byte[] array, int offset)
     {
@@ -182,6 +195,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @return 
+     * @see java.nio.ByteBuffer#getLong(long) 
      */
     public static final long readLong(byte[] array)
     {
@@ -192,6 +206,7 @@ public class Primitives
      * @param array
      * @param offset
      * @return 
+     * @see java.nio.ByteBuffer#getLong(long) 
      */
     public static final long readLong(byte[] array, int offset)
     {
@@ -213,6 +228,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @return 
+     * @see java.nio.ByteBuffer#putInt(int) 
      */
     public static final byte[] writeInt(int value)
     {
@@ -224,6 +240,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @param array 
+     * @see java.nio.ByteBuffer#putInt(int) 
      */
     public static final void writeInt(int value, byte[] array)
     {
@@ -234,6 +251,7 @@ public class Primitives
      * @param value
      * @param array
      * @param offset 
+     * @see java.nio.ByteBuffer#putInt(int) 
      */
     public static final void writeInt(int value, byte[] array, int offset)
     {
@@ -250,6 +268,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @return 
+     * @see java.nio.ByteBuffer#getInt(int) 
      */
     public static final int readInt(byte[] array)
     {
@@ -260,6 +279,7 @@ public class Primitives
      * @param array
      * @param offset
      * @return 
+     * @see java.nio.ByteBuffer#getInt(int) 
      */
     public static final int readInt(byte[] array, int offset)
     {
@@ -277,6 +297,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @return 
+     * @see java.nio.ByteBuffer#putShort(short) 
      */
     public static final byte[] writeShort(short value)
     {
@@ -288,6 +309,7 @@ public class Primitives
      * Write value to byte array
      * @param value
      * @param array 
+     * @see java.nio.ByteBuffer#putShort(short) 
      */
     public static final void writeShort(short value, byte[] array)
     {
@@ -298,6 +320,7 @@ public class Primitives
      * @param value
      * @param array
      * @param offset 
+     * @see java.nio.ByteBuffer#putShort(short) 
      */
     public static final void writeShort(short value, byte[] array, int offset)
     {
@@ -312,6 +335,7 @@ public class Primitives
      * Read value from byte array
      * @param array
      * @return 
+     * @see java.nio.ByteBuffer#getShort(short) 
      */
     public static final short readShort(byte[] array)
     {
@@ -322,6 +346,7 @@ public class Primitives
      * @param array
      * @param offset
      * @return 
+     * @see java.nio.ByteBuffer#getShort(short) 
      */
     public static final short readShort(byte[] array, int offset)
     {
