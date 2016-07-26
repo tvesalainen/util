@@ -40,6 +40,300 @@ public class Primitives
 
     private enum FloatState {Significand, Decimal, Exponent};
     /**
+     * Write value to byte array
+     * @param value
+     * @return 
+     */
+    public static final byte[] writeFloat(float value)
+    {
+        byte[] array = new byte[4];
+        writeFloat(value, array);
+        return array;
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array 
+     */
+    public static final void writeFloat(float value, byte[] array)
+    {
+        writeFloat(value, array, 0);
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array
+     * @param offset 
+     */
+    public static final void writeFloat(float value, byte[] array, int offset)
+    {
+        writeInt(Float.floatToRawIntBits(value), array, offset);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @return 
+     */
+    public static final float readFloat(byte[] array)
+    {
+        return Float.intBitsToFloat(readInt(array, 0));
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @param offset
+     * @return 
+     */
+    public static final float readFloat(byte[] array, int offset)
+    {
+        return Float.intBitsToFloat(readInt(array, offset));
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @return 
+     */
+    public static final byte[] writeDouble(double value)
+    {
+        byte[] array = new byte[8];
+        writeDouble(value, array);
+        return array;
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array 
+     */
+    public static final void writeDouble(double value, byte[] array)
+    {
+        writeDouble(value, array, 0);
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array
+     * @param offset 
+     */
+    public static final void writeDouble(double value, byte[] array, int offset)
+    {
+        writeLong(Double.doubleToRawLongBits(value), array, offset);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @return 
+     */
+    public static final double readDouble(byte[] array)
+    {
+        return readDouble(array, 0);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @param offset
+     * @return 
+     */
+    public static final double readDouble(byte[] array, int offset)
+    {
+        return Double.longBitsToDouble(readLong(array, offset));
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @return 
+     */
+    public static final byte[] writeLong(long value)
+    {
+        byte[] array = new byte[8];
+        writeLong(value, array);
+        return array;
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array 
+     */
+    public static final void writeLong(long value, byte[] array)
+    {
+        writeLong(value, array, 0);
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array
+     * @param offset 
+     */
+    public static final void writeLong(long value, byte[] array, int offset)
+    {
+        if (array.length < offset + 8)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        array[offset] = (byte) (value >> 56);
+        array[offset + 1] = (byte) ((value >> 48) & 0xff);
+        array[offset + 2] = (byte) ((value >> 40) & 0xff);
+        array[offset + 3] = (byte) ((value >> 32) & 0xff);
+        array[offset + 4] = (byte) ((value >> 24) & 0xff);
+        array[offset + 5] = (byte) ((value >> 16) & 0xff);
+        array[offset + 6] = (byte) ((value >> 8) & 0xff);
+        array[offset + 7] = (byte) (value & 0xff);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @return 
+     */
+    public static final long readLong(byte[] array)
+    {
+        return readLong(array, 0);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @param offset
+     * @return 
+     */
+    public static final long readLong(byte[] array, int offset)
+    {
+        if (array.length < offset + 8)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        return
+                (((long)array[offset]<<56) & 0xff00000000000000L) +
+                (((long)array[offset + 1]<<48) & 0xff000000000000L)  +
+                (((long)array[offset + 2]<<40) & 0xff0000000000L)  +
+                (((long)array[offset + 3]<<32) & 0xff00000000L)  +
+                (((long)array[offset + 4]<<24) & 0xff000000L)  +
+                (((long)array[offset + 5]<<16) & 0xff0000L)  +
+                (((long)array[offset + 6]<<8) & 0xff00L)  +
+                ((long)array[offset + 7] & 0xff );
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @return 
+     */
+    public static final byte[] writeInt(int value)
+    {
+        byte[] array = new byte[4];
+        writeInt(value, array);
+        return array;
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array 
+     */
+    public static final void writeInt(int value, byte[] array)
+    {
+        writeInt(value, array, 0);
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array
+     * @param offset 
+     */
+    public static final void writeInt(int value, byte[] array, int offset)
+    {
+        if (array.length < offset + 4)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        array[offset] = (byte) (value >> 24);
+        array[offset + 1] = (byte) ((value >> 16) & 0xff);
+        array[offset + 2] = (byte) ((value >> 8) & 0xff);
+        array[offset + 3] = (byte) (value & 0xff);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @return 
+     */
+    public static final int readInt(byte[] array)
+    {
+        return readInt(array, 0);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @param offset
+     * @return 
+     */
+    public static final int readInt(byte[] array, int offset)
+    {
+        if (array.length < offset + 4)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        return
+                ((array[offset]<<24) & 0xff000000) +
+                ((array[offset + 1]<<16) & 0xff0000)  +
+                ((array[offset + 2]<<8) & 0xff00)  +
+                (array[offset + 3] & 0xff );
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @return 
+     */
+    public static final byte[] writeShort(short value)
+    {
+        byte[] array = new byte[2];
+        writeShort(value, array);
+        return array;
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array 
+     */
+    public static final void writeShort(short value, byte[] array)
+    {
+        writeShort(value, array, 0);
+    }
+    /**
+     * Write value to byte array
+     * @param value
+     * @param array
+     * @param offset 
+     */
+    public static final void writeShort(short value, byte[] array, int offset)
+    {
+        if (array.length < offset + 2)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        array[offset] = (byte) (value >> 8);
+        array[offset + 1] = (byte) (value & 0xff);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @return 
+     */
+    public static final short readShort(byte[] array)
+    {
+        return readShort(array, 0);
+    }
+    /**
+     * Read value from byte array
+     * @param array
+     * @param offset
+     * @return 
+     */
+    public static final short readShort(byte[] array, int offset)
+    {
+        if (array.length < offset + 2)
+        {
+            throw new IllegalArgumentException("no room in array");
+        }
+        return 
+                (short) (((array[offset]<<8) & 0xff00) +
+                (array[offset + 1] & 0xff ));
+    }
+    /**
      * Return -1 for negative value, 1 for positive value and 0 for 0
      * @param value
      * @return 
