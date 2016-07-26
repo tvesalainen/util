@@ -39,11 +39,21 @@ public class Primitives
     private static final long LongLimit = Long.MAX_VALUE/10-10;
 
     private enum FloatState {Significand, Decimal, Exponent};
-    public static int signum(int value)
+    /**
+     * Return -1 for negative value, 1 for positive value and 0 for 0
+     * @param value
+     * @return 
+     */
+    public static final int signum(int value)
     {
         return value < 0 ? -1 : value > 0 ? 1 : 0;
     }
-    public static int signum(long value)
+    /**
+     * Return -1 for negative value, 1 for positive value and 0 for 0
+     * @param value
+     * @return 
+     */
+    public static final int signum(long value)
     {
         return value < 0 ? -1 : value > 0 ? 1 : 0;
     }
@@ -53,7 +63,7 @@ public class Primitives
      * @return 
      * @throws IllegalArgumentException if input length is not 1.
      */
-    public static char parseChar(CharSequence cs)
+    public static final char parseChar(CharSequence cs)
     {
         return parseChar(cs, 0, cs.length());
     }
@@ -65,7 +75,7 @@ public class Primitives
      * @return 
      * @throws IllegalArgumentException if input length is not 1.
      */
-    public static char parseChar(CharSequence cs, int beginIndex, int endIndex)
+    public static final char parseChar(CharSequence cs, int beginIndex, int endIndex)
     {
         if (endIndex - beginIndex != 1)
         {
@@ -82,7 +92,7 @@ public class Primitives
      * @throws IllegalArgumentException if input length is not 4.
      * @see java.lang.Boolean#parseBoolean(java.lang.String) 
      */
-    public static boolean parseBoolean(CharSequence cs)
+    public static final boolean parseBoolean(CharSequence cs)
     {
         return parseBoolean(cs, 0, cs.length());
     }
@@ -97,7 +107,7 @@ public class Primitives
      * @throws IllegalArgumentException if input length is not 4.
      * @see java.lang.Boolean#parseBoolean(java.lang.String) 
      */
-    public static boolean parseBoolean(CharSequence cs, int beginIndex, int endIndex)
+    public static final boolean parseBoolean(CharSequence cs, int beginIndex, int endIndex)
     {
         return 
                 endIndex - beginIndex == 4 &&
@@ -119,7 +129,7 @@ public class Primitives
      * @see java.lang.Character#digit(int, int) 
      * @see java.lang.Character#codePointCount(java.lang.CharSequence, int, int) 
      */
-    public static boolean parseBoolean(CharSequence cs, int radix)
+    public static final boolean parseBoolean(CharSequence cs, int radix)
     {
         return parseBoolean(cs, radix, 0, cs.length());
     }
@@ -137,7 +147,7 @@ public class Primitives
      * @see java.lang.Character#digit(int, int) 
      * @see java.lang.Character#codePointCount(java.lang.CharSequence, int, int) 
      */
-    public static boolean parseBoolean(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final boolean parseBoolean(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         if (radix != 2)
         {
@@ -176,7 +186,7 @@ public class Primitives
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * float.
      */
-    public static float parseFloat(CharSequence cs)
+    public static final float parseFloat(CharSequence cs)
     {
         return parseFloat(cs, 0, cs.length());
     }
@@ -200,7 +210,7 @@ public class Primitives
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * float.
      */
-    public static float parseFloat(CharSequence cs, int beginIndex, int endIndex)
+    public static final float parseFloat(CharSequence cs, int beginIndex, int endIndex)
     {
         FloatState fs = FloatState.Significand;
         int end = endIndex;
@@ -327,7 +337,7 @@ public class Primitives
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * double.
      */
-    public static double parseDouble(CharSequence cs)
+    public static final double parseDouble(CharSequence cs)
     {
         return parseDouble(cs, 0, cs.length());
     }
@@ -351,7 +361,7 @@ public class Primitives
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * double.
      */
-    public static double parseDouble(CharSequence cs, int beginIndex, int endIndex)
+    public static final double parseDouble(CharSequence cs, int beginIndex, int endIndex)
     {
         FloatState fs = FloatState.Significand;
         int end = endIndex;
@@ -469,7 +479,7 @@ public class Primitives
      * @see java.lang.Integer#parseInt(java.lang.String) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseInt(CharSequence cs)
+    public static final int parseInt(CharSequence cs)
     {
         return parseInt(cs, 10);
     }
@@ -487,7 +497,7 @@ public class Primitives
      * @see java.lang.Integer#parseInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseInt(CharSequence cs, int radix)
+    public static final int parseInt(CharSequence cs, int radix)
     {
         return parseInt(cs, radix, 0, cs.length());
     }
@@ -506,7 +516,7 @@ public class Primitives
      * @see java.lang.Integer#parseInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseInt(CharSequence cs, int beginIndex, int endIndex)
+    public static final int parseInt(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseInt(cs, 10, beginIndex, endIndex);
     }
@@ -526,7 +536,7 @@ public class Primitives
      * @see java.lang.Integer#parseInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         int size = Integer.SIZE;
         int end = endIndex;
@@ -608,7 +618,7 @@ public class Primitives
      * @see java.lang.Long#parseLong(java.lang.String) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static long parseLong(CharSequence cs)
+    public static final long parseLong(CharSequence cs)
     {
         return parseLong(cs, 10);
     }
@@ -626,7 +636,7 @@ public class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static long parseLong(CharSequence cs, int radix)
+    public static final long parseLong(CharSequence cs, int radix)
     {
         return parseLong(cs, radix, 0, cs.length());
     }
@@ -645,7 +655,7 @@ public class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static long parseLong(CharSequence cs, int beginIndex, int endIndex)
+    public static final long parseLong(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseLong(cs, 10, beginIndex, endIndex);
     }
@@ -665,7 +675,7 @@ public class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         int size = Long.SIZE;
         int end = endIndex;
@@ -747,7 +757,7 @@ public class Primitives
      * @see java.lang.Short#parseShort(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static short parseShort(CharSequence cs)
+    public static final short parseShort(CharSequence cs)
     {
         return parseShort(cs, 10);
     }
@@ -765,7 +775,7 @@ public class Primitives
      * @see java.lang.Short#parseShort(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static short parseShort(CharSequence cs, int radix)
+    public static final short parseShort(CharSequence cs, int radix)
     {
         return parseShort(cs, radix, 0, cs.length());
     }
@@ -784,7 +794,7 @@ public class Primitives
      * @see java.lang.Short#parseShort(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static short parseShort(CharSequence cs, int beginIndex, int endIndex)
+    public static final short parseShort(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseShort(cs, 10, beginIndex, endIndex);
     }
@@ -804,7 +814,7 @@ public class Primitives
      * @see java.lang.Short#parseShort(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         int size = Short.SIZE;
         int end = endIndex;
@@ -886,7 +896,7 @@ public class Primitives
      * @see java.lang.Byte#parseByte(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static byte parseByte(CharSequence cs)
+    public static final byte parseByte(CharSequence cs)
     {
         return parseByte(cs, 10);
     }
@@ -904,7 +914,7 @@ public class Primitives
      * @see java.lang.Byte#parseByte(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static byte parseByte(CharSequence cs, int radix)
+    public static final byte parseByte(CharSequence cs, int radix)
     {
         return parseByte(cs, radix, 0, cs.length());
     }
@@ -923,7 +933,7 @@ public class Primitives
      * @see java.lang.Byte#parseByte(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static byte parseByte(CharSequence cs, int beginIndex, int endIndex)
+    public static final byte parseByte(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseByte(cs, 10, beginIndex, endIndex);
     }
@@ -943,7 +953,7 @@ public class Primitives
      * @see java.lang.Byte#parseByte(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         int size = Byte.SIZE;
         int end = endIndex;
@@ -1025,7 +1035,7 @@ public class Primitives
      * @see java.lang.Integer#parseUnsignedInt(java.lang.String) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseUnsignedInt(CharSequence cs)
+    public static final int parseUnsignedInt(CharSequence cs)
     {
         return parseUnsignedInt(cs, 10);
     }
@@ -1041,7 +1051,7 @@ public class Primitives
      * @see java.lang.Integer#parseUnsignedInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseUnsignedInt(CharSequence cs, int radix)
+    public static final int parseUnsignedInt(CharSequence cs, int radix)
     {
         return parseUnsignedInt(cs, radix, 0, cs.length());
     }
@@ -1059,7 +1069,7 @@ public class Primitives
      * @see java.lang.Integer#parseUnsignedInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static int parseUnsignedInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final int parseUnsignedInt(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         check(cs, radix, NumberRanges.UnsignedIntRange, beginIndex, endIndex);
         int end = endIndex;
