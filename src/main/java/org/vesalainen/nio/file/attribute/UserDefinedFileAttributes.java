@@ -24,14 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.Collection;
 import java.util.List;
-import org.vesalainen.util.ThreadSafeTemporary;
 
 /**
  *
  * @author tkv
  */
-public class UserDefinedFileAttributes
+public class UserDefinedFileAttributes implements UserDefinedAttributes
 {
     private final UserDefinedFileAttributeView view;
     private ByteBuffer bb;
@@ -50,14 +50,17 @@ public class UserDefinedFileAttributes
         this.bb = ByteBuffer.allocate(maxSize);
     }
 
+    @Override
     public boolean has(String name) throws IOException
     {
         return view.list().contains(name);
     }
-    public List<String> list() throws IOException
+    @Override
+    public Collection<String> list() throws IOException
     {
         return view.list();
     }
+    @Override
     public void deleteAll() throws IOException
     {
         for (String name : list())
@@ -65,26 +68,32 @@ public class UserDefinedFileAttributes
             delete(name);
         }
     }
+    @Override
     public void delete(String name) throws IOException
     {
         view.delete(name);
     }
+    @Override
     public int size(String name) throws IOException
     {
         return view.size(name);
     }
+    @Override
     public int write(String name, ByteBuffer src) throws IOException
     {
         return view.write(name, src);
     }
+    @Override
     public int read(String name, ByteBuffer dst) throws IOException
     {
         return view.read(name, dst);
     }
+    @Override
     public void set(String name, byte[] array) throws IOException
     {
         set(name, array, 0, array.length);
     }
+    @Override
     public void set(String name, byte[] array, int offset, int length) throws IOException
     {
         bb.clear();
@@ -92,6 +101,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
+    @Override
     public byte[] get(String name) throws IOException
     {
         byte[] arr = new byte[size(name)];
@@ -99,10 +109,12 @@ public class UserDefinedFileAttributes
         view.read(name, wrap);
         return arr;
     }
+    @Override
     public boolean arraysEquals(String name, byte[] array) throws IOException
     {
         return arraysEquals(name, array, 0, array.length);
     }
+    @Override
     public boolean arraysEquals(String name, byte[] array, int offset, int length) throws IOException
     {
         if (length != size(name))
@@ -135,10 +147,12 @@ public class UserDefinedFileAttributes
         ByteBuffer b2 = u2.read(name);
         return b1.equals(b2);
     }
+    @Override
     public void setString(String name, String value) throws IOException
     {
         set(name, value.getBytes(StandardCharsets.UTF_8));
     }
+    @Override
     public void setBoolean(String name, boolean value) throws IOException
     {
         bb.clear();
@@ -146,6 +160,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
+    @Override
     public void setInt(String name, int value) throws IOException
     {
         bb.clear();
@@ -153,6 +168,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
+    @Override
     public void setLong(String name, long value) throws IOException
     {
         bb.clear();
@@ -160,6 +176,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
+    @Override
     public void setDouble(String name, double value) throws IOException
     {
         bb.clear();
@@ -167,6 +184,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         view.write(name, bb);
     }
+    @Override
     public String getString(String name) throws IOException
     {
         bb.clear();
@@ -174,6 +192,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         return new String(bb.array(), 0, bb.limit(), StandardCharsets.UTF_8);
     }
+    @Override
     public boolean getBoolean(String name) throws IOException
     {
         bb.clear();
@@ -181,6 +200,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         return bb.get() == 1;
     }
+    @Override
     public int getInt(String name) throws IOException
     {
         bb.clear();
@@ -188,6 +208,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         return bb.getInt();
     }
+    @Override
     public long getLong(String name) throws IOException
     {
         bb.clear();
@@ -195,6 +216,7 @@ public class UserDefinedFileAttributes
         bb.flip();
         return bb.getLong();
     }
+    @Override
     public double getDouble(String name) throws IOException
     {
         bb.clear();
