@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.vesalainen.lang.Primitives;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -312,6 +313,12 @@ public class ExternalFileAttributes implements UserDefinedAttributes, Serializab
         map.put(name, array);
         store();
         return array.length;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ExternalFileAttributes{" + "map=" + map + ", file=" + file + '}';
     }
     
 }
