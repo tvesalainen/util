@@ -32,7 +32,12 @@ public class ArrayIterator<T> implements Iterator<T>
 
     public ArrayIterator(T[] array)
     {
+        this(array, 0, array.length);
+    }
+    public ArrayIterator(T[] array, int offset, int length)
+    {
         this.array = array;
+        this.index = offset;
         this.length = array.length;
     }
     public ArrayIterator(Object array)
