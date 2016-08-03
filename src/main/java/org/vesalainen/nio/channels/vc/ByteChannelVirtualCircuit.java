@@ -43,7 +43,6 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     private boolean direct;
     private Future<Void> f1;
     private Future<Void> f2;
-    private AtomicInteger threadCount = new AtomicInteger();
 
     public ByteChannelVirtualCircuit(ByteChannel ch1, ByteChannel ch2, int capacity, boolean direct)
     {
@@ -108,7 +107,6 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
         @Override
         public Void call() throws Exception
         {
-            threadCount.incrementAndGet();
             finest("start VC %s / %s", readChannel, writeChannel);
             try
             {
@@ -142,12 +140,9 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
             }
             finally
             {
-                if (threadCount.decrementAndGet() == 0)
-                {
-                    finest("close VC %s / %s", readChannel, writeChannel);
-                    readChannel.close();
-                    writeChannel.close();
-                }
+                finest("close VC %s / %s", readChannel, writeChannel);
+                readChannel.close();
+                writeChannel.close();
             }
             return null;
         }

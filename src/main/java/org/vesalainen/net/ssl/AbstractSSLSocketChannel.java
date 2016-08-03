@@ -21,37 +21,43 @@ import java.net.SocketAddress;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.Set;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLEngineResult.HandshakeStatus;
 import javax.net.ssl.SSLEngineResult.Status;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
-import jdk.net.SocketFlow;
+import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author tkv
  */
-public class AbstractSSLSocketChannel extends AbstractSelectableChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
+public class AbstractSSLSocketChannel extends SelectableChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
 {
     protected JavaLogging log = new JavaLogging(AbstractSSLSocketChannel.class);
     protected SocketChannel channel;
     protected SSLEngine engine;
     protected ByteBuffer netIn;
     protected ByteBuffer netOut;
+    protected ByteBuffer appRead;
+    protected ByteBuffer[] appReadArray;
+    protected ByteBuffer appWrite;
+    protected ByteBuffer[] appWriteArray;
     protected ByteBuffer nil;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
-        super(channel.provider());
         this.channel = channel; // connected
         this.engine = engine;   // initaliased
         int packetBufferSize = engine.getSession().getPacketBufferSize();
@@ -59,26 +65,70 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
         netIn.flip();
         this.netOut = ByteBuffer.allocateDirect(packetBufferSize);
         this.nil = ByteBuffer.allocateDirect(packetBufferSize);
+        int applicationBufferSize = engine.getSession().getApplicationBufferSize();
+        this.appRead = ByteBuffer.allocateDirect(applicationBufferSize);
+        this.appReadArray = new ByteBuffer[]{appRead};
+        appRead.flip();
+        this.appWrite = ByteBuffer.allocateDirect(applicationBufferSize);
+        this.appWriteArray = new ByteBuffer[]{appWrite};
+        appWrite.flip();
     }
 
     public void closeOutbound() throws IOException
     {
         engine.closeOutbound();
         handshake();
+        channel.shutdownOutput();
     }
     
     @Override
-    protected void implCloseSelectableChannel() throws IOException
+    public SelectorProvider provider()
+    {
+        return channel.provider();
+    }
+
+    @Override
+    public boolean isRegistered()
+    {
+        return channel.isRegistered();
+    }
+
+    @Override
+    public SelectionKey keyFor(Selector sel)
+    {
+        return channel.keyFor(sel);
+    }
+
+    @Override
+    public SelectionKey register(Selector sel, int ops, Object att) throws ClosedChannelException
+    {
+        return channel.register(sel, ops, att);
+    }
+
+    @Override
+    public SelectableChannel configureBlocking(boolean block) throws IOException
+    {
+        return channel.configureBlocking(block);
+    }
+
+    @Override
+    public boolean isBlocking()
+    {
+        return channel.isBlocking();
+    }
+
+    @Override
+    public Object blockingLock()
+    {
+        return channel.blockingLock();
+    }
+
+    @Override
+    protected void implCloseChannel() throws IOException
     {
         engine.closeOutbound();
         handshake();
         channel.close();
-    }
-
-    @Override
-    protected void implConfigureBlocking(boolean block) throws IOException
-    {
-        channel.configureBlocking(block);
     }
 
     @Override
@@ -106,6 +156,12 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
                     }
                     nil.clear();
                     SSLEngineResult us = engine.unwrap(netIn, nil);
+                    if (Status.BUFFER_UNDERFLOW.equals(us.getStatus()))
+                    {
+                        netIn.compact();
+                        channel.read(netIn);
+                        netIn.flip();
+                    }
                     if (!checkStatus(us))
                     {
                         throw new IOException("unwrap:"+us);
@@ -133,6 +189,8 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
                         task.run();
                     }
                     break;
+                default:
+                    throw new UnsupportedOperationException(engine.getHandshakeStatus()+ "unsupported");
             }
         }
     }
@@ -140,20 +198,18 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
     {
         switch (status.getStatus())
         {
-            case BUFFER_UNDERFLOW:
             case BUFFER_OVERFLOW:
                 return false;
             default:
                 return true;
         }
     }
-    @Override
-    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
+    private long unwrap() throws IOException
     {
-        long remaining = remaining(dsts, offset, length);
-        while (remaining(dsts, offset, length) == remaining)
+        SSLEngineResult result = null;
+        while (result == null || result.bytesProduced() == 0)
         {
-            SSLEngineResult result = engine.unwrap(netIn, dsts, offset, length);
+            result = engine.unwrap(netIn, appReadArray, 0, 1);
             log.fine("unwrap %s", result);
             switch (result.getStatus())
             {
@@ -164,13 +220,13 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
                     {
                         engine.closeInbound();
                         handshake();
-                        return result.bytesProduced();
+                        return -1;
                     }
                     netIn.flip();
-                    result = engine.unwrap(netIn, dsts, offset, length);
+                    result = engine.unwrap(netIn, appReadArray, 0, 1);
                     break;
                 case BUFFER_OVERFLOW:
-                    throw new IOException(result.toString());
+                    throw new IOException("unwrap:"+result);
                 case CLOSED:
                     handshake();
                     return -1;
@@ -179,17 +235,20 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
             }
             handshake();
         }
-        return remaining - remaining(dsts, offset, length);
+        return result.bytesProduced();
     }
 
-    @Override
-    public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
+    private long wrap() throws IOException
     {
-        long remaining = remaining(srcs, offset, length);
-        while (remaining(srcs, offset, length) > 0)
+        long remaining = appWrite.remaining();
+        while (appWrite.remaining() > 0)
         {
             netOut.clear();
-            SSLEngineResult result = engine.wrap(srcs, offset, length, netOut);
+            SSLEngineResult result = engine.wrap(appWriteArray, 0, 1, netOut);
+            if (result.getStatus().equals(SSLEngineResult.Status.BUFFER_UNDERFLOW))
+            {
+                return 0;
+            }
             log.fine("wrap %s", result);
             if (!result.getStatus().equals(SSLEngineResult.Status.OK))
             {
@@ -244,28 +303,79 @@ public class AbstractSSLSocketChannel extends AbstractSelectableChannel implemen
         return channel.supportedOptions();
     }
     
+    private long fillAppRead() throws IOException
+    {
+        if (!appRead.hasRemaining())
+        {
+            appRead.compact();
+            long rc = unwrap();
+            if (rc <= 0)
+            {
+                return rc;
+            }
+            appRead.flip();
+        }
+        return 1;
+    }
+    @Override
+    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
+    {
+        long rc = fillAppRead();
+        if (rc <= 0)
+        {
+            return rc;
+        }
+        return ByteBuffers.move(appRead, dsts, offset, length);
+    }
     @Override
     public long read(ByteBuffer[] dsts) throws IOException
     {
-        return read(dsts, 0, dsts.length);
+        long rc = fillAppRead();
+        if (rc <= 0)
+        {
+            return rc;
+        }
+        return ByteBuffers.move(appRead, dsts);
     }
 
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
-        return (int) read(new ByteBuffer[]{dst}, 0, 1);
+        long rc = fillAppRead();
+        if (rc <= 0)
+        {
+            return (int) rc;
+        }
+        return (int) ByteBuffers.move(appRead, dst);
     }
 
     @Override
+    public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
+    {
+        appWrite.compact();
+        long len = ByteBuffers.move(srcs, offset, length, appWrite);
+        appWrite.flip();
+        wrap();
+        return len;
+    }
+    @Override
     public long write(ByteBuffer[] srcs) throws IOException
     {
-        return write(srcs, 0, srcs.length);
+        appWrite.compact();
+        long len = ByteBuffers.move(srcs, appWrite);
+        appWrite.flip();
+        wrap();
+        return len;
     }
 
     @Override
     public int write(ByteBuffer src) throws IOException
     {
-        return (int) write(new ByteBuffer[]{src}, 0, 1);
+        appWrite.compact();
+        long len = ByteBuffers.move(src, appWrite);
+        appWrite.flip();
+        wrap();
+        return (int) len;
     }
 
     public String getPeerHost()

@@ -18,6 +18,7 @@ package org.vesalainen.nio.channels.vc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import static java.nio.channels.SelectionKey.OP_READ;
@@ -122,8 +123,8 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                     {
                         SelectionKey selectionKey = iterator.next();
                         iterator.remove();
-                        SocketChannel source = (SocketChannel) selectionKey.channel();
-                        SocketChannel target = (SocketChannel) selectionKey.attachment();
+                        ByteChannel source = (ByteChannel) selectionKey.channel();
+                        ByteChannel target = (ByteChannel) selectionKey.attachment();
                         boolean upld = source == c1;
                         bb.clear();
                         int rc = source.read(bb);
@@ -147,17 +148,22 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         if (upld)
                         {
                             up += cnt;
-                            debug("VC %s --> %d %s", source.getRemoteAddress(), cnt, target.getRemoteAddress());
+                            debug("VC %s --> %d %s", source, cnt, target);
                         }
                         else
                         {
                             down += cnt;
-                            debug("VC %s <-- %d %s", target.getRemoteAddress(), cnt, source.getRemoteAddress());
+                            debug("VC %s <-- %d %s", target, cnt, source);
                         }
                     }
                 }
             }
             return null;
+        }
+        catch (Exception ex)
+        {
+            log(DEBUG, ex, "SVC %s", ex.getMessage());
+            throw ex;
         }
         finally
         {
