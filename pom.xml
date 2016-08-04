@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.vesalainen</groupId>
         <artifactId>parent</artifactId>
@@ -7,80 +7,15 @@
     </parent>    
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vesalainen</groupId>
-    <artifactId>util</artifactId>
+    <artifactId>utilities</artifactId>
     <version>1.8.0</version>
-    <packaging>jar</packaging>
-    <name>Utilities</name>
+    <packaging>pom</packaging>
+    <modules>
+        <module>util</module>
+        <module>security</module>
+    </modules>
+    <name>Utilities Parent</name>
     <description>
-        Utility classes
+        Utilities Parent
     </description>
-    <properties>
-        <additionalparam>-Xdoclint:none</additionalparam>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.efficient-java-matrix-library</groupId>
-            <artifactId>equation</artifactId>   <!-- ARTIFACT is core or equation -->
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.vesalainen</groupId>
-            <artifactId>comm</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>javax.net.debug</name>
-                            <value>all</value>    <!-- all, ssl, handshake, ...-->
-                        </property>
-                    </systemProperties>
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
-                    <testFailureIgnore>false</testFailureIgnore>
-                </configuration>
-            </plugin>            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <!-- this disables annotation processing which 
-                            causes no class files compiled-->
-                            <proc>none</proc> 
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
