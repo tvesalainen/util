@@ -35,8 +35,6 @@ import javax.net.ssl.SSLContext;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.net.ssl.SSLServerSocketChannel;
-import org.vesalainen.net.ssl.SSLSocketChannel;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -47,7 +45,6 @@ import org.vesalainen.util.logging.JavaLogging;
 public class SSLConnectionTest
 {
     private static SSLContext sslCtx;
-    private static boolean blocking;
     
     public SSLConnectionTest() throws IOException
     {
@@ -57,17 +54,6 @@ public class SSLConnectionTest
     }
 
     @Test
-    public void testBlocking() throws IOException, InterruptedException, ExecutionException
-    {
-        blocking = true;
-        test();
-    }
-    @Test
-    public void testNonblocking() throws IOException, InterruptedException, ExecutionException
-    {
-        blocking = false;
-        test();
-    }
     public void test() throws IOException, InterruptedException, ExecutionException
     {
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -76,7 +62,6 @@ public class SSLConnectionTest
         PassiveServer sa1 = new PassiveServer();
         Future<SSLSocketChannel> f1 = executor.submit(sa1);
         SSLSocketChannel sc11 = SSLSocketChannel.open("localhost", sa1.getPort(), sslCtx);
-        sc11.configureBlocking(blocking);
         
         byte[] exp = new byte[1024];
         Random random = new Random(98765);
@@ -105,7 +90,6 @@ public class SSLConnectionTest
         public SSLSocketChannel call() throws Exception
         {
             SSLSocketChannel sc = ssc.accept();
-            sc.configureBlocking(blocking);
             ByteBuffer bb = ByteBuffer.allocate(2048);
             while (true)
             {
