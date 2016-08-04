@@ -22,6 +22,7 @@ import java.net.SocketOption;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
@@ -32,14 +33,13 @@ import javax.net.ssl.SSLEngine;
  *
  * @author tkv
  */
-public class SSLServerSocketChannel extends AbstractSelectableChannel implements NetworkChannel
+public class SSLServerSocketChannel extends AbstractInterruptibleChannel implements NetworkChannel
 {
     private ServerSocketChannel channel;
     private SSLContext sslContext;
     
     protected SSLServerSocketChannel(ServerSocketChannel channel, SSLContext sslContext)
     {
-        super(channel.provider());
         this.channel = channel;
         this.sslContext = sslContext;
     }
@@ -71,23 +71,11 @@ public class SSLServerSocketChannel extends AbstractSelectableChannel implements
     }
 
     @Override
-    protected void implCloseSelectableChannel() throws IOException
+    protected void implCloseChannel() throws IOException
     {
         channel.close();
     }
-
-    @Override
-    protected void implConfigureBlocking(boolean block) throws IOException
-    {
-        channel.configureBlocking(block);
-    }
-
-    @Override
-    public int validOps()
-    {
-        return channel.validOps();
-    }
-
+    
     @Override
     public NetworkChannel bind(SocketAddress local) throws IOException
     {
@@ -117,4 +105,5 @@ public class SSLServerSocketChannel extends AbstractSelectableChannel implements
     {
         return channel.supportedOptions();
     }
+
 }

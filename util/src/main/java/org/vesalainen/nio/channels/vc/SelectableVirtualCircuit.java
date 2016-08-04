@@ -23,13 +23,13 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import static java.nio.channels.SelectionKey.OP_READ;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -104,15 +104,15 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         int up = 0;
         int down = 0;
         boolean upload = true;
-        fine("start: %s", c2);
-        SelectorProvider provider = SelectorProvider.provider();
-        Selector selector = provider.openSelector();
-        c1.configureBlocking(false);
-        c1.register(selector, OP_READ, c2);
-        c2.configureBlocking(false);
-        c2.register(selector, OP_READ, c1);
         try
         {
+            fine("start: %s", c2);
+            SelectorProvider provider = SelectorProvider.provider();
+            Selector selector = provider.openSelector();
+            c1.configureBlocking(false);
+            c1.register(selector, OP_READ, c2);
+            c2.configureBlocking(false);
+            c2.register(selector, OP_READ, c1);
             while (!selector.keys().isEmpty())
             {
                 int count = selector.select();
@@ -162,7 +162,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         }
         catch (Exception ex)
         {
-            log(DEBUG, ex, "SVC %s", ex.getMessage());
+            log(Level.SEVERE, ex, "SVC %s", ex.getMessage());
             throw ex;
         }
         finally

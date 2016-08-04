@@ -29,6 +29,7 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Set;
 import javax.net.ssl.SSLEngine;
@@ -43,7 +44,7 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author tkv
  */
-public class AbstractSSLSocketChannel extends SelectableChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
+public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
 {
     protected JavaLogging log = new JavaLogging(AbstractSSLSocketChannel.class);
     protected SocketChannel channel;
@@ -55,86 +56,65 @@ public class AbstractSSLSocketChannel extends SelectableChannel implements ByteC
     protected ByteBuffer appWrite;
     protected ByteBuffer[] appWriteArray;
     protected ByteBuffer nil;
+    private final boolean keepOpen;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
+        this(channel, engine, null, null, false);
+    }
+    protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, ByteBuffer clientHello, boolean keepOpen)
+    {
         this.channel = channel; // connected
-        this.engine = engine;   // initaliased
+        this.engine = engine;   // initialiased
+        this.keepOpen = keepOpen;
         int packetBufferSize = engine.getSession().getPacketBufferSize();
-        this.netIn = ByteBuffer.allocateDirect(packetBufferSize);
-        netIn.flip();
-        this.netOut = ByteBuffer.allocateDirect(packetBufferSize);
+        if (consumed == null)
+        {
+            this.netIn = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize).flip();
+        }
+        else
+        {
+            this.netIn = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize);
+            ByteBuffers.move(consumed, netIn);
+            netIn.flip();
+        }
+        if (clientHello == null)
+        {
+            this.netOut = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize).flip();
+        }
+        else
+        {
+            this.netOut = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize);
+            ByteBuffers.move(clientHello, netOut);
+            netOut.flip();
+        }
         this.nil = ByteBuffer.allocateDirect(packetBufferSize);
         int applicationBufferSize = engine.getSession().getApplicationBufferSize();
-        this.appRead = ByteBuffer.allocateDirect(applicationBufferSize);
+        this.appRead = (ByteBuffer)ByteBuffer.allocateDirect(applicationBufferSize).flip();
         this.appReadArray = new ByteBuffer[]{appRead};
-        appRead.flip();
-        this.appWrite = ByteBuffer.allocateDirect(applicationBufferSize);
+        this.appWrite = (ByteBuffer)ByteBuffer.allocateDirect(applicationBufferSize).flip();
         this.appWriteArray = new ByteBuffer[]{appWrite};
-        appWrite.flip();
     }
 
     public void closeOutbound() throws IOException
     {
         engine.closeOutbound();
         handshake();
-        channel.shutdownOutput();
+        if (!keepOpen)
+        {
+            channel.shutdownOutput();
+        }
     }
     
-    @Override
-    public SelectorProvider provider()
-    {
-        return channel.provider();
-    }
-
-    @Override
-    public boolean isRegistered()
-    {
-        return channel.isRegistered();
-    }
-
-    @Override
-    public SelectionKey keyFor(Selector sel)
-    {
-        return channel.keyFor(sel);
-    }
-
-    @Override
-    public SelectionKey register(Selector sel, int ops, Object att) throws ClosedChannelException
-    {
-        return channel.register(sel, ops, att);
-    }
-
-    @Override
-    public SelectableChannel configureBlocking(boolean block) throws IOException
-    {
-        return channel.configureBlocking(block);
-    }
-
-    @Override
-    public boolean isBlocking()
-    {
-        return channel.isBlocking();
-    }
-
-    @Override
-    public Object blockingLock()
-    {
-        return channel.blockingLock();
-    }
-
     @Override
     protected void implCloseChannel() throws IOException
     {
         engine.closeOutbound();
         handshake();
-        channel.close();
-    }
-
-    @Override
-    public int validOps()
-    {
-        return channel.validOps();
+        if (!keepOpen)
+        {
+            channel.close();
+        }
     }
 
     protected void handshake() throws IOException
@@ -168,7 +148,7 @@ public class AbstractSSLSocketChannel extends SelectableChannel implements ByteC
                     }
                     break;
                 case NEED_WRAP:
-                    netOut.clear();
+                    netOut.compact();
                     nil.clear();
                     nil.flip();
                     SSLEngineResult ws = engine.wrap(nil, netOut);
@@ -186,7 +166,15 @@ public class AbstractSSLSocketChannel extends SelectableChannel implements ByteC
                     Runnable task;
                     while ((task = engine.getDelegatedTask()) != null)
                     {
-                        task.run();
+                        try
+                        {
+                            task.run();
+                        }
+                        catch (Exception hfex)
+                        {
+                            //hfex.addHello(netIn);
+                            throw hfex;
+                        }
                     }
                     break;
                 default:
@@ -243,7 +231,7 @@ public class AbstractSSLSocketChannel extends SelectableChannel implements ByteC
         long remaining = appWrite.remaining();
         while (appWrite.remaining() > 0)
         {
-            netOut.clear();
+            netOut.compact();
             SSLEngineResult result = engine.wrap(appWriteArray, 0, 1, netOut);
             if (result.getStatus().equals(SSLEngineResult.Status.BUFFER_UNDERFLOW))
             {
@@ -264,15 +252,6 @@ public class AbstractSSLSocketChannel extends SelectableChannel implements ByteC
         return remaining;
     }
 
-    private long remaining(ByteBuffer[] srcs, int offset, int length)
-    {
-        long remaining = 0;
-        for (int ii=0;ii<length;ii++)
-        {
-            remaining += srcs[ii + offset].remaining();
-        }
-        return remaining;
-    }
     @Override
     public NetworkChannel bind(SocketAddress local) throws IOException
     {

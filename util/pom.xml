@@ -44,22 +44,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>javax.net.debug</name>
-                            <value>all</value>    <!-- all, ssl, handshake, ...-->
-                        </property>
-                    </systemProperties>
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
-                    <testFailureIgnore>false</testFailureIgnore>
-                </configuration>
-            </plugin>            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
                     <execution>

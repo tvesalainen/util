@@ -36,8 +36,6 @@ import javax.net.ssl.SSLContext;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.net.ssl.SSLServerSocketChannel;
-import org.vesalainen.net.ssl.SSLSocketChannel;
 import org.vesalainen.nio.channels.vc.ByteChannelVirtualCircuit;
 import org.vesalainen.nio.channels.vc.SelectableVirtualCircuit;
 import org.vesalainen.nio.channels.vc.VirtualCircuit;
@@ -52,20 +50,15 @@ public class VirtualCircuitTest
     private static SSLContext sslCtx;
     public VirtualCircuitTest() throws IOException
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.ALL);
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
         Security.addProvider(new BouncyCastleProvider());
         sslCtx = TestSSLContext.getInstance();
     }
 
     @Test
-    public void testSelectable() throws IOException, InterruptedException, ExecutionException
-    {
-        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new SelectableVirtualCircuit(sc1, sc2, 2048, false);});
-    }
-    //@Test
     public void testByteChannel() throws IOException, InterruptedException, ExecutionException
     {
-        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new ByteChannelVirtualCircuit(sc1, sc2, 2048, false);});
+        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new ByteChannelVirtualCircuit(sc1, sc2, 256, false);});
     }
     public void test(BiFunction<SSLSocketChannel,SSLSocketChannel,VirtualCircuit> supplier) throws IOException, InterruptedException, ExecutionException
     {
@@ -135,7 +128,8 @@ public class VirtualCircuitTest
     private static class Echo implements Callable<Void>
     {
         private ByteChannel rc;
-        private ByteBuffer bb = ByteBuffer.allocate(2048);
+        private ByteBuffer bb = ByteBuffer.allocateDirect(2048);
+        private int count;
 
         public Echo(ByteChannel rc)
         {
@@ -155,6 +149,7 @@ public class VirtualCircuitTest
                         return null;
                     }
                     bb.flip();
+                    count += bb.remaining();
                     while (bb.hasRemaining())
                     {
                         rc.write(bb);

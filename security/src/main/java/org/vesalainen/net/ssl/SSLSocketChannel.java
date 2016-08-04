@@ -18,12 +18,11 @@ package org.vesalainen.net.ssl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
@@ -39,7 +38,11 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
 
     protected SSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
-        super(channel, engine);
+        this(channel, engine, null, null, false);
+    }
+    protected SSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, ByteBuffer clientHello, boolean keepOpen)
+    {
+        super(channel, engine, consumed, clientHello, keepOpen);
     }
     
     public static SSLSocketChannel open(String peer, int port) throws IOException
@@ -55,6 +58,10 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
     }
     public static SSLSocketChannel open(String peer, int port, SSLContext sslContext) throws IOException
     {
+        return open(peer, port, sslContext, null);
+    }
+    public static SSLSocketChannel open(String peer, int port, SSLContext sslContext, ByteBuffer clientHello) throws IOException
+    {
         SSLEngine engine = sslContext.createSSLEngine(peer, port);
         engine.setUseClientMode(true);
         SSLParameters sslParameters = engine.getSSLParameters();
@@ -65,7 +72,14 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
         engine.setSSLParameters(sslParameters);
         InetSocketAddress address = new InetSocketAddress(peer, port);
         SocketChannel socketChannel = SocketChannel.open(address);
-        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine);
+        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, null, clientHello, false);
+        return sslSocketChannel;
+    }
+    public static SSLSocketChannel open(SocketChannel socketChannel, SSLContext sslContext, ByteBuffer consumed, boolean autoClose) throws IOException
+    {
+        SSLEngine engine = sslContext.createSSLEngine();
+        engine.setUseClientMode(false);
+        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, consumed, null, !autoClose);
         return sslSocketChannel;
     }
 }
