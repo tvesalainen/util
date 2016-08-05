@@ -16,13 +16,12 @@
  */
 package org.vesalainen.net.ssl;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
 import java.security.Security;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -42,11 +41,11 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author tkv
  */
-public class SSLConnectionTest
+public class HelloForwardTest
 {
     private static SSLContext sslCtx;
     
-    public SSLConnectionTest() throws IOException
+    public HelloForwardTest() throws IOException
     {
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
         Security.addProvider(new BouncyCastleProvider());
@@ -68,14 +67,14 @@ public class SSLConnectionTest
         random.nextBytes(exp);
         bb.put(exp);
         bb.flip();
-        sc11.write(bb);
-        bb.clear();
-        int rc = sc11.read(bb);
-        assertEquals(1024, rc);
-        byte[] array = bb.array();
-        byte[] got = Arrays.copyOf(array, 1024);
-        assertArrayEquals(exp, got);
-        sc11.close();
+        try
+        {
+            sc11.write(bb);
+            fail("no EOFException");
+        }
+        catch (EOFException ex)
+        {
+        }
         executor.shutdown();
         assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
     }
@@ -90,18 +89,31 @@ public class SSLConnectionTest
         public SSLSocketChannel call() throws Exception
         {
             SSLSocketChannel sc = ssc.accept();
+            sc.setSNIMatchers(sc.getSNIMatcher((s)->{return false;}));
             ByteBuffer bb = ByteBuffer.allocate(2048);
             while (true)
             {
-                int rc = sc.read(bb);
-                if (rc == -1)
+                try
                 {
+                    int rc = sc.read(bb);
+                    fail("no HelloForwardException");
+                    if (rc == -1)
+                    {
+                        return null;
+                    }
+                    System.err.println(HexDump.toHex(bb.array(), 0, bb.position()));
+                    bb.flip();
+                    sc.write(bb);
+                    bb.clear();
+                }
+                catch (HelloForwardException ex)
+                {
+                    assertTrue(ex.getChannel().isConnected());
+                    assertEquals("localhost", ex.getHost());
+                    assertTrue(ex.getClientHello().hasRemaining());
+                    ex.getChannel().close();
                     return null;
                 }
-                System.err.println(HexDump.toHex(bb.array(), 0, bb.position()));
-                bb.flip();
-                sc.write(bb);
-                bb.clear();
             }
         }
         

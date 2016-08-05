@@ -5,7 +5,9 @@
  */
 package org.vesalainen.net.ssl;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import javax.net.ssl.SNIServerName;
 import org.vesalainen.nio.ByteBuffers;
@@ -14,22 +16,26 @@ import org.vesalainen.nio.ByteBuffers;
  *
  * @author tkv
  */
-public class HelloForwardException extends RuntimeException
+public class HelloForwardException extends IOException
 {
+    private SocketChannel channel;
     private String host;
     private ByteBuffer clientHello;
 
-    public HelloForwardException(SNIServerName snisn)
+    HelloForwardException(SocketChannel channel, String host, ByteBuffer bb)
     {
-        this.host = new String(snisn.getEncoded(), StandardCharsets.UTF_8);
-    }
-    
-    public void addHello(ByteBuffer bb)
-    {
+        super(host);
+        this.channel = channel;
+        this.host = host;
         bb.flip();
         clientHello = ByteBuffer.allocate(bb.remaining());
         ByteBuffers.move(bb, clientHello);
         clientHello.flip();
+    }
+
+    public SocketChannel getChannel()
+    {
+        return channel;
     }
 
     public ByteBuffer getClientHello()
@@ -40,6 +46,12 @@ public class HelloForwardException extends RuntimeException
     public String getHost()
     {
         return host;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "HelloForwardException{" + "channel=" + channel + ", host=" + host + ", clientHello=" + clientHello + '}';
     }
     
 }

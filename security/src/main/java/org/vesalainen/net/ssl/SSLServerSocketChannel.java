@@ -23,7 +23,6 @@ import java.nio.channels.NetworkChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
-import java.nio.channels.spi.AbstractSelectableChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import javax.net.ssl.SSLContext;

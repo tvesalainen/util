@@ -21,6 +21,8 @@ import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Random;
@@ -42,11 +44,11 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author tkv
  */
-public class SSLConnectionTest
+public class StartTLSTest
 {
     private static SSLContext sslCtx;
     
-    public SSLConnectionTest() throws IOException
+    public StartTLSTest() throws IOException
     {
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
         Security.addProvider(new BouncyCastleProvider());
@@ -61,21 +63,28 @@ public class SSLConnectionTest
         
         PassiveServer sa1 = new PassiveServer();
         Future<SSLSocketChannel> f1 = executor.submit(sa1);
-        SSLSocketChannel sc11 = SSLSocketChannel.open("localhost", sa1.getPort(), sslCtx);
+        SocketChannel sc11 = SocketChannel.open(new InetSocketAddress("localhost", sa1.getPort()));
         
+        bb.put("Start TLS\r\n".getBytes());
+        bb.flip();
+        sc11.write(bb);
+        SSLSocketChannel ssc1 = SSLSocketChannel.open(sc11, sslCtx, null, true);
+        sc11 = null;
+        ssc1.setUseClientMode(true);
+        bb.clear();
         byte[] exp = new byte[1024];
         Random random = new Random(98765);
         random.nextBytes(exp);
         bb.put(exp);
         bb.flip();
-        sc11.write(bb);
+        ssc1.write(bb);
         bb.clear();
-        int rc = sc11.read(bb);
+        int rc = ssc1.read(bb);
         assertEquals(1024, rc);
         byte[] array = bb.array();
         byte[] got = Arrays.copyOf(array, 1024);
         assertArrayEquals(exp, got);
-        sc11.close();
+        ssc1.close();
         executor.shutdown();
         assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
     }
@@ -89,36 +98,56 @@ public class SSLConnectionTest
         @Override
         public SSLSocketChannel call() throws Exception
         {
-            SSLSocketChannel sc = ssc.accept();
-            ByteBuffer bb = ByteBuffer.allocate(2048);
-            while (true)
+            try
             {
-                int rc = sc.read(bb);
-                if (rc == -1)
+                boolean tls = false;
+                SocketChannel sc = sss.accept();
+                ByteChannel bc = sc;
+                ByteBuffer bb = ByteBuffer.allocate(2048);
+                while (true)
                 {
-                    return null;
+                    int rc = bc.read(bb);
+                    if (rc == -1)
+                    {
+                        return null;
+                    }
+                    System.err.println(HexDump.toHex(bb.array(), 0, bb.position()));
+                    bb.flip();
+                    while (!tls)
+                    {
+                        byte cc = bb.get();
+                        if (cc == '\n')
+                        {
+                            tls = true;
+                            bc = SSLSocketChannel.open(sc, sslCtx, bb, true);
+                        }
+                    }
+                    bc.write(bb);
+                    bb.clear();
                 }
-                System.err.println(HexDump.toHex(bb.array(), 0, bb.position()));
-                bb.flip();
-                sc.write(bb);
-                bb.clear();
             }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+            return null;
         }
         
     }
     private static abstract class Server implements Callable<SSLSocketChannel>
     {
-        protected final SSLServerSocketChannel ssc;
+        protected final ServerSocketChannel sss;
 
         public Server() throws IOException
         {
-            ssc = SSLServerSocketChannel.open(null, sslCtx);
-            ssc.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            sss = ServerSocketChannel.open();
+            sss.bind(null);
+            sss.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         }
 
         public int getPort() throws IOException
         {
-            InetSocketAddress local = (InetSocketAddress) ssc.getLocalAddress();
+            InetSocketAddress local = (InetSocketAddress) sss.getLocalAddress();
             return local.getPort();
         }
         

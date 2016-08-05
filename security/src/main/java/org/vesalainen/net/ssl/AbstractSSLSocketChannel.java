@@ -16,28 +16,31 @@
  */
 package org.vesalainen.net.ssl;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
-import java.nio.channels.spi.SelectorProvider;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import javax.net.ssl.SNIMatcher;
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLEngineResult.Status;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import org.vesalainen.nio.ByteBuffers;
+import org.vesalainen.util.Lists;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -56,13 +59,14 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     protected ByteBuffer appWrite;
     protected ByteBuffer[] appWriteArray;
     protected ByteBuffer nil;
-    private final boolean keepOpen;
+    protected final boolean keepOpen;
+    protected String hostMatch;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
-        this(channel, engine, null, null, false);
+        this(channel, engine, null, false);
     }
-    protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, ByteBuffer clientHello, boolean keepOpen)
+    protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, boolean keepOpen)
     {
         this.channel = channel; // connected
         this.engine = engine;   // initialiased
@@ -78,16 +82,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
             ByteBuffers.move(consumed, netIn);
             netIn.flip();
         }
-        if (clientHello == null)
-        {
-            this.netOut = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize).flip();
-        }
-        else
-        {
-            this.netOut = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize);
-            ByteBuffers.move(clientHello, netOut);
-            netOut.flip();
-        }
+        this.netOut = (ByteBuffer)ByteBuffer.allocateDirect(packetBufferSize).flip();
         this.nil = ByteBuffer.allocateDirect(packetBufferSize);
         int applicationBufferSize = engine.getSession().getApplicationBufferSize();
         this.appRead = (ByteBuffer)ByteBuffer.allocateDirect(applicationBufferSize).flip();
@@ -122,6 +117,10 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         while (true)
         {
             log.finest("HandshakeStatus=%s", engine.getHandshakeStatus());
+            if (hostMatch != null)
+            {
+                throw new HelloForwardException(channel, hostMatch, netIn);
+            }
             switch (engine.getHandshakeStatus())
             {
                 case FINISHED:
@@ -131,7 +130,10 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     if (!netIn.hasRemaining())
                     {
                         netIn.clear();
-                        channel.read(netIn);
+                        if (channel.read(netIn) == -1)
+                        {
+                            throw new EOFException();
+                        }
                         netIn.flip();
                     }
                     nil.clear();
@@ -139,7 +141,10 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     if (Status.BUFFER_UNDERFLOW.equals(us.getStatus()))
                     {
                         netIn.compact();
-                        channel.read(netIn);
+                        if (channel.read(netIn) == -1)
+                        {
+                            throw new EOFException();
+                        }
                         netIn.flip();
                     }
                     if (!checkStatus(us))
@@ -166,15 +171,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     Runnable task;
                     while ((task = engine.getDelegatedTask()) != null)
                     {
-                        try
-                        {
-                            task.run();
-                        }
-                        catch (Exception hfex)
-                        {
-                            //hfex.addHello(netIn);
-                            throw hfex;
-                        }
+                        task.run();
                     }
                     break;
                 default:
@@ -437,4 +434,48 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         engine.setSSLParameters(sslp);
     }
 
+    public void setUseClientMode(boolean bln)
+    {
+        engine.setUseClientMode(bln);
+    }
+    /**
+     * Sets a filter for accepted SSL connection. Received hostname from SNI
+     * extension is tested with hostfilter. If it returns false, a 
+     * HelloForwardException is thrown from read/write method.
+     * <p>Effective only in server mode!
+     * @param hostFilter 
+     */
+    public SNIMatcher getSNIMatcher(Predicate<SNIServerName> hostFilter)
+    {
+        return new SNIMatcherImpl(hostFilter);
+    }
+    public void setSNIMatchers(SNIMatcher... matchs)
+    {
+        SSLParameters sslParameters = engine.getSSLParameters();
+        List<SNIMatcher> matchers = Lists.create(matchs);
+        sslParameters.setSNIMatchers(matchers);
+        engine.setSSLParameters(sslParameters);
+        
+    }
+    private class SNIMatcherImpl extends SNIMatcher
+    {
+        private Predicate<SNIServerName> hostFilter;
+        
+        public SNIMatcherImpl(Predicate<SNIServerName> hostFilter)
+        {
+            super(0);
+            this.hostFilter = hostFilter;
+        }
+
+        @Override
+        public boolean matches(SNIServerName snisn)
+        {
+            if(!hostFilter.test(snisn))
+            {
+                hostMatch = new String(snisn.getEncoded(), StandardCharsets.UTF_8);
+            }
+            return true;
+        }
+        
+    }
 }

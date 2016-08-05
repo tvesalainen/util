@@ -38,11 +38,11 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
 
     protected SSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
-        this(channel, engine, null, null, false);
+        this(channel, engine, null, false);
     }
-    protected SSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, ByteBuffer clientHello, boolean keepOpen)
+    protected SSLSocketChannel(SocketChannel channel, SSLEngine engine, ByteBuffer consumed, boolean keepOpen)
     {
-        super(channel, engine, consumed, clientHello, keepOpen);
+        super(channel, engine, consumed, keepOpen);
     }
     
     public static SSLSocketChannel open(String peer, int port) throws IOException
@@ -58,10 +58,6 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
     }
     public static SSLSocketChannel open(String peer, int port, SSLContext sslContext) throws IOException
     {
-        return open(peer, port, sslContext, null);
-    }
-    public static SSLSocketChannel open(String peer, int port, SSLContext sslContext, ByteBuffer clientHello) throws IOException
-    {
         SSLEngine engine = sslContext.createSSLEngine(peer, port);
         engine.setUseClientMode(true);
         SSLParameters sslParameters = engine.getSSLParameters();
@@ -72,14 +68,14 @@ public class SSLSocketChannel extends AbstractSSLSocketChannel
         engine.setSSLParameters(sslParameters);
         InetSocketAddress address = new InetSocketAddress(peer, port);
         SocketChannel socketChannel = SocketChannel.open(address);
-        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, null, clientHello, false);
+        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, null, false);
         return sslSocketChannel;
     }
     public static SSLSocketChannel open(SocketChannel socketChannel, SSLContext sslContext, ByteBuffer consumed, boolean autoClose) throws IOException
     {
         SSLEngine engine = sslContext.createSSLEngine();
         engine.setUseClientMode(false);
-        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, consumed, null, !autoClose);
+        SSLSocketChannel sslSocketChannel = new SSLSocketChannel(socketChannel, engine, consumed, !autoClose);
         return sslSocketChannel;
     }
 }
