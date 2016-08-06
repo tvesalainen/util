@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.net.ssl.SNIMatcher;
 import javax.net.ssl.SNIServerName;
@@ -61,6 +62,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     protected ByteBuffer nil;
     protected final boolean keepOpen;
     protected String hostMatch;
+    protected List<Consumer<SNIServerName>> sniObservers;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
@@ -89,6 +91,11 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         this.appReadArray = new ByteBuffer[]{appRead};
         this.appWrite = (ByteBuffer)ByteBuffer.allocateDirect(applicationBufferSize).flip();
         this.appWriteArray = new ByteBuffer[]{appWrite};
+        
+        SSLParameters sslParameters = engine.getSSLParameters();
+        List<SNIMatcher> matchers = Lists.create(new SNIMatcherImpl());
+        sslParameters.setSNIMatchers(matchers);
+        engine.setSSLParameters(sslParameters);
     }
 
     public void closeOutbound() throws IOException
@@ -445,34 +452,60 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
      * <p>Effective only in server mode!
      * @param hostFilter 
      */
-    public SNIMatcher getSNIMatcher(Predicate<SNIServerName> hostFilter)
+    public void setHostFilter(Predicate<SNIServerName> hostFilter)
     {
-        return new SNIMatcherImpl(hostFilter);
+        addSNIObserver(new HostFilter(hostFilter));
     }
-    public void setSNIMatchers(SNIMatcher... matchs)
+    public void addSNIObserver(Consumer<SNIServerName> observer)
     {
-        SSLParameters sslParameters = engine.getSSLParameters();
-        List<SNIMatcher> matchers = Lists.create(matchs);
-        sslParameters.setSNIMatchers(matchers);
-        engine.setSSLParameters(sslParameters);
+        if (sniObservers == null)
+        {
+            sniObservers = new ArrayList<>();
+        }
+        sniObservers.add(observer);
+    }
+    public void removeSNIObserver(Consumer<SNIServerName> observer)
+    {
+        if (sniObservers != null)
+        {
+            sniObservers.remove(observer);
+        }
+    }
+    private class HostFilter implements Consumer<SNIServerName>
+    {
+        private Predicate<SNIServerName> hostFilter;
+
+        public HostFilter(Predicate<SNIServerName> hostFilter)
+        {
+            this.hostFilter = hostFilter;
+        }
+        
+        @Override
+        public void accept(SNIServerName t)
+        {
+            if (!hostFilter.test(t))
+            {
+                hostMatch = new String(t.getEncoded(), StandardCharsets.UTF_8);
+            }
+        }
         
     }
     private class SNIMatcherImpl extends SNIMatcher
     {
-        private Predicate<SNIServerName> hostFilter;
-        
-        public SNIMatcherImpl(Predicate<SNIServerName> hostFilter)
+        public SNIMatcherImpl()
         {
             super(0);
-            this.hostFilter = hostFilter;
         }
 
         @Override
         public boolean matches(SNIServerName snisn)
         {
-            if(!hostFilter.test(snisn))
+            if (sniObservers != null)
             {
-                hostMatch = new String(snisn.getEncoded(), StandardCharsets.UTF_8);
+                sniObservers.stream().forEach((observer) ->
+                {
+                    observer.accept(snisn);
+                });
             }
             return true;
         }

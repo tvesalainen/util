@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Random;

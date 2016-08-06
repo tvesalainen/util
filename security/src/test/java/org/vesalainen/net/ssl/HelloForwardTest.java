@@ -89,7 +89,7 @@ public class HelloForwardTest
         public SSLSocketChannel call() throws Exception
         {
             SSLSocketChannel sc = ssc.accept();
-            sc.setSNIMatchers(sc.getSNIMatcher((s)->{return false;}));
+            sc.setHostFilter((s)->{return false;});
             ByteBuffer bb = ByteBuffer.allocate(2048);
             while (true)
             {
