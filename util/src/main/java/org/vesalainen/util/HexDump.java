@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,6 +70,19 @@ public class HexDump
             bytes[ii] = list.get(ii).byteValue();
         }
         return bytes;
+    }
+    /**
+     * Creates readable view to byte buffer remaining. Doesn't change byte buffer.
+     * @param bb
+     * @return 
+     */
+    public static final String toHex(ByteBuffer bb)
+    {
+        byte[] buf = new byte[bb.remaining()];
+        int safe = bb.position();
+        bb.get(buf);
+        bb.position(safe);
+        return toHex(buf);
     }
     /**
      * Creates readable view to byte array content.
