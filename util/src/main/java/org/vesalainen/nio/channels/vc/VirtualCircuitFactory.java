@@ -48,7 +48,19 @@ public class VirtualCircuitFactory
         }
         else
         {
-            return new ByteChannelVirtualCircuit(ch1, ch2, capacity, direct);
+            if (
+                    (ch1 instanceof SelectableBySelector) &&
+                    (ch2 instanceof SelectableBySelector)
+                    )
+            {
+                SelectableBySelector sbs1 = (SelectableBySelector) ch1;
+                SelectableBySelector sbs2 = (SelectableBySelector) ch2;
+                return new SelectableVirtualCircuit(sbs1.getSelector(), sbs1.getSelector(), ch1, ch2, capacity, direct);
+            }
+            else
+            {
+                return new ByteChannelVirtualCircuit(ch1, ch2, capacity, direct);
+            }
         }
     }
 }

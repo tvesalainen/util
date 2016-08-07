@@ -43,6 +43,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
     private SelectableChannel c2;
     private ByteBuffer bb;
     private Future<Void> future;
+    private ByteChannel[] bc;
     /**
      * Creates SelectableVirtualCircuit
      * @param c1
@@ -52,9 +53,14 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
      */
     public SelectableVirtualCircuit(SelectableChannel c1, SelectableChannel c2, int capacity, boolean direct)
     {
+        this(c1, c2, (ByteChannel)c1, (ByteChannel)c2, capacity, direct);
+    }
+    public SelectableVirtualCircuit(SelectableChannel c1, SelectableChannel c2, ByteChannel bc1, ByteChannel bc2, int capacity, boolean direct)
+    {
         super(SelectableVirtualCircuit.class);
         this.c1 = c1;
         this.c2 = c2;
+        this.bc = new ByteChannel[] {bc1, bc2};
         if (direct)
         {
             this.bb = ByteBuffer.allocateDirect(capacity);
@@ -103,16 +109,16 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
     {
         int up = 0;
         int down = 0;
-        boolean upload = true;
+        Selector selector = null;
         try
         {
             fine("start: %s", c2);
             SelectorProvider provider = SelectorProvider.provider();
-            Selector selector = provider.openSelector();
+            selector = provider.openSelector();
             c1.configureBlocking(false);
-            c1.register(selector, OP_READ, c2);
+            c1.register(selector, OP_READ, bc[1]);
             c2.configureBlocking(false);
-            c2.register(selector, OP_READ, c1);
+            c2.register(selector, OP_READ, bc[0]);
             while (!selector.keys().isEmpty())
             {
                 int count = selector.select();
@@ -123,8 +129,8 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                     {
                         SelectionKey selectionKey = iterator.next();
                         iterator.remove();
-                        ByteChannel source = (ByteChannel) selectionKey.channel();
                         ByteChannel target = (ByteChannel) selectionKey.attachment();
+                        ByteChannel source = target == bc[0] ? bc[1] : bc[0];
                         boolean upld = source == c1;
                         bb.clear();
                         int rc = source.read(bb);
@@ -143,7 +149,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         if (rc == -1)
                         {
                             fine("VC %s quit", source);
-                            selectionKey.cancel();
+                            return null;
                         }
                         if (upld)
                         {
@@ -168,8 +174,9 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         finally
         {
             fine("VC end: up=%d down=%d %s", up, down, c2);
-            c1.close();
-            c2.close();
+            selector.close();
+            bc[0].close();
+            bc[1].close();
         }
     }
     
