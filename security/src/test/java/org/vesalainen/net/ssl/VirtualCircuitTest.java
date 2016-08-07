@@ -56,9 +56,14 @@ public class VirtualCircuitTest
     }
 
     @Test
+    public void testSelectableChannel() throws IOException, InterruptedException, ExecutionException
+    {
+        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new SelectableVirtualCircuit(sc1.getSelector(), sc2.getSelector(), sc1, sc2, 4096, false);});
+    }
+    @Test
     public void testByteChannel() throws IOException, InterruptedException, ExecutionException
     {
-        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new ByteChannelVirtualCircuit(sc1, sc2, 256, false);});
+        test((SSLSocketChannel sc1, SSLSocketChannel sc2)->{return new ByteChannelVirtualCircuit(sc1, sc2, 4096, false);});
     }
     public void test(BiFunction<SSLSocketChannel,SSLSocketChannel,VirtualCircuit> supplier) throws IOException, InterruptedException, ExecutionException
     {
@@ -92,13 +97,14 @@ public class VirtualCircuitTest
         bb.flip();
         sc11.write(bb);
         bb.clear();
-        sc11.read(bb);
+        int rc  = sc11.read(bb);
+        assertEquals(1024, rc);
         byte[] array = bb.array();
         byte[] got = Arrays.copyOf(array, 1024);
         assertArrayEquals(exp, got);
         sc11.close();
         executor.shutdown();
-        assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
+        assertTrue(executor.awaitTermination(1000, TimeUnit.SECONDS));
     }
     private static class SocketAcceptor implements Callable<SSLSocketChannel>
     {

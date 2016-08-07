@@ -25,6 +25,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.charset.StandardCharsets;
@@ -41,14 +42,19 @@ import javax.net.ssl.SSLEngineResult.Status;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import org.vesalainen.nio.ByteBuffers;
+import org.vesalainen.nio.channels.vc.SelectableBySelector;
 import org.vesalainen.util.Lists;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * AbstractSSLSocketChannel is a base class for ssl socket channel. This class
+ * has similar features as SSLSocket an SSLServerSocket, but uses SocketChannel.
+ * 
+ * <p>This class doesn't implement SelectableChannel, but it's SocketChannel
+ * can be used for selection.
  * @author tkv
  */
-public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
+public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel, SelectableBySelector
 {
     protected JavaLogging log = new JavaLogging(AbstractSSLSocketChannel.class);
     protected SocketChannel channel;
@@ -208,6 +214,11 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                 case BUFFER_UNDERFLOW:
                     netIn.compact();
                     int rc = channel.read(netIn);
+                    if (rc == 0)
+                    {
+                        netIn.flip();
+                        return 0;
+                    }
                     if (rc == -1)
                     {
                         engine.closeInbound();
@@ -292,11 +303,11 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         {
             appRead.compact();
             long rc = unwrap();
+            appRead.flip();
             if (rc <= 0)
             {
                 return rc;
             }
-            appRead.flip();
         }
         return 1;
     }
@@ -471,6 +482,13 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
             sniObservers.remove(observer);
         }
     }
+
+    @Override
+    public SelectableChannel getSelector()
+    {
+        return channel;
+    }
+    
     private class HostFilter implements Consumer<SNIServerName>
     {
         private Predicate<SNIServerName> hostFilter;
