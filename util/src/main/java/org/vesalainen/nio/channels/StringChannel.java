@@ -17,12 +17,9 @@
 package org.vesalainen.nio.channels;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.nio.channels.SystemChannel.OutChannel;
 
 /**
