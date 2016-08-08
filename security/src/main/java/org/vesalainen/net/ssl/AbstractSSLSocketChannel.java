@@ -47,7 +47,7 @@ import org.vesalainen.util.Lists;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- * AbstractSSLSocketChannel is a base class for ssl socket channel. This class
+ * AbstractSSLSocketChannel is a base class for TLS socket channel. This class
  * has similar features as SSLSocket an SSLServerSocket, but uses SocketChannel.
  * 
  * <p>This class doesn't implement SelectableChannel, but it's SocketChannel
@@ -311,6 +311,16 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         }
         return 1;
     }
+    /**
+     * Reads ByteBuffer from peer. Starts handshaking if needed.
+     * @param dsts
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
     {
@@ -321,6 +331,14 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         }
         return ByteBuffers.move(appRead, dsts, offset, length);
     }
+    /**
+     * Reads ByteBuffer from peer. Starts handshaking if needed.
+     * @param dsts
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public long read(ByteBuffer[] dsts) throws IOException
     {
@@ -331,7 +349,14 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         }
         return ByteBuffers.move(appRead, dsts);
     }
-
+    /**
+     * Reads ByteBuffer from peer. Starts handshaking if needed.
+     * @param dst
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
@@ -342,7 +367,16 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         }
         return (int) ByteBuffers.move(appRead, dst);
     }
-
+    /**
+     * Writes ByteBuffer to peer. Starts handshaking if needed.
+     * @param srcs
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
     {
@@ -352,6 +386,14 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         wrap();
         return len;
     }
+    /**
+     * Writes ByteBuffer to peer. Starts handshaking if needed.
+     * @param srcs
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public long write(ByteBuffer[] srcs) throws IOException
     {
@@ -361,7 +403,14 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         wrap();
         return len;
     }
-
+    /**
+     * Writes ByteBuffer to peer. Starts handshaking if needed.
+     * @param src
+     * @return
+     * @throws IOException 
+     * @throws HelloForwardException if client hello triggers host filter.
+     * @see org.vesalainen.net.ssl.AbstractSSLSocketChannel#setHostFilter(java.util.function.Predicate) 
+     */
     @Override
     public int write(ByteBuffer src) throws IOException
     {
@@ -467,6 +516,11 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     {
         addSNIObserver(new HostFilter(hostFilter));
     }
+    /**
+     * Add a observer for incoming SNI extension.
+     * <p>Effective only in server mode!
+     * @param observer 
+     */
     public void addSNIObserver(Consumer<SNIServerName> observer)
     {
         if (sniObservers == null)
@@ -482,7 +536,11 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
             sniObservers.remove(observer);
         }
     }
-
+    /**
+     * Returns internal SocketChannel, which can be used as selector, as long as
+     * actual I/O is using this class.
+     * @return 
+     */
     @Override
     public SelectableChannel getSelector()
     {

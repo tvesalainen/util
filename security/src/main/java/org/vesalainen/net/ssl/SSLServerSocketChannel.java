@@ -17,6 +17,7 @@
 package org.vesalainen.net.ssl;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketOption;
 import java.nio.channels.NetworkChannel;
@@ -29,7 +30,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 /**
- *
+ * SSLServerSocketChannel can accept SSLSocketCHannel connections.
+ * 
  * @author tkv
  */
 public class SSLServerSocketChannel extends AbstractInterruptibleChannel implements NetworkChannel
@@ -42,7 +44,12 @@ public class SSLServerSocketChannel extends AbstractInterruptibleChannel impleme
         this.channel = channel;
         this.sslContext = sslContext;
     }
-
+    /**
+     * Accepts SSLSocketChannel. Connection is in server mode, but can be changed 
+     * before read/write.
+     * @return
+     * @throws IOException 
+     */
     public SSLSocketChannel accept() throws IOException
     {
         SocketChannel sc = channel.accept();
@@ -50,6 +57,22 @@ public class SSLServerSocketChannel extends AbstractInterruptibleChannel impleme
         engine.setUseClientMode(false);
         return new SSLSocketChannel(sc, engine);
     }
+    /**
+     * Creates and binds SSLServerSocketChannel using default SSLContext.
+     * @param port
+     * @return
+     * @throws IOException 
+     */
+    public static SSLServerSocketChannel open(int port) throws IOException
+    {
+        return open(new InetSocketAddress(port));
+    }
+    /**
+     * Creates and binds SSLServerSocketChannel using default SSLContext.
+     * @param address
+     * @return
+     * @throws IOException 
+     */
     public static SSLServerSocketChannel open(SocketAddress address) throws IOException
     {
         try
@@ -61,6 +84,24 @@ public class SSLServerSocketChannel extends AbstractInterruptibleChannel impleme
             throw new IOException(ex);
         }
     }
+    /**
+     * Creates and binds SSLServerSocketChannel using given SSLContext.
+     * @param port
+     * @param sslContext
+     * @return
+     * @throws IOException 
+     */
+    public static SSLServerSocketChannel open(int port, SSLContext sslContext) throws IOException
+    {
+        return open(new InetSocketAddress(port), sslContext);
+    }
+    /**
+     * Creates and binds SSLServerSocketChannel using given SSLContext.
+     * @param address
+     * @param sslContext
+     * @return
+     * @throws IOException 
+     */
     public static SSLServerSocketChannel open(SocketAddress address, SSLContext sslContext) throws IOException
     {
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();

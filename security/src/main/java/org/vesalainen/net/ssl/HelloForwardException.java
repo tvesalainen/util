@@ -8,12 +8,13 @@ package org.vesalainen.net.ssl;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
-import javax.net.ssl.SNIServerName;
 import org.vesalainen.nio.ByteBuffers;
 
 /**
- *
+ * HelloForwardException is thrown from SSLSocketChannel read/write method
+ * when client hello SNI extension triggers host filter. This is a means to
+ * interrupt handshaking and e.g. redirect the connection. SocketChannel, 
+ * hostname and client hello contents are available.
  * @author tkv
  */
 public class HelloForwardException extends IOException
@@ -32,17 +33,26 @@ public class HelloForwardException extends IOException
         ByteBuffers.move(bb, clientHello);
         clientHello.flip();
     }
-
+    /**
+     * Returns the SocketChannel that sent client hello.
+     * @return 
+     */
     public SocketChannel getChannel()
     {
         return channel;
     }
-
+    /**
+     * Returns the content of client hello message.
+     * @return 
+     */
     public ByteBuffer getClientHello()
     {
         return clientHello;
     }
-
+    /**
+     * Returns the hostname that triggered the hostfilter.
+     * @return 
+     */
     public String getHost()
     {
         return host;
