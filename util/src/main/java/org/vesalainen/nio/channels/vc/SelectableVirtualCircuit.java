@@ -55,6 +55,17 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
     {
         this(c1, c2, (ByteChannel)c1, (ByteChannel)c2, capacity, direct);
     }
+    /**
+     * Creates SelectableVirtualCircuit between two ByteChannels. Both 
+     * ByteChannels are selectable by using SelectableChannel. Connected
+     * ByteChannel and SelectableChannel can be the same.
+     * @param c1
+     * @param c2
+     * @param bc1
+     * @param bc2
+     * @param capacity
+     * @param direct 
+     */
     public SelectableVirtualCircuit(SelectableChannel c1, SelectableChannel c2, ByteChannel bc1, ByteChannel bc2, int capacity, boolean direct)
     {
         super(SelectableVirtualCircuit.class);
@@ -70,13 +81,21 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
             this.bb = ByteBuffer.allocate(capacity);
         }
     }
-    
+    /**
+     * Start virtual circuit
+     * @param executor
+     * @throws IOException 
+     */
     @Override
     public void start(ExecutorService executor) throws IOException
     {
         future = executor.submit(this);
     }
-
+    /**
+     * Wait until other peer has closed connection or virtual circuit is closed 
+     * by interrupt.
+     * @throws IOException 
+     */
     @Override
     public void waitForFinish() throws IOException
     {
@@ -93,7 +112,10 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
             throw new IOException(ex);
         }
     }
-
+    /**
+     * Cancel the virtual circuit.
+     * @throws IOException 
+     */
     @Override
     public void stop() throws IOException
     {

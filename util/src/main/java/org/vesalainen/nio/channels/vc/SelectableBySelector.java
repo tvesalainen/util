@@ -19,7 +19,8 @@ package org.vesalainen.nio.channels.vc;
 import java.nio.channels.SelectableChannel;
 
 /**
- *
+ * Classes supporting this interface don't implement SelectableChannel but still
+ * they can use selector by using getSelector.
  * @author tkv
  */
 public interface SelectableBySelector

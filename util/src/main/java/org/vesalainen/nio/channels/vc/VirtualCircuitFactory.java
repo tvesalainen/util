@@ -21,8 +21,10 @@ import java.nio.channels.SelectableChannel;
 
 /**
  * VirtualCircuitFactory creates SelectableVirtualCircuit if both channels 
- * implement SelectableChannel or otherwise ByteChannelVirtualCircuit.
+ * implement SelectableChannel direct or by implementing SelectableBySelector 
+ * or otherwise ByteChannelVirtualCircuit.
  * @author tkv
+ * @see org.vesalainen.nio.channels.vc.SelectableBySelector
  */
 public class VirtualCircuitFactory
 {
