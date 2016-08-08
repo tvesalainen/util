@@ -571,6 +571,12 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     {
         return channel;
     }
+
+    @Override
+    public String toString()
+    {
+        return "AbstractSSLSocketChannel{" + "channel=" + channel + ", engine=" + engine + '}';
+    }
     
     private class HostFilter implements Consumer<SNIServerName>
     {
