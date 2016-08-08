@@ -26,8 +26,11 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SelectableChannel;
+import static java.nio.channels.SelectionKey.OP_READ;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
+import java.nio.channels.spi.SelectorProvider;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +51,7 @@ import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * AbstractSSLSocketChannel is a base class for TLS socket channel. This class
- * has similar features as SSLSocket an SSLServerSocket, but uses SocketChannel.
+ * has similar features as SSLSocket and SSLServerSocket, but uses SocketChannel.
  * 
  * <p>This class doesn't implement SelectableChannel, but it's SocketChannel
  * can be used for selection.
@@ -69,6 +72,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     protected final boolean keepOpen;
     protected String hostMatch;
     protected List<Consumer<SNIServerName>> sniObservers;
+    protected Selector selector;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
@@ -119,6 +123,10 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     {
         engine.closeOutbound();
         handshake();
+        if (selector != null)
+        {
+            selector.close();
+        }
         if (!keepOpen)
         {
             channel.close();
@@ -143,10 +151,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     if (!netIn.hasRemaining())
                     {
                         netIn.clear();
-                        if (channel.read(netIn) == -1)
-                        {
-                            throw new EOFException();
-                        }
+                        fillIn(netIn);
                         netIn.flip();
                     }
                     nil.clear();
@@ -154,10 +159,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     if (Status.BUFFER_UNDERFLOW.equals(us.getStatus()))
                     {
                         netIn.compact();
-                        if (channel.read(netIn) == -1)
-                        {
-                            throw new EOFException();
-                        }
+                        fillIn(netIn);
                         netIn.flip();
                     }
                     if (!checkStatus(us))
@@ -191,6 +193,24 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     throw new UnsupportedOperationException(engine.getHandshakeStatus()+ "unsupported");
             }
         }
+    }
+    private long fillIn(ByteBuffer bb) throws IOException
+    {
+        if (!channel.isBlocking())
+        {
+            if (selector == null)
+            {
+                selector = Selector.open();
+                channel.register(selector, OP_READ);
+            }
+            selector.select();
+        }
+        int rc = channel.read(bb);
+        if (rc == -1)
+        {
+            throw new EOFException();
+        }
+        return rc;
     }
     private boolean checkStatus(SSLEngineResult status)
     {
