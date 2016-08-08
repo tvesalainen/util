@@ -22,6 +22,7 @@ import java.net.SocketAddress;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
@@ -73,6 +74,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
     protected String hostMatch;
     protected List<Consumer<SNIServerName>> sniObservers;
     protected Selector selector;
+    private boolean closed;
     
     protected AbstractSSLSocketChannel(SocketChannel channel, SSLEngine engine)
     {
@@ -135,7 +137,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
 
     protected void handshake() throws IOException
     {
-        while (true)
+        while (!closed)
         {
             log.finest("HandshakeStatus=%s", engine.getHandshakeStatus());
             if (hostMatch != null)
@@ -208,7 +210,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         int rc = channel.read(bb);
         if (rc == -1)
         {
-            throw new EOFException();
+            closed = true;
         }
         return rc;
     }
@@ -241,8 +243,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     }
                     if (rc == -1)
                     {
-                        engine.closeInbound();
-                        handshake();
+                        closed = true;
                         return -1;
                     }
                     netIn.flip();
@@ -266,6 +267,10 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
         long remaining = appWrite.remaining();
         while (appWrite.remaining() > 0)
         {
+            if (closed)
+            {
+                throw new ClosedChannelException();
+            }
             netOut.compact();
             SSLEngineResult result = engine.wrap(appWriteArray, 0, 1, netOut);
             if (result.getStatus().equals(SSLEngineResult.Status.BUFFER_UNDERFLOW))

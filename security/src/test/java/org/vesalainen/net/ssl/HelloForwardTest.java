@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.security.Security;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -70,9 +71,9 @@ public class HelloForwardTest
         try
         {
             sc11.write(bb);
-            fail("no EOFException");
+            fail("no ClosedChannelException");
         }
-        catch (EOFException ex)
+        catch (ClosedChannelException ex)
         {
         }
         executor.shutdown();
