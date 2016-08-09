@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.vesalainen.util.HexDump;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -156,32 +157,36 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         boolean upld = source == c1;
                         bb.clear();
                         int rc = source.read(bb);
+                        debug("VC read=%d from %s", rc, source);
                         int cnt = 0;
                         while (rc > 0)
                         {
                             cnt += rc;
                             bb.flip();
+                            debug("VC \n%s", HexDump.toHex(bb));
                             while (bb.hasRemaining())
                             {
-                                target.write(bb);
+                                int wr = target.write(bb);
+                                debug("VC wrote=%d to %s", wr, target);
                             }
                             bb.clear();
                             rc = source.read(bb);
+                            debug("VC read=%d from %s", rc, source);
+                            if (upld)
+                            {
+                                up += cnt;
+                                debug("VC %s --> %d %s", source, cnt, target);
+                            }
+                            else
+                            {
+                                down += cnt;
+                                debug("VC %s <-- %d %s", target, cnt, source);
+                            }
                         }
                         if (rc == -1)
                         {
                             fine("VC %s quit", source);
                             return null;
-                        }
-                        if (upld)
-                        {
-                            up += cnt;
-                            debug("VC %s --> %d %s", source, cnt, target);
-                        }
-                        else
-                        {
-                            down += cnt;
-                            debug("VC %s <-- %d %s", target, cnt, source);
                         }
                     }
                 }
@@ -195,8 +200,11 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         }
         finally
         {
-            fine("VC end: up=%d down=%d %s", up, down, c2);
-            selector.close();
+            fine("VC end: up=%d down=%d %s / %s", up, down, bc[0], bc[1]);
+            if (selector != null)
+            {
+                selector.close();
+            }
             bc[0].close();
             bc[1].close();
         }

@@ -23,12 +23,14 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.*;
+import java.util.logging.Level;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author tkv
  */
-public class SecuredFile
+public class SecuredFile extends JavaLogging
 {
     private static final String Suffix = ".safe";
     private Path path;
@@ -48,6 +50,7 @@ public class SecuredFile
     }
     public SecuredFile(File file, String suffix)
     {
+        super(SecuredFile.class);
         this.path = file.toPath();
         this.safePath = new File(file.getPath()+suffix).toPath();
     }
@@ -62,6 +65,10 @@ public class SecuredFile
         return safePath;
     }
     
+    public boolean exists()
+    {
+        return Files.exists(path);
+    }
     public void load(Loader loader) throws IOException
     {
         try
@@ -69,14 +76,25 @@ public class SecuredFile
             try (InputStream is = Files.newInputStream(path))
             {
                 loader.load(is);
+                fine("secure loaded from %s", path);
             }
             Files.deleteIfExists(safePath);
         }
-        catch(IOException ex)
+        catch (Exception ex)
         {
+            log(Level.SEVERE, ex, "secure loading %s %s", path, ex.getMessage());
             try (InputStream is = Files.newInputStream(safePath))
             {
-                loader.load(is);
+                try
+                {
+                    loader.load(is);
+                    fine("secure loaded from %s", safePath);
+                }
+                catch (Exception ex1)
+                {
+                    log(Level.SEVERE, ex, "secure loading %s %s", safePath, ex.getMessage());
+                    throw new IOException(ex);
+                }
             }
             Files.move(safePath, path, ATOMIC_MOVE, REPLACE_EXISTING);
         }
@@ -90,18 +108,27 @@ public class SecuredFile
         }
         try (OutputStream os = Files.newOutputStream(path))
         {
-            saver.save(os);
+            try
+            {
+                saver.save(os);
+                fine("secure saved to %s", path);
+            }
+            catch (Exception ex)
+            {
+                log(Level.SEVERE, ex, "secure saving %s %s", path, ex.getMessage());
+                throw new IOException(ex);
+            }
         }
     }
     
     @FunctionalInterface
     public interface Loader
     {
-        void load(InputStream is) throws IOException;
+        void load(InputStream is) throws Exception;
     }
     @FunctionalInterface
     public interface Saver
     {
-        void save(OutputStream os) throws IOException;
+        void save(OutputStream os) throws Exception;
     }
 }
