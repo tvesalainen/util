@@ -134,7 +134,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
         Selector selector = null;
         try
         {
-            fine("start: %s", c2);
+            fine("start: %s / %s", bc[0], bc[1]);
             SelectorProvider provider = SelectorProvider.provider();
             selector = provider.openSelector();
             c1.configureBlocking(false);
