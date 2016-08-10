@@ -108,16 +108,13 @@ public class SecuredFile extends JavaLogging
         }
         try (OutputStream os = Files.newOutputStream(path))
         {
-            try
-            {
-                saver.save(os);
-                fine("secure saved to %s", path);
-            }
-            catch (Exception ex)
-            {
-                log(Level.SEVERE, ex, "secure saving %s %s", path, ex.getMessage());
-                throw new IOException(ex);
-            }
+            saver.save(os);
+            fine("secure saved to %s", path);
+        }
+        catch (Exception ex)
+        {
+            log(Level.SEVERE, ex, "secure saving %s %s", path, ex.getMessage());
+            throw new IOException(ex);
         }
     }
     
