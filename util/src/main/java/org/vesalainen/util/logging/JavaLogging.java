@@ -126,6 +126,12 @@ public class JavaLogging extends BaseLogging
     }
 
     @Override
+    protected void logIt(Level level, Supplier<String> msgSupplier)
+    {
+        logger.log(level, msgSupplier);
+    }
+
+    @Override
     protected void logIt(Level level, String msg)
     {
         logger.log(level, msg);

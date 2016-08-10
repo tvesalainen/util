@@ -17,6 +17,7 @@
 package org.vesalainen.util.logging;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 
@@ -49,6 +50,17 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at SEVERE level.
+     * @param msgSupplier 
+     */
+    public void severe(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(SEVERE))
+        {
+            logIt(SEVERE, msgSupplier);
+        }
+    }
+    /**
      * Write to log at WARNING level.
      * @param format
      * @param args 
@@ -60,6 +72,17 @@ public abstract class BaseLogging
         if (isLoggable(WARNING))
         {
             logIt(WARNING, String.format(format, args));
+        }
+    }
+    /**
+     * Write to log at WARNING level.
+     * @param msgSupplier 
+     */
+    public void warning(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(WARNING))
+        {
+            logIt(WARNING, msgSupplier);
         }
     }
     /**
@@ -77,6 +100,17 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at INFO level.
+     * @param msgSupplier 
+     */
+    public void info(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(INFO))
+        {
+            logIt(INFO, msgSupplier);
+        }
+    }
+    /**
      * Write to log at CONFIG level.
      * @param format
      * @param args 
@@ -88,6 +122,17 @@ public abstract class BaseLogging
         if (isLoggable(CONFIG))
         {
             logIt(CONFIG, String.format(format, args));
+        }
+    }
+    /**
+     * Write to log at CONFIG level.
+     * @param msgSupplier 
+     */
+    public void config(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(CONFIG))
+        {
+            logIt(CONFIG, msgSupplier);
         }
     }
     /**
@@ -105,6 +150,17 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at FINE level.
+     * @param msgSupplier 
+     */
+    public void fine(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(FINE))
+        {
+            logIt(FINE, msgSupplier);
+        }
+    }
+    /**
      * Write to log at FINER level.
      * @param format
      * @param args 
@@ -116,6 +172,17 @@ public abstract class BaseLogging
         if (isLoggable(FINER))
         {
             logIt(FINER, String.format(format, args));
+        }
+    }
+    /**
+     * Write to log at FINER level.
+     * @param msgSupplier 
+     */
+    public void finer(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(FINER))
+        {
+            logIt(FINER, msgSupplier);
         }
     }
     /**
@@ -133,6 +200,17 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at FINEST level.
+     * @param msgSupplier 
+     */
+    public void finest(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(FINEST))
+        {
+            logIt(FINEST, msgSupplier);
+        }
+    }
+    /**
      * Write to log at VERBOSE level.
      * @param format
      * @param args 
@@ -147,6 +225,17 @@ public abstract class BaseLogging
         }
     }
     /**
+     * Write to log at VERBOSE level.
+     * @param msgSupplier 
+     */
+    public void verbose(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(VERBOSE))
+        {
+            logIt(VERBOSE, msgSupplier);
+        }
+    }
+    /**
      * Write to log at DEBUG level.
      * @param format
      * @param args 
@@ -158,6 +247,17 @@ public abstract class BaseLogging
         if (isLoggable(DEBUG))
         {
             logIt(DEBUG, String.format(format, args));
+        }
+    }
+    /**
+     * Write to log at DEBUG level.
+     * @param msgSupplier 
+     */
+    public void debug(Supplier<String> msgSupplier)
+    {
+        if (isLoggable(DEBUG))
+        {
+            logIt(DEBUG, msgSupplier);
         }
     }
     /**
@@ -207,6 +307,7 @@ public abstract class BaseLogging
     }
     public abstract List<String> getLoggerNames();
     public abstract boolean isLoggable(Level level);
+    protected abstract void logIt(Level level, Supplier<String> msgSupplier);
     protected abstract void logIt(Level level, String msg);
     protected abstract void logIt(Level level, String msg, Throwable thrown);
 
