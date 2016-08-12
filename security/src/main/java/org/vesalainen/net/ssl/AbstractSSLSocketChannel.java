@@ -16,7 +16,6 @@
  */
 package org.vesalainen.net.ssl;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.SocketOption;
@@ -31,7 +30,6 @@ import static java.nio.channels.SelectionKey.OP_READ;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,6 +234,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                 case BUFFER_UNDERFLOW:
                     netIn.compact();
                     int rc = channel.read(netIn);
+                    log.fine("read = %d", rc);
                     if (rc == 0)
                     {
                         netIn.flip();
@@ -248,6 +247,7 @@ public class AbstractSSLSocketChannel extends AbstractInterruptibleChannel imple
                     }
                     netIn.flip();
                     result = engine.unwrap(netIn, appReadArray, 0, 1);
+                    log.fine("unwrap %s", result);
                     break;
                 case BUFFER_OVERFLOW:
                     throw new IOException("unwrap:"+result);
