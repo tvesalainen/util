@@ -29,7 +29,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -84,13 +86,13 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
     }
     /**
      * Start virtual circuit
-     * @param executor
+     * @param executorFactory
      * @throws IOException 
      */
     @Override
-    public void start(ExecutorService executor) throws IOException
+    public void start(Supplier<ExecutorService> executorFactory) throws IOException
     {
-        future = executor.submit(this);
+        future = executorFactory.get().submit(this);
     }
     /**
      * Wait until other peer has closed connection or virtual circuit is closed 
@@ -125,6 +127,19 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
             throw new IllegalStateException("not started");
         }
         future.cancel(true);
+    }
+
+    @Override
+    public void join(Supplier<ExecutorService> executorFactory) throws IOException
+    {
+        try
+        {
+            call();
+        }
+        catch (Exception ex)
+        {
+            throw new IOException(ex);
+        }
     }
 
     @Override

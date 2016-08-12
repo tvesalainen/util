@@ -25,8 +25,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -54,15 +55,36 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     }
     
     @Override
-    public void start(ExecutorService executor) throws IOException
+    public void start(Supplier<ExecutorService> executorFactory) throws IOException
     {
+        ExecutorService executor = executorFactory.get();
         f1 = executor.submit(new Copier(ch1, ch2, true));
         f2 = executor.submit(new Copier(ch2, ch1, false));
     }
 
     @Override
+    public void join(Supplier<ExecutorService> executorFactory) throws IOException
+    {
+        ExecutorService executor = executorFactory.get();
+        Copier c1 = new Copier(ch1, ch2, true);
+        f2 = executor.submit(new Copier(ch2, ch1, false));
+        try
+        {
+            c1.call();
+        }
+        catch (Exception ex)
+        {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
     public void waitForFinish() throws IOException
     {
+        if (f1 == null || f2 == null)
+        {
+            throw new IllegalStateException("not started");
+        }
         try
         {
             f1.get();
@@ -77,6 +99,10 @@ public class ByteChannelVirtualCircuit extends JavaLogging implements VirtualCir
     @Override
     public void stop() throws IOException
     {
+        if (f1 == null || f2 == null)
+        {
+            throw new IllegalStateException("not started");
+        }
         f1.cancel(true);
         f2.cancel(true);
     }

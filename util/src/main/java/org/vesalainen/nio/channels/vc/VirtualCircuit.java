@@ -19,6 +19,7 @@ package org.vesalainen.nio.channels.vc;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 /**
  * VirtualCircuit provides duplex communication over two channels
@@ -32,14 +33,28 @@ public interface VirtualCircuit
      */
     default void start() throws IOException
     {
-        start(Executors.newCachedThreadPool());
+        start(Executors::newCachedThreadPool);
     }
     /**
-     * Start VirtualCircuit with given thread pool.
-     * @param executor
+     * Start and wait VirtualCircuit with cached thread pool.
      * @throws IOException 
      */
-    void start(ExecutorService executor) throws IOException;
+    default void join() throws IOException
+    {
+        join(Executors::newCachedThreadPool);
+    }
+    /**
+     * Start VirtualCircuit with given thread pool factory.
+     * @param executorFactory
+     * @throws IOException 
+     */
+    void start(Supplier<ExecutorService> executorFactory) throws IOException;
+    /**
+     * Start and wait VirtualCircuit with given thread pool factory.
+     * @param executorFactory
+     * @throws IOException 
+     */
+    void join(Supplier<ExecutorService> executorFactory) throws IOException;
     /**
      * Wait until both sides close communication.
      * @throws IOException 
@@ -50,25 +65,4 @@ public interface VirtualCircuit
      * @throws IOException 
      */
     void stop() throws IOException;
-    /**
-     * Start VirtualCircuit with cached thread pool and wait until both sides 
-     * close communication.
-     * @throws IOException 
-     */
-    default void startAndWait() throws IOException
-    {
-        start(Executors.newCachedThreadPool());
-        waitForFinish();
-    }
-    /**
-     * Start VirtualCircuit with given thread pool and wait until both sides 
-     * close communication.
-     * @param executor
-     * @throws IOException 
-     */
-    default void startAndWait(ExecutorService executor) throws IOException
-    {
-        start(executor);
-        waitForFinish();
-    }
 }

@@ -72,7 +72,7 @@ public class VirtualCircuitTest
         
         executor.submit(new Echo(sc22));
         
-        vc.start(executor);
+        vc.start(()->{return executor;});
         
         byte[] exp = new byte[1024];
         Random random = new Random(98765);
