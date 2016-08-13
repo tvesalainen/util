@@ -30,7 +30,7 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
 {
     public TaggableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue)
     {
-        this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, null);
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory());
     }
 
     public TaggableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler)
@@ -52,10 +52,11 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
         if (currentThread instanceof TaggableThread)
         {
             TaggableThread tt = (TaggableThread) currentThread;
-            Map tags = tt.getTags();
+            Map<Object,Object> tags = tt.getTags();
             afterExecute(tags, tt.getStart(), System.currentTimeMillis(), t);
             tags.clear();
         }
+        currentThread.setName("Idle ["+currentThread.getId()+"]");
     }
 
     @Override
@@ -67,7 +68,8 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
             TaggableThread taggableThread = (TaggableThread) t;
             taggableThread.setStart(System.currentTimeMillis());
         }
+        t.setName("Running ["+t.getId()+"]");
     }
     
-    protected abstract void afterExecute(Map tags, long start, long end, Throwable t);
+    protected abstract void afterExecute(Map<Object,Object> tags, long start, long end, Throwable t);
 }

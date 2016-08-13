@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class TaggableThread extends Thread
 {
-    private Map tags = new HashMap<>();
+    private Map<Object,Object> tags = new HashMap<>();
     private long start;
 
     public TaggableThread(ThreadGroup group, Runnable target)
@@ -48,7 +48,7 @@ public class TaggableThread extends Thread
         tags.put(key, value);
     }
 
-    Map getTags()
+    Map<Object,Object> getTags()
     {
         return tags;
     }
