@@ -26,30 +26,32 @@ import java.util.concurrent.TimeUnit;
 import org.vesalainen.math.sliding.TimeoutSlidingStats;
 
 /**
- *
+ * StatisticsThreadPoolExecutorgather statistics from TaggabeThread's
  * @author tkv
  */
 public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
 {
     protected long slideMillis;
+    protected long startMillis;
     protected Map<Object,Map<Object,TimeoutSlidingStats>> map = new ConcurrentHashMap<>();
     
     public StatisticsThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, long slideTime, TimeUnit slidingUnit)
     {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
         this.slideMillis = slidingUnit.toMillis(slideTime);
+        this.startMillis = System.currentTimeMillis();
     }
 
     public StatisticsThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler, long slideTime, TimeUnit slidingUnit)
     {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
         this.slideMillis = slidingUnit.toMillis(slideTime);
+        this.startMillis = System.currentTimeMillis();
     }
 
     @Override
-    protected void afterExecute(Map<Object,Object> tags, long start, long end, Throwable t)
+    protected void afterExecute(Map<Object,Object> tags, long elapsed, Throwable t)
     {
-        double elapsed = end - start;
         for (Entry<Object,Object> e : tags.entrySet())
         {
             Object key = e.getKey();
@@ -74,8 +76,12 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
     {
         Map<Object,Object> m = new HashMap<>();
         m.put(key, value);
-        afterExecute(m, 0, elapsed, null);
+        afterExecute(m, elapsed, null);
     }
+    /**
+     * Prints statistics
+     * @return 
+     */
     public String printStatistics()
     {
         StringBuilder sb = new StringBuilder();
@@ -84,6 +90,8 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
         sb.append("Maximum   : ").append(getLargestPoolSize()).append('\n');
         sb.append("Active    : ").append(getActiveCount()).append('\n');
         sb.append("Completed : ").append(getCompletedTaskCount()).append('\n');
+        sb.append('\n');
+        sb.append("Statistics are from last ").append(Math.min(System.currentTimeMillis() - startMillis, slideMillis)/1000).append(" seconds\n");
         sb.append('\n');
         sb.append("Tags\n");
         sb.append("-----------------\n");

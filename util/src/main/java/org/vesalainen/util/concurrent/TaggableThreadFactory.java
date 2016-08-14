@@ -16,11 +16,11 @@
  */
 package org.vesalainen.util.concurrent;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.concurrent.ThreadFactory;
 
 /**
- *
+ * TaggableThreadFactory creates TaggableThreads. Threads properties can be
+ * changed by using methods in this class.
  * @author tkv
  */
 public class TaggableThreadFactory implements ThreadFactory
@@ -60,7 +60,10 @@ public class TaggableThreadFactory implements ThreadFactory
     {
         return name;
     }
-
+    /**
+     * Sets created thread's name as 'name [id]'
+     * @param name 
+     */
     public void setName(String name)
     {
         this.name = name;

@@ -16,23 +16,61 @@
  */
 package org.vesalainen.util.concurrent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
- *
+ * TaggableThread can be tagged or modified while running. It's intended use
+ * with TaggableThreadPoolExecutor. Thread get tagged etc while running. Before
+ * put back in pool TaggableThreadPoolExecutor afterExecute processes tags etc.
  * @author tkv
  */
 public class TaggableThread extends Thread
 {
     private Map<Object,Object> tags = new HashMap<>();
     private long start;
+    private List<BiConsumer<Map<Object,Object>,Long>> completers;
 
     public TaggableThread(ThreadGroup group, Runnable target)
     {
         super(group, target);
     }
+    /**
+     * Add a completer whose parameters are tag map and elapsed time in milliseconds.
+     * After thread run completers are called.
+     * @param completer 
+     */
+    public static void addCompleter(BiConsumer<Map<Object,Object>,Long> completer)
+    {
+        Thread currentThread = Thread.currentThread();
+        if (currentThread instanceof TaggableThread)
+        {
+            TaggableThread taggableThread = (TaggableThread) currentThread;
+            taggableThread.addMe(completer);
+        }
+    }
+    private void addMe(BiConsumer<Map<Object,Object>,Long> completer)
+    {
+        if (completers == null)
+        {
+            completers = new ArrayList<>();
+        }
+        completers.add(completer);
+    }
+
+    List<BiConsumer<Map<Object, Object>, Long>> getCompleters()
+    {
+        return completers;
+    }
     
+    /**
+     * Adds a tag, if current thread is TaggableThread, otherwise does nothing.
+     * @param key
+     * @param value 
+     */
     public static void tag(Object key, Object value)
     {
         Thread currentThread = Thread.currentThread();

@@ -16,14 +16,16 @@
  */
 package org.vesalainen.util.concurrent;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 /**
- *
+ * TaggableThreadPoolExecutor is a ThreadPoolExecutor that uses TaggableThreadFactory.
  * @author tkv
  */
 public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
@@ -53,10 +55,18 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
         {
             TaggableThread tt = (TaggableThread) currentThread;
             Map<Object,Object> tags = tt.getTags();
-            afterExecute(tags, tt.getStart(), System.currentTimeMillis(), t);
+            long elapsed = System.currentTimeMillis() - tt.getStart();
+            afterExecute(tags, elapsed, t);
+            List<BiConsumer<Map<Object, Object>, Long>> completers = tt.getCompleters();
+            if (completers != null)
+            {
+                completers.stream().forEach((completer) ->
+                {
+                    completer.accept(tags, elapsed);
+                });
+            }
             tags.clear();
         }
-        currentThread.setName("Idle ["+currentThread.getId()+"]");
     }
 
     @Override
@@ -68,8 +78,7 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
             TaggableThread taggableThread = (TaggableThread) t;
             taggableThread.setStart(System.currentTimeMillis());
         }
-        t.setName("Running ["+t.getId()+"]");
     }
     
-    protected abstract void afterExecute(Map<Object,Object> tags, long start, long end, Throwable t);
+    protected abstract void afterExecute(Map<Object,Object> tags, long elapsed, Throwable t);
 }
