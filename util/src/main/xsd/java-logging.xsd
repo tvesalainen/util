@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2016 tkv
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<xsd:schema version="1.0"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://vesalainen.org/schema/java-logging"
+        xmlns="http://vesalainen.org/schema/java-logging"
+        elementFormDefault="qualified">
+    <xsd:element name="java-logging">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="logger">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="memoryHandler" type="memoryHandlerType" maxOccurs="unbounded"/>
+                            <xsd:element name="consoleHandler" type="consoleHandlerType" maxOccurs="unbounded"/>
+                            <xsd:element name="fileHandler" type="fileHandlerType" maxOccurs="unbounded"/>
+                            <xsd:element name="socketHandler" type="socketHandlerType" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:attribute name="level" type="xsd:string" default="INFO"/>
+                        <xsd:attribute name="useParentHandlers" type="xsd:boolean" default="true"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:complexType name="socketHandlerType">
+        <xsd:complexContent>
+            <xsd:extension base="handlerType">
+                <xsd:attribute name="host" type="xsd:string"/>
+                <xsd:attribute name="port" type="xsd:unsignedShort"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="fileHandlerType">
+        <xsd:complexContent>
+            <xsd:extension base="handlerType">
+                <xsd:attribute name="pattern" type="xsd:string" default="%t/java%g.log"/>
+                <xsd:attribute name="limit" type="xsd:unsignedInt" default="1048576"/>
+                <xsd:attribute name="count" type="xsd:unsignedInt" default="8"/>
+                <xsd:attribute name="append" type="xsd:boolean" default="true"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="consoleHandlerType">
+        <xsd:complexContent>
+            <xsd:extension base="handlerType">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="memoryHandlerType">
+        <xsd:complexContent>
+            <xsd:extension base="handlerType">
+                <xsd:sequence maxOccurs="1">
+                    <xsd:element name="target">
+                        <xsd:complexType>
+                            <xsd:choice>
+                                <xsd:element name="memoryHandler" type="memoryHandlerType" />
+                                <xsd:element name="consoleHandler" type="consoleHandlerType" />
+                                <xsd:element name="fileHandler" type="fileHandlerType"/>
+                                <xsd:element name="socketHandler" type="socketHandlerType"/>
+                            </xsd:choice>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+                <xsd:attribute name="pushLevel" type="xsd:string" default="SEVERE"/>
+                <xsd:attribute name="size" type="xsd:unsignedInt" default="1024"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="handlerType">
+        <xsd:attribute name="level" type="xsd:string" default="INFO"/>
+        <xsd:attribute name="formatter" type="xsd:string"/>
+        <xsd:attribute name="filter" type="xsd:string"/>
+        <xsd:attribute name="errorManager" type="xsd:string" default="java.util.logging.ErrorManager"/>
+        <xsd:attribute name="encoding" type="xsd:string" default="utf-8"/>
+    </xsd:complexType>
+</xsd:schema>
