@@ -65,6 +65,10 @@ public abstract class TaggableThreadPoolExecutor extends ThreadPoolExecutor
                     completer.accept(tags, elapsed);
                 });
             }
+            if (completers != null)
+            {
+                completers.clear();
+            }
             tags.clear();
         }
     }
