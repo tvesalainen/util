@@ -21,10 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         targetNamespace="http://vesalainen.org/schema/java-logging"
         xmlns="http://vesalainen.org/schema/java-logging"
         elementFormDefault="qualified">
-    <xsd:element name="java-logging">
+    <xsd:element name="java-logging-config">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="logger">
+                <xsd:element name="loggerType" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element name="memoryHandler" type="memoryHandlerType" maxOccurs="unbounded"/>
@@ -35,6 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <xsd:attribute name="name" type="xsd:string"/>
                         <xsd:attribute name="level" type="xsd:string" default="INFO"/>
                         <xsd:attribute name="useParentHandlers" type="xsd:boolean" default="true"/>
+                        <xsd:attribute name="resourceBundle" type="xsd:string"/>
+                        <xsd:attribute name="locale" type="xsd:string"/>
+                        <xsd:attribute name="filter" type="xsd:string"/>
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>

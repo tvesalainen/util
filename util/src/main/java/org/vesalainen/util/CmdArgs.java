@@ -327,11 +327,25 @@ public class CmdArgs extends AbstractProvisioner
      */
     public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
     {
+        addOption(cls, name, description, exclusiveGroup, true);
+    }
+    /**
+     * Add an option
+     * @param <T> Type of option
+     * @param cls Option type class
+     * @param name Option name Option name without
+     * @param description Option description
+     * @param exclusiveGroup A group of options. Only options of a single group 
+     * are accepted.
+     * @param mandatory 
+     */
+    public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup, boolean mandatory)
+    {
         if (names.contains(name))
         {
             throw new IllegalArgumentException(name+" is already added as argument");
         }
-        Option opt = new Option(cls, name, description, exclusiveGroup);
+        Option opt = new Option(cls, name, description, exclusiveGroup, mandatory);
         Option old = map.put(name, opt);
         if (old != null)
         {
@@ -433,13 +447,13 @@ public class CmdArgs extends AbstractProvisioner
         private boolean mandatory;
         private T defValue;
 
-        public Option(Class<T> cls, String name, String description, String exclusiveGroup)
+        public Option(Class<T> cls, String name, String description, String exclusiveGroup, boolean mandatory)
         {
             this.cls = cls;
             this.name = name;
             this.description = description;
             this.exclusiveGroup = exclusiveGroup;
-            mandatory = true;
+            this.mandatory = mandatory;
         }
 
         public Option(String name, String description, String exclusiveGroup, T defValue)

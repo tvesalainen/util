@@ -311,6 +311,26 @@ public abstract class BaseLogging
     protected abstract void logIt(Level level, String msg);
     protected abstract void logIt(Level level, String msg, Throwable thrown);
 
+    public static Level parseLevel(String level)
+    {
+        level = level.toUpperCase();
+        try
+        {
+            return Level.parse(level);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            switch (level)
+            {
+                case "VERBOSE":
+                    return VERBOSE;
+                case "DEBUG":
+                    return DEBUG;
+                default:
+                    throw new IllegalArgumentException(level+" unknown");
+            }
+        }
+    }
     private static class Verbose extends Level
     {
 

@@ -16,7 +16,11 @@
  */
 package org.vesalainen.util;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -25,6 +29,15 @@ import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import java.util.logging.MemoryHandler;
 import java.util.logging.SocketHandler;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import org.vesalainen.util.jaxb.ConsoleHandlerType;
+import org.vesalainen.util.jaxb.FileHandlerType;
+import org.vesalainen.util.jaxb.HandlerType;
+import org.vesalainen.util.jaxb.JavaLoggingConfig;
+import org.vesalainen.util.jaxb.JavaLoggingConfig.LoggerType;
+import org.vesalainen.util.logging.BaseLogging;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.logging.MinimalFormatter;
 
@@ -50,10 +63,19 @@ public class LoggingCommandLine extends CmdArgs
     {
         log = new JavaLogging(LoggingCommandLine.class);
     }
-
+    /**
+     * ([ lp &lt;logging config file&gt; ] ) |
+     * (([ lp &lt;log pattern&gt; -l &lt;limit&gt; -c &lt;count&gt; ] |
+     * [ -h &lt;host&gt; -p &lt;port&gt; ])
+     * [ -ll &lt;log level&gt; ] [ -pl &lt;push level&gt; ]
+     * [ -rl &lt;root log&gt; ] [ -ph &lt;use parent handlers&gt; ]
+     * [ -bs &lt;buffer size&gt; ])
+     * @param args 
+     */
     @Override
     public void command(String... args)
     {
+        addOption(File.class, "-lx", "logging config file", "xmlConfig", false);
         addOption("-lp", "log pattern", "filelog", logPattern);
         addOption("-l", "log limit", "filelog", logLimit);
         addOption("-c", "log count", "filelog", logCount);
@@ -67,6 +89,116 @@ public class LoggingCommandLine extends CmdArgs
         
         super.command(args);
         
+        File configFile = getOption("-lx");
+        if (configFile != null)
+        {
+            configureLog(configFile);
+        }
+        else
+        {
+            configureLog();
+        }
+    }
+
+    private void configureLog(File configFile)
+    {
+        try
+        {
+            JAXBContext jaxbCtx = JAXBContext.newInstance("org.vesalainen.util.jaxb");
+            Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+            JavaLoggingConfig javaLoggingConfig = (JavaLoggingConfig) unmarshaller.unmarshal(configFile);
+            for (LoggerType loggerType : javaLoggingConfig.getLoggerType())
+            {
+                String name = loggerType.getName();
+                Logger logger = Logger.getLogger(name);
+                String level = loggerType.getLevel();
+                if (level != null)
+                {
+                    logger.setLevel(BaseLogging.parseLevel(level));
+                }
+                logger.setUseParentHandlers(loggerType.isUseParentHandlers());
+                String resourceBundleString = loggerType.getResourceBundle();
+                if (resourceBundleString != null)
+                {
+                    Locale locale;
+                    String languageTag = loggerType.getLocale();
+                    if (languageTag != null)
+                    {
+                        locale = Locale.forLanguageTag(languageTag);
+                    }
+                    else
+                    {
+                        locale = Locale.getDefault();
+                    }
+                    ResourceBundle resourceBundle = ResourceBundle.getBundle(resourceBundleString, locale);
+                    logger.setResourceBundle(resourceBundle);
+                }
+                logger.setFilter(getInstance(loggerType.getFilter()));
+                for (ConsoleHandlerType consoleHandlerType : loggerType.getConsoleHandler())
+                {
+                    logger.addHandler(createConsoleHandler(consoleHandlerType));
+                }
+                for (FileHandlerType fileHandlerType : loggerType.getFileHandler())
+                {
+                    logger.addHandler(createFileHandler(fileHandlerType));
+                }
+            }
+        }
+        catch (JAXBException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private Handler createFileHandler(FileHandlerType fileHandlerType)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Handler createConsoleHandler(ConsoleHandlerType consoleHandlerType)
+    {
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        populateHandler(consoleHandlerType, consoleHandler);
+        return consoleHandler;
+    }
+
+    private void populateHandler(HandlerType handlerType, Handler handler)
+    {
+        try
+        {
+            handler.setEncoding(handlerType.getEncoding());
+            handler.setErrorManager(getInstance(handlerType.getErrorManager()));
+            handler.setFilter(getInstance(handlerType.getFilter()));
+            handler.setFormatter(getInstance(handlerType.getFormatter()));
+            String level = handlerType.getLevel();
+            if (level != null)
+            {
+                handler.setLevel(BaseLogging.parseLevel(level));
+            }
+        }
+        catch (SecurityException | UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private <T> T getInstance(String classname)
+    {
+        if (classname == null)
+        {
+            return null;
+        }
+        try
+        {
+            Class<T> cls = (Class<T>) Class.forName(classname);
+            return cls.newInstance();
+        }
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private void configureLog()
+    {
         Logger log = Logger.getLogger(getOption("-rl"));
         log.setUseParentHandlers(getOption("-ph"));
         log.setLevel(getOption("-ll"));
@@ -104,7 +236,7 @@ public class LoggingCommandLine extends CmdArgs
         memoryHandler.setFormatter(minimalFormatter);
         log.addHandler(memoryHandler);
     }
-
+    
     public JavaLogging getLog()
     {
         return log;
@@ -244,5 +376,5 @@ public class LoggingCommandLine extends CmdArgs
     {
         this.bufferSize = bufferSize;
     }
-    
+
 }
