@@ -260,6 +260,10 @@ public class CmdArgs extends AbstractProvisioner
             {
                 return (T) opt.defValue;
             }
+            if (!opt.mandatory)
+            {
+                return null;
+            }
             throw new IllegalArgumentException(name+" not found");
         }
         return (T) value;

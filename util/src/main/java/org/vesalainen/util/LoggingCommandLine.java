@@ -36,7 +36,10 @@ import org.vesalainen.util.jaxb.ConsoleHandlerType;
 import org.vesalainen.util.jaxb.FileHandlerType;
 import org.vesalainen.util.jaxb.HandlerType;
 import org.vesalainen.util.jaxb.JavaLoggingConfig;
-import org.vesalainen.util.jaxb.JavaLoggingConfig.LoggerType;
+import org.vesalainen.util.jaxb.LoggerType;
+import org.vesalainen.util.jaxb.MemoryHandlerType;
+import org.vesalainen.util.jaxb.MemoryHandlerType.Target;
+import org.vesalainen.util.jaxb.SocketHandlerType;
 import org.vesalainen.util.logging.BaseLogging;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.logging.MinimalFormatter;
@@ -92,7 +95,14 @@ public class LoggingCommandLine extends CmdArgs
         File configFile = getOption("-lx");
         if (configFile != null)
         {
-            configureLog(configFile);
+            try
+            {
+                JavaLogging.xmlConfig(configFile);
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
         }
         else
         {
@@ -100,103 +110,6 @@ public class LoggingCommandLine extends CmdArgs
         }
     }
 
-    private void configureLog(File configFile)
-    {
-        try
-        {
-            JAXBContext jaxbCtx = JAXBContext.newInstance("org.vesalainen.util.jaxb");
-            Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
-            JavaLoggingConfig javaLoggingConfig = (JavaLoggingConfig) unmarshaller.unmarshal(configFile);
-            for (LoggerType loggerType : javaLoggingConfig.getLoggerType())
-            {
-                String name = loggerType.getName();
-                Logger logger = Logger.getLogger(name);
-                String level = loggerType.getLevel();
-                if (level != null)
-                {
-                    logger.setLevel(BaseLogging.parseLevel(level));
-                }
-                logger.setUseParentHandlers(loggerType.isUseParentHandlers());
-                String resourceBundleString = loggerType.getResourceBundle();
-                if (resourceBundleString != null)
-                {
-                    Locale locale;
-                    String languageTag = loggerType.getLocale();
-                    if (languageTag != null)
-                    {
-                        locale = Locale.forLanguageTag(languageTag);
-                    }
-                    else
-                    {
-                        locale = Locale.getDefault();
-                    }
-                    ResourceBundle resourceBundle = ResourceBundle.getBundle(resourceBundleString, locale);
-                    logger.setResourceBundle(resourceBundle);
-                }
-                logger.setFilter(getInstance(loggerType.getFilter()));
-                for (ConsoleHandlerType consoleHandlerType : loggerType.getConsoleHandler())
-                {
-                    logger.addHandler(createConsoleHandler(consoleHandlerType));
-                }
-                for (FileHandlerType fileHandlerType : loggerType.getFileHandler())
-                {
-                    logger.addHandler(createFileHandler(fileHandlerType));
-                }
-            }
-        }
-        catch (JAXBException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-    private Handler createFileHandler(FileHandlerType fileHandlerType)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private Handler createConsoleHandler(ConsoleHandlerType consoleHandlerType)
-    {
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        populateHandler(consoleHandlerType, consoleHandler);
-        return consoleHandler;
-    }
-
-    private void populateHandler(HandlerType handlerType, Handler handler)
-    {
-        try
-        {
-            handler.setEncoding(handlerType.getEncoding());
-            handler.setErrorManager(getInstance(handlerType.getErrorManager()));
-            handler.setFilter(getInstance(handlerType.getFilter()));
-            handler.setFormatter(getInstance(handlerType.getFormatter()));
-            String level = handlerType.getLevel();
-            if (level != null)
-            {
-                handler.setLevel(BaseLogging.parseLevel(level));
-            }
-        }
-        catch (SecurityException | UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private <T> T getInstance(String classname)
-    {
-        if (classname == null)
-        {
-            return null;
-        }
-        try
-        {
-            Class<T> cls = (Class<T>) Class.forName(classname);
-            return cls.newInstance();
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
     private void configureLog()
     {
         Logger log = Logger.getLogger(getOption("-rl"));
