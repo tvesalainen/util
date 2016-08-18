@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -43,6 +44,12 @@ public class JavaLoggingTest
         JavaLogging.xmlConfig(new File(url.toURI()));
         Logger logger = Logger.getLogger("test");
         assertEquals(Level.FINEST, logger.getLevel());
+        logger = Logger.getLogger("access");
+        assertEquals(Level.INFO, logger.getLevel());
+        logger.info("test");
+        Handler[] handlers = logger.getHandlers();
+        assertNotNull(handlers);
+        assertTrue(handlers.length > 0);
     }
     
 }

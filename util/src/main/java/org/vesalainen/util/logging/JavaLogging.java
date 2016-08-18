@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -55,7 +56,7 @@ import org.vesalainen.util.jaxb.SocketHandlerType;
  */
 public class JavaLogging extends BaseLogging
 {
-    private static final Map<String,JavaLogging> map = new WeakHashMap();
+    private static final Map<String,JavaLogging> map = new HashMap();
     private static Supplier<Clock> clockSupplier = () -> {return Clock.systemDefaultZone();};
     
     private Logger logger;
@@ -224,7 +225,8 @@ public class JavaLogging extends BaseLogging
             for (LoggerType loggerType : javaLoggingConfig.getLogger())
             {
                 String name = loggerType.getName();
-                Logger logger = Logger.getLogger(name);
+                JavaLogging javaLogging = getLogger(name);
+                Logger logger = javaLogging.getLogger();
                 String level = loggerType.getLevel();
                 if (level != null)
                 {

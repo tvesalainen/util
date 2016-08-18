@@ -25,4 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </target>
         </memoryHandler>
     </logger>
+    <logger name="access" level="info" useParentHandlers="false">
+        <fileHandler pattern="%ttest%g.log" formatter="org.vesalainen.util.logging.MinimalFormatter">
+        </fileHandler>
+    </logger>
 </java-logging-config>
