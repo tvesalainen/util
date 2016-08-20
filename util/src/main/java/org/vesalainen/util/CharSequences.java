@@ -53,10 +53,24 @@ public class CharSequences
     {
         return Streams.compare(s1.codePoints().map(op), s2.codePoints().map(op));
     }
+    /**
+     * Return true if seq start match pattern exactly.
+     * @param seq
+     * @param pattern
+     * @return 
+     */
     public static boolean startsWith(CharSequence seq, CharSequence pattern)
     {
         return startsWith(seq, pattern, Funcs::same);
     }
+    /**
+     * Return true if seq start match pattern after both characters have been converted
+     * with op.
+     * @param seq
+     * @param pattern
+     * @param op
+     * @return 
+     */
     public static boolean startsWith(CharSequence seq, CharSequence pattern, IntUnaryOperator op)
     {
         if (pattern.length() > seq.length())
@@ -73,10 +87,23 @@ public class CharSequences
         }
         return true;
     }
+    /**
+     * Return true if seq end match pattern exactly.
+     * @param seq
+     * @param pattern
+     * @return 
+     */
     public static boolean endsWith(CharSequence seq, CharSequence pattern)
     {
         return endsWith(seq, pattern, Funcs::same);
     }
+    /**
+     * Return true if seq end match pattern after both characters have been converted
+     * @param seq
+     * @param pattern
+     * @param op
+     * @return 
+     */
     public static boolean endsWith(CharSequence seq, CharSequence pattern, IntUnaryOperator op)
     {
         if (pattern.length() > seq.length())
