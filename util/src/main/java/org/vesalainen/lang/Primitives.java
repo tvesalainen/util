@@ -17,6 +17,8 @@
 
 package org.vesalainen.lang;
 
+import org.vesalainen.util.CharSequences;
+
 /**
  * Numbers class contains number parsing methods parsing numbers from CharSequence
  * rather that String. This is the main difference to parsing methods in Integer,
@@ -800,6 +802,14 @@ public class Primitives
      */
     public static final int parseInt(CharSequence cs)
     {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseInt(cs, 2);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseInt(cs, 16);
+        }
         return parseInt(cs, 10);
     }
     /**
@@ -939,6 +949,14 @@ public class Primitives
      */
     public static final long parseLong(CharSequence cs)
     {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseLong(cs, 2);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseLong(cs, 16);
+        }
         return parseLong(cs, 10);
     }
     /**
