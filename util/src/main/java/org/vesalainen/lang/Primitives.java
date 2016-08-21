@@ -1096,6 +1096,14 @@ public class Primitives
      */
     public static final short parseShort(CharSequence cs)
     {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseShort(cs, 2);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseShort(cs, 16);
+        }
         return parseShort(cs, 10);
     }
     /**
