@@ -873,4 +873,18 @@ public class PrimitivesTest
         assertArrayEquals(expArray, got);
         assertEquals(expShort, Primitives.readShort(got));
     }
+    @Test
+    public void testHex()
+    {
+        assertEquals(0xab, Primitives.parseShort("0xab"));
+        assertEquals(0xabcde, Primitives.parseInt("0xabcde"));
+        assertEquals(0xabcde, Primitives.parseLong("0xabcde"));
+    }
+    @Test
+    public void testBinary()
+    {
+        assertEquals(0b0111, Primitives.parseShort("0b0111"));
+        assertEquals(0b01110101, Primitives.parseInt("0b01110101"));
+        assertEquals(0b01110101, Primitives.parseLong("0b01110101"));
+    }
 }
