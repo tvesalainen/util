@@ -804,11 +804,11 @@ public class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseInt(cs, 2);
+            return parseInt(cs, 2, 2, cs.length());
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseInt(cs, 16);
+            return parseInt(cs, 16, 2, cs.length());
         }
         return parseInt(cs, 10);
     }
@@ -951,11 +951,11 @@ public class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseLong(cs, 2);
+            return parseLong(cs, 2, 2, cs.length());
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseLong(cs, 16);
+            return parseLong(cs, 16, 2, cs.length());
         }
         return parseLong(cs, 10);
     }
@@ -1098,11 +1098,11 @@ public class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseShort(cs, 2);
+            return parseShort(cs, 2, 2, cs.length());
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseShort(cs, 16);
+            return parseShort(cs, 16, 2, cs.length());
         }
         return parseShort(cs, 10);
     }
