@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -36,6 +37,31 @@ public class HexDumpTest
     {
         byte[] a = "qwerty\nasdfg\t\t\n1234567890".getBytes();
         String h = HexDump.toHex(a);
+        System.err.println(h);
+        assertEquals("    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n" +
+                "00: 71 77 65 72 74 79 0a 61 73 64 66 67 09 09 0a 31  q w e r t y . a s d f g . . . 1 \n" +
+                "10: 32 33 34 35 36 37 38 39 30                       2 3 4 5 6 7 8 9 0 \n", h);
+        Assert.assertArrayEquals(a, HexDump.fromHex(h));
+    }
+    @Test
+    public void test2()
+    {
+        byte[] a = "qwerty\nasdfg\t\t\n1234567890".getBytes();
+        ByteBuffer bb = ByteBuffer.wrap(a);
+        String h = HexDump.remainingToHex(bb);
+        System.err.println(h);
+        assertEquals("    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n" +
+                "00: 71 77 65 72 74 79 0a 61 73 64 66 67 09 09 0a 31  q w e r t y . a s d f g . . . 1 \n" +
+                "10: 32 33 34 35 36 37 38 39 30                       2 3 4 5 6 7 8 9 0 \n", h);
+        Assert.assertArrayEquals(a, HexDump.fromHex(h));
+    }
+    @Test
+    public void test3()
+    {
+        byte[] a = "qwerty\nasdfg\t\t\n1234567890".getBytes();
+        ByteBuffer bb = ByteBuffer.wrap(a);
+        bb.position(bb.limit());
+        String h = HexDump.startToHex(bb);
         System.err.println(h);
         assertEquals("    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f\n" +
                 "00: 71 77 65 72 74 79 0a 61 73 64 66 67 09 09 0a 31  q w e r t y . a s d f g . . . 1 \n" +

@@ -76,12 +76,23 @@ public class HexDump
      * @param bb
      * @return 
      */
-    public static final String toHex(ByteBuffer bb)
+    public static final String remainingToHex(ByteBuffer bb)
     {
         byte[] buf = new byte[bb.remaining()];
         int safe = bb.position();
         bb.get(buf);
         bb.position(safe);
+        return toHex(buf);
+    }
+    public static final String startToHex(ByteBuffer bb)
+    {
+        byte[] buf = new byte[bb.position()];
+        int safePos = bb.position();
+        int safeLim = bb.limit();
+        bb.flip();
+        bb.get(buf);
+        bb.position(safePos);
+        bb.limit(safeLim);
         return toHex(buf);
     }
     /**

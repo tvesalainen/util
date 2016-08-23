@@ -31,7 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -178,7 +177,7 @@ public class SelectableVirtualCircuit extends JavaLogging implements VirtualCirc
                         {
                             cnt += rc;
                             bb.flip();
-                            debug("VC \n%s", HexDump.toHex(bb));
+                            debug("VC \n%s", HexDump.remainingToHex(bb));
                             while (bb.hasRemaining())
                             {
                                 int wr = target.write(bb);
