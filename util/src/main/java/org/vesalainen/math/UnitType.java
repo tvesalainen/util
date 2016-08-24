@@ -137,6 +137,42 @@ public enum UnitType
      */
     DegMinSec(UnitCategory.Coordinate, 1, ""),
     /**
+     * Volt
+     */
+    Volt(UnitCategory.Voltage, 1, "V"),
+    /**
+     * Kilo Volt
+     */
+    KiloVolt(UnitCategory.Voltage, 1000, "KV"),
+    /**
+     * Milli Volt
+     */
+    MilliVolt(UnitCategory.Voltage, 0.001, "mV"),
+    /**
+     * Ampere
+     */
+    Ampere(UnitCategory.ElectricCurrent, 1, "A"),
+    /**
+     * Kilo Ampere
+     */
+    KiloAmpere(UnitCategory.ElectricCurrent, 1000, "KA"),
+    /**
+     * Milli Ampere
+     */
+    MilliAmpere(UnitCategory.ElectricCurrent, 0.001, "mA"),
+    /**
+     * Watt
+     */
+    Watt(UnitCategory.ElectricPower, 1, "W"),
+    /**
+     * Kilo Watt
+     */
+    KiloWatt(UnitCategory.ElectricPower, 1000, "KW"),
+    /**
+     * Milli Watt
+     */
+    MilliWatt(UnitCategory.ElectricPower, 0.001, "mW"),
+    /**
      * Unitless
      */
     Unitless(UnitCategory.Unknown, 1, "")

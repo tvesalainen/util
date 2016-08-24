@@ -34,5 +34,8 @@ public enum UnitCategory
     Time,
     Volume,
     Acceleration,
+    Voltage,
+    ElectricCurrent,
+    ElectricPower,
     Unknown
 }
