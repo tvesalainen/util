@@ -18,9 +18,6 @@ package org.vesalainen.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -29,18 +26,6 @@ import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 import java.util.logging.MemoryHandler;
 import java.util.logging.SocketHandler;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import org.vesalainen.util.jaxb.ConsoleHandlerType;
-import org.vesalainen.util.jaxb.FileHandlerType;
-import org.vesalainen.util.jaxb.HandlerType;
-import org.vesalainen.util.jaxb.JavaLoggingConfig;
-import org.vesalainen.util.jaxb.LoggerType;
-import org.vesalainen.util.jaxb.MemoryHandlerType;
-import org.vesalainen.util.jaxb.MemoryHandlerType.Target;
-import org.vesalainen.util.jaxb.SocketHandlerType;
-import org.vesalainen.util.logging.BaseLogging;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.logging.MinimalFormatter;
 
@@ -108,8 +93,13 @@ public class LoggingCommandLine extends CmdArgs
         {
             configureLog();
         }
+        Thread.setDefaultUncaughtExceptionHandler(LoggingCommandLine::exceptionHandler);
     }
 
+    private static void exceptionHandler(Thread thread, Throwable thr)
+    {
+        JavaLogging.getLogger(LoggingCommandLine.class).log(SEVERE, thr, "%s: %s", thread.getName(), thr.getMessage());
+    }
     private void configureLog()
     {
         Logger log = Logger.getLogger(getOption("-rl"));
