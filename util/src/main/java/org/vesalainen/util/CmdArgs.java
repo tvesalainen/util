@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -49,7 +50,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * also available for attachments.
  * @author tkv
  */
-public class CmdArgs extends AbstractProvisioner
+public class CmdArgs extends AbstractProvisioner implements AttachedLogger
 {
     private final Map<String,Option> map = new HashMap<>();
     private final MapList<String,Option> groups = new HashMapList<>();
