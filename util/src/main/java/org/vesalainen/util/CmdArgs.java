@@ -111,7 +111,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param args
      * @throws CmdArgsException 
      */
-    public void setArgs(String... args) throws CmdArgsException
+    public final void setArgs(String... args) throws CmdArgsException
     {
         try
         {
@@ -215,7 +215,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * if none has values.
      * @return 
      */
-    public String getEffectiveGroup()
+    public final String getEffectiveGroup()
     {
         if (arguments == null)
         {
@@ -229,7 +229,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param name
      * @return 
      */
-    public <T> T getArgument(String name)
+    public final <T> T getArgument(String name)
     {
         if (arguments == null)
         {
@@ -243,7 +243,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param name
      * @return 
      */
-    public <T> T getOption(String name)
+    public final <T> T getOption(String name)
     {
         if (arguments == null)
         {
@@ -273,7 +273,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * Add String argument
      * @param name 
      */
-    public void addArgument(String name)
+    public final void addArgument(String name)
     {
         addArgument(String.class, name);
     }
@@ -283,7 +283,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param cls
      * @param name 
      */
-    public <T> void addArgument(Class<T> cls, String name)
+    public final <T> void addArgument(Class<T> cls, String name)
     {
         if (map.containsKey(name))
         {
@@ -306,7 +306,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param name Option name Option name without
      * @param description Option description
      */
-    public <T> void addOption(String name, String description)
+    public final <T> void addOption(String name, String description)
     {
         addOption(String.class, name, description, null);
     }
@@ -317,7 +317,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param name Option name Option name without
      * @param description Option description
      */
-    public <T> void addOption(Class<T> cls, String name, String description)
+    public final <T> void addOption(Class<T> cls, String name, String description)
     {
         addOption(cls, name, description, null);
     }
@@ -330,7 +330,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * @param exclusiveGroup A group of options. Only options of a single group 
      * are accepted.
      */
-    public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
+    public final <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup)
     {
         addOption(cls, name, description, exclusiveGroup, true);
     }
@@ -344,7 +344,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * are accepted.
      * @param mandatory 
      */
-    public <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup, boolean mandatory)
+    public final <T> void addOption(Class<T> cls, String name, String description, String exclusiveGroup, boolean mandatory)
     {
         if (names.contains(name))
         {
@@ -370,7 +370,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
      * are accepted.
      * @param defValue Option default value
      */
-    public <T> void addOption(String name, String description, String exclusiveGroup, T defValue)
+    public final <T> void addOption(String name, String description, String exclusiveGroup, T defValue)
     {
         Option opt = new Option(name, description, exclusiveGroup, defValue);
         Option old = map.put(name, opt);
