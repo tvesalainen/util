@@ -45,12 +45,7 @@ public class LoggingCommandLine extends CmdArgs
     private String rootLog = "org.vesalainen";
     private boolean useParentHandlers;
     private int bufferSize = 256;
-    protected JavaLogging log;
     
-    public LoggingCommandLine()
-    {
-        log = new JavaLogging(LoggingCommandLine.class);
-    }
     /**
      * ([ lp &lt;logging config file&gt; ] ) |
      * (([ lp &lt;log pattern&gt; -l &lt;limit&gt; -c &lt;count&gt; ] |
@@ -140,12 +135,7 @@ public class LoggingCommandLine extends CmdArgs
         log.addHandler(memoryHandler);
     }
     
-    public JavaLogging getLog()
-    {
-        return log;
-    }
-
-    public String getLogPattern()
+    public final String getLogPattern()
     {
         return logPattern;
     }
@@ -154,12 +144,12 @@ public class LoggingCommandLine extends CmdArgs
      * @param logPattern 
      * @see java.util.logging.FileHandler
      */
-    public void setLogPattern(String logPattern)
+    public final void setLogPattern(String logPattern)
     {
         this.logPattern = logPattern;
     }
 
-    public int getLogLimit()
+    public final int getLogLimit()
     {
         return logLimit;
     }
@@ -167,12 +157,12 @@ public class LoggingCommandLine extends CmdArgs
      * Set default for maximum size of log file
      * @param logLimit 
      */
-    public void setLogLimit(int logLimit)
+    public final void setLogLimit(int logLimit)
     {
         this.logLimit = logLimit;
     }
 
-    public int getLogCount()
+    public final int getLogCount()
     {
         return logCount;
     }
@@ -180,12 +170,12 @@ public class LoggingCommandLine extends CmdArgs
      * Set default for maximum number of log files
      * @param logCount 
      */
-    public void setLogCount(int logCount)
+    public final void setLogCount(int logCount)
     {
         this.logCount = logCount;
     }
 
-    public String getHostname()
+    public final String getHostname()
     {
         return hostname;
     }
@@ -193,12 +183,12 @@ public class LoggingCommandLine extends CmdArgs
      * Set default for log server hostname
      * @param hostname 
      */
-    public void setHostname(String hostname)
+    public final void setHostname(String hostname)
     {
         this.hostname = hostname;
     }
 
-    public int getPort()
+    public final int getPort()
     {
         return port;
     }
@@ -206,12 +196,12 @@ public class LoggingCommandLine extends CmdArgs
      * Set default for log server port
      * @param port 
      */
-    public void setPort(int port)
+    public final void setPort(int port)
     {
         this.port = port;
     }
 
-    public Level getLogLevel()
+    public final Level getLogLevel()
     {
         return logLevel;
     }
@@ -219,12 +209,12 @@ public class LoggingCommandLine extends CmdArgs
      * Set default for log level
      * @param logLevel 
      */
-    public void setLogLevel(Level logLevel)
+    public final void setLogLevel(Level logLevel)
     {
         this.logLevel = logLevel;
     }
 
-    public Level getPushLevel()
+    public final Level getPushLevel()
     {
         return pushLevel;
     }
@@ -233,12 +223,12 @@ public class LoggingCommandLine extends CmdArgs
      * @param pushLevel 
      * @see java.util.logging.MemoryHandler
      */
-    public void setPushLevel(Level pushLevel)
+    public final void setPushLevel(Level pushLevel)
     {
         this.pushLevel = pushLevel;
     }
 
-    public String getRootLog()
+    public final String getRootLog()
     {
         return rootLog;
     }
@@ -247,12 +237,12 @@ public class LoggingCommandLine extends CmdArgs
      * @param rootLog 
      * @see java.util.logging.Logger#getLogger(java.lang.String) 
      */
-    public void setRootLog(String rootLog)
+    public final void setRootLog(String rootLog)
     {
         this.rootLog = rootLog;
     }
 
-    public boolean isUseParentHandlers()
+    public final boolean isUseParentHandlers()
     {
         return useParentHandlers;
     }
@@ -261,12 +251,12 @@ public class LoggingCommandLine extends CmdArgs
      * @param useParentHandlers 
      * @see java.util.logging.Logger#useParentHandlers
      */
-    public void setUseParentHandlers(boolean useParentHandlers)
+    public final void setUseParentHandlers(boolean useParentHandlers)
     {
         this.useParentHandlers = useParentHandlers;
     }
 
-    public int getBufferSize()
+    public final int getBufferSize()
     {
         return bufferSize;
     }
@@ -275,7 +265,7 @@ public class LoggingCommandLine extends CmdArgs
      * @param bufferSize 
      * @see java.util.logging.MemoryHandler
      */
-    public void setBufferSize(int bufferSize)
+    public final void setBufferSize(int bufferSize)
     {
         this.bufferSize = bufferSize;
     }
