@@ -98,7 +98,7 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
             {
                 Object value = BeanHelper.getValue(config, pattern);
                 configMap.put(pattern, value);
-                log.config("Config setValue(%s, %s)", pattern, value);
+                config("Config setValue(%s, %s)", pattern, value);
             });
         }
         catch (JAXBException ex)
@@ -147,12 +147,12 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
                         {
                             try
                             {
-                                log.fine("modified %s", e);
+                                fine("modified %s", e);
                                 readConfig();
                             }
                             catch (Exception ex)
                             {
-                                log.log(Level.SEVERE, ex, "%s", ex.getMessage());
+                                log(Level.SEVERE, ex, "%s", ex.getMessage());
                             }
                         }
                     }
@@ -161,7 +161,7 @@ public class JAXBCommandLine extends LoggingCommandLine implements Runnable
         }
         catch (IOException | InterruptedException ex)
         {
-            log.log(Level.SEVERE, ex, "%s", ex.getMessage());
+            log(Level.SEVERE, ex, "%s", ex.getMessage());
         }
     }
     
