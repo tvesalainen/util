@@ -34,7 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- *
+ * A utility that helps convert java type to another.
  * @author tkv
  */
 public class ConvertUtility
