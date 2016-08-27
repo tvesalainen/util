@@ -146,6 +146,14 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
                 }
                 index++;
             }
+            // defaults
+            for (Option o : map.values())
+            {
+                if (!o.mandatory && !options.containsKey(o.name))
+                {
+                    options.put(o.name, o.defValue);
+                }
+            }
             int len = args.length-index;
             if (hasArrayArgument)
             {
