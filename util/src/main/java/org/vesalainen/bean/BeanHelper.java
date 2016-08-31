@@ -1007,39 +1007,42 @@ public class BeanHelper
 
         private void walk(String prefix, Object bean, Consumer<? super String> consumer)
         {
-            for (String fld : getProperties(bean.getClass()))
+            if (bean != null)
             {
-                String name = prefix + fld;
-                consumer.accept(name);
-                Object value = getValue(bean, fld);
-                if (value != null)
+                for (String fld : getProperties(bean.getClass()))
                 {
-                    if (value.getClass().isArray())
+                    String name = prefix + fld;
+                    consumer.accept(name);
+                    Object value = getValue(bean, fld);
+                    if (value != null)
                     {
-                        int len = Array.getLength(value);
-                        for (int index = 0;index<len;index++)
+                        if (value.getClass().isArray())
                         {
-                            Object o = Array.get(value, index);
-                            consumer.accept(name + Lim + index);
-                            walk(name + Lim + index + Lim, o, consumer);
-                        }
-                    }
-                    else
-                    {
-                        if (value instanceof List)
-                        {
-                            int index = 0;
-                            List list = (List) value;
-                            for (Object o : list)
+                            int len = Array.getLength(value);
+                            for (int index = 0;index<len;index++)
                             {
+                                Object o = Array.get(value, index);
                                 consumer.accept(name + Lim + index);
                                 walk(name + Lim + index + Lim, o, consumer);
-                                index++;
                             }
                         }
                         else
                         {
-                            walk(name + Lim, value, consumer);
+                            if (value instanceof List)
+                            {
+                                int index = 0;
+                                List list = (List) value;
+                                for (Object o : list)
+                                {
+                                    consumer.accept(name + Lim + index);
+                                    walk(name + Lim + index + Lim, o, consumer);
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                walk(name + Lim, value, consumer);
+                            }
                         }
                     }
                 }
