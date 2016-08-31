@@ -1065,11 +1065,11 @@ public class BeanHelper
                     c.idx++;
                     return true;
                 }
-                if (c.fit == null)
+                if (c.fit == null && c.ob != null)
                 {
                     c.fit = getProperties(c.ob.getClass()).iterator();
                 }
-                if (c.fit.hasNext())
+                if (c.fit != null && c.fit.hasNext())
                 {
                     String fld = c.fit.next();
                     c.name = c.prefix + fld;
