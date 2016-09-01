@@ -61,6 +61,13 @@ public class BeanHelper
     public static final char Assign = '=';
     private static final Pattern Index = Pattern.compile("[0-9]+");
 
+    public static final String dump(Object bean)
+    {
+        StringBuilder sb = new StringBuilder();
+        BeanHelper.stream(bean).forEach((s)->sb.append(String.format("%s = %s\n", s, BeanHelper.getValue(bean, s))));
+        return sb.toString();
+    }
+    
     private static final Object resolvType(Object bean, Object object, Function<Object,Object> defaultFunc, BiFunction<Object,Field,Object> fieldFunc, BiFunction<Object,Method,Object> methodFunc)
     {
         if (object instanceof Field)

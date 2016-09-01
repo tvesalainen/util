@@ -155,6 +155,14 @@ public class BeanHelperTest
         
     }
     @Test
+    public void testDump() throws NoSuchFieldException
+    {
+        TestClass tc = new TestClass();
+        String dump = BeanHelper.dump(tc);
+        System.err.println(dump);
+    }
+
+    @Test
     @SuppressWarnings("empty-statement")
     public void testWalks() throws NoSuchFieldException
     {
