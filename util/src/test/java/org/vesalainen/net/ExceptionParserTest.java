@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import sun.util.logging.PlatformLogger;
 
 /**
  *
