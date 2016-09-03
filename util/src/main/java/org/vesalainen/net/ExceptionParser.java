@@ -54,7 +54,8 @@ public class ExceptionParser
             return level;
         }
         if ((thr instanceof ConnectException) && (
-                "Connection timed out".equals(thr.getMessage())
+                "Connection timed out".equals(thr.getMessage()) ||
+                "Connection refused".equals(thr.getMessage())
                 )
             )
         {
