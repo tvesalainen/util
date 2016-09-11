@@ -59,7 +59,8 @@ public class TimeoutStatsService implements PropertySetter
         this.dispatcher = dispatcher;
         if (preferencePath != null)
         {
-            try {
+            try 
+            {
                 Preferences userNodeForPackage = Preferences.userNodeForPackage(TimeoutStatsService.class);
                 this.preferences = userNodeForPackage.node(preferencePath);
                 for (String compositeProp : preferences.keys())
