@@ -59,7 +59,8 @@ import org.w3c.dom.Element;
  */
 public class JavaLogging extends BaseLogging
 {
-    private static final Map<String,JavaLogging> map = new HashMap();
+    private static final Map<String,JavaLogging> map = new HashMap<>();
+    private static final Map<String,Object> instanceMap = new WeakHashMap<>();
     private static Supplier<Clock> clockSupplier = () -> {return Clock.systemDefaultZone();};
 
     private Logger logger;
@@ -383,10 +384,17 @@ public class JavaLogging extends BaseLogging
         {
             return null;
         }
+        T obj = (T) instanceMap.get(classname);
+        if (obj != null)
+        {
+            return obj;
+        }
         try
         {
             Class<T> cls = (Class<T>) Class.forName(classname);
-            return cls.newInstance();
+            T instance = cls.newInstance();
+            instanceMap.put(classname, instance);
+            return instance;
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
         {
