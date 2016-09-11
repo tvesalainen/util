@@ -18,15 +18,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 <java-logging-config xmlns="http://vesalainen.org/schema/java-logging-config">
-    <logger name="test" level="finest" useParentHandlers="false" locale="fi_FI">
-        <memoryHandler size="256" pushLevel="severe" formatter="org.vesalainen.util.logging.MinimalFormatter">
+    <properties>
+        <locale>fi_FI</locale>
+        <formatter>org.vesalainen.util.logging.MinimalFormatter</formatter>
+        <useParentHandlers>false</useParentHandlers>
+        <size>256</size>
+        <dir>%t</dir>
+    </properties>
+    <logger name="test" level="finest" useParentHandlers="${useParentHandlers}" locale="${locale}">
+        <memoryHandler size="${size}" pushLevel="severe" formatter="${formatter}">
             <target>
-                <consoleHandler formatter="org.vesalainen.util.logging.MinimalFormatter"/>
+                <consoleHandler formatter="${formatter}"/>
             </target>
         </memoryHandler>
     </logger>
-    <logger name="access" level="info" useParentHandlers="false">
-        <fileHandler pattern="%ttest%g.log" formatter="org.vesalainen.util.logging.MinimalFormatter">
+    <logger name="access" level="info" useParentHandlers="${useParentHandlers}">
+        <fileHandler pattern="${dir}test%g.log" formatter="${formatter}">
         </fileHandler>
     </logger>
 </java-logging-config>

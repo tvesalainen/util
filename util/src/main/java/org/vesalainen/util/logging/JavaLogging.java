@@ -42,13 +42,16 @@ import java.util.logging.SocketHandler;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.util.jaxb.ConsoleHandlerType;
 import org.vesalainen.util.jaxb.FileHandlerType;
 import org.vesalainen.util.jaxb.HandlerType;
 import org.vesalainen.util.jaxb.JavaLoggingConfig;
+import org.vesalainen.util.jaxb.JavaLoggingConfig.Properties;
 import org.vesalainen.util.jaxb.LoggerType;
 import org.vesalainen.util.jaxb.MemoryHandlerType;
 import org.vesalainen.util.jaxb.SocketHandlerType;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -58,7 +61,7 @@ public class JavaLogging extends BaseLogging
 {
     private static final Map<String,JavaLogging> map = new HashMap();
     private static Supplier<Clock> clockSupplier = () -> {return Clock.systemDefaultZone();};
-    
+
     private Logger logger;
 
     public JavaLogging()
@@ -222,22 +225,34 @@ public class JavaLogging extends BaseLogging
             JAXBContext jaxbCtx = JAXBContext.newInstance("org.vesalainen.util.jaxb");
             Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
             JavaLoggingConfig javaLoggingConfig = (JavaLoggingConfig) unmarshaller.unmarshal(configFile);
+            Map<String,String> expressionMap = new HashMap<>();
+            Properties properties = javaLoggingConfig.getProperties();
+            if (properties != null)
+            {
+                for (Element element : properties.getAny())
+                {
+                    String property = element.getTagName();
+                    String expression = element.getTextContent();
+                    expressionMap.put(property, expression);
+                }
+            }
+            ExpressionParser ep = new ExpressionParser(expressionMap);
             for (LoggerType loggerType : javaLoggingConfig.getLogger())
             {
-                String name = loggerType.getName();
+                String name = ep.replace(loggerType.getName());
                 JavaLogging javaLogging = getLogger(name);
                 Logger logger = javaLogging.getLogger();
-                String level = loggerType.getLevel();
+                String level = ep.replace(loggerType.getLevel());
                 if (level != null)
                 {
                     logger.setLevel(BaseLogging.parseLevel(level));
                 }
-                logger.setUseParentHandlers(loggerType.isUseParentHandlers());
-                String resourceBundleString = loggerType.getResourceBundle();
+                logger.setUseParentHandlers(parseBoolean(ep.replace(loggerType.getUseParentHandlers())));
+                String resourceBundleString = ep.replace(loggerType.getResourceBundle());
                 if (resourceBundleString != null)
                 {
                     Locale locale;
-                    String languageTag = loggerType.getLocale();
+                    String languageTag = ep.replace(loggerType.getLocale());
                     if (languageTag != null)
                     {
                         locale = Locale.forLanguageTag(languageTag);
@@ -249,22 +264,22 @@ public class JavaLogging extends BaseLogging
                     ResourceBundle resourceBundle = ResourceBundle.getBundle(resourceBundleString, locale);
                     logger.setResourceBundle(resourceBundle);
                 }
-                logger.setFilter(getInstance(loggerType.getFilter()));
+                logger.setFilter(getInstance(ep.replace(loggerType.getFilter())));
                 for (ConsoleHandlerType consoleHandlerType : loggerType.getConsoleHandler())
                 {
-                    logger.addHandler(createConsoleHandler(consoleHandlerType));
+                    logger.addHandler(createConsoleHandler(ep, consoleHandlerType));
                 }
                 for (FileHandlerType fileHandlerType : loggerType.getFileHandler())
                 {
-                    logger.addHandler(createFileHandler(fileHandlerType));
+                    logger.addHandler(createFileHandler(ep, fileHandlerType));
                 }
                 for (MemoryHandlerType memoryHandlerType : loggerType.getMemoryHandler())
                 {
-                    logger.addHandler(createMemoryHandler(memoryHandlerType));
+                    logger.addHandler(createMemoryHandler(ep, memoryHandlerType));
                 }
                 for (SocketHandlerType socketHandlerType : loggerType.getSocketHandler())
                 {
-                    logger.addHandler(createSocketHandler(socketHandlerType));
+                    logger.addHandler(createSocketHandler(ep, socketHandlerType));
                 }
             }
         }
@@ -273,7 +288,7 @@ public class JavaLogging extends BaseLogging
             throw new RuntimeException(ex);
         }
     }
-    private static Handler createMemoryHandler(MemoryHandlerType memoryHandlerType) throws IOException
+    private static Handler createMemoryHandler(ExpressionParser ep, MemoryHandlerType memoryHandlerType) throws IOException
     {
         Handler handler = null;
         MemoryHandlerType.Target target = memoryHandlerType.getTarget();
@@ -282,66 +297,75 @@ public class JavaLogging extends BaseLogging
             ConsoleHandlerType consoleHandlerType = target.getConsoleHandler();
             if (consoleHandlerType != null)
             {
-                handler = createConsoleHandler(consoleHandlerType);
+                handler = createConsoleHandler(ep, consoleHandlerType);
             }
             else
             {
                 FileHandlerType fileHandlerType = target.getFileHandler();
                 if (fileHandlerType != null)
                 {
-                    handler = createFileHandler(fileHandlerType);
+                    handler = createFileHandler(ep, fileHandlerType);
                 }
                 else
                 {
                     MemoryHandlerType memHandlerType = target.getMemoryHandler();
                     if (memHandlerType != null)
                     {
-                        handler = createMemoryHandler(memoryHandlerType);
+                        handler = createMemoryHandler(ep, memoryHandlerType);
                     }
                     else
                     {
                         SocketHandlerType socketHandlerType = target.getSocketHandler();
                         if (socketHandlerType != null)
                         {
-                            handler = createSocketHandler(socketHandlerType);
+                            handler = createSocketHandler(ep, socketHandlerType);
                         }
                     }
                 }
             }
         }
-        MemoryHandler memoryHandler = new MemoryHandler(handler, (int)memoryHandlerType.getSize(), BaseLogging.parseLevel(memoryHandlerType.getPushLevel()));
-        populateHandler(memoryHandlerType, memoryHandler);
+        MemoryHandler memoryHandler = new MemoryHandler(
+                handler, 
+                Integer.parseInt(ep.replace(memoryHandlerType.getSize())), 
+                BaseLogging.parseLevel(ep.replace(memoryHandlerType.getPushLevel())));
+        populateHandler(ep, memoryHandlerType, memoryHandler);
         return memoryHandler;
     }
-    private static Handler createSocketHandler(SocketHandlerType socketHandlerType) throws IOException
+    private static Handler createSocketHandler(ExpressionParser ep, SocketHandlerType socketHandlerType) throws IOException
     {
-        SocketHandler socketHandler = new SocketHandler(socketHandlerType.getHost(), socketHandlerType.getPort());
-        populateHandler(socketHandlerType, socketHandler);
+        SocketHandler socketHandler = new SocketHandler(
+                ep.replace(socketHandlerType.getHost()), 
+                Integer.parseInt(ep.replace(socketHandlerType.getPort())));
+        populateHandler(ep, socketHandlerType, socketHandler);
         return socketHandler;
     }
-    private static Handler createFileHandler(FileHandlerType fileHandlerType) throws IOException
+    private static Handler createFileHandler(ExpressionParser ep, FileHandlerType fileHandlerType) throws IOException
     {
-        FileHandler fileHandler = new FileHandler(fileHandlerType.getPattern(), (int)fileHandlerType.getLimit(), (int)fileHandlerType.getCount(), fileHandlerType.isAppend());
-        populateHandler(fileHandlerType, fileHandler);
+        FileHandler fileHandler = new FileHandler(
+                ep.replace(fileHandlerType.getPattern()), 
+                Integer.parseInt(ep.replace(fileHandlerType.getLimit())), 
+                Integer.parseInt(ep.replace(fileHandlerType.getCount())), 
+                parseBoolean(ep.replace(fileHandlerType.getAppend())));
+        populateHandler(ep, fileHandlerType, fileHandler);
         return fileHandler;
     }
 
-    private static Handler createConsoleHandler(ConsoleHandlerType consoleHandlerType)
+    private static Handler createConsoleHandler(ExpressionParser ep, ConsoleHandlerType consoleHandlerType)
     {
         ConsoleHandler consoleHandler = new ConsoleHandler();
-        populateHandler(consoleHandlerType, consoleHandler);
+        populateHandler(ep, consoleHandlerType, consoleHandler);
         return consoleHandler;
     }
 
-    private static void populateHandler(HandlerType handlerType, Handler handler)
+    private static void populateHandler(ExpressionParser ep, HandlerType handlerType, Handler handler)
     {
         try
         {
-            handler.setEncoding(handlerType.getEncoding());
-            handler.setErrorManager(getInstance(handlerType.getErrorManager()));
-            handler.setFilter(getInstance(handlerType.getFilter()));
-            handler.setFormatter(getInstance(handlerType.getFormatter()));
-            String level = handlerType.getLevel();
+            handler.setEncoding(ep.replace(handlerType.getEncoding()));
+            handler.setErrorManager(getInstance(ep.replace(handlerType.getErrorManager())));
+            handler.setFilter(getInstance(ep.replace(handlerType.getFilter())));
+            handler.setFormatter(getInstance(ep.replace(handlerType.getFormatter())));
+            String level = ep.replace(handlerType.getLevel());
             if (level != null)
             {
                 handler.setLevel(BaseLogging.parseLevel(level));
@@ -369,4 +393,17 @@ public class JavaLogging extends BaseLogging
             throw new RuntimeException(ex);
         }
     }
+    private static boolean parseBoolean(String text)
+    {
+        switch (text.toLowerCase())
+        {
+            case "true":
+                return true;
+            case "false":
+                return false;
+            default:
+                throw new IllegalArgumentException(text+" not 'true' or 'false'");
+        }
+    }
+    
 }

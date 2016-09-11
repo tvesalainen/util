@@ -24,6 +24,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <xsd:element name="java-logging-config">
         <xsd:complexType>
             <xsd:sequence>
+                <xsd:element name="properties" minOccurs="0" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="logger" type="loggerType" maxOccurs="unbounded"/>
             </xsd:sequence>
         </xsd:complexType>
@@ -37,7 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="level" type="xsd:string" default="INFO"/>
-        <xsd:attribute name="useParentHandlers" type="xsd:boolean" default="true"/>
+        <xsd:attribute name="useParentHandlers" type="xsd:string" default="true"/>
         <xsd:attribute name="resourceBundle" type="xsd:string"/>
         <xsd:attribute name="locale" type="xsd:string"/>
         <xsd:attribute name="filter" type="xsd:string"/>
@@ -46,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:complexContent>
             <xsd:extension base="handlerType">
                 <xsd:attribute name="host" type="xsd:string"/>
-                <xsd:attribute name="port" type="xsd:unsignedShort"/>
+                <xsd:attribute name="port" type="xsd:string"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -54,9 +61,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:complexContent>
             <xsd:extension base="handlerType">
                 <xsd:attribute name="pattern" type="xsd:string" default="%t/java%g.log"/>
-                <xsd:attribute name="limit" type="xsd:unsignedInt" default="1048576"/>
-                <xsd:attribute name="count" type="xsd:unsignedInt" default="8"/>
-                <xsd:attribute name="append" type="xsd:boolean" default="true"/>
+                <xsd:attribute name="limit" type="xsd:string" default="1048576"/>
+                <xsd:attribute name="count" type="xsd:string" default="8"/>
+                <xsd:attribute name="append" type="xsd:string" default="true"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -82,7 +89,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </xsd:element>
                 </xsd:sequence>
                 <xsd:attribute name="pushLevel" type="xsd:string" default="SEVERE"/>
-                <xsd:attribute name="size" type="xsd:unsignedInt" default="1024"/>
+                <xsd:attribute name="size" type="xsd:string" default="1024"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>

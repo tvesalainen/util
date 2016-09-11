@@ -69,6 +69,10 @@ public class ExpressionParser
      */
     public String replace(CharSequence text)
     {
+        if (text == null)
+        {
+            return null;
+        }
         try
         {
             StringBuilder sb = new StringBuilder();
