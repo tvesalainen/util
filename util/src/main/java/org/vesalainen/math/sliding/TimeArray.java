@@ -44,4 +44,9 @@ public interface TimeArray extends ValueArray
      * @return 
      */
     long previousTime();
+    /**
+     * Returns max duration
+     * @return 
+     */
+    long maxDuration();
 }

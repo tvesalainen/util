@@ -53,6 +53,12 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     }
 
     @Override
+    public long maxDuration()
+    {
+        return timeout;
+    }
+
+    @Override
     protected boolean isRemovable(int index)
     {
         return clock.millis() - times[index] > timeout;

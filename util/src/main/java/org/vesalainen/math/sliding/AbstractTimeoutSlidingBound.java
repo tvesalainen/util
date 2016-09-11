@@ -64,6 +64,12 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
         this.timeout = parent.getTimeout();
         this.times = parent.getTimes();
     }
+
+    @Override
+    public long maxDuration()
+    {
+        return timeout;
+    }
     
     /**
      * Add new value
