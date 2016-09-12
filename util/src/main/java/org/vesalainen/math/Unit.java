@@ -20,11 +20,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * This annotation can be used in setting units 
+ * This annotation can be used in setting units and min and max limits.
  * @author tkv
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Unit
 {
     UnitType value();
+    double min() default -Double.MAX_VALUE;
+    double max() default Double.MAX_VALUE;
 }
