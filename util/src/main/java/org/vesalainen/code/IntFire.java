@@ -26,6 +26,12 @@ public interface IntFire extends PropertySetter
     void fire(String property, int value);
 
     @Override
+    default String[] getPrefixes()
+    {
+        throw new IllegalArgumentException("getPrefixes() called");
+    }
+
+    @Override
     default void set(String property, Object arg)
     {
         throw new IllegalArgumentException("set("+property+", "+arg+") called");

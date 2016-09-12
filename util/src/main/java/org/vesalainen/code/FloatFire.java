@@ -26,6 +26,12 @@ public interface FloatFire extends PropertySetter
     void fire(String property, float value);
 
     @Override
+    default String[] getPrefixes()
+    {
+        throw new IllegalArgumentException("getPrefixes() called");
+    }
+
+    @Override
     default void set(String property, Object arg)
     {
         throw new IllegalArgumentException("set("+property+", "+arg+") called");

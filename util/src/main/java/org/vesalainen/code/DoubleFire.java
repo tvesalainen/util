@@ -26,6 +26,12 @@ public interface DoubleFire extends PropertySetter
     void fire(String property, double value);
 
     @Override
+    default String[] getPrefixes()
+    {
+        throw new IllegalArgumentException("getPrefixes() called");
+    }
+
+    @Override
     default void set(String property, Object arg)
     {
         throw new IllegalArgumentException("set("+property+", "+arg+") called");
