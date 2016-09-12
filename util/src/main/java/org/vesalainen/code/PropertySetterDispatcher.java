@@ -17,18 +17,34 @@
 package org.vesalainen.code;
 
 /**
- *
+ * A PropertySetter that can dispatch property set events to other PropertySetter's.
  * @author tkv
  */
 public interface PropertySetterDispatcher extends PropertySetter
 {
-
+    /**
+     * Adds PropertySetter observer for given property. When this PropertySetter's
+     * set method is called, it will dispatch the call to observing PropertySetter.
+     * @param key
+     * @param ps 
+     */
     void addObserver(String key, PropertySetter ps);
-
+    /**
+     * Returns true if there is an observer for given property.
+     * @param property
+     * @return 
+     */
     boolean containsProperty(String property);
-
+    /**
+     * Returns true if there are no observer PropertySetter's.
+     * @return 
+     */
     boolean isEmpty();
-
+    /**
+     * Removes PropertySetter observer from given property.
+     * @param key
+     * @param ps 
+     */
     void removeObserver(String key, PropertySetter ps);
     
 }
