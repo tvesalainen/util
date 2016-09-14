@@ -73,6 +73,11 @@ public abstract class AbstractPrimitiveMap<K,V extends PrimitiveReference>
     {
         return map.size();
     }
+   
+    public V get(K key)
+    {
+        return map.get(key);
+    }
     
     @Override
     public String toString()
