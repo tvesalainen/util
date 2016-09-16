@@ -109,6 +109,7 @@ public class Scaler
      */
     public double step()
     {
+        calc();
         double st = Math.pow(10, exp);
         double count = count0();
         if (count > 5.0)
