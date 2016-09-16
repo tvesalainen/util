@@ -20,8 +20,6 @@ package org.vesalainen.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -113,6 +111,28 @@ public class Scaler
     {
         calc();
         return Math.pow(10, exp-level);
+    }
+    /**
+     * Returns stream for markers between min and max. Step is selected so that
+     * number of markers is greater than 5.
+     * @return 
+     */
+    public DoubleStream stream()
+    {
+        calc();
+        double step = Math.pow(10, exp);
+        double np = Math.pow(10, -(exp));
+        double begin = Math.ceil(min*np)*step;
+        double end = Math.floor(max*np)*step;
+        double count = (end-begin)/step;
+        if (count > 5.0)
+        {
+            return stream(0);
+        }
+        else
+        {
+            return stream(0, 0.5);
+        }
     }
     /**
      * Returns stream for markers between min and max. 0-level returns less
