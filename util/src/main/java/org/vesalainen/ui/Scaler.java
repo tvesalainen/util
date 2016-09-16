@@ -22,7 +22,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
+import java.util.stream.DoubleStream;
+import java.util.stream.StreamSupport;
 
 /**
  * Utility for creating scales. For example if samples are between 0 - 30 the 
@@ -86,7 +90,7 @@ public class Scaler
     public List<String> getLabels(Locale locale)
     {
         List<String> labels = new ArrayList<>();
-        PrimitiveIterator.OfDouble i0 = iterator(0);
+        Spliterator.OfDouble i0 = spliterator(0);
         String format = getFormat();
         i0.forEachRemaining((double d) -> labels.add(String.format(locale, format, d)));
         return labels;
@@ -101,23 +105,52 @@ public class Scaler
         return String.format("%%.%df", exp < 0 ? -exp : 0);
     }
     /**
-     * Returns iterator for markers between min and max. 0-level returns less
+     * Returns the distance between markers.
+     * @param level
+     * @return 
+     */
+    public double step(int level)
+    {
+        calc();
+        return Math.pow(10, exp-level);
+    }
+    /**
+     * Returns stream for markers between min and max. 0-level returns less
+     * @param level
+     * @return 
+     */
+    public DoubleStream stream(int level)
+    {
+        return StreamSupport.doubleStream(Scaler.this.spliterator(level, 1), false);
+    }
+    /**
+     * Returns stream for markers between min and max. 0-level returns less
+     * @param level
+     * @param stepMultiplier
+     * @return 
+     */
+    public DoubleStream stream(int level, double stepMultiplier)
+    {
+        return StreamSupport.doubleStream(Scaler.this.spliterator(level, stepMultiplier), false);
+    }
+    /**
+     * Returns spliterator for markers between min and max. 0-level returns less
      * than 10.
      * @param level >= 0
      * @return 
      */
-    public PrimitiveIterator.OfDouble iterator(int level)
+    public Spliterator.OfDouble spliterator(int level)
     {
-        return iterator(level, 1.0);
+        return Scaler.this.spliterator(level, 1.0);
     }
     /**
-     * Returns iterator for markers between min and max. 0-level returns less
+     * Returns Spliterator for markers between min and max. 0-level returns less
      * than 10.
      * @param level >= 0
      * @param stepMultiplier 
      * @return 
      */
-    public PrimitiveIterator.OfDouble iterator(int level, double stepMultiplier)
+    public Spliterator.OfDouble spliterator(int level, double stepMultiplier)
     {
         calc();
         double step = Math.pow(10, exp-level);
@@ -161,7 +194,7 @@ public class Scaler
         updated = true;
     }
 
-    private class Iter implements PrimitiveIterator.OfDouble
+    private class Iter implements Spliterator.OfDouble
     {
         private final double end;
         private final double step;
@@ -175,18 +208,6 @@ public class Scaler
         }
         
         @Override
-        public double nextDouble()
-        {
-            if (!hasNext())
-            {
-                throw new NoSuchElementException();
-            }
-            double res = next;
-            next += step;
-            return res;
-        }
-
-        @Override
         public void forEachRemaining(DoubleConsumer action)
         {
             while (next <= end)
@@ -197,15 +218,51 @@ public class Scaler
         }
 
         @Override
-        public boolean hasNext()
+        public OfDouble trySplit()
         {
-            return next <= end;
+            return null;
         }
 
         @Override
-        public Double next()
+        public boolean tryAdvance(DoubleConsumer action)
         {
-            return nextDouble();
+            if (next <= end)
+            {
+                action.accept(next);
+                next += step;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Double> action)
+        {
+            if (next <= end)
+            {
+                action.accept(next);
+                next += step;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        @Override
+        public long estimateSize()
+        {
+            return (long) ((end-next)/step);
+        }
+
+        @Override
+        public int characteristics()
+        {
+            return 0;
         }
         
     }
