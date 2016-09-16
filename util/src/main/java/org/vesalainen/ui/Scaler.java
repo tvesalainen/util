@@ -103,6 +103,24 @@ public class Scaler
         return String.format("%%.%df", exp < 0 ? -exp : 0);
     }
     /**
+     * Returns the distance between markers. Markers are selected so that count
+     * is more that 5.
+     * @return 
+     */
+    public double step()
+    {
+        double st = Math.pow(10, exp);
+        double count = count0();
+        if (count > 5.0)
+        {
+            return st;
+        }
+        else
+        {
+            return st * 0.5;
+        }
+    }
+    /**
      * Returns the distance between markers.
      * @param level
      * @return 
@@ -119,12 +137,7 @@ public class Scaler
      */
     public DoubleStream stream()
     {
-        calc();
-        double step = Math.pow(10, exp);
-        double np = Math.pow(10, -(exp));
-        double begin = Math.ceil(min*np)*step;
-        double end = Math.floor(max*np)*step;
-        double count = (end-begin)/step;
+        double count = count0();
         if (count > 5.0)
         {
             return stream(0);
@@ -133,6 +146,15 @@ public class Scaler
         {
             return stream(0, 0.5);
         }
+    }
+    private double count0()
+    {
+        calc();
+        double step = Math.pow(10, exp);
+        double np = Math.pow(10, -(exp));
+        double begin = Math.ceil(min*np)*step;
+        double end = Math.floor(max*np)*step;
+        return (end-begin)/step;
     }
     /**
      * Returns stream for markers between min and max. 0-level returns less
