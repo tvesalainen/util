@@ -41,6 +41,9 @@ public class ScalerTest
     public void test1()
     {
         Scaler sc = new Scaler(115, 144);
+        assertEquals(10, sc.step(0), Epsilon);
+        assertEquals(5, sc.step(0.5), Epsilon);
+        assertEquals(1, sc.step(1), Epsilon);
         PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0));
         assertEquals(120, i0.nextDouble(), Epsilon);
         assertEquals(130, i0.nextDouble(), Epsilon);

@@ -126,6 +126,7 @@ public class Scaler
      */
     public double step(double level)
     {
+        calc();
         int l = (int) Math.floor(level);
         double step = Math.pow(10, exp-l);
         double rem = level - (double)l;
