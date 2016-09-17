@@ -28,8 +28,8 @@ import java.util.stream.StreamSupport;
 
 /**
  * Utility for creating scales. For example if samples are between 0 - 30 the 
- * 0-level scale is 0, 10, 20, 30. 1-level 0, 1, 2, 3, .... Additionally it is
- * possible to get 5-scales by putting five=true. 
+ * 0-level scale is 0, 10, 20, 30. 0.5 level scale is 0, 5, 10, 15,... 
+ * 1-level 0, 1, 2, 3, .... 
  * @author Timo Vesalainen
  */
 public class Scaler
@@ -73,23 +73,31 @@ public class Scaler
         }
     }
     /**
-     * Returns labels for 0-level using default locale
+     * Returns labels for default level using default locale.
      * @return 
      */
     public List<String> getLabels()
     {
-        return getLabels(Locale.getDefault());
+        return getLabels(level());
+    }
+    /**
+     * Returns labels for level using default locale
+     * @return 
+     */
+    public List<String> getLabels(double level)
+    {
+        return getLabels(Locale.getDefault(), level);
     }
     /**
      * Returns labels for 0-level
      * @param locale
      * @return 
      */
-    public List<String> getLabels(Locale locale)
+    public List<String> getLabels(Locale locale, double level)
     {
         List<String> labels = new ArrayList<>();
-        Spliterator.OfDouble i0 = spliterator(0);
-        String format = getFormat();
+        Spliterator.OfDouble i0 = spliterator(level);
+        String format = getFormat(level);
         i0.forEachRemaining((double d) -> labels.add(String.format(locale, format, d)));
         return labels;
     }
@@ -98,38 +106,10 @@ public class Scaler
      * @return 
      * @see java.lang.String#format(java.lang.String, java.lang.Object...) 
      */
-    public String getFormat()
+    public String getFormat(double level)
     {
-        return String.format("%%.%df", exp < 0 ? -exp : 0);
-    }
-    /**
-     * Returns the distance between markers. Markers are selected so that count
-     * is more that 5.
-     * @return 
-     */
-    public double step()
-    {
-        calc();
-        double st = Math.pow(10, exp);
-        double count = count0();
-        if (count > 5.0)
-        {
-            return st;
-        }
-        else
-        {
-            return st * 0.5;
-        }
-    }
-    /**
-     * Returns the distance between markers.
-     * @param level
-     * @return 
-     */
-    public double step(int level)
-    {
-        calc();
-        return Math.pow(10, exp-level);
+        int e = (int) (exp + Math.signum(exp)*Math.ceil(level));
+        return String.format("%%.%df", e < 0 ? -e : 0);
     }
     /**
      * Returns stream for markers between min and max. Step is selected so that
@@ -138,23 +118,47 @@ public class Scaler
      */
     public DoubleStream stream()
     {
-        double count = count0();
-        if (count > 5.0)
-        {
-            return stream(0);
-        }
-        else
-        {
-            return stream(0, 0.5);
-        }
+        return stream(level());
     }
-    private double count0()
+    /**
+     * Returns minimum level where number of markers is not less that 5.
+     * @return 
+     */
+    public double level()
+    {
+        return level(5);
+    }
+    /**
+     * Returns minimum level where number of markers is not less that given value.
+     * @param minMarkers
+     * @return 
+     */
+    public double level(int minMarkers)
+    {
+        double level = 0;
+        double count = count(level);
+        while (count < minMarkers)
+        {
+            level += 0.5;
+            count = count(level);
+        }
+        return level;
+    }
+    private double count(double level)
     {
         calc();
+        int l = (int) Math.floor(level);
+        double rem = level - (double)l;
+        double stepMultiplier = 1.0;
+        if (rem > 0)
+        {
+            stepMultiplier = rem;
+        }
         double step = Math.pow(10, exp);
         double np = Math.pow(10, -(exp));
         double begin = Math.ceil(min*np)*step;
         double end = Math.floor(max*np)*step;
+        step *= stepMultiplier;
         return (end-begin)/step;
     }
     /**
@@ -162,42 +166,28 @@ public class Scaler
      * @param level
      * @return 
      */
-    public DoubleStream stream(int level)
+    public DoubleStream stream(double level)
     {
-        return StreamSupport.doubleStream(Scaler.this.spliterator(level, 1), false);
-    }
-    /**
-     * Returns stream for markers between min and max. 0-level returns less
-     * @param level
-     * @param stepMultiplier
-     * @return 
-     */
-    public DoubleStream stream(int level, double stepMultiplier)
-    {
-        return StreamSupport.doubleStream(Scaler.this.spliterator(level, stepMultiplier), false);
-    }
-    /**
-     * Returns spliterator for markers between min and max. 0-level returns less
-     * than 10.
-     * @param level >= 0
-     * @return 
-     */
-    public Spliterator.OfDouble spliterator(int level)
-    {
-        return Scaler.this.spliterator(level, 1.0);
+        return StreamSupport.doubleStream(Scaler.this.spliterator(level), false);
     }
     /**
      * Returns Spliterator for markers between min and max. 0-level returns less
      * than 10.
-     * @param level >= 0
-     * @param stepMultiplier 
+     * @param level >= 0 
      * @return 
      */
-    public Spliterator.OfDouble spliterator(int level, double stepMultiplier)
+    public Spliterator.OfDouble spliterator(double level)
     {
         calc();
-        double step = Math.pow(10, exp-level);
-        double np = Math.pow(10, -(exp-level));
+        int l = (int) Math.floor(level);
+        double rem = level - (double)l;
+        double stepMultiplier = 1.0;
+        if (rem > 0)
+        {
+            stepMultiplier = rem;
+        }
+        double step = Math.pow(10, exp-l);
+        double np = Math.pow(10, -(exp-l));
         double begin = Math.ceil(min*np)*step;
         double end = Math.floor(max*np)*step;
         if (stepMultiplier != 1.0)
