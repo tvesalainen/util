@@ -41,14 +41,28 @@ public class ScalerTest
     public void test1()
     {
         Scaler sc = new Scaler(115, 144);
+        assertEquals(0.5, sc.level(), Epsilon);
         assertEquals(10, sc.step(0), Epsilon);
         assertEquals(5, sc.step(0.5), Epsilon);
         assertEquals(1, sc.step(1), Epsilon);
+        assertEquals("%.0f", sc.getFormat(0));
+        assertEquals("%.0f", sc.getFormat(1));
+        assertEquals("%.1f", sc.getFormat(2));
+        assertEquals(3, sc.count(0), Epsilon);
         PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0));
         assertEquals(120, i0.nextDouble(), Epsilon);
         assertEquals(130, i0.nextDouble(), Epsilon);
         assertEquals(140, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
+        PrimitiveIterator.OfDouble i05 = Spliterators.iterator(sc.spliterator(0.5));
+        assertEquals(115, i05.nextDouble(), Epsilon);
+        assertEquals(120, i05.nextDouble(), Epsilon);
+        assertEquals(125, i05.nextDouble(), Epsilon);
+        assertEquals(130, i05.nextDouble(), Epsilon);
+        assertEquals(135, i05.nextDouble(), Epsilon);
+        assertEquals(140, i05.nextDouble(), Epsilon);
+        assertFalse(i05.hasNext());
+        assertEquals(6, sc.count(0.5), Epsilon);
         PrimitiveIterator.OfDouble i1 = Spliterators.iterator(sc.spliterator(1));
         assertEquals(115, i1.nextDouble(), Epsilon);
         assertEquals(116, i1.nextDouble(), Epsilon);
@@ -83,6 +97,7 @@ public class ScalerTest
         assertEquals(20, i0.nextDouble(), Epsilon);
         assertEquals(30, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
+        assertEquals(4, sc.count(0), Epsilon);
         PrimitiveIterator.OfDouble i5 = Spliterators.iterator(sc.spliterator(0.5));
         assertEquals(0, i5.nextDouble(), Epsilon);
         assertEquals(5, i5.nextDouble(), Epsilon);
@@ -92,6 +107,7 @@ public class ScalerTest
         assertEquals(25, i5.nextDouble(), Epsilon);
         assertEquals(30, i5.nextDouble(), Epsilon);
         assertFalse(i5.hasNext());
+        assertEquals(7, sc.count(0.5), Epsilon);
     }
 
     @Test
@@ -105,6 +121,7 @@ public class ScalerTest
         assertEquals(0.005, i0.nextDouble(), Epsilon);
         assertEquals(0.006, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
+        assertEquals(5, sc.count(0), Epsilon);
     }
 
     @Test
@@ -127,6 +144,19 @@ public class ScalerTest
     {
         Scaler sc = new Scaler(0, 4);
         long count = sc.stream().count();
-        assertEquals(9, count);
+        assertEquals(5, count);
     }
+    @Test
+    public void test7()
+    {
+        Scaler sc = new Scaler(-1, 19);
+        assertEquals(4, sc.count(0.5), Epsilon);
+        PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0.5));
+        assertEquals(0, i0.nextDouble(), Epsilon);
+        assertEquals(5, i0.nextDouble(), Epsilon);
+        assertEquals(10, i0.nextDouble(), Epsilon);
+        assertEquals(15, i0.nextDouble(), Epsilon);
+        assertFalse(i0.hasNext());
+    }
+
 }

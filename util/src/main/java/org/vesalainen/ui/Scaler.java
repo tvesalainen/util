@@ -18,6 +18,7 @@
 package org.vesalainen.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Spliterator;
@@ -41,6 +42,10 @@ public class Scaler
 
     public Scaler(double min, double max)
     {
+        if (min > max)
+        {
+            throw new IllegalArgumentException("min > max");
+        }
         this.min = min;
         this.max = max;
         updated = true;
@@ -108,7 +113,8 @@ public class Scaler
      */
     public String getFormat(double level)
     {
-        int e = (int) (exp + Math.signum(exp)*Math.ceil(level));
+        double signum = exp >= 0 ? 1 : -1;
+        int e = (int) (exp-signum*Math.ceil(level));
         return String.format("%%.%df", e < 0 ? -e : 0);
     }
     /**
@@ -146,19 +152,21 @@ public class Scaler
         return stream(level());
     }
     /**
-     * Returns minimum level where number of markers is not less that 5.
+     * Returns minimum level where number of markers is not less than 5 and less
+     * than 15.
      * @return 
      */
     public double level()
     {
-        return level(5);
+        return level(5, 15);
     }
     /**
-     * Returns minimum level where number of markers is not less that given value.
+     * Returns minimum level where number of markers is not less that minMarkers 
+     * and less than maxMarkers. If both cannot be met, maxMarkers is stronger.
      * @param minMarkers
      * @return 
      */
-    public double level(int minMarkers)
+    public double level(int minMarkers, int maxMarkers)
     {
         double level = 0;
         double count = count(level);
@@ -167,9 +175,18 @@ public class Scaler
             level += 0.5;
             count = count(level);
         }
+        if (count > maxMarkers)
+        {
+            level -= 0.5;
+        }
         return level;
     }
-    private double count(double level)
+    /**
+     * Returns number of markers for given level.
+     * @param level
+     * @return 
+     */
+    public double count(double level)
     {
         calc();
         int l = (int) Math.floor(level);
@@ -179,12 +196,22 @@ public class Scaler
         {
             stepMultiplier = rem;
         }
-        double step = Math.pow(10, exp);
-        double np = Math.pow(10, -(exp));
+        double signum = exp >= 0 ? 1 : -1;
+        double el = exp-signum*l;
+        double step = Math.pow(10, el);
+        double np = Math.pow(10, -el);
         double begin = Math.ceil(min*np)*step;
         double end = Math.floor(max*np)*step;
         step *= stepMultiplier;
-        return (end-begin)/step;
+        if (begin-step >= min)
+        {
+            begin -= step;
+        }
+        if (end+step <=max)
+        {
+            end += step;
+        }
+        return (end-begin)/step+1;
     }
     /**
      * Returns stream for markers between min and max. 0-level returns less
@@ -211,16 +238,22 @@ public class Scaler
         {
             stepMultiplier = rem;
         }
-        double step = Math.pow(10, exp-l);
-        double np = Math.pow(10, -(exp-l));
+        double signum = exp >= 0 ? 1 : -1;
+        double el = exp-signum*l;
+        double step = Math.pow(10, el);
+        double np = Math.pow(10, -el);
         double begin = Math.ceil(min*np)*step;
         double end = Math.floor(max*np)*step;
         if (stepMultiplier != 1.0)
         {
             step *= stepMultiplier;
-            if (begin-step > min)
+            if (begin-step >= min)
             {
                 begin -= step;
+            }
+            if (end+step <=max)
+            {
+                end += step;
             }
             return new Iter(begin, end, step);
         }
@@ -312,6 +345,12 @@ public class Scaler
         }
 
         @Override
+        public Comparator<? super Double> getComparator()
+        {
+            return null;
+        }
+
+        @Override
         public long estimateSize()
         {
             return (long) ((end-next)/step);
@@ -320,7 +359,7 @@ public class Scaler
         @Override
         public int characteristics()
         {
-            return 0;
+            return ORDERED|SORTED|SIZED;
         }
         
     }
