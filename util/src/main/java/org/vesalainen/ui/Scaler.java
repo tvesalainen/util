@@ -112,6 +112,30 @@ public class Scaler
         return String.format("%%.%df", e < 0 ? -e : 0);
     }
     /**
+     * Returns distance between two markers using default level.
+     * @return 
+     */
+    public double step()
+    {
+        return step(level());
+    }
+    /**
+     * Returns distance between two markers.
+     * @param level
+     * @return 
+     */
+    public double step(double level)
+    {
+        int l = (int) Math.floor(level);
+        double step = Math.pow(10, exp-l);
+        double rem = level - (double)l;
+        if (rem > 0)
+        {
+            step *= rem;
+        }
+        return step;
+    }
+    /**
      * Returns stream for markers between min and max. Step is selected so that
      * number of markers is greater than 5.
      * @return 
