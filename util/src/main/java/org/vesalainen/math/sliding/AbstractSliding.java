@@ -25,6 +25,7 @@ public abstract class AbstractSliding
 {
     protected int initialSize;
     protected int size;
+    protected int margin;
     protected int begin;
     protected int end;
     /**
@@ -35,6 +36,23 @@ public abstract class AbstractSliding
     {
         this.initialSize = size;
         this.size = size;
+        this.margin = size/10;
+    }
+    /**
+     * Returns number of free slots before grow. Default is initial size/10.
+     * @return 
+     */
+    public int getMargin()
+    {
+        return margin;
+    }
+    /**
+     * Sets number of free slots before grow. Default is initial size/10.
+     * @param margin 
+     */
+    public void setMargin(int margin)
+    {
+        this.margin = margin;
     }
 
     /**

@@ -80,7 +80,8 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
         times[index] = clock.millis();
     }
     /**
-     * Returns a stream of sample times
+     * Returns a stream of sample times. Stream is valid 
+     * only the time that takes to fill margin number of slots.
      * @return 
      */
     @Override

@@ -79,7 +79,7 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     public void accept(double value)
     {
         eliminate();
-        if (parent == null && end-begin >= size)
+        if (parent == null && end-begin >= size-margin)
         {
             grow();
         }

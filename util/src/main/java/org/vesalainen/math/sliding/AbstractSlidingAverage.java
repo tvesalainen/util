@@ -46,7 +46,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     {
         eliminate();
         int count = end-begin;
-        if (count >= size)
+        if (count >= size-margin)
         {
             grow();
         }
@@ -92,7 +92,8 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
         return s/(end-begin);
     }
     /**
-     * Returns values as stream in the same order as entered
+     * Returns values as stream in the same order as entered. Stream is valid 
+     * only the time that takes to fill margin number of slots.
      * @return 
      */
     @Override

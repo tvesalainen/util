@@ -94,6 +94,7 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
         angles = (double[]) newArray(angles, s, new double[size]);
     }
 
+    @Override
     public long lastTime()
     {
         if (count() < 1)
@@ -103,6 +104,7 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
         return times[(end+size-1) % size];
     }
 
+    @Override
     public long previousTime()
     {
         if (count() < 1)
