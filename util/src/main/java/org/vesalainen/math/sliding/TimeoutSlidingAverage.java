@@ -146,9 +146,9 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     @Override
     public long previousTime()
     {
-        if (count() < 1)
+        if (count() < 2)
         {
-            throw new IllegalStateException("count() < 1");
+            throw new IllegalStateException("count() < 2");
         }
         return times[(end+size-2) % size];
     }
