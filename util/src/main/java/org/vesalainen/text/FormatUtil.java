@@ -26,14 +26,26 @@ public class FormatUtil
 {
     /**
      * Appends value to StringBuilder so that it takes minimum space still
-     * preserving precision.
+     * preserving precision using '%f' format.
      * <p>Note! Decimal separator is '.'.
      * @param sb
      * @param v 
      */
     public static final void format(StringBuilder sb, double v)
     {
-        sb.append(String.format(Locale.US, "%f", v));
+        format(sb, v, "%f");
+    }
+    /**
+     * Appends value to StringBuilder so that it takes minimum space still
+     * preserving precision using given decimal format.
+     * <p>Note! Decimal separator is '.'.
+     * @param sb
+     * @param v
+     * @param format 
+     */
+    public static final void format(StringBuilder sb, double v, String format)
+    {
+        sb.append(String.format(Locale.US, format, v));
         int length = sb.length();
         while (true)
         {
