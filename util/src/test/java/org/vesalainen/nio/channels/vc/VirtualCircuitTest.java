@@ -30,8 +30,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -39,8 +41,16 @@ import static org.junit.Assert.*;
  */
 public class VirtualCircuitTest
 {
+
+    private ExecutorService executor;
+    private ByteBuffer bb;
+    private SocketChannel sc11;
+    private SocketChannel sc12;
+    private SocketChannel sc21;
+    private SocketChannel sc22;
     public VirtualCircuitTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
     @Test
@@ -53,27 +63,27 @@ public class VirtualCircuitTest
     {
         test((SocketChannel sc1, SocketChannel sc2)->{return new ByteChannelVirtualCircuit(sc1, sc2, 1024, false);});
     }
+    @Test
+    public void testSingleton() throws IOException, InterruptedException, ExecutionException
+    {
+        SingletonSelectableVirtualCircuit ssvc = new SingletonSelectableVirtualCircuit(1024, false);
+        init();
+        ssvc.join(sc12, sc21);
+        doTest();
+    }
     public void test(BiFunction<SocketChannel,SocketChannel,VirtualCircuit> supplier) throws IOException, InterruptedException, ExecutionException
     {
-        ExecutorService executor = Executors.newCachedThreadPool();
-        ByteBuffer bb = ByteBuffer.allocate(1024);
-        
-        SocketAcceptor sa1 = new SocketAcceptor();
-        Future<SocketChannel> f1 = executor.submit(sa1);
-        SocketChannel sc11 = SocketChannel.open(new InetSocketAddress("localhost", sa1.getPort()));
-        SocketChannel sc12 = f1.get();
-        
-        SocketAcceptor sa2 = new SocketAcceptor();
-        Future<SocketChannel> f2 = executor.submit(sa2);
-        SocketChannel sc21 = SocketChannel.open(new InetSocketAddress("localhost", sa2.getPort()));
-        SocketChannel sc22 = f2.get();
+        init();
         
         VirtualCircuit vc = supplier.apply(sc12, sc21);
         
-        executor.submit(new Echo(sc22));
-        
         vc.start(()->{return executor;});
         
+        doTest();
+    }
+
+    private void doTest() throws IOException
+    {
         byte[] exp = new byte[1024];
         Random random = new Random(98765);
         random.nextBytes(exp);
@@ -90,52 +100,22 @@ public class VirtualCircuitTest
         sc22.close();
         executor.shutdownNow();
     }
-    private static class SocketAcceptor implements Callable<SocketChannel>
+    private void init() throws IOException, InterruptedException, ExecutionException
     {
-        private final ServerSocketChannel ssc;
-
-        public SocketAcceptor() throws IOException
-        {
-            ssc = ServerSocketChannel.open();
-            ssc.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            ssc.bind(null);
-        }
-
-        public int getPort() throws IOException
-        {
-            InetSocketAddress local = (InetSocketAddress) ssc.getLocalAddress();
-            return local.getPort();
-        }
+        executor = Executors.newCachedThreadPool();
+        bb = ByteBuffer.allocate(1024);
         
-        @Override
-        public SocketChannel call() throws Exception
-        {
-            SocketChannel sc = ssc.accept();
-            ssc.close();
-            return sc;
-        }
+        SocketAcceptor sa1 = new SocketAcceptor();
+        Future<SocketChannel> f1 = executor.submit(sa1);
+        sc11 = SocketChannel.open(new InetSocketAddress("localhost", sa1.getPort()));
+        sc12 = f1.get();
         
-    }
-    private static class Echo implements Callable<Void>
-    {
-        private ByteChannel rc;
-        private ByteBuffer bb = ByteBuffer.allocate(256);
+        SocketAcceptor sa2 = new SocketAcceptor();
+        Future<SocketChannel> f2 = executor.submit(sa2);
+        sc21 = SocketChannel.open(new InetSocketAddress("localhost", sa2.getPort()));
+        sc22 = f2.get();
 
-        public Echo(ByteChannel rc)
-        {
-            this.rc = rc;
-        }
-
-        @Override
-        public Void call() throws Exception
-        {
-            while (true)
-            {
-                bb.clear();
-                rc.read(bb);
-                bb.flip();
-                rc.write(bb);
-            }
-        }
+        executor.submit(new Echo(sc22));
+        
     }
 }
