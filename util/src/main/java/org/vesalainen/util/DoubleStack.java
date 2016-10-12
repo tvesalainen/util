@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import org.vesalainen.math.BasicMath;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import org.vesalainen.math.Arithmetic;
@@ -25,7 +26,7 @@ import org.vesalainen.math.Arithmetic;
  * implements basic arithmetic stack operations.
  * @author tkv
  */
-public class DoubleStack implements Arithmetic
+public class DoubleStack implements Arithmetic, BasicMath
 {
     private double[] stack;
     private float growFactor;
@@ -100,6 +101,7 @@ public class DoubleStack implements Arithmetic
      * Return true is stack doesn't have any elements.
      * @return 
      */
+    @Override
     public boolean isEmpty()
     {
         return top == 0;
@@ -201,6 +203,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#abs(double) 
      */
+    @Override
     public void abs()
     {
         if (top < 1)
@@ -212,6 +215,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#acos(double) 
      */
+    @Override
     public void acos()
     {
         if (top < 1)
@@ -223,6 +227,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#asin(double) 
      */
+    @Override
     public void asin()
     {
         if (top < 1)
@@ -234,6 +239,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#atan(double) 
      */
+    @Override
     public void atan()
     {
         if (top < 1)
@@ -245,6 +251,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#atan2(double) 
      */
+    @Override
     public void atan2()
     {
         if (top < 2)
@@ -257,6 +264,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#cbrt(double) 
      */
+    @Override
     public void cbrt()
     {
         if (top < 1)
@@ -268,6 +276,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#ceil(double) 
      */
+    @Override
     public void ceil()
     {
         if (top < 1)
@@ -279,6 +288,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#cos(double) 
      */
+    @Override
     public void cos()
     {
         if (top < 1)
@@ -290,6 +300,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#cosh(double) 
      */
+    @Override
     public void cosh()
     {
         if (top < 1)
@@ -301,6 +312,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#exp(double) 
      */
+    @Override
     public void exp()
     {
         if (top < 1)
@@ -312,6 +324,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#expm1(double) 
      */
+    @Override
     public void expm1()
     {
         if (top < 1)
@@ -323,6 +336,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#floor(double) 
      */
+    @Override
     public void floor()
     {
         if (top < 1)
@@ -334,6 +348,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#hypot(double, double) 
      */
+    @Override
     public void hypot()
     {
         if (top < 2)
@@ -346,6 +361,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#log(double) 
      */
+    @Override
     public void log()
     {
         if (top < 1)
@@ -357,6 +373,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#log10(double) 
      */
+    @Override
     public void log10()
     {
         if (top < 1)
@@ -368,6 +385,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#log1p(double) 
      */
+    @Override
     public void log1p()
     {
         if (top < 1)
@@ -379,6 +397,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#max(double, double) 
      */
+    @Override
     public void max()
     {
         if (top < 2)
@@ -391,6 +410,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#min(double, double) 
      */
+    @Override
     public void min()
     {
         if (top < 2)
@@ -403,6 +423,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#pow(double, double) 
      */
+    @Override
     public void pow()
     {
         if (top < 2)
@@ -415,6 +436,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#sin(double) 
      */
+    @Override
     public void sin()
     {
         if (top < 1)
@@ -426,6 +448,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#sinh(double) 
      */
+    @Override
     public void sinh()
     {
         if (top < 1)
@@ -437,6 +460,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#sqrt(double) 
      */
+    @Override
     public void sqrt()
     {
         if (top < 1)
@@ -448,6 +472,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#tan(double) 
      */
+    @Override
     public void tan()
     {
         if (top < 1)
@@ -459,6 +484,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#tanh(double) 
      */
+    @Override
     public void tanh()
     {
         if (top < 1)
@@ -470,6 +496,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#toDegrees(double) 
      */
+    @Override
     public void toDegrees()
     {
         if (top < 1)
@@ -481,6 +508,7 @@ public class DoubleStack implements Arithmetic
     /**
      * @see java.lang.Math#toRadians(double) 
      */
+    @Override
     public void toRadians()
     {
         if (top < 1)
