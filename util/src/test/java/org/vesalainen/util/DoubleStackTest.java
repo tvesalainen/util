@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.util.DoubleStack.*;
 
 /**
  *
@@ -125,6 +126,186 @@ public class DoubleStackTest
         s.neg();
         assertEquals(1, s.size());
         assertEquals(-7, s.peek(), Epsilon);
+    }
+    @Test
+    public void testEq()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(7);
+        s.push(7);
+        s.eq();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.eq();
+        assertEquals(FALSE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testNe()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(7);
+        s.push(7);
+        s.ne();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.ne();
+        assertEquals(TRUE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testLt()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(6);
+        s.push(7);
+        s.lt();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.lt();
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(7);
+        s.lt();
+        assertEquals(FALSE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testLe()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(6);
+        s.push(7);
+        s.le();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.le();
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(7);
+        s.le();
+        assertEquals(TRUE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testGt()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(6);
+        s.push(7);
+        s.gt();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.gt();
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(7);
+        s.lt();
+        assertEquals(FALSE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testGe()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(6);
+        s.push(7);
+        s.ge();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(5);
+        s.ge();
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(7);
+        s.push(7);
+        s.le();
+        assertEquals(TRUE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testAnd()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(TRUE);
+        s.push(TRUE);
+        s.and();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(FALSE);
+        s.push(TRUE);
+        s.and();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(TRUE);
+        s.push(FALSE);
+        s.and();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(FALSE);
+        s.push(FALSE);
+        s.and();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testOr()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(TRUE);
+        s.push(TRUE);
+        s.or();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(FALSE);
+        s.push(TRUE);
+        s.or();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(TRUE);
+        s.push(FALSE);
+        s.or();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
+        s.clear();
+        s.push(FALSE);
+        s.push(FALSE);
+        s.or();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+    }
+    @Test
+    public void testNot()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(TRUE);
+        s.not();
+        assertEquals(1, s.size());
+        assertEquals(FALSE, s.peek(), Epsilon);
+        s.clear();
+        s.push(FALSE);
+        s.not();
+        assertEquals(1, s.size());
+        assertEquals(TRUE, s.peek(), Epsilon);
     }
     
 }

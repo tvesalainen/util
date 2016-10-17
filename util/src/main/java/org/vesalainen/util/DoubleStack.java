@@ -16,18 +16,22 @@
  */
 package org.vesalainen.util;
 
+import java.io.IOException;
 import org.vesalainen.math.BasicMath;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import org.vesalainen.math.Arithmetic;
+import org.vesalainen.math.Conditional;
 
 /**
  * DoubleStack implements stack operations for primitive double values. It also 
  * implements basic arithmetic stack operations.
  * @author tkv
  */
-public class DoubleStack implements Arithmetic, BasicMath
+public class DoubleStack implements Arithmetic, BasicMath, Conditional
 {
+    public static final double TRUE = 1;
+    public static final double FALSE = 0;
     private double[] stack;
     private float growFactor;
     private int top;
@@ -523,5 +527,72 @@ public class DoubleStack implements Arithmetic, BasicMath
             throw new EmptyStackException();
         }
         stack[top-1] = Math.toRadians(stack[top-1]);
+    }
+
+    @Override
+    public void eq()
+    {
+        stack[top-2] = stack[top-2] == stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void ne()
+    {
+        stack[top-2] = stack[top-2] != stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void lt()
+    {
+        stack[top-2] = stack[top-2] < stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void le()
+    {
+        stack[top-2] = stack[top-2] <= stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void gt()
+    {
+        stack[top-2] = stack[top-2] > stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void ge()
+    {
+        stack[top-2] = stack[top-2] >= stack[top-1] ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void not()
+    {
+        assert(stack[top-1] == TRUE || stack[top-1] == FALSE);
+        stack[top-1] = stack[top-1] == FALSE ? TRUE : FALSE;
+    }
+
+    @Override
+    public void and()
+    {
+        assert(stack[top-2] == TRUE || stack[top-2] == FALSE);
+        assert(stack[top-1] == TRUE || stack[top-1] == FALSE);
+        stack[top-2] = stack[top-2] == TRUE && stack[top-1] == TRUE ? TRUE : FALSE;
+        top--;
+    }
+
+    @Override
+    public void or()
+    {
+        assert(stack[top-2] == TRUE || stack[top-2] == FALSE);
+        assert(stack[top-1] == TRUE || stack[top-1] == FALSE);
+        stack[top-2] = stack[top-2] == TRUE || stack[top-1] == TRUE ? TRUE : FALSE;
+        top--;
     }
 }
