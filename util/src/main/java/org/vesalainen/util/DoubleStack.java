@@ -98,6 +98,13 @@ public class DoubleStack implements Arithmetic, BasicMath
         return top;
     }
     /**
+     * Sets stack pointer to 0.
+     */
+    public void clear()
+    {
+        top = 0;
+    }
+    /**
      * Return true is stack doesn't have any elements.
      * @return 
      */
