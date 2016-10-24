@@ -16,7 +16,8 @@
  */
 package org.vesalainen.math;
 
-import java.io.IOException;
+import org.vesalainen.util.NoNeedToContinueException;
+
 
 /**
  *
@@ -26,47 +27,59 @@ public interface Conditional
 {
     /**
      * Push(pop() == pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void eq() throws IOException;
+    void eq() throws Exception;
     /**
      * Push(pop() != pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void ne() throws IOException;
+    void ne() throws Exception;
     /**
      * Push(pop()>pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void lt() throws IOException;
+    void lt() throws Exception;
     /**
      * Push(pop()>=pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void le() throws IOException;
+    void le() throws Exception;
     /**
      * Push(pop()<pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void gt() throws IOException;
+    void gt() throws Exception;
     /**
      * Push(pop()<=pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void ge() throws IOException;
+    void ge() throws Exception;
     /**
      * Push(!pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void not() throws IOException;
+    void not() throws Exception;
     /**
      * Push(pop() && pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void and() throws IOException;
+    void and() throws Exception;
     /**
      * Push(pop() || pop())
-     * @throws IOException 
+     * @throws Exception 
      */
-    void or() throws IOException;
+    void or() throws Exception;
+    /**
+     * Checks if there is FALSE at the bottom of stack in and statement. If
+     * there is throws NoNeedToContinueException.
+     * @throws NoNeedToContinueException 
+     */
+    void checkAnd() throws NoNeedToContinueException;
+    /**
+     * Checks if there is TRUE at the bottom of stack in or statement. If
+     * there is throws NoNeedToContinueException.
+     * @throws NoNeedToContinueException 
+     */
+    void checkOr() throws NoNeedToContinueException;
 }

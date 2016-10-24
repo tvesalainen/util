@@ -14,26 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
-
+package org.vesalainen.util;
 
 /**
  *
  * @author tkv
  */
-public interface Arithmetic
+public class NoNeedToContinueException extends Exception
 {
-    void dup() throws Exception;
+
+    public NoNeedToContinueException()
+    {
+    }
+
+    public NoNeedToContinueException(String message)
+    {
+        super(message);
+    }
     
-    void add() throws Exception;
-
-    void div() throws Exception;
-
-    void mod() throws Exception;
-
-    void mul() throws Exception;
-
-    void neg() throws Exception;
-
-    void subtract() throws Exception;
 }

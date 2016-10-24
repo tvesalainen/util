@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.vesalainen.util.DoubleStack.*;
@@ -307,5 +309,32 @@ public class DoubleStackTest
         assertEquals(1, s.size());
         assertEquals(TRUE, s.peek(), Epsilon);
     }
-    
+    @Test
+    public void testCheckAnd()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(FALSE);
+        try
+        {
+            s.checkAnd();
+            fail("should have thrown NoNeedToContinueException");
+        }
+        catch (NoNeedToContinueException ex)
+        {
+        }
+    }    
+    @Test
+    public void testCheckOr()
+    {
+        DoubleStack s = new DoubleStack(4, 1.5F);
+        s.push(TRUE);
+        try
+        {
+            s.checkOr();
+            fail("should have thrown NoNeedToContinueException");
+        }
+        catch (NoNeedToContinueException ex)
+        {
+        }
+    }    
 }

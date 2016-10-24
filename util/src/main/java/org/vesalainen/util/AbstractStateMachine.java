@@ -25,46 +25,121 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import org.vesalainen.util.AbstractStateMachine.State;
 
 /**
  *
  * @author tkv
+ * @param <B>
+ * @param <S>
  */
-public class AbstractStateMachine
+public class AbstractStateMachine<B extends BooleanSupplier,S extends State>
 {
     private String start;
-    private Map<String,StateImpl> states = new HashMap<>();
+    private Map<String,AbstractState> states = new HashMap<>();
     private List<PreTransition> preTransitions = new ArrayList<>();
-    private StateImpl current;
-    private Clock clock;
+    private AbstractState current;
+    private Supplier<Clock> clockSupplier;
     private long startTime;
     private long stateStartTime;
-
+    /**
+     * Creates new state machine.
+     * @param start Name of start state.
+     */
     public AbstractStateMachine(String start)
     {
-        this(start, Clock.systemDefaultZone());
+        this(start, Clock::systemDefaultZone);
     }
-
-    public AbstractStateMachine(String start, Clock clock)
+    /**
+     * Creates new state machine.
+     * @param start Name of start state.
+     * @param clockSupplier 
+     */
+    public AbstractStateMachine(String start, Supplier<Clock> clockSupplier)
     {
         this.start = start;
-        this.clock = clock;
+        this.clockSupplier = clockSupplier;
     }
-    public void addState(String name, State state)
+    /**
+     * Creates named state with functional interface.
+     * @param name
+     * @param enter Called when state is entered.
+     */
+    public void addState(String name, Runnable enter)
     {
-        states.put(name, new StateImpl(name, state));
+        addState(name, (S) new AdhocState(name, enter, null, null));
     }
-    public void addTransition(String from, BooleanSupplier condition, String to)
+    /**
+     * Creates named state with functional interface.
+     * @param name
+     * @param enter Called when state is entered.
+     * @param exit Called when state is exited.
+     */
+    public void addState(String name, Runnable enter, Runnable exit)
+    {
+        addState(name, (S) new AdhocState(name, enter, null, exit));
+    }
+    /**
+     * Creates named state with functional interface.
+     * @param name
+     * @param enter Called when state is entered.
+     * @param run Called when state is entered, when evaluated but not exited and when exited.
+     * @param exit Called when state is exited.
+     */
+    public void addState(String name, Runnable enter, Runnable run, Runnable exit)
+    {
+        addState(name, (S) new AdhocState(name, enter, run, exit));
+    }
+    /**
+     * Creates named state
+     * @param name
+     * @param state 
+     */
+    public void addState(String name, S state)
+    {
+        AbstractState old = states.put(name, new StateWrapper(name, state));
+        if (old != null)
+        {
+            throw new IllegalArgumentException("state "+name+" exists already");
+        }
+    }
+    public void addTransition(String from, B condition, String to)
     {
         preTransitions.add(new PreTransition(from, condition, to));
     }
+    public String getCurrentState() throws Exception
+    {
+        if (current == null)
+        {
+            compile();
+        }
+        return current.name;
+    }
+    protected Set<B> getCurrentConditions() throws Exception
+    {
+        if (current == null)
+        {
+            compile();
+        }
+        return (Set<B>) current.transitions.keySet();
+    }
+    /**
+     * Evaluates current states conditions and transit to new state depending on
+     * conditions.
+     * <p>If transition to new state: calls exit for old state and enter and run
+     * for new state.
+     * <p>If no transition: calls run for current state.
+     * @throws IllegalArgumentException if more than one condition is true.
+     * @throws Exception From states enter, run or exit methods.
+     */
     public void evaluate() throws Exception
     {
         if (current == null)
         {
             compile();
         }
-        StateImpl candidate = null;
+        StateWrapper candidate = null;
         for (Entry<BooleanSupplier,State> e : current.transitions.entrySet())
         {
             if (e.getKey().getAsBoolean())
@@ -73,34 +148,49 @@ public class AbstractStateMachine
                 {
                     throw new IllegalArgumentException("transition from state "+current+" to two states at the same time: "+candidate.toString()+" and "+e.getValue());
                 }
-                candidate = (StateImpl) e.getValue();
+                candidate = (StateWrapper) e.getValue();
             }
         }
         if (candidate != null)
         {
             current.exit();
             current = candidate;
-            stateStartTime = clock.millis();
+            stateStartTime = clockSupplier.get().millis();
             current.enter();
         }
         current.run();
     }
-
+    /**
+     * Returns state machines start time in milli seconds from epoch.
+     * @return 
+     */
     public long getStartTime()
     {
         return startTime;
     }
+    /**
+     * Returns the time since start of state machine in milli seconds.
+     * @return 
+     */
     public long getElapsedTime()
     {
-        return clock.millis() - startTime;
+        return clockSupplier.get().millis() - startTime;
     }
+    /**
+     * Returns current states start time in milli seconds from epoch.
+     * @return 
+     */
     public long getStateStartTime()
     {
         return stateStartTime;
     }
+    /**
+     * Returns current states elapsed time in milli seconds.
+     * @return 
+     */
     public long getStateElapsedTime()
     {
-        return clock.millis() - stateStartTime;
+        return clockSupplier.get().millis() - stateStartTime;
     }
     
     private void compile() throws Exception
@@ -115,12 +205,12 @@ public class AbstractStateMachine
         inSet.remove(start);
         for (PreTransition pt : preTransitions)
         {
-            StateImpl from = states.get(pt.from);
+            AbstractState from = states.get(pt.from);
             if (from == null)
             {
                 throw new IllegalArgumentException("state "+from+" missing");
             }
-            StateImpl to = states.get(pt.to);
+            AbstractState to = states.get(pt.to);
             if (to == null)
             {
                 throw new IllegalArgumentException("state "+to+" missing");
@@ -134,12 +224,12 @@ public class AbstractStateMachine
         }
         if (!inSet.isEmpty())
         {
-            throw new IllegalArgumentException("states "+inSet+" have no transion into");
+            throw new IllegalArgumentException("states "+inSet+" have no transition into");
         }
         start = null;
         preTransitions = null;
         states = null;
-        startTime = stateStartTime = clock.millis();
+        startTime = stateStartTime = clockSupplier.get().millis();
         current.enter();
         current.run();
     }
@@ -149,18 +239,16 @@ public class AbstractStateMachine
         void run() throws Exception;
         void exit() throws Exception;
     }
-    public static class StateImpl implements State
+    private static abstract class AbstractState implements State
     {
         private String name;
-        private State inner;
-        private Map<BooleanSupplier,State> transitions = new HashMap<>();
+        protected Map<BooleanSupplier,State> transitions = new HashMap<>();
 
-        public StateImpl(String name, State inner)
+        public AbstractState(String name)
         {
             this.name = name;
-            this.inner = inner;
         }
-
+        
         public String name()
         {
             return name;
@@ -169,7 +257,59 @@ public class AbstractStateMachine
         @Override
         public String toString()
         {
-            return "State{" + "name=" + name + ", "+ inner+'}';
+            return "State{" + "name=" + name + '}';
+        }
+
+    }
+    private static class AdhocState extends AbstractState
+    {
+        private Runnable enter;
+        private Runnable run;
+        private Runnable exit;
+
+        public AdhocState(String name, Runnable enter, Runnable run, Runnable exit)
+        {
+            super(name);
+            this.enter = enter;
+            this.run = run;
+            this.exit = exit;
+        }
+
+        @Override
+        public void enter() throws Exception
+        {
+            if (enter != null)
+            {
+                enter.run();
+            }
+        }
+
+        @Override
+        public void run() throws Exception
+        {
+            if (run != null)
+            {
+                run.run();
+            }
+        }
+
+        @Override
+        public void exit() throws Exception
+        {
+            if (exit != null)
+            {
+                exit.run();
+            }
+        }
+    }
+    private static class StateWrapper extends AbstractState
+    {
+        private State inner;
+
+        public StateWrapper(String name, State inner)
+        {
+            super(name);
+            this.inner = inner;
         }
 
         @Override

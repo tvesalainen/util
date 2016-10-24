@@ -16,7 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.io.IOException;
 import org.vesalainen.math.BasicMath;
 import java.util.Arrays;
 import java.util.EmptyStackException;
@@ -92,6 +91,15 @@ public class DoubleStack implements Arithmetic, BasicMath, Conditional
             throw new EmptyStackException();
         }
         return stack[top-1];
+    }
+    /**
+     * Returns value at index. No checks!
+     * @param index
+     * @return 
+     */
+    public double get(int index)
+    {
+        return stack[index];
     }
     /**
      * Returns number of elements in stack.
@@ -588,11 +596,29 @@ public class DoubleStack implements Arithmetic, BasicMath, Conditional
     }
 
     @Override
+    public void checkAnd() throws NoNeedToContinueException
+    {
+        if (top == 1 && stack[0] == FALSE)
+        {
+            throw new NoNeedToContinueException("false && ? == false");
+        }
+    }
+
+    @Override
     public void or()
     {
         assert(stack[top-2] == TRUE || stack[top-2] == FALSE);
         assert(stack[top-1] == TRUE || stack[top-1] == FALSE);
         stack[top-2] = stack[top-2] == TRUE || stack[top-1] == TRUE ? TRUE : FALSE;
         top--;
+    }
+
+    @Override
+    public void checkOr() throws NoNeedToContinueException
+    {
+        if (top == 1 && stack[0] == TRUE)
+        {
+            throw new NoNeedToContinueException("true || ? == true");
+        }
     }
 }
