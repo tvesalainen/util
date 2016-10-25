@@ -178,7 +178,7 @@ public final class Recycler
                         if (recyclable == null)
                         {
                             queue = null;
-                            log.info("stop thread ", Recycler.class.getSimpleName());
+                            log.info("stop thread %s", Recycler.class.getSimpleName());
                             return;
                         }
                         if (recyclable.isRecycled())
