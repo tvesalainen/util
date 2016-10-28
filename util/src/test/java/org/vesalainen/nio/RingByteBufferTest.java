@@ -37,7 +37,6 @@ import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.Matcher;
 import org.vesalainen.util.OrMatcher;
 import org.vesalainen.util.SimpleMatcher;
-import org.vesalainen.util.concurrent.SynchronizedRingBufferTest;
 
 /**
  *
@@ -90,7 +89,8 @@ public class RingByteBufferTest
                             break;
                         case Match:
                             assertTrue(str1.contentEquals(rbb) || str2.contentEquals(rbb));
-                            rbb.write(gbc);
+                            int cn = rbb.write(gbc);
+                            assertEquals(12, cn);
                             mark = true;
                             writeCount++;
                             break;
