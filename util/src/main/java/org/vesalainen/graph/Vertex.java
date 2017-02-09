@@ -22,6 +22,7 @@ import java.util.Collection;
  *
  * @author Timo Vesalainen
  */
+@FunctionalInterface
 public interface Vertex<T>
 {
     Collection<T> edges();

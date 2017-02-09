@@ -29,7 +29,8 @@ import java.util.Map;
  * FRANK DeREMER and 
  * THOMAS PENNELLO: Efficient Computation of LALR(1) Look-Ahead Sets
  * </a>
- * 
+ * This class provides an easy way to traverse directed graph (net) so that each
+ * node and edge are accessed only once. Call either traverse method.
  * @author Timo Vesalainen
  */
 public class DiGraph<X extends Vertex>
@@ -53,6 +54,10 @@ public class DiGraph<X extends Vertex>
             }
         }
     }
+    /**
+     * This algorithm traverses all vertices and all edges once.
+     * @param x 
+     */
     public void traverse(X x)
     {
         enter(x);
@@ -88,11 +93,18 @@ public class DiGraph<X extends Vertex>
         }
         exit(x, traversedCount() - depth);
     }
-    
+    /**
+     * This method is called exactly once for each node.
+     * @param x 
+     */
     protected void enter(X x)
     {
     }
-
+    /**
+     * This method is called exactly once for each edge.
+     * @param from
+     * @param to 
+     */
     protected void edge(X from, X to)
     {
     }
