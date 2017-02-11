@@ -52,7 +52,7 @@ public class DiGraphTest
         g.set(h);
         
         DG dg = new DG();
-        dg.traverse(a, Vertex::edges);
+        dg.traverse(Collections.singleton(a), Vertex::edges);
         assertEquals(8, dg.entries);
         assertEquals(9, dg.edges);
     }

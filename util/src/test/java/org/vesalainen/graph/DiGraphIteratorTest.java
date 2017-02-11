@@ -48,7 +48,7 @@ public class DiGraphIteratorTest
         e.set(f);
         g.set(h);
 
-        long count = DiGraphIterator.stream(a, Vertex::edges).count();
+        long count = DiGraphIterator.streamC(a, Vertex::edges).count();
         assertEquals(8, count);
     }
 

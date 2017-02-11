@@ -43,16 +43,25 @@ public final class DiGraphIterator<X> implements Iterator<X>
     private Map<X,Integer> indexMap = new HashMap<>();
     private Deque<Ctx> context = new ArrayDeque<>();
     private X next;
-    private Function<? super X, ? extends Collection<X>> edges;
+    private Function<? super X, ? extends Stream<X>> edges;
     /**
      * Creates a DiGraphIterator. It will iterate once for every node.
      * @param root
      * @param edges 
      */
-    public DiGraphIterator(X root, Function<? super X, ? extends Collection<X>> edges)
+    public DiGraphIterator(X root, Function<? super X, ? extends Stream<X>> edges)
     {
         this.edges = edges;
         next = enter(root);
+    }
+    /**
+     * Creates a DiGraphIterator. It will iterate once for every node.
+     * @param root
+     * @param edges 
+     */
+    public static <T> DiGraphIterator<T> getInstance(T root, Function<? super T, ? extends Collection<T>> edges)
+    {
+        return new DiGraphIterator<>(root, (y)->edges.apply(y).stream());
     }
     /**
      * Creates a stream.
@@ -61,7 +70,7 @@ public final class DiGraphIterator<X> implements Iterator<X>
      * @param edges
      * @return 
      */
-    public static <T> Stream<T> stream(T root, Function<? super T, ? extends Collection<T>> edges)
+    public static <T> Stream<T> stream(T root, Function<? super T, ? extends Stream<T>> edges)
     {
         return StreamSupport.stream(spliterator(root, edges), false);
     }
@@ -72,12 +81,23 @@ public final class DiGraphIterator<X> implements Iterator<X>
      * @param edges
      * @return 
      */
-    public static <T> Spliterator<T> spliterator(T root, Function<? super T, ? extends Collection<T>> edges)
+    public static <T> Spliterator<T> spliterator(T root, Function<? super T, ? extends Stream<T>> edges)
     {
         DiGraphIterator dgi = new DiGraphIterator(root, edges);
         return Spliterators.spliteratorUnknownSize(dgi, 0);
     }
     
+    /**
+     * Creates a stream.
+     * @param <T>
+     * @param root
+     * @param edges
+     * @return 
+     */
+    public static <T> Stream<T> streamC(T root, Function<? super T, ? extends Collection<T>> edges)
+    {
+        return StreamSupport.stream(spliterator(root, (y)->edges.apply(y).stream()), false);
+    }
     @Override
     public boolean hasNext()
     {

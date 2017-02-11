@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
     /**
  * DiGraph class implements the digraph algorithm described in FRANK DeREMER and 
@@ -70,12 +71,16 @@ public class DiGraph<X>
      */
     public void traverse(Collection<X> allX, Function<? super X, ? extends Collection<X>> edges)
     {
+        traverseS(allX, (y)->edges.apply(y).stream());
+    }
+    public void traverseS(Collection<X> allX, Function<? super X, ? extends Stream<X>> edges)
+    {
         reset();
         for (X x : allX)
         {
             if (indexOf(x) == 0)
             {
-                traverse(x, edges);
+                traverseS(x, edges);
             }
         }
     }
@@ -86,6 +91,10 @@ public class DiGraph<X>
      */
     public void traverse(X x, Function<? super X, ? extends Collection<X>> edges)
     {
+        traverseS(x, (y)->edges.apply(y).stream());
+    }
+    public void traverseS(X x, Function<? super X, ? extends Stream<X>> edges)
+    {
         enterFunc.accept(x);
         stack.push(x);
 
@@ -93,16 +102,16 @@ public class DiGraph<X>
         setIndexOf(x, d);
 
         int depth = traversedCount();
-        Collection<X> c = edges.apply(x);
-        for (X s : c)
+        Stream<X> c = edges.apply(x);
+        c.forEach((s)->
         {
             edgeFunc.accept(x, s);
             if (indexOf(s) == 0)
             {
-                traverse(s, edges);
+                traverseS(s, edges);
             }
             setIndexOf(x, Math.min(indexOf(x), indexOf(s)));
-        }
+        });
         if (indexOf(x) == d)
         {
             branch(x);
