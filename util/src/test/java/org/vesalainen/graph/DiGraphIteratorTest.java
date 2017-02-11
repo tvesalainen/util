@@ -16,20 +16,17 @@
  */
 package org.vesalainen.graph;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.Lists;
 
 /**
  *
  * @author tkv
  */
-public class DiGraphTest
+public class DiGraphIteratorTest
 {
     
-    public DiGraphTest()
+    public DiGraphIteratorTest()
     {
     }
 
@@ -50,11 +47,10 @@ public class DiGraphTest
         d.set(e);
         e.set(f);
         g.set(h);
-        
-        DG dg = new DG();
-        dg.traverse(a, Vertex::edges);
-        assertEquals(8, dg.entries);
-        assertEquals(9, dg.edges);
+
+        long count = DiGraphIterator.stream(a, Vertex::edges).count();
+        assertEquals(8, count);
     }
 
+    
 }

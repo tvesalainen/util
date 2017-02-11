@@ -21,59 +21,85 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
     /**
  * DiGraph class implements the digraph algorithm described in FRANK DeREMER and 
  * THOMAS PENNELLO: Efficient Computation of LALR(1) Look-Ahead Sets
+ * @param <X>
  * @see <a href="http://www.win.tue.nl/~wsinswan/softwaretools/material/DeRemer_Pennello.pdf">
  * FRANK DeREMER and 
  * THOMAS PENNELLO: Efficient Computation of LALR(1) Look-Ahead Sets
  * </a>
  * This class provides an easy way to traverse directed graph (net) so that each
  * node and edge are accessed only once. Call either traverse method.
+ * 
+ * <p>You can set enter and/or edge functions or subclass and implement enter and/or edge methods.
  * @author Timo Vesalainen
  */
-public class DiGraph<X extends Vertex>
+public class DiGraph<X>
 {
     private Deque<X> stack = new ArrayDeque<>();
     private Map<X,Integer> indexMap = new HashMap<>();
     private static final int INFINITY = 9999999;
+    private Consumer<X> enterFunc = this::enter;
+    private BiConsumer<X,X> edgeFunc = this::edge;
+    /**
+     * Set function which is called once for every node. Default value is enter method.
+     * @param enterFunc 
+     */
+    public void setEnterFunc(Consumer<X> enterFunc)
+    {
+        this.enterFunc = enterFunc;
+    }
+    /**
+     * Set function which is called once for every edge. Default value is edge method.
+     * @param edgeFunc 
+     */
+    public void setEdgeFunc(BiConsumer<X, X> edgeFunc)
+    {
+        this.edgeFunc = edgeFunc;
+    }
 
     /**
      * This algorithm traverses all vertices and all edges once.
      * @param allX 
+     * @param edges 
      */
-    public void traverse(Collection<X> allX)
+    public void traverse(Collection<X> allX, Function<? super X, ? extends Collection<X>> edges)
     {
         reset();
         for (X x : allX)
         {
             if (indexOf(x) == 0)
             {
-                traverse(x);
+                traverse(x, edges);
             }
         }
     }
     /**
      * This algorithm traverses all vertices and all edges once.
      * @param x 
+     * @param edges 
      */
-    public void traverse(X x)
+    public void traverse(X x, Function<? super X, ? extends Collection<X>> edges)
     {
-        enter(x);
+        enterFunc.accept(x);
         stack.push(x);
 
         int d = stack.size();
         setIndexOf(x, d);
 
         int depth = traversedCount();
-        Collection<X> c = x.edges();
+        Collection<X> c = edges.apply(x);
         for (X s : c)
         {
-            edge(x, s);
+            edgeFunc.accept(x, s);
             if (indexOf(s) == 0)
             {
-                traverse(s);
+                traverse(s, edges);
             }
             setIndexOf(x, Math.min(indexOf(x), indexOf(s)));
         }

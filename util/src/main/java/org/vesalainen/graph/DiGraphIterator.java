@@ -17,11 +17,17 @@
 package org.vesalainen.graph;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * DiGraphIterator implements iterator over all vertices a given vertex has a connection.
@@ -29,7 +35,7 @@ import java.util.NoSuchElementException;
  * @author Timo Vesalainen
  * @see DiGraph
  */
-public final class DiGraphIterator<X extends Vertex> implements Iterator<X>
+public final class DiGraphIterator<X> implements Iterator<X>
 {
     private static final int INFINITY = 9999999;
 
@@ -37,12 +43,41 @@ public final class DiGraphIterator<X extends Vertex> implements Iterator<X>
     private Map<X,Integer> indexMap = new HashMap<>();
     private Deque<Ctx> context = new ArrayDeque<>();
     private X next;
-
-    public DiGraphIterator(X root)
+    private Function<? super X, ? extends Collection<X>> edges;
+    /**
+     * Creates a DiGraphIterator. It will iterate once for every node.
+     * @param root
+     * @param edges 
+     */
+    public DiGraphIterator(X root, Function<? super X, ? extends Collection<X>> edges)
     {
+        this.edges = edges;
         next = enter(root);
     }
-
+    /**
+     * Creates a stream.
+     * @param <T>
+     * @param root
+     * @param edges
+     * @return 
+     */
+    public static <T> Stream<T> stream(T root, Function<? super T, ? extends Collection<T>> edges)
+    {
+        return StreamSupport.stream(spliterator(root, edges), false);
+    }
+    /**
+     * Creates a Spliterator
+     * @param <T>
+     * @param root
+     * @param edges
+     * @return 
+     */
+    public static <T> Spliterator<T> spliterator(T root, Function<? super T, ? extends Collection<T>> edges)
+    {
+        DiGraphIterator dgi = new DiGraphIterator(root, edges);
+        return Spliterators.spliteratorUnknownSize(dgi, 0);
+    }
+    
     @Override
     public boolean hasNext()
     {
@@ -64,7 +99,7 @@ public final class DiGraphIterator<X extends Vertex> implements Iterator<X>
     @Override
     public void remove()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported.");
     }
     
     private X enter(X x)
@@ -74,7 +109,7 @@ public final class DiGraphIterator<X extends Vertex> implements Iterator<X>
         int d = stack.size();
         setIndexOf(x, d);
 
-        Iterator<X> i = x.edges().iterator();
+        Iterator<X> i = edges.apply(x).iterator();
         context.push(new Ctx(x, i, d));
         return x;
     }
