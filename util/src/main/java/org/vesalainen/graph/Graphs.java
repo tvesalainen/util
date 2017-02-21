@@ -20,16 +20,32 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- *
+ * Algorithm implementations for graph traversal
  * @author tkv
  */
 public class Graphs
 {
+    /**
+     * Returns stream for graph nodes starting with root. Function edges returns
+     * stream for each node containing nodes edges. Traversal is in breadth first
+     * order.
+     * @param <T>
+     * @param root
+     * @param edges
+     * @return 
+     */
     public static final <T> Stream<T> breadthFirst(T root, Function<? super T, ? extends Stream<T>> edges)
     {
         return BreadthFirst.stream(root, edges);
     }
-    
+    /**
+     * Returns stream for graph nodes starting with root. Function edges returns
+     * stream for each node containing nodes edges.
+     * @param <T>
+     * @param root
+     * @param edges
+     * @return 
+     */
     public static final <T> Stream<T> diGraph(T root, Function<? super T, ? extends Stream<T>> edges)
     {
         return DiGraphIterator.stream(root, edges);
