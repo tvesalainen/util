@@ -13,6 +13,7 @@
     <modules>
         <module>util</module>
         <module>security</module>
+        <module>installer</module>
     </modules>
     <name>Utilities Parent</name>
     <description>

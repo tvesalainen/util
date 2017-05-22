@@ -18,12 +18,17 @@ package org.vesalainen.installer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
+import org.vesalainen.nio.FileUtil;
 
 /**
  *
@@ -45,12 +50,12 @@ public class InstallerTest
     @After
     public void after() throws IOException
     {
-        Files.walkFileTree(LOCAL, (p)->Files.delete(p));
+        FileUtil.deleteDirectory(LOCAL);
     }
     @Test
     public void testUpdate()
     {
-        Installer.main("-jd", LOCAL.toString(), "-g", "org.vesalainen", "-a", "test", "-v", "1.0.0", "UPDATE");
+        Installer.main("-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "router", "-v", "1.8.0", "UPDATE");
     }
     
 }
