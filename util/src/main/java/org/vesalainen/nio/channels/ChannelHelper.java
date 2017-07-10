@@ -40,6 +40,14 @@ public class ChannelHelper
     {
         writeAll(ch, bbs, 0, bbs.length);
     }
+    /**
+     * Attempts to write all remaining data in bbs.
+     * @param ch Target
+     * @param bbs 
+     * @param offset
+     * @param length
+     * @throws IOException If couldn't write all.
+     */
     public static void writeAll(GatheringByteChannel ch, ByteBuffer[] bbs, int offset, int length) throws IOException
     {
         long all = 0;
