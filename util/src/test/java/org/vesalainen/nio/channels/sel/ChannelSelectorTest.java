@@ -152,7 +152,7 @@ public class ChannelSelectorTest
         {
             this.selector = selector;
             sc = SocketChannel.open(sa);
-            channel = new ReadSelectChannel(sc, 16, true);
+            channel = new ReadSelectChannel(sc);
         }
 
         @Override

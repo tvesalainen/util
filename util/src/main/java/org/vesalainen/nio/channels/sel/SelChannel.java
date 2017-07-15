@@ -138,21 +138,10 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
     {
         private ByteBuffer bb;
         
-        public ReadSelectChannel(T channel, int size, boolean direct)
+        public ReadSelectChannel(T channel)
         {
             super(channel, ReadSelectChannel.class);
-            if (size < 1)
-            {
-                throw new IllegalArgumentException("size "+size+" not valid");
-            }
-            if (direct)
-            {
-                bb = ByteBuffer.allocateDirect(size);
-            }
-            else
-            {
-                bb = ByteBuffer.allocate(size);
-            }
+            bb = ByteBuffer.allocate(1);
             bb.flip();
         }
 
@@ -168,9 +157,11 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
             if (!bb.hasRemaining())
             {
                 bb.clear();
+                channel.configureBlocking(true);
                 int rc = channel.read(bb);
                 if (rc != -1)
                 {
+                    channel.configureBlocking(false);
                     fine("selected() %s", bb);
                     bb.flip();
                 }
@@ -220,23 +211,26 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
                 fine("read() EOF");
                 return -1;
             }
-            int srcrem = bb.remaining();
-            int dstrem = dst.remaining();
-            if (srcrem <= dstrem)
+            int count = 0;
+            if (bb.hasRemaining() && dst.hasRemaining())
             {
                 dst.put(bb);
-                fine("read() = %d %s", srcrem, bb);
-                return srcrem;
+                fine("read(1)");
+                count = 1;
             }
-            else
+            int rc = channel.read(dst);
+            if (rc == -1)
             {
-                int delta = srcrem - dstrem;
-                bb.limit(bb.limit() - delta);
-                dst.put(bb);
-                bb.limit(bb.limit() + delta);
-                fine("read() = %d %s", dstrem, bb);
-                return dstrem;
+                if (count > 0)
+                {
+                    return count;
+                }
+                else
+                {
+                    return -1;
+                }
             }
+            return count + rc;
         }
 
         @Override
