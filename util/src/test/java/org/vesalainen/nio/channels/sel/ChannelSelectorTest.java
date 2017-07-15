@@ -147,6 +147,7 @@ public class ChannelSelectorTest
         private ByteBuffer bb = ByteBuffer.allocate(10);
         private byte[] got = new byte[BUFSIZE];
         private int count;
+        private SelKey selKey;
 
         public Client(ChannelSelector selector, SocketAddress sa) throws IOException
         {
@@ -158,13 +159,13 @@ public class ChannelSelectorTest
         @Override
         public void register() throws IOException
         {
-            channel.register(selector, Op.OP_READ, this);
+            selKey = channel.register(selector, Op.OP_READ, this);
         }
 
         @Override
         public void unregister() throws IOException
         {
-            channel.unregister(selector);
+            selKey.cancel();
         }
         
         @Override
@@ -197,6 +198,7 @@ public class ChannelSelectorTest
         private ChannelSelector selector;
         private ServerSocketChannel ssc;
         private AcceptSelectChannel channel;
+        private SelKey selKey;
 
         public Listener(ChannelSelector selector) throws IOException
         {
@@ -209,13 +211,13 @@ public class ChannelSelectorTest
         @Override
         public void register() throws IOException
         {
-            channel.register(selector, Op.OP_ACCEPT, this);
+            selKey = channel.register(selector, Op.OP_ACCEPT, this);
         }
         
         @Override
         public void unregister() throws IOException
         {
-            channel.unregister(selector);
+            selKey.cancel();
         }
         
         public SocketAddress getLocalAddress() throws IOException

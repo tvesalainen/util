@@ -36,7 +36,8 @@ import org.vesalainen.util.concurrent.ConcurrentArraySet;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * ChannelSelector is replacement for java.nio.channels.Selector. Behavior is 
+ * similar but differs in many points.
  * @author tkv
  */
 public class ChannelSelector extends JavaLogging implements AutoCloseable
@@ -49,38 +50,65 @@ public class ChannelSelector extends JavaLogging implements AutoCloseable
     private Set<SelKey> selectedKeys = new ConcurrentArraySet<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ReentrantLock lock = new ReentrantLock();
-
+    /**
+     * Creates ChannelSelector
+     */
     public ChannelSelector()
     {
         super(ChannelSelector.class);
     }
-    
+    /**
+     * Returns true if selector is not closed.
+     * @return 
+     */
     public boolean isOpen()
     {
         return !executor.isShutdown();
     }
-
+    /**
+     * Throws exception.
+     * @return 
+     */
     public SelectorProvider provider()
     {
         throw new UnsupportedOperationException("Not supported.");
     }
-
+    /**
+     * Returns unmodifiable keys-set.
+     * @return 
+     */
     public Set<SelKey> keys()
     {
         return unmodifiableKeys;
     }
-
+    /**
+     * Returns set of selected keys after one-of select methods is called.
+     * It is allowed and desired to remove entries after processed.
+     * @return 
+     */
     public Set<SelKey> selectedKeys()
     {
         return selectedKeys;
     }
-
+    /**
+     * Selects and returns immediately.
+     * @return
+     * @throws IOException 
+     */
     public int selectNow() throws IOException
     {
         fine("selectNow()");
         return select(0);
     }
-
+    /**
+     * This method calls func as channels becomes ready as long as time
+     * between calls doesn't exceed timeout and thread is not interrupted.
+     * <p>
+     * Most other methods are blocked during this call.
+     * @param func
+     * @param timeout
+     * @throws IOException 
+     */
     public void forEach(Consumer<SelKey> func, long timeout) throws IOException
     {
         fine("forEach("+timeout+")");
@@ -157,6 +185,12 @@ public class ChannelSelector extends JavaLogging implements AutoCloseable
             }
         }
     }
+    /**
+     * Selects and waits .
+     * @param timeout Milliseconds.
+     * @return
+     * @throws IOException 
+     */
     public int select(long timeout) throws IOException
     {
         fine("select("+timeout+")");
@@ -191,13 +225,21 @@ public class ChannelSelector extends JavaLogging implements AutoCloseable
             lock.unlock();
         }
     }
-
+    /**
+     * Selects and wait.
+     * @return
+     * @throws IOException 
+     */
     public int select() throws IOException
     {
         fine("select()");
         return select(Long.MAX_VALUE);
     }
-
+    /**
+     * Causes running select/forEach to stop immediately. If select/forEach was
+     * not running while this method was called the the next call will stop.
+     * @return 
+     */
     public ChannelSelector wakeup()
     {
         fine("wakeup()");

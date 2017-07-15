@@ -36,28 +36,42 @@ import org.vesalainen.util.logging.JavaLogging;
 public abstract class SelChannel<T extends Channel> extends JavaLogging implements Channel, Runnable, AutoCloseable
 {
     protected T channel;
+    protected Op validOp;
     
     private ChannelSelector selector;
     private SelKey key;
 
-    private SelChannel(T channel, Class<?> cls)
+    private SelChannel(T channel, Op op, Class<?> cls)
     {
         super(cls);
         this.channel = channel;
+        this.validOp = op;
     }
-    
+    /**
+     * Throws exception.
+     * @return 
+     */
     public SelectorProvider provider()
     {
         throw new UnsupportedOperationException("Not supported.");
     }
-
-    public abstract Op validOps();
-
+    /**
+     * Returns valid ops.
+     * @return 
+     */
+    public final Op validOps()
+    {
+        return validOp;
+    }
+    /**
+     * Returns true if channel is registered.
+     * @return 
+     */
     public boolean isRegistered()
     {
         return selector != null;
     }
-
+    
     public SelKey keyFor(ChannelSelector sel)
     {
         if (selector == sel)
@@ -69,12 +83,22 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
             return null;
         }
     }
-
+    /**
+     * Registers channel for selection.
+     * @param sel
+     * @param ops
+     * @param att
+     * @return 
+     */
     public SelKey register(ChannelSelector sel, Op ops, Object att)
     {
         if (selector != null)
         {
             throw new IllegalStateException("already registered with "+selector);
+        }
+        if (validOp != ops)
+        {
+            throw new IllegalArgumentException("expected "+validOp+" got "+ops);
         }
         key = sel.register(this, ops, att);
         selector = sel;
@@ -140,15 +164,9 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
         
         public ReadSelectChannel(T channel)
         {
-            super(channel, ReadSelectChannel.class);
+            super(channel, Op.OP_READ, ReadSelectChannel.class);
             bb = ByteBuffer.allocate(1);
             bb.flip();
-        }
-
-        @Override
-        public Op validOps()
-        {
-            return Op.OP_READ;
         }
 
         @Override
@@ -247,13 +265,7 @@ public abstract class SelChannel<T extends Channel> extends JavaLogging implemen
 
         public AcceptSelectChannel(ServerSocketChannel channel)
         {
-            super(channel, AcceptSelectChannel.class);
-        }
-
-        @Override
-        public Op validOps()
-        {
-            return Op.OP_ACCEPT;
+            super(channel, Op.OP_ACCEPT, AcceptSelectChannel.class);
         }
 
         @Override

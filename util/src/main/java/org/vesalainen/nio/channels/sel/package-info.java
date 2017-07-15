@@ -23,6 +23,8 @@
  * <p>
  * Reason for using this package might be that you have channels from different
  * selector providers.
+ * <p>
+ * Besides simulated select/selectedKeys loop, you can use faster forEach method.
  */
 package org.vesalainen.nio.channels.sel;
 
