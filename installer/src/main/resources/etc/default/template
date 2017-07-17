@@ -1,0 +1,9 @@
+VERSION=${version}
+CLASS=${mainClass}
+CLASSPATH=${classpath}
+OPTS="-ll CONFIG -pl CONFIG -lp /var/log/${artifactId}%g.log"
+CONFIG=/home/pi/router2.xml
+DAEMON=/usr/bin/java
+DAEMON_ARGS="-classpath $CLASSPATH $CLASS $OPTS $CONFIG"
+
+

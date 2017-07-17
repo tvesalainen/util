@@ -55,7 +55,7 @@ public class InstallerTest
     @Test
     public void testUpdate()
     {
-        Installer.main("-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "router", "-v", "1.8.0", "UPDATE");
+        Installer.main("-ed", LOCAL.toString(), "-ei", LOCAL.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "router", "-v", "1.8.0", "UPDATE");
     }
     
 }

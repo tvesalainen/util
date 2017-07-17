@@ -7,22 +7,28 @@ package org.vesalainen.installer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
 import org.vesalainen.test.pom.FileModelResolver;
-import org.vesalainen.test.pom.MavenKey;
 import org.vesalainen.test.pom.ModelFactory;
-import org.vesalainen.test.pom.VersionResolver;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.CmdArgs;
 
 /**
@@ -31,6 +37,18 @@ import org.vesalainen.util.CmdArgs;
  */
 public class Installer extends CmdArgs
 {
+
+    private ModelFactory factory;
+    private Model root;
+    private File localRepository;
+    private File jarDirectory;
+    private String groupId;
+    private String artifactId;
+    private String version;
+    private FileModelResolver fileModelResolver;
+    private Object defaultDirectory;
+    private Object initDirectory;
+    private String classpath;
 
     private enum Action {INSTALL, UPDATE, RUN};
     
@@ -46,27 +64,61 @@ public class Installer extends CmdArgs
             addOption(File.class, "-lr", "Local Repository");
         }
         addOption(File.class, "-jd", "Jar Directory", null, false);
+        addOption("-ed", "Default Directory", null, new File("/etc/default"));
+        addOption("-ei", "Init Directory", null, new File("/etc/init.d"));
         addOption("-g", "Group Id");
         addOption("-a", "Artifact Id");
         addOption("-v", "Version");
         addArgument(Action.class, "Action");
     }
-    
-    private Stream<Path> update()
+
+    @Override
+    public void command(String... args)
     {
-        File localRepository = getOption("-lr");
-        File jarDirectory = getOption("-jd");
-        ModelFactory factory = new ModelFactory(localRepository, null);
-        String mainClass = mainClass(factory);
-        FileModelResolver fileModelResolver = factory.getFileModelResolver();
-        return closure(factory).map((m)->
+        super.command(args);
+        localRepository = getOption("-lr");
+        jarDirectory = getOption("-jd");
+        defaultDirectory = getOption("-ed");
+        initDirectory = getOption("-ei");
+        factory = new ModelFactory(localRepository, null);
+        groupId = getOption("-g");
+        artifactId = getOption("-a");
+        version = getOption("-v");
+        fileModelResolver = factory.getFileModelResolver();
+        root = factory.getLocalModel(groupId, artifactId, version);
+    }
+    
+    private void update() throws IOException, URISyntaxException
+    {
+        List<Path> jars = updateJars();
+        classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(";"));
+        URL url = Installer.class.getResource("/etc/init.d/template");
+        CharSequence initTemplate = CharSequences.getAsciiCharSequence(new File(url.toURI()));
+        ExpressionParser parser = new ExpressionParser(this);
+        String initContent = parser.replace(initTemplate);
+        Properties prop = new Properties();
+        try (InputStream is = Installer.class.getResourceAsStream("/etc/default/template"))
+        {
+            prop.load(is);
+        }
+        for (String key : prop.stringPropertyNames())
+        {
+            String property = prop.getProperty(key, "");
+            property = parser.replace(property);
+            prop.setProperty(key, property);
+        }
+    }
+    
+    private List<Path> updateJars()
+    {
+        return getDependencies().stream().map((m)->
         {
             System.err.println(m);
-            String groupId = m.getGroupId();
-            String artifactId = m.getArtifactId();
-            String version = m.getVersion();
+            String grp = m.getGroupId();
+            String art = m.getArtifactId();
+            String ver = m.getVersion();
             String packaging = m.getPackaging();
-            String filename = fileModelResolver.getFilename(groupId, artifactId, version, "jar");
+            String filename = fileModelResolver.getFilename(grp, art, ver, "jar");
             File repo = new File(localRepository, filename);
             File local = new File(jarDirectory, filename);
             if (needsUpdate(repo, local))
@@ -82,15 +134,12 @@ public class Installer extends CmdArgs
                 }
             }
             return local.toPath();
-        });
+            })
+            .collect(Collectors.toList());
     }
     
-    private Stream<Model> closure(ModelFactory factory)
+    private List<Model> getDependencies()
     {
-        String groupId = getOption("-g");
-        String artifactId = getOption("-a");
-        String version = getOption("-v");
-        Model root = factory.getLocalModel(groupId, artifactId, version);
         return Graphs.breadthFirst(root, 
                 (y)->y.getDependencies()
                 .stream()
@@ -100,14 +149,11 @@ public class Installer extends CmdArgs
                 .map(factory::getVersionResolver)
                 .map((v)->v.resolv())
                 .map(factory::getLocalModel)
-        );
+                )
+                .collect(Collectors.toList());
     }
-    private String mainClass(ModelFactory factory)
+    public String getMainClass()
     {
-        String groupId = getOption("-g");
-        String artifactId = getOption("-a");
-        String version = getOption("-v");
-        Model root = factory.getLocalModel(groupId, artifactId, version);
         Build build = root.getBuild();
         Map<String, Plugin> pluginsAsMap = build.getPluginsAsMap();
         Plugin assemblyPlugin = pluginsAsMap.get("org.apache.maven.plugins:maven-assembly-plugin");
@@ -130,19 +176,86 @@ public class Installer extends CmdArgs
         return !local.exists() || repo.lastModified() > local.lastModified();
     }
 
+    public String getClasspath()
+    {
+        return classpath;
+    }
+
+    public String getArtifactId()
+    {
+        return root.getArtifactId();
+    }
+
+    public String getDescription()
+    {
+        return root.getDescription();
+    }
+
+    public String getGroupId()
+    {
+        return root.getGroupId();
+    }
+
+    public String getInceptionYear()
+    {
+        return root.getInceptionYear();
+    }
+
+    public String getModelEncoding()
+    {
+        return root.getModelEncoding();
+    }
+
+    public String getModelVersion()
+    {
+        return root.getModelVersion();
+    }
+
+    public String getName()
+    {
+        return root.getName();
+    }
+
+    public String getPackaging()
+    {
+        return root.getPackaging();
+    }
+
+    public String getUrl()
+    {
+        return root.getUrl();
+    }
+
+    public String getVersion()
+    {
+        return root.getVersion();
+    }
+
+    public String getId()
+    {
+        return root.getId();
+    }
+
     public static void main(String... args)
     {
-        Installer installer = new Installer();
-        installer.command(args);
-        Action action = installer.getArgument("Action");
-        switch (action)
+        try
         {
-            case UPDATE:
-                installer.update();
-                break;
-            default:
-                System.err.println(action+" not supported yet.");
-                System.exit(-1);
+            Installer installer = new Installer();
+            installer.command(args);
+            Action action = installer.getArgument("Action");
+            switch (action)
+            {
+                case UPDATE:
+                    installer.update();
+                    break;
+                default:
+                    System.err.println(action+" not supported yet.");
+                    System.exit(-1);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
         }
     }
 }
