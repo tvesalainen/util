@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -197,5 +198,18 @@ public class CharSequencesTest
                 (c1 < 0 && c2 < 0) ||
                 (c1 > 0 && c2 > 0) ||
                 (c1 == 0 && c2 == 0);
+    }
+    @Test
+    public void testAsciiCharSequence()
+    {
+        byte[] bytes = "qwerty1234567890".getBytes(Charset.forName("ASCII"));
+        CharSequence seq1 = CharSequences.getAsciiCharSequence(bytes);
+        assertEquals(16, seq1.length());
+        assertEquals('q', seq1.charAt(0));
+        assertEquals('0', seq1.charAt(15));
+        CharSequence seq2 = seq1.subSequence(3, 6);
+        assertEquals(3, seq2.length());
+        assertEquals('r', seq2.charAt(0));
+        assertEquals('y', seq2.charAt(2));
     }
 }

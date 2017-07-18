@@ -16,6 +16,10 @@
  */
 package org.vesalainen.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.IntPredicate;
@@ -596,6 +600,97 @@ public class CharSequences
         public int characteristics()
         {
             return 0;
+        }
+        
+    }
+    /**
+     * Creates a CharSequence from a file with ASCII content.
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final CharSequence getAsciiCharSequence(File file) throws IOException
+    {
+        return new ASCIICharSequence(file);
+    }
+    /**
+     * Creates a CharSequence from path with ASCII content
+     * @param path
+     * @return
+     * @throws IOException 
+     */
+    public static final CharSequence getAsciiCharSequence(Path path) throws IOException
+    {
+        return new ASCIICharSequence(path);
+    }
+    /**
+     * Creates a CharSequence from byte buffer.
+     * @param buf
+     * @return 
+     */
+    public static final CharSequence getAsciiCharSequence(byte[] buf)
+    {
+        return new ASCIICharSequence(buf);
+    }
+    /**
+     * Creates a CharSequence from byte buffer.
+     * @param buf
+     * @param offset
+     * @param length
+     * @return 
+     */
+    public static final CharSequence getAsciiCharSequence(byte[] buf, int offset, int length)
+    {
+        return new ASCIICharSequence(buf, offset, length);
+    }
+    private static class ASCIICharSequence implements CharSequence
+    {
+        private byte[] buf;
+        private int offset;
+        private int length;
+
+        public ASCIICharSequence(File file) throws IOException
+        {
+            this(file.toPath());
+        }
+
+        public ASCIICharSequence(Path path) throws IOException
+        {
+            this(Files.readAllBytes(path));
+        }
+
+        public ASCIICharSequence(byte[] buf)
+        {
+            this(buf, 0, buf.length);
+        }
+
+        public ASCIICharSequence(byte[] buf, int offset, int length)
+        {
+            this.buf = buf;
+            this.offset = offset;
+            this.length = length;
+        }
+        
+        @Override
+        public int length()
+        {
+            return length;
+        }
+
+        @Override
+        public char charAt(int index)
+        {
+            if (index < 0 || index >= length)
+            {
+                throw new IllegalArgumentException("index "+index+" out of range");
+            }
+            return (char) buf[index+offset];
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end)
+        {
+            return new ASCIICharSequence(buf, offset+start, end-start);
         }
         
     }
