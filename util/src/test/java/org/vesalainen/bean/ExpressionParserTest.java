@@ -16,6 +16,8 @@
  */
 package org.vesalainen.bean;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -33,7 +35,7 @@ public class ExpressionParserTest
     @Test
     public void test1()
     {
-        ExpressionParser ep = new ExpressionParser((s)->{return s;});
+        ExpressionParser ep = new ExpressionParser((s)->s);
         assertEquals("qwerty", ep.replace("${qwerty}"));
         assertEquals("123qwerty456", ep.replace("123${qwerty}456"));
         assertEquals("qwerty", ep.replace("${qw${er${t}}y}"));
@@ -44,5 +46,15 @@ public class ExpressionParserTest
     {
         ExpressionParser ep = new ExpressionParser("abc");
         assertEquals("12345", ep.replace("12${length}45"));
+    }
+    @Test
+    public void test3()
+    {
+        Map<String,String> map = new HashMap<>();
+        map.put("k1", "v1");
+        map.put("k2", "v2");
+        ExpressionParser ep = new ExpressionParser(map);
+        ep.addMapper((s)->"N/A");
+        assertEquals("av1bN/A", ep.replace("a${k1}b${k3}"));
     }
 }

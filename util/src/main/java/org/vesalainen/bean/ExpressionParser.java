@@ -17,43 +17,83 @@
 package org.vesalainen.bean;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
+import org.vesalainen.util.Lists;
 
 /**
- * A parser class for ${key} expressions. Mapper function is used to replace
- * expression with map(key). Expressions can be nested. Inner expressions are
+ * A parser class for ${key} expressions. A list of mapper function are used to replace
+ * expression with map(key). Constructor mapper is tried first, then the first
+ * added mapper etc.
+ * Expressions can be nested. Inner expressions are
  * naturally resolved first.
  * @author tkv
  */
 public class ExpressionParser
 {
-    private Function<String,String> mapper;
+    private List<Function<String,String>> mapperList = new ArrayList<>();
     /**
      * Creator using map
      * @param map 
      */
     public ExpressionParser(Map<String,String> map)
     {
-        this((s)->{return map.get(s);});
+        this((s)->map.get(s));
     }
+    /**
+     * Creates ExpressionParser using bean-object as mapping. Expression ${key}
+     * maps into method call o.getKey()
+     * @param bean 
+     */
     public ExpressionParser(Object bean)
     {
-        this((s)->{return ExpressionParser.getValue(bean, s);});
+        this((s)->ExpressionParser.getValue(bean, s));
     }
     /**
      * Creator using functional interface
      * @param mapper 
      */
-    public ExpressionParser(Function<String, String> mapper)
+    public ExpressionParser(Function<String, String>... mapper)
     {
-        this.mapper = mapper;
+        this.mapperList = Lists.create(mapper);
     }
-    public static String getValue(Object bean, String property)
+    /**
+     * Add mapper to mapper list.
+     * @param map
+     * @return 
+     */
+    public ExpressionParser addMapper(Map<String,String> map)
+    {
+        mapperList.add((s)->map.get(s));
+        return this;
+    }
+    /**
+     * Add mapper to mapper list.
+     * @param bean
+     * @return 
+     */
+    public ExpressionParser addMapper(Object bean)
+    {
+        mapperList.add((s)->ExpressionParser.getValue(bean, s));
+        return this;
+    }
+    /**
+     * Add mapper to mapper list.
+     * @param mapper
+     * @return 
+     */
+    public ExpressionParser addMapper(Function<String, String> mapper)
+    {
+        mapperList.add(mapper);
+        return this;
+    }
+    private static String getValue(Object bean, String property)
     {
         String s = ConvertUtility.convert(String.class, BeanHelper.getValue(bean, property));
         if (s != null)
@@ -98,7 +138,7 @@ public class ExpressionParser
             out.append(text.subSequence(0, idx));
             int end = findEnd(text, idx+2);
             String key = replace(text.subSequence(idx+2, end));
-            out.append(mapper.apply(key));
+            out.append(map(key));
             out.append(replace(text.subSequence(end+1, text.length())));
             
         }
@@ -108,6 +148,18 @@ public class ExpressionParser
         }
     }
 
+    private String map(String key)
+    {
+        for (Function<String, String> mapper : mapperList)
+        {
+            String value = mapper.apply(key);
+            if (value != null)
+            {
+                return value;
+            }
+        }
+        return key;
+    }
     private int findEnd(CharSequence text, int start)
     {
         int len = text.length();
