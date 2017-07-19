@@ -16,8 +16,10 @@
  */
 package org.vesalainen.nio;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.Files;
@@ -31,13 +33,32 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class FileUtil
 {
-    public static DirectoryDeletor FILE_DELETOR = new DirectoryDeletor();
+    public static final DirectoryDeletor FILE_DELETOR = new DirectoryDeletor();
+    /**
+     * Read all bytes from InputStream and returns them as byte array. 
+     * InputStream is not closed after call.
+     * @param is
+     * @return
+     * @throws IOException 
+     */
+    public static final byte[] readAllBytes(InputStream is) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        int rc = is.read(buf);
+        while (rc != -1)
+        {
+            baos.write(buf, 0, rc);
+            rc = is.read(buf);
+        }
+        return baos.toByteArray();
+    }
     /**
      * Delete directory and all files in it.
      * @param dir
      * @throws IOException 
      */
-    public static void deleteDirectory(File dir) throws IOException
+    public static final void deleteDirectory(File dir) throws IOException
     {
         deleteDirectory(dir.toPath());
     }
@@ -46,12 +67,12 @@ public class FileUtil
      * @param dir
      * @throws IOException 
      */
-    public static void deleteDirectory(Path dir) throws IOException
+    public static final void deleteDirectory(Path dir) throws IOException
     {
         Files.walkFileTree(dir, FILE_DELETOR);
     }
     
-    public static class DirectoryDeletor extends SimpleFileVisitor<Path>
+    public static final class DirectoryDeletor extends SimpleFileVisitor<Path>
     {
 
         @Override
