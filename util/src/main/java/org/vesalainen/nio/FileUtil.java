@@ -16,16 +16,25 @@
  */
 package org.vesalainen.nio;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.FileVisitResult;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -34,6 +43,88 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class FileUtil
 {
     public static final DirectoryDeletor FILE_DELETOR = new DirectoryDeletor();
+    
+    public static final Stream<String> lines(InputStream is)
+    {
+        return lines(is, UTF_8);
+    }
+    /**
+     * Reads InputStream as stream of lines. Line separator is '\n' while '\r' 
+     * is simply ignored.
+     * @param is
+     * @param cs
+     * @return 
+     */
+    public static final Stream<String> lines(InputStream is, Charset cs)
+    {
+        return StreamSupport.stream(new StringSplitIterator(is, cs), false);
+    }
+    private static final class StringSplitIterator extends AbstractSpliterator<String>
+    {
+        private IOIntSupplier supplier;
+        private StringBuilder sb = new StringBuilder();
+        public StringSplitIterator(InputStream is, Charset cs)
+        {
+            super(Long.MAX_VALUE, 0);
+            if (!(is instanceof BufferedInputStream))
+            {
+                is = new BufferedInputStream(is);
+            }
+            if (StandardCharsets.US_ASCII.contains(cs))
+            {
+                supplier = is::read;
+            }
+            else
+            {
+                InputStreamReader isr = new InputStreamReader(is, cs);
+                supplier = isr::read;
+            }
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super String> action)
+        {
+            try
+            {
+                sb.setLength(0);
+                while (true)
+                {
+                    int cc = supplier.read();
+                    switch (cc)
+                    {
+                        case -1:
+                            if (sb.length() > 0)
+                            {
+                                action.accept(sb.toString());
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        case '\r':
+                            break;
+                        case '\n':
+                                action.accept(sb.toString());
+                                return true;
+                        default:
+                            sb.append((char)cc);
+                            break;
+                    }
+                }
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+
+    }
+    @FunctionalInterface
+    private interface IOIntSupplier
+    {
+        int read() throws IOException;
+    }
     /**
      * Read all bytes from InputStream and returns them as byte array. 
      * InputStream is not closed after call.
