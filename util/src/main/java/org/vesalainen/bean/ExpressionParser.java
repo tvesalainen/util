@@ -152,10 +152,17 @@ public class ExpressionParser
     {
         for (Function<String, String> mapper : mapperList)
         {
-            String value = mapper.apply(key);
-            if (value != null)
+            try
             {
-                return value;
+                String value = mapper.apply(key);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
+            catch (Exception ex)
+            {
+                
             }
         }
         return key;
