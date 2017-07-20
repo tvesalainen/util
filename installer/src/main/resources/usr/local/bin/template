@@ -1,0 +1,5 @@
+JAVA=
+ARGS=
+CLASSPATH=${classpath}
+MAIN=${mainClass}
+$JAVA -classpath $CLASSPATH $MAIN $ARGS

@@ -5,20 +5,20 @@
  */
 package org.vesalainen.installer;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
+import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import static java.nio.file.StandardCopyOption.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
@@ -26,8 +26,13 @@ import org.apache.maven.model.PluginExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
+import org.vesalainen.loader.LibraryLoader;
+import org.vesalainen.loader.LibraryLoader.OS;
+import static org.vesalainen.loader.LibraryLoader.OS.*;
+import org.vesalainen.nio.FileUtil;
 import org.vesalainen.test.pom.FileModelResolver;
 import org.vesalainen.test.pom.ModelFactory;
+import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.CmdArgs;
 
@@ -37,7 +42,10 @@ import org.vesalainen.util.CmdArgs;
  */
 public class Installer extends CmdArgs
 {
-
+    private static final String DEFAULT_TEMPLATE = "/etc/default/template";
+    private static final String INIT_D_TEMPLATE = "/etc/init.d/template";
+    private static final String USR_LOCAL_BIN_TEMPLATE = "/usr/local/bin/template";
+    private static final String BIN_TEMPLATE = "/bin/template";
     private ModelFactory factory;
     private Model root;
     private File localRepository;
@@ -46,29 +54,32 @@ public class Installer extends CmdArgs
     private String artifactId;
     private String version;
     private FileModelResolver fileModelResolver;
-    private Object defaultDirectory;
-    private Object initDirectory;
+    private File defaultDirectory;
+    private File initDirectory;
     private String classpath;
+    private ExpressionParser expressionParser;
+    private File exeDirectory;
 
-    private enum Action {INSTALL, UPDATE, RUN};
+    private enum Action {CLIENT, SERVER};
     
     public Installer()
     {
-        String localRepository = System.getProperty("localRepository");
-        if (localRepository != null)
+        String lr = System.getProperty("localRepository");
+        if (lr != null)
         {
-            addOption("-lr", "Local Repository", null, new File(localRepository));
+            addOption("-lr", "Local Repository", null, new File(lr));
         }
         else
         {
-            addOption(File.class, "-lr", "Local Repository");
+            addOption(File.class, "-lr", "Local Repository", null, true);
         }
-        addOption(File.class, "-jd", "Jar Directory", null, false);
-        addOption("-ed", "Default Directory", null, new File("/etc/default"));
-        addOption("-ei", "Init Directory", null, new File("/etc/init.d"));
+        addOption(File.class, "-jd", "Jar Directory", null, true);
+        addOption("-ed", "Executive Directory", "client", new File("/usr/local/bin"));
+        addOption("-dd", "Default Directory", "server", new File("/etc/default"));
+        addOption("-id", "Init Directory", "server", new File("/etc/init.d"));
         addOption("-g", "Group Id");
         addOption("-a", "Artifact Id");
-        addOption("-v", "Version");
+        addOption(String.class, "-v", "Version", null, false);
         addArgument(Action.class, "Action");
     }
 
@@ -78,37 +89,117 @@ public class Installer extends CmdArgs
         super.command(args);
         localRepository = getOption("-lr");
         jarDirectory = getOption("-jd");
-        defaultDirectory = getOption("-ed");
-        initDirectory = getOption("-ei");
+        exeDirectory = getOption("-ed");
+        defaultDirectory = getOption("-dd");
+        initDirectory = getOption("-id");
         factory = new ModelFactory(localRepository, null);
+        fileModelResolver = factory.getFileModelResolver();
         groupId = getOption("-g");
         artifactId = getOption("-a");
         version = getOption("-v");
-        fileModelResolver = factory.getFileModelResolver();
+        if (version == null)
+        {
+            List<Version> versions = fileModelResolver.getVersions(groupId, artifactId);
+            if (versions == null || versions.isEmpty())
+            {
+                throw new IllegalArgumentException("no version for "+groupId+"."+artifactId);
+            }
+            version = versions.get(versions.size()-1).toString();
+        }
         root = factory.getLocalModel(groupId, artifactId, version);
+        expressionParser = new ExpressionParser(root);
+        expressionParser.addMapper(this);
     }
     
-    private void update() throws IOException, URISyntaxException
+    private void installLinuxClient()
     {
-        List<Path> jars = updateJars();
-        classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(";"));
-        URL url = Installer.class.getResource("/etc/init.d/template");
-        CharSequence initTemplate = CharSequences.getAsciiCharSequence(new File(url.toURI()));
-        ExpressionParser parser = new ExpressionParser(this);
-        String initContent = parser.replace(initTemplate);
-        Properties prop = new Properties();
-        try (InputStream is = Installer.class.getResourceAsStream("/etc/default/template"))
+        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+    }
+
+    private void installWindowsClient() throws IOException
+    {
+        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+        mergeTemplate(new File(exeDirectory, artifactId.toUpperCase()+".BAT"), BIN_TEMPLATE);
+    }
+
+    private void installLinuxServer() throws IOException, URISyntaxException
+    {
+        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+        etcInitD();
+        mergeTemplate(new File(defaultDirectory, artifactId), DEFAULT_TEMPLATE);
+    }
+    private void mergeTemplate(File def, String templatePath) throws IOException
+    {
+        if (def.exists())
         {
-            prop.load(is);
+            Map<String,String> map = new HashMap<>();
+            try (InputStream is = Installer.class.getResourceAsStream(templatePath))
+            {
+                FileUtil.lines(is, US_ASCII).forEach((l)->
+                {
+                    String line = expressionParser.replace(l);
+                    if (!l.equals(line))
+                    {
+                        CharSequence key = CharSequences.split(l, '=').findFirst().get();
+                        map.put(key.toString(), line);
+                    }
+                });
+            }
+            List<String> list = Files.readAllLines(def.toPath(), US_ASCII);
+            try (BufferedWriter bw = Files.newBufferedWriter(def.toPath(), US_ASCII))
+            {
+                for (String line : list)
+                {
+                    CharSequence key = CharSequences.split(line, '=').findFirst().get();
+                    String l = map.get(key);
+                    if (l != null)
+                    {
+                        bw.append(l);
+                    }
+                    else
+                    {
+                        bw.append(line);
+                    }
+                    bw.newLine();
+                }
+            }
         }
-        for (String key : prop.stringPropertyNames())
+        else
         {
-            String property = prop.getProperty(key, "");
-            property = parser.replace(property);
-            prop.setProperty(key, property);
+            try (InputStream is = Installer.class.getResourceAsStream(templatePath);
+                    BufferedWriter bw = Files.newBufferedWriter(def.toPath(), US_ASCII))
+            {
+                FileUtil.lines(is, US_ASCII).forEach((l)->
+                {
+                    try
+                    {
+                        String line = expressionParser.replace(l);
+                        bw.append(line);
+                        bw.newLine();
+                    }
+                    catch (IOException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            }
         }
     }
-    
+    private void etcInitD() throws IOException
+    {
+        byte[] initBuf = null;
+        try (InputStream is = Installer.class.getResourceAsStream("/etc/init.d/template"))
+        {
+            initBuf = FileUtil.readAllBytes(is);
+        }
+        CharSequence initTemplate = CharSequences.getAsciiCharSequence(initBuf);
+        String initContent = expressionParser.replace(initTemplate);
+        File init = new File(initDirectory, artifactId);
+        try (BufferedWriter bf = Files.newBufferedWriter(init.toPath(), US_ASCII))
+        {
+            bf.append(initContent);
+        }
+    }
     private List<Path> updateJars()
     {
         return getDependencies().stream().map((m)->
@@ -126,14 +217,14 @@ public class Installer extends CmdArgs
                 try
                 {
                     Files.createDirectories(local.toPath().getParent());
-                    Files.copy(repo.toPath(), local.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(repo.toPath(), local.toPath(), REPLACE_EXISTING);
                 }
                 catch (IOException ex)
                 {
                     throw new RuntimeException(ex);
                 }
             }
-            return local.toPath();
+            return local.toPath().toAbsolutePath();
             })
             .collect(Collectors.toList());
     }
@@ -181,61 +272,6 @@ public class Installer extends CmdArgs
         return classpath;
     }
 
-    public String getArtifactId()
-    {
-        return root.getArtifactId();
-    }
-
-    public String getDescription()
-    {
-        return root.getDescription();
-    }
-
-    public String getGroupId()
-    {
-        return root.getGroupId();
-    }
-
-    public String getInceptionYear()
-    {
-        return root.getInceptionYear();
-    }
-
-    public String getModelEncoding()
-    {
-        return root.getModelEncoding();
-    }
-
-    public String getModelVersion()
-    {
-        return root.getModelVersion();
-    }
-
-    public String getName()
-    {
-        return root.getName();
-    }
-
-    public String getPackaging()
-    {
-        return root.getPackaging();
-    }
-
-    public String getUrl()
-    {
-        return root.getUrl();
-    }
-
-    public String getVersion()
-    {
-        return root.getVersion();
-    }
-
-    public String getId()
-    {
-        return root.getId();
-    }
-
     public static void main(String... args)
     {
         try
@@ -243,10 +279,32 @@ public class Installer extends CmdArgs
             Installer installer = new Installer();
             installer.command(args);
             Action action = installer.getArgument("Action");
+            OS os = LibraryLoader.getOS();
             switch (action)
             {
-                case UPDATE:
-                    installer.update();
+                case SERVER:
+                    switch (os)
+                    {
+                        case Linux:
+                        case Windows:   // TODO remove this line
+                            installer.installLinuxServer();
+                            break;
+                        default:
+                            throw new IllegalArgumentException(os+" not supported");
+                    }
+                    break;
+                case CLIENT:
+                    switch (os)
+                    {
+                        case Linux:
+                            installer.installLinuxClient();
+                            break;
+                        case Windows:
+                            installer.installWindowsClient();
+                            break;
+                        default:
+                            throw new IllegalArgumentException(os+" not supported");
+                    }
                     break;
                 default:
                     System.err.println(action+" not supported yet.");

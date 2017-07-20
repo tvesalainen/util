@@ -18,17 +18,11 @@ package org.vesalainen.installer;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import static java.nio.file.FileVisitResult.CONTINUE;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
-import org.vesalainen.nio.FileUtil;
 
 /**
  *
@@ -37,6 +31,9 @@ import org.vesalainen.nio.FileUtil;
 public class InstallerTest
 {
     static final Path LOCAL = new File("localTest").toPath();
+    static final Path INIT = LOCAL.resolve("init.d");
+    static final Path DEFAULT = LOCAL.resolve("default");
+    static final Path BIN = LOCAL.resolve("bin");
     
     public InstallerTest()
     {
@@ -46,16 +43,25 @@ public class InstallerTest
     public void before() throws IOException
     {
         Files.createDirectories(LOCAL);
+        Files.createDirectories(INIT);
+        Files.createDirectories(DEFAULT);
+        Files.createDirectories(BIN);
     }
     @After
     public void after() throws IOException
     {
-        FileUtil.deleteDirectory(LOCAL);
+        //FileUtil.deleteDirectory(LOCAL);
     }
-    @Test
-    public void testUpdate()
+    //@Test
+    public void testServer()
     {
-        Installer.main("-ed", LOCAL.toString(), "-ei", LOCAL.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "router", "-v", "1.8.0", "UPDATE");
+        Installer.main("-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
+    }
+    
+    @Test
+    public void testWinClient()
+    {
+        Installer.main("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "installer", "CLIENT");
     }
     
 }
