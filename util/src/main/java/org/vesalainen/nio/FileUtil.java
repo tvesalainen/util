@@ -70,7 +70,7 @@ public class FileUtil
             {
                 is = new BufferedInputStream(is);
             }
-            if (StandardCharsets.US_ASCII.contains(cs))
+            if (ISO_8859_1.contains(cs))
             {
                 supplier = is::read;
             }

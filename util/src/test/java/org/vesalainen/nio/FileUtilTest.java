@@ -39,7 +39,7 @@ public class FileUtilTest
     @Test
     public void testAsciiLines() throws IOException
     {
-        try (InputStream is = FileUtilTest.class.getResourceAsStream("/lines1.txt"))
+        try (InputStream is = FileUtilTest.class.getResourceAsStream("/lines_ansi.txt"))
         {
             List<String> list = FileUtil.lines(is, US_ASCII).collect(Collectors.toList());
             assertEquals(3, list.size());
@@ -52,9 +52,22 @@ public class FileUtilTest
     @Test
     public void testUTF8Lines() throws IOException
     {
-        try (InputStream is = FileUtilTest.class.getResourceAsStream("/lines2.txt"))
+        try (InputStream is = FileUtilTest.class.getResourceAsStream("/lines_utf.txt"))
         {
             List<String> list = FileUtil.lines(is, UTF_8).collect(Collectors.toList());
+            assertEquals(3, list.size());
+            assertEquals("Ensimmäinen rivi", list.get(0));
+            assertEquals("Toinen riviKolmas rivi", list.get(1));
+            assertEquals("Neljäs rivi", list.get(2));
+        }
+    }
+    
+    @Test
+    public void testISO_8859_1Lines() throws IOException
+    {
+        try (InputStream is = FileUtilTest.class.getResourceAsStream("/lines_iso.txt"))
+        {
+            List<String> list = FileUtil.lines(is, ISO_8859_1).collect(Collectors.toList());
             assertEquals(3, list.size());
             assertEquals("Ensimmäinen rivi", list.get(0));
             assertEquals("Toinen riviKolmas rivi", list.get(1));
