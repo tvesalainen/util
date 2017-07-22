@@ -1,9 +1,16 @@
+# these are the settings for java server applications managed by maven_installer
+
+CONFIG=
+LOGLEVEL=CONFIG
+PUSHLEVEL=CONFIG
+##### DON'T EDIT LINES BELOW
 VERSION=${version}
 CLASS=${mainClass}
 CLASSPATH=${classpath}
-OPTS="-ll CONFIG -pl CONFIG -lp /var/log/${artifactId}%g.log"
-CONFIG=/home/pi/router2.xml
-DAEMON=/usr/bin/java
-DAEMON_ARGS="-classpath $CLASSPATH $CLASS $OPTS $CONFIG"
+LOGSETTING="-ll $LOGLEVEL -pl $PUSHLEVEL -lp /var/log/${artifactId}%g.log"
+JMX=${jmxSettings}
+##### DON'T EDIT LINES ABOVE
+DAEMON=$JAVA
+DAEMON_ARGS="$JMX -server -classpath $CLASSPATH $CLASS $LOGSETTING $CONFIG"
 
 

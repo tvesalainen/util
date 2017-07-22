@@ -52,10 +52,10 @@ public class InstallerTest
     {
         //FileUtil.deleteDirectory(LOCAL);
     }
-    //@Test
+    @Test
     public void testServer()
     {
-        Installer.main("-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
+        Installer.main("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
     }
     
     @Test

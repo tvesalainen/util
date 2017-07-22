@@ -27,6 +27,9 @@ PNAME="NMEA Router"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
+# Read configuration file if it is present
+[ -r /etc/default/maven_installer ] && . /etc/default/maven_installer
+
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 

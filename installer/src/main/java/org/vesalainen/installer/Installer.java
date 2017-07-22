@@ -14,10 +14,13 @@ import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.*;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
@@ -59,6 +62,7 @@ public class Installer extends CmdArgs
     private String classpath;
     private ExpressionParser expressionParser;
     private File exeDirectory;
+    private int jmxPort;
 
     private enum Action {CLIENT, SERVER};
     
@@ -73,10 +77,11 @@ public class Installer extends CmdArgs
         {
             addOption(File.class, "-lr", "Local Repository", null, true);
         }
-        addOption(File.class, "-jd", "Jar Directory", null, true);
+        addOption("-jd", "Jar Directory", null, new File("/usr/local/lib"));
         addOption("-ed", "Executive Directory", "client", new File("/usr/local/bin"));
         addOption("-dd", "Default Directory", "server", new File("/etc/default"));
         addOption("-id", "Init Directory", "server", new File("/etc/init.d"));
+        addOption("-jp", "JMX Port", "server", -1);
         addOption("-g", "Group Id");
         addOption("-a", "Artifact Id");
         addOption(String.class, "-v", "Version", null, false);
@@ -94,6 +99,7 @@ public class Installer extends CmdArgs
         initDirectory = getOption("-id");
         factory = new ModelFactory(localRepository, null);
         fileModelResolver = factory.getFileModelResolver();
+        jmxPort = getOption("-jp");
         groupId = getOption("-g");
         artifactId = getOption("-a");
         version = getOption("-v");
@@ -107,13 +113,17 @@ public class Installer extends CmdArgs
             version = versions.get(versions.size()-1).toString();
         }
         root = factory.getLocalModel(groupId, artifactId, version);
-        expressionParser = new ExpressionParser(root);
-        expressionParser.addMapper(this);
+        expressionParser = new ExpressionParser(root)
+                            .addMapper((s)->root.getProperties().getProperty(s))
+                            .addMapper(this);
     }
     
-    private void installLinuxClient()
+    private void installLinuxClient() throws IOException
     {
-        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(":"));
+        File exe = new File(exeDirectory, artifactId);
+        mergeTemplate(exe, USR_LOCAL_BIN_TEMPLATE);
+        setPosixFilePermissions(exe, "rwxr--r--");
     }
 
     private void installWindowsClient() throws IOException
@@ -125,8 +135,23 @@ public class Installer extends CmdArgs
     private void installLinuxServer() throws IOException, URISyntaxException
     {
         classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
-        etcInitD();
-        mergeTemplate(new File(defaultDirectory, artifactId), DEFAULT_TEMPLATE);
+        File init = new File(initDirectory, artifactId);
+        etcInitD(init);
+        File def = new File(defaultDirectory, artifactId);
+        mergeTemplate(def, DEFAULT_TEMPLATE);
+        setPosixFilePermissions(init, "rw-r--r--");
+        setPosixFilePermissions(def, "rw-r--r--");
+    }
+    private void setPosixFilePermissions(File file, String posixPermissions) throws IOException
+    {
+        try
+        {
+            Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(posixPermissions));
+        }
+        catch (UnsupportedOperationException ex)
+        {
+            System.err.println("setPosixFilePermissions not supported");
+        }
     }
     private void mergeTemplate(File def, String templatePath) throws IOException
     {
@@ -185,7 +210,7 @@ public class Installer extends CmdArgs
             }
         }
     }
-    private void etcInitD() throws IOException
+    private void etcInitD(File init) throws IOException
     {
         byte[] initBuf = null;
         try (InputStream is = Installer.class.getResourceAsStream("/etc/init.d/template"))
@@ -194,7 +219,6 @@ public class Installer extends CmdArgs
         }
         CharSequence initTemplate = CharSequences.getAsciiCharSequence(initBuf);
         String initContent = expressionParser.replace(initTemplate);
-        File init = new File(initDirectory, artifactId);
         try (BufferedWriter bf = Files.newBufferedWriter(init.toPath(), US_ASCII))
         {
             bf.append(initContent);
@@ -267,6 +291,21 @@ public class Installer extends CmdArgs
         return !local.exists() || repo.lastModified() > local.lastModified();
     }
 
+    public String getJmxSettings()
+    {
+        if (jmxPort != -1)
+        {
+            return String.format("-Dcom.sun.management.jmxremote " +
+            "-Dcom.sun.management.jmxremote.port=%d " +
+            "-Dcom.sun.management.jmxremote.local.only=false " +
+            "-Dcom.sun.management.jmxremote.authenticate=false " +
+            "-Dcom.sun.management.jmxremote.ssl=false", jmxPort);
+        }
+        else
+        {
+            return "";
+        }
+    }
     public String getClasspath()
     {
         return classpath;
@@ -300,7 +339,7 @@ public class Installer extends CmdArgs
                             installer.installLinuxClient();
                             break;
                         case Windows:
-                            installer.installWindowsClient();
+                            installer.installLinuxClient();
                             break;
                         default:
                             throw new IllegalArgumentException(os+" not supported");

@@ -1,8 +1,1 @@
-CONFIG=/home/pi/router2.xml
-OPTS="-ll CONFIG -pl CONFIG -lp /var/log/nmea-router%g.log"
-CLASSPATH=localTest\org\vesalainen\nmea\nmea-router\1.8.1\nmea-router-1.8.1.jar;localTest\org\vesalainen\nmea\parser\1.8.0\parser-1.8.0.jar;localTest\org\vesalainen\comm\1.0.3\comm-1.0.3.jar;localTest\org\vesalainen\util\1.8.0\util-1.8.0.jar;localTest\org\vesalainen\lpg\javalpg\1.8.0\javalpg-1.8.0.jar;localTest\org\htmlparser\htmlparser\2.1\htmlparser-2.1.jar;localTest\org\vesalainen\dev\1.0.0\dev-1.0.0.jar;localTest\commons-net\commons-net\3.3\commons-net-3.3.jar;localTest\com\googlecode\efficient-java-matrix-library\equation\0.26\equation-0.26.jar;localTest\log4j\log4j\1.2.17\log4j-1.2.17.jar;localTest\org\apache\ant\ant\1.9.4\ant-1.9.4.jar;localTest\org\vesalainen\lpg\lpg\1.8.0\lpg-1.8.0.jar;localTest\org\htmlparser\htmllexer\2.1\htmllexer-2.1.jar;localTest\com\googlecode\efficient-java-matrix-library\core\0.26\core-0.26.jar;localTest\org\apache\ant\ant-launcher\1.9.4\ant-launcher-1.9.4.jar;localTest\org\vesalainen\bcc\bcc\1.1.4\bcc-1.1.4.jar
-DAEMON_ARGS="-classpath $CLASSPATH $CLASS $OPTS $CONFIG"
-DAEMON=/usr/bin/java
-CLASS=org.vesalainen.nmea.router.CommandLine
-VERSION=1.8.1
-EXTRA=blaa blaa
+# these are the settings for java server applications managed by maven_installer
