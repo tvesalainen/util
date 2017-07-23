@@ -43,7 +43,12 @@ import java.util.stream.StreamSupport;
 public class FileUtil
 {
     public static final DirectoryDeletor FILE_DELETOR = new DirectoryDeletor();
-    
+    /**
+     * Reads InputStream as stream of lines. Line separator is '\n' while '\r' 
+     * is simply ignored. Character set is UTF-8
+     * @param is
+     * @return 
+     */
     public static final Stream<String> lines(InputStream is)
     {
         return lines(is, UTF_8);
