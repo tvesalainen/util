@@ -14,15 +14,15 @@ import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.*;
-import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.model.Build;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -64,7 +64,7 @@ public class Installer extends CmdArgs
     private File exeDirectory;
     private int jmxPort;
 
-    private enum Action {CLIENT, SERVER};
+    private enum Action {CLIENT, SERVER, SCRIPT};
     
     public Installer()
     {
@@ -81,6 +81,7 @@ public class Installer extends CmdArgs
         addOption("-ed", "Executive Directory", "client", new File("/usr/local/bin"));
         addOption("-dd", "Default Directory", "server", new File("/etc/default"));
         addOption("-id", "Init Directory", "server", new File("/etc/init.d"));
+        addOption("-ss", "Self Install Script", "self", new File("maven-installer.sh"));
         addOption("-jp", "JMX Port", "server", -1);
         addOption("-g", "Group Id");
         addOption("-a", "Artifact Id");
@@ -118,9 +119,55 @@ public class Installer extends CmdArgs
                             .addMapper(this);
     }
     
+    private void createInstallScript() throws IOException
+    {
+        classpath = getDependencyFilenames().map((s)->"$JAR/"+s).collect(Collectors.joining(":"));
+        File installFile = getOption("-ss");
+        try (   BufferedWriter bw = Files.newBufferedWriter(installFile.toPath(), US_ASCII);
+                InputStream is = Installer.class.getResourceAsStream(USR_LOCAL_BIN_TEMPLATE))
+        {
+            bw.append("#! /bin/sh").append('\n');
+            
+            bw.append("REPO=/mnt/m2/repository\n");
+            bw.append("JAR=/usr/local/lib\n");
+            bw.append("EXE=/usr/local/bin\n");
+            
+            bw.append("echo >").append("$EXE/").append(artifactId).append('\n');
+            FileUtil.lines(is).forEach((l)->
+            {
+                try
+                {
+                    l = expressionParser.replace(l);
+                    bw.append("echo '").append(l).append("' >>").append("$EXE/").append(artifactId).append('\n');
+                }
+                catch (IOException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            });
+            bw.append("chmod 744 ").append("$EXE/").append(artifactId).append('\n');
+            bw.append("chown root ").append("$EXE/").append(artifactId).append('\n');
+            getDependencyFilenames().forEach((n)->
+            {
+                try
+                {
+                    String d = n.substring(0, n.lastIndexOf('/'));
+                    bw.append("mkdir -p $JAR/").append(d).append('\n');
+                    bw.append("cp $REPO/").append(n).append(" $JAR/").append(n).append('\n');
+                    bw.append("chmod 644").append(" $JAR/").append(n).append('\n');
+                    bw.append("chown root").append(" $JAR/").append(n).append('\n');
+                }
+                catch (IOException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }
+    }
+
     private void installLinuxClient() throws IOException
     {
-        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(":"));
+        classpath = updateJars().map((p)->p.toString()).collect(Collectors.joining(":"));
         File exe = new File(exeDirectory, artifactId);
         mergeTemplate(exe, USR_LOCAL_BIN_TEMPLATE);
         setPosixFilePermissions(exe, "rwxr--r--");
@@ -128,13 +175,13 @@ public class Installer extends CmdArgs
 
     private void installWindowsClient() throws IOException
     {
-        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+        classpath = updateJars().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
         mergeTemplate(new File(exeDirectory, artifactId.toUpperCase()+".BAT"), BIN_TEMPLATE);
     }
 
     private void installLinuxServer() throws IOException, URISyntaxException
     {
-        classpath = updateJars().stream().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
+        classpath = updateJars().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
         File init = new File(initDirectory, artifactId);
         etcInitD(init);
         File def = new File(defaultDirectory, artifactId);
@@ -224,16 +271,10 @@ public class Installer extends CmdArgs
             bf.append(initContent);
         }
     }
-    private List<Path> updateJars()
+    private Stream<Path> updateJars()
     {
-        return getDependencies().stream().map((m)->
+        return getDependencyFilenames().map((filename)->
         {
-            System.err.println(m);
-            String grp = m.getGroupId();
-            String art = m.getArtifactId();
-            String ver = m.getVersion();
-            String packaging = m.getPackaging();
-            String filename = fileModelResolver.getFilename(grp, art, ver, "jar");
             File repo = new File(localRepository, filename);
             File local = new File(jarDirectory, filename);
             if (needsUpdate(repo, local))
@@ -249,12 +290,24 @@ public class Installer extends CmdArgs
                 }
             }
             return local.toPath().toAbsolutePath();
-            })
-            .collect(Collectors.toList());
+            });
     }
     
-    private List<Model> getDependencies()
+    private Stream<String> getDependencyFilenames()
     {
+        return getDependencies().map((m)->
+        {
+            System.err.println(m);
+            String grp = m.getGroupId();
+            String art = m.getArtifactId();
+            String ver = m.getVersion();
+            String packaging = m.getPackaging();
+            return fileModelResolver.getFilename(grp, art, ver, "jar");
+        });
+}
+    private Stream<Model> getDependencies()
+    {
+        List<Dependency> dependencies = root.getDependencies();
         return Graphs.breadthFirst(root, 
                 (y)->y.getDependencies()
                 .stream()
@@ -264,8 +317,7 @@ public class Installer extends CmdArgs
                 .map(factory::getVersionResolver)
                 .map((v)->v.resolv())
                 .map(factory::getLocalModel)
-                )
-                .collect(Collectors.toList());
+                );
     }
     public String getMainClass()
     {
@@ -325,7 +377,6 @@ public class Installer extends CmdArgs
                     switch (os)
                     {
                         case Linux:
-                        case Windows:   // TODO remove this line
                             installer.installLinuxServer();
                             break;
                         default:
@@ -339,11 +390,14 @@ public class Installer extends CmdArgs
                             installer.installLinuxClient();
                             break;
                         case Windows:
-                            installer.installLinuxClient();
+                            installer.installWindowsClient();
                             break;
                         default:
                             throw new IllegalArgumentException(os+" not supported");
                     }
+                    break;
+                case SCRIPT:
+                    installer.createInstallScript();
                     break;
                 default:
                     System.err.println(action+" not supported yet.");

@@ -52,16 +52,22 @@ public class InstallerTest
     {
         //FileUtil.deleteDirectory(LOCAL);
     }
-    @Test
+    //@Test
     public void testServer()
     {
         Installer.main("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
     }
     
-    @Test
+    //@Test
     public void testWinClient()
     {
-        Installer.main("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "installer", "CLIENT");
+        Installer.main("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
+    }
+    
+    @Test
+    public void testScript()
+    {
+        Installer.main("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");
     }
     
 }
