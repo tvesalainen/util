@@ -1,0 +1,77 @@
+/*
+ * Copyright (C) 2017 tkv
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.vesalainen.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import org.vesalainen.nio.FileUtil;
+import org.vesalainen.util.logging.JavaLogging;
+
+/**
+ *
+ * @author tkv
+ */
+public class OSProcess
+{
+
+    public static final int call(String... args) throws IOException, InterruptedException
+    {
+        if (args.length == 1)
+        {
+            args = args[0].split("[ ]+");
+        }
+        String cmd = Arrays.stream(args).collect(Collectors.joining(" "));
+        JavaLogging.getLogger(OSProcess.class).info("call: %s", cmd);
+        Process process = Runtime.getRuntime().exec(args);
+        Thread stdout = new Thread(new ProcessLogger(cmd, process.getInputStream(), Level.INFO));
+        stdout.start();
+        Thread stderr = new Thread(new ProcessLogger(cmd, process.getErrorStream(), Level.WARNING));
+        stderr.start();
+        return process.waitFor();
+    }
+    private static class ProcessLogger extends JavaLogging implements Runnable
+    {
+        private InputStream is;
+        private Level level;
+        private final String cmd;
+
+        public ProcessLogger(String cmd, InputStream is, Level level)
+        {
+            super(ProcessLogger.class);
+            this.cmd = cmd;
+            this.is = is;
+            this.level = level;
+        }
+        
+        @Override
+        public void run()
+        {
+            try (InputStream s = is)
+            {
+                FileUtil.lines(s).forEach((l)->log(level, "%s: %s", cmd, l));
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        
+    }
+}
