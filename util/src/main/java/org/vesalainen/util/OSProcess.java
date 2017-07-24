@@ -25,12 +25,22 @@ import org.vesalainen.nio.FileUtil;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * Helper for calling OS processes.
  * @author tkv
  */
 public class OSProcess
 {
-
+    /**
+     * Call os process and waits it's execution.
+     * @param args Either command and arguments in single string or command and
+     * arguments as separate strings. 
+     * <p>
+     * call("netstat -an") is same as call("netstat", "-an")
+     * @return
+     * @throws IOException
+     * @throws InterruptedException 
+     * @see java.lang.Runtime#exec(java.lang.String[]) 
+     */
     public static final int call(String... args) throws IOException, InterruptedException
     {
         if (args.length == 1)
