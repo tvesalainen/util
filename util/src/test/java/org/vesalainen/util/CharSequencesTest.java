@@ -154,6 +154,7 @@ public class CharSequencesTest
     @Test
     public void testSplit()
     {
+        assertEquals(0, CharSequences.split("", ',').count());
         assertEquals(4, CharSequences.split(",,,", ',').count());
         List<CharSequence> list = CharSequences.split("W/\"xyzzy\", W/\"r2d2xxxx\", W/\"c3piozzzz\"", ',').collect(Collectors.toList());
         assertEquals(3, list.size());

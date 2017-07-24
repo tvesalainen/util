@@ -530,6 +530,10 @@ public class CharSequences
      */
     public static Stream<CharSequence> split(CharSequence seq, char cc)
     {
+        if (seq.length() == 0)
+        {
+            return Stream.empty();
+        }
         return StreamSupport.stream(new SpliteratorImpl(seq, (x)->{return x==cc;}), false);
     }
     /**
@@ -540,6 +544,10 @@ public class CharSequences
      */
     public static Stream<CharSequence> split(CharSequence seq, IntPredicate p)
     {
+        if (seq.length() == 0)
+        {
+            return Stream.empty();
+        }
         return StreamSupport.stream(new SpliteratorImpl(seq, p), false);
     }
     private static class SpliteratorImpl implements Spliterator<CharSequence>
