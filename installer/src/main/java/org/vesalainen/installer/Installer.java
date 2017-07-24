@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2017 tkv
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.vesalainen.installer;
 
@@ -19,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.model.Build;
@@ -37,18 +49,19 @@ import org.vesalainen.test.pom.FileModelResolver;
 import org.vesalainen.test.pom.ModelFactory;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.util.CmdArgs;
+import org.vesalainen.util.LoggingCommandLine;
 
 /**
  *
  * @author tkv
  */
-public class Installer extends CmdArgs
+public class Installer extends LoggingCommandLine
 {
-    private static final String DEFAULT_TEMPLATE = "/etc/default/template";
-    private static final String INIT_D_TEMPLATE = "/etc/init.d/template";
-    private static final String USR_LOCAL_BIN_TEMPLATE = "/usr/local/bin/template";
-    private static final String BIN_TEMPLATE = "/bin/template";
+    private static final String DEFAULT_TEMPLATE = "/etc/default/default.tmpl";
+    private static final String INIT_D_TEMPLATE = "/etc/init.d/init.tmpl";
+    private static final String USR_LOCAL_BIN_TEMPLATE = "/usr/local/bin/exe.tmpl";
+    private static final String USR_LOCAL_BIN_SCRIPT = "/usr/local/bin/script.tmpl";
+    private static final String BIN_TEMPLATE = "/bin/win.tmpl";
     private ModelFactory factory;
     private Model root;
     private File localRepository;
@@ -87,23 +100,35 @@ public class Installer extends CmdArgs
         addOption("-a", "Artifact Id");
         addOption(String.class, "-v", "Version", null, false);
         addArgument(Action.class, "Action");
+        setLogLevel(Level.CONFIG);
+        setPushLevel(Level.CONFIG);
     }
 
     @Override
     public void command(String... args)
     {
+        info("Starting %s", MyVersion.version());
         super.command(args);
         localRepository = getOption("-lr");
+        config("localRepository=%s", localRepository);
         jarDirectory = getOption("-jd");
+        config("jarDirectory=%s", jarDirectory);
         exeDirectory = getOption("-ed");
+        config("exeDirectory=%s", exeDirectory);
         defaultDirectory = getOption("-dd");
+        config("defaultDirectory=%s", defaultDirectory);
         initDirectory = getOption("-id");
+        config("initDirectory=%s", initDirectory);
         factory = new ModelFactory(localRepository, null);
         fileModelResolver = factory.getFileModelResolver();
         jmxPort = getOption("-jp");
+        config("jmxPort=%d", jmxPort);
         groupId = getOption("-g");
+        config("groupId=%s", groupId);
         artifactId = getOption("-a");
+        config("artifactId=%s", artifactId);
         version = getOption("-v");
+        config("version=%s", version);
         if (version == null)
         {
             List<Version> versions = fileModelResolver.getVersions(groupId, artifactId);
@@ -121,10 +146,10 @@ public class Installer extends CmdArgs
     
     private void createInstallScript() throws IOException
     {
-        classpath = getDependencyFilenames().map((s)->"$JAR/"+s).collect(Collectors.joining(":"));
+        classpath = getDependencyNames().map((s)->"$JAR/"+s).collect(Collectors.joining(":"));
         File installFile = getOption("-ss");
         try (   BufferedWriter bw = Files.newBufferedWriter(installFile.toPath(), US_ASCII);
-                InputStream is = Installer.class.getResourceAsStream(USR_LOCAL_BIN_TEMPLATE))
+                InputStream is = Installer.class.getResourceAsStream(USR_LOCAL_BIN_SCRIPT))
         {
             bw.append("#! /bin/sh").append('\n');
             
@@ -138,7 +163,7 @@ public class Installer extends CmdArgs
                 try
                 {
                     l = expressionParser.replace(l);
-                    bw.append("echo '").append(l).append("' >>").append("$EXE/").append(artifactId).append('\n');
+                    bw.append("echo \"").append(l).append("\" >>").append("$EXE/").append(artifactId).append('\n');
                 }
                 catch (IOException ex)
                 {
@@ -147,7 +172,7 @@ public class Installer extends CmdArgs
             });
             bw.append("chmod 744 ").append("$EXE/").append(artifactId).append('\n');
             bw.append("chown root ").append("$EXE/").append(artifactId).append('\n');
-            getDependencyFilenames().forEach((n)->
+            getDependencyNames().forEach((n)->
             {
                 try
                 {
@@ -163,6 +188,7 @@ public class Installer extends CmdArgs
                 }
             });
         }
+        info("created %s", installFile);
     }
 
     private void installLinuxClient() throws IOException
@@ -194,10 +220,11 @@ public class Installer extends CmdArgs
         try
         {
             Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(posixPermissions));
+            finest("posix %s -> %s", posixPermissions, file);
         }
         catch (UnsupportedOperationException ex)
         {
-            System.err.println("setPosixFilePermissions not supported");
+            warning("setPosixFilePermissions not supported");
         }
     }
     private void mergeTemplate(File def, String templatePath) throws IOException
@@ -222,7 +249,7 @@ public class Installer extends CmdArgs
             {
                 for (String line : list)
                 {
-                    CharSequence key = CharSequences.split(line, '=').findFirst().get();
+                    CharSequence key = CharSequences.split(line, '=').findFirst().orElse(null);
                     String l = map.get(key);
                     if (l != null)
                     {
@@ -235,6 +262,7 @@ public class Installer extends CmdArgs
                     bw.newLine();
                 }
             }
+            info("updated %s", def);
         }
         else
         {
@@ -255,12 +283,13 @@ public class Installer extends CmdArgs
                     }
                 });
             }
+            info("created %s", def);
         }
     }
     private void etcInitD(File init) throws IOException
     {
         byte[] initBuf = null;
-        try (InputStream is = Installer.class.getResourceAsStream("/etc/init.d/template"))
+        try (InputStream is = Installer.class.getResourceAsStream(INIT_D_TEMPLATE))
         {
             initBuf = FileUtil.readAllBytes(is);
         }
@@ -270,10 +299,11 @@ public class Installer extends CmdArgs
         {
             bf.append(initContent);
         }
+        info("created %s", init);
     }
     private Stream<Path> updateJars()
     {
-        return getDependencyFilenames().map((filename)->
+        return getDependencyNames().map((filename)->
         {
             File repo = new File(localRepository, filename);
             File local = new File(jarDirectory, filename);
@@ -283,6 +313,7 @@ public class Installer extends CmdArgs
                 {
                     Files.createDirectories(local.toPath().getParent());
                     Files.copy(repo.toPath(), local.toPath(), REPLACE_EXISTING);
+                    info("updated %s -> %s", repo, local);
                 }
                 catch (IOException ex)
                 {
@@ -293,11 +324,11 @@ public class Installer extends CmdArgs
             });
     }
     
-    private Stream<String> getDependencyFilenames()
+    private Stream<String> getDependencyNames()
     {
         return getDependencies().map((m)->
         {
-            System.err.println(m);
+            fine("dependency %s", m);
             String grp = m.getGroupId();
             String art = m.getArtifactId();
             String ver = m.getVersion();
@@ -312,8 +343,8 @@ public class Installer extends CmdArgs
                 (y)->y.getDependencies()
                 .stream()
                 .filter((d)->!"true".equals(d.getOptional()))
-                .peek((d)->System.err.println(d))
                 .filter((d)->"compile".equals(d.getScope()) || "runtime".equals(d.getScope()))
+                .peek((d)->fine("%s", d))
                 .map(factory::getVersionResolver)
                 .map((v)->v.resolv())
                 .map(factory::getLocalModel)
@@ -363,46 +394,50 @@ public class Installer extends CmdArgs
         return classpath;
     }
 
+    static void install(String... args) throws IOException, URISyntaxException
+    {
+        Installer installer = new Installer();
+        installer.command(args);
+        Action action = installer.getArgument("Action");
+        OS os = LibraryLoader.getOS();
+        switch (action)
+        {
+            case SERVER:
+                switch (os)
+                {
+                    case Linux:
+                        installer.installLinuxServer();
+                        break;
+                    default:
+                        throw new IllegalArgumentException(os+" not supported");
+                }
+                break;
+            case CLIENT:
+                switch (os)
+                {
+                    case Linux:
+                        installer.installLinuxClient();
+                        break;
+                    case Windows:
+                        installer.installWindowsClient();
+                        break;
+                    default:
+                        throw new IllegalArgumentException(os+" not supported");
+                }
+                break;
+            case SCRIPT:
+                installer.createInstallScript();
+                break;
+            default:
+                System.err.println(action+" not supported yet.");
+                System.exit(-1);
+        }
+    }
     public static void main(String... args)
     {
         try
         {
-            Installer installer = new Installer();
-            installer.command(args);
-            Action action = installer.getArgument("Action");
-            OS os = LibraryLoader.getOS();
-            switch (action)
-            {
-                case SERVER:
-                    switch (os)
-                    {
-                        case Linux:
-                            installer.installLinuxServer();
-                            break;
-                        default:
-                            throw new IllegalArgumentException(os+" not supported");
-                    }
-                    break;
-                case CLIENT:
-                    switch (os)
-                    {
-                        case Linux:
-                            installer.installLinuxClient();
-                            break;
-                        case Windows:
-                            installer.installWindowsClient();
-                            break;
-                        default:
-                            throw new IllegalArgumentException(os+" not supported");
-                    }
-                    break;
-                case SCRIPT:
-                    installer.createInstallScript();
-                    break;
-                default:
-                    System.err.println(action+" not supported yet.");
-                    System.exit(-1);
-            }
+            install(args);
         }
         catch (Exception ex)
         {

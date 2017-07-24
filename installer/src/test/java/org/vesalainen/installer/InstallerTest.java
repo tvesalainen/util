@@ -18,11 +18,13 @@ package org.vesalainen.installer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
+import org.vesalainen.nio.FileUtil;
 
 /**
  *
@@ -50,24 +52,27 @@ public class InstallerTest
     @After
     public void after() throws IOException
     {
-        //FileUtil.deleteDirectory(LOCAL);
+        FileUtil.deleteDirectory(LOCAL);
     }
     //@Test
-    public void testServer()
+    public void testServer() throws IOException, URISyntaxException
     {
-        Installer.main("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
-    }
-    
-    //@Test
-    public void testWinClient()
-    {
-        Installer.main("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
+        Installer.install("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
+        Installer.install("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
     }
     
     @Test
-    public void testScript()
+    public void testWinClient() throws IOException, URISyntaxException
     {
-        Installer.main("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");
+        Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
+        Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
+    }
+    
+    @Test
+    public void testScript() throws IOException, URISyntaxException
+    {
+        Installer.install("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");
+        Installer.install("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");
     }
     
 }
