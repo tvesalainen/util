@@ -71,10 +71,7 @@ public class FileUtil
         public StringSplitIterator(InputStream is, Charset cs)
         {
             super(Long.MAX_VALUE, 0);
-            if (!(is instanceof BufferedInputStream))
-            {
-                is = new BufferedInputStream(is);
-            }
+            is = buffer(is);
             if (ISO_8859_1.contains(cs))
             {
                 supplier = is::read;
@@ -186,5 +183,21 @@ public class FileUtil
         }
         
     }
-    
+    /**
+     * Wraps InputStream with BufferedInputStream if is is not BufferedInputStream.
+     * If it is returns is.
+     * @param is    
+     * @return 
+     */
+    public static final BufferedInputStream buffer(InputStream is)
+    {
+        if (is instanceof BufferedInputStream)
+        {
+            return (BufferedInputStream) is;
+        }
+        else
+        {
+            return new BufferedInputStream(is);
+        }
+    }
 }
