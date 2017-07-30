@@ -339,6 +339,7 @@ This tag specifies the RSA signature of the combined Header and Payload sections
      * This tag contains an opaque string whose contents are undefined.
      */
     RPMTAG_PLATFORM(1132, STRING, 1, Informational),
+    UNKNOWN_TAG_VALUE(0, STRING, 1, Optional)
 ;
     private int tagValue;
     private IndexType type;
@@ -367,7 +368,7 @@ This tag specifies the RSA signature of the combined Header and Payload sections
                 return tag;
             }
         }
-        throw new IllegalArgumentException("no TagValue for tag "+tagValue);
+        return TagValue.UNKNOWN_TAG_VALUE;
     }
     public int getTagValue()
     {

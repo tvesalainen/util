@@ -40,7 +40,7 @@ public class RPMTest
     @Test
     public void test1() throws IOException, URISyntaxException
     {
-        URL url = RPMTest.class.getResource("/lsb-4.0-3mdv2010.1.i586.rpm");
+        URL url = RPMTest.class.getResource("/lsb-4.0-26.1.2.armv7hl.rpm");
         try (   RPM rpm = new RPM())
         {
             Path path = Paths.get(url.toURI());
@@ -50,16 +50,17 @@ public class RPMTest
             ByteBuffer exp = ByteBuffer.wrap(buf);
             rpm.load(path);
             // lead
-            assertArrayEquals(RPM.LEAD_MAGIC, rpm.leadMagic);
+            assertArrayEquals(RPM.LEAD_MAGIC, rpm.magic);
             assertEquals(3, rpm.major);
             assertEquals(0, rpm.minor);
             assertEquals(0, rpm.type);
-            assertEquals(1, rpm.archnum);
-            assertEquals("lsb-4.0-3mdv2010.1", rpm.name);
+            //assertEquals(1, rpm.archnum);
+            //assertEquals("lsb-4.0-3mdv2010.1", rpm.name);
             assertEquals(1, rpm.osnum);
             assertEquals(5, rpm.signatureType);
             // header
-            assertArrayEquals(RPM.HEADER_MAGIC, rpm.headerMagic);
+            assertArrayEquals(RPM.HEADER_MAGIC, rpm.signature.magic);
+            rpm.append(System.err);
             rpm.save(bb);
             assertSame(exp, bb);
         }

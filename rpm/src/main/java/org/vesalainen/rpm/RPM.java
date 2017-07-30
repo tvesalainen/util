@@ -24,6 +24,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.util.Arrays;
 
 /**
  *
@@ -35,7 +36,7 @@ public class RPM implements AutoCloseable
     static final byte[] HEADER_MAGIC = new byte[]{(byte)0x8e, (byte)0xad, (byte)0xe8, (byte)0x01};
     private FileChannel fc;
     private ByteBuffer bb;
-    byte[] leadMagic = LEAD_MAGIC;
+    byte[] magic = LEAD_MAGIC;
     byte major = 3;
     byte minor;
     short type;
@@ -43,12 +44,9 @@ public class RPM implements AutoCloseable
     String name;
     short osnum;
     short signatureType;
-    byte[] leadReserved = new byte[16];
-    byte[] headerMagic = HEADER_MAGIC;
-    byte[] headerReserved = new byte[4];
-    int nindex;
-    int hsize;
-    IndexRecord[] indexRecords;
+    byte[] reserved = new byte[16];
+    HeaderStructure signature;
+    HeaderStructure header;
 
     public RPM()
     {
@@ -60,7 +58,11 @@ public class RPM implements AutoCloseable
         bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, Files.size(path));
         bb.order(BIG_ENDIAN);
         // lead
-        bb.get(leadMagic);
+        bb.get(magic);
+        if (!Arrays.equals(LEAD_MAGIC, magic))
+        {
+            throw new IllegalArgumentException("not rpm file");
+        }
         major = bb.get();
         minor = bb.get();
         type = bb.getShort();
@@ -68,25 +70,17 @@ public class RPM implements AutoCloseable
         name = readString(66);
         osnum = bb.getShort();
         signatureType = bb.getShort();
-        bb.get(leadReserved);
-        // header record
-        bb.get(headerMagic);
-        bb.get(headerReserved);
-        nindex = bb.getInt();
-        hsize = bb.getInt();
-        indexRecords = new IndexRecord[nindex];
-        // index records
-        for (int ii=0;ii<nindex;ii++)
-        {
-            indexRecords[ii] = new IndexRecord();
-        }
+        bb.get(reserved);
+        
+        signature = new HeaderStructure(bb);
+        header = new HeaderStructure(bb);
     }
     void save(ByteBuffer bb) throws IOException
     {
         this.bb = bb;
         bb.order(BIG_ENDIAN);
         // lead
-        bb.put(leadMagic);
+        bb.put(magic);
         bb.put(major);
         bb.put(minor);
         bb.putShort(type);
@@ -94,23 +88,23 @@ public class RPM implements AutoCloseable
         writeString(name, 66);
         bb.putShort(osnum);
         bb.putShort(signatureType);
-        bb.put(leadReserved);
-        // header record
-        bb.put(headerMagic);
-        bb.put(headerReserved);
-        bb.putInt(nindex);
-        bb.putInt(hsize);
-        // index records
-        for (int ii=0;ii<nindex;ii++)
-        {
-            indexRecords[ii].save();
-        }
+        bb.put(reserved);
+        
+        signature.save(bb);
+        header.save(bb);
     }
     public void save(Path path) throws IOException
     {
         fc = FileChannel.open(path, CREATE, WRITE, TRUNCATE_EXISTING);
         bb = fc.map(FileChannel.MapMode.READ_WRITE, 0, Files.size(path));
         save(bb);
+    }
+    public void append(Appendable out) throws IOException
+    {
+        out.append("Signature\n");
+        signature.append(out);
+        out.append("Header\n");
+        header.append(out);
     }
     private String readString(int size)
     {
@@ -140,34 +134,33 @@ public class RPM implements AutoCloseable
             bb.put((byte)0);
         }
     }
+    static void align(ByteBuffer bb, int align)
+    {
+        bb.position(alignedPosition(bb, align));
+    }
+    static int alignedPosition(ByteBuffer bb, int align)
+    {
+        int position = bb.position();
+        int mod =  position % align;
+        if (mod > 0)
+        {
+            return position + align-mod;
+        }
+        else
+        {
+            return position;
+        }
+    }
+    static void skip(ByteBuffer bb, int skip)
+    {
+        bb.position(bb.position()+skip);
+    }
     @Override
     public void close() throws IOException
     {
         if (fc != null)
         {
             fc.close();
-        }
-    }
-    class IndexRecord
-    {
-        int tag;
-        IndexType type;
-        int offset;
-        int count;
-
-        public IndexRecord()
-        {
-            tag = bb.getInt();
-            type = IndexType.values()[bb.getInt()];
-            offset = bb.getInt();
-            count = bb.getInt();
-        }
-        public void save()
-        {
-            bb.putInt(tag);
-            bb.putInt(type.ordinal());
-            bb.putInt(offset);
-            bb.putInt(count);
         }
     }
 }
