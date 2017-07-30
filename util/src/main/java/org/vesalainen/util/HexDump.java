@@ -84,15 +84,32 @@ public class HexDump
         bb.position(safe);
         return toHex(buf);
     }
+    /**
+     * Creates readable view to byte buffer remaining. Mark will be discarded.
+     * @param bb
+     * @return 
+     */
     public static final String startToHex(ByteBuffer bb)
     {
         byte[] buf = new byte[bb.position()];
         int safePos = bb.position();
         int safeLim = bb.limit();
-        bb.flip();
+        bb.position(0);
         bb.get(buf);
         bb.position(safePos);
         bb.limit(safeLim);
+        return toHex(buf);
+    }
+    public static final String toHex(ByteBuffer bb, int offset, int length)
+    {
+        byte[] buf = new byte[length];
+        int safePos = bb.position();
+        int safeLim = bb.limit();
+        bb.position(offset);
+        bb.limit(offset+length);
+        bb.get(buf);
+        bb.limit(safeLim);
+        bb.position(safePos);
         return toHex(buf);
     }
     /**
