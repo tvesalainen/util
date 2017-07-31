@@ -27,6 +27,8 @@ import java.util.function.Function;
 /**
  * FilterByteBuffer enables filtered I/O to underlying ByteBuffer with 
  * ByteBuffer like API. Byte order is BIG_ENDIAN.
+ * <p>
+ * Usage example: Read/Write GZIP content to/from FileChannel using mapped ByteBuffer.
  * 
  * @author tkv
  */
