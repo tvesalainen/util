@@ -47,6 +47,9 @@ public class RPM implements AutoCloseable
     byte[] reserved = new byte[16];
     HeaderStructure signature;
     HeaderStructure header;
+    private int signatureStart;
+    private int headerStart;
+    private int payloadStart;
 
     public RPM()
     {
@@ -72,8 +75,16 @@ public class RPM implements AutoCloseable
         signatureType = bb.getShort();
         bb.get(reserved);
         
-        signature = new HeaderStructure(bb);
-        header = new HeaderStructure(bb);
+        signatureStart = bb.position();
+        
+        signature = new HeaderStructure(bb, true);
+
+        headerStart = bb.position();
+        
+        header = new HeaderStructure(bb, false);
+        
+        payloadStart = bb.position();
+        
     }
     void save(ByteBuffer bb) throws IOException
     {
@@ -101,6 +112,7 @@ public class RPM implements AutoCloseable
     }
     public void append(Appendable out) throws IOException
     {
+        out.append(String.format("lead %d signature %d header %d payload\n", signatureStart, headerStart, payloadStart));
         out.append("Signature\n");
         signature.append(out);
         out.append("Header\n");

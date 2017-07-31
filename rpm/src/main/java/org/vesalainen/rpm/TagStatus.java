@@ -45,6 +45,10 @@ public enum TagStatus
     /**
      * This Index Record shall not be present.
      */
-    Reserved
+    Reserved,
+    /**
+     * This tag is not part of LSB
+     */
+    NotLSB
     
 }

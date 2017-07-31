@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -40,7 +43,12 @@ public class RPMTest
     @Test
     public void test1() throws IOException, URISyntaxException
     {
-        URL url = RPMTest.class.getResource("/lsb-4.0-26.1.2.armv7hl.rpm");
+        URL url = RPMTest.class.getResource("/ntp-4.2.8p10-29.6.1.armv7hl.rpm");
+        //
+        Path tmp = Files.createTempFile("test", "tmp");
+        FileChannel fc = FileChannel.open(tmp, READ, WRITE, CREATE, DELETE_ON_CLOSE);
+        MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, Integer.MAX_VALUE);
+        //
         try (   RPM rpm = new RPM())
         {
             Path path = Paths.get(url.toURI());

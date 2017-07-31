@@ -27,7 +27,7 @@ import org.vesalainen.util.HexDump;
  */
 class HeaderStructure
 {
-    
+    boolean signature;
     byte[] magic = RPM.HEADER_MAGIC;
     byte[] reserved = new byte[4];
     int nindex;
@@ -35,8 +35,9 @@ class HeaderStructure
     IndexRecord[] indexRecords;
     ByteBuffer storage;
 
-    public HeaderStructure(ByteBuffer bb)
+    public HeaderStructure(ByteBuffer bb, boolean signature)
     {
+        this.signature = signature;
         RPM.align(bb, 8);
         bb.get(magic);
         if (!Arrays.equals(RPM.HEADER_MAGIC, magic))
@@ -55,10 +56,11 @@ class HeaderStructure
         storage = bb.slice();
         storage.limit(hsize);
         RPM.skip(bb, hsize);
-    } // index records
+    }
 
     public void save(ByteBuffer bb)
     {
+        RPM.align(bb, 8);
         bb.put(magic);
         bb.put(reserved);
         bb.putInt(nindex);
@@ -80,15 +82,19 @@ class HeaderStructure
     }
     class IndexRecord
     {
-        TagValue tag;
+        HeaderTag tag;
         IndexType type;
         int offset;
         int count;
 
         public IndexRecord(ByteBuffer bb)
         {
-            tag = TagValue.valueOf(bb.getInt());
+            tag = HeaderTag.valueOf(bb.getInt(), signature);
             type = IndexType.values()[bb.getInt()];
+            if (type != tag.getType())
+            {
+                throw new IllegalArgumentException(tag+" type differs from "+type);
+            }
             offset = bb.getInt();
             count = bb.getInt();
         }

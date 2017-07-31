@@ -16,6 +16,7 @@
  */
 package org.vesalainen.rpm;
 
+import java.util.Objects;
 import static org.vesalainen.rpm.IndexType.*;
 import static org.vesalainen.rpm.TagStatus.*;
 
@@ -23,54 +24,54 @@ import static org.vesalainen.rpm.TagStatus.*;
  *
  * @author tkv
  */
-public enum TagValue
+public enum HeaderTag
 {
     /**
      * The signature tag differentiates a signature header from a metadata header, and identifies the original contents of the signature header.
      */
-    RPMTAG_HEADERSIGNATURES(62, BIN, 16, Optional),
+    RPMTAG_HEADERSIGNATURES(62, BIN, null, 16, Optional),
     /**
      * This tag contains an index record which specifies the portion of the Header Record which was used for the calculation of a signature. This data shall be preserved or any header-only signature will be invalidated.
      */
-    RPMTAG_HEADERIMMUTABLE(63, BIN, 16, Optional),
+    RPMTAG_HEADERIMMUTABLE(63, BIN, null, 16, Optional),
     /**
      * Contains a list of locales for which strings are provided in other parts of the package.
      */
-    RPMTAG_HEADERI18NTABLE(100, STRING_ARRAY, Optional),
+    RPMTAG_HEADERI18NTABLE(100, STRING_ARRAY, null, 1, Optional),
     /**
      * This tag specifies the combined size of the Header and Payload sections.
      */
-    RPMSIGTAG_SIZE(1000, INT32, 1, Required),
+    RPMSIGTAG_SIZE(1000, INT32, true, 1, Required),
     /**
      * This tag specifies the uncompressed size of the Payload archive, including the cpio headers.
      */
-    RPMSIGTAG_PAYLOADSIZE(1007, INT32, 1, Optional),
+    RPMSIGTAG_PAYLOADSIZE(1007, INT32, true, 1, Optional),
     /**
      * This index contains the SHA1 checksum of the entire Header Section, including the Header Record, Index Records and Header store.
      */
-    RPMSIGTAG_SHA1(269, STRING, 1, Optional),
+    RPMSIGTAG_SHA1(269, STRING, true, 1, Optional),
     /**
      * This tag specifies the 128-bit MD5 checksum of the combined Header and Archive sections.
      */
-    RPMSIGTAG_MD5(1004, BIN, 16, Required),
+    RPMSIGTAG_MD5(1004, BIN, true, 16, Required),
     /**
      * The tag contains the DSA signature of the Header section. The data is formatted as a Version 3 Signature Packet as specified in RFC 2440: OpenPGP Message Format. If this tag is present, then the SIGTAG_GPG tag shall also be present.
      */
-    RPMSIGTAG_DSA(267, BIN, 65, Optional),
+    RPMSIGTAG_DSA(267, BIN, true, 65, Optional),
     /**
      * 	
 The tag contains the RSA signature of the Header section.The data is formatted as a Version 3 Signature Packet as specified in RFC 2440: OpenPGP Message Format. If this tag is present, then the SIGTAG_PGP shall also be present.
      */
-    RPMSIGTAG_RSA(268, BIN, 1, Optional),
+    RPMSIGTAG_RSA(268, BIN, true, 1, Optional),
     /**
      * 	
 This tag specifies the RSA signature of the combined Header and Payload sections. The data is formatted as a Version 3 Signature Packet as specified in RFC 2440: OpenPGP Message Format.
      */
-    RPMSIGTAG_PGP(1002, BIN, 1, Optional),
+    RPMSIGTAG_PGP(1002, BIN, true, 1, Optional),
     /**
      * The tag contains the DSA signature of the combined Header and Payload sections. The data is formatted as a Version 3 Signature Packet as specified in RFC 2440: OpenPGP Message Format.
      */
-    RPMSIGTAG_GPG(1005, BIN, 65, Optional),
+    RPMSIGTAG_GPG(1005, BIN, true, 65, Optional),
     /**
      * This tag specifies the name of the package.
      */
@@ -339,36 +340,52 @@ This tag specifies the RSA signature of the combined Header and Payload sections
      * This tag contains an opaque string whose contents are undefined.
      */
     RPMTAG_PLATFORM(1132, STRING, 1, Informational),
-    UNKNOWN_TAG_VALUE(0, STRING, 1, Optional)
+    // Tags outsize LSB
+    RPMTAG_FILECLASS(1141, INT32, 1, NotLSB),
+    RPMTAG_CLASSDICT(1142, STRING_ARRAY, NotLSB),
+    RPMTAG_FILEDEPENDSX(1143, INT32, 1, NotLSB),
+    RPMTAG_FILEDEPENDSN(1144, INT32, 1, NotLSB),
+    RPMTAG_DEPENDSDICT(1145, INT32, 1, NotLSB),
+    RPMTAG_SOURCEPKGID(1146, BIN, 1, NotLSB),
+    RPMTAG_SUGGESTNAME(5049, STRING_ARRAY, NotLSB),
+    RPMTAG_SUGGESTVERSION(5050, STRING_ARRAY, NotLSB),
+    RPMTAG_SUGGESTFLAGS(5051, INT32, 1, NotLSB)
+    
 ;
     private int tagValue;
     private IndexType type;
+    private Boolean signature;
     private int count;
     private TagStatus tagStatus;
 
-    private TagValue(int tagValue, IndexType type, TagStatus tagStatus)
+    private HeaderTag(int tagValue, IndexType type, TagStatus tagStatus)
     {
         this(tagValue, type, 1, tagStatus);
     }
 
-    private TagValue(int tagValue, IndexType type, int count, TagStatus tagStatus)
+    private HeaderTag(int tagValue, IndexType type, int count, TagStatus tagStatus)
+    {
+        this(tagValue, type, false, count, tagStatus);
+    }
+    private HeaderTag(int tagValue, IndexType type, Boolean signature, int count, TagStatus tagStatus)
     {
         this.tagValue = tagValue;
         this.type = type;
+        this.signature = signature;
         this.count = count;
         this.tagStatus = tagStatus;
     }
 
-    public static TagValue valueOf(int tagValue)
+    public static HeaderTag valueOf(int tagValue, Boolean signature)
     {
-        for (TagValue tag : TagValue.values())
+        for (HeaderTag tag : HeaderTag.values())
         {
-            if (tagValue == tag.tagValue)
+            if (tagValue == tag.tagValue && (tag.signature == null || (tag.signature == signature)))
             {
                 return tag;
             }
         }
-        return TagValue.UNKNOWN_TAG_VALUE;
+        throw new IllegalArgumentException("tag "+tagValue+" unknown");
     }
     public int getTagValue()
     {
@@ -388,6 +405,11 @@ This tag specifies the RSA signature of the combined Header and Payload sections
     public TagStatus getTagStatus()
     {
         return tagStatus;
+    }
+
+    public Boolean isSignature()
+    {
+        return signature;
     }
     
 }
