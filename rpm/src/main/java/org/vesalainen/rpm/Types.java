@@ -17,8 +17,10 @@
 package org.vesalainen.rpm;
 
 import java.nio.ByteBuffer;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.ArrayList;
 import java.util.List;
+import org.vesalainen.util.HexDump;
 
 /**
  *
@@ -39,23 +41,23 @@ public class Types
     {
         return getChar(bb, index, count);
     }
-    public static short[] getInt16(ByteBuffer bb, int index, int count)
+    public static List<Short> getInt16(ByteBuffer bb, int index, int count)
     {
-        short[] buf = new short[count];
+        List<Short> list = new ArrayList<>();
         for (int ii=0;ii<count;ii++)
         {
-            buf[ii] = bb.getShort(index+2*ii);
+            list.add(bb.getShort(index+2*ii));
         }
-        return buf;
+        return list;
     }
-    public static int[] getInt32(ByteBuffer bb, int index, int count)
+    public static List<Integer> getInt32(ByteBuffer bb, int index, int count)
     {
-        int[] buf = new int[count];
+        List<Integer> list = new ArrayList<>();
         for (int ii=0;ii<count;ii++)
         {
-            buf[ii] = bb.getInt(index+4*ii);
+            list.add(bb.getInt(index+4*ii));
         }
-        return buf;
+        return list;
     }
     public static String getString(ByteBuffer bb, int index)
     {
@@ -90,4 +92,103 @@ public class Types
         }
         return buf;
     }
+    public static Object getData(ByteBuffer bb, int index, int count, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+                return getInt16(bb, index, count);
+            case INT32:
+                return getInt32(bb, index, count);
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return getStringArray(bb, index, count);
+            case BIN:
+                return getBin(bb, index, count);
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+    public static int setData(ByteBuffer bb, Object data, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+                return setInt16(bb, data);
+            case INT32:
+                return setInt32(bb, data);
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return setStringArray(bb, data);
+            case BIN:
+                return setBin(bb, data);
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+
+    private static int setInt16(ByteBuffer bb, Object data)
+    {
+        RPM.align(bb, 2);
+        int position = bb.position();
+        List<Short> list = (List<Short>) data;
+        for (Short s : list)
+        {
+            bb.putShort(s.shortValue());
+        }
+        return position;
+    }
+
+    private static int setInt32(ByteBuffer bb, Object data)
+    {
+        RPM.align(bb, 4);
+        int position = bb.position();
+        List<Integer> list = (List<Integer>) data;
+        for (Integer i : list)
+        {
+            bb.putInt(i.intValue());
+        }
+        return position;
+    }
+
+    private static int setStringArray(ByteBuffer bb, Object data)
+    {
+        int position = bb.position();
+        List<String> list = (List<String>) data;
+        for (String s : list)
+        {
+            byte[] bytes = s.getBytes(US_ASCII);
+            bb.put(bytes).put((byte)0);
+        }
+        return position;
+    }
+
+    private static int setBin(ByteBuffer bb, Object data)
+    {
+        int position = bb.position();
+        byte[] buf = (byte[]) data;
+        bb.put(buf);
+        return position;
+    }
+    public static int getCount(Object data, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+            case INT32:
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                List<?> list = (List<?>) data;
+                return list.size();
+            case BIN:
+                byte[] buf = (byte[]) data;
+                return buf.length;
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+
 }

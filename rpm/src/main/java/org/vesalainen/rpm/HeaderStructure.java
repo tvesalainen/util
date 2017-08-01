@@ -18,7 +18,12 @@ package org.vesalainen.rpm;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.vesalainen.util.HexDump;
 
 /**
@@ -32,7 +37,8 @@ class HeaderStructure
     byte[] reserved = new byte[4];
     int nindex;
     int hsize;
-    IndexRecord[] indexRecords;
+    List<IndexRecord> indexRecords = new ArrayList<>();
+    Map<HeaderTag,IndexRecord> indexMap = new HashMap<>();
     ByteBuffer storage;
 
     public HeaderStructure(ByteBuffer bb, boolean signature)
@@ -47,14 +53,19 @@ class HeaderStructure
         bb.get(reserved);
         nindex = bb.getInt();
         hsize = bb.getInt();
-        indexRecords = new IndexRecord[nindex];
+        // extract storage
+        bb.mark();
+        bb.position(bb.position()+16*nindex);
+        storage = bb.slice();
+        storage.limit(hsize);
+        bb.reset();
         // index records
         for (int ii = 0; ii < nindex; ii++)
         {
-            indexRecords[ii] = new IndexRecord(bb);
+            IndexRecord indexRecord = new IndexRecord(bb);
+            indexRecords.add(indexRecord);
+            indexMap.put(indexRecord.tag, indexRecord);
         }
-        storage = bb.slice();
-        storage.limit(hsize);
         RPM.skip(bb, hsize);
     }
 
@@ -63,14 +74,21 @@ class HeaderStructure
         RPM.align(bb, 8);
         bb.put(magic);
         bb.put(reserved);
-        bb.putInt(nindex);
+        bb.putInt(indexRecords.size());
+        int hsizeIndex = bb.position();
         bb.putInt(hsize);
+        // extract storage
+        bb.mark();
+        bb.position(bb.position()+16*nindex);
+        storage = bb.slice();
+        bb.reset();
         // index records
-        for (int ii = 0; ii < nindex; ii++)
-        {
-            indexRecords[ii].save(bb);
-        }
-        bb.put(storage);
+        Collections.sort(indexRecords);
+        indexRecords.forEach((i)->i.save(bb));
+        storage.flip();
+        hsize = storage.remaining();
+        bb.putInt(hsizeIndex, hsize);
+        RPM.skip(bb, hsize);
     }
     
     public void append(Appendable out) throws IOException
@@ -80,12 +98,17 @@ class HeaderStructure
             ir.append(out);
         }
     }
-    class IndexRecord
+    public IndexRecord getIndexRecord(HeaderTag tag)
+    {
+        return indexMap.get(tag);
+    }
+    class IndexRecord implements Comparable<IndexRecord>
     {
         HeaderTag tag;
         IndexType type;
         int offset;
         int count;
+        Object data;
 
         public IndexRecord(ByteBuffer bb)
         {
@@ -97,9 +120,12 @@ class HeaderStructure
             }
             offset = bb.getInt();
             count = bb.getInt();
+            data = Types.getData(storage, offset, count, type);
         }
         public void save(ByteBuffer bb)
         {
+            offset = Types.setData(storage, data, type);
+            count = Types.getCount(data, type);
             bb.putInt(tag.getTagValue());
             bb.putInt(type.ordinal());
             bb.putInt(offset);
@@ -110,19 +136,13 @@ class HeaderStructure
             out.append(tag.name()).append(String.format(" type=%s offset=%d count=%d\n", type, offset, count));
             switch (type)
             {
-                case CHAR:
-                case INT8:
-                    out.append(String.format("value=%s \n", Arrays.toString(Types.getChar(storage, offset, count))));
-                    break;
                 case INT16:
-                    out.append(String.format("value=%s \n", Arrays.toString(Types.getInt16(storage, offset, count))));
+                    out.append(String.format("value=%s \n", Types.getInt16(storage, offset, count)));
                     break;
                 case INT32:
-                    out.append(String.format("value=%s \n", Arrays.toString(Types.getInt32(storage, offset, count))));
+                    out.append(String.format("value=%s \n", Types.getInt32(storage, offset, count)));
                     break;
                 case STRING:
-                    out.append(String.format("value='%s' \n", Types.getString(storage, offset)));
-                    break;
                 case I18NSTRING:
                 case STRING_ARRAY:
                     out.append(String.format("value=%s \n", Types.getStringArray(storage, offset, count)));
@@ -134,5 +154,12 @@ class HeaderStructure
                     out.append("not supported\n");
             }
         }
+
+        @Override
+        public int compareTo(IndexRecord o)
+        {
+            return offset - o.offset;
+        }
+        
     }
 }

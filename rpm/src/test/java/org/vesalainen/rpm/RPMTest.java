@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.*;
+import java.security.NoSuchAlgorithmException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -41,13 +42,10 @@ public class RPMTest
     }
 
     @Test
-    public void test1() throws IOException, URISyntaxException
+    public void test1() throws IOException, URISyntaxException, NoSuchAlgorithmException
     {
         URL url = RPMTest.class.getResource("/ntp-4.2.8p10-29.6.1.armv7hl.rpm");
         //
-        Path tmp = Files.createTempFile("test", "tmp");
-        FileChannel fc = FileChannel.open(tmp, READ, WRITE, CREATE, DELETE_ON_CLOSE);
-        MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, Integer.MAX_VALUE);
         //
         try (   RPM rpm = new RPM())
         {
@@ -58,14 +56,14 @@ public class RPMTest
             ByteBuffer exp = ByteBuffer.wrap(buf);
             rpm.load(path);
             // lead
-            assertArrayEquals(RPM.LEAD_MAGIC, rpm.magic);
-            assertEquals(3, rpm.major);
-            assertEquals(0, rpm.minor);
-            assertEquals(0, rpm.type);
+            assertArrayEquals(RPM.LEAD_MAGIC, rpm.lead.magic);
+            assertEquals(3, rpm.lead.major);
+            assertEquals(0, rpm.lead.minor);
+            assertEquals(0, rpm.lead.type);
             //assertEquals(1, rpm.archnum);
             //assertEquals("lsb-4.0-3mdv2010.1", rpm.name);
-            assertEquals(1, rpm.osnum);
-            assertEquals(5, rpm.signatureType);
+            assertEquals(1, rpm.lead.osnum);
+            assertEquals(5, rpm.lead.signatureType);
             // header
             assertArrayEquals(RPM.HEADER_MAGIC, rpm.signature.magic);
             rpm.append(System.err);
