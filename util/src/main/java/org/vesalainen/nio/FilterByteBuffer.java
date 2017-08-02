@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
+import org.vesalainen.util.function.IOFunction;
 
 /**
  * FilterByteBuffer enables filtered I/O to underlying ByteBuffer with 
@@ -51,7 +52,7 @@ public class FilterByteBuffer implements AutoCloseable
      * @param fin Mapper can be null.
      * @param fout Mapper can be null. 
      */
-    public FilterByteBuffer(ByteBuffer bb, Function<? super InputStream,? extends InputStream> fin, Function<? super OutputStream,? extends OutputStream> fout)
+    public FilterByteBuffer(ByteBuffer bb, IOFunction<? super InputStream,? extends InputStream> fin, IOFunction<? super OutputStream,? extends OutputStream> fout) throws IOException
     {
         this.bb = bb;
         if (fin != null)
