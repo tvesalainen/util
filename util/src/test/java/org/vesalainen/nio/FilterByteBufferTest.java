@@ -74,6 +74,10 @@ public class FilterByteBufferTest
         fbb.putShort((short)123);
         ep+=2;
         assertEquals(ep, fbb.position());
+        fbb.putString("foobar");
+        ep+=7;
+        assertEquals(ep, fbb.position());
+        
         fbb.flush();
         fbb.position(0);
         ep = 0;
@@ -111,6 +115,9 @@ public class FilterByteBufferTest
         assertEquals(ep, fbb.position());
         assertEquals(123, fbb.getShort());
         ep+=2;
+        assertEquals(ep, fbb.position());
+        assertEquals("foobar", fbb.getString());
+        ep+=7;
         assertEquals(ep, fbb.position());
     }
     @Test

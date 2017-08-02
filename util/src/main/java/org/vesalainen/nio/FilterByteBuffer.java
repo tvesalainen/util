@@ -16,6 +16,7 @@
  */
 package org.vesalainen.nio;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -23,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.function.Function;
 import org.vesalainen.util.function.IOFunction;
 
@@ -138,6 +141,53 @@ public class FilterByteBuffer implements AutoCloseable
     {
         checkOut();
         out.flush();
+    }
+    /**
+     * returns null terminated ascii string
+     * @return
+     * @throws IOException 
+     */
+    public String getString() throws IOException
+    {
+        return getString(US_ASCII);
+    }
+    /**
+     * returns null terminated string
+     * @param charset
+     * @return
+     * @throws IOException 
+     */
+    public String getString(Charset charset) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte cc = get();
+        while (cc != 0)
+        {
+            baos.write(cc);
+            cc = get();
+        }
+        byte[] buf = baos.toByteArray();
+        return new String(buf, charset);
+    }
+    /**
+     * Puts ascii string as null terminated byte array
+     * @param str
+     * @throws IOException 
+     */
+    public void putString(String str) throws IOException
+    {
+        putString(str, US_ASCII);
+    }
+    /**
+     * Puts string as null terminated byte array
+     * @param str
+     * @param charset
+     * @throws IOException 
+     */
+    public void putString(String str, Charset charset) throws IOException
+    {
+        byte[] bytes = str.getBytes(charset);
+        put(bytes).put((byte)0);
     }
     /**
      * Returns next byte.
