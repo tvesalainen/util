@@ -23,10 +23,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import java.util.function.Function;
 import org.vesalainen.util.function.IOFunction;
 
 /**
@@ -44,6 +44,7 @@ import org.vesalainen.util.function.IOFunction;
  */
 public class FilterByteBuffer implements AutoCloseable
 {
+    private static final int BUFSIZE = 4096;
     private ByteBuffer bb;
     private DataInputStream in;
     private DataOutputStream out;
@@ -172,22 +173,61 @@ public class FilterByteBuffer implements AutoCloseable
     /**
      * Puts ascii string as null terminated byte array
      * @param str
+     * @return 
      * @throws IOException 
      */
-    public void putString(String str) throws IOException
+    public FilterByteBuffer putString(String str) throws IOException
     {
-        putString(str, US_ASCII);
+        return putString(str, US_ASCII);
     }
     /**
      * Puts string as null terminated byte array
      * @param str
      * @param charset
+     * @return 
      * @throws IOException 
      */
-    public void putString(String str, Charset charset) throws IOException
+    public FilterByteBuffer putString(String str, Charset charset) throws IOException
     {
         byte[] bytes = str.getBytes(charset);
         put(bytes).put((byte)0);
+        return this;
+    }
+    /**
+     * Tries to read remaining bytes into ByteBuffer.
+     * @param bb
+     * @return
+     * @throws IOException 
+     * @throws EOFException If get request couldn't be filled. 
+     */
+    public FilterByteBuffer get(ByteBuffer bb) throws IOException
+    {
+        byte[] buf = new byte[BUFSIZE];
+        while (bb.hasRemaining())
+        {
+            int lim = Math.min(BUFSIZE, bb.remaining());
+            get(buf, 0, lim);
+            bb.put(buf, 0, lim);
+        }
+        return this;
+    }
+    /**
+     * Tries to put remaining bytes.
+     * @param bb
+     * @return
+     * @throws IOException 
+     * @throws BufferOverflowException If not enough room in ByteBuffer.
+     */
+    public FilterByteBuffer put(ByteBuffer bb) throws IOException
+    {
+        byte[] buf = new byte[BUFSIZE];
+        while (bb.hasRemaining())
+        {
+            int lim = Math.min(BUFSIZE, bb.remaining());
+            bb.get(buf, 0, lim);
+            put(buf, 0, lim);
+        }
+        return this;
     }
     /**
      * Returns next byte.

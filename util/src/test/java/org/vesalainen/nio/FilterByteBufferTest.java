@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.util.Arrays;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -32,6 +33,7 @@ import org.junit.Test;
  */
 public class FilterByteBufferTest
 {
+    private static final byte[] EXP = "qwertyhgfdsazxcvbnm5".getBytes(US_ASCII);
     
     public FilterByteBufferTest()
     {
@@ -40,6 +42,7 @@ public class FilterByteBufferTest
     @Test
     public void test1() throws IOException
     {
+        ByteBuffer b1 = ByteBuffer.wrap(Arrays.copyOf(EXP, EXP.length));
         ByteBuffer bb = ByteBuffer.allocate(1024);
         FilterByteBuffer fbb = new FilterByteBuffer(bb, BufferedInputStream::new, BufferedOutputStream::new);
         int ep = 0;
@@ -76,6 +79,9 @@ public class FilterByteBufferTest
         assertEquals(ep, fbb.position());
         fbb.putString("foobar");
         ep+=7;
+        assertEquals(ep, fbb.position());
+        fbb.put(b1);
+        ep+=20;
         assertEquals(ep, fbb.position());
         
         fbb.flush();
@@ -118,6 +124,11 @@ public class FilterByteBufferTest
         assertEquals(ep, fbb.position());
         assertEquals("foobar", fbb.getString());
         ep+=7;
+        assertEquals(ep, fbb.position());
+        b1.clear();
+        fbb.get(b1);
+        assertArrayEquals(EXP, b1.array());
+        ep+=20;
         assertEquals(ep, fbb.position());
     }
     @Test
