@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.io.File;
 import java.io.IOException;
+import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Spliterator;
@@ -699,6 +700,12 @@ public class CharSequences
         public CharSequence subSequence(int start, int end)
         {
             return new ASCIICharSequence(buf, offset+start, end-start);
+        }
+
+        @Override
+        public String toString()
+        {
+            return new String(buf, offset, length, US_ASCII);
         }
         
     }
