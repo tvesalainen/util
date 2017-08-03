@@ -47,7 +47,7 @@ public class FilterByteBufferTest
         FilterByteBuffer fbb = new FilterByteBuffer(bb, BufferedInputStream::new, BufferedOutputStream::new);
         int ep = 0;
         assertEquals(ep, fbb.position());
-        fbb.put((byte)1);
+        fbb.put((byte)200);
         ep++;
         assertEquals(ep, fbb.position());
         fbb.alignOutput(8);
@@ -89,7 +89,7 @@ public class FilterByteBufferTest
         ep = 0;
         
         bb.flip();
-        assertEquals(1, fbb.get());
+        assertEquals((byte)200, fbb.get());
         ep+=1;
         assertEquals(ep, fbb.position());
         fbb.alignInput(8);

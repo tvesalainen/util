@@ -267,10 +267,21 @@ public class FilterByteBuffer implements AutoCloseable
     public FilterByteBuffer get(byte[] dst, int offset, int length) throws IOException
     {
         checkIn();
-        int rc = in.read(dst, offset, length);
-        if (rc != length)
+        int len = length;
+        int count = 100;
+        while (len > 0 && count > 0)
         {
-            throw new EOFException();
+            int rc = in.read(dst, offset+length-len, len);
+            if (rc == -1)
+            {
+                throw new EOFException();
+            }
+            len -= rc;
+            count--;
+        }
+        if (count == 0)
+        {
+            throw new IOException("couldn't fill buffer after 100 tries");
         }
         position += length;
         return this;
@@ -536,7 +547,7 @@ public class FilterByteBuffer implements AutoCloseable
         @Override
         public int read() throws IOException
         {
-            return bb.get();
+            return bb.get() & 0xff;
         }
 
         @Override
