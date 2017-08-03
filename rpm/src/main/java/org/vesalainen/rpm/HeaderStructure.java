@@ -21,9 +21,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import static org.vesalainen.rpm.IndexType.*;
 import org.vesalainen.util.HexDump;
 
 /**
@@ -38,7 +41,7 @@ class HeaderStructure
     int nindex;
     int hsize;
     List<IndexRecord> indexRecords = new ArrayList<>();
-    Map<HeaderTag,IndexRecord> indexMap = new HashMap<>();
+    Map<HeaderTag,IndexRecord> indexMap = new EnumMap<>(HeaderTag.class);
     ByteBuffer storage;
 
     public HeaderStructure(ByteBuffer bb, boolean signature)
@@ -62,14 +65,22 @@ class HeaderStructure
         // index records
         for (int ii = 0; ii < nindex; ii++)
         {
-            IndexRecord indexRecord = new IndexRecord(bb);
-            indexRecords.add(indexRecord);
-            indexMap.put(indexRecord.tag, indexRecord);
+            IndexRecord indexRecord = loadIndexRecord(bb);
+            addIndexRecord(indexRecord);
         }
         RPM.skip(bb, hsize);
     }
 
-    public void save(ByteBuffer bb)
+    HeaderStructure()
+    {
+    }
+    
+    void addIndexRecord(IndexRecord indexRecord)
+    {
+        indexRecords.add(indexRecord);
+        indexMap.put(indexRecord.tag, indexRecord);
+    }
+    void saveLoaded(ByteBuffer bb)
     {
         RPM.align(bb, 8);
         bb.put(magic);
@@ -83,7 +94,6 @@ class HeaderStructure
         storage = bb.slice();
         bb.reset();
         // index records
-        Collections.sort(indexRecords);
         indexRecords.forEach((i)->i.save(bb));
         storage.flip();
         hsize = storage.remaining();
@@ -102,34 +112,153 @@ class HeaderStructure
     {
         return indexMap.get(tag);
     }
-    class IndexRecord implements Comparable<IndexRecord>
+    public Set<HeaderTag> getAllTags()
+    {
+        return indexMap.keySet();
+    }
+    IndexRecord loadIndexRecord(ByteBuffer bb)
+    {
+        HeaderTag tag = HeaderTag.valueOf(bb.getInt(), signature);
+        IndexType type = IndexType.values()[bb.getInt()];
+        if (type != tag.getType())
+        {
+            throw new IllegalArgumentException(tag+" type differs from "+type);
+        }
+        int offset = bb.getInt();
+        int count = bb.getInt();
+        switch (type)
+        {
+            case INT16:
+                return new IndexRecord<Short>(tag, type, offset, count, Types.getInt16(storage, offset, count));
+            case INT32:
+                return new IndexRecord<Integer>(tag, type, offset, count, Types.getInt32(storage, offset, count));
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return new IndexRecord<String>(tag, type, offset, count, Types.getStringArray(storage, offset, count));
+            case BIN:
+                return new IndexRecord(tag, type, offset, count, Types.getBin(storage, offset, count));
+            default:
+                throw new UnsupportedOperationException("not supported\n");
+        }
+    }
+    IndexRecord createIndexRecord(HeaderTag tag)
+    {
+        IndexType type = tag.getType();
+        switch (type)
+        {
+            case INT16:
+                return new IndexRecord<Short>(tag, new ArrayList<>());
+            case INT32:
+                return new IndexRecord<Integer>(tag, new ArrayList<>());
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return new IndexRecord<String>(tag, new ArrayList<>());
+            case BIN:
+                return new IndexRecord(tag);
+            default:
+                throw new UnsupportedOperationException("not supported\n");
+        }
+    }
+    class IndexRecord<T>
     {
         HeaderTag tag;
         IndexType type;
         int offset;
         int count;
-        Object data;
+        List<T> list;
+        byte[] bin;
 
-        public IndexRecord(ByteBuffer bb)
+        private IndexRecord(HeaderTag tag, List<T> list)
         {
-            tag = HeaderTag.valueOf(bb.getInt(), signature);
-            type = IndexType.values()[bb.getInt()];
-            if (type != tag.getType())
-            {
-                throw new IllegalArgumentException(tag+" type differs from "+type);
-            }
-            offset = bb.getInt();
-            count = bb.getInt();
-            data = Types.getData(storage, offset, count, type);
+            this.tag = tag;
+            this.type = tag.getType();
+            this.list = list;
         }
+
+        private IndexRecord(HeaderTag tag)
+        {
+            this.tag = tag;
+            this.type = tag.getType();
+        }
+
+        private IndexRecord(HeaderTag tag, IndexType type, int offset, int count, List<T> list)
+        {
+            this.tag = tag;
+            this.type = type;
+            this.offset = offset;
+            this.count = count;
+            this.list = list;
+        }
+
+        private IndexRecord(HeaderTag tag, IndexType type, int offset, int count, byte[] bin)
+        {
+            this.tag = tag;
+            this.type = type;
+            this.offset = offset;
+            this.count = count;
+            this.bin = bin;
+        }
+
         public void save(ByteBuffer bb)
         {
-            offset = Types.setData(storage, data, type);
-            count = Types.getCount(data, type);
+            offset = Types.setData(storage, list, bin, type);
+            count = getCount();
             bb.putInt(tag.getTagValue());
             bb.putInt(type.ordinal());
             bb.putInt(offset);
             bb.putInt(count);
+        }
+        void addItem(T item)
+        {
+            if (type == STRING && !list.isEmpty())
+            {
+                throw new IllegalArgumentException("more that one item in STRING");
+            }
+            list.add(item);
+        }
+
+        public void setBin(byte[] bin)
+        {
+            this.bin = bin;
+        }
+        
+        int getCount()
+        {
+            if (bin != null)
+            {
+                return bin.length;
+            }
+            else
+            {
+                return list.size();
+            }
+        }
+        List<T> getArray(IndexType it)
+        {
+            if (type != it)
+            {
+                throw new IllegalArgumentException("tag data is "+type+" not "+it);
+            }
+            return list;
+        }
+        T getSingle(IndexType it)
+        {
+            List<T> list = getArray(it);
+            if (list.size() != 1)
+            {
+                throw new IllegalArgumentException("count > 1");
+            }
+            return list.get(0);
+        }
+        public byte[] getBin()
+        {
+            if (type != BIN)
+            {
+                throw new IllegalArgumentException("tag data is "+type+" not "+BIN);
+            }
+            return bin;
         }
         public void append(Appendable out) throws IOException
         {
@@ -155,10 +284,19 @@ class HeaderStructure
             }
         }
 
-        @Override
-        public int compareTo(IndexRecord o)
+        public HeaderTag getTag()
         {
-            return offset - o.offset;
+            return tag;
+        }
+
+        public IndexType getType()
+        {
+            return type;
+        }
+
+        public int getOffset()
+        {
+            return offset;
         }
         
     }

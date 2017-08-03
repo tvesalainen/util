@@ -20,14 +20,24 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.nio.channels.FileChannel;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
+import org.vesalainen.nio.FilterByteBuffer;
+import org.vesalainen.rpm.HeaderStructure.IndexRecord;
 import static org.vesalainen.rpm.HeaderTag.*;
+import static org.vesalainen.rpm.IndexType.INT16;
+import static org.vesalainen.rpm.IndexType.INT32;
+import static org.vesalainen.rpm.IndexType.STRING;
+import static org.vesalainen.rpm.TagStatus.Required;
 
 /**
  *
@@ -42,6 +52,7 @@ public class RPM implements AutoCloseable
     Lead lead;
     HeaderStructure signature;
     HeaderStructure header;
+    List<FileRecord> fileRecords = new ArrayList<>();
     private int signatureStart;
     private int headerStart;
     private int payloadStart;
@@ -67,8 +78,7 @@ public class RPM implements AutoCloseable
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         md5.update(rest);
         byte[] digest = md5.digest();
-        HeaderStructure.IndexRecord md5Record = signature.getIndexRecord(RPMSIGTAG_MD5);
-        byte[] dig = (byte[]) md5Record.data;
+        byte[] dig = getBin(RPMSIGTAG_MD5);
         
         if (!Arrays.equals(dig, digest))
         {
@@ -78,7 +88,16 @@ public class RPM implements AutoCloseable
         
         header = new HeaderStructure(bb, false);
         
+        checkRequiredTags();
+        
         payloadStart = bb.position();
+        
+        FilterByteBuffer fbb = new FilterByteBuffer(bb, GZIPInputStream::new, null);
+        int fileCount = getFileCount();
+        for (int ii=0;ii<fileCount;ii++)
+        {
+            fileRecords.add(new FileRecord(fbb));
+        }
         
     }
     void save(ByteBuffer bb) throws IOException
@@ -88,14 +107,109 @@ public class RPM implements AutoCloseable
         // lead
         lead.save(bb);
         
-        signature.save(bb);
-        header.save(bb);
+        signature.saveLoaded(bb);
+        header.saveLoaded(bb);
     }
     public void save(Path path) throws IOException
     {
         fc = FileChannel.open(path, CREATE, WRITE, TRUNCATE_EXISTING);
         bb = fc.map(FileChannel.MapMode.READ_WRITE, 0, Files.size(path));
         save(bb);
+    }
+    public void checkRequiredTags()
+    {
+        Set<HeaderTag> required = EnumSet.noneOf(HeaderTag.class);
+        for (HeaderTag tag : HeaderTag.values())
+        {
+            if (tag.getTagStatus() == Required)
+            {
+                required.add(tag);
+            }
+        }
+        required.removeAll(signature.getAllTags());
+        required.removeAll(header.getAllTags());
+        if (!required.isEmpty())
+        {
+            throw new IllegalArgumentException("required tags missing "+required);
+        }
+    }
+    public int getFileCount()
+    {
+        return getCount(RPMTAG_FILESIZES);
+    }
+    public int getCount(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getCount();
+    }
+    public short getInt16(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (short) indexRecord.getSingle(INT16);
+    }
+    public int getInt32(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (int) indexRecord.getSingle(INT32);
+    }
+    public String getString(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (String) indexRecord.getSingle(STRING);
+    }
+    public List<Short> getInt16Array(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(INT16);
+    }
+    public List<Integer> getInt32Array(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(INT32);
+    }
+    public List<String> getStringArray(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(STRING);
+    }
+    public byte[] getBin(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getBin();
+    }
+    private IndexRecord getIndexRecord(HeaderTag tag)
+    {
+        if (tag.isSignature())
+        {
+            return signature.getIndexRecord(tag);
+        }
+        else
+        {
+            return header.getIndexRecord(tag);
+        }
+    }
+    private IndexRecord getOrCreateIndexRecord(HeaderTag tag)
+    {
+        IndexRecord indexRecord;
+        if (tag.isSignature())
+        {
+            indexRecord = signature.getIndexRecord(tag);
+            if (indexRecord == null)
+            {
+                indexRecord = signature.createIndexRecord(tag);
+                signature.addIndexRecord(indexRecord);
+            }
+        }
+        else
+        {
+            indexRecord = header.getIndexRecord(tag);
+            if (indexRecord == null)
+            {
+                indexRecord = header.createIndexRecord(tag);
+                header.addIndexRecord(indexRecord);
+            }
+        }
+        return indexRecord;
     }
     public void append(Appendable out) throws IOException
     {
@@ -132,6 +246,84 @@ public class RPM implements AutoCloseable
         if (fc != null)
         {
             fc.close();
+        }
+    }
+    private void addInt16(HeaderTag tag, short value)
+    {
+        IndexRecord<Short> indexRecord = getOrCreateIndexRecord(tag);
+        indexRecord.addItem(value);
+    }
+    private void addInt32(HeaderTag tag, int value)
+    {
+        IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
+        indexRecord.addItem(value);
+    }
+    private void addString(HeaderTag tag, String value)
+    {
+        IndexRecord<String> indexRecord = getOrCreateIndexRecord(tag);
+        indexRecord.addItem(value);
+    }
+    private void setBin(HeaderTag tag, byte[] bin)
+    {
+        IndexRecord indexRecord = getOrCreateIndexRecord(tag);
+        indexRecord.setBin(bin);
+    }
+    public class Builder
+    {
+        public Builder(String name)
+        {
+            lead = new Lead(name);
+            signature = new HeaderStructure();
+            header = new HeaderStructure();
+            addString(HeaderTag.RPMTAG_NAME, name);
+            addString(HeaderTag.RPMTAG_PAYLOADFORMAT, "cpio");
+            addString(HeaderTag.RPMTAG_PAYLOADCOMPRESSOR, "gzip");
+            addString(HeaderTag.RPMTAG_PAYLOADFLAGS, "9");
+        }
+        public Builder setVersion(String version)
+        {
+            addString(HeaderTag.RPMTAG_VERSION, version);
+            return this;
+        }
+        public Builder setRelease(String v)
+        {
+            addString(HeaderTag.RPMTAG_RELEASE, v);
+            return this;
+        }
+        public Builder setSummary(String v)
+        {
+            addString(HeaderTag.RPMTAG_SUMMARY, v);
+            return this;
+        }
+        public Builder setDescription(String v)
+        {
+            addString(HeaderTag.RPMTAG_DESCRIPTION, v);
+            return this;
+        }
+        private Builder setSize(int v)
+        {
+            addInt32(HeaderTag.RPMTAG_SIZE, v);
+            return this;
+        }
+        public Builder setLicense(String v)
+        {
+            addString(HeaderTag.RPMTAG_LICENSE, v);
+            return this;
+        }
+        public Builder setGroup(String v)
+        {
+            addString(HeaderTag.RPMTAG_GROUP, v);
+            return this;
+        }
+        public Builder setOs(String v)
+        {
+            addString(HeaderTag.RPMTAG_OS, v);
+            return this;
+        }
+        public Builder setArch(String v)
+        {
+            addString(HeaderTag.RPMTAG_ARCH, v);
+            return this;
         }
     }
 }

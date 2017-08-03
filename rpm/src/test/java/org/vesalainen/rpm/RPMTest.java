@@ -44,7 +44,7 @@ public class RPMTest
     @Test
     public void test1() throws IOException, URISyntaxException, NoSuchAlgorithmException
     {
-        URL url = RPMTest.class.getResource("/ntp-4.2.8p10-29.6.1.armv7hl.rpm");
+        URL url = RPMTest.class.getResource("/redhat-lsb-4.0-2.1.4.el5.i386.rpm");
         //
         //
         try (   RPM rpm = new RPM())

@@ -110,30 +110,33 @@ public class Types
                 throw new UnsupportedOperationException(type+" not supported");
         }
     }
-    public static int setData(ByteBuffer bb, Object data, IndexType type)
+    public static <T> int setData(ByteBuffer bb, List<T> list, byte[] bin, IndexType type)
     {
         switch (type)
         {
             case INT16:
-                return setInt16(bb, data);
+                return setInt16(bb, (List<Short>) list);
             case INT32:
-                return setInt32(bb, data);
+                return setInt32(bb, (List<Integer>) list);
             case STRING:
+                if (list.size() != 1)
+                {
+                    throw new IllegalArgumentException("STRING size != 1 = "+list.size());
+                }
             case I18NSTRING:
             case STRING_ARRAY:
-                return setStringArray(bb, data);
+                return setStringArray(bb, (List<String>) list);
             case BIN:
-                return setBin(bb, data);
+                return setBin(bb, bin);
             default:
                 throw new UnsupportedOperationException(type+" not supported");
         }
     }
 
-    private static int setInt16(ByteBuffer bb, Object data)
+    private static int setInt16(ByteBuffer bb, List<Short> list)
     {
         RPM.align(bb, 2);
         int position = bb.position();
-        List<Short> list = (List<Short>) data;
         for (Short s : list)
         {
             bb.putShort(s.shortValue());
@@ -141,11 +144,10 @@ public class Types
         return position;
     }
 
-    private static int setInt32(ByteBuffer bb, Object data)
+    private static int setInt32(ByteBuffer bb, List<Integer> list)
     {
         RPM.align(bb, 4);
         int position = bb.position();
-        List<Integer> list = (List<Integer>) data;
         for (Integer i : list)
         {
             bb.putInt(i.intValue());
@@ -153,10 +155,9 @@ public class Types
         return position;
     }
 
-    private static int setStringArray(ByteBuffer bb, Object data)
+    private static int setStringArray(ByteBuffer bb, List<String> list)
     {
         int position = bb.position();
-        List<String> list = (List<String>) data;
         for (String s : list)
         {
             byte[] bytes = s.getBytes(US_ASCII);
@@ -165,11 +166,10 @@ public class Types
         return position;
     }
 
-    private static int setBin(ByteBuffer bb, Object data)
+    private static int setBin(ByteBuffer bb, byte[] bin)
     {
         int position = bb.position();
-        byte[] buf = (byte[]) data;
-        bb.put(buf);
+        bb.put(bin);
         return position;
     }
     public static int getCount(Object data, IndexType type)

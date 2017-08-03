@@ -16,7 +16,6 @@
  */
 package org.vesalainen.rpm;
 
-import java.util.Objects;
 import static org.vesalainen.rpm.IndexType.*;
 import static org.vesalainen.rpm.TagStatus.*;
 
@@ -349,9 +348,20 @@ This tag specifies the RSA signature of the combined Header and Payload sections
     RPMTAG_SOURCEPKGID(1146, BIN, 1, NotLSB),
     RPMTAG_SUGGESTNAME(5049, STRING_ARRAY, NotLSB),
     RPMTAG_SUGGESTVERSION(5050, STRING_ARRAY, NotLSB),
-    RPMTAG_SUGGESTFLAGS(5051, INT32, 1, NotLSB)
-    
-;
+    RPMTAG_SUGGESTFLAGS(5051, INT32, 1, NotLSB),
+    RPMSIGTAG_UNKNOWN1(1008, BIN, true, 1, NotLSB),
+    RPMTAG_TRIGGERSCRIPTS(1065, STRING_ARRAY, 1, NotLSB),
+    RPMTAG_TRIGGERNAME(1066, STRING_ARRAY, 1, NotLSB),
+    RPMTAG_TRIGGERVERSION(1067, STRING_ARRAY, 1, NotLSB),
+    RPMTAG_TRIGGERFLAGS(1068, INT32, 1, NotLSB),
+    RPMTAG_TRIGGERINDEX(1069, INT32, 1, NotLSB),
+    RPMTAG_VERIFYSCRIPT(1079, STRING, 1, NotLSB),
+    RPMTAG_TRIGGERSCRIPTPROG(1092, STRING_ARRAY, 1, NotLSB),
+    RPMTAG_FILECOLORS(1140, INT32, 1, NotLSB),
+    RPMTAG_FILEDIGESTALGO(5011, INT32, 1, NotLSB),
+    RPMTAG_UNKNOWN1(5062, STRING, 1, NotLSB),
+    RPMTAG_FILECONTEXTS(1147, STRING_ARRAY, 1, NotLSB)
+    ;
     private int tagValue;
     private IndexType type;
     private Boolean signature;
