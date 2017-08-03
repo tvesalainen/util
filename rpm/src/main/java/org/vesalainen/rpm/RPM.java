@@ -282,7 +282,7 @@ public class RPM implements AutoCloseable
         }
         public Builder setVersion(String version)
         {
-            addString(HeaderTag.RPMTAG_VERSION, version);
+            addString(HeaderTag.RPMTAG_VERSION, version); 
             return this;
         }
         public Builder setRelease(String v)
