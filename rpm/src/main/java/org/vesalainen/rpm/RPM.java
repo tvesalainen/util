@@ -23,6 +23,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -30,13 +31,13 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import org.vesalainen.nio.FilterByteBuffer;
+import static org.vesalainen.rpm.Dependency.*;
 import org.vesalainen.rpm.HeaderStructure.IndexRecord;
 import static org.vesalainen.rpm.HeaderTag.*;
-import static org.vesalainen.rpm.IndexType.INT16;
-import static org.vesalainen.rpm.IndexType.INT32;
-import static org.vesalainen.rpm.IndexType.STRING;
+import static org.vesalainen.rpm.IndexType.*;
 import static org.vesalainen.rpm.TagStatus.Required;
 
 /**
@@ -214,6 +215,7 @@ public class RPM implements AutoCloseable
     public void append(Appendable out) throws IOException
     {
         out.append(String.format("lead %d signature %d header %d payload\n", signatureStart, headerStart, payloadStart));
+        out.append(lead.name).append('\n');
         out.append("Signature\n");
         signature.append(out);
         out.append("Header\n");
@@ -248,20 +250,38 @@ public class RPM implements AutoCloseable
             fc.close();
         }
     }
-    private void addInt16(HeaderTag tag, short value)
+    private <T> boolean contains(HeaderTag tag, T value)
+    {
+        IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return indexRecord.contains(value);
+        }
+        return false;
+    }
+    private <T> int indexOf(HeaderTag tag, T value)
+    {
+        IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return indexRecord.indexOf(value);
+        }
+        return -1;
+    }
+    private int addInt16(HeaderTag tag, short value)
     {
         IndexRecord<Short> indexRecord = getOrCreateIndexRecord(tag);
-        indexRecord.addItem(value);
+        return indexRecord.addItem(value);
     }
-    private void addInt32(HeaderTag tag, int value)
+    private int addInt32(HeaderTag tag, int value)
     {
         IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
-        indexRecord.addItem(value);
+        return indexRecord.addItem(value);
     }
-    private void addString(HeaderTag tag, String value)
+    private int addString(HeaderTag tag, String value)
     {
         IndexRecord<String> indexRecord = getOrCreateIndexRecord(tag);
-        indexRecord.addItem(value);
+        return indexRecord.addItem(value);
     }
     private void setBin(HeaderTag tag, byte[] bin)
     {
@@ -272,7 +292,6 @@ public class RPM implements AutoCloseable
     {
         public Builder(String name)
         {
-            lead = new Lead(name);
             signature = new HeaderStructure();
             header = new HeaderStructure();
             addString(HeaderTag.RPMTAG_NAME, name);
@@ -282,7 +301,7 @@ public class RPM implements AutoCloseable
         }
         public Builder setVersion(String version)
         {
-            addString(HeaderTag.RPMTAG_VERSION, version); 
+            addString(HeaderTag.RPMTAG_VERSION, version);
             return this;
         }
         public Builder setRelease(String v)
@@ -324,6 +343,253 @@ public class RPM implements AutoCloseable
         {
             addString(HeaderTag.RPMTAG_ARCH, v);
             return this;
+        }
+        public Builder setPreIn(String v)
+        {
+            addString(HeaderTag.RPMTAG_PREIN, v);
+            addString(HeaderTag.RPMTAG_PREINPROG, "/bin/sh");
+            ensureBinSh();
+            return this;
+        }
+        public Builder setPostIn(String v)
+        {
+            addString(HeaderTag.RPMTAG_POSTIN, v);
+            addString(HeaderTag.RPMTAG_POSTINPROG, "/bin/sh");
+            ensureBinSh();
+            return this;
+        }
+        public Builder setPreUn(String v)
+        {
+            addString(HeaderTag.RPMTAG_PREUN, v);
+            addString(HeaderTag.RPMTAG_PREUNPROG, "/bin/sh");
+            ensureBinSh();
+            return this;
+        }
+        public Builder setPostUn(String v)
+        {
+            addString(HeaderTag.RPMTAG_POSTUN, v);
+            addString(HeaderTag.RPMTAG_POSTUNPROG, "/bin/sh");
+            ensureBinSh();
+            return this;
+        }
+        private void ensureBinSh()
+        {
+            if (!contains(HeaderTag.RPMTAG_REQUIRENAME, "/bin/sh"))
+            {
+                addRequire("/bin/sh");
+            }
+        }
+        public Builder addProvide(String name)
+        {
+            return addProvide(name, "");
+        }
+        public Builder addProvide(String name, String version, int... dependency)
+        {
+            addString(HeaderTag.RPMTAG_PROVIDENAME, name);
+            addString(HeaderTag.RPMTAG_PROVIDEVERSION, version);
+            addInt32(HeaderTag.RPMTAG_PROVIDEFLAGS, Dependency.or(dependency));
+            ensureVersionReq(version);
+            return this;
+        }
+        public Builder addRequire(String name)
+        {
+            return addRequire(name, "");
+        }
+        public Builder addRequire(String name, String version, int... dependency)
+        {
+            addString(HeaderTag.RPMTAG_REQUIRENAME, name);
+            addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
+            addInt32(HeaderTag.RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+            ensureVersionReq(version);
+            return this;
+        }
+        public Builder addConflict(String name)
+        {
+            return addConflict(name, "");
+        }
+        public Builder addConflict(String name, String version, int... dependency)
+        {
+            addString(HeaderTag.RPMTAG_CONFLICTNAME, name);
+            addString(HeaderTag.RPMTAG_CONFLICTVERSION, version);
+            addInt32(HeaderTag.RPMTAG_CONFLICTFLAGS, Dependency.or(dependency));
+            ensureVersionReq(version);
+            return this;
+        }
+        private void ensureVersionReq(String version)
+        {
+            if (!version.isEmpty() && !contains(RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
+            {
+                addRequire("rpmlib(VersionedDependencies)", "3.0.3-1", EQUAL, LESS, RPMLIB);
+            }
+        }
+        public void build(Path dir)
+        {
+            checkRequiredTags();
+            lead = new Lead(String.format("%s-%s-%s", getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), getString(HeaderTag.RPMTAG_RELEASE)));
+            addRequire("rpmlib(CompressedFileNames)", "3.0.4-1", EQUAL, LESS, RPMLIB);
+        }
+    }
+    public class FileBuilder
+    {
+        CPIO cpio = new CPIO();
+        ByteBuffer content;
+        String target;
+        String base;
+        String dir;
+        int size;
+        int time = (int) (System.currentTimeMillis()/1000);
+        short mode;
+        short rdev;
+        String linkTo = "";
+        int flag;
+        String username = "root";
+        String groupname = "root";
+        int device;
+        int inode;
+        String lang = "";
+        
+        public FileBuilder(Path source, String target) throws IOException
+        {
+            this.target = target;
+            size = (int) Files.size(source);
+            try (FileChannel fc = FileChannel.open(source, READ))
+            {
+                content = fc.map(FileChannel.MapMode.READ_ONLY, 0, size);
+            }
+            FileTime fileTime = Files.getLastModifiedTime(source);
+            time = (int)fileTime.to(TimeUnit.SECONDS);
+            compressFilename();
+        }
+
+        public FileBuilder(ByteBuffer content, String target)
+        {
+            this.content = content;
+            this.target = target;
+            size = content.limit();
+            compressFilename();
+        }
+
+        public FileBuilder setTime(int time)
+        {
+            this.time = time;
+            return this;
+        }
+
+        public FileBuilder setMode(short mode)
+        {
+            this.mode = mode;
+            return this;
+        }
+
+        public FileBuilder setRdev(short rdev)
+        {
+            this.rdev = rdev;
+            return this;
+        }
+
+        public FileBuilder setLinkTo(String linkTo)
+        {
+            this.linkTo = linkTo;
+            return this;
+        }
+
+        public FileBuilder setFlag(FileFlag... flags)
+        {
+            this.flag = FileFlag.or(flags);
+            return this;
+        }
+
+        public FileBuilder setUsername(String username)
+        {
+            this.username = username;
+            return this;
+        }
+
+        public FileBuilder setGroupname(String groupname)
+        {
+            this.groupname = groupname;
+            return this;
+        }
+
+        public FileBuilder setDevice(int device)
+        {
+            this.device = device;
+            return this;
+        }
+
+        public FileBuilder setInode(int inode)
+        {
+            this.inode = inode;
+            return this;
+        }
+
+        public FileBuilder setLang(String lang)
+        {
+            this.lang = lang;
+            return this;
+        }
+
+        public void build() throws NoSuchAlgorithmException
+        {
+            int index;
+            addString(HeaderTag.RPMTAG_BASENAMES, base);
+            if (!contains(HeaderTag.RPMTAG_DIRNAMES, dir))
+            {
+                index = addString(HeaderTag.RPMTAG_DIRNAMES, dir);
+            }
+            else
+            {
+                index = indexOf(HeaderTag.RPMTAG_DIRNAMES, dir);
+            }
+            addInt32(HeaderTag.RPMTAG_DIRINDEXES, index);
+            addInt32(HeaderTag.RPMTAG_FILESIZES, size);
+            addInt32(HeaderTag.RPMTAG_FILEMTIMES, time);
+            // md5
+            ByteBuffer duplicate = content.duplicate();
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(duplicate);
+            byte[] digest = md5.digest();
+            addString(HeaderTag.RPMTAG_FILEMD5S, toHex(digest));
+        
+            addInt16(HeaderTag.RPMTAG_FILEMODES, mode);
+            addInt16(HeaderTag.RPMTAG_FILERDEVS, rdev);
+            addString(HeaderTag.RPMTAG_FILELINKTOS, linkTo);
+            addInt32(HeaderTag.RPMTAG_FILEFLAGS, flag);
+            addString(HeaderTag.RPMTAG_FILEUSERNAME, username);
+            addString(HeaderTag.RPMTAG_FILEGROUPNAME, groupname);
+            addInt32(HeaderTag.RPMTAG_FILEDEVICES, device);
+            addInt32(HeaderTag.RPMTAG_FILEINODES, inode);
+            addString(HeaderTag.RPMTAG_FILELANGS, lang);
+            
+            FileRecord fileRecord = new FileRecord(cpio, target, content);
+            fileRecords.add(fileRecord);
+            cpio = null;
+            content = null;
+            target = null;
+        }
+        private void compressFilename()
+        {
+            int idx = target.lastIndexOf('/');
+            if (idx == -1)
+            {
+                throw new IllegalArgumentException("directory missing "+target);
+            }
+            base  = target.substring(0, idx);
+            dir = target.substring(idx+1);
+        }
+        private String toHex(byte[] buf)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (byte b : buf)
+            {
+                String s = Integer.toHexString(Byte.toUnsignedInt(b));
+                if (s.length() < 2)
+                {
+                    sb.append('0');
+                }
+                sb.append(s);
+            }
+            return sb.toString();
         }
     }
 }

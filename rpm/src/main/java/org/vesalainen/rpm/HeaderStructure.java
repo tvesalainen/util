@@ -210,13 +210,22 @@ class HeaderStructure
             bb.putInt(offset);
             bb.putInt(count);
         }
-        void addItem(T item)
+        boolean contains(T item)
+        {
+            return list.contains(item);
+        }
+        int indexOf(T item)
+        {
+            return list.indexOf(item);
+        }
+        int addItem(T item)
         {
             if (type == STRING && !list.isEmpty())
             {
                 throw new IllegalArgumentException("more that one item in STRING");
             }
             list.add(item);
+            return list.size()-1;
         }
 
         public void setBin(byte[] bin)

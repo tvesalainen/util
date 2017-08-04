@@ -47,6 +47,10 @@ public class CPIO
     int namesize;
     int checksum;
 
+    public CPIO()
+    {
+    }
+
     public CPIO(FilterByteBuffer bb) throws IOException
     {
         bb.get(magic);

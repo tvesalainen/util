@@ -16,42 +16,24 @@
  */
 package org.vesalainen.rpm;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import org.vesalainen.nio.FilterByteBuffer;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.vesalainen.rpm.Dependency.*;
 
 /**
  *
  * @author tkv
  */
-public class FileRecord
+public class DependencyTest
 {
-    CPIO cpio;
-    String filename;
-    ByteBuffer content;
-
-    FileRecord(CPIO cpio, String filename, ByteBuffer content)
+    
+    public DependencyTest()
     {
-        this.cpio = cpio;
-        this.filename = filename;
-        this.content = content;
     }
 
-    FileRecord(FilterByteBuffer bb) throws IOException
+    @Test
+    public void test1()
     {
-        cpio = new CPIO(bb);
-        filename = bb.getString();
-        bb.alignInput(4);
-        content = ByteBuffer.allocate(cpio.filesize);
-        bb.get(content);
-        bb.alignInput(4);
-    }
-
-    void save(FilterByteBuffer bb) throws IOException
-    {
-        cpio.save(bb);
-        bb.putString(filename);
-        bb.alignInput(4);
-        bb.put(content);
+        assertEquals(10, Dependency.or(EQUAL, LESS));
     }
 }
