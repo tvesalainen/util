@@ -45,4 +45,18 @@ public class DynamicByteBuffer
             return fc.map(FileChannel.MapMode.READ_WRITE, 0, maxSize);
         }
     }
+    /**
+     * Creates dynamically growing ByteBuffer upto maxSize for named file.
+     * @param path
+     * @param maxSize
+     * @return
+     * @throws IOException 
+     */
+    public static ByteBuffer create(Path path, int maxSize) throws IOException
+    {
+        try (FileChannel fc = FileChannel.open(path, READ, WRITE, CREATE))
+        {
+            return fc.map(FileChannel.MapMode.READ_WRITE, 0, maxSize);
+        }
+    }
 }
