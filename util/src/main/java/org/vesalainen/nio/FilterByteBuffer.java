@@ -495,7 +495,7 @@ public class FilterByteBuffer implements AutoCloseable
      * @throws Exception 
      */
     @Override
-    public void close() throws Exception
+    public void close() throws IOException
     {
         if (out != null)
         {
