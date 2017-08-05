@@ -51,7 +51,7 @@ public class FileRecord
     {
         cpio.save(bb);
         bb.putString(filename);
-        bb.alignInput(4);
+        bb.alignOutput(4);
         bb.put(content);
     }
 }

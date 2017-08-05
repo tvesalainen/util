@@ -37,7 +37,7 @@ public class CPIO
     int mode;
     int uid;
     int gid;
-    int nlink;
+    int nlink = 1;
     int mtime;
     int filesize;
     int devmajor;

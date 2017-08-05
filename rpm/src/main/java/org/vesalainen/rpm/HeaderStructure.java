@@ -85,7 +85,8 @@ class HeaderStructure
         RPM.align(bb, 8);
         bb.put(magic);
         bb.put(reserved);
-        bb.putInt(indexRecords.size());
+        nindex = indexRecords.size();
+        bb.putInt(nindex);
         int hsizeIndex = bb.position();
         bb.putInt(hsize);
         // extract storage
@@ -246,10 +247,6 @@ class HeaderStructure
         }
         List<T> getArray(IndexType it)
         {
-            if (type != it)
-            {
-                throw new IllegalArgumentException("tag data is "+type+" not "+it);
-            }
             return list;
         }
         T getSingle(IndexType it)
