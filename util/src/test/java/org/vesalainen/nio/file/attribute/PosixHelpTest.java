@@ -33,8 +33,8 @@ public class PosixHelpTest
     @Test
     public void test1()
     {
-        assertEquals("rwxr--r--", PosixHelp.toString(0744));
-        assertEquals("rwxrwxrwx", PosixHelp.toString(0777));
+        assertEquals("rwxr--r--", PosixHelp.toString((short)0744));
+        assertEquals("rwxrwxrwx", PosixHelp.toString((short)0777));
         assertEquals(0744, PosixHelp.getMode("rwxr--r--"));
         assertEquals(0777, PosixHelp.getMode("rwxrwxrwx"));
     }

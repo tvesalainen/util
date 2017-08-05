@@ -36,7 +36,7 @@ public final class PosixHelp
      * @param perms
      * @return 
      */
-    public static int getMode(String perms)
+    public static short getMode(String perms)
     {
         return getMode(PosixFilePermissions.fromString(perms));
     }
@@ -45,7 +45,7 @@ public final class PosixHelp
      * @param mode
      * @return 
      */
-    public static String toString(int mode)
+    public static String toString(short mode)
     {
         return PosixFilePermissions.toString(fromMode(mode));
     }
@@ -54,9 +54,9 @@ public final class PosixHelp
      * @param perms
      * @return 
      */
-    public static int getMode(Set<PosixFilePermission> perms)
+    public static short getMode(Set<PosixFilePermission> perms)
     {
-        int mode = 0;
+        short mode = 0;
         for (PosixFilePermission p : perms)
         {
             switch (p)
@@ -99,7 +99,7 @@ public final class PosixHelp
      * @param mode
      * @return 
      */
-    public static Set<PosixFilePermission> fromMode(int mode)
+    public static Set<PosixFilePermission> fromMode(short mode)
     {
         Set<PosixFilePermission> set = EnumSet.noneOf(PosixFilePermission.class);
         if ((mode & 1) != 0)
