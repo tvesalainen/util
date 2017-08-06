@@ -18,6 +18,7 @@ package org.vesalainen.rpm;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -242,10 +243,12 @@ public class Builder extends RPMBase
         fileRecords.add(new FileRecord(cpio, "TRAILER!!!", ByteBuffer.allocate(0)));
         // header
         ByteBuffer hdr = DynamicByteBuffer.create(Integer.MAX_VALUE);
-        header.saveLoaded(hdr);
+        hdr.order(ByteOrder.BIG_ENDIAN);
+        header.save(hdr);
         hdr.flip();
         // payload
         ByteBuffer payload = DynamicByteBuffer.create(Integer.MAX_VALUE);
+        payload.order(ByteOrder.BIG_ENDIAN);
         try (final FilterByteBuffer fbb = new FilterByteBuffer(payload, null, GZIPOutputStream::new))
         {
             for (FileRecord fr : fileRecords)
@@ -265,8 +268,9 @@ public class Builder extends RPMBase
         addInt32(HeaderTag.RPMSIGTAG_SIZE, hdr.limit() + payload.limit());
         checkRequiredTags();
         ByteBuffer rpm = DynamicByteBuffer.create(Integer.MAX_VALUE);
+        rpm.order(ByteOrder.BIG_ENDIAN);
         lead.save(rpm);
-        signature.saveLoaded(rpm);
+        signature.save(rpm);
         align(rpm, 8);
         rpm.put(hdr);
         rpm.put(payload);
@@ -434,7 +438,7 @@ public class Builder extends RPMBase
             addString(RPMTAG_FILEMD5S, HexUtil.toString(digest));
         
             addInt16(RPMTAG_FILEMODES, mode);
-            cpio.mode = mode;
+            cpio.mode = mode & 0xffff;
             addInt16(RPMTAG_FILERDEVS, rdev);
             addString(RPMTAG_FILELINKTOS, linkTo);
             addInt32(RPMTAG_FILEFLAGS, flag);
@@ -458,7 +462,7 @@ public class Builder extends RPMBase
             {
                 throw new IllegalArgumentException("directory missing "+target);
             }
-            dir  = target.substring(0, idx);
+            dir  = target.substring(0, idx+1);
             base = target.substring(idx+1);
         }
     }

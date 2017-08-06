@@ -21,19 +21,15 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static java.nio.file.StandardOpenOption.*;
 import java.security.NoSuchAlgorithmException;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.vesalainen.nio.FileUtil;
-import org.vesalainen.rpm.Builder;
 
 /**
  *
@@ -74,7 +70,7 @@ public class RPMTest
                 .addRequire("/usr/bin/java");
         
         builder.addFile(Paths.get("pom.xml"), "/etc/default/pom.xml")
-                .setMode("rwxr--r--")
+                .setMode("-rwxr--r--")
                 .build();
         
         builder.build(LOCAL);

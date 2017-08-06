@@ -99,8 +99,8 @@ public class RPM extends RPMBase implements AutoCloseable
         // lead
         lead.save(bb);
         
-        signature.saveLoaded(bb);
-        header.saveLoaded(bb);
+        signature.save(bb);
+        header.save(bb);
     }
     public void save(Path path) throws IOException
     {

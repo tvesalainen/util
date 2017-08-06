@@ -226,7 +226,7 @@ public class RPMBase
         int len = ind.size();
         for (int ii=0;ii<len;ii++)
         {
-            list.add(dir.get(ind.get(ii))+"/"+base.get(ii));
+            list.add(dir.get(ind.get(ii))+base.get(ii));
         }
         return list;
     }

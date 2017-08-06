@@ -80,7 +80,7 @@ class HeaderStructure
         indexRecords.add(indexRecord);
         indexMap.put(indexRecord.tag, indexRecord);
     }
-    void saveLoaded(ByteBuffer bb)
+    void save(ByteBuffer bb)
     {
         RPM.align(bb, 8);
         bb.put(magic);
