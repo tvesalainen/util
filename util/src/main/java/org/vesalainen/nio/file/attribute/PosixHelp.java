@@ -16,128 +16,286 @@
  */
 package org.vesalainen.nio.file.attribute;
 
-import java.nio.file.attribute.PosixFilePermission;
-import static java.nio.file.attribute.PosixFilePermission.*;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.EnumSet;
-import java.util.Set;
-
 /**
- * PosixHelp provides methods for manipulating posix permissions. Like in 
- * PosixPermission only 9 bits are supported.
+ * PosixHelp provides methods for manipulating posix permissions. Supported are:
+ * File types sl-bdcp, set-uid, set-gid and sticky bit.
  * @author tkv
- * @see java.nio.file.attribute.PosixFilePermission
- * @see java.nio.file.attribute.PosixFilePermissions
  */
 public final class PosixHelp
 {
     /**
-     * Returns mode from String. E.g. "rwxr--r--" = 0744.
+     * Returns mode from String. E.g. "-rwxr--r--" = 0100744.
      * @param perms
      * @return 
      */
-    public static short getMode(String perms)
+    public static short getMode(CharSequence perms)
     {
-        return getMode(PosixFilePermissions.fromString(perms));
-    }
-    /**
-     * Returns permission String. 0744 = "rwxr--r--".
-     * @param mode
-     * @return 
-     */
-    public static String toString(short mode)
-    {
-        return PosixFilePermissions.toString(fromMode(mode));
-    }
-    /**
-     * Returns mode.
-     * @param perms
-     * @return 
-     */
-    public static short getMode(Set<PosixFilePermission> perms)
-    {
-        short mode = 0;
-        for (PosixFilePermission p : perms)
+        if (perms.length() != 10)
         {
-            switch (p)
+            throw new IllegalArgumentException(perms+" not permission");
+        }
+        short mode = 0;
+        for (int ii=0;ii<10;ii++)
+        {
+            int shift = 9-ii;
+            switch (perms.charAt(ii))
             {
-                case OTHERS_EXECUTE:
-                    mode |= 1;
+                case 'c':   // character device
+                    if (ii != 0)
+                    {
+                        throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    mode |= 0020000;
                     break;
-                case OTHERS_WRITE:
-                    mode |= 2;
+                case 'b':   // block device
+                    if (ii != 0)
+                    {
+                        throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    mode |= 0060000;
                     break;
-                case OTHERS_READ:
-                    mode |= 4;
+                case 'p':   // FIFO (pipe)
+                    if (ii != 0)
+                    {
+                        throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    mode |= 0010000;
                     break;
-                case GROUP_EXECUTE:
-                    mode |= 8;
+                case 'l':
+                    if (ii != 0)
+                    {
+                        throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    mode |= 0120000;
                     break;
-                case GROUP_WRITE:
-                    mode |= 16;
+                case 'd':
+                    if (ii != 0)
+                    {
+                        throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    mode |= 0040000;
                     break;
-                case GROUP_READ:
-                    mode |= 32;
+                case '-':
+                    if (ii == 0)
+                    {
+                        mode |= 0100000;
+                    }
                     break;
-                case OWNER_EXECUTE:
-                    mode |= 64;
+                case 'r':
+                    switch (ii)
+                    {
+                        case 7:
+                        case 4:
+                        case 1:
+                            mode |= (1<<shift);
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
                     break;
-                case OWNER_WRITE:
-                    mode |= 128;
+                case 'w':
+                    switch (ii)
+                    {
+                        case 8:
+                        case 5:
+                        case 2:
+                            mode |= (1<<shift);
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
                     break;
-                case OWNER_READ:
-                    mode |= 256;
+                case 'x':
+                    switch (ii)
+                    {
+                        case 9:
+                        case 6:
+                        case 3:
+                            mode |= (1<<shift);
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
                     break;
-                default:
-                    throw new UnsupportedOperationException(p+" not supported");
+                case 's':
+                    switch (ii)
+                    {
+                        case 0:
+                            mode |= 0140000;
+                            break;
+                        case 6:
+                            mode |= 0002000;
+                            mode |= (1<<shift);
+                            break;
+                        case 3:
+                            mode |= 0004000;
+                            mode |= (1<<shift);
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    break;
+                case 't':
+                    switch (ii)
+                    {
+                        case 9:
+                            mode |= 0001001;
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    break;
+                case 'T':
+                    switch (ii)
+                    {
+                        case 9:
+                            mode |= 0001000;
+                            break;
+                        default:
+                            throw new IllegalArgumentException(perms+" illegal");
+                    }
+                    break;
             }
         }
         return mode;
     }
     /**
-     * Returns permissions from mode.
+     * Returns permission String. 0100744 = "-rwxr--r--".
      * @param mode
      * @return 
      */
-    public static Set<PosixFilePermission> fromMode(short mode)
+    public static String toString(short mode)
     {
-        Set<PosixFilePermission> set = EnumSet.noneOf(PosixFilePermission.class);
-        if ((mode & 1) != 0)
+        StringBuilder sb = new StringBuilder();
+        switch (mode & 0170000)
         {
-            set.add(OTHERS_EXECUTE);
+            case 0140000:
+                sb.append('s');
+                break;
+            case 0120000:
+                sb.append('l');
+                break;
+            case 0100000:
+                sb.append('-');
+                break;
+            case 0060000:
+                sb.append('b');
+                break;
+            case 0040000:
+                sb.append('d');
+                break;
+            case 0020000:
+                sb.append('c');
+                break;
+            case 0010000:
+                sb.append('p');
+                break;
+            default:
+                throw new IllegalArgumentException(mode+" illegal mode");
         }
-        if ((mode & 2) != 0)
+        // owner
+        if ((mode & 00400)==00400)
         {
-            set.add(OTHERS_WRITE);
+            sb.append('r');
         }
-        if ((mode & 4) != 0)
+        else
         {
-            set.add(OTHERS_READ);
+            sb.append('-');
         }
-        if ((mode & 8) != 0)
+        if ((mode & 00200)==00200)
         {
-            set.add(GROUP_EXECUTE);
+            sb.append('w');
         }
-        if ((mode & 16) != 0)
+        else
         {
-            set.add(GROUP_WRITE);
+            sb.append('-');
         }
-        if ((mode & 32) != 0)
+        if ((mode & 00100)==00100)
         {
-            set.add(GROUP_READ);
+            if ((mode & 0004000)==0004000)
+            {
+                sb.append('s');
+            }
+            else
+            {
+                sb.append('x');
+            }
         }
-        if ((mode & 64) != 0)
+        else
         {
-            set.add(OWNER_EXECUTE);
+            sb.append('-');
         }
-        if ((mode & 128) != 0)
+        // group
+        if ((mode & 0040)==0040)
         {
-            set.add(OWNER_WRITE);
+            sb.append('r');
         }
-        if ((mode & 256) != 0)
+        else
         {
-            set.add(OWNER_READ);
+            sb.append('-');
         }
-        return set;
+        if ((mode & 0020)==0020)
+        {
+            sb.append('w');
+        }
+        else
+        {
+            sb.append('-');
+        }
+        if ((mode & 0010)==0010)
+        {
+            if ((mode & 0002000)==0002000)
+            {
+                sb.append('s');
+            }
+            else
+            {
+                sb.append('x');
+            }
+        }
+        else
+        {
+            sb.append('-');
+        }
+        // others
+        if ((mode & 004)==004)
+        {
+            sb.append('r');
+        }
+        else
+        {
+            sb.append('-');
+        }
+        if ((mode & 002)==002)
+        {
+            sb.append('w');
+        }
+        else
+        {
+            sb.append('-');
+        }
+        if ((mode & 001)==001)
+        {
+            if ((mode & 0001000)==0001000)
+            {
+                sb.append('t');
+            }
+            else
+            {
+                sb.append('x');
+            }
+        }
+        else
+        {
+            if ((mode & 0001000)==0001000)
+            {
+                sb.append('T');
+            }
+            else
+            {
+                sb.append('-');
+            }
+        }
+        return sb.toString();
     }
 }

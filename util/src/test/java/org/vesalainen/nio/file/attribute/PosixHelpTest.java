@@ -31,12 +31,43 @@ public class PosixHelpTest
     }
 
     @Test
-    public void test1()
+    public void testPerm()
     {
-        assertEquals("rwxr--r--", PosixHelp.toString((short)0744));
-        assertEquals("rwxrwxrwx", PosixHelp.toString((short)0777));
-        assertEquals(0744, PosixHelp.getMode("rwxr--r--"));
-        assertEquals(0777, PosixHelp.getMode("rwxrwxrwx"));
+        assertEquals("-rwxr--r--", PosixHelp.toString((short)0100744));
+        assertEquals("-rwxrwxrwx", PosixHelp.toString((short)0100777));
+        assertEquals((short)0100744, PosixHelp.getMode("-rwxr--r--"));
+        assertEquals((short)0100777, PosixHelp.getMode("-rwxrwxrwx"));
     }
-    
+    @Test
+    public void testFileTypes()
+    {
+        assertEquals("srwxr--r--", PosixHelp.toString((short)0140744));
+        assertEquals("lrwxr--r--", PosixHelp.toString((short)0120744));
+        assertEquals("brwxr--r--", PosixHelp.toString((short)0060744));
+        assertEquals("drwxr--r--", PosixHelp.toString((short)0040744));
+        assertEquals("crwxr--r--", PosixHelp.toString((short)0020744));
+        assertEquals("prwxr--r--", PosixHelp.toString((short)0010744));
+        assertEquals((short)0140744, PosixHelp.getMode("srwxr--r--"));
+        assertEquals((short)0120744, PosixHelp.getMode("lrwxr--r--"));
+        assertEquals((short)0060744, PosixHelp.getMode("brwxr--r--"));
+        assertEquals((short)0040744, PosixHelp.getMode("drwxr--r--"));
+        assertEquals((short)0020744, PosixHelp.getMode("crwxr--r--"));
+        assertEquals((short)0010744, PosixHelp.getMode("prwxr--r--"));
+    }    
+    @Test
+    public void testSetXId()
+    {
+        assertEquals("-r-sr-xr-x", PosixHelp.toString((short)0104555));
+        assertEquals("-r-xr-sr-x", PosixHelp.toString((short)0102555));
+        assertEquals((short)0104555, PosixHelp.getMode("-r-sr-xr-x"));
+        assertEquals((short)0102555, PosixHelp.getMode("-r-xr-sr-x"));
+    }
+    @Test
+    public void testSticky()
+    {
+        assertEquals("-r-xr-xr-t", PosixHelp.toString((short)0101555));
+        assertEquals("-r-xr-xr-T", PosixHelp.toString((short)0101554));
+        assertEquals((short)0101555, PosixHelp.getMode("-r-xr-xr-t"));
+        assertEquals((short)0101554, PosixHelp.getMode("-r-xr-xr-T"));
+    }
 }
