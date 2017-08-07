@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.security.NoSuchAlgorithmException;
 import org.junit.After;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class RPMTest
     public void testBuild() throws IOException, NoSuchAlgorithmException
     {
         Builder builder = new Builder()
-                .setName("Test")
+                .setName("test")
                 .setVersion("1.0")
                 .setRelease("r1")
                 .setArch("noarch")
@@ -67,16 +68,22 @@ public class RPMTest
                 .setLicense("GPL")
                 .setOs("linux")
                 .setSummary("summary...")
-                .addRequire("/usr/bin/java");
+                .addRequire("lsb")
+                .addRequire("java7-runtime-headless")
+                .setPostIn("echo qwerty >/tmp/test\n")
+                ;
         
-        builder.addFile(Paths.get("pom.xml"), "/etc/default/pom.xml")
+        builder.addFile(Paths.get("pom.xml"), "/etc/default/foo/pom.xml")
                 .setMode("-rwxr--r--")
                 .build();
         
-        builder.build(LOCAL);
+        Path rpmFile = builder.build(LOCAL);
+        Path z = Paths.get("Z:");   // TODO REMOVE!!!!!!!!
+        Path target = z.resolve(rpmFile.getFileName());
+        Files.copy(rpmFile, target, REPLACE_EXISTING);
         try (   RPM rpm2 = new RPM())
         {
-            Path path = LOCAL.resolve("Test-1.0-r1.rpm");
+            Path path = LOCAL.resolve("lsb-test-1.0-r1.rpm");
             long size = Files.size(path);
             ByteBuffer bb = ByteBuffer.allocate((int) size);
             byte[] buf = Files.readAllBytes(path);

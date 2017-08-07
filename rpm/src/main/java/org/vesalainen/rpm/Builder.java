@@ -229,8 +229,14 @@ public class Builder extends RPMBase
     {
         return new FileBuilder(content, target);
     }
-
-    public void build(Path dir) throws IOException, NoSuchAlgorithmException
+    /**
+     * Creates RPM file in dir. Returns Path of created file.
+     * @param dir
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException 
+     */
+    public Path build(Path dir) throws IOException, NoSuchAlgorithmException
     {
         String name = getName();
         lead = new Lead(name);
@@ -275,11 +281,12 @@ public class Builder extends RPMBase
         rpm.put(hdr);
         rpm.put(payload);
         rpm.flip();
-        Path path = dir.resolve(name + ".rpm");
+        Path path = dir.resolve("lsb-" + name + ".rpm");
         try (final FileChannel fc = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))
         {
             fc.write(rpm);
         }
+        return path;
     }
 
     private String getName()
