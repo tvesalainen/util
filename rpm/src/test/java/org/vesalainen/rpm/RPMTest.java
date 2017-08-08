@@ -59,7 +59,7 @@ public class RPMTest
     public void testBuild() throws IOException, NoSuchAlgorithmException
     {
         Builder builder = new Builder()
-                .setName("test")
+                .setName("test2")
                 .setVersion("1.0")
                 .setRelease("r1")
                 .setArch("noarch")
@@ -73,7 +73,7 @@ public class RPMTest
                 .setPostIn("echo qwerty >/tmp/test\n")
                 ;
         
-        builder.addFile(Paths.get("pom.xml"), "/etc/default/foo/pom.xml")
+        builder.addFile(Paths.get("pom.xml"), "/opt/org.vesalainen/foo/pom.xml")
                 .setMode("-rwxr--r--")
                 .build();
         
@@ -83,7 +83,7 @@ public class RPMTest
         Files.copy(rpmFile, target, REPLACE_EXISTING);
         try (   RPM rpm2 = new RPM())
         {
-            Path path = LOCAL.resolve("lsb-test-1.0-r1.rpm");
+            Path path = LOCAL.resolve("lsb-test1-1.0-r1.rpm");
             long size = Files.size(path);
             ByteBuffer bb = ByteBuffer.allocate((int) size);
             byte[] buf = Files.readAllBytes(path);
