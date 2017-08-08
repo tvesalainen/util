@@ -42,7 +42,7 @@ public class PosixHelpTest
         assertTrue(Files.isRegularFile(reg));
         Path dir = PosixHelp.create(base.resolve("dir"), "drwxr--r--");
         assertTrue(Files.isDirectory(dir));
-        Path link = PosixHelp.createSymbolicLink(base.resolve("link"), reg, "lrwxr--r--");
+        Path link = PosixHelp.create(base.resolve("link"), reg, "lrwxr--r--");
         assertTrue(Files.isSymbolicLink(link));
     }
     @Test

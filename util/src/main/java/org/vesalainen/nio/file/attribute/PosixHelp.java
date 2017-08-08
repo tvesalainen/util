@@ -33,40 +33,61 @@ import static org.vesalainen.util.OperatingSystem.Linux;
  */
 public final class PosixHelp
 {
-    public static Path createSymbolicLink(Path path, Path target, String perms) throws IOException
-    {
-        if (perms.length() != 10)
-        {
-            throw new IllegalArgumentException(perms+" not permission");
-        }
-        FileAttribute<?>[] attrs = getFileAttributes(perms);
-        switch (perms.charAt(0))
-        {
-            case 'l':
-                return Files.createSymbolicLink(path, target, attrs);
-            default:
-                throw new IllegalArgumentException(perms+" illegal to this method");
-        }
-    }
+    /**
+     * Creates regular file or directory
+     * @param path
+     * @param perms E.g. -rwxr--r--
+     * @return
+     * @throws IOException 
+     */
     public static Path create(Path path, String perms) throws IOException
     {
+        return create(path, null, perms);
+    }
+    /**
+     * Creates regular file, directory or symbolic link
+     * @param path
+     * @param target Can be null
+     * @param perms E.g. -rwxr--r--
+     * @return
+     * @throws IOException 
+     */
+    public static Path create(Path path, Path target, String perms) throws IOException
+    {
         if (perms.length() != 10)
         {
-            throw new IllegalArgumentException(perms+" not permission");
+            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
         }
         FileAttribute<?>[] attrs = getFileAttributes(perms);
         switch (perms.charAt(0))
         {
             case '-':
                 return Files.createFile(path, attrs);
+            case 'l':
+                if (target == null)
+                {
+                    throw new IllegalArgumentException("no target");
+                }
+                return Files.createSymbolicLink(path, target, attrs);
             case 'd':
                 return Files.createDirectories(path, attrs);
             default:
                 throw new IllegalArgumentException(perms+" illegal to this method");
         }
     }
-    private static  FileAttribute<?>[] getFileAttributes(String perms)
+    /**
+     * Returns PosixFileAttributes for perms
+     * <p>
+     * If OS is not Linux returns empty array;
+     * @param perms E.g. -rwxr--r--
+     * @return 
+     */
+    public static FileAttribute<?>[] getFileAttributes(String perms)
     {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
+        }
         if (OperatingSystem.is(Linux))
         {
             Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
