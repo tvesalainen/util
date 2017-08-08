@@ -16,6 +16,16 @@
  */
 package org.vesalainen.nio.file.attribute;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
+import org.vesalainen.util.OperatingSystem;
+import static org.vesalainen.util.OperatingSystem.Linux;
+
 /**
  * PosixHelp provides methods for manipulating posix permissions. Supported are:
  * File types sl-bdcp, set-uid, set-gid and sticky bit.
@@ -23,6 +33,51 @@ package org.vesalainen.nio.file.attribute;
  */
 public final class PosixHelp
 {
+    public static Path createSymbolicLink(Path path, Path target, String perms) throws IOException
+    {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission");
+        }
+        FileAttribute<?>[] attrs = getFileAttributes(perms);
+        switch (perms.charAt(0))
+        {
+            case 'l':
+                return Files.createSymbolicLink(path, target, attrs);
+            default:
+                throw new IllegalArgumentException(perms+" illegal to this method");
+        }
+    }
+    public static Path create(Path path, String perms) throws IOException
+    {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission");
+        }
+        FileAttribute<?>[] attrs = getFileAttributes(perms);
+        switch (perms.charAt(0))
+        {
+            case '-':
+                return Files.createFile(path, attrs);
+            case 'd':
+                return Files.createDirectories(path, attrs);
+            default:
+                throw new IllegalArgumentException(perms+" illegal to this method");
+        }
+    }
+    private static  FileAttribute<?>[] getFileAttributes(String perms)
+    {
+        if (OperatingSystem.is(Linux))
+        {
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
+            FileAttribute<Set<PosixFilePermission>> attrs = PosixFilePermissions.asFileAttribute(posixPerms);
+            return new FileAttribute<?>[]{attrs};
+        }
+        else
+        {
+            return new FileAttribute<?>[]{};
+        }
+    }
     /**
      * Returns mode from String. E.g. "-rwxr--r--" = 0100744.
      * @param perms

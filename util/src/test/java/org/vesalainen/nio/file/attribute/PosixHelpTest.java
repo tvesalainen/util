@@ -16,6 +16,10 @@
  */
 package org.vesalainen.nio.file.attribute;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,6 +34,17 @@ public class PosixHelpTest
     {
     }
 
+    //@Test // this need to be run in linux
+    public void testCreate() throws IOException
+    {
+        Path base = Paths.get("Z:").toAbsolutePath();
+        Path reg = PosixHelp.create(base.resolve("reg"), "-rwxr--r--");
+        assertTrue(Files.isRegularFile(reg));
+        Path dir = PosixHelp.create(base.resolve("dir"), "drwxr--r--");
+        assertTrue(Files.isDirectory(dir));
+        Path link = PosixHelp.createSymbolicLink(base.resolve("link"), reg, "lrwxr--r--");
+        assertTrue(Files.isSymbolicLink(link));
+    }
     @Test
     public void testPerm()
     {
