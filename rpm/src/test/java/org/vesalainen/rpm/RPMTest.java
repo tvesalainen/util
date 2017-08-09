@@ -58,7 +58,7 @@ public class RPMTest
     @Test
     public void testBuild() throws IOException, NoSuchAlgorithmException
     {
-        Builder builder = new Builder()
+        RPMBuilder builder = new RPMBuilder()
                 .setName("test2")
                 .setVersion("1.0")
                 .setRelease("r1")

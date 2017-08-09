@@ -28,40 +28,23 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import org.vesalainen.nio.DynamicByteBuffer;
 import org.vesalainen.nio.FilterByteBuffer;
 import org.vesalainen.nio.file.attribute.PosixHelp;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_BASENAMES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_DIRINDEXES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_DIRNAMES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEDEVICES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEFLAGS;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEGROUPNAME;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEINODES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILELANGS;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILELINKTOS;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEMD5S;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEMODES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEMTIMES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILERDEVS;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILESIZES;
-import static org.vesalainen.rpm.HeaderTag.RPMTAG_FILEUSERNAME;
+import static org.vesalainen.rpm.HeaderTag.*;
 import org.vesalainen.util.HexUtil;
 
 /**
  *
  * @author tkv
  */
-public class Builder extends RPMBase
+public class RPMBuilder extends RPMBase
 {
     
-    public Builder()
+    public RPMBuilder()
     {
         signature = new HeaderStructure();
         header = new HeaderStructure();
@@ -70,67 +53,67 @@ public class Builder extends RPMBase
         addString(HeaderTag.RPMTAG_PAYLOADFLAGS, "9");
     }
 
-    public Builder setName(String name)
+    public RPMBuilder setName(String name)
     {
         addString(HeaderTag.RPMTAG_NAME, name);
         return this;
     }
 
-    public Builder setVersion(String version)
+    public RPMBuilder setVersion(String version)
     {
         addString(HeaderTag.RPMTAG_VERSION, version);
         return this;
     }
 
-    public Builder setRelease(String v)
+    public RPMBuilder setRelease(String v)
     {
         addString(HeaderTag.RPMTAG_RELEASE, v);
         return this;
     }
 
-    public Builder setSummary(String v)
+    public RPMBuilder setSummary(String v)
     {
         addString(HeaderTag.RPMTAG_SUMMARY, v);
         return this;
     }
 
-    public Builder setDescription(String v)
+    public RPMBuilder setDescription(String v)
     {
         addString(HeaderTag.RPMTAG_DESCRIPTION, v);
         return this;
     }
 
-    private Builder setSize(int v)
+    private RPMBuilder setSize(int v)
     {
         addInt32(HeaderTag.RPMTAG_SIZE, v);
         return this;
     }
 
-    public Builder setLicense(String v)
+    public RPMBuilder setLicense(String v)
     {
         addString(HeaderTag.RPMTAG_LICENSE, v);
         return this;
     }
 
-    public Builder setGroup(String v)
+    public RPMBuilder setGroup(String v)
     {
         addString(HeaderTag.RPMTAG_GROUP, v);
         return this;
     }
 
-    public Builder setOs(String v)
+    public RPMBuilder setOs(String v)
     {
         addString(HeaderTag.RPMTAG_OS, v);
         return this;
     }
 
-    public Builder setArch(String v)
+    public RPMBuilder setArch(String v)
     {
         addString(HeaderTag.RPMTAG_ARCH, v);
         return this;
     }
 
-    public Builder setPreIn(String v)
+    public RPMBuilder setPreIn(String v)
     {
         addString(HeaderTag.RPMTAG_PREIN, v);
         addString(HeaderTag.RPMTAG_PREINPROG, "/bin/sh");
@@ -138,7 +121,7 @@ public class Builder extends RPMBase
         return this;
     }
 
-    public Builder setPostIn(String v)
+    public RPMBuilder setPostIn(String v)
     {
         addString(HeaderTag.RPMTAG_POSTIN, v);
         addString(HeaderTag.RPMTAG_POSTINPROG, "/bin/sh");
@@ -146,7 +129,7 @@ public class Builder extends RPMBase
         return this;
     }
 
-    public Builder setPreUn(String v)
+    public RPMBuilder setPreUn(String v)
     {
         addString(HeaderTag.RPMTAG_PREUN, v);
         addString(HeaderTag.RPMTAG_PREUNPROG, "/bin/sh");
@@ -154,7 +137,7 @@ public class Builder extends RPMBase
         return this;
     }
 
-    public Builder setPostUn(String v)
+    public RPMBuilder setPostUn(String v)
     {
         addString(HeaderTag.RPMTAG_POSTUN, v);
         addString(HeaderTag.RPMTAG_POSTUNPROG, "/bin/sh");
@@ -170,12 +153,12 @@ public class Builder extends RPMBase
         }
     }
 
-    public Builder addProvide(String name)
+    public RPMBuilder addProvide(String name)
     {
         return addProvide(name, "");
     }
 
-    public Builder addProvide(String name, String version, int... dependency)
+    public RPMBuilder addProvide(String name, String version, int... dependency)
     {
         addString(HeaderTag.RPMTAG_PROVIDENAME, name);
         addString(HeaderTag.RPMTAG_PROVIDEVERSION, version);
@@ -184,12 +167,12 @@ public class Builder extends RPMBase
         return this;
     }
 
-    public Builder addRequire(String name)
+    public RPMBuilder addRequire(String name)
     {
         return addRequire(name, "");
     }
 
-    public Builder addRequire(String name, String version, int... dependency)
+    public RPMBuilder addRequire(String name, String version, int... dependency)
     {
         addString(HeaderTag.RPMTAG_REQUIRENAME, name);
         addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
@@ -198,12 +181,12 @@ public class Builder extends RPMBase
         return this;
     }
 
-    public Builder addConflict(String name)
+    public RPMBuilder addConflict(String name)
     {
         return addConflict(name, "");
     }
 
-    public Builder addConflict(String name, String version, int... dependency)
+    public RPMBuilder addConflict(String name, String version, int... dependency)
     {
         addString(HeaderTag.RPMTAG_CONFLICTNAME, name);
         addString(HeaderTag.RPMTAG_CONFLICTVERSION, version);

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.rpm;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -193,25 +192,25 @@ public class RPMBase
         return -1;
     }
 
-    protected int addInt16(HeaderTag tag, short value)
+    protected final int addInt16(HeaderTag tag, short value)
     {
         HeaderStructure.IndexRecord<Short> indexRecord = getOrCreateIndexRecord(tag);
         return indexRecord.addItem(value);
     }
 
-    protected int addInt32(HeaderTag tag, int value)
+    protected final int addInt32(HeaderTag tag, int value)
     {
         HeaderStructure.IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
         return indexRecord.addItem(value);
     }
 
-    protected int addString(HeaderTag tag, String value)
+    protected final int addString(HeaderTag tag, String value)
     {
         HeaderStructure.IndexRecord<String> indexRecord = getOrCreateIndexRecord(tag);
         return indexRecord.addItem(value);
     }
 
-    protected void setBin(HeaderTag tag, byte[] bin)
+    protected final void setBin(HeaderTag tag, byte[] bin)
     {
         HeaderStructure.IndexRecord indexRecord = getOrCreateIndexRecord(tag);
         indexRecord.setBin(bin);

@@ -33,8 +33,9 @@ import static org.vesalainen.rpm.HeaderTag.*;
 import org.vesalainen.util.HexUtil;
 
 /**
- *
+ * RPM is a class for reading and creating of LSB RPM file.
  * @author tkv
+ * @see <a href="http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/book1.html">Linux Standard Base Core Specification 4.0</a>
  */
 public class RPM extends RPMBase implements AutoCloseable
 {
