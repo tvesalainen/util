@@ -23,13 +23,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.FileVisitResult;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
@@ -198,6 +198,21 @@ public class FileUtil
         else
         {
             return new BufferedInputStream(is);
+        }
+    }
+    /**
+     * Copies class resource to path
+     * @param source As in getResourceAsStream
+     * @param target Target file
+     * @param cls A class for finding class loader.
+     * @throws IOException 
+     * @see java.lang.Class#getResourceAsStream(java.lang.String) 
+     */
+    public static final void copyResource(String source, Path target, Class<?> cls) throws IOException
+    {
+        try (InputStream is = cls.getResourceAsStream(source))
+        {
+            Files.copy(is, target, REPLACE_EXISTING);
         }
     }
 }
