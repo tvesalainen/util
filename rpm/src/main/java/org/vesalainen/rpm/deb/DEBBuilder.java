@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import org.vesalainen.nio.FileUtil;
+import org.vesalainen.nio.file.attribute.PosixHelp;
 
 /**
  * DEBBuilder class supports building structure for building debian packet.
@@ -34,6 +35,8 @@ import org.vesalainen.nio.FileUtil;
  */
 public class DEBBuilder
 {
+    public static final String STANDARDS_VERSION = "4.0.1.0";
+    public static final String SOURCE_FORMAT = "1.0\n";
     private static final String INTERPRETER = "/bin/sh";
     private Path dir;
     private String name;
@@ -46,20 +49,32 @@ public class DEBBuilder
     private int compatibility = 9;
     private Set<MaintainerScript> maintainerScripts = new HashSet<>();
     private ChangeLog changeLog;
+    private Conffiles conffiles;
+    private Docs docs;
 
-    public DEBBuilder(Path dir, String name, String version, String release, String maintainer)
+    public DEBBuilder(Path base, String name, String version, String release, String maintainer)
     {
-        this.dir = dir;
+        this.dir = base.resolve(name+"-"+version);
         this.name = name;
         this.version = version;
         this.release = release;
         this.maintainer = maintainer;
         this.debian = dir.resolve("debian");
         control = new Control(debian, name);
+        control.setStandardsVersion(STANDARDS_VERSION);
         copyright = new Copyright(debian);
         changeLog = new ChangeLog(debian, name, version, release, maintainer);
+        conffiles = new Conffiles(debian);
+        docs = new Docs(debian);
     }
-
+    public void addDocumentationFile(String filepath)
+    {
+        docs.addFile(filepath);
+    }
+    public void addConfigurationFile(String filepath)
+    {
+        conffiles.addFile(filepath);
+    }
     public void setPostInst(String script)
     {
         setPostInst(script, INTERPRETER);
@@ -113,7 +128,7 @@ public class DEBBuilder
         control.save();
 
         changeLog.save();
-        
+        // compat
         Path compat = debian.resolve("compat");
         try (BufferedWriter bf = Files.newBufferedWriter(compat, UTF_8))
         {
@@ -123,7 +138,19 @@ public class DEBBuilder
         {
             ms.save();
         }
-        
-        FileUtil.copyResource("/rules", debian.resolve("rules"), DEBBuilder.class);
+        // rules
+        Path rules = debian.resolve("rules");
+        FileUtil.copyResource("/rules", rules, DEBBuilder.class);
+        PosixHelp.setPermission(rules, "-rwxr-xr-x");
+        // source/format
+        Path source = debian.resolve("source");
+        Files.createDirectories(source);
+        Path format = source.resolve("format");
+        try (BufferedWriter bf = Files.newBufferedWriter(format, UTF_8))
+        {
+            bf.append(SOURCE_FORMAT);
+        }
+        conffiles.save();
+        docs.save();
     }
 }

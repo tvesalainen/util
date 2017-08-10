@@ -86,11 +86,11 @@ public class ChangeLog
             bf.append('\n');
             for (String change : changeDetails)
             {
-                bf.append(" * ");
+                bf.append("  * ");
                 bf.append(change);
-                bf.append("\n\n");
+                bf.append(" \n\n");
             }
-            bf.append(String.format("-- %s  %s\n\n", maintainer, ZonedDateTime.now().format(RFC_1123_DATE_TIME)));
+            bf.append(String.format(" -- %s  %s\n\n", maintainer, ZonedDateTime.now().format(RFC_1123_DATE_TIME)));
         }
         
     }

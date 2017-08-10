@@ -16,42 +16,34 @@
  */
 package org.vesalainen.rpm.deb;
 
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.Test;
-import org.junit.Before;
-import org.vesalainen.nio.FileUtil;
+import java.util.ArrayList;
+import java.util.List;
+import static org.vesalainen.rpm.deb.DEBBuilder.SOURCE_FORMAT;
 
 /**
  *
  * @author tkv
  */
-public class DEBBuilderTest
+public class Conffiles extends FilesBase
 {
-    static final Path DIR = new File("z:\\").toPath();
-    
-    public DEBBuilderTest()
-    {
-    }
 
-    @Test
-    public void testBuild() throws IOException
+    public Conffiles(Path debian)
     {
-        DEBBuilder builder = new DEBBuilder(DIR, "deb-test", "0.1", "r0", "Timo <timo@mail.net>");
-        builder.control()
-                .setMaintainer("timo")
-                .setSection("java")
-                .setPriority("optional")
-                .setPackage("test")
-                .setArchitecture("all")
-                .addDepends("lsb", "")
-                .setDescription("blaa blaa");
-        builder.copyright()
-                .setCopyright("2017 Timo Vesalainen")
-                .setLicense("GPL-3");
-        builder.build();
+        super(debian, "conffiles");
+    }
+    
+    @Override
+    public void addFile(String filepath)
+    {
+        if (!filepath.startsWith("/etc"))
+        {
+            super.addFile(filepath);
+        }
     }
     
 }

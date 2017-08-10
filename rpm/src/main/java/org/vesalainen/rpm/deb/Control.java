@@ -56,7 +56,7 @@ public class Control extends ControlBase
         general.add(Priority, v);
         return this;
     }
-    public Control setStandardsVersion(String v)
+    Control setStandardsVersion(String v)
     {
         general.add(Standards_Version, v);
         return this;
