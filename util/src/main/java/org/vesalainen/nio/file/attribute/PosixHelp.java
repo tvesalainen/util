@@ -17,12 +17,17 @@
 package org.vesalainen.nio.file.attribute;
 
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Set;
+import org.vesalainen.util.OSProcess;
 import org.vesalainen.util.OperatingSystem;
 import static org.vesalainen.util.OperatingSystem.Linux;
 
@@ -33,6 +38,32 @@ import static org.vesalainen.util.OperatingSystem.Linux;
  */
 public final class PosixHelp
 {
+    public static final void setGroup(String name, Path... files) throws IOException, InterruptedException
+    {
+        if (OperatingSystem.is(Linux))
+        {
+            for (Path file : files)
+            {
+                FileSystem fs = file.getFileSystem();
+                UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
+                UserPrincipal group = upls.lookupPrincipalByName(name);
+                OSProcess.call("chgrp", group.getName(), file.toString());
+            }
+        }
+    }
+    public static final void setOwner(String name, Path... files) throws IOException
+    {
+        if (OperatingSystem.is(Linux))
+        {
+            for (Path file : files)
+            {
+                FileSystem fs = file.getFileSystem();
+                UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
+                UserPrincipal user = upls.lookupPrincipalByName(name);
+                Files.setOwner(file, user);
+            }
+        }
+    }
     /**
      * Set posix permissions if os is linux.
      * @param path
