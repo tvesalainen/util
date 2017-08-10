@@ -34,13 +34,53 @@ import static org.vesalainen.util.OperatingSystem.Linux;
 public final class PosixHelp
 {
     /**
+     * Set posix permissions if os is linux.
+     * @param path
+     * @param perms E.g. -rwxr--r--
+     */
+    public static final void setPermission(Path path, String perms) throws IOException
+    {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
+        }
+        switch (perms.charAt(0))
+        {
+            case '-':
+                if (!Files.isRegularFile(path))
+                {
+                    throw new IllegalArgumentException("file is not regular file");
+                }
+                break;
+            case 'd':
+                if (!Files.isDirectory(path))
+                {
+                    throw new IllegalArgumentException("file is not directory");
+                }
+                break;
+            case 'l':
+                if (!Files.isSymbolicLink(path))
+                {
+                    throw new IllegalArgumentException("file is not symbolic link");
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException(perms+" not supported");
+        }
+        if (OperatingSystem.is(Linux))
+        {
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
+            Files.setPosixFilePermissions(path, posixPerms);
+        }
+    }
+    /**
      * Creates regular file or directory
      * @param path
      * @param perms E.g. -rwxr--r--
      * @return
      * @throws IOException 
      */
-    public static Path create(Path path, String perms) throws IOException
+    public static final Path create(Path path, String perms) throws IOException
     {
         return create(path, null, perms);
     }
@@ -52,12 +92,8 @@ public final class PosixHelp
      * @return
      * @throws IOException 
      */
-    public static Path create(Path path, Path target, String perms) throws IOException
+    public static final Path create(Path path, Path target, String perms) throws IOException
     {
-        if (perms.length() != 10)
-        {
-            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
-        }
         FileAttribute<?>[] attrs = getFileAttributes(perms);
         switch (perms.charAt(0))
         {
@@ -82,7 +118,7 @@ public final class PosixHelp
      * @param perms E.g. -rwxr--r--
      * @return 
      */
-    public static FileAttribute<?>[] getFileAttributes(String perms)
+    public static final FileAttribute<?>[] getFileAttributes(String perms)
     {
         if (perms.length() != 10)
         {
@@ -104,7 +140,7 @@ public final class PosixHelp
      * @param perms
      * @return 
      */
-    public static short getMode(CharSequence perms)
+    public static final short getMode(CharSequence perms)
     {
         if (perms.length() != 10)
         {
@@ -240,7 +276,7 @@ public final class PosixHelp
      * @param mode
      * @return 
      */
-    public static String toString(short mode)
+    public static final String toString(short mode)
     {
         StringBuilder sb = new StringBuilder();
         switch (mode & 0170000)
