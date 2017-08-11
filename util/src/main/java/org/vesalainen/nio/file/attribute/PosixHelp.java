@@ -18,7 +18,6 @@ package org.vesalainen.nio.file.attribute;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -83,8 +82,24 @@ public final class PosixHelp
      * Set posix permissions if os is linux.
      * @param path
      * @param perms E.g. -rwxr--r--
+     * @throws java.io.IOException
      */
     public static final void setPermission(Path path, String perms) throws IOException
+    {
+        checkFileType(path, perms);
+        if (OperatingSystem.is(Linux))
+        {
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
+            Files.setPosixFilePermissions(path, posixPerms);
+        }
+    }
+    /**
+     * Throws IllegalArgumentException if perms length != 0 or files type doesn't
+     * match with permission.
+     * @param path
+     * @param perms 
+     */
+    public static final void checkFileType(Path path, String perms)
     {
         if (perms.length() != 10)
         {
@@ -112,11 +127,6 @@ public final class PosixHelp
                 break;
             default:
                 throw new UnsupportedOperationException(perms+" not supported");
-        }
-        if (OperatingSystem.is(Linux))
-        {
-            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
-            Files.setPosixFilePermissions(path, posixPerms);
         }
     }
     /**
