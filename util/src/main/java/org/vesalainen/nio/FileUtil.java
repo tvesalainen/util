@@ -30,7 +30,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -213,6 +216,34 @@ public class FileUtil
         try (InputStream is = cls.getResourceAsStream(source))
         {
             Files.copy(is, target, REPLACE_EXISTING);
+        }
+    }
+    public static final FileTime getLastModifiedTime(Path file) throws IOException
+    {
+        return (FileTime) Files.getAttribute(file, "lastModifiedTime");
+    }
+    public static final FileTime getLastAccessTime(Path file) throws IOException
+    {
+        return (FileTime) Files.getAttribute(file, "lastAccessTime");
+    }
+    public static final FileTime getCreationTime(Path file) throws IOException
+    {
+        return (FileTime) Files.getAttribute(file, "creationTime");
+    }
+    /**
+     * Set files times. Non null times are changed.
+     * @param lastModifiedTime Can be null
+     * @param lastAccessTime Can be null
+     * @param createTime Can be null
+     * @param files
+     * @throws IOException 
+     */
+    public static final void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime, Path... files) throws IOException
+    {
+        for (Path file : files)
+        {
+            BasicFileAttributeView view = Files.getFileAttributeView(file, BasicFileAttributeView.class);
+            view.setTimes(lastModifiedTime, lastAccessTime, createTime);
         }
     }
 }

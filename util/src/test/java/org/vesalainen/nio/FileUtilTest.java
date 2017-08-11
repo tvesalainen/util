@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -36,6 +39,17 @@ public class FileUtilTest
     {
     }
 
+    @Test
+    public void testTimes() throws IOException
+    {
+        Path cur = Paths.get(".");
+        FileTime creationTime = FileUtil.getCreationTime(cur);
+        assertNotNull(creationTime);
+        FileTime lastAccessTime = FileUtil.getLastAccessTime(cur);
+        assertNotNull(lastAccessTime);
+        FileTime lastModified = FileUtil.getLastModifiedTime(cur);
+        assertNotNull(lastModified);
+    }
     @Test
     public void testAsciiLines() throws IOException
     {

@@ -31,7 +31,7 @@ public class OSProcessTest
     {
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException, InterruptedException
     {
         OSProcess.call("netstat  -an");

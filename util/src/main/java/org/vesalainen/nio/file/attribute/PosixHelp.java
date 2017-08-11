@@ -21,6 +21,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
@@ -38,6 +41,95 @@ import static org.vesalainen.util.OperatingSystem.Linux;
 public final class PosixHelp
 {
     /**
+     * Return linux file owner name. Or ""
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final String getOwner(Path file) throws IOException
+    {
+        if (OperatingSystem.is(Linux))
+        {
+            PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
+            UserPrincipal owner = view.getOwner();
+            return owner.getName();
+        }
+        else
+        {
+            return "";
+        }
+    }
+    /**
+     * Return linux file group name. Or ""
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final String getGroup(Path file) throws IOException
+    {
+        if (OperatingSystem.is(Linux))
+        {
+            PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
+            PosixFileAttributes attrs = view.readAttributes();
+            GroupPrincipal group = attrs.group();
+            return group.getName();
+        }
+        else
+        {
+            return "";
+        }
+    }
+    /**
+     * Set permissions to path
+     * @param perms
+     * @param files
+     * @throws IOException 
+     */
+    public static final void setMode(String perms, Path... files) throws IOException
+    {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
+        }
+        if (OperatingSystem.is(Linux))
+        {
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
+            for (Path file : files)
+            {
+                checkFileType(file, perms);
+                Files.setPosixFilePermissions(file, posixPerms);
+            }
+        }
+    }
+    /**
+     * Returns  mode string for path. Real mode for linux. Others guess work.
+     * @param path
+     * @return
+     * @throws IOException 
+     */
+    public static final String getModeString(Path path) throws IOException
+    {
+        char letter = getFileTypeLetter(path);
+        if (OperatingSystem.is(Linux))
+        {
+            Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
+            return letter+PosixFilePermissions.toString(perms);
+        }
+        else
+        {
+            switch (letter)
+            {
+                case '-':
+                    return "-rw-r--r--";
+                case 'd':
+                    return "drwxr-xr-x";
+                case 'l':
+                    return "drw-r--r--";
+            }
+        }
+        throw new UnsupportedOperationException("should not happen");
+    }
+    /**
      * Change group of given files. Works only in linux
      * @param name
      * @param files
@@ -45,7 +137,7 @@ public final class PosixHelp
      * @throws InterruptedException 
      * @see org.vesalainen.util.OSProcess#call(java.lang.String...) 
      */
-    public static final void setGroup(String name, Path... files) throws IOException, InterruptedException
+    public static final void setGroup(String name, Path... files) throws IOException
     {
         if (OperatingSystem.is(Linux))
         {
@@ -53,8 +145,9 @@ public final class PosixHelp
             {
                 FileSystem fs = file.getFileSystem();
                 UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
-                UserPrincipal group = upls.lookupPrincipalByName(name);
-                OSProcess.call("chgrp", group.getName(), file.toString());
+                GroupPrincipal group = upls.lookupPrincipalByGroupName(name);
+                PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
+                view.setGroup(group);
             }
         }
     }
@@ -128,6 +221,27 @@ public final class PosixHelp
             default:
                 throw new UnsupportedOperationException(perms+" not supported");
         }
+    }
+    /**
+     * Returns '-' for regular file, 'd' for directory or 'l' for symbolic link.
+     * @param path
+     * @return 
+     */
+    public static final char getFileTypeLetter(Path path)
+    {
+        if (Files.isRegularFile(path))
+        {
+            return '-';
+        }
+        if (Files.isDirectory(path))
+        {
+            return 'd';
+        }
+        if (Files.isSymbolicLink(path))
+        {
+            return 'l';
+        }
+        throw new IllegalArgumentException(path+" is either regular file, directory or symbolic link");
     }
     /**
      * Creates regular file or directory

@@ -34,6 +34,11 @@ public class PosixHelpTest
     {
     }
 
+    @Test
+    public void testGetOwner() throws IOException
+    {
+        String owner = PosixHelp.getOwner(Paths.get("."));
+    }
     //@Test // this need to be run in linux
     public void testCreate() throws IOException
     {
