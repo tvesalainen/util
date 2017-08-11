@@ -38,6 +38,14 @@ import static org.vesalainen.util.OperatingSystem.Linux;
  */
 public final class PosixHelp
 {
+    /**
+     * Change group of given files. Works only in linux
+     * @param name
+     * @param files
+     * @throws IOException
+     * @throws InterruptedException 
+     * @see org.vesalainen.util.OSProcess#call(java.lang.String...) 
+     */
     public static final void setGroup(String name, Path... files) throws IOException, InterruptedException
     {
         if (OperatingSystem.is(Linux))
@@ -51,6 +59,13 @@ public final class PosixHelp
             }
         }
     }
+    /**
+     * Change user of given files. Works only in linux.
+     * @param name
+     * @param files
+     * @throws IOException 
+     * @see java.nio.file.Files#setOwner(java.nio.file.Path, java.nio.file.attribute.UserPrincipal) 
+     */
     public static final void setOwner(String name, Path... files) throws IOException
     {
         if (OperatingSystem.is(Linux))
