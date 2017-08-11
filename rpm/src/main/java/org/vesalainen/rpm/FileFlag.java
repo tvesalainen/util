@@ -92,5 +92,16 @@ public enum FileFlag
         }
         return flag;
     }
+    public static boolean isSet(FileFlag flag, FileFlag... flags)
+    {
+        for (FileFlag f : flags)
+        {
+            if (f == flag)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
     

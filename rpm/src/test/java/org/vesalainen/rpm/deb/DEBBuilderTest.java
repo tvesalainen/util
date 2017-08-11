@@ -20,9 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.Test;
 import org.junit.Before;
 import org.vesalainen.nio.FileUtil;
+import static org.vesalainen.rpm.FileFlag.DOC;
 
 /**
  *
@@ -51,6 +53,9 @@ public class DEBBuilderTest
         builder.copyright()
                 .setCopyright("2017 Timo Vesalainen")
                 .setLicense("GPL-3");
+        builder.addFile("/opt/app/rules", Paths.get("src", "main", "resources", "rules"))
+                .setFlags(DOC)
+                .build();
         builder.build();
     }
     

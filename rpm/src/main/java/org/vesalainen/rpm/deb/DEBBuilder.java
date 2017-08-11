@@ -18,13 +18,21 @@ package org.vesalainen.rpm.deb;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import static java.nio.channels.FileChannel.MapMode.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.nio.file.attribute.PosixHelp;
+import org.vesalainen.rpm.FileFlag;
+import static org.vesalainen.rpm.FileFlag.*;
 
 /**
  * DEBBuilder class supports building structure for building debian packet.
@@ -51,6 +59,7 @@ public class DEBBuilder
     private ChangeLog changeLog;
     private Conffiles conffiles;
     private Docs docs;
+    private FileTime now = FileTime.from(Instant.now());
 
     public DEBBuilder(Path base, String name, String version, String release, String maintainer)
     {
@@ -152,5 +161,111 @@ public class DEBBuilder
         }
         conffiles.save();
         docs.save();
+    }
+    
+    public FileBuilder addFile(String target, Path file) throws IOException
+    {
+        return new FileBuilder(target, file);
+    }
+    public FileBuilder addFile(String target, ByteBuffer content) throws IOException
+    {
+        return new FileBuilder(target, content);
+    }
+    public class FileBuilder
+    {
+        private String target;
+        private ByteBuffer content; 
+        private String user = "root";
+        private String group = "root";
+        private short mode;
+        private FileTime creationTime = now;
+        private FileTime lastAccessTime = now;
+        private FileTime lastModifiedTime = now;
+        private FileFlag[] flags = new FileFlag[]{};
+
+        public FileBuilder(String target, Path file) throws IOException
+        {
+            this.target = target.startsWith("/") ? target.substring(1) : target;
+            try (FileChannel fc = FileChannel.open(file, READ))
+            {
+                this.content = fc.map(READ_ONLY, 0, Files.size(file));
+            }
+            this.user = PosixHelp.getOwner(file);
+            this.group = PosixHelp.getGroup(file);
+            this.mode = PosixHelp.getMode(PosixHelp.getModeString(file));
+            this.creationTime = FileUtil.getCreationTime(file);
+            this.lastAccessTime = FileUtil.getLastAccessTime(file);
+            this.lastModifiedTime = FileUtil.getLastModifiedTime(file);
+        }
+
+        public FileBuilder(String target, ByteBuffer content)
+        {
+            this.target = target.startsWith("/") ? target.substring(1) : target;
+            this.content = content;
+        }
+
+        public FileBuilder setUser(String user)
+        {
+            this.user = user;
+            return this;
+        }
+
+        public FileBuilder setGroup(String group)
+        {
+            this.group = group;
+            return this;
+        }
+
+        public FileBuilder setMode(String mode)
+        {
+            this.mode = PosixHelp.getMode(mode);    // to make early check
+            return this;
+        }
+
+        public FileBuilder setCreationTime(FileTime creationTime)
+        {
+            this.creationTime = creationTime;
+            return this;
+        }
+
+        public FileBuilder setLastAccessTime(FileTime lastAccessTime)
+        {
+            this.lastAccessTime = lastAccessTime;
+            return this;
+        }
+
+        public FileBuilder setLastModifiedTime(FileTime lastModifiedTime)
+        {
+            this.lastModifiedTime = lastModifiedTime;
+            return this;
+        }
+
+        public FileBuilder setFlags(FileFlag... flags)
+        {
+            this.flags = flags;
+            return this;
+        }
+        
+        public void build() throws IOException
+        {
+            if (FileFlag.isSet(CONFIG, flags))
+            {
+                addConfigurationFile(target);
+            }
+            if (FileFlag.isSet(DOC, flags))
+            {
+                addDocumentationFile(target);
+            }
+            Path path = dir.resolve(target);
+            Files.createDirectories(path.getParent());
+            try (FileChannel fc = FileChannel.open(path, WRITE, CREATE))
+            {
+                fc.write(content);
+            }
+            PosixHelp.setOwner(user, path);
+            PosixHelp.setGroup(group, path);
+            PosixHelp.setPermission(path, PosixHelp.toString(mode));
+            FileUtil.setTimes(lastModifiedTime, lastAccessTime, creationTime, path);
+        }
     }
 }
