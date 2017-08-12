@@ -40,6 +40,42 @@ import static org.vesalainen.util.OperatingSystem.Linux;
  */
 public final class PosixHelp
 {
+    public static final boolean isRegularFile(String perms)
+    {
+        return isFileType(perms, '-');
+    }
+    public static final boolean isRegularFile(short mode)
+    {
+        return isFileType(mode, '-');
+    }
+    public static final boolean isDirectory(String perms)
+    {
+        return isFileType(perms, 'd');
+    }
+    public static final boolean isDirectory(short mode)
+    {
+        return isFileType(mode, 'd');
+    }
+    public static final boolean isSymbolicLink(String perms)
+    {
+        return isFileType(perms, 'l');
+    }
+    public static final boolean isSymbolicLink(short mode)
+    {
+        return isFileType(mode, 'l');
+    }
+    private static final boolean isFileType(short mode, char type)
+    {
+        return isFileType(toString(mode), type);
+    }
+    private static final boolean isFileType(String perms, char type)
+    {
+        if (perms.length() != 10)
+        {
+            throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
+        }
+        return perms.charAt(0) == type;
+    }
     /**
      * Return linux file owner name. Or ""
      * @param file
