@@ -44,8 +44,7 @@ public class MaintainerScript
     {
         try (BufferedWriter bf = Files.newBufferedWriter(path, UTF_8))
         {
-            bf.append(String.format("#!%s", interpreter));
-            bf.newLine();
+            bf.append(String.format("#!%s\n", interpreter));
             bf.append(script);
         }
     }

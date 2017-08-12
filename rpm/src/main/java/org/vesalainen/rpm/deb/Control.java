@@ -16,12 +16,7 @@
  */
 package org.vesalainen.rpm.deb;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import org.vesalainen.rpm.Dependency;
 import static org.vesalainen.rpm.Dependency.*;
 import static org.vesalainen.rpm.deb.Field.*;
 
@@ -73,7 +68,7 @@ public class Control extends ControlBase
     }
     public Control setArchitecture(String v)
     {
-        binary.add(Architecture, v);
+        binary.add(Architecture, "noarch".equalsIgnoreCase(v) ? "all" : v);
         return this;
     }
     public Control setDescription(String v)
@@ -81,17 +76,31 @@ public class Control extends ControlBase
         binary.add(Description, v);
         return this;
     }
-    public Control addDepends(String depends, String version, int... dependencies)
+    public Control addDepends(String depends)
     {
-        addRelationship(Depends, depends, version, dependencies);
+        return addDepends(depends, "", 0);
+    }
+    public Control addDepends(String depends, String version, int dependencies)
+    {
+        if (compatible(dependencies) && !depends.startsWith("/"))
+        {
+            addRelationship(Depends, depends, version, dependencies);
+        }
         return this;
     }
-    public Control addConflict(String depends, String version, int... dependencies)
+    public Control addConflict(String depends)
     {
-        addRelationship(Conflicts, depends, version, dependencies);
+        return addConflict(depends, "", 0);
+    }
+    public Control addConflict(String depends, String version, int dependencies)
+    {
+        if (compatible(dependencies) && !depends.startsWith("/"))
+        {
+            addRelationship(Conflicts, depends, version, dependencies);
+        }
         return this;
     }
-    private void addRelationship(Field field, String depends, String version, int... dependencies)
+    private void addRelationship(Field field, String depends, String version, int dependencies)
     {
         binary.add(field, toString(depends, version, dependencies));
     }
@@ -106,14 +115,13 @@ public class Control extends ControlBase
         return this;
     }
 
-    String toString(String depends, String version, int... dependencies)
+    String toString(String depends, String version, int dependencies)
     {
         if (version == null || version.isEmpty())
         {
             return depends;
         }
-        int flags = Dependency.or(dependencies);
-        switch (flags)
+        switch (dependencies)
         {
             case LESS:
                 return depends+" (<< "+version+")";
@@ -126,9 +134,14 @@ public class Control extends ControlBase
             case GREATER | EQUAL:
                 return depends+" (>= "+version+")";
             default:
-                throw new UnsupportedOperationException(flags+" dependency not supported");
+                throw new UnsupportedOperationException(dependencies+" dependency not supported");
                 
         }
+    }
+
+    private boolean compatible(int dependencies)
+    {
+        return dependencies == 0 || (dependencies >= 0x02 && dependencies <= (0x08 | 0x04 | 0x02));
     }
 
 }

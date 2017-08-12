@@ -48,14 +48,14 @@ public class DEBBuilderTest
                 .setPriority("optional")
                 .setPackage("test")
                 .setArchitecture("all")
-                .addDepends("lsb", "")
+                .addDepends("lsb")
                 .setDescription("blaa blaa");
         builder.copyright()
                 .setCopyright("2017 Timo Vesalainen")
                 .setLicense("GPL-3");
         builder.addFile("/opt/app/rules", Paths.get("src", "main", "resources", "rules"))
                 .setFlags(DOC)
-                .build();
+                ;
         builder.build();
     }
     

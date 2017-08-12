@@ -78,7 +78,10 @@ public class RPMTest
                 .build();
         
         Path rpmFile = builder.build(LOCAL);
+        RPM2DEB rpm2deb = new RPM2DEB(LOCAL, builder, "Timo <timo@mail.net>");
+        Path r2d = rpm2deb.build();
         Path z = Paths.get("Z:");   // TODO REMOVE!!!!!!!!
+        FileUtil.copy(r2d, z, REPLACE_EXISTING);
         Path target = z.resolve(rpmFile.getFileName());
         Files.copy(rpmFile, target, REPLACE_EXISTING);
         try (   RPM rpm2 = new RPM())

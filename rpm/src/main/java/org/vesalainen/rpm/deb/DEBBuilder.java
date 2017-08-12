@@ -27,7 +27,9 @@ import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.nio.file.attribute.PosixHelp;
@@ -45,23 +47,32 @@ public class DEBBuilder
 {
     public static final String STANDARDS_VERSION = "4.0.1.0";
     public static final String SOURCE_FORMAT = "1.0\n";
-    private static final String INTERPRETER = "/bin/sh";
-    private Path dir;
-    private String name;
-    private String version;
-    private String release;
-    private String maintainer;
-    private Path debian;
-    private Copyright copyright;
-    private Control control;
-    private int compatibility = 9;
-    private Set<MaintainerScript> maintainerScripts = new HashSet<>();
-    private ChangeLog changeLog;
-    private Conffiles conffiles;
-    private Docs docs;
-    private FileTime now = FileTime.from(Instant.now());
+    protected static final String INTERPRETER = "/bin/sh";
+    protected Path dir;
+    protected String name;
+    protected String version;
+    protected String release;
+    protected String maintainer;
+    protected Path debian;
+    protected Copyright copyright;
+    protected Control control;
+    protected int compatibility = 9;
+    protected Set<MaintainerScript> maintainerScripts = new HashSet<>();
+    protected ChangeLog changeLog;
+    protected Conffiles conffiles;
+    protected Docs docs;
+    protected FileTime now = FileTime.from(Instant.now());
+    protected List<FileBuilder> fileBuilders = new ArrayList<>();
+
+    protected DEBBuilder()
+    {
+    }
 
     public DEBBuilder(Path base, String name, String version, String release, String maintainer)
+    {
+        init(base, name, version, release, maintainer);
+    }
+    protected final void init(Path base, String name, String version, String release, String maintainer)
     {
         this.dir = base.resolve(name+"-"+version);
         this.name = name;
@@ -76,63 +87,67 @@ public class DEBBuilder
         conffiles = new Conffiles(debian);
         docs = new Docs(debian);
     }
-    public void addDocumentationFile(String filepath)
+    public final void addDocumentationFile(String filepath)
     {
         docs.addFile(filepath);
     }
-    public void addConfigurationFile(String filepath)
+    public final void addConfigurationFile(String filepath)
     {
         conffiles.addFile(filepath);
     }
-    public void setPostInst(String script)
+    public final void setPostInst(String script)
     {
         setPostInst(script, INTERPRETER);
     }
-    public void setPostInst(String script, String interpreter)
+    public final void setPostInst(String script, String interpreter)
     {
         setMaintainerScript("postinst", script, interpreter);
     }
-    public void setPreInst(String script)
+    public final void setPreInst(String script)
     {
         setPreInst(script, INTERPRETER);
     }
-    public void setPreInst(String script, String interpreter)
+    public final void setPreInst(String script, String interpreter)
     {
         setMaintainerScript("preinst", script, interpreter);
     }
-    public void setPostRm(String script)
+    public final void setPostRm(String script)
     {
         setPostRm(script, INTERPRETER);
     }
-    public void setPostRm(String script, String interpreter)
+    public final void setPostRm(String script, String interpreter)
     {
         setMaintainerScript("postrm", script, interpreter);
     }
-    public void setPreRm(String script)
+    public final void setPreRm(String script)
     {
         setPreRm(script, INTERPRETER);
     }
-    public void setPreRm(String script, String interpreter)
+    public final void setPreRm(String script, String interpreter)
     {
         setMaintainerScript("prerm", script, interpreter);
     }
     private void setMaintainerScript(String name, String script, String interpreter)
     {
-        maintainerScripts.add(new MaintainerScript(dir, name, script, interpreter));
+        maintainerScripts.add(new MaintainerScript(debian, name, script, interpreter));
     }
     
-    public Control control()
+    public final Control control()
     {
         return control;
     }
 
-    public Copyright copyright()
+    public final Copyright copyright()
     {
         return copyright;
     }
     
-    public void build() throws IOException
+    public Path build() throws IOException
     {
+        for (FileBuilder fb : fileBuilders)
+        {
+            fb.build();
+        }
         copyright.save();
         control.save();
 
@@ -161,15 +176,21 @@ public class DEBBuilder
         }
         conffiles.save();
         docs.save();
+        
+        return dir;
     }
     
-    public FileBuilder addFile(String target, Path file) throws IOException
+    public final FileBuilder addFile(String target, Path file) throws IOException
     {
-        return new FileBuilder(target, file);
+        FileBuilder fb = new FileBuilder(target, file);
+        fileBuilders.add(fb);
+        return fb;
     }
-    public FileBuilder addFile(String target, ByteBuffer content) throws IOException
+    public final FileBuilder addFile(String target, ByteBuffer content) throws IOException
     {
-        return new FileBuilder(target, content);
+        FileBuilder fb = new FileBuilder(target, content);
+        fileBuilders.add(fb);
+        return fb;
     }
     public class FileBuilder
     {
@@ -246,7 +267,7 @@ public class DEBBuilder
             return this;
         }
         
-        public void build() throws IOException
+        private void build() throws IOException
         {
             if (FileFlag.isSet(CONFIG, flags))
             {
@@ -257,10 +278,24 @@ public class DEBBuilder
                 addDocumentationFile(target);
             }
             Path path = dir.resolve(target);
-            Files.createDirectories(path.getParent());
-            try (FileChannel fc = FileChannel.open(path, WRITE, CREATE))
+            if (PosixHelp.isDirectory(mode))
             {
-                fc.write(content);
+                Files.createDirectories(path);
+            }
+            else
+            {
+                if (PosixHelp.isRegularFile(mode))
+                {
+                    Files.createDirectories(path.getParent());
+                    try (FileChannel fc = FileChannel.open(path, WRITE, CREATE))
+                    {
+                        fc.write(content);
+                    }
+                }
+                else
+                {
+                    throw new UnsupportedOperationException(mode+" mode (symbolic link???) not supported yet");
+                }
             }
             PosixHelp.setOwner(user, path);
             PosixHelp.setGroup(group, path);

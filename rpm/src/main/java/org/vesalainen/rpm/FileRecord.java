@@ -52,6 +52,6 @@ public class FileRecord
         cpio.save(bb);
         bb.putString(filename);
         bb.alignOutput(4);
-        bb.put(content);
+        bb.put(content.duplicate());
     }
 }

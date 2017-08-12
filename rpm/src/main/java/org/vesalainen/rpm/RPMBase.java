@@ -172,6 +172,16 @@ public class RPMBase
         return indexRecord;
     }
 
+    protected <T> boolean contains(HeaderTag tag)
+    {
+        HeaderStructure.IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
     protected <T> boolean contains(HeaderTag tag, T value)
     {
         HeaderStructure.IndexRecord<T> indexRecord = getIndexRecord(tag);
@@ -229,4 +239,5 @@ public class RPMBase
         }
         return list;
     }
+
 }

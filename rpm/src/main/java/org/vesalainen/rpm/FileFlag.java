@@ -103,5 +103,18 @@ public enum FileFlag
         }
         return false;
     }
+    public static FileFlag[] get(int flags)
+    {
+        FileFlag[] arr = new FileFlag[Integer.bitCount(flags)];
+        int idx = 0;
+        for (FileFlag ff : FileFlag.values())
+        {
+            if ((flags & ff.getFlag()) != 0)
+            {
+                arr[idx++] = ff;
+            }
+        }
+        return arr;
+    }
 }
     

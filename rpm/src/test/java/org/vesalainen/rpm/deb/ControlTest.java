@@ -35,12 +35,12 @@ public class ControlTest
     public void testDependency()
     {
         Control control = new Control(null, null);
-        assertEquals("foo (>= 1.2)", control.toString("foo", "1.2", GREATER, EQUAL));
+        assertEquals("foo (>= 1.2)", control.toString("foo", "1.2", GREATER|EQUAL));
         assertEquals("libbar1 (= 1.3.4)", control.toString("libbar1", "1.3.4", EQUAL));
         assertEquals("libbaz4 (>> 4.0.7)", control.toString("libbaz4", "4.0.7", GREATER));
-        assertEquals("quux", control.toString("quux", ""));
+        assertEquals("quux", control.toString("quux", "", 0));
         assertEquals("quux (<< 5)", control.toString("quux", "5", LESS));
-        assertEquals("quux-foo (<= 7.6)", control.toString("quux-foo", "7.6", LESS, EQUAL));
+        assertEquals("quux-foo (<= 7.6)", control.toString("quux-foo", "7.6", LESS|EQUAL));
     }
     
 }

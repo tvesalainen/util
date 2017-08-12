@@ -39,6 +39,8 @@ import org.vesalainen.util.HexUtil;
  */
 public class RPM extends RPMBase implements AutoCloseable
 {
+    static final String TRAILER = "TRAILER!!!";
+    
     private FileChannel fc;
     private ByteBuffer bb;
     private int signatureStart;
