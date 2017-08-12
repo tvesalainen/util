@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import static java.nio.charset.StandardCharsets.*;
+import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.Files;
@@ -33,9 +34,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.time.Instant;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -244,6 +246,67 @@ public class FileUtil
         {
             BasicFileAttributeView view = Files.getFileAttributeView(file, BasicFileAttributeView.class);
             view.setTimes(lastModifiedTime, lastAccessTime, createTime);
+        }
+    }
+    /**
+     * Enhances Files.copy to directory. If both source and target are 
+     * directories the source directory structure is copied to target.
+     * @param source
+     * @param target
+     * @param options
+     * @throws IOException 
+     */
+    public static final void copy(Path source, Path target, CopyOption... options) throws IOException
+    {
+        if (Files.isRegularFile(target))
+        {
+            if (Files.isRegularFile(target))
+            {
+                Files.copy(source, target, options);
+            }
+            else
+            {
+                if (Files.isDirectory(target))
+                {
+                    Path t = target.resolve(source.getFileName());
+                    Files.copy(source, t, options);
+                }
+            }
+        }
+        else
+        {
+            if (Files.isDirectory(source) && Files.isDirectory(target))
+            {
+                final Path dir = target.resolve(source.getFileName());
+                Files.createDirectories(target);
+                Files.walk(source).forEach((p)->
+                {
+                    try
+                    {
+                        Path rel = source.relativize(p);
+                        Path trg = dir.resolve(rel);
+                        if (Files.isDirectory(p))
+                        {
+                            Files.createDirectories(trg);
+                        }
+                        else
+                        {
+                            if (Files.isRegularFile(p))
+                            {
+                                Files.copy(p, trg);
+                            }
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            }
+            else
+            {
+                throw new IllegalArgumentException("don't know what to do");
+            }
         }
     }
 }
