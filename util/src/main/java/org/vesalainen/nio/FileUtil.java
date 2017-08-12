@@ -255,6 +255,7 @@ public class FileUtil
      * @param target
      * @param options
      * @throws IOException 
+     * @see java.nio.file.Files#copy(java.nio.file.Path, java.nio.file.Path, java.nio.file.CopyOption...) 
      */
     public static final void copy(Path source, Path target, CopyOption... options) throws IOException
     {
@@ -293,7 +294,7 @@ public class FileUtil
                         {
                             if (Files.isRegularFile(p))
                             {
-                                Files.copy(p, trg);
+                                Files.copy(p, trg, options);
                             }
                         }
                     }
