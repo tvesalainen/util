@@ -16,8 +16,16 @@
  */
 package org.vesalainen.pm;
 
+import java.io.IOException;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
 import java.time.Instant;
+import java.util.Set;
+import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.pm.rpm.FileFlag;
 
 /**
@@ -29,7 +37,15 @@ public interface ComponentBuilder
 
     ComponentBuilder setFlag(FileFlag... flags);
 
-    ComponentBuilder setGroupname(String groupname);
+    default ComponentBuilder setGroupname(String groupname) throws IOException
+    {
+        FileAttribute<GroupPrincipal> group = PosixHelp.getGroupAsAttribute(groupname);
+        if (group != null)
+        {
+            addFileAttributes(group);
+        }
+        return this;
+    }
 
     ComponentBuilder setLang(String lang);
 
@@ -38,7 +54,16 @@ public interface ComponentBuilder
      * @param mode
      * @return
      */
-    ComponentBuilder setMode(String mode);
+    default ComponentBuilder setMode(String mode)
+    {
+        if (PosixHelp.supports("posix"))
+        {
+            Set<PosixFilePermission> perms = PosixFilePermissions.fromString(mode);
+            FileAttribute<Set<PosixFilePermission>> fa = PosixFilePermissions.asFileAttribute(perms);
+            addFileAttributes(fa);
+        }
+        return this;
+    }
     /**
      * Add file attribute
      * @param attrs
@@ -51,15 +76,30 @@ public interface ComponentBuilder
      * @param time
      * @return
      */
-    ComponentBuilder setTime(Instant time);
+    default ComponentBuilder setLastModifiedTime(Instant time)
+    {
+        addFileAttributes(PosixHelp.getLastModifiedTimeAsAttribute(FileTime.from(time)));
+        return this;
+    }
+    default ComponentBuilder setLastAccessTime(Instant time)
+    {
+        addFileAttributes(PosixHelp.getLastAccessTimeAsAttribute(FileTime.from(time)));
+        return this;
+    }
+    default ComponentBuilder setCreationTime(Instant time)
+    {
+        addFileAttributes(PosixHelp.getCreationTimeAsAttribute(FileTime.from(time)));
+        return this;
+    }
 
-    /**
-     * Set file time as seconds from epoch.
-     * @param time
-     * @return
-     */
-    ComponentBuilder setTime(int time);
-
-    ComponentBuilder setUsername(String username);
+    default ComponentBuilder setUsername(String name) throws IOException
+    {
+        FileAttribute<UserPrincipal> owner = PosixHelp.getOwnerAsAttribute(name);
+        if (owner != null)
+        {
+            addFileAttributes(owner);
+        }
+        return this;
+    }
     
 }

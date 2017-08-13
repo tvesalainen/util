@@ -54,9 +54,9 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
     {
         signature = new HeaderStructure();
         header = new HeaderStructure();
-        addString(HeaderTag.RPMTAG_PAYLOADFORMAT, "cpio");
-        addString(HeaderTag.RPMTAG_PAYLOADCOMPRESSOR, "gzip");
-        addString(HeaderTag.RPMTAG_PAYLOADFLAGS, "9");
+        addString(RPMTAG_PAYLOADFORMAT, "cpio");
+        addString(RPMTAG_PAYLOADCOMPRESSOR, "gzip");
+        addString(RPMTAG_PAYLOADFLAGS, "9");
     }
 
     @Override
