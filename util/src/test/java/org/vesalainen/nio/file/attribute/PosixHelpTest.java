@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
+import java.time.Instant;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -41,9 +42,10 @@ public class PosixHelpTest
     public void testTimes() throws IOException
     {
         Path file = Paths.get("pom.xml");
-        FileAttribute<FileTime> lat = PosixHelp.getLastAccessTimeTimeAsAttribute(file);
-        FileAttribute<FileTime> lmt = PosixHelp.getLastModifiedTimeAsAttribute(file);
-        FileAttribute<FileTime> ct = PosixHelp.getCreationTimeTimeAsAttribute(file);
+        FileTime time = FileTime.from(Instant.now());
+        FileAttribute<FileTime> lat = PosixHelp.getLastAccessTimeAsAttribute(time);
+        FileAttribute<FileTime> lmt = PosixHelp.getLastModifiedTimeAsAttribute(time);
+        FileAttribute<FileTime> ct = PosixHelp.getCreationTimeAsAttribute(time);
         Path tmp = Paths.get("test.tml");
         Files.createFile(tmp);
         Files.setAttribute(tmp, lat.name(), lat.value());

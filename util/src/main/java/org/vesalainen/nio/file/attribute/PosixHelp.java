@@ -682,38 +682,33 @@ public final class PosixHelp
     }
     /**
      * Returns files last modified time as attribute.
-     * @param file
+     * @param time
      * @return
      * @throws IOException 
      */
-    public static final FileAttribute<FileTime> getLastModifiedTimeAsAttribute(Path file) throws IOException
+    public static final FileAttribute<FileTime> getLastModifiedTimeAsAttribute(FileTime time)
     {
-        return getFileTimeAsAttribute(file, "lastModifiedTime");
+        return new FileAttributeImpl<>("lastModifiedTime", time);
     }
     /**
      * Returns files last access time as attribute.
-     * @param file
+     * @param time
      * @return
      * @throws IOException 
      */
-    public static final FileAttribute<FileTime> getLastAccessTimeTimeAsAttribute(Path file) throws IOException
+    public static final FileAttribute<FileTime> getLastAccessTimeAsAttribute(FileTime time)
     {
-        return getFileTimeAsAttribute(file, "lastAccessTime");
+        return new FileAttributeImpl<>("lastAccessTime", time);
     }
     /**
      * Returns files creation time as attribute.
-     * @param file
+     * @param time
      * @return
      * @throws IOException 
      */
-    public static final FileAttribute<FileTime> getCreationTimeTimeAsAttribute(Path file) throws IOException
+    public static final FileAttribute<FileTime> getCreationTimeAsAttribute(FileTime time)
     {
-        return getFileTimeAsAttribute(file, "lastModifiedTime");
-    }
-    private static FileAttribute<FileTime> getFileTimeAsAttribute(Path file, String attribute) throws IOException
-    {
-        FileTime time = (FileTime) Files.getAttribute(file, attribute);
-        return new FileAttributeImpl<>(attribute, time);
+        return new FileAttributeImpl<>("lastModifiedTime", time);
     }
     public static class FileAttributeImpl<T> implements FileAttribute<T>
     {
