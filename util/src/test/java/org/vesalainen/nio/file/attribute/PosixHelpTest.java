@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.UserPrincipal;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -34,10 +37,25 @@ public class PosixHelpTest
     {
     }
 
-    @Test
+    //@Test
+    public void testTimes() throws IOException
+    {
+        Path file = Paths.get("pom.xml");
+        FileAttribute<FileTime> lat = PosixHelp.getLastAccessTimeTimeAsAttribute(file);
+        FileAttribute<FileTime> lmt = PosixHelp.getLastModifiedTimeAsAttribute(file);
+        FileAttribute<FileTime> ct = PosixHelp.getCreationTimeTimeAsAttribute(file);
+        Path tmp = Paths.get("test.tml");
+        Files.createFile(tmp);
+        Files.setAttribute(tmp, lat.name(), lat.value());
+        Files.setAttribute(tmp, lmt.name(), lmt.value());
+        Files.setAttribute(tmp, ct.name(), ct.value());
+        Files.delete(tmp);
+    }
+    //@Test
     public void testGetOwner() throws IOException
     {
-        String owner = PosixHelp.getOwner(Paths.get("."));
+        String owner = PosixHelp.getOwner(Paths.get("pom.xml"));
+        PosixHelp.getOwnerAsAttribute(owner);
     }
     //@Test // this need to be run in linux
     public void testCreate() throws IOException
