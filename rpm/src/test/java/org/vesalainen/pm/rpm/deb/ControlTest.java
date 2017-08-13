@@ -16,7 +16,7 @@
  */
 package org.vesalainen.pm.rpm.deb;
 
-import org.vesalainen.pm.rpm.deb.Control;
+import org.vesalainen.pm.deb.Control;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.vesalainen.pm.rpm.Dependency.*;

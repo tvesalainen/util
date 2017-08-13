@@ -19,6 +19,7 @@ package org.vesalainen.pm.rpm;
 import org.vesalainen.pm.rpm.Dependency;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.pm.Condition;
 import static org.vesalainen.pm.rpm.Dependency.*;
 
 /**
@@ -35,6 +36,11 @@ public class DependencyTest
     @Test
     public void test1()
     {
-        assertEquals(10, Dependency.or(EQUAL, LESS));
+        assertEquals(14, Dependency.or(EQUAL, LESS, GREATER));
+    }
+    @Test
+    public void test2()
+    {
+        assertEquals(14, Dependency.or(Condition.EQUAL, Condition.LESS, Condition.GREATER));
     }
 }

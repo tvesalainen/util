@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import static org.vesalainen.pm.rpm.HeaderTag.*;
-import org.vesalainen.pm.rpm.deb.DEBBuilder;
+import org.vesalainen.pm.deb.DEBBuilder;
 
 /**
  *

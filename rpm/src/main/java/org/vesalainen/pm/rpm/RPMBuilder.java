@@ -16,6 +16,7 @@
  */
 package org.vesalainen.pm.rpm;
 
+import org.vesalainen.pm.PackageBuilder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,13 +39,16 @@ import org.vesalainen.nio.FilterByteBuffer;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import static org.vesalainen.pm.rpm.HeaderTag.*;
 import org.vesalainen.util.HexUtil;
+import org.vesalainen.pm.ComponentBuilder;
+import org.vesalainen.pm.Condition;
 
 /**
  *
  * @author tkv
  */
-public class RPMBuilder extends RPMBase
+public class RPMBuilder extends RPMBase implements PackageBuilder
 {
+    private static final String INTERPRETER = "/bin/sh";
     private List<FileBuilder> fileBuilders = new ArrayList<>();
     public RPMBuilder()
     {
@@ -55,30 +59,35 @@ public class RPMBuilder extends RPMBase
         addString(HeaderTag.RPMTAG_PAYLOADFLAGS, "9");
     }
 
-    public RPMBuilder setName(String name)
+    @Override
+    public RPMBuilder setPackageName(String name)
     {
         addString(HeaderTag.RPMTAG_NAME, name);
         return this;
     }
 
+    @Override
     public RPMBuilder setVersion(String version)
     {
         addString(HeaderTag.RPMTAG_VERSION, version);
         return this;
     }
 
+    @Override
     public RPMBuilder setRelease(String v)
     {
         addString(HeaderTag.RPMTAG_RELEASE, v);
         return this;
     }
 
+    @Override
     public RPMBuilder setSummary(String v)
     {
         addString(HeaderTag.RPMTAG_SUMMARY, v);
         return this;
     }
 
+    @Override
     public RPMBuilder setDescription(String v)
     {
         addString(HeaderTag.RPMTAG_DESCRIPTION, v);
@@ -91,57 +100,71 @@ public class RPMBuilder extends RPMBase
         return this;
     }
 
+    @Override
     public RPMBuilder setLicense(String v)
     {
         addString(HeaderTag.RPMTAG_LICENSE, v);
         return this;
     }
 
+    @Override
     public RPMBuilder setGroup(String v)
     {
         addString(HeaderTag.RPMTAG_GROUP, v);
         return this;
     }
 
-    public RPMBuilder setOs(String v)
+    @Override
+    public RPMBuilder setOperatingSystem(String v)
     {
         addString(HeaderTag.RPMTAG_OS, v);
         return this;
     }
 
-    public RPMBuilder setArch(String v)
+    @Override
+    public RPMBuilder setArchitecture(String v)
     {
         addString(HeaderTag.RPMTAG_ARCH, v);
         return this;
     }
 
-    public RPMBuilder setPreIn(String v)
+    @Override
+    public String getDefaultInterpreter()
     {
-        addString(HeaderTag.RPMTAG_PREIN, v);
-        addString(HeaderTag.RPMTAG_PREINPROG, "/bin/sh");
+        return INTERPRETER;
+    }
+
+    @Override
+    public RPMBuilder setPreInstallation(String script, String interpreter)
+    {
+        addString(HeaderTag.RPMTAG_PREIN, script);
+        addString(HeaderTag.RPMTAG_PREINPROG, interpreter);
         ensureBinSh();
         return this;
     }
 
-    public RPMBuilder setPostIn(String v)
+    @Override
+    public RPMBuilder setPostInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_POSTIN, v);
-        addString(HeaderTag.RPMTAG_POSTINPROG, "/bin/sh");
+        addString(HeaderTag.RPMTAG_POSTIN, script);
+        addString(HeaderTag.RPMTAG_POSTINPROG, interpreter);
         ensureBinSh();
         return this;
     }
 
-    public RPMBuilder setPreUn(String v)
+    @Override
+    public RPMBuilder setPreUnInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_PREUN, v);
-        addString(HeaderTag.RPMTAG_PREUNPROG, "/bin/sh");
+        addString(HeaderTag.RPMTAG_PREUN, script);
+        addString(HeaderTag.RPMTAG_PREUNPROG, interpreter);
         ensureBinSh();
         return this;
     }
 
-    public RPMBuilder setPostUn(String v)
+    @Override
+    public RPMBuilder setPostUnInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_POSTUN, v);
+        addString(HeaderTag.RPMTAG_POSTUN, script);
         addString(HeaderTag.RPMTAG_POSTUNPROG, "/bin/sh");
         ensureBinSh();
         return this;
@@ -155,12 +178,8 @@ public class RPMBuilder extends RPMBase
         }
     }
 
-    public RPMBuilder addProvide(String name)
-    {
-        return addProvide(name, "");
-    }
-
-    public RPMBuilder addProvide(String name, String version, int... dependency)
+    @Override
+    public RPMBuilder addProvide(String name, String version, Condition... dependency)
     {
         addString(HeaderTag.RPMTAG_PROVIDENAME, name);
         addString(HeaderTag.RPMTAG_PROVIDEVERSION, version);
@@ -169,12 +188,8 @@ public class RPMBuilder extends RPMBase
         return this;
     }
 
-    public RPMBuilder addRequire(String name)
-    {
-        return addRequire(name, "");
-    }
-
-    public RPMBuilder addRequire(String name, String version, int... dependency)
+    @Override
+    public RPMBuilder addRequire(String name, String version, Condition... dependency)
     {
         addString(HeaderTag.RPMTAG_REQUIRENAME, name);
         addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
@@ -183,12 +198,17 @@ public class RPMBuilder extends RPMBase
         return this;
     }
 
-    public RPMBuilder addConflict(String name)
+    private RPMBuilder addRequireInt(String name, String version, int... dependency)
     {
-        return addConflict(name, "");
+        addString(HeaderTag.RPMTAG_REQUIRENAME, name);
+        addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
+        addInt32(HeaderTag.RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        ensureVersionReq(version);
+        return this;
     }
 
-    public RPMBuilder addConflict(String name, String version, int... dependency)
+    @Override
+    public RPMBuilder addConflict(String name, String version, Condition... dependency)
     {
         addString(HeaderTag.RPMTAG_CONFLICTNAME, name);
         addString(HeaderTag.RPMTAG_CONFLICTVERSION, version);
@@ -201,10 +221,11 @@ public class RPMBuilder extends RPMBase
     {
         if (!version.isEmpty() && !contains(HeaderTag.RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
         {
-            addRequire("rpmlib(VersionedDependencies)", "3.0.3-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+            addRequireInt("rpmlib(VersionedDependencies)", "3.0.3-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
         }
     }
 
+    @Override
     public FileBuilder addFile(Path source, String target) throws IOException
     {
         FileBuilder fb =  new FileBuilder(source, target);
@@ -212,6 +233,7 @@ public class RPMBuilder extends RPMBase
         return fb;
     }
 
+    @Override
     public FileBuilder addFile(ByteBuffer content, String target) throws IOException
     {
         FileBuilder fb = new FileBuilder(content, target);
@@ -222,10 +244,10 @@ public class RPMBuilder extends RPMBase
      * Creates RPM file in dir. Returns Path of created file.
      * @param dir
      * @return
-     * @throws IOException
-     * @throws NoSuchAlgorithmException 
+     * @throws IOException 
      */
-    public Path build(Path dir) throws IOException, NoSuchAlgorithmException
+    @Override
+    public Path build(Path dir) throws IOException
     {
         // files
         for (FileBuilder fb : fileBuilders)
@@ -234,8 +256,8 @@ public class RPMBuilder extends RPMBase
         }
         String name = getName();
         lead = new Lead(name);
-        addProvide(getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), Dependency.EQUAL);
-        addRequire("rpmlib(CompressedFileNames)", "3.0.4-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+        addProvide(getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), Condition.EQUAL);
+        addRequireInt("rpmlib(CompressedFileNames)", "3.0.4-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
         addInt32(HeaderTag.RPMTAG_SIZE, getInt32Array(HeaderTag.RPMTAG_FILESIZES).stream().collect(Collectors.summingInt((i) -> i)));
         // trailer
         CPIO cpio = new CPIO();
@@ -258,7 +280,15 @@ public class RPMBuilder extends RPMBase
         }
         payload.flip();
         // signature
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        MessageDigest md5;
+        try
+        {
+            md5 = MessageDigest.getInstance("MD5");
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            throw new IOException(ex);
+        }
         ByteBuffer dupHdr = hdr.duplicate();
         md5.update(dupHdr);
         ByteBuffer dupPayload = payload.duplicate();
@@ -288,7 +318,7 @@ public class RPMBuilder extends RPMBase
         return String.format("%s-%s-%s", getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), getString(HeaderTag.RPMTAG_RELEASE));
     }
     
-    public class FileBuilder
+    public class FileBuilder implements ComponentBuilder
     {
         CPIO cpio = new CPIO();
         ByteBuffer content;
@@ -332,6 +362,7 @@ public class RPMBuilder extends RPMBase
          * @param time
          * @return 
          */
+        @Override
         public FileBuilder setTime(Instant time)
         {
             return setTime((int)time.getEpochSecond());
@@ -341,6 +372,7 @@ public class RPMBuilder extends RPMBase
          * @param time
          * @return 
          */
+        @Override
         public FileBuilder setTime(int time)
         {
             this.time = time;
@@ -351,6 +383,7 @@ public class RPMBuilder extends RPMBase
          * @param mode
          * @return 
          */
+        @Override
         public FileBuilder setMode(String mode)
         {
             return setMode(PosixHelp.getMode(mode));
@@ -360,61 +393,70 @@ public class RPMBuilder extends RPMBase
          * @param mode
          * @return 
          */
+        @Override
         public FileBuilder setMode(short mode)
         {
             this.mode = mode;
             return this;
         }
 
+        @Override
         public FileBuilder setRdev(short rdev)
         {
             this.rdev = rdev;
             return this;
         }
 
+        @Override
         public FileBuilder setLinkTo(String linkTo)
         {
             this.linkTo = linkTo;
             return this;
         }
 
+        @Override
         public FileBuilder setFlag(FileFlag... flags)
         {
             this.flag = FileFlag.or(flags);
             return this;
         }
 
+        @Override
         public FileBuilder setUsername(String username)
         {
             this.username = username;
             return this;
         }
 
+        @Override
         public FileBuilder setGroupname(String groupname)
         {
             this.groupname = groupname;
             return this;
         }
 
+        @Override
         public FileBuilder setDevice(int device)
         {
             this.device = device;
             return this;
         }
 
+        @Override
         public FileBuilder setInode(int inode)
         {
             this.inode = inode;
             return this;
         }
 
+        @Override
         public FileBuilder setLang(String lang)
         {
             this.lang = lang;
             return this;
         }
 
-        private void build() throws NoSuchAlgorithmException
+        private void build()
         {
             int index;
             addString(RPMTAG_BASENAMES, base);
@@ -433,7 +475,15 @@ public class RPMBuilder extends RPMBase
             cpio.mtime = time;
             // md5
             ByteBuffer duplicate = content.duplicate();
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5;
+            try
+            {
+                md5 = MessageDigest.getInstance("MD5");
+            }
+            catch (NoSuchAlgorithmException ex)
+            {
+                throw new RuntimeException(ex);
+            }
             md5.update(duplicate);
             byte[] digest = md5.digest();
             addString(RPMTAG_FILEMD5S, HexUtil.toString(digest));

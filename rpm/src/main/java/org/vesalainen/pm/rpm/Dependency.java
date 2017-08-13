@@ -16,6 +16,8 @@
  */
 package org.vesalainen.pm.rpm;
 
+import org.vesalainen.pm.Condition;
+
 /**
  *
  * @author tkv
@@ -33,6 +35,26 @@ public class Dependency
     public static final int SCRIPT_POSTUN = 0x1000;	 
     public static final int RPMLIB = 0x1000000;
     
+    public static int or(Condition... flags)
+    {
+        int flag = 0;
+        for (Condition f : flags)
+        {
+            switch (f)
+            {
+                case EQUAL:
+                    flag |= 0x08;
+                    break;
+                case LESS:
+                    flag |= 0x02;
+                    break;
+                case GREATER:
+                    flag |= 0x04;
+                    break;
+            }
+        }
+        return flag;
+    }
     public static int or(int... flags)
     {
         int flag = 0;

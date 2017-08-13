@@ -44,6 +44,7 @@ public class FileRecord
         bb.alignInput(4);
         content = ByteBuffer.allocate(cpio.filesize);
         bb.get(content);
+        content.flip();
         bb.alignInput(4);
     }
 

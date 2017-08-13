@@ -14,41 +14,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.pm.rpm.deb;
+package org.vesalainen.pm.deb;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import org.vesalainen.util.Lists;
 
 /**
  *
  * @author tkv
  */
-public class FilesBase
+public class ControlBase
 {
     
-    protected Path path;
-    protected List<String> files = new ArrayList<>();
+    protected Path dir;
+    protected String name;
+    protected List<Paragraph> paragraphs;
 
-    protected FilesBase(Path debian, String name)
+    protected ControlBase(Path dir, String name, Paragraph... paragraphs)
     {
-        this.path = debian.resolve(name);
+        this.dir = dir;
+        this.name = name;
+        this.paragraphs = Lists.create(paragraphs);
     }
-    public void addFile(String filepath)
+
+    void save() throws IOException
     {
-        files.add(filepath);
-    }
-    public void save() throws IOException
-    {
-        try (final BufferedWriter bf = Files.newBufferedWriter(path, StandardCharsets.UTF_8))
+        Path control = dir.resolve(name);
+        Files.createDirectories(dir);
+        try (final BufferedWriter bw = Files.newBufferedWriter(control, StandardCharsets.UTF_8))
         {
-            for (String file : files)
+            for (Paragraph p : paragraphs)
             {
-                bf.append(file).append('\n');
+                p.append(bw);
             }
         }
     }

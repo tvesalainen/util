@@ -14,32 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.pm.rpm.deb;
+package org.vesalainen.pm.deb;
 
-import org.vesalainen.pm.deb.Paragraph;
-import java.io.IOException;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.vesalainen.pm.deb.Field.*;
+import java.nio.file.Path;
 
 /**
  *
  * @author tkv
  */
-public class ParagraphTest
+public class Docs extends FilesBase
 {
     
-    public ParagraphTest()
+    public Docs(Path debian)
     {
-    }
-
-    @Test
-    public void test1() throws IOException
-    {
-        Paragraph p = new Paragraph();
-        p.add(Package, "test-1.0");
-        p.add(Depends, "lsb", "java");
-        p.append(System.err);
+        super(debian, "docs");
     }
     
 }

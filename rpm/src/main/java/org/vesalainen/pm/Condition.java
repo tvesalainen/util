@@ -14,20 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.pm.rpm.deb;
-
-import java.nio.file.Path;
+package org.vesalainen.pm;
 
 /**
  *
  * @author tkv
  */
-public class Docs extends FilesBase
+public enum Condition
 {
-    
-    public Docs(Path debian)
-    {
-        super(debian, "docs");
-    }
-    
+    NONE,
+    EQUAL,
+    LESS,
+    GREATER;
 }

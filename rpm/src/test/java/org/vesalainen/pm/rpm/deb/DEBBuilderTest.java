@@ -16,7 +16,7 @@
  */
 package org.vesalainen.pm.rpm.deb;
 
-import org.vesalainen.pm.rpm.deb.DEBBuilder;
+import org.vesalainen.pm.deb.DEBBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

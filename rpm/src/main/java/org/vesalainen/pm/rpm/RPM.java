@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import org.vesalainen.nio.FilterByteBuffer;
+import org.vesalainen.nio.file.attribute.PosixHelp;
 import static org.vesalainen.pm.rpm.HeaderTag.*;
 import org.vesalainen.util.HexUtil;
 
@@ -139,24 +140,30 @@ public class RPM extends RPMBase implements AutoCloseable
         for (int ii=0;ii<len;ii++)
         {
             FileRecord fr = fileRecords.get(ii);
-            if (!fr.filename.equals(names.get(ii)))
+            String filename = fr.filename.startsWith(".") ? fr.filename.substring(1) : fr.filename;
+            if (!filename.equals(names.get(ii)))
             {
                 throw new IllegalArgumentException(fr.filename+" != "+names.get(ii));
             }
-            if (fr.content.limit() != sizes.get(ii))
+            if (PosixHelp.isRegularFile((short) fr.cpio.mode))
             {
-                throw new IllegalArgumentException(fr.content+" size not "+sizes.get(ii));
+                if (fr.content.limit() != sizes.get(ii))
+                {
+                    throw new IllegalArgumentException(fr.content+" size not "+sizes.get(ii));
+                }
+                if (!md5List.get(ii).isEmpty())
+                {
+                    ByteBuffer duplicate = fr.content.duplicate();
+                    md5.update(duplicate);
+                    byte[] digest = md5.digest();
+                    String digStr = HexUtil.toString(digest);
+                    if (!digStr.equalsIgnoreCase(md5List.get(ii)))
+                    {
+                        throw new IllegalArgumentException(fr.filename+" md5 conflict");
+                    }
+                    md5.reset();
+                }
             }
-            ByteBuffer duplicate = fr.content.duplicate();
-            duplicate.flip();
-            md5.update(duplicate);
-            byte[] digest = md5.digest();
-            String digStr = HexUtil.toString(digest);
-            if (!digStr.equalsIgnoreCase(md5List.get(ii)))
-            {
-                throw new IllegalArgumentException(fr.filename+" md5 conflict");
-            }
-            md5.reset();
         }
     }
 
