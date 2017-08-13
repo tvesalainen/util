@@ -75,7 +75,7 @@ public class RPMTest
         
         builder.addFile(Paths.get("pom.xml"), "/opt/org.vesalainen/foo/pom.xml")
                 .setMode("-rwxr--r--")
-                .build();
+                ;
         
         Path rpmFile = builder.build(LOCAL);
         RPM2DEB rpm2deb = new RPM2DEB(LOCAL, builder, "Timo <timo@mail.net>");

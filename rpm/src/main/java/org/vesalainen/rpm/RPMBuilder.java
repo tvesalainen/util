@@ -28,6 +28,8 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
@@ -43,7 +45,7 @@ import org.vesalainen.util.HexUtil;
  */
 public class RPMBuilder extends RPMBase
 {
-    
+    private List<FileBuilder> fileBuilders = new ArrayList<>();
     public RPMBuilder()
     {
         signature = new HeaderStructure();
@@ -205,12 +207,16 @@ public class RPMBuilder extends RPMBase
 
     public FileBuilder addFile(Path source, String target) throws IOException
     {
-        return new FileBuilder(source, target);
+        FileBuilder fb =  new FileBuilder(source, target);
+        fileBuilders.add(fb);
+        return fb;
     }
 
     public FileBuilder addFile(ByteBuffer content, String target) throws IOException
     {
-        return new FileBuilder(content, target);
+        FileBuilder fb = new FileBuilder(content, target);
+        fileBuilders.add(fb);
+        return fb;
     }
     /**
      * Creates RPM file in dir. Returns Path of created file.
@@ -221,6 +227,11 @@ public class RPMBuilder extends RPMBase
      */
     public Path build(Path dir) throws IOException, NoSuchAlgorithmException
     {
+        // files
+        for (FileBuilder fb : fileBuilders)
+        {
+            fb.build();
+        }
         String name = getName();
         lead = new Lead(name);
         addProvide(getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), Dependency.EQUAL);
@@ -403,7 +414,7 @@ public class RPMBuilder extends RPMBase
             return this;
         }
 
-        public void build() throws NoSuchAlgorithmException
+        private void build() throws NoSuchAlgorithmException
         {
             int index;
             addString(RPMTAG_BASENAMES, base);
