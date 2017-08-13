@@ -18,9 +18,11 @@ package org.vesalainen.nio.file.attribute;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
@@ -29,9 +31,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Set;
-import org.vesalainen.util.OSProcess;
-import org.vesalainen.util.OperatingSystem;
-import static org.vesalainen.util.OperatingSystem.Linux;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * PosixHelp provides methods for manipulating posix permissions. Supported are:
@@ -64,11 +64,11 @@ public final class PosixHelp
     {
         return isFileType(mode, 'l');
     }
-    private static final boolean isFileType(short mode, char type)
+    private static boolean isFileType(short mode, char type)
     {
         return isFileType(toString(mode), type);
     }
-    private static final boolean isFileType(String perms, char type)
+    private static boolean isFileType(String perms, char type)
     {
         if (perms.length() != 10)
         {
@@ -84,14 +84,14 @@ public final class PosixHelp
      */
     public static final String getOwner(Path file) throws IOException
     {
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
-            PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
-            UserPrincipal owner = view.getOwner();
+            UserPrincipal owner = (UserPrincipal) Files.getAttribute(file, "posix:owner");
             return owner.getName();
         }
         else
         {
+            JavaLogging.getLogger(PosixHelp.class).warning("no owner support. getOwner(%s) returns \"\"", file);
             return "";
         }
     }
@@ -103,7 +103,7 @@ public final class PosixHelp
      */
     public static final String getGroup(Path file) throws IOException
     {
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
             PosixFileAttributes attrs = view.readAttributes();
@@ -112,6 +112,7 @@ public final class PosixHelp
         }
         else
         {
+            JavaLogging.getLogger(PosixHelp.class).warning("no posix support. getGroup(%s) returns \"\"", file);
             return "";
         }
     }
@@ -127,7 +128,7 @@ public final class PosixHelp
         {
             throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
         }
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
             for (Path file : files)
@@ -135,6 +136,10 @@ public final class PosixHelp
                 checkFileType(file, perms);
                 Files.setPosixFilePermissions(file, posixPerms);
             }
+        }
+        else
+        {
+            JavaLogging.getLogger(PosixHelp.class).warning("no posix support. setMode(%s)", perms);
         }
     }
     /**
@@ -146,7 +151,7 @@ public final class PosixHelp
     public static final String getModeString(Path path) throws IOException
     {
         char letter = getFileTypeLetter(path);
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
             return letter+PosixFilePermissions.toString(perms);
@@ -169,13 +174,12 @@ public final class PosixHelp
      * Change group of given files. Works only in linux
      * @param name
      * @param files
-     * @throws IOException
-     * @throws InterruptedException 
+     * @throws IOException 
      * @see org.vesalainen.util.OSProcess#call(java.lang.String...) 
      */
     public static final void setGroup(String name, Path... files) throws IOException
     {
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             for (Path file : files)
             {
@@ -185,6 +189,10 @@ public final class PosixHelp
                 PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
                 view.setGroup(group);
             }
+        }
+        else
+        {
+            JavaLogging.getLogger(PosixHelp.class).warning("no posix support. setGroup(%s)", name);
         }
     }
     /**
@@ -196,7 +204,7 @@ public final class PosixHelp
      */
     public static final void setOwner(String name, Path... files) throws IOException
     {
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             for (Path file : files)
             {
@@ -205,6 +213,10 @@ public final class PosixHelp
                 UserPrincipal user = upls.lookupPrincipalByName(name);
                 Files.setOwner(file, user);
             }
+        }
+        else
+        {
+            JavaLogging.getLogger(PosixHelp.class).warning("no owner support. setOwner(%s)", name);
         }
     }
     /**
@@ -216,10 +228,14 @@ public final class PosixHelp
     public static final void setPermission(Path path, String perms) throws IOException
     {
         checkFileType(path, perms);
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
             Files.setPosixFilePermissions(path, posixPerms);
+        }
+        else
+        {
+            JavaLogging.getLogger(PosixHelp.class).warning("no posix support. setPermission(%s, %s)", path, perms);
         }
     }
     /**
@@ -330,7 +346,7 @@ public final class PosixHelp
         {
             throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
         }
-        if (OperatingSystem.is(Linux))
+        if (supports("posix"))
         {
             Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
             FileAttribute<Set<PosixFilePermission>> attrs = PosixFilePermissions.asFileAttribute(posixPerms);
@@ -615,5 +631,112 @@ public final class PosixHelp
             }
         }
         return sb.toString();
+    }
+    /**
+     * Return true if default file system supports given view 
+     * @param view
+     * @return 
+     */
+    public static final boolean supports(String view)
+    {
+        Set<String> supportedFileAttributeViews = FileSystems.getDefault().supportedFileAttributeViews();
+        return supportedFileAttributeViews.contains(view);
+    }
+    /**
+     * Return file owner as attribute if posix supported. Otherwise returns null.
+     * @param owner
+     * @return
+     * @throws IOException 
+     */
+    public static final FileAttribute<UserPrincipal> getOwnerAsAttribute(String owner) throws IOException
+    {
+        if (supports("posix"))
+        {
+            UserPrincipalLookupService upls = FileSystems.getDefault().getUserPrincipalLookupService();
+            UserPrincipal user = upls.lookupPrincipalByName(owner);
+            return new FileAttributeImpl<>("posix:owner", user);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /**
+     * Return file group as attribute if posix supported. Otherwise returns null.
+     * @param group
+     * @return
+     * @throws IOException 
+     */
+    public static final FileAttribute<GroupPrincipal> getGroupAsAttribute(String group) throws IOException
+    {
+        if (supports("posix"))
+        {
+            UserPrincipalLookupService upls = FileSystems.getDefault().getUserPrincipalLookupService();
+            GroupPrincipal grp = upls.lookupPrincipalByGroupName(group);
+            return new FileAttributeImpl<>("posix:group", grp);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /**
+     * Returns files last modified time as attribute.
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final FileAttribute<FileTime> getLastModifiedTimeAsAttribute(Path file) throws IOException
+    {
+        return getFileTimeAsAttribute(file, "lastModifiedTime");
+    }
+    /**
+     * Returns files last access time as attribute.
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final FileAttribute<FileTime> getLastAccessTimeTimeAsAttribute(Path file) throws IOException
+    {
+        return getFileTimeAsAttribute(file, "lastAccessTime");
+    }
+    /**
+     * Returns files creation time as attribute.
+     * @param file
+     * @return
+     * @throws IOException 
+     */
+    public static final FileAttribute<FileTime> getCreationTimeTimeAsAttribute(Path file) throws IOException
+    {
+        return getFileTimeAsAttribute(file, "lastModifiedTime");
+    }
+    private static FileAttribute<FileTime> getFileTimeAsAttribute(Path file, String attribute) throws IOException
+    {
+        FileTime time = (FileTime) Files.getAttribute(file, attribute);
+        return new FileAttributeImpl<>(attribute, time);
+    }
+    public static class FileAttributeImpl<T> implements FileAttribute<T>
+    {
+        private String name;
+        private T value;
+
+        public FileAttributeImpl(String name, T value)
+        {
+            this.name = name;
+            this.value = value;
+        }
+        
+        @Override
+        public String name()
+        {
+            return name;
+        }
+
+        @Override
+        public T value()
+        {
+            return value;
+        }
+        
     }
 }
