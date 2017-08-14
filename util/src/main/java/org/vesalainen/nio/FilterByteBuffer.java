@@ -525,6 +525,12 @@ public class FilterByteBuffer implements AutoCloseable
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return "FilterByteBuffer{" + "bb=" + bb + ", position=" + position + '}';
+    }
+
     private class BBOut extends OutputStream
     {
 
