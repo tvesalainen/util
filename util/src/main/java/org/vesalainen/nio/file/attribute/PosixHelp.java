@@ -43,6 +43,10 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public final class PosixHelp
 {
+    public static final int FILE_TYPE_MASK = 0170000;   //bit mask for the file type bit fields
+    public static final int BITS_MASK = 07000;   //bit mask for the seu-uid, set-gid and stick bits.
+    public static final int PERMS_MASK = 0777;   //bit mask for the permissions bits.
+    
     public static final boolean isRegularFile(String perms)
     {
         return isFileType(perms, '-');
