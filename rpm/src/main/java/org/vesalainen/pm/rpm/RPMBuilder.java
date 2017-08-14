@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import static java.nio.file.StandardOpenOption.READ;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -57,6 +59,12 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         addString(RPMTAG_PAYLOADFORMAT, "cpio");
         addString(RPMTAG_PAYLOADCOMPRESSOR, "gzip");
         addString(RPMTAG_PAYLOADFLAGS, "9");
+    }
+
+    @Override
+    public String getPackageBuilderName()
+    {
+        return "rpm";
     }
 
     @Override
@@ -94,12 +102,6 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         return this;
     }
 
-    private RPMBuilder setSize(int v)
-    {
-        addInt32(HeaderTag.RPMTAG_SIZE, v);
-        return this;
-    }
-
     @Override
     public RPMBuilder setLicense(String v)
     {
@@ -108,7 +110,7 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
     }
 
     @Override
-    public RPMBuilder setGroup(String v)
+    public RPMBuilder setApplicationArea(String v)
     {
         addString(HeaderTag.RPMTAG_GROUP, v);
         return this;
@@ -240,6 +242,23 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         fileBuilders.add(fb);
         return fb;
     }
+
+    @Override
+    public ComponentBuilder addDirectory(String target) throws IOException
+    {
+        FileBuilder fb = new FileBuilder(target);
+        fileBuilders.add(fb);
+        return fb;
+    }
+
+    @Override
+    public ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException
+    {
+        FileBuilder fb = new FileBuilder(target, linkTarget);
+        fileBuilders.add(fb);
+        return fb;
+    }
+    
     /**
      * Creates RPM file in dir. Returns Path of created file.
      * @param dir
@@ -327,7 +346,7 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         String dir;
         int size;
         int time = (int) (System.currentTimeMillis()/1000);
-        short mode;
+        short mode = (short) 0100000;   // regular file
         short rdev;
         String linkTo = "";
         int flag;
@@ -336,7 +355,12 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         int device;
         int inode;
         String lang = "";
-        
+        /**
+         * Create regular file
+         * @param source
+         * @param target
+         * @throws IOException 
+         */
         public FileBuilder(Path source, String target) throws IOException
         {
             this.target = target;
@@ -349,7 +373,11 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             time = (int)fileTime.to(TimeUnit.SECONDS);
             compressFilename();
         }
-
+        /**
+         * Create regular file
+         * @param content
+         * @param target 
+         */
         public FileBuilder(ByteBuffer content, String target)
         {
             this.content = content;
@@ -358,12 +386,39 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             compressFilename();
         }
         /**
-         * Seet file time.
+         * Create directory
+         * @param target 
+         */
+        public FileBuilder(String target)
+        {
+            this.target = target;
+            this.content = ByteBuffer.allocate(0);
+            this.size = content.limit();
+            this.mode = 040000;
+            compressFilename();
+        }
+        /**
+         * Create symbolic link
+         * @param target
+         * @param linkTo 
+         */
+        public FileBuilder(String target, String linkTo)
+        {
+            this.target = target;
+            this.linkTo = linkTo;
+            this.content = ByteBuffer.wrap(linkTo.getBytes(US_ASCII));
+            this.size = content.limit();
+            this.mode = (short) 0120000;
+            compressFilename();
+        }
+        
+        /**
+         * Set file time.
          * @param time
          * @return 
          */
         @Override
-        public FileBuilder setTime(Instant time)
+        public FileBuilder setLastModifiedTime(Instant time)
         {
             return setTime((int)time.getEpochSecond());
         }
@@ -372,8 +427,7 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
          * @param time
          * @return 
          */
-        @Override
-        public FileBuilder setTime(int time)
+        private FileBuilder setTime(int time)
         {
             this.time = time;
             return this;
@@ -384,33 +438,24 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
          * @return 
          */
         @Override
-        public FileBuilder setMode(String mode)
+        public FileBuilder setPermissions(String mode)
         {
-            return setMode(PosixHelp.getMode(mode));
+            return setMode(PosixHelp.getMode('-'+mode));
         }
         /**
          * Set mode as short. E.g. (short)0744
          * @param mode
          * @return 
          */
-        @Override
         public FileBuilder setMode(short mode)
         {
-            this.mode = mode;
+            this.mode |= mode & 0777;
             return this;
         }
 
-        @Override
         public FileBuilder setRdev(short rdev)
         {
             this.rdev = rdev;
-            return this;
-        }
-
-        @Override
-        public FileBuilder setLinkTo(String linkTo)
-        {
-            this.linkTo = linkTo;
             return this;
         }
 
@@ -422,38 +467,41 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
 
         @Override
-        public FileBuilder setUsername(String username)
+        public FileBuilder setOwner(String username)
         {
             this.username = username;
             return this;
         }
 
         @Override
-        public FileBuilder setGroupname(String groupname)
+        public FileBuilder setGroup(String groupname)
         {
             this.groupname = groupname;
             return this;
         }
 
-        @Override
         public FileBuilder setDevice(int device)
         {
             this.device = device;
             return this;
         }
 
-        @Override
         public FileBuilder setInode(int inode)
         {
             this.inode = inode;
             return this;
         }
 
-        @Override
         public FileBuilder setLang(String lang)
         {
             this.lang = lang;
             return this;
+        }
+
+        @Override
+        public ComponentBuilder addFileAttributes(FileAttribute<?>... attrs)
+        {
+            throw new UnsupportedOperationException("This shouldn't be called.");
         }
 
         private void build()

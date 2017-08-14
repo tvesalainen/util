@@ -21,19 +21,19 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.security.NoSuchAlgorithmException;
-import java.util.Set;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.vesalainen.nio.FileUtil;
+import org.vesalainen.pm.Mapper;
 import org.vesalainen.pm.PackageBuilder;
+import org.vesalainen.pm.PackageBuilderFactory;
 
 /**
  *
@@ -58,16 +58,19 @@ public class RPMTest
         System.gc();
         FileUtil.deleteDirectory(LOCAL);
     }
-    //@Test
+    @Test
     public void testBuild() throws IOException, NoSuchAlgorithmException
     {
-        PackageBuilder builder = new RPMBuilder()
+        Mapper<String> appArea = new Mapper<>();
+        appArea.add("rpm", "Applications/Internet");
+        appArea.add("deb", "java");
+        PackageBuilder builder = PackageBuilderFactory.findPackageBuilder("rpm")
                 .setPackageName("test2")
                 .setVersion("1.0")
                 .setRelease("r1")
                 .setArchitecture("noarch")
                 .setDescription("description...")
-                .setGroup("Test/Test")
+                .setApplicationArea(appArea.get())
                 .setLicense("GPL")
                 .setOperatingSystem("linux")
                 .setSummary("summary...")
@@ -76,15 +79,21 @@ public class RPMTest
                 .setPostInstallation("echo qwerty >/tmp/test\n")
                 ;
         
+        builder.addDirectory("/opt/org.vesalainen")
+                .setPermissions("rwxr-xr-x");
+        builder.addDirectory("/opt/org.vesalainen/foo")
+                .setPermissions("rwxr-xr-x");
+        builder.addSymbolicLink("/tmp/foo", "/opt/org.vesalainen/foo")
+                .setPermissions("rwxrwxrwx");
         builder.addFile(Paths.get("pom.xml"), "/opt/org.vesalainen/foo/pom.xml")
-                .setMode("-rwxr--r--")
+                .setPermissions("rwxr--r--")
                 ;
         
         Path rpmFile = builder.build(LOCAL);
-        RPM2DEB rpm2deb = new RPM2DEB(LOCAL, (RPMBase) builder, "Timo <timo@mail.net>");
-        Path r2d = rpm2deb.build();
+//        RPM2DEB rpm2deb = new RPM2DEB(LOCAL, (RPMBase) builder, "Timo <timo@mail.net>");
+  //      Path r2d = rpm2deb.build();
         Path z = Paths.get("Z:");   // TODO REMOVE!!!!!!!!
-        FileUtil.copy(r2d, z, REPLACE_EXISTING);
+    //    FileUtil.copy(r2d, z, REPLACE_EXISTING);
         Path target = z.resolve(rpmFile.getFileName());
         Files.copy(rpmFile, target, REPLACE_EXISTING);
         try (   RPM rpm2 = new RPM())
@@ -111,7 +120,7 @@ public class RPMTest
             assertSame(exp, bb);
         }
     }
-    @Test
+    //@Test
     public void test1() throws IOException, URISyntaxException, NoSuchAlgorithmException
     {
         URL url = RPMTest.class.getResource("/redhat-lsb-4.0-2.1.4.el5.i386.rpm");

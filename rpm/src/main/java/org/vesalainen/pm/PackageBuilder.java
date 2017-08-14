@@ -28,6 +28,12 @@ import static org.vesalainen.pm.Condition.NONE;
 public interface PackageBuilder
 {
     /**
+     * Returns the name of this package builder. This name is used by 
+     * PackageBuilderFactory to identify requested builder.
+     * @return 
+     */
+    String getPackageBuilderName();
+    /**
      * Add conflicting package name
      * @param name
      * @return 
@@ -242,5 +248,12 @@ public interface PackageBuilder
      * @return 
      */
     PackageBuilder setVersion(String version);
+    /**
+     * Sets application area of package. This maps differently with package 
+     * types so 
+     * @param version
+     * @return 
+     */
+    PackageBuilder setApplicationArea(String area);
     
 }

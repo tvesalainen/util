@@ -34,10 +34,19 @@ import org.vesalainen.pm.rpm.FileFlag;
  */
 public interface ComponentBuilder
 {
-
+    /**
+     * Set flags for file. 
+     * @param flags
+     * @return 
+     */
     ComponentBuilder setFlag(FileFlag... flags);
-
-    default ComponentBuilder setGroupname(String groupname) throws IOException
+    /**
+     * Sets posix group name of file.
+     * @param groupname
+     * @return
+     * @throws IOException 
+     */
+    default ComponentBuilder setGroup(String groupname) throws IOException
     {
         FileAttribute<GroupPrincipal> group = PosixHelp.getGroupAsAttribute(groupname);
         if (group != null)
@@ -46,33 +55,32 @@ public interface ComponentBuilder
         }
         return this;
     }
-
-    ComponentBuilder setLang(String lang);
-
     /**
-     * Set mode in rwxrwxrwx string. rwxr--r-- = 0744
-     * @param mode
+     * Set posix permissions  in rwxrwxrwx format. rwxr--r-- = 0744
+     * @param perms
      * @return
      */
-    default ComponentBuilder setMode(String mode)
+    default ComponentBuilder setPermissions(String perms)
     {
         if (PosixHelp.supports("posix"))
         {
-            Set<PosixFilePermission> perms = PosixFilePermissions.fromString(mode);
-            FileAttribute<Set<PosixFilePermission>> fa = PosixFilePermissions.asFileAttribute(perms);
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms);
+            FileAttribute<Set<PosixFilePermission>> fa = PosixFilePermissions.asFileAttribute(posixPerms);
             addFileAttributes(fa);
         }
         return this;
     }
     /**
-     * Add file attribute
+     * Add file attribute. Default implementaions setGroup, setOwner, setPermissions, 
+ setLastModifiedTime, setLastAccessTime and setCreationTime calls this
+ method.
      * @param attrs
      * @return 
      */
     ComponentBuilder addFileAttributes(FileAttribute<?>... attrs);
 
     /**
-     * Seet file time.
+     * Sets files last modified time.
      * @param time
      * @return
      */
@@ -81,18 +89,33 @@ public interface ComponentBuilder
         addFileAttributes(PosixHelp.getLastModifiedTimeAsAttribute(FileTime.from(time)));
         return this;
     }
+    /**
+     * Sets files last access time.
+     * @param time
+     * @return 
+     */
     default ComponentBuilder setLastAccessTime(Instant time)
     {
         addFileAttributes(PosixHelp.getLastAccessTimeAsAttribute(FileTime.from(time)));
         return this;
     }
+    /**
+     * Sets files creation time.
+     * @param time
+     * @return 
+     */
     default ComponentBuilder setCreationTime(Instant time)
     {
         addFileAttributes(PosixHelp.getCreationTimeAsAttribute(FileTime.from(time)));
         return this;
     }
-
-    default ComponentBuilder setUsername(String name) throws IOException
+    /**
+     * Sets file posix owner.
+     * @param name
+     * @return
+     * @throws IOException 
+     */
+    default ComponentBuilder setOwner(String name) throws IOException
     {
         FileAttribute<UserPrincipal> owner = PosixHelp.getOwnerAsAttribute(name);
         if (owner != null)

@@ -54,5 +54,6 @@ public class FileRecord
         bb.putString(filename);
         bb.alignOutput(4);
         bb.put(content.duplicate());
+        bb.alignOutput(4);
     }
 }
