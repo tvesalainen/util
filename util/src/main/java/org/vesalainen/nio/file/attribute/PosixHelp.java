@@ -36,6 +36,9 @@ import org.vesalainen.util.logging.JavaLogging;
 /**
  * PosixHelp provides methods for manipulating posix permissions. Supported are:
  * File types sl-bdcp, set-uid, set-gid and sticky bit.
+ * <p>
+ * Most methods accept string with file type as first letter. E.g. drwxrwxrwx.
+ * Some methods accept also shorter permission part rwxrwxrwx.
  * @author tkv
  */
 public final class PosixHelp
@@ -117,30 +120,18 @@ public final class PosixHelp
         }
     }
     /**
-     * Set permissions to path
+     * Returns permission part of mode string
      * @param perms
-     * @param files
-     * @throws IOException 
+     * @return 
      */
-    public static final void setMode(String perms, Path... files) throws IOException
+    private static String permsPart(String perms)
     {
-        if (perms.length() != 10)
+        int length = perms.length();
+        if (length > 10 || length < 9)
         {
             throw new IllegalArgumentException(perms+" not permission. E.g. -rwxr--r--");
         }
-        if (supports("posix"))
-        {
-            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
-            for (Path file : files)
-            {
-                checkFileType(file, perms);
-                Files.setPosixFilePermissions(file, posixPerms);
-            }
-        }
-        else
-        {
-            JavaLogging.getLogger(PosixHelp.class).warning("no posix support. setMode(%s)", perms);
-        }
+        return length == 10 ? perms.substring(1) : perms;
     }
     /**
      * Returns  mode string for path. Real mode for linux. Others guess work.
@@ -220,9 +211,9 @@ public final class PosixHelp
         }
     }
     /**
-     * Set posix permissions if os is linux.
+     * Set posix permissions if supported.
      * @param path
-     * @param perms E.g. -rwxr--r--
+     * @param perms 10 or 9 length E.g. -rwxr--r--
      * @throws java.io.IOException
      */
     public static final void setPermission(Path path, String perms) throws IOException
@@ -230,7 +221,7 @@ public final class PosixHelp
         checkFileType(path, perms);
         if (supports("posix"))
         {
-            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(perms.substring(1));
+            Set<PosixFilePermission> posixPerms = PosixFilePermissions.fromString(permsPart(perms));
             Files.setPosixFilePermissions(path, posixPerms);
         }
         else
@@ -239,7 +230,7 @@ public final class PosixHelp
         }
     }
     /**
-     * Throws IllegalArgumentException if perms length != 0 or files type doesn't
+     * Throws IllegalArgumentException if perms length != 10 or files type doesn't
      * match with permission.
      * @param path
      * @param perms 
@@ -336,7 +327,7 @@ public final class PosixHelp
     /**
      * Returns PosixFileAttributes for perms
      * <p>
-     * If OS is not Linux returns empty array;
+     * If posix is not supported returns empty array;
      * @param perms E.g. -rwxr--r--
      * @return 
      */
@@ -683,8 +674,7 @@ public final class PosixHelp
     /**
      * Returns files last modified time as attribute.
      * @param time
-     * @return
-     * @throws IOException 
+     * @return 
      */
     public static final FileAttribute<FileTime> getLastModifiedTimeAsAttribute(FileTime time)
     {
@@ -693,8 +683,7 @@ public final class PosixHelp
     /**
      * Returns files last access time as attribute.
      * @param time
-     * @return
-     * @throws IOException 
+     * @return 
      */
     public static final FileAttribute<FileTime> getLastAccessTimeAsAttribute(FileTime time)
     {
@@ -703,8 +692,7 @@ public final class PosixHelp
     /**
      * Returns files creation time as attribute.
      * @param time
-     * @return
-     * @throws IOException 
+     * @return 
      */
     public static final FileAttribute<FileTime> getCreationTimeAsAttribute(FileTime time)
     {
