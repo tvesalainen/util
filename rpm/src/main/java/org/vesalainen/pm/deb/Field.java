@@ -37,6 +37,7 @@ public enum Field
     Uploaders,
     Depends,
     Conflicts,
+    Provides,
     Standards_Version(Recommended),
     Homepage,
     Format_Specification,

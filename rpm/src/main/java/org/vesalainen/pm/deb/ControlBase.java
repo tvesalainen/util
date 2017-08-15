@@ -31,21 +31,21 @@ import org.vesalainen.util.Lists;
 public class ControlBase
 {
     
-    protected Path dir;
+    protected Path debian;
     protected String name;
     protected List<Paragraph> paragraphs;
 
-    protected ControlBase(Path dir, String name, Paragraph... paragraphs)
+    protected ControlBase(String name, Paragraph... paragraphs)
     {
-        this.dir = dir;
+        this.debian = debian;
         this.name = name;
         this.paragraphs = Lists.create(paragraphs);
     }
 
-    void save() throws IOException
+    void save(Path debian) throws IOException
     {
-        Path control = dir.resolve(name);
-        Files.createDirectories(dir);
+        Path control = debian.resolve(name);
+        Files.createDirectories(debian);
         try (final BufferedWriter bw = Files.newBufferedWriter(control, StandardCharsets.UTF_8))
         {
             for (Paragraph p : paragraphs)

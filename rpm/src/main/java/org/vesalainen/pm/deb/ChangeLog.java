@@ -21,7 +21,6 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import org.vesalainen.util.Lists;
  */
 public class ChangeLog
 {
-    private Path dir;
     private String name;
     private String version;
     private String release;
@@ -44,9 +42,12 @@ public class ChangeLog
     private String maintainer;
     private List<String> changeDetails = new ArrayList<>();
 
-    public ChangeLog(Path dir, String name, String version, String release, String maintainer)
+    public ChangeLog()
     {
-        this.dir = dir;
+    }
+
+    public void set(String name, String version, String release, String maintainer)
+    {
         this.name = name;
         this.version = version;
         this.release = release;
@@ -68,13 +69,13 @@ public class ChangeLog
         this.distributions = Lists.create(distributions);
     }
     
-    public void save() throws IOException
+    public void save(Path debian) throws IOException
     {
         if (changeDetails.isEmpty())
         {
             changeDetails.add("TO DO");
         }
-        Path changelog = dir.resolve("changelog");
+        Path changelog = debian.resolve("changelog");
         try (BufferedWriter bf = Files.newBufferedWriter(changelog, UTF_8))
         {
             bf.append(String.format("%s (%s-%s) %s; urgency=%s\n", 

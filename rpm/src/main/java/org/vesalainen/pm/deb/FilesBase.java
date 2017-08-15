@@ -31,19 +31,20 @@ import java.util.List;
 public class FilesBase
 {
     
-    protected Path path;
     protected List<String> files = new ArrayList<>();
+    private final String name;
 
-    protected FilesBase(Path debian, String name)
+    protected FilesBase(String name)
     {
-        this.path = debian.resolve(name);
+        this.name = name;
     }
     public void addFile(String filepath)
     {
         files.add(filepath);
     }
-    public void save() throws IOException
+    public void save(Path debian) throws IOException
     {
+        Path path = debian.resolve(name);
         try (final BufferedWriter bf = Files.newBufferedWriter(path, StandardCharsets.UTF_8))
         {
             for (String file : files)

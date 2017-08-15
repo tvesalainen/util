@@ -140,6 +140,12 @@ public interface PackageBuilder
      */
     PackageBuilder setDescription(String description);
     /**
+     * Set copyright
+     * @param copyright
+     * @return 
+     */
+    PackageBuilder setCopyright(String copyright);
+    /**
      * Set license.
      * @param license
      * @return 
@@ -251,9 +257,20 @@ public interface PackageBuilder
     /**
      * Sets application area of package. This maps differently with package 
      * types so 
-     * @param version
+     * @param area
      * @return 
      */
     PackageBuilder setApplicationArea(String area);
-    
+    /**
+     * Sets package priority.
+     * @param priority
+     * @return 
+     */
+    PackageBuilder setPriority(String priority);
+    /**
+     * Set maintainer of package
+     * @param maintainer
+     * @return 
+     */
+    PackageBuilder setMaintainer(String maintainer);
 }

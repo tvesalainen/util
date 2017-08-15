@@ -124,5 +124,17 @@ public interface ComponentBuilder
         }
         return this;
     }
+    /**
+     * Set copyright
+     * @param copyright
+     * @return 
+     */
+    ComponentBuilder setCopyright(String copyright);
+    /**
+     * Set license.
+     * @param license
+     * @return 
+     */
+    ComponentBuilder setLicense(String license);
     
 }

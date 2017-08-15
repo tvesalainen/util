@@ -16,14 +16,7 @@
  */
 package org.vesalainen.pm.deb;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import static org.vesalainen.pm.deb.DEBBuilder.SOURCE_FORMAT;
 
 /**
  *
@@ -32,9 +25,9 @@ import static org.vesalainen.pm.deb.DEBBuilder.SOURCE_FORMAT;
 public class Conffiles extends FilesBase
 {
 
-    public Conffiles(Path debian)
+    public Conffiles()
     {
-        super(debian, "conffiles");
+        super("conffiles");
     }
     
     @Override

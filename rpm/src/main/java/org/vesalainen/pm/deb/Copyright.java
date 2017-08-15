@@ -28,9 +28,9 @@ public class Copyright extends ControlBase
     private Paragraph paragraph1;
     private Paragraph paragraph2;
     
-    public Copyright(Path dir)
+    public Copyright()
     {
-        super(dir, "copyright", new Paragraph(), new Paragraph());
+        super("copyright", new Paragraph(), new Paragraph());
         paragraph1 = this.paragraphs.get(0);
         paragraph2 = this.paragraphs.get(1);
         paragraph1.add(Format_Specification, "http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135");
@@ -60,14 +60,30 @@ public class Copyright extends ControlBase
         paragraph2.add(License, v);
         return this;
     }
-    public Copyright addFile(String file, String copyright, String license)
+    public FileCopyright addFile(String file)
     {
         Paragraph p = new Paragraph();
         paragraphs.add(p);
-        p.add(Files, file);
-        p.add(Copyright, copyright);
-        p.add(License, license);
-        return this;
+        return new FileCopyright(p, file);
     }
-    
+    public class FileCopyright
+    {
+        private Paragraph p;
+
+        public FileCopyright(Paragraph p, String file)
+        {
+            this.p = p;
+            p.add(Files, file);
+        }
+        public FileCopyright addCopyright(String copyright)
+        {
+            p.add(Copyright, copyright);
+            return this;
+        }
+        public FileCopyright addLicense(String license)
+        {
+            p.add(License, license);
+            return this;
+        }
+    }
 }

@@ -19,12 +19,9 @@ package org.vesalainen.pm.rpm.deb;
 import org.vesalainen.pm.deb.DEBBuilder;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Test;
-import org.junit.Before;
-import org.vesalainen.nio.FileUtil;
 import static org.vesalainen.pm.rpm.FileFlag.DOC;
 
 /**

@@ -17,7 +17,9 @@
 package org.vesalainen.pm.deb;
 
 import java.nio.file.Path;
-import static org.vesalainen.pm.rpm.Dependency.*;
+import java.util.Arrays;
+import org.vesalainen.pm.Condition;
+import static org.vesalainen.pm.Condition.*;
 import static org.vesalainen.pm.deb.Field.*;
 
 /**
@@ -29,12 +31,16 @@ public class Control extends ControlBase
     private Paragraph general;
     private Paragraph binary;
 
-    Control(Path dir, String source)
+    Control()
     {
-        super(dir, "control", new Paragraph(), new Paragraph());
+        super("control", new Paragraph(), new Paragraph());
         general = paragraphs.get(0);
         binary = paragraphs.get(1);
+    }
+    public Control setSource(String source)
+    {
         general.add(Source, source);
+        return this;
     }
     public Control setMaintainer(String v)
     {
@@ -78,11 +84,11 @@ public class Control extends ControlBase
     }
     public Control addDepends(String depends)
     {
-        return addDepends(depends, "", 0);
+        return addDepends(depends, "");
     }
-    public Control addDepends(String depends, String version, int dependencies)
+    public Control addDepends(String depends, String version, Condition... dependencies)
     {
-        if (compatible(dependencies) && !depends.startsWith("/"))
+        if (!depends.startsWith("/"))
         {
             addRelationship(Depends, depends, version, dependencies);
         }
@@ -90,17 +96,22 @@ public class Control extends ControlBase
     }
     public Control addConflict(String depends)
     {
-        return addConflict(depends, "", 0);
+        return addConflict(depends, "");
     }
-    public Control addConflict(String depends, String version, int dependencies)
+    public Control addConflict(String depends, String version, Condition... dependencies)
     {
-        if (compatible(dependencies) && !depends.startsWith("/"))
+        if (!depends.startsWith("/"))
         {
             addRelationship(Conflicts, depends, version, dependencies);
         }
         return this;
     }
-    private void addRelationship(Field field, String depends, String version, int dependencies)
+    public Control addProvides(String provides)
+    {
+        binary.add(Provides, provides);
+        return this;
+    }
+    private void addRelationship(Field field, String depends, String version, Condition... dependencies)
     {
         binary.add(field, toString(depends, version, dependencies));
     }
@@ -115,33 +126,44 @@ public class Control extends ControlBase
         return this;
     }
 
-    String toString(String depends, String version, int dependencies)
+    String toString(String depends, String version, Condition... deps)
     {
         if (version == null || version.isEmpty())
         {
             return depends;
         }
-        switch (dependencies)
+        if (deps.length < 1 || deps.length > 2)
         {
-            case LESS:
-                return depends+" (<< "+version+")";
-            case GREATER:
-                return depends+" (>> "+version+")";
-            case EQUAL:
-                return depends+" (= "+version+")";
-            case LESS | EQUAL:
-                return depends+" (<= "+version+")";
-            case GREATER | EQUAL:
-                return depends+" (>= "+version+")";
-            default:
-                throw new UnsupportedOperationException(dependencies+" dependency not supported");
-                
+            throw new IllegalArgumentException(Arrays.toString(deps)+" illegal combination");
         }
-    }
+        if (deps.length == 1)
+        {
+            switch (deps[0])
+            {
+                case LESS:
+                    return depends+" (<< "+version+")";
+                case GREATER:
+                    return depends+" (>> "+version+")";
+                case EQUAL:
+                    return depends+" (= "+version+")";
+                default:
+                    throw new UnsupportedOperationException(deps[0]+" not supported");
+            }
+        }
+        else
+        {
+            Arrays.sort(deps);
+            switch (deps[1])
+            {
+                case LESS:
+                    return depends+" (<= "+version+")";
+                case GREATER:
+                    return depends+" (>= "+version+")";
+                default:
+                    throw new UnsupportedOperationException(Arrays.toString(deps)+" dependency not supported");
+            }
 
-    private boolean compatible(int dependencies)
-    {
-        return dependencies == 0 || (dependencies >= 0x02 && dependencies <= (0x08 | 0x04 | 0x02));
+        }
     }
 
 }

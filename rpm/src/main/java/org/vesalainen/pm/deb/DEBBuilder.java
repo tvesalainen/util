@@ -25,14 +25,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.nio.file.attribute.PosixHelp;
+import org.vesalainen.pm.ComponentBuilder;
+import org.vesalainen.pm.Condition;
+import org.vesalainen.pm.PackageBuilder;
+import org.vesalainen.pm.deb.Copyright.FileCopyright;
 import org.vesalainen.pm.rpm.FileFlag;
 import static org.vesalainen.pm.rpm.FileFlag.*;
 
@@ -43,7 +50,7 @@ import static org.vesalainen.pm.rpm.FileFlag.*;
  * @see <a href="https://www.debian.org/doc/manuals/maint-guide/index.en.html">Debian New Maintainers' Guide</a>
  * @see <a href="https://www.debian.org/doc/debian-policy/index.html">Debian Policy Manual</a>
  */
-public class DEBBuilder
+public class DEBBuilder implements PackageBuilder
 {
     public static final String STANDARDS_VERSION = "4.0.1.0";
     public static final String SOURCE_FORMAT = "1.0\n";
@@ -64,94 +71,309 @@ public class DEBBuilder
     protected FileTime now = FileTime.from(Instant.now());
     protected List<FileBuilder> fileBuilders = new ArrayList<>();
 
-    protected DEBBuilder()
+    public DEBBuilder()
     {
+        control = new Control();
+        copyright = new Copyright();
+        changeLog = new ChangeLog();
+        conffiles = new Conffiles();
+        docs = new Docs();
     }
 
-    public DEBBuilder(Path base, String name, String version, String release, String maintainer)
+    /**
+     * Returns "deb"
+     * @return 
+     */
+    @Override
+    public String getPackageBuilderName()
     {
-        init(base, name, version, release, maintainer);
+        return "deb";
     }
-    protected final void init(Path base, String name, String version, String release, String maintainer)
-    {
-        this.dir = base.resolve(name+"-"+version);
-        this.name = name;
-        this.version = version;
-        this.release = release;
-        this.maintainer = maintainer;
-        this.debian = dir.resolve("debian");
-        control = new Control(debian, name);
-        control.setStandardsVersion(STANDARDS_VERSION);
-        copyright = new Copyright(debian);
-        changeLog = new ChangeLog(debian, name, version, release, maintainer);
-        conffiles = new Conffiles(debian);
-        docs = new Docs(debian);
-    }
-    public final void addDocumentationFile(String filepath)
+
+    private void addDocumentationFile(String filepath)
     {
         docs.addFile(filepath);
     }
-    public final void addConfigurationFile(String filepath)
+    private void addConfigurationFile(String filepath)
     {
         conffiles.addFile(filepath);
     }
-    public final void setPostInst(String script)
+    /**
+     * Returns "/bin/sh"
+     * @return 
+     */
+    @Override
+    public String getDefaultInterpreter()
     {
-        setPostInst(script, INTERPRETER);
+        return INTERPRETER;
     }
-    public final void setPostInst(String script, String interpreter)
+    /**
+     * Set debian/postinst
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public DEBBuilder setPostInstallation(String script, String interpreter)
     {
         setMaintainerScript("postinst", script, interpreter);
+        return this;
     }
-    public final void setPreInst(String script)
-    {
-        setPreInst(script, INTERPRETER);
-    }
-    public final void setPreInst(String script, String interpreter)
+    /**
+     * Set debian/preinst
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public DEBBuilder setPreInstallation(String script, String interpreter)
     {
         setMaintainerScript("preinst", script, interpreter);
+        return this;
     }
-    public final void setPostRm(String script)
-    {
-        setPostRm(script, INTERPRETER);
-    }
-    public final void setPostRm(String script, String interpreter)
+    /**
+     * Set debian/postrm
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public DEBBuilder setPostUnInstallation(String script, String interpreter)
     {
         setMaintainerScript("postrm", script, interpreter);
+        return this;
     }
-    public final void setPreRm(String script)
-    {
-        setPreRm(script, INTERPRETER);
-    }
-    public final void setPreRm(String script, String interpreter)
+    /**
+     * Set debian/prerm
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public DEBBuilder setPreUnInstallation(String script, String interpreter)
     {
         setMaintainerScript("prerm", script, interpreter);
+        return this;
     }
     private void setMaintainerScript(String name, String script, String interpreter)
     {
         maintainerScripts.add(new MaintainerScript(debian, name, script, interpreter));
     }
-    
-    public final Control control()
+    /**
+     * Add debian/control Conflicts field.
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
+    @Override
+    public DEBBuilder addConflict(String name, String version, Condition... dependency)
     {
-        return control;
+        control.addConflict(release, version, dependency);
+        return this;
+    }
+    /**
+     * Add debian/control Depends field.
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
+    @Override
+    public DEBBuilder addRequire(String name, String version, Condition... dependency)
+    {
+        control.addDepends(release, version, dependency);
+        return this;
+    }
+    /**
+     * Add debian/control Provides field.
+     * @param name
+     * @param version Not used
+     * @param dependency Not used
+     * @return 
+     */
+    @Override
+    public DEBBuilder addProvide(String name, String version, Condition... dependency)
+    {
+        control.addProvides(name);
+        return this;
+    }
+    /**
+     * Add debian/control Architecture field.
+     * @param architecture
+     * @return 
+     */
+    @Override
+    public DEBBuilder setArchitecture(String architecture)
+    {
+        control.setArchitecture(architecture);
+        return this;
+    }
+    /**
+     * Add debian/control Description field.
+     * @param description
+     * @return 
+     */
+    @Override
+    public DEBBuilder setDescription(String description)
+    {
+        control.setDescription(description);
+        return this;
+    }
+    /**
+     * Add debian/copyright Copyright field.
+     * @param cr
+     * @return 
+     */
+    @Override
+    public DEBBuilder setCopyright(String cr)
+    {
+        copyright.setCopyright(cr);
+        return this;
+    }
+    /**
+     * Add debian/copyright License field.
+     * @param license
+     * @return 
+     */
+    @Override
+    public DEBBuilder setLicense(String license)
+    {
+        copyright.setLicense(license);
+        return this;
+    }
+    /**
+     * Add debian/control Maintainer field. 
+     * @param maintainer
+     * @return 
+     */
+    @Override
+    public PackageBuilder setMaintainer(String maintainer)
+    {
+        this.maintainer = maintainer;
+        control.setMaintainer(maintainer);
+        return this;
+    }
+    /**
+     * Add debian/control Package field.
+     * @param name
+     * @return 
+     */
+    @Override
+    public DEBBuilder setPackageName(String name)
+    {
+        this.name = name;
+        control.setPackage(name);
+        return this;
+    }
+    /**
+     * Does nothing
+     * @param os
+     * @return 
+     */
+    @Override
+    public DEBBuilder setOperatingSystem(String os)
+    {
+        return this;
+    }
+    /**
+     * Set debian/changelog release
+     * @param release
+     * @return 
+     */
+    @Override
+    public DEBBuilder setRelease(String release)
+    {
+        this.release = release;
+        return this;
+    }
+    /**
+     * Does nothing
+     * @param summary
+     * @return 
+     */
+    @Override
+    public DEBBuilder setSummary(String summary)
+    {
+        return this;
+    }
+    /**
+     * Set debian/changelog version
+     * @param version
+     * @return 
+     */
+    @Override
+    public DEBBuilder setVersion(String version)
+    {
+        this.version = version;
+        return this;
+    }
+    /**
+     * Set debian/control Section field.
+     * @param area
+     * @return 
+     */
+    @Override
+    public DEBBuilder setApplicationArea(String area)
+    {
+        control.setSection(area);
+        return this;
+    }
+    /**
+     * Set debian/control Priority field.
+     * @param priority
+     * @return 
+     */
+    @Override
+    public PackageBuilder setPriority(String priority)
+    {
+        control.setPriority(priority);
+        return this;
+    }
+    
+    @Override
+    public ComponentBuilder addDirectory(String target) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public final Copyright copyright()
+    @Override
+    public ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException
     {
-        return copyright;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    public Path build() throws IOException
+
+    @Override
+    public FileBuilder addFile(Path source, String target) throws IOException
     {
+        FileBuilder fb = new FileBuilder(target, source);
+        fileBuilders.add(fb);
+        return fb;
+    }
+    @Override
+    public ComponentBuilder addFile(ByteBuffer content, String target) throws IOException
+    {
+        FileBuilder fb = new FileBuilder(target, content);
+        fileBuilders.add(fb);
+        return fb;
+    }
+
+    @Override
+    public Path build(Path base) throws IOException
+    {
+        this.dir = base.resolve(name+"-"+version);
+        this.debian = dir.resolve("debian");
+        control.setStandardsVersion(STANDARDS_VERSION);
+        changeLog.set(name, version, release, maintainer);
+        control.setSource(name);
         for (FileBuilder fb : fileBuilders)
         {
             fb.build();
         }
-        copyright.save();
-        control.save();
+        copyright.save(debian);
+        control.save(debian);
 
-        changeLog.save();
+        changeLog.save(debian);
         // compat
         Path compat = debian.resolve("compat");
         try (BufferedWriter bf = Files.newBufferedWriter(compat, UTF_8))
@@ -174,35 +396,38 @@ public class DEBBuilder
         {
             bf.append(SOURCE_FORMAT);
         }
-        conffiles.save();
-        docs.save();
+        conffiles.save(debian);
+        docs.save(debian);
         
         return dir;
     }
     
-    public final FileBuilder addFile(String target, Path file) throws IOException
-    {
-        FileBuilder fb = new FileBuilder(target, file);
-        fileBuilders.add(fb);
-        return fb;
-    }
-    public final FileBuilder addFile(String target, ByteBuffer content) throws IOException
-    {
-        FileBuilder fb = new FileBuilder(target, content);
-        fileBuilders.add(fb);
-        return fb;
-    }
-    public class FileBuilder
+    public class FileBuilder implements ComponentBuilder
     {
         private String target;
+        private String linkTarget;
         private ByteBuffer content; 
-        private String user = "root";
-        private String group = "root";
-        private short mode;
-        private FileTime creationTime = now;
-        private FileTime lastAccessTime = now;
-        private FileTime lastModifiedTime = now;
         private FileFlag[] flags = new FileFlag[]{};
+        private Map<String,Object> attributeMap = new HashMap<>();
+        private FileCopyright fileCopyright;
+        /**
+         * Creates directory
+         * @param target 
+         */
+        public FileBuilder(String target)
+        {
+            this.target = target;
+        }
+        /**
+         * Creates symbolic link.
+         * @param target
+         * @param linkTarget 
+         */
+        public FileBuilder(String target, String linkTarget)
+        {
+            this.target = target;
+            this.linkTarget = linkTarget;
+        }
 
         public FileBuilder(String target, Path file) throws IOException
         {
@@ -211,12 +436,7 @@ public class DEBBuilder
             {
                 this.content = fc.map(READ_ONLY, 0, Files.size(file));
             }
-            this.user = PosixHelp.getOwner(file);
-            this.group = PosixHelp.getGroup(file);
-            this.mode = PosixHelp.getMode(PosixHelp.getModeString(file));
-            this.creationTime = FileUtil.getCreationTime(file);
-            this.lastAccessTime = FileUtil.getLastAccessTime(file);
-            this.lastModifiedTime = FileUtil.getLastModifiedTime(file);
+            attributeMap.putAll(Files.readAttributes(file, "*"));
         }
 
         public FileBuilder(String target, ByteBuffer content)
@@ -225,48 +445,45 @@ public class DEBBuilder
             this.content = content;
         }
 
-        public FileBuilder setUser(String user)
+        @Override
+        public FileBuilder addFileAttributes(FileAttribute<?>... attrs)
         {
-            this.user = user;
+            for (FileAttribute<?> fa : attrs)
+            {
+                attributeMap.put(fa.name(), fa.value());
+            }
             return this;
         }
 
-        public FileBuilder setGroup(String group)
-        {
-            this.group = group;
-            return this;
-        }
-
-        public FileBuilder setMode(String mode)
-        {
-            this.mode = PosixHelp.getMode(mode);    // to make early check
-            return this;
-        }
-
-        public FileBuilder setCreationTime(FileTime creationTime)
-        {
-            this.creationTime = creationTime;
-            return this;
-        }
-
-        public FileBuilder setLastAccessTime(FileTime lastAccessTime)
-        {
-            this.lastAccessTime = lastAccessTime;
-            return this;
-        }
-
-        public FileBuilder setLastModifiedTime(FileTime lastModifiedTime)
-        {
-            this.lastModifiedTime = lastModifiedTime;
-            return this;
-        }
-
-        public FileBuilder setFlags(FileFlag... flags)
+        @Override
+        public FileBuilder setFlag(FileFlag... flags)
         {
             this.flags = flags;
             return this;
         }
-        
+
+        @Override
+        public ComponentBuilder setCopyright(String cr)
+        {
+            if (fileCopyright == null)
+            {
+                fileCopyright = copyright.addFile(target);
+            }
+            fileCopyright.addCopyright(cr);
+            return this;
+        }
+
+        @Override
+        public ComponentBuilder setLicense(String license)
+        {
+            if (fileCopyright == null)
+            {
+                fileCopyright = copyright.addFile(target);
+            }
+            fileCopyright.addLicense(license);
+            return this;
+        }
+
         private void build() throws IOException
         {
             if (FileFlag.isSet(CONFIG, flags))
@@ -278,29 +495,37 @@ public class DEBBuilder
                 addDocumentationFile(target);
             }
             Path path = dir.resolve(target);
-            if (PosixHelp.isDirectory(mode))
+            if (content != null)
             {
-                Files.createDirectories(path);
+                Files.createDirectories(path.getParent());
+                try (FileChannel fc = FileChannel.open(path, WRITE, CREATE))
+                {
+                    fc.write(content);
+                }
             }
             else
             {
-                if (PosixHelp.isRegularFile(mode))
+                if (linkTarget == null)
                 {
-                    Files.createDirectories(path.getParent());
-                    try (FileChannel fc = FileChannel.open(path, WRITE, CREATE))
-                    {
-                        fc.write(content);
-                    }
+                    Files.createDirectories(path);
                 }
                 else
                 {
-                    throw new UnsupportedOperationException(mode+" mode (symbolic link???) not supported yet");
+                    Path link = dir.resolve(linkTarget);
+                    Files.createSymbolicLink(path, link);
                 }
             }
-            PosixHelp.setOwner(user, path);
-            PosixHelp.setGroup(group, path);
-            PosixHelp.setPermission(path, PosixHelp.toString(mode));
-            FileUtil.setTimes(lastModifiedTime, lastAccessTime, creationTime, path);
+            attributeMap.forEach((a,v)->
+            {
+                try
+                {
+                    Files.setAttribute(path, a, v);
+                }
+                catch (IOException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            });
         }
     }
 }

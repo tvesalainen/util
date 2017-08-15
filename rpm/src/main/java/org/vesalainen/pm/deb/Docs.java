@@ -16,8 +16,6 @@
  */
 package org.vesalainen.pm.deb;
 
-import java.nio.file.Path;
-
 /**
  *
  * @author tkv
@@ -25,9 +23,9 @@ import java.nio.file.Path;
 public class Docs extends FilesBase
 {
     
-    public Docs(Path debian)
+    public Docs()
     {
-        super(debian, "docs");
+        super("docs");
     }
     
 }

@@ -60,173 +60,269 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         addString(RPMTAG_PAYLOADCOMPRESSOR, "gzip");
         addString(RPMTAG_PAYLOADFLAGS, "9");
     }
-
+    /**
+     * returns "rpm"
+     * @return 
+     */
     @Override
     public String getPackageBuilderName()
     {
         return "rpm";
     }
-
+    /**
+     * Set RPMTAG_NAME
+     * @param name
+     * @return 
+     */
     @Override
     public RPMBuilder setPackageName(String name)
     {
-        addString(HeaderTag.RPMTAG_NAME, name);
+        addString(RPMTAG_NAME, name);
         return this;
     }
-
+    /**
+     * Set RPMTAG_VERSION
+     * @param version
+     * @return 
+     */
     @Override
     public RPMBuilder setVersion(String version)
     {
-        addString(HeaderTag.RPMTAG_VERSION, version);
+        addString(RPMTAG_VERSION, version);
         return this;
     }
-
+    /**
+     * Set RPMTAG_RELEASE
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setRelease(String v)
     {
-        addString(HeaderTag.RPMTAG_RELEASE, v);
+        addString(RPMTAG_RELEASE, v);
         return this;
     }
-
+    /**
+     * Set RPMTAG_SUMMARY
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setSummary(String v)
     {
-        addString(HeaderTag.RPMTAG_SUMMARY, v);
+        addString(RPMTAG_SUMMARY, v);
         return this;
     }
-
+    /**
+     * Set RPMTAG_DESCRIPTION
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setDescription(String v)
     {
-        addString(HeaderTag.RPMTAG_DESCRIPTION, v);
+        addString(RPMTAG_DESCRIPTION, v);
         return this;
     }
-
+    /**
+     * No operation
+     * @param copyright
+     * @return 
+     */
+    @Override
+    public RPMBuilder setCopyright(String copyright)
+    {
+        return this;
+    }
+    /**
+     * Set RPMTAG_LICENSE
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setLicense(String v)
     {
-        addString(HeaderTag.RPMTAG_LICENSE, v);
+        addString(RPMTAG_LICENSE, v);
         return this;
     }
-
+    /**
+     * Set RPMTAG_GROUP
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setApplicationArea(String v)
     {
-        addString(HeaderTag.RPMTAG_GROUP, v);
+        addString(RPMTAG_GROUP, v);
         return this;
     }
-
+    /**
+     * Set RPMTAG_OS
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setOperatingSystem(String v)
     {
-        addString(HeaderTag.RPMTAG_OS, v);
+        addString(RPMTAG_OS, v);
         return this;
     }
-
+    /**
+     * Set RPMTAG_ARCH
+     * @param v
+     * @return 
+     */
     @Override
     public RPMBuilder setArchitecture(String v)
     {
-        addString(HeaderTag.RPMTAG_ARCH, v);
+        addString(RPMTAG_ARCH, v);
         return this;
     }
-
+    /**
+     * Returns "/bin/sh"
+     * @return 
+     */
     @Override
     public String getDefaultInterpreter()
     {
         return INTERPRETER;
     }
-
+    /**
+     * Set RPMTAG_PREIN and RPMTAG_PREINPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
     @Override
     public RPMBuilder setPreInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_PREIN, script);
-        addString(HeaderTag.RPMTAG_PREINPROG, interpreter);
+        addString(RPMTAG_PREIN, script);
+        addString(RPMTAG_PREINPROG, interpreter);
         ensureBinSh();
         return this;
     }
-
+    /**
+     * Set RPMTAG_POSTIN and RPMTAG_POSTINPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
     @Override
     public RPMBuilder setPostInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_POSTIN, script);
-        addString(HeaderTag.RPMTAG_POSTINPROG, interpreter);
+        addString(RPMTAG_POSTIN, script);
+        addString(RPMTAG_POSTINPROG, interpreter);
         ensureBinSh();
         return this;
     }
-
+    /**
+     * Set RPMTAG_PREUN and RPMTAG_PREUNPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
     @Override
     public RPMBuilder setPreUnInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_PREUN, script);
-        addString(HeaderTag.RPMTAG_PREUNPROG, interpreter);
+        addString(RPMTAG_PREUN, script);
+        addString(RPMTAG_PREUNPROG, interpreter);
         ensureBinSh();
         return this;
     }
-
+    /**
+     * Set RPMTAG_POSTUN and RPMTAG_POSTUNPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
     @Override
     public RPMBuilder setPostUnInstallation(String script, String interpreter)
     {
-        addString(HeaderTag.RPMTAG_POSTUN, script);
-        addString(HeaderTag.RPMTAG_POSTUNPROG, "/bin/sh");
+        addString(RPMTAG_POSTUN, script);
+        addString(RPMTAG_POSTUNPROG, interpreter);
         ensureBinSh();
         return this;
     }
 
     private void ensureBinSh()
     {
-        if (!contains(HeaderTag.RPMTAG_REQUIRENAME, "/bin/sh"))
+        if (!contains(RPMTAG_REQUIRENAME, "/bin/sh"))
         {
             addRequire("/bin/sh");
         }
     }
-
+    /**
+     * Add RPMTAG_PROVIDENAME, RPMTAG_PROVIDEVERSION and RPMTAG_PROVIDEFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
     @Override
     public RPMBuilder addProvide(String name, String version, Condition... dependency)
     {
-        addString(HeaderTag.RPMTAG_PROVIDENAME, name);
-        addString(HeaderTag.RPMTAG_PROVIDEVERSION, version);
-        addInt32(HeaderTag.RPMTAG_PROVIDEFLAGS, Dependency.or(dependency));
+        addString(RPMTAG_PROVIDENAME, name);
+        addString(RPMTAG_PROVIDEVERSION, version);
+        addInt32(RPMTAG_PROVIDEFLAGS, Dependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
-
+    /**
+     * Add RPMTAG_REQUIRENAME, RPMTAG_REQUIREVERSION and RPMTAG_REQUIREFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
     @Override
     public RPMBuilder addRequire(String name, String version, Condition... dependency)
     {
-        addString(HeaderTag.RPMTAG_REQUIRENAME, name);
-        addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
-        addInt32(HeaderTag.RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        addString(RPMTAG_REQUIRENAME, name);
+        addString(RPMTAG_REQUIREVERSION, version);
+        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
 
     private RPMBuilder addRequireInt(String name, String version, int... dependency)
     {
-        addString(HeaderTag.RPMTAG_REQUIRENAME, name);
-        addString(HeaderTag.RPMTAG_REQUIREVERSION, version);
-        addInt32(HeaderTag.RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        addString(RPMTAG_REQUIRENAME, name);
+        addString(RPMTAG_REQUIREVERSION, version);
+        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
-
+    /**
+     * Add RPMTAG_CONFLICTNAME, RPMTAG_CONFLICTVERSION and RPMTAG_CONFLICTFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
     @Override
     public RPMBuilder addConflict(String name, String version, Condition... dependency)
     {
-        addString(HeaderTag.RPMTAG_CONFLICTNAME, name);
-        addString(HeaderTag.RPMTAG_CONFLICTVERSION, version);
-        addInt32(HeaderTag.RPMTAG_CONFLICTFLAGS, Dependency.or(dependency));
+        addString(RPMTAG_CONFLICTNAME, name);
+        addString(RPMTAG_CONFLICTVERSION, version);
+        addInt32(RPMTAG_CONFLICTFLAGS, Dependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
 
     private void ensureVersionReq(String version)
     {
-        if (!version.isEmpty() && !contains(HeaderTag.RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
+        if (!version.isEmpty() && !contains(RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
         {
             addRequireInt("rpmlib(VersionedDependencies)", "3.0.3-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
         }
     }
-
+    /**
+     * Add file to package from path.
+     * @param source
+     * @param target Target path like /opt/application/bin/foo
+     * @return
+     * @throws IOException 
+     */
     @Override
     public FileBuilder addFile(Path source, String target) throws IOException
     {
@@ -234,7 +330,13 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         fileBuilders.add(fb);
         return fb;
     }
-
+    /**
+     * Add file to package from content
+     * @param content
+     * @param target Target path like /opt/application/bin/foo
+     * @return
+     * @throws IOException 
+     */
     @Override
     public FileBuilder addFile(ByteBuffer content, String target) throws IOException
     {
@@ -242,17 +344,28 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         fileBuilders.add(fb);
         return fb;
     }
-
+    /**
+     * Add directory to package.
+     * @param target Target path like /opt/application/bin/foo
+     * @return
+     * @throws IOException 
+     */
     @Override
-    public ComponentBuilder addDirectory(String target) throws IOException
+    public FileBuilder addDirectory(String target) throws IOException
     {
         FileBuilder fb = new FileBuilder(target);
         fileBuilders.add(fb);
         return fb;
     }
-
+    /**
+     * Add symbolic link to package.
+     * @param target Target path like /opt/application/bin/foo
+     * @param linkTarget Link target like ../lib/bar
+     * @return
+     * @throws IOException 
+     */
     @Override
-    public ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException
+    public FileBuilder addSymbolicLink(String target, String linkTarget) throws IOException
     {
         FileBuilder fb = new FileBuilder(target, linkTarget);
         fileBuilders.add(fb);
@@ -275,9 +388,9 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
         String name = getName();
         lead = new Lead(name);
-        addProvide(getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), Condition.EQUAL);
+        addProvide(getString(RPMTAG_NAME), getString(RPMTAG_VERSION), Condition.EQUAL);
         addRequireInt("rpmlib(CompressedFileNames)", "3.0.4-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
-        addInt32(HeaderTag.RPMTAG_SIZE, getInt32Array(HeaderTag.RPMTAG_FILESIZES).stream().collect(Collectors.summingInt((i) -> i)));
+        addInt32(RPMTAG_SIZE, getInt32Array(RPMTAG_FILESIZES).stream().collect(Collectors.summingInt((i) -> i)));
         // trailer
         CPIO cpio = new CPIO();
         cpio.namesize = 11;
@@ -313,8 +426,8 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         ByteBuffer dupPayload = payload.duplicate();
         md5.update(dupPayload);
         byte[] digest = md5.digest();
-        setBin(HeaderTag.RPMSIGTAG_MD5, digest);
-        addInt32(HeaderTag.RPMSIGTAG_SIZE, hdr.limit() + payload.limit());
+        setBin(RPMSIGTAG_MD5, digest);
+        addInt32(RPMSIGTAG_SIZE, hdr.limit() + payload.limit());
         checkRequiredTags();
         ByteBuffer rpm = DynamicByteBuffer.create(Integer.MAX_VALUE);
         rpm.order(ByteOrder.BIG_ENDIAN);
@@ -334,7 +447,7 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
 
     private String getName()
     {
-        return String.format("%s-%s-%s", getString(HeaderTag.RPMTAG_NAME), getString(HeaderTag.RPMTAG_VERSION), getString(HeaderTag.RPMTAG_RELEASE));
+        return String.format("%s-%s-%s", getString(RPMTAG_NAME), getString(RPMTAG_VERSION), getString(RPMTAG_RELEASE));
     }
     
     public class FileBuilder implements ComponentBuilder
@@ -413,7 +526,7 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
         
         /**
-         * Set file time.
+         * Set last modified time.
          * @param time
          * @return 
          */
@@ -458,25 +571,37 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             this.rdev = rdev;
             return this;
         }
-
+        /**
+         * Set FileFlags.
+         * @param flags
+         * @return 
+         */
         @Override
         public FileBuilder setFlag(FileFlag... flags)
         {
             this.flag = FileFlag.or(flags);
             return this;
         }
-
+        /**
+         * Set file owner
+         * @param owner
+         * @return 
+         */
         @Override
-        public FileBuilder setOwner(String username)
+        public FileBuilder setOwner(String owner)
         {
-            this.username = username;
+            this.username = owner;
             return this;
         }
-
+        /**
+         * Set file group
+         * @param group
+         * @return 
+         */
         @Override
-        public FileBuilder setGroup(String groupname)
+        public FileBuilder setGroup(String group)
         {
-            this.groupname = groupname;
+            this.groupname = group;
             return this;
         }
 
@@ -497,11 +622,35 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             this.lang = lang;
             return this;
         }
-
+        /**
+         * throw UnsupportedOperationException
+         * @param attrs
+         * @return 
+         */
         @Override
-        public ComponentBuilder addFileAttributes(FileAttribute<?>... attrs)
+        public FileBuilder addFileAttributes(FileAttribute<?>... attrs)
         {
             throw new UnsupportedOperationException("This shouldn't be called.");
+        }
+        /**
+         * Does nothing
+         * @param copyright
+         * @return 
+         */
+        @Override
+        public FileBuilder setCopyright(String copyright)
+        {
+            return this;
+        }
+        /**
+         * Does nothing
+         * @param license
+         * @return 
+         */
+        @Override
+        public FileBuilder setLicense(String license)
+        {
+            return this;
         }
 
         private void build()
