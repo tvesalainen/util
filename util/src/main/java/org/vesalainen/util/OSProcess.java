@@ -18,7 +18,9 @@ package org.vesalainen.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.vesalainen.nio.FileUtil;
@@ -43,13 +45,41 @@ public class OSProcess
      */
     public static final int call(String... args) throws IOException, InterruptedException
     {
+        return call(null, null, args);
+    }
+    /**
+     * Call os process and waits it's execution.
+     * @param args Either command and arguments in single string or command and
+     * arguments as separate strings. 
+     * <p>
+     * call("netstat -an") is same as call("netstat", "-an")
+     * @param cwd Current Working Directory
+     * @param env Environment
+     * @param args
+     * @return
+     * @throws IOException
+     * @throws InterruptedException 
+     */
+    public static final int call(Path cwd, Map<String,String> env, String... args) throws IOException, InterruptedException
+    {
         if (args.length == 1)
         {
             args = args[0].split("[ ]+");
         }
         String cmd = Arrays.stream(args).collect(Collectors.joining(" "));
         JavaLogging.getLogger(OSProcess.class).info("call: %s", cmd);
-        Process process = Runtime.getRuntime().exec(args);
+        ProcessBuilder builder = new ProcessBuilder(args);
+        if (cwd != null)
+        {
+            builder.directory(cwd.toFile());
+        }
+        if (env != null)
+        {
+            Map<String, String> environment = builder.environment();
+            environment.clear();
+            environment.putAll(env);
+        }
+        Process process = builder.start();
         Thread stdout = new Thread(new ProcessLogger(cmd, process.getInputStream(), Level.INFO));
         stdout.start();
         Thread stderr = new Thread(new ProcessLogger(cmd, process.getErrorStream(), Level.WARNING));
