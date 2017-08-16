@@ -108,6 +108,8 @@ public class Lists
      * @param delim
      * @param collection
      * @return 
+     * @deprecated Use java.util.stream.Collectors.joining
+     * @see java.util.stream.Collectors#joining(java.lang.CharSequence) 
      */
     public static final String print(String delim, Collection<?> collection)
     {
@@ -123,6 +125,8 @@ public class Lists
      * @param end End
      * @param collection
      * @return 
+     * @deprecated Use java.util.stream.Collectors.joining
+     * @see java.util.stream.Collectors#joining(java.lang.CharSequence, java.lang.CharSequence, java.lang.CharSequence) 
      */
     public static final String print(String start, String delim, String quotStart, String quotEnd, String end, Collection<?> collection)
     {
@@ -137,6 +141,17 @@ public class Lists
             throw new IllegalArgumentException(ex);
         }
     }
+    /**
+     * 
+     * @param out
+     * @param start
+     * @param delim
+     * @param quotStart
+     * @param quotEnd
+     * @param end
+     * @param collection
+     * @throws IOException 
+     */
     public static final void print(Appendable out, String start, String delim, String quotStart, String quotEnd, String end, Collection<?> collection) throws IOException
     {
         append(start, out);
