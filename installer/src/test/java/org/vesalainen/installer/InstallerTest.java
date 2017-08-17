@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ import org.vesalainen.nio.FileUtil;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class InstallerTest
 {
@@ -55,21 +55,21 @@ public class InstallerTest
         FileUtil.deleteDirectory(LOCAL);
     }
     //@Test
-    public void testServer() throws IOException, URISyntaxException
+    public void testServer() throws IOException, URISyntaxException, InterruptedException
     {
         Installer.install("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
         Installer.install("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
     }
     
     @Test
-    public void testWinClient() throws IOException, URISyntaxException
+    public void testWinClient() throws IOException, URISyntaxException, InterruptedException
     {
         Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
         Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
     }
     
     @Test
-    public void testScript() throws IOException, URISyntaxException
+    public void testScript() throws IOException, URISyntaxException, InterruptedException
     {
         Installer.install("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");
         Installer.install("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");

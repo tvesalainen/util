@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,13 +50,15 @@ import org.vesalainen.test.pom.ModelFactory;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.LoggingCommandLine;
+import org.vesalainen.util.OSProcess;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Installer extends LoggingCommandLine
 {
+    private static final String TEMPLATE_PATH = "org/vesalainen/installer/template";
     private static final String DEFAULT_TEMPLATE = "/etc/default/default.tmpl";
     private static final String INIT_D_TEMPLATE = "/etc/init.d/init.tmpl";
     private static final String USR_LOCAL_BIN_TEMPLATE = "/usr/local/bin/exe.tmpl";
@@ -77,7 +79,7 @@ public class Installer extends LoggingCommandLine
     private File exeDirectory;
     private int jmxPort;
 
-    private enum Action {CLIENT, SERVER, SCRIPT};
+    private enum Action {CLIENT, SERVER, SCRIPT, REMOVE};
     
     public Installer()
     {
@@ -149,7 +151,7 @@ public class Installer extends LoggingCommandLine
         classpath = getDependencyNames().map((s)->"$JAR/"+s).collect(Collectors.joining(":"));
         File installFile = getOption("-ss");
         try (   BufferedWriter bw = Files.newBufferedWriter(installFile.toPath(), US_ASCII);
-                InputStream is = Installer.class.getResourceAsStream(USR_LOCAL_BIN_SCRIPT))
+                InputStream is = templateStream(USR_LOCAL_BIN_SCRIPT))
         {
             bw.append("#! /bin/sh").append('\n');
             
@@ -196,7 +198,7 @@ public class Installer extends LoggingCommandLine
         classpath = updateJars().map((p)->p.toString()).collect(Collectors.joining(":"));
         File exe = new File(exeDirectory, artifactId);
         mergeTemplate(exe, USR_LOCAL_BIN_TEMPLATE);
-        setPosixFilePermissions(exe, "rwxr--r--");
+        setPosixFilePermissions(exe.toPath(), "rwxr--r--");
     }
 
     private void installWindowsClient() throws IOException
@@ -205,22 +207,30 @@ public class Installer extends LoggingCommandLine
         mergeTemplate(new File(exeDirectory, artifactId.toUpperCase()+".BAT"), BIN_TEMPLATE);
     }
 
-    private void installLinuxServer() throws IOException, URISyntaxException
+    private void installLinuxServer() throws IOException, URISyntaxException, InterruptedException
     {
         classpath = updateJars().map((p)->p.toString()).collect(Collectors.joining(File.pathSeparator));
         File init = new File(initDirectory, artifactId);
         etcInitD(init);
         File def = new File(defaultDirectory, artifactId);
         mergeTemplate(def, DEFAULT_TEMPLATE);
-        setPosixFilePermissions(init, "rw-r--r--");
-        setPosixFilePermissions(def, "rw-r--r--");
+        setPosixFilePermissions(init.toPath(), "rwxr-xr-x");
+        setPosixFilePermissions(def.toPath(), "rw-r--r--");
+        call("maven_installer_start");
     }
-    private void setPosixFilePermissions(File file, String posixPermissions) throws IOException
+    private void removeLinuxServer() throws IOException, InterruptedException
+    {
+        Path init = new File(initDirectory, artifactId).toPath();
+        Files.deleteIfExists(init);
+        call("maven_installer_stop");
+    }
+
+    private void setPosixFilePermissions(Path path, String posixPermissions) throws IOException
     {
         try
         {
-            Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString(posixPermissions));
-            finest("posix %s -> %s", posixPermissions, file);
+            Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(posixPermissions));
+            finest("posix %s -> %s", posixPermissions, path);
         }
         catch (UnsupportedOperationException ex)
         {
@@ -232,7 +242,7 @@ public class Installer extends LoggingCommandLine
         if (def.exists())
         {
             Map<String,String> map = new HashMap<>();
-            try (InputStream is = Installer.class.getResourceAsStream(templatePath))
+            try (InputStream is = templateStream(templatePath))
             {
                 FileUtil.lines(is, US_ASCII).forEach((l)->
                 {
@@ -266,7 +276,7 @@ public class Installer extends LoggingCommandLine
         }
         else
         {
-            try (InputStream is = Installer.class.getResourceAsStream(templatePath);
+            try (InputStream is = templateStream(templatePath);
                     BufferedWriter bw = Files.newBufferedWriter(def.toPath(), US_ASCII))
             {
                 FileUtil.lines(is, US_ASCII).forEach((l)->
@@ -289,7 +299,7 @@ public class Installer extends LoggingCommandLine
     private void etcInitD(File init) throws IOException
     {
         byte[] initBuf = null;
-        try (InputStream is = Installer.class.getResourceAsStream(INIT_D_TEMPLATE))
+        try (InputStream is = templateStream(INIT_D_TEMPLATE))
         {
             initBuf = FileUtil.readAllBytes(is);
         }
@@ -300,6 +310,32 @@ public class Installer extends LoggingCommandLine
             bf.append(initContent);
         }
         info("created %s", init);
+    }
+    private void call(String template) throws IOException, InterruptedException
+    {
+        Path path = installTemplate('/'+template, exeDirectory, "rwxr--r--");
+        OSProcess.call(template, artifactId);
+    }
+    private InputStream templateStream(String template) throws IOException
+    {
+        Path path = installTemplate(template, new File(jarDirectory, TEMPLATE_PATH), "rw-r--r--");
+        InputStream is = Files.newInputStream(path);
+        return FileUtil.buffer(is);
+    }
+    private Path installTemplate(String template, File targetDir, String permissions) throws IOException
+    {
+        Path target = new File(targetDir, template).toPath();
+        if (!Files.exists(target))
+        {
+            try (InputStream is = Installer.class.getResourceAsStream(template))
+            {
+                Files.createDirectories(target.getParent());
+                Files.copy(is, target);
+                info("install %s -> %s", template, target);
+                setPosixFilePermissions(target, permissions);
+            }
+        }
+        return target;
     }
     private Stream<Path> updateJars()
     {
@@ -394,7 +430,7 @@ public class Installer extends LoggingCommandLine
         return classpath;
     }
 
-    static void install(String... args) throws IOException, URISyntaxException
+    static void install(String... args) throws IOException, URISyntaxException, InterruptedException
     {
         Installer installer = new Installer();
         installer.command(args);
@@ -407,6 +443,16 @@ public class Installer extends LoggingCommandLine
                 {
                     case Linux:
                         installer.installLinuxServer();
+                        break;
+                    default:
+                        throw new IllegalArgumentException(os+" not supported");
+                }
+                break;
+            case REMOVE:
+                switch (os)
+                {
+                    case Linux:
+                        installer.removeLinuxServer();
                         break;
                     default:
                         throw new IllegalArgumentException(os+" not supported");
