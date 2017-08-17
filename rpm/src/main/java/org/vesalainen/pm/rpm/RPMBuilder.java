@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,15 +38,17 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.vesalainen.nio.DynamicByteBuffer;
 import org.vesalainen.nio.FilterByteBuffer;
+import org.vesalainen.nio.file.PathHelper;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import static org.vesalainen.pm.rpm.HeaderTag.*;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.pm.ComponentBuilder;
 import org.vesalainen.pm.Condition;
+import org.vesalainen.pm.FileUse;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class RPMBuilder extends RPMBase implements PackageBuilder
 {
@@ -317,6 +319,27 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
     }
     /**
+     * Does nothing.
+     * @param priority
+     * @return 
+     */
+    @Override
+    public RPMBuilder setPriority(String priority)
+    {
+        return this;
+    }
+    /**
+     * Does nothing.
+     * @param maintainer
+     * @return 
+     */
+    @Override
+    public RPMBuilder setMaintainer(String maintainer)
+    {
+        return this;
+    }
+    
+    /**
      * Add file to package from path.
      * @param source
      * @param target Target path like /opt/application/bin/foo
@@ -324,9 +347,19 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
      * @throws IOException 
      */
     @Override
-    public FileBuilder addFile(Path source, String target) throws IOException
+    public FileBuilder addFile(Path source, Path target) throws IOException
     {
-        FileBuilder fb =  new FileBuilder(source, target);
+        checkTarget(target);
+        FileBuilder fb =  new FileBuilder();
+        fb.target = target;
+        fb.size = (int) Files.size(source);
+        try (FileChannel fc = FileChannel.open(source, READ))
+        {
+            fb.content = fc.map(FileChannel.MapMode.READ_ONLY, 0, fb.size);
+        }
+        FileTime fileTime = Files.getLastModifiedTime(source);
+        fb.time = (int)fileTime.to(TimeUnit.SECONDS);
+        fb.compressFilename();
         fileBuilders.add(fb);
         return fb;
     }
@@ -338,9 +371,14 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
      * @throws IOException 
      */
     @Override
-    public FileBuilder addFile(ByteBuffer content, String target) throws IOException
+    public FileBuilder addFile(ByteBuffer content, Path target) throws IOException
     {
-        FileBuilder fb = new FileBuilder(content, target);
+        checkTarget(target);
+        FileBuilder fb = new FileBuilder();
+        fb.content = content;
+        fb.target = target;
+        fb.size = content.limit();
+        fb.compressFilename();
         fileBuilders.add(fb);
         return fb;
     }
@@ -351,9 +389,15 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
      * @throws IOException 
      */
     @Override
-    public FileBuilder addDirectory(String target) throws IOException
+    public FileBuilder addDirectory(Path target) throws IOException
     {
-        FileBuilder fb = new FileBuilder(target);
+        checkTarget(target);
+        FileBuilder fb = new FileBuilder();
+        fb.target = target;
+        fb.content = ByteBuffer.allocate(0);
+        fb.size = fb.content.limit();
+        fb.mode = 040000;
+        fb.compressFilename();
         fileBuilders.add(fb);
         return fb;
     }
@@ -365,9 +409,17 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
      * @throws IOException 
      */
     @Override
-    public FileBuilder addSymbolicLink(String target, String linkTarget) throws IOException
+    public FileBuilder addSymbolicLink(Path target, Path linkTarget) throws IOException
     {
-        FileBuilder fb = new FileBuilder(target, linkTarget);
+        checkTarget(target);
+        checkTarget(linkTarget);
+        FileBuilder fb = new FileBuilder();
+        fb.target = target;
+        fb.linkTo = linkTarget;
+        fb.content = ByteBuffer.wrap(PathHelper.posixString(linkTarget).getBytes(US_ASCII));
+        fb.size = fb.content.limit();
+        fb.mode = (short) 0120000;
+        fb.compressFilename();
         fileBuilders.add(fb);
         return fb;
     }
@@ -454,77 +506,24 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
     {
         CPIO cpio = new CPIO();
         ByteBuffer content;
-        String target;
+        Path target;
         String base;
         String dir;
         int size;
         int time = (int) (System.currentTimeMillis()/1000);
         short mode = (short) 0100000;   // regular file
         short rdev;
-        String linkTo = "";
+        Path linkTo;
         int flag;
         String username = "root";
         String groupname = "root";
         int device;
         int inode;
         String lang = "";
-        /**
-         * Create regular file
-         * @param source
-         * @param target
-         * @throws IOException 
-         */
-        public FileBuilder(Path source, String target) throws IOException
+
+        private FileBuilder()
         {
-            this.target = target;
-            size = (int) Files.size(source);
-            try (FileChannel fc = FileChannel.open(source, READ))
-            {
-                content = fc.map(FileChannel.MapMode.READ_ONLY, 0, size);
-            }
-            FileTime fileTime = Files.getLastModifiedTime(source);
-            time = (int)fileTime.to(TimeUnit.SECONDS);
-            compressFilename();
         }
-        /**
-         * Create regular file
-         * @param content
-         * @param target 
-         */
-        public FileBuilder(ByteBuffer content, String target)
-        {
-            this.content = content;
-            this.target = target;
-            size = content.limit();
-            compressFilename();
-        }
-        /**
-         * Create directory
-         * @param target 
-         */
-        public FileBuilder(String target)
-        {
-            this.target = target;
-            this.content = ByteBuffer.allocate(0);
-            this.size = content.limit();
-            this.mode = 040000;
-            compressFilename();
-        }
-        /**
-         * Create symbolic link
-         * @param target
-         * @param linkTo 
-         */
-        public FileBuilder(String target, String linkTo)
-        {
-            this.target = target;
-            this.linkTo = linkTo;
-            this.content = ByteBuffer.wrap(linkTo.getBytes(US_ASCII));
-            this.size = content.limit();
-            this.mode = (short) 0120000;
-            compressFilename();
-        }
-        
         /**
          * Set last modified time.
          * @param time
@@ -573,13 +572,13 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
         /**
          * Set FileFlags.
-         * @param flags
+         * @param use
          * @return 
          */
         @Override
-        public FileBuilder setFlag(FileFlag... flags)
+        public FileBuilder setUsage(FileUse... use)
         {
-            this.flag = FileFlag.or(flags);
+            this.flag = FileFlag.or(use);
             return this;
         }
         /**
@@ -688,16 +687,18 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             addInt16(RPMTAG_FILEMODES, mode);
             cpio.mode = mode & 0xffff;
             addInt16(RPMTAG_FILERDEVS, rdev);
-            addString(RPMTAG_FILELINKTOS, linkTo);
+            addString(RPMTAG_FILELINKTOS, linkTo != null ? PathHelper.posixString(linkTo) : "");
             addInt32(RPMTAG_FILEFLAGS, flag);
             addString(RPMTAG_FILEUSERNAME, username);
             addString(RPMTAG_FILEGROUPNAME, groupname);
             addInt32(RPMTAG_FILEDEVICES, device);
             addInt32(RPMTAG_FILEINODES, inode);
             addString(RPMTAG_FILELANGS, lang);
-            cpio.namesize = target.length()+1;
             
-            FileRecord fileRecord = new FileRecord(cpio, target, content);
+            String trg = PathHelper.posixString(target);
+            cpio.namesize = trg.length()+1;
+            
+            FileRecord fileRecord = new FileRecord(cpio, trg, content);
             fileRecords.add(fileRecord);
             cpio = null;
             content = null;
@@ -705,13 +706,14 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         }
         private void compressFilename()
         {
-            int idx = target.lastIndexOf('/');
+            String trg = PathHelper.posixString(target);
+            int idx = trg.lastIndexOf('/');
             if (idx == -1)
             {
                 throw new IllegalArgumentException("directory missing "+target);
             }
-            dir  = target.substring(0, idx+1);
-            base = target.substring(idx+1);
+            dir  = trg.substring(0, idx+1);
+            base = trg.substring(idx+1);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,11 @@
  */
 package org.vesalainen.pm.rpm;
 
+import org.vesalainen.pm.FileUse;
+
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public enum FileFlag
 {
@@ -82,6 +84,23 @@ public enum FileFlag
         {
             return 0;
         }
+    }
+    public static int or(FileUse... uses)
+    {
+        int flag = 0;
+        for (FileUse u : uses)
+        {
+            switch (u)
+            {
+                case CONFIGURATION:
+                    flag |= CONFIG.getFlag();
+                    break;
+                case DOCUMENTATION:
+                    flag |= DOC.getFlag();
+                    break;
+            }
+        }
+        return flag;
     }
     public static int or(FileFlag... flags)
     {

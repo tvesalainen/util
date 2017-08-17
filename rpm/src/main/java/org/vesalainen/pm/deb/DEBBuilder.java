@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,19 +34,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.pm.ComponentBuilder;
 import org.vesalainen.pm.Condition;
+import org.vesalainen.pm.FileUse;
+import static org.vesalainen.pm.FileUse.*;
 import org.vesalainen.pm.PackageBuilder;
 import org.vesalainen.pm.deb.Copyright.FileCopyright;
-import org.vesalainen.pm.rpm.FileFlag;
-import static org.vesalainen.pm.rpm.FileFlag.*;
+import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.OSProcess;
 
 /**
  * DEBBuilder class supports building structure for building debian packet.
  * Use dpkg-buildpackage -us -uc for building of actual packet.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.debian.org/doc/manuals/maint-guide/index.en.html">Debian New Maintainers' Guide</a>
  * @see <a href="https://www.debian.org/doc/debian-policy/index.html">Debian Policy Manual</a>
  */
@@ -330,34 +334,73 @@ public class DEBBuilder implements PackageBuilder
         control.setPriority(priority);
         return this;
     }
-    
+    /**
+     * Add directory to package.
+     * @param target
+     * @return
+     * @throws IOException 
+     */
     @Override
     public ComponentBuilder addDirectory(String target) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkTarget(target);
+        FileBuilder fb = new FileBuilder(target);
+        fileBuilders.add(fb);
+        return fb;
     }
-
+    /**
+     * Add symbolic link to package.
+     * @param target
+     * @param linkTarget
+     * @return
+     * @throws IOException 
+     */
     @Override
     public ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkTarget(target);
+        checkTarget(linkTarget);
+        FileBuilder fb = new FileBuilder(target, linkTarget);
+        fileBuilders.add(fb);
+        return fb;
     }
-
+    /**
+     * Add regular file to package.
+     * @param source
+     * @param target
+     * @return
+     * @throws IOException 
+     */
     @Override
     public FileBuilder addFile(Path source, String target) throws IOException
     {
+        checkTarget(target);
         FileBuilder fb = new FileBuilder(target, source);
         fileBuilders.add(fb);
         return fb;
     }
+    /**
+     * Add regular file to package.
+     * @param content
+     * @param target
+     * @return
+     * @throws IOException 
+     */
     @Override
     public ComponentBuilder addFile(ByteBuffer content, String target) throws IOException
     {
+        checkTarget(target);
         FileBuilder fb = new FileBuilder(target, content);
         fileBuilders.add(fb);
         return fb;
     }
-
+    /**
+     * Creates name-version directory creates debian source files and runs 
+     * dpkg-buildpackage -us -uc
+     * @param base
+     * @return
+     * @throws IOException 
+     */
     @Override
     public Path build(Path base) throws IOException
     {
@@ -398,7 +441,14 @@ public class DEBBuilder implements PackageBuilder
         }
         conffiles.save(debian);
         docs.save(debian);
-        
+        try
+        {
+            OSProcess.call(dir, null, "dpkg-buildpackage -us -uc");
+        }
+        catch (InterruptedException ex)
+        {
+            throw new IOException(ex);
+        }
         return dir;
     }
     
@@ -407,7 +457,7 @@ public class DEBBuilder implements PackageBuilder
         private String target;
         private String linkTarget;
         private ByteBuffer content; 
-        private FileFlag[] flags = new FileFlag[]{};
+        private FileUse[] usage = new FileUse[]{};
         private Map<String,Object> attributeMap = new HashMap<>();
         private FileCopyright fileCopyright;
         /**
@@ -428,7 +478,12 @@ public class DEBBuilder implements PackageBuilder
             this.target = target;
             this.linkTarget = linkTarget;
         }
-
+        /**
+         * Creates regular file from file contents
+         * @param target
+         * @param file
+         * @throws IOException 
+         */
         public FileBuilder(String target, Path file) throws IOException
         {
             this.target = target.startsWith("/") ? target.substring(1) : target;
@@ -438,13 +493,21 @@ public class DEBBuilder implements PackageBuilder
             }
             attributeMap.putAll(Files.readAttributes(file, "*"));
         }
-
+        /**
+         * Creates regular file from given content.
+         * @param target
+         * @param content 
+         */
         public FileBuilder(String target, ByteBuffer content)
         {
             this.target = target.startsWith("/") ? target.substring(1) : target;
             this.content = content;
         }
-
+        /**
+         * Gathers FileAttributes from default methods.
+         * @param attrs
+         * @return 
+         */
         @Override
         public FileBuilder addFileAttributes(FileAttribute<?>... attrs)
         {
@@ -454,14 +517,22 @@ public class DEBBuilder implements PackageBuilder
             }
             return this;
         }
-
+        /**
+         * Set file usage in package.
+         * @param use
+         * @return 
+         */
         @Override
-        public FileBuilder setFlag(FileFlag... flags)
+        public FileBuilder setUsage(FileUse... use)
         {
-            this.flags = flags;
+            this.usage = use;
             return this;
         }
-
+        /**
+         * Set files copyright.
+         * @param cr
+         * @return 
+         */
         @Override
         public ComponentBuilder setCopyright(String cr)
         {
@@ -472,7 +543,11 @@ public class DEBBuilder implements PackageBuilder
             fileCopyright.addCopyright(cr);
             return this;
         }
-
+        /**
+         * Set files license.
+         * @param license
+         * @return 
+         */
         @Override
         public ComponentBuilder setLicense(String license)
         {
@@ -486,11 +561,11 @@ public class DEBBuilder implements PackageBuilder
 
         private void build() throws IOException
         {
-            if (FileFlag.isSet(CONFIG, flags))
+            if (ArrayHelp.contains(usage, CONFIGURATION))
             {
                 addConfigurationFile(target);
             }
-            if (FileFlag.isSet(DOC, flags))
+            if (ArrayHelp.contains(usage, DOCUMENTATION))
             {
                 addDocumentationFile(target);
             }

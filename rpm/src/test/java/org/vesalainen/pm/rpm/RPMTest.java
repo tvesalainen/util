@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import org.vesalainen.pm.PackageBuilderFactory;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class RPMTest
 {
@@ -79,13 +79,13 @@ public class RPMTest
                 .setPostInstallation("echo qwerty >/tmp/test\n")
                 ;
         
-        builder.addDirectory("/opt/org.vesalainen")
+        builder.addDirectory("opt/org.vesalainen")
                 .setPermissions("rwxr-xr-x");
-        builder.addDirectory("/opt/org.vesalainen/foo")
+        builder.addDirectory("opt/org.vesalainen/foo")
                 .setPermissions("rwxr-xr-x");
-        builder.addSymbolicLink("/tmp/foo", "/opt/org.vesalainen/foo")
+        builder.addSymbolicLink("tmp/foo", "opt/org.vesalainen/foo")
                 .setPermissions("rwxrwxrwx");
-        builder.addFile(Paths.get("pom.xml"), "/opt/org.vesalainen/foo/pom.xml")
+        builder.addFile(Paths.get("pom.xml"), "opt/org.vesalainen/foo/pom.xml")
                 .setPermissions("rwxr--r--")
                 ;
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 package org.vesalainen.pm;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
@@ -24,22 +25,23 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.pm.rpm.FileFlag;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface ComponentBuilder
 {
     /**
-     * Set flags for file. 
-     * @param flags
+     * Set file usage. 
+     * @param use
      * @return 
      */
-    ComponentBuilder setFlag(FileFlag... flags);
+    ComponentBuilder setUsage(FileUse... use);
     /**
      * Sets posix group name of file.
      * @param groupname
@@ -136,5 +138,4 @@ public interface ComponentBuilder
      * @return 
      */
     ComponentBuilder setLicense(String license);
-    
 }

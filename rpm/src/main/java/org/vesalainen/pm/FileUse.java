@@ -16,43 +16,19 @@
  */
 package org.vesalainen.pm;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * This class can support using package dependent values for certain difficult
- * to map fields like application-area. PackageBuilderFactory sets key to 
- * requested package-builder name
+ * This enum directs the usage of installed file.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <V>
  */
-public class Mapper<V>
+public enum FileUse
 {
-    private static String key;
-    private Map<String,V> map = new HashMap<>();
     /**
-     * Sets static key
-     * @param key 
+     * The file is configuration and it is normally not replaced in upgrade or
+     * removal.
      */
-    static void setKey(String key)
-    {
-        Mapper.key = key;
-    }
+    CONFIGURATION,
     /**
-     * Add key dependent value
-     * @param key
-     * @param value 
+     * The file is documentation.
      */
-    public void add(String key, V value)
-    {
-        map.put(key, value);
-    }
-    /**
-     * Returns key dependent value
-     * @return 
-     */
-    public V get()
-    {
-        return map.get(key);
-    }
+    DOCUMENTATION
 }

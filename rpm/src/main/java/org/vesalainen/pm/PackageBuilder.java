@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,13 @@ package org.vesalainen.pm;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.Objects;
+import org.vesalainen.nio.file.PathHelper;
 import static org.vesalainen.pm.Condition.NONE;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface PackageBuilder
 {
@@ -53,38 +55,102 @@ public interface PackageBuilder
     /**
      * Add file to package. Returned ComponentBuilder can be used to further
      * configurate the file.
+     * <p>
+     * Default implementation converts target to Path and call addFile(Path,Path)
+     * @param source
+     * @param target Target path can't be absolute
+     * @return
+     * @throws IOException 
+     * @see org.vesalainen.nio.file.PathHelper#fromPosix(java.lang.String) 
+     */
+    default ComponentBuilder addFile(Path source, String target) throws IOException
+    {
+        checkTarget(target);
+        return addFile(source, PathHelper.fromPosix(target));
+    }
+    /**
+     * Add file to package. Returned ComponentBuilder can be used to further
+     * configurate the file.
      * @param source Source path
-     * @param target Target path
+     * @param target Target path can't be absolute
      * @return
      * @throws IOException 
      */
-    ComponentBuilder addFile(Path source, String target) throws IOException;
+    ComponentBuilder addFile(Path source, Path target) throws IOException;
+    /**
+     * Add file to package. Returned ComponentBuilder can be used to further
+     * configurate the file.
+     * <p>
+     * Default implementation converts target to Path and call addFile(ByteBuffer,Path)
+     * @param content File content
+     * @param target Target path can't be absolute
+     * @return
+     * @throws IOException 
+     * @see org.vesalainen.nio.file.PathHelper#fromPosix(java.lang.String) 
+     */
+    default ComponentBuilder addFile(ByteBuffer content, String target) throws IOException
+    {
+        checkTarget(target);
+        return addFile(content, PathHelper.fromPosix(target));
+    }
     /**
      * Add file to package. Returned ComponentBuilder can be used to further
      * configurate the file.
      * @param content File content
-     * @param target Target path
+     * @param target Target path can't be absolute
      * @return
      * @throws IOException 
      */
-    ComponentBuilder addFile(ByteBuffer content, String target) throws IOException;
+    ComponentBuilder addFile(ByteBuffer content, Path target) throws IOException;
     /**
      * Add directory to package. Returned ComponentBuilder can be used to further
      * configurate the directory.
-     * @param target
+     * <p>
+     * Default implementation converts target to Path and call addDirectory(Path)
+     * @param target Target path can't be absolute
+     * @return
+     * @throws IOException 
+     * @see org.vesalainen.nio.file.PathHelper#fromPosix(java.lang.String) 
+     */
+    default ComponentBuilder addDirectory(String target) throws IOException
+    {
+        checkTarget(target);
+        return addDirectory(PathHelper.fromPosix(target));
+    }
+    /**
+     * Add directory to package. Returned ComponentBuilder can be used to further
+     * configurate the directory.
+     * @param target Target path can't be absolute
      * @return
      * @throws IOException 
      */
-    ComponentBuilder addDirectory(String target) throws IOException;
+    ComponentBuilder addDirectory(Path target) throws IOException;
     /**
      * Add symbolic link to package. Returned ComponentBuilder can be used to further
      * configurate the link.
-     * @param target
-     * @param linkTarget
+     * <p>
+     * Default implementation converts target to Path and call addSymbolicLink(Path,Path)
+     * @param target Target path can't be absolute
+     * @param linkTarget can't be absolute
+     * @return
+     * @throws IOException 
+     * @see org.vesalainen.nio.file.PathHelper#fromPosix(java.lang.String) 
+     */
+    default ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException
+    {
+        checkTarget(target);
+        checkTarget(linkTarget);
+        return addSymbolicLink(PathHelper.fromPosix(target), PathHelper.fromPosix(linkTarget));
+    }
+    /**
+     * Add symbolic link to package. Returned ComponentBuilder can be used to further
+     * configurate the link.
+     * @param target Target path can't be absolute
+     * @param linkTarget can't be absolute
      * @return
      * @throws IOException 
      */
-    ComponentBuilder addSymbolicLink(String target, String linkTarget) throws IOException;
+    ComponentBuilder addSymbolicLink(Path target, Path linkTarget) throws IOException;
     /**
      * Add virtual package name that this package provides.
      * @param name
@@ -121,9 +187,10 @@ public interface PackageBuilder
     PackageBuilder addRequire(String name, String version, Condition... dependency);
 
     /**
-     * Creates package file in dir. Returns Path of created file.
+     * Creates package file in dir. This dir can also be used to store temporary 
+     * files.
      * @param dir
-     * @return
+     * @return Returns Path of created file.
      * @throws IOException
      */
     Path build(Path dir) throws IOException;
@@ -273,4 +340,30 @@ public interface PackageBuilder
      * @return 
      */
     PackageBuilder setMaintainer(String maintainer);
+    /**
+     * Throws NullPointerExcption if target is null. Throws IllegalArgumentException
+     * if target is absolute path. 
+     * @param target 
+     */
+    default void checkTarget(Path target)
+    {
+        Objects.requireNonNull(target, "target can't be null");
+        if (target.isAbsolute())
+        {
+            throw new IllegalArgumentException(target+" can't be absolut path");
+        }
+    }
+    /**
+     * Throws NullPointerExcption if target is null. Throws IllegalArgumentException
+     * if target is absolute path. 
+     * @param target 
+     */
+    default void checkTarget(String target)
+    {
+        Objects.requireNonNull(target, "target can't be null");
+        if (target.startsWith("/"))
+        {
+            throw new IllegalArgumentException(target+" can't be absolut path");
+        }
+    }
 }
