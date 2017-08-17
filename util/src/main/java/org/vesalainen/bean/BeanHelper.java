@@ -49,7 +49,7 @@ import org.vesalainen.util.function.IndexFunction;
  * <p>prop - getProp / setProp
  * <p>list.1 - list.get(1)
  * <p>list.0.p1 - list.get(0).getP1()
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class BeanHelper
 {

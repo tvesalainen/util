@@ -49,7 +49,7 @@ import org.vesalainen.util.ConvertUtilityException;
  * Number of formatting characters matter when formatting. If number of characters
  * is greater than outputted numbers zero padding is used.
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class CoordinateFormat extends Format
 {

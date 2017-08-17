@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import java.util.stream.LongStream;
 
 /**
  * Base class for timeout sliding bound calculation. Each sample has given timeout.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound implements Timeouting, TimeArray
 {

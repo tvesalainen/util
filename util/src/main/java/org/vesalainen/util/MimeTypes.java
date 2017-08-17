@@ -28,7 +28,7 @@ import java.net.URI;
 import java.util.Map;
 /**
  * Resolves MIME types by using file extensions
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class MimeTypes
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 tkv
+ * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
  * <p>Iterators are not fail-fast. Instead they are using read/write locks.
  * Iterator is write-locked causing other threads to wait. Lock is held until
  * hasNext returns true. Application should call unlock if it exists iterator loop.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class ConcurrentArraySet<T> implements Set<T>
 {

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TimeSpan extends Scalar
 {

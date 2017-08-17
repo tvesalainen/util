@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * 
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Motion implements Serializable
 {

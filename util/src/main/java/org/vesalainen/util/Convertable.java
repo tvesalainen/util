@@ -20,7 +20,7 @@ package org.vesalainen.util;
  * Interface for classes supporting conversion between T and C types.
  * T type is usually the type of implementing class and type C is most
  * often String
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface Convertable<T,C>
 {

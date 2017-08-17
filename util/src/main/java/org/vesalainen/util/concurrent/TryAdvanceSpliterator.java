@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * is difficult. This wrapper class implements tryAdvance by using another thread.
  * <p>
  * Timeout is how long we wait between actions without giving up.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TryAdvanceSpliterator<T> implements Spliterator<T>, Runnable
 {

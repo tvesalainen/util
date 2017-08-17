@@ -21,7 +21,7 @@ import java.util.WeakHashMap;
 
 /**
  * WeakHashMap and WeakSet based implementation of MapSet
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K> Map key type.
  * @param <V> Set value type
  */

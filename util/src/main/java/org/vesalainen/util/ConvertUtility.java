@@ -35,7 +35,7 @@ import java.util.Date;
 
 /**
  * A utility that helps convert java type to another.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class ConvertUtility
 {

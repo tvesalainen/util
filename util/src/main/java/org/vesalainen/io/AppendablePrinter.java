@@ -24,7 +24,7 @@ import java.util.Locale;
  * PrintReader methods.
  * 
  * <p>This class throws IOException wrapped in IllegalArgumentException.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class AppendablePrinter implements Appendable
 {

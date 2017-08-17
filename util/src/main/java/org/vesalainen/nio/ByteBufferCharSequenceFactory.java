@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import java.util.function.IntUnaryOperator;
  * in CharSequences. 
  * 
  * <p>Charset is US_ASCII
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see org.vesalainen.util.CharSequences#hashCode(java.lang.CharSequence) 
  */
 public class ByteBufferCharSequenceFactory

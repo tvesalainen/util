@@ -22,7 +22,7 @@ import java.util.TreeSet;
 
 /**
  * HashMap and TreeSet based implementation of MapSet
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K> Map key type
  * @param <V> Set value type
  */

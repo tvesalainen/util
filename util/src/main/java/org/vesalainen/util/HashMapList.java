@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * HashMap and ArrayList based implementation of MapList
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K> Map key type
  * @param <V> List value type
  */

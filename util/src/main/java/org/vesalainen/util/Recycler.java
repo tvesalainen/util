@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * <p>This kind of recycling is for special cases only. Implementation has to take
  * care that recycled object is not referenced. This kind of recycling can leed
  * to hard to find bugs.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public final class Recycler
 {

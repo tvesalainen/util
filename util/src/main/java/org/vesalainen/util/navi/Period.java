@@ -22,7 +22,7 @@ import java.util.Date;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Period implements Serializable
 {

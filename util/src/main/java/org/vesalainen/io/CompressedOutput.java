@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 tkv
+ * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import org.vesalainen.util.BitArray;
  * A class for compressing writing class public fields compressed. It is suitable
  * for fields that doesn't change much.
  * <p>Read compressed data with CompressedInput
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T> Object to be compressed
  * @see org.vesalainen.io.CompressedInput
  */

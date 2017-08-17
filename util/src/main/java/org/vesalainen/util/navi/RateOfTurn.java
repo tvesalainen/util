@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * RateOfTurn is a base class for turn.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class RateOfTurn extends Scalar
 {

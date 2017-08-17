@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 /**
  * A helper class for parsing with regex
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 
 public class StringParser

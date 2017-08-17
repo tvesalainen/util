@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
  * TaggableThread can be tagged or modified while running. It's intended use
  * with TaggableThreadPoolExecutor. Thread get tagged etc while running. Before
  * put back in pool TaggableThreadPoolExecutor afterExecute processes tags etc.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TaggableThread extends Thread
 {

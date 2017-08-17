@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import org.vesalainen.util.IntReference;
 /**
  * A mutable clock implementation. Clock fields can be changed. Depending on
  * base clock the clock is running or fixed.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class MutableClock extends Clock implements TemporalAccessor, MutableDateTime
 {

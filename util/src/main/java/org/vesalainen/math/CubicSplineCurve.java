@@ -18,7 +18,7 @@ import org.ejml.ops.CommonOps;
  * <p>This class is not very efficient. Small epsilons will slow down performance.
  * <p>Example curve through (0, 1) (1, 3) (2, 2) (3, 4) (4, 3)
  * <p><img src="doc-files/test3.png">
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see http://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf
  * @see org.vesalainen.math.CubicBezierCurve
  */

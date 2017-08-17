@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import java.nio.channels.SelectableChannel;
  * VirtualCircuitFactory creates SelectableVirtualCircuit if both channels 
  * implement SelectableChannel direct or by implementing SelectableBySelector 
  * or otherwise ByteChannelVirtualCircuit.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see org.vesalainen.nio.channels.vc.SelectableBySelector
  */
 public class VirtualCircuitFactory

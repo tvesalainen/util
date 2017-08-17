@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 tkv
+ * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * 
  * <p>This class has weak references to stored object. Therefore it is not necessary
  * to remove objects not-in-use.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
 public class AutoCloseableList<T extends AutoCloseable> extends JavaLogging implements AutoCloseable

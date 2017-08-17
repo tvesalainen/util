@@ -18,7 +18,7 @@ package org.vesalainen.util;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class ConvertUtilityException extends RuntimeException
 {

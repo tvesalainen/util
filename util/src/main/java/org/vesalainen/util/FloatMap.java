@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import java.util.HashMap;
 /**
  * FloatMap is a map-like class that can be used to store mappings to primitive
  * type.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K>
  */
 public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implements Serializable

@@ -20,7 +20,7 @@ import org.vesalainen.util.navi.Angle;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Degree extends Angle
 {

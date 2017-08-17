@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 tkv
+ * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import java.nio.BufferUnderflowException;
 /**
  * A RingBuffer wrapper for Buffer. 
  * <p>This class acts also as CharSequence between mark and position.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <B> Buffer type
  * @param <R> Reader type
  * @param <W> Writer type

@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class BeanHelperException extends RuntimeException
 {

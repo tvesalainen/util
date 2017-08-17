@@ -19,7 +19,7 @@ package org.vesalainen.util.navi;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Angle extends Scalar
 {

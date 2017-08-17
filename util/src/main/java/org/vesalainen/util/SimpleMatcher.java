@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 tkv
+ * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.util.Arrays;
  * and '*' matches as they are. '?' matches matches any single char. '*' matches
  * any number of all characters except the one that follows '*' in pattern.
  * <p>Note that escaping '?' or '*' is not currently implemented!
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SimpleMatcher implements Matcher<String>
 {

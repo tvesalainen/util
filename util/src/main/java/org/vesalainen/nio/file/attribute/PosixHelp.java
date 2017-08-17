@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 tkv
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * <p>
  * Most methods accept string with file type as first letter. E.g. drwxrwxrwx.
  * Some methods accept also shorter permission part rwxrwxrwx.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public final class PosixHelp
 {

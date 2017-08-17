@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Scalar implements Comparable<Scalar>, Serializable
 {

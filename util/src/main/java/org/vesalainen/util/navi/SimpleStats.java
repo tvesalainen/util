@@ -23,7 +23,7 @@ import java.util.Random;
  * 
  * <p> Implementation doesn't store the values. Because of this the calculated
  * values are not accurate.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SimpleStats
 {

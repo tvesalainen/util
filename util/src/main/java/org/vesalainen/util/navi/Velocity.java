@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Velocity extends Scalar
 {

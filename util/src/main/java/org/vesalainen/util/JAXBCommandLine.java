@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import org.vesalainen.bean.BeanHelper;
 /**
  * JAXBCommandLine handles applications logging parameters and configuration
  * with single xml-file as argument.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class JAXBCommandLine extends LoggingCommandLine implements Runnable
 {

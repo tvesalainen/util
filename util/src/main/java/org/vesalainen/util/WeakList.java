@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 tkv
+ * Copyright (C) 2016 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import java.util.stream.StreamSupport;
  * Implementation of List which stores list items in WeakReference
  * 
  * <p>Using indexes to access list items doesn't make any sense, so they are not implemented.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  * @see java.lang.ref.WeakReference
  */

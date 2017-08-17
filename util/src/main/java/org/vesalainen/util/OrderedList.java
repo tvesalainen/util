@@ -23,7 +23,7 @@ import java.util.Comparator;
 
 /**
  * An ArrayList implementation which keeps list items ordered.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
 public class OrderedList<T> extends ArrayList<T> implements Serializable
