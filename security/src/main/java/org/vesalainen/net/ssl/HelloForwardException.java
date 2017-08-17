@@ -15,7 +15,7 @@ import org.vesalainen.nio.ByteBuffers;
  * when client hello SNI extension triggers host filter. This is a means to
  * interrupt handshaking and e.g. redirect the connection. SocketChannel, 
  * hostname and client hello contents are available.
- * @author tkv
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class HelloForwardException extends IOException
 {
