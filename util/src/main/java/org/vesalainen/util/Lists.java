@@ -256,4 +256,36 @@ public class Lists
         }
         return true;
     }
+    /**
+     * Adds array members to list
+     * @param <T>
+     * @param list
+     * @param array 
+     */
+    public static <T> List<T> addAll(List<T> list, T... array)
+    {
+        for (T item : array)
+        {
+            list.add(item);
+        }
+        return list;
+    }
+    /**
+     * Add arrays members to list starting at index.
+     * <p>
+     * If list contains a,b,c,d and array 1,2,3. After addAll(2, list, array)
+     * list contains a,b,1,2,3,c,d 
+     * @param <T>
+     * @param index
+     * @param list
+     * @param array 
+     */
+    public static <T> List<T> addAll(int index, List<T> list, T... array)
+    {
+        for (T item : array)
+        {
+            list.add(index++, item);
+        }
+        return list;
+    }
 }

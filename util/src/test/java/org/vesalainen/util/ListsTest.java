@@ -94,4 +94,11 @@ public class ListsTest
         list.add(9);
         assertFalse(Lists.equals(list, arr));
     }
+    @Test
+    public void testAddAll()
+    {
+        List<String> exp = Lists.create("a", "b", "1", "2", "3", "c", "d");
+        List<String> list = Lists.create("a", "b", "c", "d");
+        assertEquals(exp, Lists.addAll(2, list, "1", "2", "3"));
+    }
 }
