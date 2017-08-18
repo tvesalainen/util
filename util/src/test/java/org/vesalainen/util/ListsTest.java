@@ -101,4 +101,12 @@ public class ListsTest
         List<String> list = Lists.create("a", "b", "c", "d");
         assertEquals(exp, Lists.addAll(2, list, "1", "2", "3"));
     }
+    @Test
+    public void testToArray()
+    {
+        String[] exp = new String[] {"foo", "bar", "goo"};
+        List<String> list = Lists.create(exp);
+        String[] array = Lists.toArray(list, String.class);
+        assertArrayEquals(exp, array);
+    }
 }

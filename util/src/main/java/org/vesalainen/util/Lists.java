@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -287,5 +288,18 @@ public class Lists
             list.add(index++, item);
         }
         return list;
+    }
+    /**
+     * Converts Collection to array. 
+     * @param <T>
+     * @param col
+     * @param cls
+     * @return 
+     * @see java.util.Collection#toArray(T[]) 
+     */
+    public static <T> T[] toArray(Collection<T> col, Class<T> cls)
+    {
+        T[] arr = (T[]) Array.newInstance(cls, col.size());
+        return col.toArray(arr);
     }
 }
