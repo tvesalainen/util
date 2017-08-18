@@ -33,7 +33,25 @@ public final class PathHelper
 {
     private static final String SEP = File.separator;
     /**
-     * Converts '/' separated path to Path. Path is abolute if it starts with '/'.
+     * Transform path from relative oldBase to newBase.
+     * <p>
+     * If oldBase = /a/b and newBase = /q/w/e then path /a/b/c/d will
+     * transform to /q/w/e/c/d
+     * @param oldBase
+     * @param newBase
+     * @param path
+     * @return 
+     */
+    public static final Path transform(Path oldBase, Path newBase, Path path)
+    {
+        if (!path.startsWith(oldBase))
+        {
+            throw new IllegalArgumentException(path+" not in "+oldBase);
+        }
+        return newBase.resolve(oldBase.relativize(path));
+    }
+    /**
+     * Converts '/' separated path to Path. Path is absolute if it starts with '/'.
      * @param posix
      * @return 
      */

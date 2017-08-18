@@ -33,6 +33,15 @@ public class PathHelperTest
     }
 
     @Test
+    public void testTransform()
+    {
+        Path ob = Paths.get("a", "b");
+        Path nb = Paths.get("q", "w", "e");
+        Path p = Paths.get("a", "b", "c", "d");
+        Path exp = Paths.get("q", "w", "e", "c", "d");
+        assertEquals(exp, PathHelper.transform(ob, nb, p));
+    }
+    @Test
     public void testPosixString()
     {
         assertEquals("foo/bar", PathHelper.posixString(PathHelper.fromPosix("foo/bar")));
