@@ -17,7 +17,6 @@
 package org.vesalainen.pm;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
@@ -25,13 +24,13 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Set;
 import org.vesalainen.nio.file.attribute.PosixHelp;
-import org.vesalainen.pm.rpm.FileFlag;
 
 /**
- *
+ * This interfaces implementation is created by one of PackageBuilder addXXX 
+ * methods. After doing necessary configuration call build method to do the
+ * actual building.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface ComponentBuilder
@@ -138,4 +137,9 @@ public interface ComponentBuilder
      * @return 
      */
     ComponentBuilder setLicense(String license);
+    /**
+     * Does the actual building
+     * @throws IOException 
+     */
+    void build() throws IOException;
 }

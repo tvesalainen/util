@@ -14,23 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.pm;
+package org.vesalainen.pm.deb;
+
+import org.vesalainen.pm.PackageBuilder;
+import org.vesalainen.pm.PackageBuilderProvider;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface PackageBuilderProvider
+public class DEBBuilderProvider implements PackageBuilderProvider
 {
-    /**
-     * Returns the name of this package builder. This name is used by 
-     * PackageBuilderFactory to identify requested builder.
-     * @return 
-     */
-    String getPackageBuilderName();
-    /**
-     * Creates new instance of PackageBuilder
-     * @return 
-     */
-    PackageBuilder newInstance();
+
+    @Override
+    public String getPackageBuilderName()
+    {
+        return "DEB";
+    }
+
+    @Override
+    public PackageBuilder newInstance()
+    {
+        return new DEBBuilder();
+    }
+    
 }

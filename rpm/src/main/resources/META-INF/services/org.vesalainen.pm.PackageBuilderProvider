@@ -1,0 +1,2 @@
+org.vesalainen.pm.rpm.RPMBuilderProvider
+org.vesalainen.pm.deb.DEBBuilderProvider

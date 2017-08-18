@@ -30,8 +30,8 @@ public class PackageBuilderFactory
      * Returns PackageBuilder for name. It also sets Mapper key to that name.
      * <p>
      * Currently supported are "rpm" and "deb". It is possible to create new
-     * builders by providing implementing class name in file 
-     * META-INF/services/org.vesalainen.pm.PackageBuilder
+     * builders by providing PackageBuilderProvider implementation class in file 
+     * META-INF/services/org.vesalainen.pm.PackageBuilderProvider
      * @param name
      * @return 
      * @see java.util.ServiceLoader
@@ -39,15 +39,15 @@ public class PackageBuilderFactory
     public static final PackageBuilder findPackageBuilder(String name)
     {
         Objects.requireNonNull(name, "name cannot be null");
-        ServiceLoader<PackageBuilder> loader = ServiceLoader.load(PackageBuilder.class);
-        Iterator<PackageBuilder> iterator = loader.iterator();
+        ServiceLoader<PackageBuilderProvider> loader = ServiceLoader.load(PackageBuilderProvider.class);
+        Iterator<PackageBuilderProvider> iterator = loader.iterator();
         while (iterator.hasNext())
         {
-            PackageBuilder pb = iterator.next();
-            if (name.equals(pb.getPackageBuilderName()))
+            PackageBuilderProvider pbp = iterator.next();
+            if (name.equals(pbp.getPackageBuilderName()))
             {
                 Mapper.setKey(name);
-                return pb;
+                return pbp.newInstance();
             }
         }
         throw new UnsupportedOperationException("package builder "+name+" not found");

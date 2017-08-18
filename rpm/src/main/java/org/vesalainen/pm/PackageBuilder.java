@@ -18,10 +18,13 @@ package org.vesalainen.pm;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.vesalainen.nio.file.PathHelper;
 import static org.vesalainen.pm.Condition.NONE;
+import org.vesalainen.pm.deb.MultiFileBuilder;
 
 /**
  *
@@ -29,12 +32,6 @@ import static org.vesalainen.pm.Condition.NONE;
  */
 public interface PackageBuilder
 {
-    /**
-     * Returns the name of this package builder. This name is used by 
-     * PackageBuilderFactory to identify requested builder.
-     * @return 
-     */
-    String getPackageBuilderName();
     /**
      * Add conflicting package name
      * @param name
@@ -141,6 +138,32 @@ public interface PackageBuilder
         checkTarget(target);
         checkTarget(linkTarget);
         return addSymbolicLink(PathHelper.fromPosix(target), PathHelper.fromPosix(linkTarget));
+    }
+    /**
+     * Adds all files, directories and symbolic links from sourceDirectory to 
+     * relativeTarget.
+     * @param sourceDirectory
+     * @param relativeTarget
+     * @return
+     * @throws IOException 
+     */
+    default ComponentBuilder addAllFiles(Path sourceDirectory, Path relativeTarget) throws IOException
+    {
+        return addAllFiles(sourceDirectory, Files.walk(sourceDirectory), relativeTarget);
+    }
+    /**
+     * Adds all files, directories and symbolic links from sourceDirectory to 
+     * relativeTarget from stream. Path in stream must be from sourceDirectory.
+     * So this method is a way to filter.
+     * @param sourceDirectory
+     * @param stream
+     * @param relativeTarget
+     * @return
+     * @throws IOException 
+     */
+    default ComponentBuilder addAllFiles(Path sourceDirectory, Stream<Path> stream, Path relativeTarget) throws IOException
+    {
+        return new MultiFileBuilder(this, sourceDirectory, stream, relativeTarget);
     }
     /**
      * Add symbolic link to package. Returned ComponentBuilder can be used to further

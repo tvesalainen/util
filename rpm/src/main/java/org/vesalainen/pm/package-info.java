@@ -14,23 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.pm;
-
 /**
- *
- * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Package Management General Classes
  */
-public interface PackageBuilderProvider
-{
-    /**
-     * Returns the name of this package builder. This name is used by 
-     * PackageBuilderFactory to identify requested builder.
-     * @return 
-     */
-    String getPackageBuilderName();
-    /**
-     * Creates new instance of PackageBuilder
-     * @return 
-     */
-    PackageBuilder newInstance();
-}
+package org.vesalainen.pm;

@@ -34,8 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.pm.ComponentBuilder;
@@ -82,16 +80,6 @@ public class DEBBuilder implements PackageBuilder
         changeLog = new ChangeLog();
         conffiles = new Conffiles();
         docs = new Docs();
-    }
-
-    /**
-     * Returns "deb"
-     * @return 
-     */
-    @Override
-    public String getPackageBuilderName()
-    {
-        return "deb";
     }
 
     private void addDocumentationFile(String filepath)

@@ -63,15 +63,6 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
         addString(RPMTAG_PAYLOADFLAGS, "9");
     }
     /**
-     * returns "rpm"
-     * @return 
-     */
-    @Override
-    public String getPackageBuilderName()
-    {
-        return "rpm";
-    }
-    /**
      * Set RPMTAG_NAME
      * @param name
      * @return 
@@ -433,11 +424,6 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
     @Override
     public Path build(Path dir) throws IOException
     {
-        // files
-        for (FileBuilder fb : fileBuilders)
-        {
-            fb.build();
-        }
         String name = getName();
         lead = new Lead(name);
         addProvide(getString(RPMTAG_NAME), getString(RPMTAG_VERSION), Condition.EQUAL);
@@ -652,7 +638,8 @@ public class RPMBuilder extends RPMBase implements PackageBuilder
             return this;
         }
 
-        private void build()
+        @Override
+        public void build()
         {
             int index;
             addString(RPMTAG_BASENAMES, base);

@@ -80,13 +80,17 @@ public class RPMTest
                 ;
         
         builder.addDirectory("opt/org.vesalainen")
-                .setPermissions("rwxr-xr-x");
+                .setPermissions("rwxr-xr-x")
+                .build();
         builder.addDirectory("opt/org.vesalainen/foo")
-                .setPermissions("rwxr-xr-x");
+                .setPermissions("rwxr-xr-x")
+                .build();
         builder.addSymbolicLink("tmp/foo", "opt/org.vesalainen/foo")
-                .setPermissions("rwxrwxrwx");
+                .setPermissions("rwxrwxrwx")
+                .build();
         builder.addFile(Paths.get("pom.xml"), "opt/org.vesalainen/foo/pom.xml")
                 .setPermissions("rwxr--r--")
+                .build();
                 ;
         
         Path rpmFile = builder.build(LOCAL);
@@ -120,10 +124,12 @@ public class RPMTest
             assertSame(exp, bb);
         }
     }
-    //@Test
+    @Test
     public void test1() throws IOException, URISyntaxException, NoSuchAlgorithmException
     {
         URL url = RPMTest.class.getResource("/redhat-lsb-4.0-2.1.4.el5.i386.rpm");
+        Path p = Paths.get(url.toURI());
+        String probeContentType = Files.probeContentType(p);
         //
         //
         try (   RPM rpm = new RPM())
