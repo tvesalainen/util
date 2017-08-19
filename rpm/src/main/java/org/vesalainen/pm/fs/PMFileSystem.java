@@ -42,7 +42,7 @@ public class PMFileSystem extends FileSystem
     @Override
     public FileSystemProvider provider()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return provider;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class PMFileSystem extends FileSystem
     @Override
     public Path getPath(String first, String... more)
     {
-        return new PMPath(this, first, more);
+        return new MultiPath(this, first, more);
     }
 
     @Override

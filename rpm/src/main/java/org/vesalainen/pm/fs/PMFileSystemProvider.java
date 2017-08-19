@@ -25,6 +25,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -126,7 +127,7 @@ public class PMFileSystemProvider extends FileSystemProvider
     @Override
     public void checkAccess(Path path, AccessMode... modes) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new NoSuchFileException(path.toString());
     }
 
     @Override
