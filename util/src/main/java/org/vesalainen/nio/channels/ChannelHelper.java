@@ -36,6 +36,93 @@ import java.nio.channels.WritableByteChannel;
  */
 public class ChannelHelper
 {
+    /**
+     * ScatteringChannel support
+     * @param channel
+     * @param dsts
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     */
+    public static final long read(ReadableByteChannel channel, ByteBuffer[] dsts, int offset, int length) throws IOException
+    {
+        long res = 0;
+        for  (int ii=0;ii<length;ii++)
+        {
+            ByteBuffer bb = dsts[ii+offset];
+            if (bb.hasRemaining())
+            {
+                int rc = channel.read(bb);
+                if (rc == -1)
+                {
+                    if (res == 0)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return res;
+                    }
+                }
+                res += rc;
+                if (bb.hasRemaining())
+                {
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+    /**
+     * ScatteringChannel support
+     * @param channel
+     * @param dsts
+     * @return
+     * @throws IOException 
+     */
+    public long read(ReadableByteChannel channel, ByteBuffer[] dsts) throws IOException
+    {
+        return read(channel, dsts, 0, dsts.length);
+    }
+    /**
+     * GatheringChannel support.
+     * @param channel
+     * @param srcs
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     */
+    public static final long write(WritableByteChannel channel, ByteBuffer[] srcs, int offset, int length) throws IOException
+    {
+        long res = 0;
+        for  (int ii=0;ii<length;ii++)
+        {
+            ByteBuffer bb = srcs[ii+offset];
+            if (bb.hasRemaining())
+            {
+                res += channel.write(bb);
+                if (bb.hasRemaining())
+                {
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+    /**
+     * GatheringChannel support.
+     * @param channel
+     * @param srcs
+     * @return
+     * @throws IOException 
+     */
+    public static final long write(WritableByteChannel channel, ByteBuffer[] srcs) throws IOException
+    {
+        return write(channel, srcs, 0, srcs.length);
+    }
+
     public static void writeAll(GatheringByteChannel ch, ByteBuffer... bbs) throws IOException
     {
         writeAll(ch, bbs, 0, bbs.length);
@@ -302,32 +389,7 @@ public class ChannelHelper
         @Override
         public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
         {
-            long res = 0;
-            for  (int ii=0;ii<length;ii++)
-            {
-                ByteBuffer bb = dsts[ii+offset];
-                if (bb.hasRemaining())
-                {
-                    int rc = channel.read(bb);
-                    if (rc == -1)
-                    {
-                        if (res == 0)
-                        {
-                            return -1;
-                        }
-                        else
-                        {
-                            return res;
-                        }
-                    }
-                    res += rc;
-                    if (bb.hasRemaining())
-                    {
-                        break;
-                    }
-                }
-            }
-            return res;
+            return ChannelHelper.read(channel, dsts, offset, length);
         }
 
         @Override
@@ -367,20 +429,7 @@ public class ChannelHelper
         @Override
         public synchronized long write(ByteBuffer[] srcs, int offset, int length) throws IOException
         {
-            long res = 0;
-            for  (int ii=0;ii<length;ii++)
-            {
-                ByteBuffer bb = srcs[ii+offset];
-                if (bb.hasRemaining())
-                {
-                    res += channel.write(bb);
-                    if (bb.hasRemaining())
-                    {
-                        break;
-                    }
-                }
-            }
-            return res;
+            return ChannelHelper.write(channel, srcs, offset, length);
         }
 
         @Override
