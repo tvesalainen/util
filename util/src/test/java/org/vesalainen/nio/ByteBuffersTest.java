@@ -38,7 +38,8 @@ public class ByteBuffersTest
         ByteBuffer bb2 = ByteBuffer.wrap("0123456789".getBytes());
         ByteBuffer bb3 = ByteBuffer.allocate(5);
         ByteBuffer bb4 = ByteBuffer.allocate(10);
-        ByteBuffers.move(new ByteBuffer[]{bb1, bb2}, new ByteBuffer[]{bb3, bb4});
+        long count = ByteBuffers.move(new ByteBuffer[]{bb1, bb2}, new ByteBuffer[]{bb3, bb4});
+        assertEquals(15, count);
         assertFalse(bb1.hasRemaining());
         assertEquals(5, bb2.remaining());
         assertFalse(bb3.hasRemaining());
@@ -52,11 +53,12 @@ public class ByteBuffersTest
         ByteBuffer bb2 = ByteBuffer.wrap("0123456789".getBytes());
         ByteBuffer bb3 = ByteBuffer.allocate(15);
         ByteBuffer bb4 = ByteBuffer.allocate(10);
-        ByteBuffers.move(new ByteBuffer[]{bb1, bb2}, new ByteBuffer[]{bb3, bb4});
+        long count = ByteBuffers.move(new ByteBuffer[]{bb1, bb2}, new ByteBuffer[]{bb3, bb4});
+        assertEquals(20, count);
         assertFalse(bb1.hasRemaining());
         assertFalse(bb2.hasRemaining());
         assertFalse(bb3.hasRemaining());
         assertEquals(5, bb4.remaining());
     }
-    
+
 }
