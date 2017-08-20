@@ -81,7 +81,7 @@ public class ChannelHelper
      * @return
      * @throws IOException 
      */
-    public long read(ReadableByteChannel channel, ByteBuffer[] dsts) throws IOException
+    public static final long read(ReadableByteChannel channel, ByteBuffer[] dsts) throws IOException
     {
         return read(channel, dsts, 0, dsts.length);
     }
