@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.UserPrincipal;
 import java.time.Instant;
 import org.junit.Test;
 import static org.junit.Assert.*;
