@@ -21,10 +21,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermission;
+import static java.nio.file.attribute.PosixFilePermission.*;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.vesalainen.nio.DynamicByteBuffer;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
@@ -51,6 +55,10 @@ public class VFile
         this.content = content;
     }
 
+    private void init()
+    {
+        
+    }
     public BasicAttrs getBasicAttrs()
     {
         return basicAttrs;
@@ -79,6 +87,86 @@ public class VFile
         {
             attributes.put(fa.name(), fa.value());
         }
+    }
+    public static final Map<String,Object> fromMode(short mode)
+    {
+        Map<String,Object> map = new HashMap<>();
+        EnumSet perms = EnumSet.noneOf(PosixFilePermission.class);
+        map.put(PERMISSIONS, perms);
+        switch (mode & 0170000)
+        {
+            case 0120000:   // i
+                map.put(IS_SYMBOLIC_LINK, true);
+                break;
+            case 0100000:   // -
+                map.put(IS_REGULAR, true);
+                break;
+            case 0040000:   // d
+                map.put(IS_DIRECTORY, true);
+                break;
+            default:
+                map.put(IS_OTHER, true);
+                break;
+        }
+        // owner
+        if ((mode & 00400)==00400)
+        {
+            perms.add(OWNER_READ);
+        }
+        if ((mode & 00200)==00200)
+        {
+            perms.add(OWNER_WRITE);
+        }
+        if ((mode & 00100)==00100)
+        {
+            perms.add(OWNER_EXECUTE);
+            if ((mode & 0004000)==0004000)
+            {
+                map.put(SET_UID, true);
+            }
+        }
+        // group
+        if ((mode & 0040)==0040)
+        {
+            perms.add(GROUP_READ);
+        }
+        if ((mode & 0020)==0020)
+        {
+            perms.add(GROUP_WRITE);
+        }
+        if ((mode & 0010)==0010)
+        {
+            perms.add(GROUP_EXECUTE);
+            if ((mode & 0002000)==0002000)
+            {
+                map.put(SET_GID, true);
+            }
+        }
+        // others
+        if ((mode & 004)==004)
+        {
+            perms.add(OTHERS_READ);
+        }
+        if ((mode & 002)==002)
+        {
+            perms.add(OTHERS_WRITE);
+        }
+        if ((mode & 001)==001)
+        {
+            perms.add(OTHERS_EXECUTE);
+            if ((mode & 0001000)==0001000)
+            {
+                map.put(STICKY_BIT, true);
+            }
+        }
+        else
+        {
+            if ((mode & 0001000)==0001000)
+            {
+                map.put(STICKY_BIT, true);
+            }
+        }
+        return map;
     }
     public class BasicAttrs implements BasicFileAttributes
     {
