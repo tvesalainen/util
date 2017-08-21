@@ -19,11 +19,16 @@ package org.vesalainen.vfs;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.NonReadableChannelException;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.util.Set;
 import org.vesalainen.nio.ByteBuffers;
@@ -35,12 +40,14 @@ import org.vesalainen.nio.channels.ChannelHelper;
  */
 public class VFileChannel extends FileChannel
 {
+    private Path path;
     private VFile file;
     private ByteBuffer bb;
     private Set<? extends OpenOption> options;
 
-    public VFileChannel(VFile file, Set<? extends OpenOption> options)
+    public VFileChannel(Path path, VFile file, Set<? extends OpenOption> options)
     {
+        this.path = path;
         this.file = file;
         this.options = options;
         this.bb = file.duplicate();
@@ -59,18 +66,26 @@ public class VFileChannel extends FileChannel
     {
         if (!options.contains(READ))
         {
-            throw new IOException("file is not open for reading");
+            throw new NonReadableChannelException();
         }
         bb.limit(file.getSize());
+        if (!bb.hasRemaining())
+        {
+            return -1;
+        }
         return (int) ByteBuffers.move(bb, dst);
     }
 
     @Override
     public int write(ByteBuffer src) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         if (!options.contains(WRITE))
         {
-            throw new IOException("file is not open for writing");
+            throw new NonWritableChannelException();
         }
         bb.limit(bb.capacity());
         int rc = (int) ByteBuffers.move(src, bb);
@@ -81,12 +96,24 @@ public class VFileChannel extends FileChannel
     @Override
     public long position() throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         return bb.position();
     }
 
     @Override
     public FileChannel position(long newPosition) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (newPosition < 0)
+        {
+            throw new IllegalArgumentException(newPosition+" < 0");
+        }
         bb.position((int) newPosition);
         return this;
     }
@@ -94,13 +121,32 @@ public class VFileChannel extends FileChannel
     @Override
     public long size() throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         return file.getSize();
     }
 
     @Override
     public FileChannel truncate(long size) throws IOException
     {
-        file.truncate((int) size);
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (!options.contains(WRITE))
+        {
+            throw new NonWritableChannelException();
+        }
+        if (size < 0)
+        {
+            throw new IllegalArgumentException(size+" < 0");
+        }
+        if (size <= file.getSize())
+        {
+            file.truncate((int) size);
+        }
         return this;
     }
 
@@ -112,9 +158,13 @@ public class VFileChannel extends FileChannel
     @Override
     public long transferTo(long position, long count, WritableByteChannel target) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         if (!options.contains(READ))
         {
-            throw new IOException("file is not open for reading");
+            throw new NonWritableChannelException();
         }
         int avail = (int) (file.getSize()-position);
         if (avail > 0)
@@ -137,9 +187,13 @@ public class VFileChannel extends FileChannel
     @Override
     public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         if (!options.contains(WRITE))
         {
-            throw new IOException("file is not open for writing");
+            throw new NonWritableChannelException();
         }
         if (position <= file.getSize())
         {
@@ -154,9 +208,21 @@ public class VFileChannel extends FileChannel
     @Override
     public int read(ByteBuffer dst, long position) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (position < 0)
+        {
+            throw new IllegalArgumentException(position+" < 0");
+        }
         if (!options.contains(READ))
         {
-            throw new IOException("file is not open for reading");
+            throw new NonReadableChannelException();
+        }
+        if (position >= file.getSize())
+        {
+            return -1;
         }
         if (position <= file.getSize())
         {
@@ -171,9 +237,17 @@ public class VFileChannel extends FileChannel
     @Override
     public int write(ByteBuffer src, long position) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (position < 0)
+        {
+            throw new IllegalArgumentException(position+" < 0");
+        }
         if (!options.contains(WRITE))
         {
-            throw new IOException("file is not open for writing");
+            throw new NonWritableChannelException();
         }
         ByteBuffer view = bb.duplicate();
         view.position((int) position);
@@ -184,24 +258,28 @@ public class VFileChannel extends FileChannel
     @Override
     public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public FileLock lock(long position, long size, boolean shared) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public FileLock tryLock(long position, long size, boolean shared) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     protected void implCloseChannel() throws IOException
     {
+        if (options.contains(DELETE_ON_CLOSE))
+        {
+            Files.deleteIfExists(path);
+        }
     }
     
     @Override

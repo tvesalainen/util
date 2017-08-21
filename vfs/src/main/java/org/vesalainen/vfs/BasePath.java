@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -37,9 +36,9 @@ import java.util.stream.Collectors;
  */
 public abstract class BasePath implements Path
 {
-    protected FileSystem fileSystem;
+    protected VirtualFileSystem fileSystem;
 
-    protected BasePath(FileSystem fileSystem)
+    protected BasePath(VirtualFileSystem fileSystem)
     {
         this.fileSystem = fileSystem;
     }
@@ -90,7 +89,7 @@ public abstract class BasePath implements Path
         {
             nl.add(itOth.next());
         }
-        return new MultiPath(fileSystem, isAbsolute(), nl);
+        return new MultiPath(fileSystem, (Root) getRoot(), nl);
     }
 
     @Override
@@ -140,7 +139,7 @@ public abstract class BasePath implements Path
             {
                 nl.add(it.next());
             }
-            return new MultiPath(fileSystem, true, nl);
+            return new MultiPath(fileSystem, fileSystem.getDefaultRoot(), nl);
         }
     }
 

@@ -24,19 +24,50 @@ import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PMFileSystem extends FileSystem
+public class VirtualFileSystem extends FileSystem
 {
     private FileSystemProvider provider;
+    private Map<Root,VirtualFileStore> stores = new HashMap<>();
+    private Set<Path> rootSet = Collections.unmodifiableSet(stores.keySet());
+    private Collection<FileStore> storeSet = Collections.unmodifiableCollection(stores.values());
+    private Root defaultRoot;
 
-    public PMFileSystem(FileSystemProvider provider)
+    public VirtualFileSystem(FileSystemProvider provider)
     {
         this.provider = provider;
+    }
+
+    void addFileStore(Root root, VirtualFileStore store)
+    {
+        stores.put(root, store);
+    }
+    void addDefaultFileStore(Root defaultRoot, VirtualFileStore defaultStore)
+    {
+        stores.put(defaultRoot, defaultStore);
+        this.defaultRoot = defaultRoot;
+    }
+    VirtualFileStore getFileStore(Path path)
+    {
+        if (path.isAbsolute())
+        {
+            return stores.get(path.getRoot());
+        }
+        return stores.get(defaultRoot);
+    }
+
+    Root getDefaultRoot()
+    {
+        return defaultRoot;
     }
     
     @Override
@@ -72,13 +103,13 @@ public class PMFileSystem extends FileSystem
     @Override
     public Iterable<Path> getRootDirectories()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return rootSet;
     }
 
     @Override
     public Iterable<FileStore> getFileStores()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return storeSet;
     }
 
     @Override
@@ -90,7 +121,18 @@ public class PMFileSystem extends FileSystem
     @Override
     public Path getPath(String first, String... more)
     {
-        return new MultiPath(this, first, more);
+        Root root = null;
+        for (Root r : stores.keySet())
+        {
+            String rest = r.matches(first);
+            if (rest != null)
+            {
+                root = r;
+                first = rest;
+                break;
+            }
+        }
+        return new MultiPath(this, root, first, more);
     }
 
     @Override

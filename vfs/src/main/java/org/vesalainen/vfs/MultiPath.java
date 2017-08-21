@@ -34,34 +34,18 @@ public class MultiPath extends BasePath
     private List<Path> list;
     private Root root;
     
-    MultiPath(FileSystem fileSystem, boolean absolute)
+    MultiPath(VirtualFileSystem fileSystem, Root root, List<Path> list)
     {
         super(fileSystem);
-        if (absolute)
-        {
-            this.root = Root.getRoot(fileSystem);
-        }
-    }
-
-    MultiPath(FileSystem fileSystem, boolean absolute, List<Path> list)
-    {
-        super(fileSystem);
-        if (absolute)
-        {
-            this.root = Root.getRoot(fileSystem);
-        }
+        this.root = root;
         this.list = Collections.unmodifiableList(list);
     }
     
-    MultiPath(FileSystem fileSystem, String first, String... more)
+    MultiPath(VirtualFileSystem fileSystem, Root root, String first, String... more)
     {
         super(fileSystem);
         this.list = new ArrayList<>();
-        if (first.startsWith("/"))
-        {
-            this.root = Root.getRoot(fileSystem);
-            first = first.substring(1);
-        }
+        this.root = root;
         if (!first.isEmpty())
         {
             add(first);
@@ -110,7 +94,7 @@ public class MultiPath extends BasePath
     {
         if (list.size() > 1)
         {
-            return new MultiPath(fileSystem, isAbsolute(), list.subList(0, list.size()-1));
+            return new MultiPath(fileSystem, root, list.subList(0, list.size()-1));
         }
         if (list.size() == 1 && isAbsolute())
         {
@@ -134,7 +118,7 @@ public class MultiPath extends BasePath
     @Override
     public Path subpath(int beginIndex, int endIndex)
     {
-        return new MultiPath(fileSystem, false, list.subList(beginIndex, endIndex));
+        return new MultiPath(fileSystem, null, list.subList(beginIndex, endIndex));
     }
 
     @Override
@@ -209,7 +193,7 @@ public class MultiPath extends BasePath
                     }
                 }
             }
-            return new MultiPath(fileSystem, isAbsolute(), nl);
+            return new MultiPath(fileSystem, root, nl);
         }
         else
         {

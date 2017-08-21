@@ -30,19 +30,14 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  *
@@ -51,9 +46,22 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class VirtualFileSystemProvider extends FileSystemProvider
 {
     static final String SCHEME = "org.vesalainen.vfs";
-    
-    private SortedMap<Path,VFile> files = new ConcurrentSkipListMap<>();
-    
+
+    private VFile getFile(Path path)
+    {
+        VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
+        return vfs.getFileStore(path).get(path);
+    }
+    private VFile createFile(Path path, FileAttribute<?>... attrs) throws IOException
+    {
+        VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
+        return vfs.getFileStore(path).create(path, attrs);
+    }
+    private VFile deleteFile(Path path)
+    {
+        VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
+        return vfs.getFileStore(path).remove(path);
+    }
     @Override
     public String getScheme()
     {
@@ -71,7 +79,9 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         if (SCHEME.equalsIgnoreCase(uri.getScheme()))
         {
-            return new PMFileSystem(this);
+            VirtualFileSystem vfs = new VirtualFileSystem(this);
+            vfs.addDefaultFileStore(new Root(vfs, "/"), new VirtualFileStore());
+            return vfs;
         }
         throw new IllegalArgumentException(uri+" not matching");
     }
@@ -85,7 +95,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
-        VFile file = files.get(path);
+        VFile file = getFile(path);
         Set<OpenOption> opts = new HashSet<>(options);
         if (!opts.contains(READ) && !opts.contains(WRITE) && !opts.contains(APPEND))
         {
@@ -105,21 +115,17 @@ public class VirtualFileSystemProvider extends FileSystemProvider
             {
                 throw new FileAlreadyExistsException(path.toString());
             }
-            file = new VFile();
-            files.put(path, file);
-            file.setFileAttributes(attrs);
+            file = createFile(path, attrs);
         }
         if (options.contains(CREATE) && file == null)
         {
-            file = new VFile();
-            files.put(path, file);
-            file.setFileAttributes(attrs);
+            file = createFile(path, attrs);
         }
         if (file == null)
         {
             throw new FileNotFoundException(path.toString());
         }
-        return new VFileChannel(file, opts);
+        return new VFileChannel(path, file, opts);
     }
 
     @Override
@@ -173,7 +179,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void checkAccess(Path path, AccessMode... modes) throws IOException
     {
-        if (!files.containsKey(path))
+        if (getFile(path) == null)
         {
             throw new NoSuchFileException(path.toString());
         }
@@ -188,7 +194,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException
     {
-        VFile file = files.get(path);
+        VFile file = getFile(path);
         if (file == null)
         {
             throw new FileNotFoundException(path.toString());

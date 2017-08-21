@@ -29,10 +29,10 @@ import java.util.Objects;
  */
 public class SinglePath extends BasePath
 {
-    private String name;
-    private final List<Path> singleton;
+    protected String name;
+    protected final List<Path> singleton;
 
-    public SinglePath(FileSystem fileSystem, String name)
+    public SinglePath(VirtualFileSystem fileSystem, String name)
     {
         super(fileSystem);
         this.name = name;

@@ -34,26 +34,23 @@ import java.util.Map;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Root extends BasePath
+public class Root extends SinglePath
 {
     private static Map<FileSystem,Root> map = new HashMap<>();
     
-    private Root(FileSystem fileSystem)
+    Root(VirtualFileSystem fileSystem, String name)
     {
-        super(fileSystem);
+        super(fileSystem, name);
     }
 
-    static final Root getRoot(FileSystem fileSystem)
+    String matches(String first)
     {
-        Root root = map.get(fileSystem);
-        if (root == null)
+        if (first.startsWith(name))
         {
-            root = new Root(fileSystem);
-            map.put(fileSystem, root);
+            return first.substring(name.length());
         }
-        return root;
+        return null;
     }
-    
     @Override
     public boolean isAbsolute()
     {

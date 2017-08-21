@@ -20,11 +20,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -42,25 +44,39 @@ public class VirtualFileSystemProviderTest
     }
 
     @Test
-    public void test1() throws URISyntaxException
+    public void test1() throws URISyntaxException, IOException
     {
-        Path p = Paths.get("c:\\temp");
-        Path parent = p.getParent();
-        int nc1 = p.getNameCount();
-        Path fn = p.getFileName();
-        Path root = p.getRoot();
+        Path cr = Paths.get("c:\\temp");
+        Path temp = Paths.get("temp");
+        Path parent = cr.getParent();
+        int nc1 = cr.getNameCount();
+        Path fn = cr.getFileName();
+        Path root = cr.getRoot();
         int nc2 = root.getNameCount();
         URI uri = new URI("file:///");
+        Path d = Paths.get("d:\\");
     }
 
-    @Test
-    public void test2() throws URISyntaxException, IOException
+    //@Test
+    public void testCopy() throws URISyntaxException, IOException
     {
         Path source = Paths.get("pom.xml");
+        List<String> exp = Files.readAllLines(source, US_ASCII);
         Path target = fileSystem.getPath("foo");
         Files.copy(source, target);
         assertEquals(Files.size(source), Files.size(target));
-        byte[] readAllBytes = Files.readAllBytes(target);
-        List<String> list = Files.readAllLines(target, US_ASCII);
+        List<String> lines = Files.readAllLines(target, US_ASCII);
+        assertEquals(exp, lines);
+        Path target2 = fileSystem.getPath("bar");
+        Files.copy(target, target2);
+        List<String> lines2 = Files.readAllLines(target2, US_ASCII);
+        assertEquals(exp, lines2);
+    }
+    @Test
+    public void testCreate() throws URISyntaxException, IOException
+    {
+        Path target = fileSystem.getPath("foo/bar");
+        Files.createFile(target, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr--r--")));
+        assertTrue(Files.exists(target));
     }
 }
