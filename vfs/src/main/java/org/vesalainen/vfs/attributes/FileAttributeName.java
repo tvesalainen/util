@@ -21,6 +21,7 @@ import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -78,6 +79,15 @@ public final class FileAttributeName
     public static final Class<?> type(String name)
     {
         return types.get(name);
+    }
+    public static final void check(String name, Object value)
+    {
+        Objects.requireNonNull(value, "value can't be null");
+        Class<?> type = FileAttributeName.type(name);
+        if (type == null || !type.isAssignableFrom(value.getClass()))
+        {
+            throw new IllegalArgumentException(value+" not expected type "+type);
+        }
     }
     public static final String normalize(String str)
     {

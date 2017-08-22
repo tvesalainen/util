@@ -37,10 +37,8 @@ public class VirtualFileStore extends FileStore
     {
         return files.get(path);
     }
-    VirtualFile create(Path path, FileAttribute<?>... attrs) throws IOException
+    VirtualFile add(Path path, VirtualFile file) throws IOException
     {
-        VirtualFile file = new VirtualFile();
-        file.setFileAttributes(attrs);
         files.put(path, file);
         return file;
     }

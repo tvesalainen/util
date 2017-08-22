@@ -19,6 +19,7 @@ package org.vesalainen.vfs;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -38,15 +39,20 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.vesalainen.nio.DynamicByteBuffer;
+import org.vesalainen.vfs.VirtualFile.Type;
+import static org.vesalainen.vfs.VirtualFile.Type.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFileSystemProvider extends FileSystemProvider
+public abstract class VirtualFileSystemProvider extends FileSystemProvider
 {
     static final String SCHEME = "org.vesalainen.vfs";
 
+    public abstract VirtualFile createFile(Type type, ByteBuffer content, FileAttribute<?>... attrs) throws IOException;
+    
     private VirtualFile getFile(Path path)
     {
         VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
@@ -55,7 +61,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     private VirtualFile createFile(Path path, FileAttribute<?>... attrs) throws IOException
     {
         VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
-        return vfs.getFileStore(path).create(path, attrs);
+        VirtualFile file = createFile(REGULAR, DynamicByteBuffer.create(Integer.MAX_VALUE), attrs);
+        return vfs.getFileStore(path).add(path, file);
     }
     private VirtualFile deleteFile(Path path)
     {
@@ -188,7 +195,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        VirtualFile file = getFile(path);
+        if (file == null)
+        {
+            throw new IllegalArgumentException(path.toString());
+        }
+        return file.getFileAttributeView(type);
     }
 
     @Override
@@ -199,23 +211,29 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         {
             throw new FileNotFoundException(path.toString());
         }
-        if (BasicFileAttributes.class.equals(type))
-        {
-            return (A) file.getBasicAttrs();
-        }
-        throw new UnsupportedOperationException(type+" not supported");
+        return file.readAttributes(type);
     }
 
     @Override
     public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        VirtualFile file = getFile(path);
+        if (file == null)
+        {
+            throw new FileNotFoundException(path.toString());
+        }
+        return file.readAttributes(attributes);
     }
 
     @Override
     public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        VirtualFile file = getFile(path);
+        if (file == null)
+        {
+            throw new FileNotFoundException(path.toString());
+        }
+        file.setAttribute(attribute, value);
     }
     
 }

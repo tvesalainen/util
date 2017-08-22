@@ -36,13 +36,13 @@ import java.util.Set;
  */
 public class VirtualFileSystem extends FileSystem
 {
-    private FileSystemProvider provider;
+    private VirtualFileSystemProvider provider;
     private Map<Root,VirtualFileStore> stores = new HashMap<>();
     private Set<Path> rootSet = Collections.unmodifiableSet(stores.keySet());
     private Collection<FileStore> storeSet = Collections.unmodifiableCollection(stores.values());
     private Root defaultRoot;
 
-    public VirtualFileSystem(FileSystemProvider provider)
+    public VirtualFileSystem(VirtualFileSystemProvider provider)
     {
         this.provider = provider;
     }

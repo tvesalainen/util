@@ -18,63 +18,40 @@ package org.vesalainen.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.FileTime;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
-import org.vesalainen.nio.DynamicByteBuffer;
-import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFile
+public abstract class VirtualFile
 {
+    protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
     protected static final int MAX_SIZE = Integer.MAX_VALUE;
-    protected Map<String,Object> attributes = new HashMap<>();
+    protected Type type;
     protected ByteBuffer content;
     protected long size;
-    protected BasicFileAttributeView basicFileAttributeView;
 
-    VirtualFile(ByteBuffer content)
+    protected VirtualFile(Type type, ByteBuffer content, FileAttribute<?>... attrs) throws IOException
     {
+        this.type = type;
         this.content = content;
-        FileTime now = FileTime.from(Instant.now());
-        attributes.put(CREATION_TIME, now);
-        attributes.put(LAST_ACCESS_TIME, now);
-        attributes.put(LAST_MODIFIED_TIME, now);
-        basicFileAttributeView = new BasicFileAttributeViewImpl(attributes);
+        for (FileAttribute fa : attrs)
+        {
+            setAttribute(fa.name(), fa.value());
+        }
     }
     
-    public <V extends FileAttributeView> V getFileAttributeView(Class<V> type)
-    {
-        if (BasicFileAttributeView.class.equals(type))
-        {
-            return (V) basicFileAttributeView;
-        }
-        return null;
-    }
+    public abstract void setAttribute(String attribute, Object value);
+    public abstract <V extends FileAttributeView> V getFileAttributeView(Class<V> type);
 
-    public <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException
-    {
-        if (BasicFileAttributes.class.equals(type))
-        {
-            return (A) basicFileAttributeView.readAttributes();
-        }
-        return null;
-    }
-    public Map<String, Object> readAttributes(String attributes) throws IOException
-    {
-        
-    }
+    public abstract <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException;
+    public abstract Map<String, Object> readAttributes(String names) throws IOException;
+    
     ByteBuffer duplicate()
     {
         return content.duplicate();
@@ -82,21 +59,16 @@ public class VirtualFile
     void append(int pos)
     {
         size = Math.max(size, pos);
+        setAttribute(SIZE, size);
     }
     void truncate(int pos)
     {
         size = pos;
+        setAttribute(SIZE, size);
     }
 
     int getSize()
     {
         return (int) size;
-    }
-    void setFileAttributes(FileAttribute<?>... attrs)
-    {
-        for (FileAttribute fa : attrs)
-        {
-            attributes.put(fa.name(), fa.value());
-        }
     }
 }
