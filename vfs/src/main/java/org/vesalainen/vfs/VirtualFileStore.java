@@ -31,20 +31,20 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class VirtualFileStore extends FileStore
 {
-    private SortedMap<Path,VFile> files = new ConcurrentSkipListMap<>();
+    private SortedMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
 
-    VFile get(Path path)
+    VirtualFile get(Path path)
     {
         return files.get(path);
     }
-    VFile create(Path path, FileAttribute<?>... attrs) throws IOException
+    VirtualFile create(Path path, FileAttribute<?>... attrs) throws IOException
     {
-        VFile file = new VFile();
+        VirtualFile file = new VirtualFile();
         file.setFileAttributes(attrs);
         files.put(path, file);
         return file;
     }
-    VFile remove(Path path)
+    VirtualFile remove(Path path)
     {
         return files.remove(path);
     }

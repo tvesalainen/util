@@ -24,6 +24,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Map;
 import java.util.Set;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
@@ -31,7 +32,8 @@ import java.util.Set;
  */
 public class PosixFileAttributeViewImpl extends BasicFileAttributeViewImpl implements PosixFileAttributeView
 {
-
+    private PosixFileAttributes posixFileAttributes = new PosixFileAttributesImpl();
+    
     protected PosixFileAttributeViewImpl(String name, Map<String, Object> map)
     {
         super(name, map);
@@ -45,19 +47,19 @@ public class PosixFileAttributeViewImpl extends BasicFileAttributeViewImpl imple
     @Override
     public PosixFileAttributes readAttributes() throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return posixFileAttributes;
     }
 
     @Override
     public void setPermissions(Set<PosixFilePermission> perms) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        put(PERMISSIONS, perms);
     }
 
     @Override
     public void setGroup(GroupPrincipal group) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        put(GROUP, group);
     }
     private class PosixFileAttributesImpl extends BasicFileAttributesImpl implements PosixFileAttributes
     {
@@ -65,19 +67,19 @@ public class PosixFileAttributeViewImpl extends BasicFileAttributeViewImpl imple
         @Override
         public UserPrincipal owner()
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return (UserPrincipal) get(OWNER);
         }
 
         @Override
         public GroupPrincipal group()
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return (GroupPrincipal) get(GROUP);
         }
 
         @Override
         public Set<PosixFilePermission> permissions()
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return (Set<PosixFilePermission>) get(PERMISSIONS);
         }
         
     }

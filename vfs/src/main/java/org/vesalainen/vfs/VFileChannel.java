@@ -41,11 +41,11 @@ import org.vesalainen.nio.channels.ChannelHelper;
 public class VFileChannel extends FileChannel
 {
     private Path path;
-    private VFile file;
+    private VirtualFile file;
     private ByteBuffer bb;
     private Set<? extends OpenOption> options;
 
-    public VFileChannel(Path path, VFile file, Set<? extends OpenOption> options)
+    public VFileChannel(Path path, VirtualFile file, Set<? extends OpenOption> options)
     {
         this.path = path;
         this.file = file;

@@ -47,17 +47,17 @@ public class VirtualFileSystemProvider extends FileSystemProvider
 {
     static final String SCHEME = "org.vesalainen.vfs";
 
-    private VFile getFile(Path path)
+    private VirtualFile getFile(Path path)
     {
         VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
         return vfs.getFileStore(path).get(path);
     }
-    private VFile createFile(Path path, FileAttribute<?>... attrs) throws IOException
+    private VirtualFile createFile(Path path, FileAttribute<?>... attrs) throws IOException
     {
         VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
         return vfs.getFileStore(path).create(path, attrs);
     }
-    private VFile deleteFile(Path path)
+    private VirtualFile deleteFile(Path path)
     {
         VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
         return vfs.getFileStore(path).remove(path);
@@ -95,7 +95,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
-        VFile file = getFile(path);
+        VirtualFile file = getFile(path);
         Set<OpenOption> opts = new HashSet<>(options);
         if (!opts.contains(READ) && !opts.contains(WRITE) && !opts.contains(APPEND))
         {
@@ -194,7 +194,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException
     {
-        VFile file = getFile(path);
+        VirtualFile file = getFile(path);
         if (file == null)
         {
             throw new FileNotFoundException(path.toString());

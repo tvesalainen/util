@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.attributes;
+package org.vesalainen.vfs.unix;
 
-import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFileAttributeView;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface UnixFileAttributes extends PosixFileAttributes
+public interface UnixFileAttributeView extends PosixFileAttributeView
 {
     /**
      * Returns ID of device containing file
@@ -70,19 +70,20 @@ public interface UnixFileAttributes extends PosixFileAttributes
      */
     short mode();
     /**
-     * Returns permissions, set-UID, set-GID and sticky-bit as number. E.g. 0120744
+     * Returns permissions, set-UID, set-GID and sticky-bit as number. E.g. 0120744.
+     * File type bits are masked. Like mode( mode & 07777)
      * @param mode 
      */
-    void mode(short mode);
+    void mode(int mode);
     /**
      * Sets permissions, set-UID, set-GID and sticky-bit as String E.g.
-     * lrwxr--r--
+     * lrwxr--r--.
      * @return 
      */
     String modeString();
     /**
      * Returns permissions, set-UID, set-GID and sticky-bit as String E.g.
-     * lrwxr--r--
+     * lrwxr--r--. mode can be 10 or 9 long. However file type is ignored.
      * @param mode 
      */
     void mode(String mode);

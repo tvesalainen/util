@@ -16,15 +16,25 @@
  */
 package org.vesalainen.vfs.attributes;
 
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public final class FileAttributeName
 {
-    public static final String SET_UID = "org.vesalainen.vfs:set-uid";
-    public static final String SET_GID = "org.vesalainen.vfs:set-gid";
-    public static final String STICKY_BIT = "org.vesalainen.vfs:sticky-bit";
+    public static final String UNIX_NAME = "org.vesalainen";
+    public static final String DEVICE = UNIX_NAME+":device";
+    public static final String INODE = UNIX_NAME+":inode";
+    public static final String SET_UID = UNIX_NAME+":set-uid";
+    public static final String SET_GID = UNIX_NAME+":set-gid";
+    public static final String STICKY_BIT = UNIX_NAME+":sticky-bit";
     
     public static final String PERMISSIONS = "posix:permissions";
     public static final String GROUP = "posix:group";
@@ -40,7 +50,35 @@ public final class FileAttributeName
     public static final String FILE_KEY = "basic:fileKey";
     
     public static final String OWNER = "basic:owner";
-    
+
+    public static final Map<String,Class<?>> types;
+    static
+    {
+        types = new HashMap<>();
+        types.put(DEVICE, Integer.class);
+        types.put(INODE, Integer.class);
+        types.put(SET_UID, Boolean.class);
+        types.put(SET_GID, Boolean.class);
+        types.put(STICKY_BIT, Boolean.class);
+
+        types.put(PERMISSIONS, Set.class);
+        types.put(GROUP, GroupPrincipal.class);
+        types.put(OWNER, UserPrincipal.class);
+
+        types.put(LAST_MODIFIED_TIME, FileTime.class);
+        types.put(LAST_ACCESS_TIME, FileTime.class);
+        types.put(CREATION_TIME, FileTime.class);
+        types.put(SIZE, Long.class);
+        types.put(IS_REGULAR, Boolean.class);
+        types.put(IS_DIRECTORY, Boolean.class);
+        types.put(IS_SYMBOLIC_LINK, Boolean.class);
+        types.put(IS_OTHER, Boolean.class);
+        types.put(FILE_KEY, Boolean.class);
+    }
+    public static final Class<?> type(String name)
+    {
+        return types.get(name);
+    }
     public static final String normalize(String str)
     {
         if (str.indexOf(':') != str.lastIndexOf(':'))
