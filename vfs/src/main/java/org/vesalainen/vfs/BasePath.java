@@ -126,13 +126,13 @@ public abstract class BasePath implements Path
     @Override
     public Path toAbsolutePath()
     {
-        if (isAbsolute())
+        Path nor = normalize();
+        if (nor.isAbsolute())
         {
-            return this;
+            return nor;
         }
         else
         {
-            Path nor = normalize();
             List<Path> nl = new ArrayList<>();
             Iterator<Path> it = nor.iterator();
             while (it.hasNext())

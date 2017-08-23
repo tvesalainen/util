@@ -17,13 +17,22 @@
 package org.vesalainen.vfs;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileStoreAttributeView;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.vesalainen.vfs.VirtualFile.Type;
+import static org.vesalainen.vfs.VirtualFile.Type.*;
 
 /**
  *
@@ -31,20 +40,59 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class VirtualFileStore extends FileStore
 {
-    private SortedMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
+    protected VirtualFileSystem fileSystem;
+    protected ConcurrentNavigableMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
+    protected Map<String,Object> storeAttributes = new HashMap<>();
+    protected Set<String> supportedFileAttributeViews = new HashSet<>();
+
+    protected VirtualFileStore(VirtualFileSystem fileSystem, String... views)
+    {
+        this.fileSystem = fileSystem;
+        supportedFileAttributeViews.add("basic");
+    }
+
+    public VirtualFileSystem getFileSystem()
+    {
+        return fileSystem;
+    }
+    public VirtualFileSystemProvider provider()
+    {
+        return (VirtualFileSystemProvider) fileSystem.provider();
+    }
+    public Set<String> supportedFileAttributeViews()
+    {
+        return supportedFileAttributeViews;
+    }
 
     VirtualFile get(Path path)
     {
         return files.get(path);
     }
-    VirtualFile add(Path path, VirtualFile file) throws IOException
+    VirtualFile create(Path path, Type type, ByteBuffer content, FileAttribute<?>... attrs) throws IOException
     {
+        VirtualFile file = new VirtualFile(this, type, content, supportedFileAttributeViews, attrs);
         files.put(path, file);
         return file;
     }
-    VirtualFile remove(Path path)
+    VirtualFile remove(Path path) throws DirectoryNotEmptyException
     {
+        VirtualFile file = files.get(path);
+        if (file.getType() == DIRECTORY)
+        {
+            Path ck = files.higherKey(path);
+            if (ck != null)
+            {
+                if (ck.startsWith(path))
+                {
+                    throw new DirectoryNotEmptyException(path.toString());
+                }
+            }
+        }
         return files.remove(path);
+    }
+    void link(Path link, Path existing)
+    {
+        files.put(link, files.get(existing));
     }
     @Override
     public String name()
@@ -67,19 +115,19 @@ public class VirtualFileStore extends FileStore
     @Override
     public long getTotalSpace() throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return files.values().stream().mapToLong((f)->f.size).sum();
     }
 
     @Override
     public long getUsableSpace() throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Long.MAX_VALUE;
     }
 
     @Override
     public long getUnallocatedSpace() throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Long.MAX_VALUE;
     }
 
     @Override
@@ -103,7 +151,7 @@ public class VirtualFileStore extends FileStore
     @Override
     public Object getAttribute(String attribute) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return storeAttributes.get(attribute);
     }
     
 }

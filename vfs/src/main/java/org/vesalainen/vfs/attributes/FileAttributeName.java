@@ -107,10 +107,12 @@ public final class FileAttributeName
     
     public static class FileAttributeNameMatcher
     {
+        private Set<String> views;
         private Name[] array;
 
-        public FileAttributeNameMatcher(String expr)
+        public FileAttributeNameMatcher(Set<String> views, String expr)
         {
+            this.views = views;
             String[] ss = expr.split(",");
             array = new Name[ss.length];
             int len = ss.length;
@@ -123,7 +125,7 @@ public final class FileAttributeName
         {
             for (Name n : array)
             {
-                if (n.match(new Name(name)))
+                if (views.contains(n.view) && n.match(new Name(name)))
                 {
                     return true;
                 }

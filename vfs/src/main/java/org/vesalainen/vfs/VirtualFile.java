@@ -18,39 +18,171 @@ package org.vesalainen.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.file.AccessMode;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import static org.vesalainen.vfs.VirtualFile.Type.REGULAR;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class VirtualFile
+public class VirtualFile
 {
+
     protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
     protected static final int MAX_SIZE = Integer.MAX_VALUE;
+    protected VirtualFileStore fileStore;
     protected Type type;
     protected ByteBuffer content;
     protected long size;
+    protected Map<String,Object> attributes = new HashMap<>();
+    protected Map<String,? extends FileAttributeView> viewMap;
+    protected Path symbolicTarget;
 
-    protected VirtualFile(Type type, ByteBuffer content, FileAttribute<?>... attrs) throws IOException
+    protected VirtualFile(VirtualFileStore fileStore, Type type, ByteBuffer content, Set<String> views, FileAttribute<?>... attrs) throws IOException
     {
+        this.fileStore = fileStore;
         this.type = type;
         this.content = content;
+        this.viewMap = fileStore.provider().createViewMap(attributes, views);
+        switch (type)
+        {
+            case REGULAR:
+                setAttribute(IS_REGULAR, true);
+                break;
+            case DIRECTORY:
+                setAttribute(IS_DIRECTORY, true);
+                break;
+            case SYMBOLIC_LINK:
+                setAttribute(IS_SYMBOLIC_LINK, true);
+                symbolicTarget = fileStore.fileSystem.getPath(new String(content.array(), US_ASCII));
+                break;
+            default:
+                throw new UnsupportedOperationException(type.name());
+        }
         for (FileAttribute fa : attrs)
         {
             setAttribute(fa.name(), fa.value());
         }
+        FileTime now = FileTime.from(Instant.now());
+        setAttribute(CREATION_TIME, now);
+        setAttribute(LAST_ACCESS_TIME, now);
+        setAttribute(LAST_MODIFIED_TIME, now);
+    }
+
+    public Path getSymbolicTarget()
+    {
+        return symbolicTarget;
+    }
+
+    public Type getType()
+    {
+        return type;
     }
     
-    public abstract void setAttribute(String attribute, Object value);
-    public abstract <V extends FileAttributeView> V getFileAttributeView(Class<V> type);
+    public boolean checkAccess(AccessMode... modes)
+    {
+        for (AccessMode am : modes)
+        {
+            switch (am)
+            {
+                case WRITE:
+                    if (content.isReadOnly())
+                    {
+                        return false;
+                    }
+                    break;
+                case READ:
+                case EXECUTE:
+                    if (type != REGULAR)
+                    {
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new UnsupportedOperationException(am.name());
+            }
+        }
+        return true;
+    }
+    public final void setAttribute(String name, Object value)
+    {
+        String normalized = FileAttributeName.normalize(name);
+        checkAttribute(normalized, value);
+        attributes.put(normalized, value);
+    }
+    public <V extends FileAttributeView> V getFileAttributeView(Class<V> type)
+    {
+        for (FileAttributeView view : viewMap.values())
+        {
+            if (type.isAssignableFrom(view.getClass()))
+            {
+                return (V) view;
+            }
+        }
+        return null;
+    }
 
-    public abstract <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException;
-    public abstract Map<String, Object> readAttributes(String names) throws IOException;
+    public <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException
+    {
+        if (BasicFileAttributes.class.equals(type))
+        {
+            BasicFileAttributeView attrs = getFileAttributeView(BasicFileAttributeView.class);
+            if (attrs != null)
+            {
+                return (A) attrs.readAttributes();
+            }
+        }
+        if (PosixFileAttributes.class.equals(type))
+        {
+            PosixFileAttributeView attrs = getFileAttributeView(PosixFileAttributeView.class);
+            if (attrs != null)
+            {
+                return (A) attrs.readAttributes();
+            }
+        }
+        throw new UnsupportedOperationException(type+" not supported");
+    }
+    public Map<String, Object> readAttributes(String names) throws IOException
+    {
+        Map<String, Object> map = new HashMap<>();
+        FileAttributeName.FileAttributeNameMatcher matcher = new FileAttributeName.FileAttributeNameMatcher(viewMap.keySet(), names);
+        attributes.forEach((n,a)->
+        {
+            if (matcher.any(n))
+            {
+                map.put(n, a);
+            }
+        });
+        return map;
+    }
+
+    protected void checkAttribute(String name, Object value)
+    {
+        FileAttributeName.check(name, value);
+        for (String view : viewMap.keySet())
+        {
+            if (name.startsWith(view))
+            {
+                return;
+            }
+        }
+        throw new UnsupportedOperationException(name);
+    }
     
     ByteBuffer duplicate()
     {

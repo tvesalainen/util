@@ -27,8 +27,10 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import static org.vesalainen.vfs.VirtualFile.Type.*;
 
 /**
  *
@@ -41,20 +43,24 @@ public class VirtualFileSystem extends FileSystem
     private Set<Path> rootSet = Collections.unmodifiableSet(stores.keySet());
     private Collection<FileStore> storeSet = Collections.unmodifiableCollection(stores.values());
     private Root defaultRoot;
+    private Set<String> supportedFileAttributeViews = new HashSet<>();
+    private Set<String> supportedFileAttributeViewsSecured = Collections.unmodifiableSet(supportedFileAttributeViews);
 
     public VirtualFileSystem(VirtualFileSystemProvider provider)
     {
         this.provider = provider;
     }
 
-    void addFileStore(Root root, VirtualFileStore store)
+    void addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
     {
-        stores.put(root, store);
-    }
-    void addDefaultFileStore(Root defaultRoot, VirtualFileStore defaultStore)
-    {
-        stores.put(defaultRoot, defaultStore);
-        this.defaultRoot = defaultRoot;
+        Root r = new Root(this, root);
+        stores.put(r, store);
+        supportedFileAttributeViews.addAll(store.supportedFileAttributeViews());
+        store.create(r, DIRECTORY, null);
+        if (defaultStore)
+        {
+            this.defaultRoot = r;
+        }
     }
     VirtualFileStore getFileStore(Path path)
     {
@@ -115,7 +121,7 @@ public class VirtualFileSystem extends FileSystem
     @Override
     public Set<String> supportedFileAttributeViews()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return supportedFileAttributeViewsSecured;
     }
 
     @Override

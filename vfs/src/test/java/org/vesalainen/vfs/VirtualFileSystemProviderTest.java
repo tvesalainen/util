@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -73,10 +74,66 @@ public class VirtualFileSystemProviderTest
         assertEquals(exp, lines2);
     }
     @Test
+    public void testCreateDirectory() throws URISyntaxException, IOException
+    {
+        Path target = fileSystem.getPath("foo");
+        Files.createDirectory(target);
+        assertTrue(Files.exists(target));
+        assertTrue(Files.isDirectory(target));
+        Path bar = fileSystem.getPath("foo/bar");
+        Files.createFile(bar);
+        try
+        {
+            Files.delete(target);
+            fail("DirectoryNotEmptyException");
+        }
+        catch(DirectoryNotEmptyException ex)
+        {
+        }
+        Files.delete(bar);
+        Files.delete(target);
+        assertFalse(Files.exists(target));
+    }
+    @Test
     public void testCreate() throws URISyntaxException, IOException
     {
         Path target = fileSystem.getPath("foo/bar");
-        Files.createFile(target, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr--r--")));
+        Files.createDirectories(target.getParent());
+        Files.createFile(target);
         assertTrue(Files.exists(target));
+        assertTrue(Files.isRegularFile(target));
+        Files.delete(target);
+        assertFalse(Files.exists(target));
+    }
+    @Test
+    public void testCreateSymbolicLink() throws URISyntaxException, IOException
+    {
+        Path source = Paths.get("pom.xml");
+        List<String> exp = Files.readAllLines(source, US_ASCII);
+        Path target = fileSystem.getPath("foo");
+        Files.copy(source, target);
+        Path link = fileSystem.getPath("bar");
+        Files.createSymbolicLink(link, target);
+        assertTrue(Files.isSymbolicLink(link));
+        assertEquals(target, Files.readSymbolicLink(link));
+        assertEquals(Files.size(source), Files.size(link));
+        assertTrue(Files.isSymbolicLink(link));
+    }
+    @Test
+    public void testCreateLink() throws URISyntaxException, IOException
+    {
+        Path source = Paths.get("pom.xml");
+        List<String> exp = Files.readAllLines(source, US_ASCII);
+        Path target = fileSystem.getPath("foo");
+        Files.copy(source, target);
+        Path link = fileSystem.getPath("bar");
+        Files.createLink(link, target);
+        assertEquals(Files.size(source), Files.size(link));
+        assertTrue(Files.isSameFile(link, target));
+        Files.deleteIfExists(target);
+        assertFalse(Files.exists(target));
+        assertTrue(Files.exists(link));
+        List<String> lines = Files.readAllLines(link, US_ASCII);
+        assertEquals(exp, lines);
     }
 }
