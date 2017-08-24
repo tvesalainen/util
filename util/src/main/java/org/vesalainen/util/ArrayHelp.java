@@ -139,10 +139,10 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
     /**
      * Throws UnsupportedOperationException if one of array members is not one
@@ -158,10 +158,10 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
     /**
      * Throws UnsupportedOperationException if one of array members is not one
@@ -177,10 +177,10 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
     /**
      * Throws UnsupportedOperationException if one of array members is not one
@@ -196,10 +196,10 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
     /**
      * Throws UnsupportedOperationException if one of array members is not one
@@ -215,10 +215,10 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
     /**
      * Throws UnsupportedOperationException if one of array members is not one
@@ -234,9 +234,9 @@ public final class ArrayHelp
         {
             if (!contains(items, b))
             {
-                throw new UnsupportedOperationException(b+" not supported");
+                return false;
             }
         }
-        return false;
+        return true;
     }
 }

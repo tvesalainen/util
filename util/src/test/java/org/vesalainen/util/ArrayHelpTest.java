@@ -41,15 +41,7 @@ public class ArrayHelpTest
     public void testContainsOnly()
     {
         String[] arr = new String[] {"foo", "bar", "qwerty"};
-        try
-        {
-            ArrayHelp.containsOnly(arr, "foo");
-            fail("UnsupportedOperationException");
-        }
-        catch (UnsupportedOperationException ex)
-        {
-            
-        }
+        assertFalse(ArrayHelp.containsOnly(arr, "foo"));
     }
     
 }
