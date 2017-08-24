@@ -16,7 +16,6 @@
  */
 package org.vesalainen.vfs;
 
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +60,7 @@ public class MultiPath extends BasePath
         String[] split = str.split(fileSystem.getSeparator());
         for (String s : split)
         {
-            list.add(new SinglePath(fileSystem, s));
+            list.add(SinglePath.getInstance(fileSystem, s));
         }
     }
     @Override

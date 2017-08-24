@@ -58,7 +58,7 @@ public class VirtualFileSystemProviderTest
         Path d = Paths.get("d:\\");
     }
 
-    //@Test
+    @Test
     public void testCopy() throws URISyntaxException, IOException
     {
         Path source = Paths.get("pom.xml");
@@ -135,5 +135,18 @@ public class VirtualFileSystemProviderTest
         assertTrue(Files.exists(link));
         List<String> lines = Files.readAllLines(link, US_ASCII);
         assertEquals(exp, lines);
+    }
+    @Test
+    public void testMove() throws URISyntaxException, IOException
+    {
+        Path source = Paths.get("pom.xml");
+        List<String> exp = Files.readAllLines(source, US_ASCII);
+        Path target = fileSystem.getPath("foo");
+        Files.copy(source, target);
+        Path bar = fileSystem.getPath("bar");
+        Files.move(target, bar);
+        assertFalse(Files.exists(target));
+        assertTrue(Files.exists(bar));
+        assertEquals(Files.size(source), Files.size(bar));
     }
 }

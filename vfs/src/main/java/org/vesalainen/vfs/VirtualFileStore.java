@@ -19,6 +19,7 @@ package org.vesalainen.vfs;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -26,9 +27,9 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileStoreAttributeView;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import org.vesalainen.vfs.VirtualFile.Type;
@@ -76,23 +77,39 @@ public class VirtualFileStore extends FileStore
     }
     VirtualFile remove(Path path) throws DirectoryNotEmptyException
     {
+        if (isNonEmptyDirectory(path))
+        {
+            throw new DirectoryNotEmptyException(path.toString());
+        }
+        return files.remove(path);
+    }
+    boolean isNonEmptyDirectory(Path path)
+    {
         VirtualFile file = files.get(path);
-        if (file.getType() == DIRECTORY)
+        if (file.isDirectory())
         {
             Path ck = files.higherKey(path);
             if (ck != null)
             {
                 if (ck.startsWith(path))
                 {
-                    throw new DirectoryNotEmptyException(path.toString());
+                    return true;
                 }
             }
         }
-        return files.remove(path);
+        return false;
     }
     void link(Path link, Path existing)
     {
         files.put(link, files.get(existing));
+    }
+    void add(Path path, VirtualFile file)
+    {
+        files.put(path, file);
+    }
+    DirectoryStream<Path> directoryStream(Path dir)
+    {
+        return new DirectoryStreamImpl(dir);
     }
     @Override
     public String name()
@@ -153,5 +170,63 @@ public class VirtualFileStore extends FileStore
     {
         return storeAttributes.get(attribute);
     }
-    
+
+    public class DirectoryStreamImpl implements DirectoryStream<Path>
+    {
+        private Path dir;
+
+        public DirectoryStreamImpl(Path dir)
+        {
+            this.dir = dir;
+        }
+        
+        @Override
+        public Iterator<Path> iterator()
+        {
+            return new PathIter(dir, files.keySet().tailSet(dir).iterator());
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+        }
+        
+    }
+    private class PathIter implements Iterator<Path>
+    {
+        private Path dir;
+        private Iterator<Path> iterator;
+        private Path next;
+
+        public PathIter(Path dir, Iterator<Path> iterator)
+        {
+            this.dir = dir;
+            this.iterator = iterator;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            while (iterator.hasNext())
+            {
+                next = iterator.next();
+                if (next.startsWith(dir))
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Path next()
+        {
+            return next;
+        }
+        
+    }
 }

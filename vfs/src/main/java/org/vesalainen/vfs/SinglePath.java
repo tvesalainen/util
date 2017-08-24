@@ -21,7 +21,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 
 /**
  *
@@ -29,16 +31,33 @@ import java.util.Objects;
  */
 public class SinglePath extends BasePath
 {
+    private static final Map<VirtualFileSystem,Map<String,SinglePath>> singlePathMap = new WeakHashMap<>();
     protected String name;
     protected final List<Path> singleton;
 
-    public SinglePath(VirtualFileSystem fileSystem, String name)
+    protected SinglePath(VirtualFileSystem fileSystem, String name)
     {
         super(fileSystem);
         this.name = name;
         this.singleton = Collections.singletonList(this);
     }
 
+    static final SinglePath getInstance(VirtualFileSystem fileSystem, String name)
+    {
+        Map<String, SinglePath> map = singlePathMap.get(fileSystem);
+        if (map == null)
+        {
+            map = new WeakHashMap<>();
+            singlePathMap.put(fileSystem, map);
+        }
+        SinglePath sp = map.get(name);
+        if (sp == null)
+        {
+            sp = new SinglePath(fileSystem, name);
+            map.put(name, sp);
+        }
+        return sp;
+    }
     static final boolean isEmpty(Path path)
     {
         return contentIs(path, "");
@@ -153,6 +172,12 @@ public class SinglePath extends BasePath
             return name.compareTo(sp.name);
         }
         return 1;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return (this == obj);
     }
 
     @Override

@@ -32,7 +32,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import static org.vesalainen.vfs.VirtualFile.Type.REGULAR;
+import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
@@ -58,6 +58,13 @@ public class VirtualFile
         this.fileStore = fileStore;
         this.type = type;
         this.content = content;
+        if (content != null)
+        {
+            if (content.position() != 0)
+            {
+                throw new IllegalArgumentException(content.position()+" content position should be 0");
+            }
+        }
         this.viewMap = fileStore.provider().createViewMap(attributes, views);
         switch (type)
         {
@@ -92,6 +99,19 @@ public class VirtualFile
     public Type getType()
     {
         return type;
+    }
+
+    public boolean isRegular()
+    {
+        return type == REGULAR;
+    }
+    public boolean isDirectory()
+    {
+        return type == DIRECTORY;
+    }
+    public boolean isSymbolicLink()
+    {
+        return type == SYMBOLIC_LINK;
     }
     
     public boolean checkAccess(AccessMode... modes)
@@ -183,10 +203,25 @@ public class VirtualFile
         }
         throw new UnsupportedOperationException(name);
     }
-    
-    ByteBuffer duplicate()
+    /**
+     * Returns read-only view of content. Position = 0, limit=size;
+     * @return 
+     */
+    ByteBuffer readView()
     {
-        return content.duplicate();
+        ByteBuffer bb = content.duplicate().asReadOnlyBuffer();
+        bb.limit((int) size);
+        return bb;
+    }
+    /**
+     * Returns view of content. Position = 0, limit=capacity;
+     * @return 
+     */
+    ByteBuffer writeView()
+    {
+        ByteBuffer bb = content.duplicate();
+        bb.limit(content.capacity());
+        return bb;
     }
     void append(int pos)
     {

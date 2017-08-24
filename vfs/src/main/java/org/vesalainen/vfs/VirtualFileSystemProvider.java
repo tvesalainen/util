@@ -16,7 +16,6 @@
  */
 package org.vesalainen.vfs;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -24,6 +23,7 @@ import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -31,9 +31,11 @@ import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import static java.nio.file.LinkOption.*;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.NotLinkException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.*;
 import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -43,11 +45,13 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.nio.DynamicByteBuffer;
 import org.vesalainen.util.ArrayHelp;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
@@ -80,12 +84,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         viewSuppliers.put(name, func);
     }
     
-    private VirtualFile getFile(Path path, LinkOption... options)
+    private VirtualFile getFile(Path path, CopyOption... options)
     {
         Path p = path.toAbsolutePath();
-        VirtualFileSystem vfs = (VirtualFileSystem) p.getFileSystem();
-        VirtualFile file = vfs.getFileStore(p).get(p);
-        if (file != null && !ArrayHelp.contains(options, NOFOLLOW_LINKS) && file.getType() == SYMBOLIC_LINK)
+        VirtualFile file = store(p).get(p);
+        if (file != null && !ArrayHelp.contains(options, NOFOLLOW_LINKS) && file.isSymbolicLink())
         {
             return getFile(file.getSymbolicTarget(), options);
         }
@@ -163,18 +166,17 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         }
         if (file == null)
         {
-            throw new FileNotFoundException(p.toString());
+            throw new NoSuchFileException(p.toString());
         }
-        return new VFileChannel(p, file, opts);
+        return new VirtualFileChannel(p, file, opts);
     }
 
     private VirtualFile createFile(Path path, FileAttribute<?>... attrs) throws IOException
     {
         Path p = path.toAbsolutePath();
         checkNotExists(p);
-        VirtualFileSystem vfs = (VirtualFileSystem) p.getFileSystem();
         checkDirectory(p);
-        return vfs.getFileStore(p).create(p, REGULAR, DynamicByteBuffer.create(Integer.MAX_VALUE), attrs);
+        return store(p).create(p, REGULAR, DynamicByteBuffer.create(Integer.MAX_VALUE), attrs);
     }
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path dir, DirectoryStream.Filter<? super Path> filter) throws IOException
@@ -187,17 +189,16 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         Path d = dir.toAbsolutePath();
         checkNotExists(d);
-        VirtualFileSystem vfs = (VirtualFileSystem) d.getFileSystem();
         checkDirectory(d);
-        vfs.getFileStore(d).create(d, DIRECTORY, null, attrs);
+        store(d).create(d, DIRECTORY, null, attrs);
     }
 
     @Override
     public void delete(Path path) throws IOException
     {
         Path p = path.toAbsolutePath();
-        VirtualFileSystem vfs = (VirtualFileSystem) p.getFileSystem();
-        vfs.getFileStore(p).remove(p);
+        find(p);
+        store(p).remove(p);
     }
 
     @Override
@@ -209,8 +210,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         find(e);
         if (l.getRoot().equals(e.getRoot()))
         {
-            VirtualFileSystem vfs = (VirtualFileSystem) e.getFileSystem();
-            vfs.getFileStore(e).link(l, e);
+            store(e).link(l, e);
         }
         else
         {
@@ -223,17 +223,16 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         Path l = link.toAbsolutePath();
         checkNotExists(l);
-        VirtualFileSystem vfs = (VirtualFileSystem) l.getFileSystem();
         checkDirectory(l);
         byte[] bytes = target.toString().getBytes(US_ASCII);
-        vfs.getFileStore(l).create(l, SYMBOLIC_LINK, ByteBuffer.wrap(bytes), attrs);
+        store(l).create(l, SYMBOLIC_LINK, ByteBuffer.wrap(bytes), attrs);
     }
 
     @Override
     public Path readSymbolicLink(Path link) throws IOException
     {
         VirtualFile l = find(link, NOFOLLOW_LINKS);
-        if (l.getType() != SYMBOLIC_LINK)
+        if (!l.isSymbolicLink())
         {
             throw new NotLinkException(link.toString());
         }
@@ -243,21 +242,83 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void copy(Path source, Path target, CopyOption... options) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!ArrayHelp.containsOnly(options, REPLACE_EXISTING, COPY_ATTRIBUTES, NOFOLLOW_LINKS))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
+        Path src = source.toAbsolutePath();
+        Path trg = target.toAbsolutePath();
+        if (isSameFile(src, trg))
+        {
+            return;
+        }
+        VirtualFile srcFile = find(src, options);
+        if (ArrayHelp.contains(options, REPLACE_EXISTING));
+        {
+            deleteIfExists(trg);
+        }
+        checkNotExists(trg);
+        switch (srcFile.getType())
+        {
+            case REGULAR:
+                VirtualFile trgFile = createFile(trg);
+                ByteBuffer rv = srcFile.readView();
+                ByteBuffer wv = trgFile.writeView();
+                long len = ByteBuffers.move(rv, wv);
+                trgFile.append((int) len);
+                break;
+            case DIRECTORY:
+                createDirectory(trg);
+                break;
+            case SYMBOLIC_LINK:
+                createSymbolicLink(trg, srcFile.getSymbolicTarget());
+                break;
+            default:
+                throw new UnsupportedOperationException(srcFile.getType()+" not supported");
+        }
+        if (ArrayHelp.contains(options, COPY_ATTRIBUTES));
+        {
+            copyAttributes(src, trg);
+        }
     }
 
     @Override
     public void move(Path source, Path target, CopyOption... options) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!ArrayHelp.containsOnly(options, REPLACE_EXISTING, ATOMIC_MOVE))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
+        if (ArrayHelp.contains(options, ATOMIC_MOVE))
+        {
+            throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "not supported");
+        }
+        Path src = source.toAbsolutePath();
+        Path trg = target.toAbsolutePath();
+        if (isSameFile(src, trg))
+        {
+            return;
+        }
+        if (store(src).isNonEmptyDirectory(src))
+        {
+            throw new UnsupportedOperationException("moving non empty directory not supported");
+        }
+        VirtualFile srcFile = find(src, options);
+        if (ArrayHelp.contains(options, REPLACE_EXISTING))
+        {
+            deleteIfExists(trg);
+        }
+        checkNotExists(trg);
+        store(src).add(trg, srcFile);
+        delete(src);
     }
 
     @Override
     public boolean isSameFile(Path path, Path path2) throws IOException
     {
-        VirtualFile file = find(path);
-        VirtualFile file2 = find(path2);
-        return file.equals(file2);
+        VirtualFile file = getFile(path);
+        VirtualFile file2 = getFile(path2);
+        return file != null && file2 != null && file.equals(file2);
     }
 
     @Override
@@ -293,6 +354,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options)
     {
+        if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
         VirtualFile file = getFile(path, options);
         if (file != null)
         {
@@ -304,6 +369,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException
     {
+        if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
         VirtualFile file = find(path, options);
         return file.readAttributes(type);
     }
@@ -311,6 +380,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException
     {
+        if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
         VirtualFile file = find(path, options);
         return file.readAttributes(attributes);
     }
@@ -318,11 +391,15 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException
     {
+        if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
+        {
+            throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
         VirtualFile file = find(path, options);
         file.setAttribute(attribute, value);
     }
 
-    public <A extends FileAttributeView> Map<String,Class<A>> createViewClassMap(String... views)
+    <A extends FileAttributeView> Map<String,Class<A>> createViewClassMap(String... views)
     {
         Map<String,Class<A>> res = new HashMap<>();
         for (String view : views)
@@ -336,7 +413,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         }
         return res;
     }
-    public <A extends FileAttributeView> Map<String,A> createViewMap(Map<String,Object> map, Set<String> views)
+    <A extends FileAttributeView> Map<String,A> createViewMap(Map<String,Object> map, Set<String> views)
     {
         Map<String,A> res = new HashMap<>();
         for (String view : views)
@@ -350,12 +427,17 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         }
         return res;
     }
-    private VirtualFile find(Path path,  LinkOption... options) throws FileNotFoundException
+    private VirtualFileStore store(Path path)
+    {
+        VirtualFileSystem vfs = (VirtualFileSystem) path.getFileSystem();
+        return vfs.getFileStore(path);
+    }
+    private VirtualFile find(Path path,  CopyOption... options) throws NoSuchFileException
     {
         VirtualFile file = getFile(path.toAbsolutePath(), options);
         if (file == null)
         {
-            throw new FileNotFoundException(path.toString());
+            throw new NoSuchFileException(path.toString());
         }
         return file;
     }
@@ -377,15 +459,18 @@ public class VirtualFileSystemProvider extends FileSystemProvider
             {
                 throw new IOException(parent+" doesn't exist");
             }
-            BasicFileAttributes bfa = dir.readAttributes(BasicFileAttributes.class);
-            if (bfa == null)
+            if (!dir.isDirectory())
             {
-                throw new UnsupportedOperationException("BasicFileAttributes");
-            }
-            if (!bfa.isDirectory())
-            {
-                throw new IOException(dir+" doesn't exist");
+                throw new IOException(dir+" is not directory");
             }
         }
+    }
+
+    private void copyAttributes(Path src, Path trg) throws IOException
+    {
+        VirtualFile srcFile = find(src);
+        VirtualFile trgFile = find(trg);
+        Map<String, Object> attrs = srcFile.readAttributes("*");
+        attrs.forEach((n,a)->trgFile.setAttribute(n, a));
     }
 }

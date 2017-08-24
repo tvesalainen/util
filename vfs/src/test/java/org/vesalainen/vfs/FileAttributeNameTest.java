@@ -37,8 +37,9 @@ public class FileAttributeNameTest
     @Test
     public void testStar()
     {
-        
-        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("*");
+        Set<String> views = new HashSet<>();
+        views.add("basic");
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher(views, "*");
         assertTrue(fanm.any(SIZE));
         assertTrue(fanm.any(LAST_MODIFIED_TIME));
     }
@@ -46,8 +47,10 @@ public class FileAttributeNameTest
     @Test
     public void testPosix()
     {
-        
-        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("posix:*,lastModifiedTime,lastAccessTime");
+        Set<String> views = new HashSet<>();
+        views.add("basic");
+        views.add("posix");
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher(views, "posix:*,lastModifiedTime,lastAccessTime");
         assertFalse(fanm.any(SIZE));
         assertTrue(fanm.any(PERMISSIONS));
         assertTrue(fanm.any(GROUP));
