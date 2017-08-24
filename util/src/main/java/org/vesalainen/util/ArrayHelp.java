@@ -108,40 +108,6 @@ public final class ArrayHelp
         return false;
     }
     /**
-     * Returns true if one of arr members is item
-     * @param array
-     * @param item
-     * @return 
-     */
-    public static final boolean contains(float[] array, float item)
-    {
-        for (float b : array)
-        {
-            if (b == item)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    /**
-     * Returns true if one of arr members is item
-     * @param array
-     * @param item
-     * @return 
-     */
-    public static final boolean contains(double[] array, double item)
-    {
-        for (double b : array)
-        {
-            if (b == item)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    /**
      * Returns true if one of arr members equals item
      * @param <T>
      * @param array
@@ -155,6 +121,120 @@ public final class ArrayHelp
             if (b.equals(item))
             {
                 return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(T[] array, T... items)
+    {
+        for (T b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(byte[] array, T... items)
+    {
+        for (byte b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(char[] array, T... items)
+    {
+        for (char b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(short[] array, T... items)
+    {
+        for (short b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(int[] array, T... items)
+    {
+        for (int b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
+            }
+        }
+        return false;
+    }
+    /**
+     * Throws UnsupportedOperationException if one of array members is not one
+     * of items
+     * @param <T>
+     * @param array
+     * @param items
+     * @return 
+     */
+    public static final <T> boolean containsOnly(long[] array, T... items)
+    {
+        for (long b : array)
+        {
+            if (!contains(items, b))
+            {
+                throw new UnsupportedOperationException(b+" not supported");
             }
         }
         return false;
