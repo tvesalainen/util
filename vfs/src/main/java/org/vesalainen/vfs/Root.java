@@ -120,30 +120,6 @@ public class Root extends SinglePath
     }
 
     @Override
-    public Path resolve(Path other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Path resolveSibling(Path other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Path resolveSibling(String other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Path relativize(Path other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public URI toUri()
     {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -153,12 +129,6 @@ public class Root extends SinglePath
     public Path toAbsolutePath()
     {
         return this;
-    }
-
-    @Override
-    public Path toRealPath(LinkOption... options) throws IOException
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

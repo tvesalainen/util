@@ -46,6 +46,7 @@ public class VirtualFileSystem extends FileSystem
     private Root defaultRoot;
     private Set<String> supportedFileAttributeViews = new HashSet<>();
     private Set<String> supportedFileAttributeViewsSecured = Collections.unmodifiableSet(supportedFileAttributeViews);
+    private Glob glob;
 
     public VirtualFileSystem(VirtualFileSystemProvider provider)
     {
@@ -57,7 +58,7 @@ public class VirtualFileSystem extends FileSystem
         Root r = new Root(this, root);
         stores.put(r, store);
         supportedFileAttributeViews.addAll(store.supportedFileAttributeViews());
-        store.create(r, DIRECTORY, null);
+        store.create(r, DIRECTORY);
         if (defaultStore)
         {
             this.defaultRoot = r;
@@ -145,7 +146,11 @@ public class VirtualFileSystem extends FileSystem
     @Override
     public PathMatcher getPathMatcher(String syntaxAndPattern)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (glob == null)
+        {
+            glob = Glob.newInstance();
+        }
+        return glob.pathMatcher(syntaxAndPattern);
     }
 
     @Override

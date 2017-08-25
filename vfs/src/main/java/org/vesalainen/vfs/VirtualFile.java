@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.vesalainen.nio.DynamicByteBuffer;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -44,7 +45,6 @@ public class VirtualFile
 {
 
     protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
-    protected static final int MAX_SIZE = Integer.MAX_VALUE;
     protected VirtualFileStore fileStore;
     protected Type type;
     protected ByteBuffer content;
@@ -53,18 +53,11 @@ public class VirtualFile
     protected Map<String,? extends FileAttributeView> viewMap;
     protected Path symbolicTarget;
 
-    protected VirtualFile(VirtualFileStore fileStore, Type type, ByteBuffer content, Set<String> views, FileAttribute<?>... attrs) throws IOException
+    protected VirtualFile(VirtualFileStore fileStore, Type type, Set<String> views, FileAttribute<?>... attrs) throws IOException
     {
         this.fileStore = fileStore;
         this.type = type;
-        this.content = content;
-        if (content != null)
-        {
-            if (content.position() != 0)
-            {
-                throw new IllegalArgumentException(content.position()+" content position should be 0");
-            }
-        }
+        this.content = ByteBuffer.allocateDirect(0);
         this.viewMap = fileStore.provider().createViewMap(attributes, views);
         switch (type)
         {
@@ -76,7 +69,6 @@ public class VirtualFile
                 break;
             case SYMBOLIC_LINK:
                 setAttribute(IS_SYMBOLIC_LINK, true);
-                symbolicTarget = fileStore.fileSystem.getPath(new String(content.array(), US_ASCII));
                 break;
             default:
                 throw new UnsupportedOperationException(type.name());
@@ -91,8 +83,15 @@ public class VirtualFile
         setAttribute(LAST_MODIFIED_TIME, now);
     }
 
-    public Path getSymbolicTarget()
+    public Path getSymbolicTarget() throws IOException
     {
+        if (symbolicTarget == null && type == SYMBOLIC_LINK)
+        {
+            ByteBuffer readView = readView(0);
+            byte[] bytes = new byte[(int)size];
+            readView.get(bytes);
+            symbolicTarget = fileStore.fileSystem.getPath(new String(bytes, US_ASCII));
+        }
         return symbolicTarget;
     }
 
@@ -207,9 +206,10 @@ public class VirtualFile
      * Returns read-only view of content. Position = 0, limit=size;
      * @return 
      */
-    ByteBuffer readView()
+    ByteBuffer readView(int position)
     {
         ByteBuffer bb = content.duplicate().asReadOnlyBuffer();
+        bb.position(position);
         bb.limit((int) size);
         return bb;
     }
@@ -217,10 +217,21 @@ public class VirtualFile
      * Returns view of content. Position = 0, limit=capacity;
      * @return 
      */
-    ByteBuffer writeView()
+    ByteBuffer writeView(int position, int needs) throws IOException
     {
+        int waterMark = position+needs;
+        if (waterMark > content.capacity())
+        {
+            int blockSize = fileStore.getBlockSize();
+            int newCapacity = ((waterMark / blockSize) + 1) * blockSize;
+            ByteBuffer newBB = ByteBuffer.allocateDirect(newCapacity);
+            content.limit((int) size);
+            newBB.put(content);
+            content = newBB;
+        }
         ByteBuffer bb = content.duplicate();
-        bb.limit(content.capacity());
+        bb.position(position);
+        bb.limit(position+needs);
         return bb;
     }
     void append(int pos)

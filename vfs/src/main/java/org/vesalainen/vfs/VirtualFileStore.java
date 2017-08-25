@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import org.vesalainen.vfs.VirtualFile.Type;
-import static org.vesalainen.vfs.VirtualFile.Type.*;
 
 /**
  *
@@ -45,11 +44,17 @@ public class VirtualFileStore extends FileStore
     protected ConcurrentNavigableMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
     protected Map<String,Object> storeAttributes = new HashMap<>();
     protected Set<String> supportedFileAttributeViews = new HashSet<>();
+    protected int blockSize = 4096;
 
     protected VirtualFileStore(VirtualFileSystem fileSystem, String... views)
     {
         this.fileSystem = fileSystem;
         supportedFileAttributeViews.add("basic");
+    }
+
+    public int getBlockSize()
+    {
+        return blockSize;
     }
 
     public VirtualFileSystem getFileSystem()
@@ -69,9 +74,9 @@ public class VirtualFileStore extends FileStore
     {
         return files.get(path);
     }
-    VirtualFile create(Path path, Type type, ByteBuffer content, FileAttribute<?>... attrs) throws IOException
+    VirtualFile create(Path path, Type type, FileAttribute<?>... attrs) throws IOException
     {
-        VirtualFile file = new VirtualFile(this, type, content, supportedFileAttributeViews, attrs);
+        VirtualFile file = new VirtualFile(this, type, supportedFileAttributeViews, attrs);
         files.put(path, file);
         return file;
     }
@@ -107,9 +112,9 @@ public class VirtualFileStore extends FileStore
     {
         files.put(path, file);
     }
-    DirectoryStream<Path> directoryStream(Path dir)
+    DirectoryStream<Path> directoryStream(Path dir, DirectoryStream.Filter<? super Path> filter)
     {
-        return new DirectoryStreamImpl(dir);
+        return new DirectoryStreamImpl(dir, filter);
     }
     @Override
     public String name()
@@ -174,16 +179,18 @@ public class VirtualFileStore extends FileStore
     public class DirectoryStreamImpl implements DirectoryStream<Path>
     {
         private Path dir;
+        private final Filter<? super Path> filter;
 
-        public DirectoryStreamImpl(Path dir)
+        public DirectoryStreamImpl(Path dir, DirectoryStream.Filter<? super Path> filter)
         {
             this.dir = dir;
+            this.filter = filter;
         }
         
         @Override
         public Iterator<Path> iterator()
         {
-            return new PathIter(dir, files.keySet().tailSet(dir).iterator());
+            return new PathIter(dir, filter, files.keySet().tailSet(dir).iterator());
         }
 
         @Override
@@ -195,31 +202,43 @@ public class VirtualFileStore extends FileStore
     private class PathIter implements Iterator<Path>
     {
         private Path dir;
+        private final DirectoryStream.Filter<? super Path> filter;
         private Iterator<Path> iterator;
         private Path next;
 
-        public PathIter(Path dir, Iterator<Path> iterator)
+        public PathIter(Path dir, DirectoryStream.Filter<? super Path> filter, Iterator<Path> iterator)
         {
             this.dir = dir;
+            this.filter = filter;
             this.iterator = iterator;
         }
 
         @Override
         public boolean hasNext()
         {
-            while (iterator.hasNext())
+            try
             {
-                next = iterator.next();
-                if (next.startsWith(dir))
+                while (iterator.hasNext())
                 {
-                    return true;
+                    next = iterator.next();
+                    if (filter.accept(next))
+                    {
+                        if (next.startsWith(dir))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                 }
-                else
-                {
-                    break;
-                }
+                return false;
             }
-            return false;
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
         }
 
         @Override

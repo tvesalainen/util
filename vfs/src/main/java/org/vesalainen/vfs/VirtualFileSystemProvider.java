@@ -32,6 +32,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.NotLinkException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -175,13 +176,18 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         Path p = path.toAbsolutePath();
         checkNotExists(p);
-        checkDirectory(p);
-        return store(p).create(p, REGULAR, DynamicByteBuffer.create(Integer.MAX_VALUE), attrs);
+        checkHasDirectory(p);
+        return store(p).create(p, REGULAR, attrs);
     }
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path dir, DirectoryStream.Filter<? super Path> filter) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        VirtualFile dirFile = find(dir);
+        if (!dirFile.isDirectory())
+        {
+            throw new NotDirectoryException(dir.toString());
+        }
+        return store(dir).directoryStream(dir, filter);
     }
 
     @Override
@@ -189,8 +195,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         Path d = dir.toAbsolutePath();
         checkNotExists(d);
-        checkDirectory(d);
-        store(d).create(d, DIRECTORY, null, attrs);
+        checkHasDirectory(d);
+        store(d).create(d, DIRECTORY, attrs);
     }
 
     @Override
@@ -223,9 +229,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         Path l = link.toAbsolutePath();
         checkNotExists(l);
-        checkDirectory(l);
+        checkHasDirectory(l);
         byte[] bytes = target.toString().getBytes(US_ASCII);
-        store(l).create(l, SYMBOLIC_LINK, ByteBuffer.wrap(bytes), attrs);
+        VirtualFile created = store(l).create(l, SYMBOLIC_LINK, attrs);
+        ByteBuffer writeView = created.writeView(0, bytes.length);
+        writeView.put(bytes);
+        created.append(writeView.position());
     }
 
     @Override
@@ -262,8 +271,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         {
             case REGULAR:
                 VirtualFile trgFile = createFile(trg);
-                ByteBuffer rv = srcFile.readView();
-                ByteBuffer wv = trgFile.writeView();
+                ByteBuffer rv = srcFile.readView(0);
+                ByteBuffer wv = trgFile.writeView(0, rv.remaining());
                 long len = ByteBuffers.move(rv, wv);
                 trgFile.append((int) len);
                 break;
@@ -449,7 +458,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
             throw new FileAlreadyExistsException(path.toString());
         }
     }
-    private void checkDirectory(Path path) throws IOException
+    private void checkHasDirectory(Path path) throws IOException
     {
         Path parent = path.toAbsolutePath().getParent();
         if (parent != null)

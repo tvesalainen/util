@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -224,4 +225,85 @@ public class BasePathTest
         assertEquals(exp, list);
     }
     
+    @Test
+    public void testEnding1()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("*.java");
+        assertTrue(m.matches(getPath("/foo/bar/goo.java")));
+        assertFalse(m.matches(getPath("/foo/bar/goo.cpp")));
+    }
+    @Test
+    public void testEnding2()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("*.*");
+        assertTrue(m.matches(getPath("/foo/bar/goo.java")));
+        assertFalse(m.matches(getPath("/foo/bar/goocpp")));
+    }
+    @Test
+    public void testEnding3()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("foo.?");
+        assertTrue(m.matches(getPath("/foo/bar/foo.1")));
+        assertFalse(m.matches(getPath("/foo/bar/goocpp")));
+    }
+    @Test
+    public void testGroup()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("{java,jar}");
+        assertTrue(m.matches(getPath("/foo/bar/goo.java")));
+        assertTrue(m.matches(getPath("/foo/bar/goo.jar")));
+        assertFalse(m.matches(getPath("/foo/bar/goo.cpp")));
+    }
+    @Test
+    public void testBracketExpression1()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("*[-]ver");
+        assertTrue(m.matches(getPath("/foo/bar/goo-ver")));
+        assertFalse(m.matches(getPath("/foo/bar/goo.ver")));
+    }
+    @Test
+    public void testBracketExpression2()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("*[!a-c].ver");
+        assertTrue(m.matches(getPath("/foo/bar/goo.ver")));
+        assertFalse(m.matches(getPath("/foo/bar/baa.ver")));
+    }
+    @Test
+    public void testDirectory1()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("/home/*/*");
+        assertTrue(m.matches(getPath("/home/gus/data")));
+        assertFalse(m.matches(getPath("/home/gus")));
+    }
+    @Test
+    public void testDirectory2()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("/home/**");
+        assertTrue(m.matches(getPath("/home/gus/data")));
+        assertTrue(m.matches(getPath("/home/gus")));
+    }
+    @Test
+    public void testDirectory3()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("/home/**/hello.class");
+        assertTrue(m.matches(getPath("/home/gus/data/hello.class")));
+        assertTrue(m.matches(getPath("/home/gus/hello.class")));
+    }
+    @Test
+    public void testDirectory4()
+    {
+        Glob g = Glob.newInstance();
+        PathMatcher m = g.pathMatcher("/home/**/middle/**hello.class");
+        assertFalse(m.matches(getPath("/home/gus/data/hello.class")));
+        assertTrue(m.matches(getPath("/home/foo/middle/gus/hello.class")));
+    }
 }

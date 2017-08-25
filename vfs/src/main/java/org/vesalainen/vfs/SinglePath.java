@@ -16,7 +16,6 @@
  */
 package org.vesalainen.vfs;
 
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;

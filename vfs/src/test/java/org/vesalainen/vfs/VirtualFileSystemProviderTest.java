@@ -21,14 +21,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -39,9 +38,24 @@ import static org.junit.Assert.*;
 public class VirtualFileSystemProviderTest
 {
     FileSystem fileSystem;
-    public VirtualFileSystemProviderTest() throws URISyntaxException
+    public VirtualFileSystemProviderTest() throws URISyntaxException, IOException
     {
         fileSystem = FileSystems.getFileSystem(new URI("org.vesalainen.vfs:///", null, null));
+        Files.createDirectories(fileSystem.getPath("/etc/default/java"));
+        Files.createDirectories(fileSystem.getPath("/usr/local/bin"));
+        Files.createDirectories(fileSystem.getPath("/usr/local/lib"));
+        Files.createDirectories(fileSystem.getPath("/bin"));
+        Files.createDirectories(fileSystem.getPath("/var/log"));
+        Files.createDirectories(fileSystem.getPath("/home/timo"));
+        Files.createFile(fileSystem.getPath("/usr/local/bin/java"));
+        Files.createFile(fileSystem.getPath("/usr/local/bin/jar"));
+        Files.createFile(fileSystem.getPath("/usr/local/bin/README"));
+        Files.createFile(fileSystem.getPath("/bin/bash"));
+        Files.createFile(fileSystem.getPath("/bin/sh"));
+        Files.createFile(fileSystem.getPath("/bin/pg"));
+        Files.createFile(fileSystem.getPath("/home/timo/hello.c"));
+        Files.createFile(fileSystem.getPath("/home/timo/hello.o"));
+        Files.createFile(fileSystem.getPath("/home/timo/hello"));
     }
 
     @Test
@@ -148,5 +162,16 @@ public class VirtualFileSystemProviderTest
         assertFalse(Files.exists(target));
         assertTrue(Files.exists(bar));
         assertEquals(Files.size(source), Files.size(bar));
+    }
+    @Test
+    public void testDirectoryStream() throws URISyntaxException, IOException
+    {
+        List<Path> list1 = Files.list(fileSystem.getPath("/usr/local/bin")).collect(Collectors.toList());
+        assertEquals(4, list1.size());
+        assertEquals(fileSystem.getPath("/usr/local/bin"), list1.get(0));
+        assertEquals(fileSystem.getPath("/usr/local/bin/README"), list1.get(1));
+        assertEquals(fileSystem.getPath("/usr/local/bin/jar"), list1.get(2));
+        assertEquals(fileSystem.getPath("/usr/local/bin/java"), list1.get(3));
+        
     }
 }

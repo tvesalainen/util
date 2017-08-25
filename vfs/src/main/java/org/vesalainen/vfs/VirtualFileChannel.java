@@ -44,7 +44,7 @@ public class VirtualFileChannel extends FileChannel
 {
     private Path path;
     private VirtualFile file;
-    private ByteBuffer bb;
+    private int currentPosition;
     private Set<? extends OpenOption> options;
     private Lock readLock = new ReentrantLock();
     private Lock writeLock = new ReentrantLock();
@@ -54,65 +54,16 @@ public class VirtualFileChannel extends FileChannel
         this.path = path;
         this.file = file;
         this.options = options;
-        this.bb = file.writeView();
         if (options.contains(TRUNCATE_EXISTING) && options.contains(WRITE))
         {
             file.truncate(0);
         }
         if (options.contains(APPEND))
         {
-            bb.position(file.getSize());
+            currentPosition = file.getSize();
         }
     }
     
-    @Override
-    public int read(ByteBuffer dst) throws IOException
-    {
-        readLock.lock();
-        try
-        {
-            if (!options.contains(READ))
-            {
-                throw new NonReadableChannelException();
-            }
-            bb.limit(file.getSize());
-            if (!bb.hasRemaining())
-            {
-                return -1;
-            }
-            return (int) ByteBuffers.move(bb, dst);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-    }
-
-    @Override
-    public int write(ByteBuffer src) throws IOException
-    {
-        writeLock.lock();
-        try
-        {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
-            if (!options.contains(WRITE))
-            {
-                throw new NonWritableChannelException();
-            }
-            bb.limit(bb.capacity());
-            int rc = (int) ByteBuffers.move(src, bb);
-            file.append(bb.position());
-            return rc;
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    }
-
     @Override
     public long position() throws IOException
     {
@@ -120,12 +71,16 @@ public class VirtualFileChannel extends FileChannel
         {
             throw new ClosedChannelException();
         }
-        return bb.position();
+        return currentPosition;
     }
 
     @Override
     public FileChannel position(long newPosition) throws IOException
     {
+        if (newPosition > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("position > "+Integer.MAX_VALUE);
+        }
         writeLock.lock();
         try
         {
@@ -137,7 +92,7 @@ public class VirtualFileChannel extends FileChannel
             {
                 throw new IllegalArgumentException(newPosition+" < 0");
             }
-            bb.position((int) newPosition);
+            currentPosition = (int) newPosition;
             return this;
         }
         finally
@@ -159,6 +114,10 @@ public class VirtualFileChannel extends FileChannel
     @Override
     public FileChannel truncate(long size) throws IOException
     {
+        if (size > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("size > "+Integer.MAX_VALUE);
+        }
         writeLock.lock();
         try
         {
@@ -194,6 +153,10 @@ public class VirtualFileChannel extends FileChannel
     @Override
     public long transferTo(long position, long count, WritableByteChannel target) throws IOException
     {
+        if (position > Integer.MAX_VALUE || count > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("position/count> "+Integer.MAX_VALUE);
+        }
         readLock.lock();
         try
         {
@@ -208,8 +171,7 @@ public class VirtualFileChannel extends FileChannel
             int avail = (int) (file.getSize()-position);
             if (avail > 0)
             {
-                ByteBuffer view = bb.duplicate();
-                view.position((int) position);
+                ByteBuffer view = file.readView((int) position);
                 if (avail > count)
                 {
                     view.limit(file.getSize());
@@ -229,37 +191,37 @@ public class VirtualFileChannel extends FileChannel
     }
 
     @Override
-    public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException
+    public int read(ByteBuffer dst) throws IOException
     {
-        writeLock.lock();
+        readLock.lock();
         try
         {
-            if (!isOpen())
+            if (!options.contains(READ))
             {
-                throw new ClosedChannelException();
+                throw new NonReadableChannelException();
             }
-            if (!options.contains(WRITE))
+            ByteBuffer readView = file.readView(currentPosition);
+            if (!readView.hasRemaining())
             {
-                throw new NonWritableChannelException();
+                return -1;
             }
-            if (position <= file.getSize())
-            {
-                ByteBuffer view = bb.duplicate();
-                view.position((int) position);
-                view.limit((int) (position+count));
-                return src.read(view);
-            }
-            return 0;
+            int rc = (int) ByteBuffers.move(readView, dst);
+            currentPosition = readView.position();
+            return rc;
         }
         finally
         {
-            writeLock.unlock();
+            readLock.unlock();
         }
     }
 
     @Override
     public int read(ByteBuffer dst, long position) throws IOException
     {
+        if (position > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("position > "+Integer.MAX_VALUE);
+        }
         readLock.lock();
         try
         {
@@ -281,9 +243,7 @@ public class VirtualFileChannel extends FileChannel
             }
             if (position <= file.getSize())
             {
-                ByteBuffer view = bb.duplicate();
-                view.position((int) position);
-                view.limit(file.getSize());
+                ByteBuffer view = file.readView((int) position);
                 return (int) ByteBuffers.move(view, dst);
             }
             return 0;
@@ -295,8 +255,71 @@ public class VirtualFileChannel extends FileChannel
     }
 
     @Override
+    public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException
+    {
+        if (position > Integer.MAX_VALUE || count > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("position/count> "+Integer.MAX_VALUE);
+        }
+        writeLock.lock();
+        try
+        {
+            if (!isOpen())
+            {
+                throw new ClosedChannelException();
+            }
+            if (!options.contains(WRITE))
+            {
+                throw new NonWritableChannelException();
+            }
+            if (position <= file.getSize())
+            {
+                ByteBuffer view = file.writeView((int)position, (int)count);
+                view.position((int) position);
+                view.limit((int) (position+count));
+                return src.read(view);
+            }
+            return 0;
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
+    public int write(ByteBuffer src) throws IOException
+    {
+        writeLock.lock();
+        try
+        {
+            if (!isOpen())
+            {
+                throw new ClosedChannelException();
+            }
+            if (!options.contains(WRITE))
+            {
+                throw new NonWritableChannelException();
+            }
+            ByteBuffer writeView = file.writeView(currentPosition, src.remaining());
+            int rc = (int) ByteBuffers.move(src, writeView);
+            currentPosition = writeView.position();
+            file.append(writeView.position());
+            return rc;
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
     public int write(ByteBuffer src, long position) throws IOException
     {
+        if (position > Integer.MAX_VALUE)
+        {
+            throw new UnsupportedOperationException("position > "+Integer.MAX_VALUE);
+        }
         writeLock.lock();
         try
         {
@@ -312,10 +335,8 @@ public class VirtualFileChannel extends FileChannel
             {
                 throw new NonWritableChannelException();
             }
-            ByteBuffer view = bb.duplicate();
-            view.position((int) position);
-            view.limit(bb.capacity());
-            return (int) ByteBuffers.move(src, view);
+            ByteBuffer writeView = file.writeView((int) position, src.remaining());
+            return (int) ByteBuffers.move(src, writeView);
         }
         finally
         {
