@@ -31,7 +31,8 @@ import static java.nio.file.StandardOpenOption.*;
 public class DynamicByteBuffer
 {
     /**
-     * Creates dynamically growing ByteBuffer upto maxSize.
+     * Creates dynamically growing ByteBuffer upto maxSize. ByteBuffer is 
+     * created by mapping a temporary file
      * @param maxSize
      * @return
      * @throws IOException 
