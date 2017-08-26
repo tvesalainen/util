@@ -263,7 +263,7 @@ public class Lists
      * @param list
      * @param array 
      */
-    public static <T> List<T> addAll(List<T> list, T... array)
+    public static <T> Collection<T> addAll(Collection<T> list, T... array)
     {
         for (T item : array)
         {
