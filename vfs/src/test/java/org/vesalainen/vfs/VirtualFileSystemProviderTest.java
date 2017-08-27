@@ -19,17 +19,29 @@ package org.vesalainen.vfs;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.nio.file.attribute.UserAttrs;
+import org.vesalainen.regex.Regex;
 
 /**
  *
@@ -46,6 +58,7 @@ public class VirtualFileSystemProviderTest
         Files.createDirectories(fileSystem.getPath("/usr/local/lib"));
         Files.createDirectories(fileSystem.getPath("/bin"));
         Files.createDirectories(fileSystem.getPath("/var/log"));
+        Files.createDirectories(fileSystem.getPath("/tmp"));
         Files.createDirectories(fileSystem.getPath("/home/timo"));
         Files.createFile(fileSystem.getPath("/usr/local/bin/java"));
         Files.createFile(fileSystem.getPath("/usr/local/bin/jar"));
@@ -164,14 +177,125 @@ public class VirtualFileSystemProviderTest
         assertEquals(Files.size(source), Files.size(bar));
     }
     @Test
-    public void testDirectoryStream() throws URISyntaxException, IOException
+    public void testDirectoryStream1() throws URISyntaxException, IOException
     {
         List<Path> list1 = Files.list(fileSystem.getPath("/usr/local/bin")).collect(Collectors.toList());
-        assertEquals(4, list1.size());
-        assertEquals(fileSystem.getPath("/usr/local/bin"), list1.get(0));
-        assertEquals(fileSystem.getPath("/usr/local/bin/README"), list1.get(1));
-        assertEquals(fileSystem.getPath("/usr/local/bin/jar"), list1.get(2));
-        assertEquals(fileSystem.getPath("/usr/local/bin/java"), list1.get(3));
+        assertEquals(3, list1.size());
+        assertTrue(list1.contains(fileSystem.getPath("/usr/local/bin/README")));
+        assertTrue(list1.contains(fileSystem.getPath("/usr/local/bin/jar")));
+        assertTrue(list1.contains(fileSystem.getPath("/usr/local/bin/java")));
         
     }
-}
+    @Test
+    public void testDirectoryStream2() throws URISyntaxException, IOException
+    {
+        DirectoryStream<Path> ds = Files.newDirectoryStream(fileSystem.getPath("/home/timo"), "*.c");
+        Iterator<Path> iterator = ds.iterator();
+        assertTrue(iterator.hasNext());
+        while (iterator.hasNext())
+        {
+            assertEquals(fileSystem.getPath("/home/timo/hello.c"), iterator.next());
+        }
+    }
+    @Test
+    public void testDirectoryStream3() throws URISyntaxException, IOException
+    {
+        DirectoryStream<Path> ds = Files.newDirectoryStream(fileSystem.getPath("/usr/local/bin"), RegexPathMatcher.createFilter(".*read.*", Regex.Option.CASE_INSENSITIVE));
+        Iterator<Path> iterator = ds.iterator();
+        assertTrue(iterator.hasNext());
+        while (iterator.hasNext())
+        {
+            assertEquals(fileSystem.getPath("/usr/local/bin/README"), iterator.next());
+        }
+    }
+    @Test
+    public void testUserDefinedAttributes() throws IOException
+    {
+        Path path = fileSystem.getPath("/usr/local/bin/README");
+        UserAttrs.setShortAttribute(path, "user:short", (short)1234);
+        assertEquals(1234, UserAttrs.getShortAttribute(path, "user:short"));
+        UserAttrs.setIntAttribute(path, "user:int", 1234);
+        assertEquals(1234, UserAttrs.getIntAttribute(path, "user:int"));
+        UserAttrs.setLongAttribute(path, "user:long", 1234L);
+        assertEquals(1234, UserAttrs.getLongAttribute(path, "user:long"));
+        UserAttrs.setFloatAttribute(path, "user:float", (float)1234.56);
+        assertEquals((float)1234.56, UserAttrs.getFloatAttribute(path, "user:float"), 1e-10);
+        UserAttrs.setDoubleAttribute(path, "user:double", 1234.56);
+        assertEquals(1234.56, UserAttrs.getDoubleAttribute(path, "user:double"), 1e-10);
+        UserAttrs.setStringAttribute(path, "user:string", "qwerty");
+        assertEquals("qwerty", UserAttrs.getStringAttribute(path, "user:string"));
+    }
+    @Test
+    public void testCreateTempDirectory() throws IOException
+    {
+        Path tmp = fileSystem.getPath("/tmp");
+        Path tempDirectory = Files.createTempDirectory(tmp, null);
+        assertTrue(Files.exists(tempDirectory));
+    }
+    @Test
+    public void testCreateTempFile() throws IOException
+    {
+        Path tmp = fileSystem.getPath("/tmp");
+        Path tempFile = Files.createTempFile(tmp, null, null);
+        assertTrue(Files.exists(tempFile));
+    }
+    @Test
+    public void testFind() throws IOException
+    {
+        Path root = fileSystem.getPath("/");
+        Stream<Path> stream = Files.find(root, 6, (p,b)->b.isDirectory());
+        List<Path> list = stream.collect(Collectors.toList());
+        assertTrue(list.size()> 0);
+        assertTrue(list.stream().allMatch((p)->Files.isDirectory(p)));
+    }
+    @Test
+    public void testReadAttributes() throws IOException
+    {
+        Path path = fileSystem.getPath("/usr/local/bin/README");
+        BasicFileAttributes bfa = Files.readAttributes(path, BasicFileAttributes.class);
+        assertNotNull(bfa);
+        PosixFileAttributes pfa = Files.readAttributes(path, PosixFileAttributes.class);
+        assertNotNull(pfa);
+    }
+    @Test
+    public void testWalk() throws IOException
+    {
+        Path path = fileSystem.getPath("/");
+        Stream<Path> stream = Files.walk(path);
+        List<Path> list = stream.collect(Collectors.toList());
+        assertTrue(list.size() > 10);
+    }
+    @Test
+    public void testWrite() throws IOException
+    {
+        Path path = fileSystem.getPath("/home/timo/hello.c");
+        Files.write(path, "hello".getBytes(US_ASCII));
+        assertEquals(5, Files.size(path));
+        Files.write(path, "hello".getBytes(US_ASCII), APPEND);
+        assertEquals(10, Files.size(path));
+        Files.write(path, "hello".getBytes(US_ASCII));
+        assertEquals(5, Files.size(path));
+    }
+    @Test
+    public void testChannel() throws IOException
+    {
+        byte[] exp = "0123456789".getBytes();
+        ByteBuffer bb = ByteBuffer.wrap(exp);
+        Path path = fileSystem.getPath("/home/timo/hello.o");
+        try (FileChannel ch = FileChannel.open(path, EnumSet.of(READ,WRITE)))
+        {
+            ch.write(bb);
+            assertEquals(10, ch.position());
+            bb.clear();
+            int read = ch.read(bb, 5);
+            assertEquals(5, read);
+            int write = ch.write(ByteBuffer.wrap("asd".getBytes()), 3);
+            assertEquals(3, write);
+            bb.clear();
+            ch.read(bb, 3);
+            bb.flip();
+            assertEquals('a', bb.get());
+            // TODO transfetTo etc...
+        }
+    }
+ }

@@ -50,7 +50,7 @@ public class UnixFileAttributeViewImplTest
     {
         Map<String,Object> map = new HashMap<>();
         UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(map);
-        assertEquals(UNIX_NAME, u.name());
+        assertEquals(UNIX_VIEW, u.name());
         assertFalse(u.setGroupId());
         assertFalse(u.stickyBit());
         PosixFileAttributes p = u.readAttributes();

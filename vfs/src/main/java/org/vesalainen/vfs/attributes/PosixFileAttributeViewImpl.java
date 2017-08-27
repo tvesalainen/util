@@ -24,6 +24,8 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -34,14 +36,14 @@ public class PosixFileAttributeViewImpl extends BasicFileAttributeViewImpl imple
 {
     private PosixFileAttributes posixFileAttributes = new PosixFileAttributesImpl();
     
-    protected PosixFileAttributeViewImpl(String name, Map<String, Object> map)
+    protected PosixFileAttributeViewImpl(String name, FileAttributeAccess access)
     {
-        super(name, map);
+        super(name, access);
     }
 
-    public PosixFileAttributeViewImpl(Map<String, Object> map)
+    public PosixFileAttributeViewImpl(FileAttributeAccess access)
     {
-        super("posix", map);
+        super("posix", access);
     }
 
     @Override

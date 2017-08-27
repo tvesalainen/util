@@ -30,7 +30,7 @@ import java.util.WeakHashMap;
  */
 public class SinglePath extends BasePath
 {
-    private static final Map<VirtualFileSystem,Map<String,SinglePath>> singlePathMap = new WeakHashMap<>();
+    private static final Map<VirtualFileSystem,Map<String,SinglePath>> cache = new WeakHashMap<>();
     protected String name;
     protected final List<Path> singleton;
 
@@ -43,11 +43,11 @@ public class SinglePath extends BasePath
 
     static final SinglePath getInstance(VirtualFileSystem fileSystem, String name)
     {
-        Map<String, SinglePath> map = singlePathMap.get(fileSystem);
+        Map<String, SinglePath> map = cache.get(fileSystem);
         if (map == null)
         {
             map = new WeakHashMap<>();
-            singlePathMap.put(fileSystem, map);
+            cache.put(fileSystem, map);
         }
         SinglePath sp = map.get(name);
         if (sp == null)

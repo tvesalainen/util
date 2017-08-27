@@ -19,11 +19,9 @@ package org.vesalainen.vfs.unix;
 import java.nio.file.attribute.PosixFilePermission;
 import static java.nio.file.attribute.PosixFilePermission.*;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import org.vesalainen.nio.file.attribute.PosixHelp;
-import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
+import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
@@ -34,9 +32,9 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implements UnixFileAttributeView
 {
 
-    public UnixFileAttributeViewImpl(Map<String, Object> map)
+    public UnixFileAttributeViewImpl(FileAttributeAccess access)
     {
-        super(UNIX_NAME, map);
+        super(UNIX_VIEW, access);
     }
 
     @Override
@@ -54,37 +52,37 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     @Override
     public boolean setUserId()
     {
-        return (boolean) get(SET_UID);
+        return (boolean) get(SETUID);
     }
 
     @Override
     public void setUserId(boolean setUserId)
     {
-        put(SET_UID, setUserId);
+        put(SETUID, setUserId);
     }
 
     @Override
     public boolean setGroupId()
     {
-        return (boolean) get(SET_GID);
+        return (boolean) get(SETGID);
     }
 
     @Override
     public void setGroupId(boolean setGroupId)
     {
-        put(SET_GID, setGroupId);
+        put(SETGID, setGroupId);
     }
 
     @Override
     public boolean stickyBit()
     {
-        return (boolean) get(STICKY_BIT);
+        return (boolean) get(STICKY);
     }
 
     @Override
     public void stickyBit(boolean stickyBit)
     {
-        put(STICKY_BIT, stickyBit);
+        put(STICKY, stickyBit);
     }
 
     @Override
@@ -96,7 +94,7 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     @Override
     public void mode(int mode)
     {
-        fromMode(map, (short) ((short) mode & 07777));
+        fromMode((short) ((short) mode & 07777));
     }
 
     @Override
@@ -113,7 +111,7 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     
     public short getMode()
     {
-        Set<PosixFilePermission> perms = (Set<PosixFilePermission>) map.get(PERMISSIONS);
+        Set<PosixFilePermission> perms = (Set<PosixFilePermission>) get(PERMISSIONS);
         if (perms == null)
         {
             perms = EnumSet.noneOf(PosixFilePermission.class);
@@ -174,37 +172,37 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
                     break;
             }
         }
-        if ((Boolean)get(SET_UID))
+        if ((Boolean)get(SETUID))
         {
             mode |= 04000;
         }
-        if ((Boolean)get(SET_GID))
+        if ((Boolean)get(SETGID))
         {
             mode |= 02000;
         }
-        if ((Boolean)get(STICKY_BIT))
+        if ((Boolean)get(STICKY))
         {
             mode |= 01000;
         }
         return mode;
     }
-    public static final void fromMode(Map<String,Object> map, short mode)
+    private void fromMode(short mode)
     {
         EnumSet perms = EnumSet.noneOf(PosixFilePermission.class);
-        map.put(PERMISSIONS, perms);
+        put(PERMISSIONS, perms);
         switch (mode & 0170000)
         {
             case 0120000:   // i
-                map.put(IS_SYMBOLIC_LINK, true);
+                put(IS_SYMBOLIC_LINK, true);
                 break;
             case 0100000:   // -
-                map.put(IS_REGULAR, true);
+                put(IS_REGULAR, true);
                 break;
             case 0040000:   // d
-                map.put(IS_DIRECTORY, true);
+                put(IS_DIRECTORY, true);
                 break;
             default:
-                map.put(IS_OTHER, true);
+                put(IS_OTHER, true);
                 break;
         }
         // owner
@@ -221,7 +219,7 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
             perms.add(OWNER_EXECUTE);
             if ((mode & 0004000)==0004000)
             {
-                map.put(SET_UID, true);
+                put(SETUID, true);
             }
         }
         // group
@@ -238,7 +236,7 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
             perms.add(GROUP_EXECUTE);
             if ((mode & 0002000)==0002000)
             {
-                map.put(SET_GID, true);
+                put(SETGID, true);
             }
         }
         // others
@@ -255,14 +253,14 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
             perms.add(OTHERS_EXECUTE);
             if ((mode & 0001000)==0001000)
             {
-                map.put(STICKY_BIT, true);
+                put(STICKY, true);
             }
         }
         else
         {
             if ((mode & 0001000)==0001000)
             {
-                map.put(STICKY_BIT, true);
+                put(STICKY, true);
             }
         }
     }

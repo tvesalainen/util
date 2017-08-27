@@ -19,6 +19,7 @@ package org.vesalainen.vfs;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.annotation.GenClassname;
@@ -149,10 +150,17 @@ public abstract class Glob
     @ParseMethod(start="parts")
     public abstract String parse(CharSequence text);
     
-    public PathMatcher pathMatcher(String expr, Option...options)
+    public PathMatcher globMatcher(String expr, Option...options)
     {
-        PathMatcher pathMatcher = new PathMatcherImpl(expr, options);
-        return pathMatcher;
+        try
+        {
+            PathMatcher pathMatcher = new PathMatcherImpl(expr, options);
+            return pathMatcher;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            throw new PatternSyntaxException("syntax error", expr, 0);
+        }
     }
     public static  Glob newInstance()
     {
@@ -173,6 +181,10 @@ public abstract class Glob
         @Override
         public boolean matches(Path path)
         {
+            if (path == null)
+            {
+                return false;   // it's root
+            }
             Boolean match;
             if (wholePath)
             {

@@ -17,7 +17,6 @@
 package org.vesalainen.vfs;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileStore;
@@ -32,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.vesalainen.util.Lists;
 import org.vesalainen.vfs.VirtualFile.Type;
 
 /**
@@ -49,7 +49,7 @@ public class VirtualFileStore extends FileStore
     protected VirtualFileStore(VirtualFileSystem fileSystem, String... views)
     {
         this.fileSystem = fileSystem;
-        supportedFileAttributeViews.add("basic");
+        Lists.addAll(supportedFileAttributeViews, views);
     }
 
     public int getBlockSize()
@@ -190,7 +190,14 @@ public class VirtualFileStore extends FileStore
         @Override
         public Iterator<Path> iterator()
         {
-            return new PathIter(dir, filter, files.keySet().tailSet(dir).iterator());
+            if (dir.isAbsolute() && dir.getNameCount() == 0)
+            {
+                return new PathIter(dir, filter, files.keySet().iterator());
+            }
+            else
+            {
+                return new PathIter(dir, filter, files.keySet().tailSet(dir).iterator());
+            }
         }
 
         @Override
@@ -221,16 +228,20 @@ public class VirtualFileStore extends FileStore
                 while (iterator.hasNext())
                 {
                     next = iterator.next();
-                    if (filter.accept(next))
+                    if (next.startsWith(dir))
                     {
-                        if (next.startsWith(dir))
+                        if (!dir.equals(next) && dir.equals(next.getParent()) && filter.accept(next))
                         {
                             return true;
                         }
                         else
                         {
-                            break;
+                            continue;
                         }
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
                 return false;

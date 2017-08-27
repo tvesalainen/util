@@ -135,22 +135,39 @@ public class VirtualFileSystem extends FileSystem
             String rest = r.matches(first);
             if (rest != null)
             {
+                if (rest.isEmpty())
+                {
+                    return r;   // it's root
+                }
                 root = r;
                 first = rest;
                 break;
             }
         }
-        return new MultiPath(this, root, first, more);
+        return MultiPath.getInstance(this, root, first, more);
     }
 
     @Override
     public PathMatcher getPathMatcher(String syntaxAndPattern)
     {
-        if (glob == null)
+        String[] split = syntaxAndPattern.split(":");
+        if (split.length != 2)
         {
-            glob = Glob.newInstance();
+            throw new IllegalArgumentException(syntaxAndPattern);
         }
-        return glob.pathMatcher(syntaxAndPattern);
+        switch (split[0])
+        {
+            case "glob":
+                if (glob == null)
+                {
+                    glob = Glob.newInstance();
+                }
+                return glob.globMatcher(split[1]);
+            case "regex":
+                return new RegexPathMatcher(split[1]);
+            default:
+                throw new UnsupportedOperationException(split[0]+" not supported");
+        }
     }
 
     @Override

@@ -79,6 +79,10 @@ public abstract class BasePath implements Path
             return this;
         }
         List<Path> nl = new ArrayList<>();
+        if (isAbsolute())
+        {
+            nl.add(getRoot());
+        }
         Iterator<Path> itThis = iterator();
         while (itThis.hasNext())
         {
@@ -89,7 +93,7 @@ public abstract class BasePath implements Path
         {
             nl.add(itOth.next());
         }
-        return new MultiPath(fileSystem, (Root) getRoot(), nl);
+        return MultiPath.getInstance(fileSystem, nl);
     }
 
     @Override
@@ -134,12 +138,13 @@ public abstract class BasePath implements Path
         else
         {
             List<Path> nl = new ArrayList<>();
+            nl.add(fileSystem.getDefaultRoot());
             Iterator<Path> it = nor.iterator();
             while (it.hasNext())
             {
                 nl.add(it.next());
             }
-            return new MultiPath(fileSystem, fileSystem.getDefaultRoot(), nl);
+            return MultiPath.getInstance(fileSystem, nl);
         }
     }
 

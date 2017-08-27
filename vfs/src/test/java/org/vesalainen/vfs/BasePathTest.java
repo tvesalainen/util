@@ -229,7 +229,7 @@ public class BasePathTest
     public void testEnding1()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("*.java");
+        PathMatcher m = g.globMatcher("*.java");
         assertTrue(m.matches(getPath("/foo/bar/goo.java")));
         assertFalse(m.matches(getPath("/foo/bar/goo.cpp")));
     }
@@ -237,7 +237,7 @@ public class BasePathTest
     public void testEnding2()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("*.*");
+        PathMatcher m = g.globMatcher("*.*");
         assertTrue(m.matches(getPath("/foo/bar/goo.java")));
         assertFalse(m.matches(getPath("/foo/bar/goocpp")));
     }
@@ -245,7 +245,7 @@ public class BasePathTest
     public void testEnding3()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("foo.?");
+        PathMatcher m = g.globMatcher("foo.?");
         assertTrue(m.matches(getPath("/foo/bar/foo.1")));
         assertFalse(m.matches(getPath("/foo/bar/goocpp")));
     }
@@ -253,7 +253,7 @@ public class BasePathTest
     public void testGroup()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("{java,jar}");
+        PathMatcher m = g.globMatcher("{java,jar}");
         assertTrue(m.matches(getPath("/foo/bar/goo.java")));
         assertTrue(m.matches(getPath("/foo/bar/goo.jar")));
         assertFalse(m.matches(getPath("/foo/bar/goo.cpp")));
@@ -262,7 +262,7 @@ public class BasePathTest
     public void testBracketExpression1()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("*[-]ver");
+        PathMatcher m = g.globMatcher("*[-]ver");
         assertTrue(m.matches(getPath("/foo/bar/goo-ver")));
         assertFalse(m.matches(getPath("/foo/bar/goo.ver")));
     }
@@ -270,7 +270,7 @@ public class BasePathTest
     public void testBracketExpression2()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("*[!a-c].ver");
+        PathMatcher m = g.globMatcher("*[!a-c].ver");
         assertTrue(m.matches(getPath("/foo/bar/goo.ver")));
         assertFalse(m.matches(getPath("/foo/bar/baa.ver")));
     }
@@ -278,7 +278,7 @@ public class BasePathTest
     public void testDirectory1()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("/home/*/*");
+        PathMatcher m = g.globMatcher("/home/*/*");
         assertTrue(m.matches(getPath("/home/gus/data")));
         assertFalse(m.matches(getPath("/home/gus")));
     }
@@ -286,7 +286,7 @@ public class BasePathTest
     public void testDirectory2()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("/home/**");
+        PathMatcher m = g.globMatcher("/home/**");
         assertTrue(m.matches(getPath("/home/gus/data")));
         assertTrue(m.matches(getPath("/home/gus")));
     }
@@ -294,7 +294,7 @@ public class BasePathTest
     public void testDirectory3()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("/home/**/hello.class");
+        PathMatcher m = g.globMatcher("/home/**/hello.class");
         assertTrue(m.matches(getPath("/home/gus/data/hello.class")));
         assertTrue(m.matches(getPath("/home/gus/hello.class")));
     }
@@ -302,7 +302,7 @@ public class BasePathTest
     public void testDirectory4()
     {
         Glob g = Glob.newInstance();
-        PathMatcher m = g.pathMatcher("/home/**/middle/**hello.class");
+        PathMatcher m = g.globMatcher("/home/**/middle/**hello.class");
         assertFalse(m.matches(getPath("/home/gus/data/hello.class")));
         assertTrue(m.matches(getPath("/home/foo/middle/gus/hello.class")));
     }

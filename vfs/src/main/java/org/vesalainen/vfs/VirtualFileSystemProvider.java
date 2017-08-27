@@ -19,6 +19,7 @@ package org.vesalainen.vfs;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.AccessDeniedException;
@@ -38,13 +39,16 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.*;
 import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,14 +57,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.vesalainen.nio.ByteBuffers;
-import org.vesalainen.nio.DynamicByteBuffer;
 import org.vesalainen.util.ArrayHelp;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
+import org.vesalainen.vfs.attributes.AclFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
-import static org.vesalainen.vfs.attributes.FileAttributeName.UNIX_NAME;
+import org.vesalainen.vfs.attributes.DosFileAttributeViewImpl;
+import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.attributes.FileOwnerAttributeViewImpl;
+import org.vesalainen.vfs.attributes.UserDefinedFileAttributeViewImpl;
 
 /**
  *
@@ -70,16 +78,20 @@ public class VirtualFileSystemProvider extends FileSystemProvider
 {
     static final String SCHEME = "org.vesalainen.vfs";
     protected Map<String,Class<? extends FileAttributeView>> viewClasses = new HashMap<>();
-    protected Map<String,Function<Map<String,Object>,? extends FileAttributeView>> viewSuppliers = new HashMap<>();
+    protected Map<String,Function<FileAttributeAccess,? extends FileAttributeView>> viewSuppliers = new HashMap<>();
 
     public VirtualFileSystemProvider()
     {
-        addFileAttributeView("basic", BasicFileAttributeView.class, BasicFileAttributeViewImpl::new);
-        addFileAttributeView("posix", PosixFileAttributeView.class, PosixFileAttributeViewImpl::new);
-        addFileAttributeView(UNIX_NAME, UnixFileAttributeView.class, UnixFileAttributeViewImpl::new);
+        addFileAttributeView(BASIC_VIEW, BasicFileAttributeView.class, BasicFileAttributeViewImpl::new);
+        addFileAttributeView(ACL_VIEW, AclFileAttributeView.class, AclFileAttributeViewImpl::new);
+        addFileAttributeView(DOS_VIEW, DosFileAttributeView.class, DosFileAttributeViewImpl::new);
+        addFileAttributeView(OWNER_VIEW, FileOwnerAttributeView.class, FileOwnerAttributeViewImpl::new);
+        addFileAttributeView(POSIX_VIEW, PosixFileAttributeView.class, PosixFileAttributeViewImpl::new);
+        addFileAttributeView(USER_VIEW, UserDefinedFileAttributeView.class, UserDefinedFileAttributeViewImpl::new);
+        addFileAttributeView(UNIX_VIEW, UnixFileAttributeView.class, UnixFileAttributeViewImpl::new);
     }
 
-    protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<Map<String,Object>,? extends FileAttributeView> func)
+    protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)
     {
         viewClasses.put(name, cls);
         viewSuppliers.put(name, func);
@@ -118,7 +130,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
             try 
             {
                 VirtualFileSystem vfs = new VirtualFileSystem(this);
-                vfs.addFileStore("/", new VirtualFileStore(vfs, "basic"), true);
+                vfs.addFileStore("/", new VirtualFileStore(vfs, BASIC_VIEW, POSIX_VIEW, UNIX_VIEW, USER_VIEW), true);
                 return vfs;
             }
             catch (IOException ex) 
@@ -137,6 +149,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider
 
     @Override
     public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
+    {
+        return newFileChannel(path, options, attrs);
+    }
+    @Override
+    public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
         Path p = path.toAbsolutePath();
         VirtualFile file = getFile(p);
@@ -234,7 +251,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         VirtualFile created = store(l).create(l, SYMBOLIC_LINK, attrs);
         ByteBuffer writeView = created.writeView(0, bytes.length);
         writeView.put(bytes);
-        created.append(writeView.position());
+        created.commit(writeView.position());
     }
 
     @Override
@@ -274,7 +291,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
                 ByteBuffer rv = srcFile.readView(0);
                 ByteBuffer wv = trgFile.writeView(0, rv.remaining());
                 long len = ByteBuffers.move(rv, wv);
-                trgFile.append((int) len);
+                trgFile.commit((int) len);
                 break;
             case DIRECTORY:
                 createDirectory(trg);
@@ -422,17 +439,17 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         }
         return res;
     }
-    <A extends FileAttributeView> Map<String,A> createViewMap(Map<String,Object> map, Set<String> views)
+    <A extends FileAttributeView> Map<String,A> createViewMap(FileAttributeAccess access, Set<String> views)
     {
         Map<String,A> res = new HashMap<>();
         for (String view : views)
         {
-            Function<Map<String, Object>, ? extends FileAttributeView> func = viewSuppliers.get(view);
+            Function<FileAttributeAccess,? extends FileAttributeView> func = viewSuppliers.get(view);
             if (func == null)
             {
                 throw new UnsupportedOperationException(view+" not supported");
             }
-            res.put(view, (A) func.apply(map));
+            res.put(view, (A) func.apply(access));
         }
         return res;
     }

@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -30,15 +32,17 @@ import java.util.stream.Collectors;
  */
 public class MultiPath extends BasePath
 {
+    private static final Map<VirtualFileSystem,Map<List<Path>,MultiPath>> cache = new WeakHashMap<>();
+    
     private List<Path> list = new ArrayList<>(); 
     private List<Path> names;
+    private String toString;
     
-    MultiPath(VirtualFileSystem fileSystem, Root root, List<Path> lst)
+    private MultiPath(VirtualFileSystem fileSystem, List<Path> lst)
     {
         super(fileSystem);
-        if (root != null)
+        if (!lst.isEmpty() && lst.get(0).isAbsolute())
         {
-            list.add(root);
             list.addAll(lst);
             names = list.subList(1, list.size());
         }
@@ -49,36 +53,44 @@ public class MultiPath extends BasePath
         }
         this.names = Collections.unmodifiableList(names);
     }
-    
-    MultiPath(VirtualFileSystem fileSystem, Root root, String first, String... more)
+    static final MultiPath getInstance(VirtualFileSystem fileSystem, Root root, String first, String... more)
     {
-        super(fileSystem);
+        List<Path> list = new ArrayList<>();
         if (root != null)
         {
             list.add(root);
-            names = new ArrayList<>();
-            add(first, more);
-            list.addAll(names);
         }
-        else
-        {
-            names = list;
-            add(first, more);
-        }
-        names = Collections.unmodifiableList(names);
+        add(fileSystem, list, first, more);
+        return getInstance(fileSystem, list);
     }
-    private void add(String first, String... more)
+    static final MultiPath getInstance(VirtualFileSystem fileSystem, List<Path> lst)
+    {
+        Map<List<Path>,MultiPath> map = cache.get(fileSystem);
+        if (map == null)
+        {
+            map = new WeakHashMap<>();
+            cache.put(fileSystem, map);
+        }
+        MultiPath mp = map.get(lst);
+        if (mp == null)
+        {
+            mp = new MultiPath(fileSystem, lst);
+            map.put(lst, mp);
+        }
+        return mp;
+    }
+    private static void add(VirtualFileSystem fileSystem, List<Path> names, String first, String... more)
     {
         if (!first.isEmpty())
         {
-            add(first);
+            add(fileSystem, names, first);
             for (String m : more)
             {
-                add(m);
+                add(fileSystem, names, m);
             }
         }
     }
-    private void add(String str)
+    private static void add(VirtualFileSystem fileSystem, List<Path> names, String str)
     {
         String[] split = str.split(fileSystem.getSeparator());
         for (String s : split)
@@ -120,7 +132,7 @@ public class MultiPath extends BasePath
     {
         if (names.size() > 1)
         {
-            return new MultiPath(fileSystem, (Root) getRoot(), names.subList(0, names.size()-1));
+            return getInstance(fileSystem, list.subList(0, list.size()-1));
         }
         if (names.size() == 1 && isAbsolute())
         {
@@ -144,7 +156,7 @@ public class MultiPath extends BasePath
     @Override
     public Path subpath(int beginIndex, int endIndex)
     {
-        return new MultiPath(fileSystem, null, names.subList(beginIndex, endIndex));
+        return getInstance(fileSystem, names.subList(beginIndex, endIndex));
     }
 
     @Override
@@ -198,7 +210,7 @@ public class MultiPath extends BasePath
         boolean hasDots = names.stream().anyMatch((p)->SinglePath.isCurrentDirectory(p) || SinglePath.isParentDirectory(p));
         if (hasDots)
         {
-            List<Path> nl = new ArrayList<>(names);
+            List<Path> nl = new ArrayList<>(list);
             for (int ii=0;ii<nl.size();ii++)
             {
                 Path p = nl.get(ii);
@@ -219,7 +231,7 @@ public class MultiPath extends BasePath
                     }
                 }
             }
-            return new MultiPath(fileSystem, (Root) getRoot(), nl);
+            return getInstance(fileSystem, nl);
         }
         else
         {
@@ -258,7 +270,11 @@ public class MultiPath extends BasePath
     @Override
     public String toString()
     {
-        return names.stream().map((p)->p.toString()).collect(Collectors.joining("/", isAbsolute()?"/":"", ""));
+        if (toString == null)
+        {
+            toString = names.stream().map((p)->p.toString()).collect(Collectors.joining("/", isAbsolute()?"/":"", ""));
+        }
+        return toString;
     }
 
     @Override

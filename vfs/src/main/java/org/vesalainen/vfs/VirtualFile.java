@@ -17,6 +17,8 @@
 package org.vesalainen.vfs;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.AccessMode;
@@ -32,8 +34,10 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.vesalainen.nio.DynamicByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
+import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
@@ -41,15 +45,15 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFile
+public class VirtualFile implements FileAttributeAccess
 {
 
     protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
     protected VirtualFileStore fileStore;
     protected Type type;
     protected ByteBuffer content;
-    protected long size;
-    protected Map<String,Object> attributes = new HashMap<>();
+    protected long size;    // has to be long because of attribute SIZE
+    protected Map<Name,Object> attributes = new HashMap<>();
     protected Map<String,? extends FileAttributeView> viewMap;
     protected Path symbolicTarget;
 
@@ -58,7 +62,7 @@ public class VirtualFile
         this.fileStore = fileStore;
         this.type = type;
         this.content = ByteBuffer.allocateDirect(0);
-        this.viewMap = fileStore.provider().createViewMap(attributes, views);
+        this.viewMap = fileStore.provider().createViewMap(this, views);
         switch (type)
         {
             case REGULAR:
@@ -83,7 +87,54 @@ public class VirtualFile
         setAttribute(LAST_MODIFIED_TIME, now);
     }
 
-    public Path getSymbolicTarget() throws IOException
+    @Override
+    public Object get(Name name, Object def)
+    {
+        switch (name.toString())
+        {
+            case SIZE:
+                return (long)size;
+            default:
+                return attributes.getOrDefault(name, def);
+        }
+    }
+
+    @Override
+    public Set<Name> names()
+    {
+        return attributes.keySet();
+    }
+
+    @Override
+    public void put(Name name, Object value)
+    {
+        switch (name.toString())
+        {
+            case SIZE:
+                throw new IllegalArgumentException("not allowed to set "+name);
+            default:
+                if (USER_VIEW.equals(name) && (value instanceof ByteBuffer))
+                {
+                    ByteBuffer bb = (ByteBuffer) value;
+                    byte[] arr = new byte[bb.remaining()];
+                    bb.get(arr);
+                    attributes.put(name, arr);
+                }
+                else
+                {
+                    attributes.put(name, value);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void delete(Name name)
+    {
+        attributes.remove(name);
+    }
+    
+    public Path getSymbolicTarget()
     {
         if (symbolicTarget == null && type == SYMBOLIC_LINK)
         {
@@ -138,11 +189,11 @@ public class VirtualFile
         }
         return true;
     }
-    public final void setAttribute(String name, Object value)
+    public final void setAttribute(String attribute, Object value)
     {
-        String normalized = FileAttributeName.normalize(name);
-        checkAttribute(normalized, value);
-        attributes.put(normalized, value);
+        Name name = FileAttributeName.getInstance(attribute);
+        checkAttribute(name, value);
+        attributes.put(name, value);
     }
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> type)
     {
@@ -158,53 +209,52 @@ public class VirtualFile
 
     public <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException
     {
-        if (BasicFileAttributes.class.equals(type))
+        try
         {
-            BasicFileAttributeView attrs = getFileAttributeView(BasicFileAttributeView.class);
-            if (attrs != null)
+            for (FileAttributeView view : viewMap.values())
             {
-                return (A) attrs.readAttributes();
+                Method method = view.getClass().getMethod("readAttributes");
+                if (type.isAssignableFrom(method.getReturnType()))
+                {
+                    return (A) method.invoke(view);
+                }
             }
         }
-        if (PosixFileAttributes.class.equals(type))
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
-            PosixFileAttributeView attrs = getFileAttributeView(PosixFileAttributeView.class);
-            if (attrs != null)
-            {
-                return (A) attrs.readAttributes();
-            }
+            throw new IOException(ex);
         }
         throw new UnsupportedOperationException(type+" not supported");
     }
     public Map<String, Object> readAttributes(String names) throws IOException
     {
         Map<String, Object> map = new HashMap<>();
-        FileAttributeName.FileAttributeNameMatcher matcher = new FileAttributeName.FileAttributeNameMatcher(viewMap.keySet(), names);
+        FileAttributeName.FileAttributeNameMatcher matcher = new FileAttributeName.FileAttributeNameMatcher(names);
         attributes.forEach((n,a)->
         {
             if (matcher.any(n))
             {
-                map.put(n, a);
+                map.put(n.getName(), a);
             }
         });
         return map;
     }
 
-    protected void checkAttribute(String name, Object value)
+    protected void checkAttribute(Name name, Object value)
     {
         FileAttributeName.check(name, value);
         for (String view : viewMap.keySet())
         {
-            if (name.startsWith(view))
+            if (view.equals(name.getView()))
             {
                 return;
             }
         }
-        throw new UnsupportedOperationException(name);
+        throw new UnsupportedOperationException(name.toString());
     }
     /**
      * Returns read-only view of content. Position = 0, limit=size;
-     * @return 
+     * @return ByteBuffer position set to given position limit is file size.
      */
     ByteBuffer readView(int position)
     {
@@ -214,8 +264,8 @@ public class VirtualFile
         return bb;
     }
     /**
-     * Returns view of content. Position = 0, limit=capacity;
-     * @return 
+     * Returns view of content. 
+     * @return ByteBuffer position set to given position limit is position+needs.
      */
     ByteBuffer writeView(int position, int needs) throws IOException
     {
@@ -231,18 +281,25 @@ public class VirtualFile
         }
         ByteBuffer bb = content.duplicate();
         bb.position(position);
-        bb.limit(position+needs);
+        bb.limit(waterMark);
         return bb;
     }
-    void append(int pos)
+    /**
+     * called after writing to commit that writing succeeded up to position.
+     * If position > size the size is updated.
+     * @param pos 
+     */
+    void commit(int pos)
     {
         size = Math.max(size, pos);
-        setAttribute(SIZE, size);
     }
+    /**
+     * File size is set to pos unconditionally.
+     * @param pos 
+     */
     void truncate(int pos)
     {
         size = pos;
-        setAttribute(SIZE, size);
     }
 
     int getSize()

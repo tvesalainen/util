@@ -22,7 +22,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -33,15 +34,15 @@ public class BasicFileAttributeViewImpl extends FileAttributeViewImpl implements
 {
     private BasicFileAttributes basicAttr = new BasicFileAttributesImpl();
 
-    protected BasicFileAttributeViewImpl(String name, Map<String, Object> map)
+    protected BasicFileAttributeViewImpl(String name, FileAttributeAccess access)
     {
-        super(name, map);
+        super(name, access);
     }
     
     
-    public BasicFileAttributeViewImpl(Map<String, Object> map)
+    public BasicFileAttributeViewImpl(FileAttributeAccess access)
     {
-        super("basic", map);
+        super("basic", access);
     }
 
     @Override

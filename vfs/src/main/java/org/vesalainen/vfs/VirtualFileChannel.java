@@ -304,7 +304,7 @@ public class VirtualFileChannel extends FileChannel
             ByteBuffer writeView = file.writeView(currentPosition, src.remaining());
             int rc = (int) ByteBuffers.move(src, writeView);
             currentPosition = writeView.position();
-            file.append(writeView.position());
+            file.commit(writeView.position());
             return rc;
         }
         finally

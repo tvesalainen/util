@@ -17,11 +17,10 @@
 package org.vesalainen.vfs.attributes;
 
 import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import org.vesalainen.vfs.attributes.FileAttributeName.Name;
 
 /**
  *
@@ -30,20 +29,20 @@ import java.util.Set;
 public class FileAttributeViewImpl implements FileAttributeView
 {
     private String name;
-    protected Map<String,Object> map;
+    protected FileAttributeAccess access;
 
-    public FileAttributeViewImpl(String name, Map<String, Object> map)
+    public FileAttributeViewImpl(String name, FileAttributeAccess access)
     {
         this.name = name;
-        this.map = map;
+        this.access = access;
     }
 
     protected Object get(String name)
     {
-        String norm = FileAttributeName.normalize(name);
-        return map.getOrDefault(norm, getDef(norm));
+        Name norm = FileAttributeName.getInstance(name);
+        return access.get(norm, getDef(norm));
     }
-    private Object getDef(String name)
+    private Object getDef(Name name)
     {
         Class<?> type = FileAttributeName.type(name);
         if (Set.class.equals(type))
@@ -66,7 +65,11 @@ public class FileAttributeViewImpl implements FileAttributeView
     }
     protected void put(String name, Object value)
     {
-        map.put(FileAttributeName.normalize(name), value);
+        access.put(FileAttributeName.getInstance(name), value);
+    }
+    protected Set<Name> names()
+    {
+        return access.names();
     }
     @Override
     public String name()

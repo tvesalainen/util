@@ -16,7 +16,12 @@
  */
 package org.vesalainen.vfs;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -37,24 +42,40 @@ public class FileAttributeNameTest
     @Test
     public void testStar()
     {
-        Set<String> views = new HashSet<>();
-        views.add("basic");
-        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher(views, "*");
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("*");
         assertTrue(fanm.any(SIZE));
         assertTrue(fanm.any(LAST_MODIFIED_TIME));
     }
     
     @Test
+    public void testBasic()
+    {
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("size,lastModifiedTime,lastAccessTime");
+        assertTrue(fanm.any(SIZE));
+        assertFalse(fanm.any(PERMISSIONS));
+        assertFalse(fanm.any(GROUP));
+        assertTrue(fanm.any(LAST_MODIFIED_TIME));
+        assertTrue(fanm.any(LAST_ACCESS_TIME));
+    }
+    
+    @Test
     public void testPosix()
     {
-        Set<String> views = new HashSet<>();
-        views.add("basic");
-        views.add("posix");
-        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher(views, "posix:*,lastModifiedTime,lastAccessTime");
-        assertFalse(fanm.any(SIZE));
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("posix:*");
+        assertTrue(fanm.any(SIZE));
         assertTrue(fanm.any(PERMISSIONS));
         assertTrue(fanm.any(GROUP));
         assertTrue(fanm.any(LAST_MODIFIED_TIME));
+    }
+    
+    @Test
+    public void testPosix2()
+    {
+        FileAttributeNameMatcher fanm = new FileAttributeNameMatcher("posix:permissions,owner,size");
+        assertTrue(fanm.any(SIZE));
+        assertTrue(fanm.any(PERMISSIONS));
+        assertTrue(fanm.any(OWNER));
+        assertFalse(fanm.any(LAST_MODIFIED_TIME));
     }
     
 }
