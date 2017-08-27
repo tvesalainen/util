@@ -30,21 +30,45 @@ import java.util.stream.Collectors;
  */
 public class MultiPath extends BasePath
 {
-    private List<Path> list;
-    private Root root;
+    private List<Path> list = new ArrayList<>(); 
+    private List<Path> names;
     
-    MultiPath(VirtualFileSystem fileSystem, Root root, List<Path> list)
+    MultiPath(VirtualFileSystem fileSystem, Root root, List<Path> lst)
     {
         super(fileSystem);
-        this.root = root;
-        this.list = Collections.unmodifiableList(list);
+        if (root != null)
+        {
+            list.add(root);
+            list.addAll(lst);
+            names = list.subList(1, list.size());
+        }
+        else
+        {
+            list.addAll(lst);
+            names = list;
+        }
+        this.names = Collections.unmodifiableList(names);
     }
     
     MultiPath(VirtualFileSystem fileSystem, Root root, String first, String... more)
     {
         super(fileSystem);
-        this.list = new ArrayList<>();
-        this.root = root;
+        if (root != null)
+        {
+            list.add(root);
+            names = new ArrayList<>();
+            add(first, more);
+            list.addAll(names);
+        }
+        else
+        {
+            names = list;
+            add(first, more);
+        }
+        names = Collections.unmodifiableList(names);
+    }
+    private void add(String first, String... more)
+    {
         if (!first.isEmpty())
         {
             add(first);
@@ -53,49 +77,52 @@ public class MultiPath extends BasePath
                 add(m);
             }
         }
-        this.list = Collections.unmodifiableList(this.list);
     }
     private void add(String str)
     {
         String[] split = str.split(fileSystem.getSeparator());
         for (String s : split)
         {
-            list.add(SinglePath.getInstance(fileSystem, s));
+            names.add(SinglePath.getInstance(fileSystem, s));
         }
     }
     @Override
     public boolean isAbsolute()
     {
-        return root != null;
+        return names.size() != list.size();
     }
 
     @Override
     public Path getRoot()
     {
-        return root;
+        if (isAbsolute())
+        {
+            return list.get(0);
+        }
+        return null;
     }
 
     @Override
     public Path getFileName()
     {
-        if (list.isEmpty())
+        if (names.isEmpty())
         {
             return null;
         }
         else
         {
-            return list.get(list.size()-1);
+            return names.get(names.size()-1);
         }
     }
 
     @Override
     public Path getParent()
     {
-        if (list.size() > 1)
+        if (names.size() > 1)
         {
-            return new MultiPath(fileSystem, root, list.subList(0, list.size()-1));
+            return new MultiPath(fileSystem, (Root) getRoot(), names.subList(0, names.size()-1));
         }
-        if (list.size() == 1 && isAbsolute())
+        if (names.size() == 1 && isAbsolute())
         {
             return getRoot();
         }
@@ -105,19 +132,19 @@ public class MultiPath extends BasePath
     @Override
     public int getNameCount()
     {
-        return list.size();
+        return names.size();
     }
 
     @Override
     public Path getName(int index)
     {
-        return list.get(index);
+        return names.get(index);
     }
 
     @Override
     public Path subpath(int beginIndex, int endIndex)
     {
-        return new MultiPath(fileSystem, null, list.subList(beginIndex, endIndex));
+        return new MultiPath(fileSystem, null, names.subList(beginIndex, endIndex));
     }
 
     @Override
@@ -168,10 +195,10 @@ public class MultiPath extends BasePath
     @Override
     public Path normalize()
     {
-        boolean hasDots = list.stream().anyMatch((p)->SinglePath.isCurrentDirectory(p) || SinglePath.isParentDirectory(p));
+        boolean hasDots = names.stream().anyMatch((p)->SinglePath.isCurrentDirectory(p) || SinglePath.isParentDirectory(p));
         if (hasDots)
         {
-            List<Path> nl = new ArrayList<>(list);
+            List<Path> nl = new ArrayList<>(names);
             for (int ii=0;ii<nl.size();ii++)
             {
                 Path p = nl.get(ii);
@@ -192,7 +219,7 @@ public class MultiPath extends BasePath
                     }
                 }
             }
-            return new MultiPath(fileSystem, root, nl);
+            return new MultiPath(fileSystem, (Root) getRoot(), nl);
         }
         else
         {
@@ -203,7 +230,7 @@ public class MultiPath extends BasePath
     @Override
     public Iterator<Path> iterator()
     {
-        return list.iterator();
+        return names.iterator();
     }
 
     @Override
@@ -231,7 +258,7 @@ public class MultiPath extends BasePath
     @Override
     public String toString()
     {
-        return list.stream().map((p)->p.toString()).collect(Collectors.joining("/", isAbsolute()?"/":"", ""));
+        return names.stream().map((p)->p.toString()).collect(Collectors.joining("/", isAbsolute()?"/":"", ""));
     }
 
     @Override
@@ -239,7 +266,6 @@ public class MultiPath extends BasePath
     {
         int hash = 5;
         hash = 29 * hash + Objects.hashCode(this.list);
-        hash = 29 * hash + Objects.hashCode(this.root);
         return hash;
     }
 
