@@ -17,8 +17,10 @@
 package org.vesalainen.nio.file.attribute;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,18 +39,18 @@ public class UserAttrsTest
     public void test() throws IOException
     {
         Path path = Paths.get("C:\\temp\\test.txt");
-        UserAttrs.setShortAttribute(path, "user:short", (short)1234);
-        assertEquals(1234, UserAttrs.getShortAttribute(path, "user:short"));
-        UserAttrs.setIntAttribute(path, "user:int", 1234);
-        assertEquals(1234, UserAttrs.getIntAttribute(path, "user:int"));
-        UserAttrs.setLongAttribute(path, "user:long", 1234L);
-        assertEquals(1234, UserAttrs.getLongAttribute(path, "user:long"));
-        UserAttrs.setFloatAttribute(path, "user:float", (float)1234.56);
-        assertEquals((float)1234.56, UserAttrs.getFloatAttribute(path, "user:float"), 1e-10);
-        UserAttrs.setDoubleAttribute(path, "user:double", 1234.56);
-        assertEquals(1234.56, UserAttrs.getDoubleAttribute(path, "user:double"), 1e-10);
-        UserAttrs.setStringAttribute(path, "user:string", "qwerty");
-        assertEquals("qwerty", UserAttrs.getStringAttribute(path, "user:string"));
+        UserAttrs.setShortAttribute(path, "short", (short)1234);
+        assertEquals(1234, UserAttrs.getShortAttribute(path, "short"));
+        UserAttrs.setIntAttribute(path, "int", 1234);
+        assertEquals(1234, UserAttrs.getIntAttribute(path, "int"));
+        UserAttrs.setLongAttribute(path, "long", 1234L);
+        assertEquals(1234, UserAttrs.getLongAttribute(path, "long"));
+        UserAttrs.setFloatAttribute(path, "float", (float)1234.56);
+        assertEquals((float)1234.56, UserAttrs.getFloatAttribute(path, "float"), 1e-10);
+        UserAttrs.setDoubleAttribute(path, "double", 1234.56);
+        assertEquals(1234.56, UserAttrs.getDoubleAttribute(path, "double"), 1e-10);
+        UserAttrs.setStringAttribute(path, "string", "qwerty");
+        assertEquals("qwerty", UserAttrs.getStringAttribute(path, "string"));
     }
     
 }

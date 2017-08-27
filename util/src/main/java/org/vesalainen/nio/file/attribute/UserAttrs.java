@@ -32,85 +32,92 @@ public final class UserAttrs
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setShortAttribute(Path path, String attribute, short value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, Primitives.writeShort(value), options);
     }
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setIntAttribute(Path path, String attribute, int value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, Primitives.writeInt(value), options);
     }
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setLongAttribute(Path path, String attribute, long value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, Primitives.writeLong(value), options);
     }
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setFloatAttribute(Path path, String attribute, float value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, Primitives.writeFloat(value), options);
     }
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setDoubleAttribute(Path path, String attribute, double value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, Primitives.writeDouble(value), options);
     }
     /**
      * Set user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param value
      * @param options
      * @throws IOException 
      */
     public static final void setStringAttribute(Path path, String attribute, String value, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         Files.setAttribute(path, attribute, value.getBytes(UTF_8), options);
     }
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final short getShortAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
@@ -125,13 +132,14 @@ public final class UserAttrs
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final int getIntAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
@@ -146,13 +154,14 @@ public final class UserAttrs
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final long getLongAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
@@ -167,13 +176,14 @@ public final class UserAttrs
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final float getFloatAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
@@ -188,13 +198,14 @@ public final class UserAttrs
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final double getDoubleAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
@@ -209,13 +220,14 @@ public final class UserAttrs
     /**
      * Returns user-defined-attribute
      * @param path
-     * @param attribute user:attribute name
+     * @param attribute user:attribute name. user: can be omitted.
      * @param options
      * @return
      * @throws IOException 
      */
     public static final String getStringAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
