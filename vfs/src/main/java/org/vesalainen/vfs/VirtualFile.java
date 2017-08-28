@@ -23,19 +23,14 @@ import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.AccessMode;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
@@ -45,15 +40,13 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFile implements FileAttributeAccess
+public class VirtualFile extends FileAttributeAccessImpl implements FileAttributeAccess
 {
 
     protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
     protected VirtualFileStore fileStore;
     protected Type type;
     protected ByteBuffer content;
-    protected long size;    // has to be long because of attribute SIZE
-    protected Map<Name,Object> attributes = new HashMap<>();
     protected Map<String,? extends FileAttributeView> viewMap;
     protected Path symbolicTarget;
 
@@ -88,58 +81,46 @@ public class VirtualFile implements FileAttributeAccess
     }
 
     @Override
-    public Object get(Name name, Object def)
+    public Object get(FileAttributeName.Name name, Object def)
     {
         switch (name.toString())
         {
-            case SIZE:
-                return (long)size;
+            case FileAttributeName.SIZE:
+                return (long) content.limit();
             default:
-                return attributes.getOrDefault(name, def);
+                return super.get(name, def);
         }
     }
 
     @Override
-    public Set<Name> names()
-    {
-        return attributes.keySet();
-    }
-
-    @Override
-    public void put(Name name, Object value)
+    public void put(FileAttributeName.Name name, Object value)
     {
         switch (name.toString())
         {
-            case SIZE:
-                throw new IllegalArgumentException("not allowed to set "+name);
+            case FileAttributeName.SIZE:
+                throw new IllegalArgumentException("not allowed to set " + name);
             default:
-                if (USER_VIEW.equals(name) && (value instanceof ByteBuffer))
+                if (FileAttributeName.USER_VIEW.equals(name) && (value instanceof ByteBuffer))
                 {
                     ByteBuffer bb = (ByteBuffer) value;
                     byte[] arr = new byte[bb.remaining()];
                     bb.get(arr);
-                    attributes.put(name, arr);
+                    super.put(name, arr);
                 }
                 else
                 {
-                    attributes.put(name, value);
+                    super.put(name, value);
                 }
                 break;
         }
     }
 
-    @Override
-    public void delete(Name name)
-    {
-        attributes.remove(name);
-    }
-    
     public Path getSymbolicTarget()
     {
         if (symbolicTarget == null && type == SYMBOLIC_LINK)
         {
             ByteBuffer readView = readView(0);
-            byte[] bytes = new byte[(int)size];
+            byte[] bytes = new byte[content.limit()];
             readView.get(bytes);
             symbolicTarget = fileStore.fileSystem.getPath(new String(bytes, US_ASCII));
         }
@@ -193,13 +174,14 @@ public class VirtualFile implements FileAttributeAccess
     {
         Name name = FileAttributeName.getInstance(attribute);
         checkAttribute(name, value);
-        attributes.put(name, value);
+        put(name, value);
     }
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> type)
     {
         for (FileAttributeView view : viewMap.values())
         {
-            if (type.isAssignableFrom(view.getClass()))
+            Class<?>[] interfaces = view.getClass().getInterfaces();
+            if (interfaces.length > 0 && interfaces[0].equals(type))
             {
                 return (V) view;
             }
@@ -213,14 +195,21 @@ public class VirtualFile implements FileAttributeAccess
         {
             for (FileAttributeView view : viewMap.values())
             {
-                Method method = view.getClass().getMethod("readAttributes");
-                if (type.isAssignableFrom(method.getReturnType()))
+                Method method;
+                try
                 {
-                    return (A) method.invoke(view);
+                    method = view.getClass().getMethod("readAttributes");
+                    if (type.equals(method.getReturnType()))
+                    {
+                        return (A) method.invoke(view);
+                    }
+                }
+                catch (NoSuchMethodException ex)
+                {
                 }
             }
         }
-        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+        catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
             throw new IOException(ex);
         }
@@ -260,7 +249,6 @@ public class VirtualFile implements FileAttributeAccess
     {
         ByteBuffer bb = content.duplicate().asReadOnlyBuffer();
         bb.position(position);
-        bb.limit((int) size);
         return bb;
     }
     /**
@@ -275,8 +263,8 @@ public class VirtualFile implements FileAttributeAccess
             int blockSize = fileStore.getBlockSize();
             int newCapacity = ((waterMark / blockSize) + 1) * blockSize;
             ByteBuffer newBB = ByteBuffer.allocateDirect(newCapacity);
-            content.limit((int) size);
             newBB.put(content);
+            newBB.flip();
             content = newBB;
         }
         ByteBuffer bb = content.duplicate();
@@ -284,14 +272,14 @@ public class VirtualFile implements FileAttributeAccess
         bb.limit(waterMark);
         return bb;
     }
-    /**
+        /**
      * called after writing to commit that writing succeeded up to position.
      * If position > size the size is updated.
      * @param pos 
      */
     void commit(int pos)
     {
-        size = Math.max(size, pos);
+        content.limit(Math.max(content.limit(), pos));
     }
     /**
      * File size is set to pos unconditionally.
@@ -299,11 +287,11 @@ public class VirtualFile implements FileAttributeAccess
      */
     void truncate(int pos)
     {
-        size = pos;
+        content.limit(pos);
     }
 
     int getSize()
     {
-        return (int) size;
+        return content.limit();
     }
 }

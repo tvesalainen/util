@@ -37,6 +37,10 @@ public class MultiPath extends BasePath
     private List<Path> list = new ArrayList<>(); 
     private List<Path> names;
     private String toString;
+    private Path parent;
+    private final boolean absolute;
+    private Root root;
+    private Path filename;
     
     private MultiPath(VirtualFileSystem fileSystem, List<Path> lst)
     {
@@ -52,6 +56,31 @@ public class MultiPath extends BasePath
             names = list;
         }
         this.names = Collections.unmodifiableList(names);
+        // absolute
+        absolute = names.size() != list.size();;
+        // root
+        if (absolute)
+        {
+            root = (Root) list.get(0);
+        }
+        // parent
+        if (names.size() > 1)
+        {
+            parent = getInstance(fileSystem, list.subList(0, list.size()-1));
+        }
+        if (names.size() == 1 && absolute)
+        {
+            parent = root;
+        }
+        // filename
+        if (names.isEmpty())
+        {
+            filename = null;
+        }
+        else
+        {
+            filename = names.get(names.size()-1);
+        }
     }
     static final MultiPath getInstance(VirtualFileSystem fileSystem, Root root, String first, String... more)
     {
@@ -101,44 +130,25 @@ public class MultiPath extends BasePath
     @Override
     public boolean isAbsolute()
     {
-        return names.size() != list.size();
+        return absolute;
     }
 
     @Override
     public Path getRoot()
     {
-        if (isAbsolute())
-        {
-            return list.get(0);
-        }
-        return null;
+        return root;
     }
 
     @Override
     public Path getFileName()
     {
-        if (names.isEmpty())
-        {
-            return null;
-        }
-        else
-        {
-            return names.get(names.size()-1);
-        }
+        return filename;
     }
 
     @Override
     public Path getParent()
     {
-        if (names.size() > 1)
-        {
-            return getInstance(fileSystem, list.subList(0, list.size()-1));
-        }
-        if (names.size() == 1 && isAbsolute())
-        {
-            return getRoot();
-        }
-        return null;
+        return parent;
     }
 
     @Override

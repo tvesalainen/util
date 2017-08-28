@@ -172,13 +172,13 @@ public class VirtualFileChannel extends FileChannel
             if (avail > 0)
             {
                 ByteBuffer view = file.readView((int) position);
-                if (avail > count)
+                if (avail <= count)
                 {
                     view.limit(file.getSize());
                 }
                 else
                 {
-                    view.limit((int) (position+avail));
+                    view.limit((int) (position+count));
                 }
                 return target.write(view);
             }
@@ -343,7 +343,14 @@ public class VirtualFileChannel extends FileChannel
             writeLock.unlock();
         }
     }
-
+    /**
+     * Throws UnsupportedOperationException
+     * @param mode
+     * @param position
+     * @param size
+     * @return
+     * @throws IOException 
+     */
     @Override
     public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException
     {
@@ -382,5 +389,4 @@ public class VirtualFileChannel extends FileChannel
     {
         return ChannelHelper.write(this, srcs, offset, length);
     }
-
 }

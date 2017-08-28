@@ -80,7 +80,7 @@ public class BasicFileAttributeViewImpl extends FileAttributeViewImpl implements
         put(OWNER, owner);
     }
     
-    protected class BasicFileAttributesImpl implements BasicFileAttributes
+    public class BasicFileAttributesImpl implements BasicFileAttributes
     {
 
         @Override

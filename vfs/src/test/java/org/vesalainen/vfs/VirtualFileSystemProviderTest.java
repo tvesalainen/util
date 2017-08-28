@@ -16,6 +16,8 @@
  */
 package org.vesalainen.vfs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,7 +33,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -42,6 +46,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.nio.file.attribute.UserAttrs;
 import org.vesalainen.regex.Regex;
+import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
+import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl.BasicFileAttributesImpl;
+import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
+import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl.PosixFileAttributesImpl;
+import org.vesalainen.vfs.unix.UnixFileAttributeView;
+import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
 
 /**
  *
@@ -101,7 +111,19 @@ public class VirtualFileSystemProviderTest
         assertEquals(exp, lines2);
     }
     @Test
-    public void testCreateDirectory() throws URISyntaxException, IOException
+    public void testCopy2() throws IOException
+    {
+        Path target = fileSystem.getPath("/home/timo/trash/../../notes.txt");
+        Path targetExp = fileSystem.getPath("/home/notes.txt");
+        ByteArrayInputStream bais = new ByteArrayInputStream("spanish waters".getBytes());
+        Files.copy(bais, target);
+        assertEquals(14, Files.size(targetExp));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Files.copy(target, baos);
+        assertEquals("spanish waters", baos.toString());
+    }
+    @Test
+    public void testCreateDirectory() throws IOException
     {
         Path target = fileSystem.getPath("foo");
         Files.createDirectory(target);
@@ -253,9 +275,20 @@ public class VirtualFileSystemProviderTest
     {
         Path path = fileSystem.getPath("/usr/local/bin/README");
         BasicFileAttributes bfa = Files.readAttributes(path, BasicFileAttributes.class);
-        assertNotNull(bfa);
+        assertTrue(bfa.getClass().equals(BasicFileAttributesImpl.class));
         PosixFileAttributes pfa = Files.readAttributes(path, PosixFileAttributes.class);
-        assertNotNull(pfa);
+        assertTrue(pfa.getClass().equals(PosixFileAttributesImpl.class));
+    }
+    @Test
+    public void testGetFileAttributeView() throws IOException
+    {
+        Path path = fileSystem.getPath("/usr/local/bin/README");
+        BasicFileAttributeView bfav = Files.getFileAttributeView(path, BasicFileAttributeView.class);
+        assertTrue(bfav.getClass().equals(BasicFileAttributeViewImpl.class));
+        PosixFileAttributeView pfav = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+        assertTrue(pfav.getClass().equals(PosixFileAttributeViewImpl.class));
+        UnixFileAttributeView ufav = Files.getFileAttributeView(path, UnixFileAttributeView.class);
+        assertTrue(ufav.getClass().equals(UnixFileAttributeViewImpl.class));
     }
     @Test
     public void testWalk() throws IOException
@@ -282,20 +315,34 @@ public class VirtualFileSystemProviderTest
         byte[] exp = "0123456789".getBytes();
         ByteBuffer bb = ByteBuffer.wrap(exp);
         Path path = fileSystem.getPath("/home/timo/hello.o");
-        try (FileChannel ch = FileChannel.open(path, EnumSet.of(READ,WRITE)))
+        Path path2 = fileSystem.getPath("/home/timo/file.tmp");
+        try (   FileChannel ch = FileChannel.open(path, EnumSet.of(READ,WRITE));
+                FileChannel ch2 = FileChannel.open(path2, EnumSet.of(READ,WRITE, CREATE)))
         {
             ch.write(bb);
             assertEquals(10, ch.position());
             bb.clear();
             int read = ch.read(bb, 5);
             assertEquals(5, read);
-            int write = ch.write(ByteBuffer.wrap("asd".getBytes()), 3);
+            int write = ch.write(ByteBuffer.wrap("asd".getBytes()), 3); // 012asd6789
             assertEquals(3, write);
+            assertArrayEquals("012asd6789".getBytes(), Files.readAllBytes(path));
             bb.clear();
             ch.read(bb, 3);
             bb.flip();
             assertEquals('a', bb.get());
-            // TODO transfetTo etc...
+            ch.transferTo(3, 5, ch2);
+            assertArrayEquals("asd67".getBytes(), Files.readAllBytes(path2));
+            bb.clear();
+            ch2.read(bb, 0);
+            bb.flip();
+            byte[] b1 = new byte[5];
+            bb.get(b1);
+            assertArrayEquals("asd67".getBytes(), b1);
+            ch2.position(1);
+            long tf = ch.transferFrom(ch2, 1, 3);
+            assertEquals(3, tf);
+            assertArrayEquals("0sd6sd6789".getBytes(), Files.readAllBytes(path));
         }
     }
  }

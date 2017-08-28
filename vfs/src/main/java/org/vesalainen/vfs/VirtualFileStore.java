@@ -137,7 +137,7 @@ public class VirtualFileStore extends FileStore
     @Override
     public long getTotalSpace() throws IOException
     {
-        return files.values().stream().mapToLong((f)->f.size).sum();
+        return files.values().stream().mapToLong((f)->f.getSize()).sum();
     }
 
     @Override

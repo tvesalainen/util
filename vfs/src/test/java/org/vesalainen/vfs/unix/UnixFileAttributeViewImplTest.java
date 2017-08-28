@@ -16,7 +16,6 @@
  */
 package org.vesalainen.vfs.unix;
 
-import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.util.Collections;
@@ -26,6 +25,9 @@ import org.junit.Test;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import static org.junit.Assert.*;
+import org.vesalainen.vfs.FileAttributeAccessImpl;
+import org.vesalainen.vfs.attributes.FileAttributeAccess;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -48,8 +50,8 @@ public class UnixFileAttributeViewImplTest
     @Test
     public void testDefault() throws IOException
     {
-        Map<String,Object> map = new HashMap<>();
-        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(map);
+        Map<Name,Object> map = new HashMap<>();
+        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessImpl(map));
         assertEquals(UNIX_VIEW, u.name());
         assertFalse(u.setGroupId());
         assertFalse(u.stickyBit());
@@ -60,9 +62,9 @@ public class UnixFileAttributeViewImplTest
     @Test
     public void testMode() throws IOException
     {
-        Map<String,Object> map = new HashMap<>();
-        map.put(IS_SYMBOLIC_LINK, true);
-        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(map);
+        Map<Name,Object> map = new HashMap<>();
+        map.put(FileAttributeName.getInstance(IS_SYMBOLIC_LINK), true);
+        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessImpl(map));
         String m = "lrwsrwsrwt";
         u.mode(m);
         assertEquals(m, u.modeString());
@@ -70,5 +72,4 @@ public class UnixFileAttributeViewImplTest
         assertTrue(u.setGroupId());
         assertTrue(u.stickyBit());
     }
-    
 }

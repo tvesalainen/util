@@ -22,10 +22,7 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -63,7 +60,7 @@ public class PosixFileAttributeViewImpl extends BasicFileAttributeViewImpl imple
     {
         put(GROUP, group);
     }
-    private class PosixFileAttributesImpl extends BasicFileAttributesImpl implements PosixFileAttributes
+    public class PosixFileAttributesImpl extends BasicFileAttributesImpl implements PosixFileAttributes
     {
 
         @Override
