@@ -18,7 +18,9 @@ package org.vesalainen.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
@@ -32,18 +34,30 @@ public class DynamicByteBuffer
 {
     /**
      * Creates dynamically growing ByteBuffer upto maxSize. ByteBuffer is 
-     * created by mapping a temporary file
+     * created by mapping a temporary file, MapMode is READ_WRITE.
      * @param maxSize
      * @return
      * @throws IOException 
      * @see java.nio.MappedByteBuffer
      */
-    public static ByteBuffer create(int maxSize) throws IOException
+    public static MappedByteBuffer create(int maxSize) throws IOException
+    {
+        return create(MapMode.READ_WRITE, maxSize);
+    }
+    /**
+     * Creates dynamically growing ByteBuffer upto maxSize. ByteBuffer is 
+     * created by mapping a temporary file
+     * @param mapMode
+     * @param maxSize
+     * @return
+     * @throws IOException 
+     */
+    public static MappedByteBuffer create(MapMode mapMode, int maxSize) throws IOException
     {
         Path tmp = Files.createTempFile("dynBB", "tmp");
         try (FileChannel fc = FileChannel.open(tmp, READ, WRITE, CREATE, DELETE_ON_CLOSE))
         {
-            return fc.map(FileChannel.MapMode.READ_WRITE, 0, maxSize);
+            return fc.map(MapMode.READ_WRITE, 0, maxSize);
         }
     }
     /**
