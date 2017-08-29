@@ -160,6 +160,12 @@ public class ChannelHelper
             }
         }
     }
+    /**
+     * Writes to ch until no remaining left or throws IOException
+     * @param ch
+     * @param bb
+     * @throws IOException 
+     */
     public static void writeAll(WritableByteChannel ch, ByteBuffer bb) throws IOException
     {
         int count = 0;

@@ -26,6 +26,36 @@ import org.vesalainen.util.ArrayIterator;
 public class ByteBuffers
 {
     /**
+     * Moves bytes from buf to bb as much as is possible. Positions are moved
+     * according to move.
+     * @param buf
+     * @param offset
+     * @param length
+     * @param bb
+     * @return 
+     */
+    public static final int move(byte[] buf, int offset, int length, ByteBuffer bb)
+    {
+        int count = Math.min(length, bb.remaining());
+        bb.put(buf, offset, count);
+        return count;
+    }
+    /**
+     * Moves bytes from bb to buf as much as is possible. Positions are moved
+     * according to move.
+     * @param bb
+     * @param buf
+     * @param offset
+     * @param length
+     * @return 
+     */
+    public static final int move(ByteBuffer bb, byte[] buf, int offset, int length)
+    {
+        int count = Math.min(length, bb.remaining());
+        bb.get(buf, offset, count);
+        return count;
+    }
+    /**
      * Moves bytes from b1 to b2 as much as is possible. Positions are moved
      * according to move.
      * @param b1
