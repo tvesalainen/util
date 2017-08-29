@@ -172,47 +172,4 @@ public abstract class BasePath implements Path
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public int hashCode()
-    {
-        int hash = 5;
-        hash = 97 * hash + Objects.hashCode(this.fileSystem);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        final BasePath other = (BasePath) obj;
-        if (!Objects.equals(this.fileSystem, other.fileSystem))
-        {
-            return false;
-        }
-        if (!Objects.equals(getRoot(), getRoot()))
-        {
-            return false;
-        }
-        if (getNameCount() != other.getNameCount())
-        {
-            return false;
-        }
-        int len = getNameCount();
-        for (int ii=0;ii<len;ii++)
-        {
-            if (!getName(ii).toString().equals(other.getName(ii).toString()))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }

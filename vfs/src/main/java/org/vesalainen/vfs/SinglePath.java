@@ -174,20 +174,6 @@ public class SinglePath extends BasePath
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        return (this == obj);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int hash = 7;
-        hash = 17 * hash + Objects.hashCode(this.name);
-        return hash;
-    }
-
-    @Override
     public String toString()
     {
         return name;

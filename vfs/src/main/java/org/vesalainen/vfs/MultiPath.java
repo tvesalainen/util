@@ -82,7 +82,7 @@ public class MultiPath extends BasePath
             filename = names.get(names.size()-1);
         }
     }
-    static final MultiPath getInstance(VirtualFileSystem fileSystem, Root root, String first, String... more)
+    static final Path getInstance(VirtualFileSystem fileSystem, Root root, String first, String... more)
     {
         List<Path> list = new ArrayList<>();
         if (root != null)
@@ -92,8 +92,12 @@ public class MultiPath extends BasePath
         add(fileSystem, list, first, more);
         return getInstance(fileSystem, list);
     }
-    static final MultiPath getInstance(VirtualFileSystem fileSystem, List<Path> lst)
+    static final Path getInstance(VirtualFileSystem fileSystem, List<Path> lst)
     {
+        if (lst.size() == 1)
+        {
+            return SinglePath.getInstance(fileSystem, lst.get(0).toString());
+        }
         Map<List<Path>,MultiPath> map = cache.get(fileSystem);
         if (map == null)
         {

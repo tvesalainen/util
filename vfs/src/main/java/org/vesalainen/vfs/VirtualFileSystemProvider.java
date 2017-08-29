@@ -30,6 +30,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.NoSuchFileException;
@@ -120,6 +121,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException
     {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public FileSystem newFileSystem(Path path, Map<String, ?> env) throws IOException
+    {
+        return FileSystemFactory.getInstance(this, path, env);
     }
 
     @Override
