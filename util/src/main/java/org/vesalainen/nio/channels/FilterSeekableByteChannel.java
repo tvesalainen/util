@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.Channel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.function.IOFunction;
@@ -43,7 +41,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     private OutputStream out;
     private long position;
 
-    private FilterSeekableByteChannel(
+    public FilterSeekableByteChannel(
             ByteChannel channel, 
             IOFunction<? super InputStream,? extends InputStream> fin,
             IOFunction<? super OutputStream,? extends OutputStream> fout
