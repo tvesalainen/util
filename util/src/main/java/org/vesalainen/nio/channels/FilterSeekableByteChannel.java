@@ -87,6 +87,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         {
             throw new UnsupportedOperationException("setting position backwards not supported.");
         }
+        return this;
     }
     /**
      * Throws UnsupportedOperationException
@@ -146,7 +147,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     {
         if (skip > 0 && length > 0)
         {
-            int s = Math.min(length, skip);
+            long s = Math.min(length, skip);
             offset += s;
             length -= s;
             position += s;
