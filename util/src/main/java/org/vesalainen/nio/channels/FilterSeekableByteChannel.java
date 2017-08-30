@@ -40,6 +40,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     private int length;
     private OutputStream out;
     private long position;
+    private long skip;
 
     public FilterSeekableByteChannel(
             ByteChannel channel, 
@@ -81,7 +82,11 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public SeekableByteChannel position(long newPosition) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        skip = newPosition - position;
+        if (skip < 0)
+        {
+            throw new UnsupportedOperationException("setting position backwards not supported.");
+        }
     }
     /**
      * Throws UnsupportedOperationException
@@ -120,6 +125,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
+        skip();
         if (length == 0)
         {
             length = in.read(buf);
@@ -128,6 +134,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
                 return -1;
             }
             offset = 0;
+            skip();
         }
         int count = ByteBuffers.move(buf, offset, length, dst);
         offset += count;
@@ -135,9 +142,25 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         position += count;
         return count;
     }
+    private void skip()
+    {
+        if (skip > 0 && length > 0)
+        {
+            int s = Math.min(length, skip);
+            offset += s;
+            length -= s;
+            position += s;
+            skip -= s;
+        }
+    }
     @Override
     public int write(ByteBuffer src) throws IOException
     {
+        while (skip > 0)
+        {
+            out.write(0);
+            skip--;
+        }
         int res = src.remaining();
         while (src.hasRemaining())
         {
