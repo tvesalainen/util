@@ -16,22 +16,55 @@
  */
 package org.vesalainen.vfs.arch;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.util.Map;
+import org.vesalainen.vfs.FileAttributeAccessStore;
+import org.vesalainen.vfs.attributes.FileAttributeName;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Header
+public abstract class Header extends FileAttributeAccessStore
 {
-    protected int inode;
-    protected int mode;
-    protected int uid;
-    protected int gid;
-    protected int nlink;
-    protected int mtime;
-    protected int atime;
-    protected int ctime;
-    protected int filesize;
-    protected int devmajor;
-    protected int devminor;
-    protected String filename;
+    public Object get(String name)
+    {
+        return get(FileAttributeName.getInstance(name), null);
+    }
+    public void put(String name, Object value)
+    {
+        put(FileAttributeName.getInstance(name), value);
+    }
+    protected static void align(SeekableByteChannel ch, long align) throws IOException
+    {
+        ch.position(alignedPosition(ch, align));
+    }
+
+    protected static long alignedPosition(SeekableByteChannel ch, long align) throws IOException
+    {
+        long position = ch.position();
+        long mod = position % align;
+        if (mod > 0)
+        {
+            return position + align - mod;
+        }
+        else
+        {
+            return position;
+        }
+    }
+
+    protected static void skip(SeekableByteChannel ch, long skip) throws IOException
+    {
+        ch.position(ch.position() + skip);
+    }
+
+    
+    public abstract boolean isEof();
+    public abstract String filename();
+    public abstract void load(SeekableByteChannel channel) throws IOException;
+    public abstract void store(SeekableByteChannel channel, Map<String,Object> attributes) throws IOException;
+    public abstract void storeEof(SeekableByteChannel channel) throws IOException;
 }

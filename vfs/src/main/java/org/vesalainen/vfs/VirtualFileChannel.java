@@ -121,14 +121,7 @@ public class VirtualFileChannel extends FileChannel
         writeLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
-            if (!options.contains(WRITE))
-            {
-                throw new NonWritableChannelException();
-            }
+            checkWritable();
             if (size < 0)
             {
                 throw new IllegalArgumentException(size+" < 0");
@@ -160,14 +153,7 @@ public class VirtualFileChannel extends FileChannel
         readLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
-            if (!options.contains(READ))
-            {
-                throw new NonWritableChannelException();
-            }
+            checkReadable();
             int avail = (int) (file.getSize()-position);
             if (avail > 0)
             {
@@ -196,10 +182,7 @@ public class VirtualFileChannel extends FileChannel
         readLock.lock();
         try
         {
-            if (!options.contains(READ))
-            {
-                throw new NonReadableChannelException();
-            }
+            checkReadable();
             ByteBuffer readView = file.readView(currentPosition);
             if (!readView.hasRemaining())
             {
@@ -225,17 +208,10 @@ public class VirtualFileChannel extends FileChannel
         readLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
+            checkReadable();
             if (position < 0)
             {
                 throw new IllegalArgumentException(position+" < 0");
-            }
-            if (!options.contains(READ))
-            {
-                throw new NonReadableChannelException();
             }
             if (position >= file.getSize())
             {
@@ -254,6 +230,17 @@ public class VirtualFileChannel extends FileChannel
         }
     }
 
+    private void checkReadable() throws ClosedChannelException
+    {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (!options.contains(READ))
+        {
+            throw new NonReadableChannelException();
+        }
+    }
     @Override
     public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException
     {
@@ -264,19 +251,12 @@ public class VirtualFileChannel extends FileChannel
         writeLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
-            if (!options.contains(WRITE))
-            {
-                throw new NonWritableChannelException();
-            }
+            checkWritable();
             if (position <= file.getSize())
             {
                 ByteBuffer view = file.writeView((int)position, (int)count);
-                view.position((int) position);
-                view.limit((int) (position+count));
+                assert view.position() == position;
+                assert view.limit() == position+count;
                 return src.read(view);
             }
             return 0;
@@ -293,14 +273,7 @@ public class VirtualFileChannel extends FileChannel
         writeLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
-            if (!options.contains(WRITE))
-            {
-                throw new NonWritableChannelException();
-            }
+            checkWritable();
             ByteBuffer writeView = file.writeView(currentPosition, src.remaining());
             int rc = (int) ByteBuffers.move(src, writeView);
             currentPosition = writeView.position();
@@ -323,17 +296,10 @@ public class VirtualFileChannel extends FileChannel
         writeLock.lock();
         try
         {
-            if (!isOpen())
-            {
-                throw new ClosedChannelException();
-            }
+            checkWritable();
             if (position < 0)
             {
                 throw new IllegalArgumentException(position+" < 0");
-            }
-            if (!options.contains(WRITE))
-            {
-                throw new NonWritableChannelException();
             }
             ByteBuffer writeView = file.writeView((int) position, src.remaining());
             return (int) ByteBuffers.move(src, writeView);
@@ -341,6 +307,17 @@ public class VirtualFileChannel extends FileChannel
         finally
         {
             writeLock.unlock();
+        }
+    }
+    private void checkWritable() throws ClosedChannelException
+    {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (!options.contains(WRITE))
+        {
+            throw new NonWritableChannelException();
         }
     }
     /**
@@ -381,12 +358,28 @@ public class VirtualFileChannel extends FileChannel
     @Override
     public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
     {
-        return ChannelHelper.read(this, dsts, offset, length);
+        readLock.lock();
+        try
+        {
+            return ChannelHelper.read(this, dsts, offset, length);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     @Override
     public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
     {
-        return ChannelHelper.write(this, srcs, offset, length);
+        writeLock.lock();
+        try
+        {
+            return ChannelHelper.write(this, srcs, offset, length);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
 }

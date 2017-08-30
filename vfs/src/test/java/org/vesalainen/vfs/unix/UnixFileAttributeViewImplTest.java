@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import static org.junit.Assert.*;
-import org.vesalainen.vfs.FileAttributeAccessImpl;
+import org.vesalainen.vfs.FileAttributeAccessStore;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -51,7 +51,7 @@ public class UnixFileAttributeViewImplTest
     public void testDefault() throws IOException
     {
         Map<Name,Object> map = new HashMap<>();
-        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessImpl(map));
+        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessStore(map));
         assertEquals(UNIX_VIEW, u.name());
         assertFalse(u.setGroupId());
         assertFalse(u.stickyBit());
@@ -64,7 +64,7 @@ public class UnixFileAttributeViewImplTest
     {
         Map<Name,Object> map = new HashMap<>();
         map.put(FileAttributeName.getInstance(IS_SYMBOLIC_LINK), true);
-        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessImpl(map));
+        UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessStore(map));
         String m = "lrwsrwsrwt";
         u.mode(m);
         assertEquals(m, u.modeString());

@@ -40,7 +40,7 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFile extends FileAttributeAccessImpl implements FileAttributeAccess
+public class VirtualFile extends FileAttributeAccessStore implements FileAttributeAccess
 {
 
     protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};

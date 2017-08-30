@@ -23,8 +23,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -32,7 +30,7 @@ import java.util.logging.Logger;
  */
 public abstract class FileSystemFactory
 {
-    private static final Map<String,Class<? extends FileSystemFactory>> map = new HashMap<>();
+    private static final Map<String,Class<? extends VirtualFileSystem>> map = new HashMap<>();
     
     protected VirtualFileSystemProvider provider;
     protected Path path;
@@ -47,9 +45,9 @@ public abstract class FileSystemFactory
 
     public abstract FileSystem create() throws IOException;
     
-    public static final void register(String extension, Class<? extends FileSystemFactory> fileSystemFactory)
+    public static final void register(String extension, Class<? extends VirtualFileSystem> fileSystem)
     {
-        map.put(extension, fileSystemFactory);
+        map.put(extension, fileSystem);
     }
     
     public static final FileSystem getInstance(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
@@ -70,14 +68,13 @@ public abstract class FileSystemFactory
             {
                 throw new UnsupportedOperationException(path+" not supported");
             }
-            Class<? extends FileSystemFactory> cls = map.get(extension);
+            Class<? extends VirtualFileSystem> cls = map.get(extension);
             if (cls == null)
             {
                 throw new UnsupportedOperationException(extension+" not supported");
             }
-            Constructor<? extends FileSystemFactory> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
-            FileSystemFactory fsf = constructor.newInstance(provider, path, env);
-            return fsf.create();
+            Constructor<? extends VirtualFileSystem> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
+            return constructor.newInstance(provider, path, env);
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {

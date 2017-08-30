@@ -80,9 +80,9 @@ public final class FileAttributeName
     public static final String SYSTEM = "dos:system";
     public static final String ARCHIVE = "dos:archive";
 
-    public static final Map<String,Class<?>> types;
-    public static final Bijection<String,Class<? extends FileAttributeView>> nameView;
-    public static final MapSet<String,String> impliesMap = new HashMapSet<>();
+    private static final Map<String,Class<?>> types;
+    private static final Bijection<String,Class<? extends FileAttributeView>> nameView;
+    private static final MapSet<String,String> impliesMap = new HashMapSet<>();
     static
     {
         types = new HashMap<>();

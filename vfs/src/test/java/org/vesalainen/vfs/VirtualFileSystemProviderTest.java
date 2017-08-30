@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -40,6 +39,7 @@ import java.nio.file.attribute.PosixFileAttributes;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Test;
@@ -93,6 +93,7 @@ public class VirtualFileSystemProviderTest
         int nc2 = root.getNameCount();
         URI uri = new URI("file:///");
         Path d = Paths.get("d:\\");
+        Set<String> supportedFileAttributeViews = d.getFileSystem().supportedFileAttributeViews();
     }
 
     @Test

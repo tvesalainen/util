@@ -46,7 +46,7 @@ public class VirtualFileStore extends FileStore
     protected Set<String> supportedFileAttributeViews = new HashSet<>();
     protected int blockSize = 4096;
 
-    protected VirtualFileStore(VirtualFileSystem fileSystem, String... views)
+    public VirtualFileStore(VirtualFileSystem fileSystem, String... views)
     {
         this.fileSystem = fileSystem;
         Lists.addAll(supportedFileAttributeViews, views);

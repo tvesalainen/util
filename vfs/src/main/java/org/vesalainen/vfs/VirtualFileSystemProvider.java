@@ -60,6 +60,7 @@ import java.util.function.Function;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.ArrayHelp;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
+import org.vesalainen.vfs.arch.cpio.CPIOFileSystem;
 import org.vesalainen.vfs.attributes.AclFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.DosFileAttributeViewImpl;
@@ -90,6 +91,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         addFileAttributeView(POSIX_VIEW, PosixFileAttributeView.class, PosixFileAttributeViewImpl::new);
         addFileAttributeView(USER_VIEW, UserDefinedFileAttributeView.class, UserDefinedFileAttributeViewImpl::new);
         addFileAttributeView(UNIX_VIEW, UnixFileAttributeView.class, UnixFileAttributeViewImpl::new);
+        
+        FileSystemFactory.register(".cpio", CPIOFileSystem.class);
     }
 
     protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)

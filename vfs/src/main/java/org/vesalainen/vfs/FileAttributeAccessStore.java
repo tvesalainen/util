@@ -17,8 +17,10 @@
 package org.vesalainen.vfs;
 
 import java.nio.ByteBuffer;
+import java.nio.file.attribute.FileAttribute;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
@@ -28,20 +30,32 @@ import org.vesalainen.vfs.attributes.FileAttributeName.Name;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FileAttributeAccessImpl implements FileAttributeAccess
+public class FileAttributeAccessStore implements FileAttributeAccess
 {
     protected Map<FileAttributeName.Name,Object> attributes;
     
-    public FileAttributeAccessImpl()
+    public FileAttributeAccessStore()
     {
         this(new HashMap<>());
     }
 
-    public FileAttributeAccessImpl(Map<Name, Object> attributes)
+    public FileAttributeAccessStore(Map<Name, Object> attributes)
     {
         this.attributes = attributes;
     }
 
+    public void clear()
+    {
+        attributes.clear();;
+    }
+    
+    public void addAll(Map<String,Object> map)
+    {
+        for (Entry<String,Object> entry : map.entrySet())
+        {
+            attributes.put(FileAttributeName.getInstance(entry.getKey()), entry.getValue());
+        }
+    }
     @Override
     public Object get(FileAttributeName.Name name, Object def)
     {
@@ -83,4 +97,39 @@ public class FileAttributeAccessImpl implements FileAttributeAccess
         attributes.remove(name);
     }
     
+    public FileAttribute<?>[] fileAttributes()
+    {
+        FileAttribute[] array = new FileAttribute[attributes.size()];
+        int index = 0;
+        for (Entry<Name, Object> entry : attributes.entrySet())
+        {
+            array[index++] = new FileAttributeImpl(entry);
+        }
+        return array;
+    }
+    
+    private static class FileAttributeImpl implements FileAttribute
+    {
+        private Name name;
+        private Object value;
+
+        public FileAttributeImpl(Entry<Name,Object> entry)
+        {
+            this.name = entry.getKey();
+            this.value = entry.getValue();
+        }
+        
+        @Override
+        public String name()
+        {
+            return name.toString();
+        }
+
+        @Override
+        public Object value()
+        {
+            return value;
+        }
+        
+    }
 }

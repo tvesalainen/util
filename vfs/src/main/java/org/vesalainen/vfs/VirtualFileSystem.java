@@ -53,7 +53,7 @@ public class VirtualFileSystem extends FileSystem
         this.provider = provider;
     }
 
-    void addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
+    public final void addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
     {
         Root r = new Root(this, root);
         stores.put(r, store);
@@ -64,7 +64,7 @@ public class VirtualFileSystem extends FileSystem
             this.defaultRoot = r;
         }
     }
-    VirtualFileStore getFileStore(Path path)
+    public VirtualFileStore getFileStore(Path path)
     {
         if (path.isAbsolute())
         {
@@ -73,7 +73,7 @@ public class VirtualFileSystem extends FileSystem
         return stores.get(defaultRoot);
     }
 
-    Root getDefaultRoot()
+    public Root getDefaultRoot()
     {
         return defaultRoot;
     }
