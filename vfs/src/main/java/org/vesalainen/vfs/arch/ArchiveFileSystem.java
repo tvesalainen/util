@@ -38,6 +38,7 @@ import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystem;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -141,12 +142,13 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
         Root root = getDefaultRoot();
+        Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
         Files.walk(root).forEach((p)->
         {
             try
             {
                 Map<String, Object> all = new HashMap<>();
-                for (String view : supportedFileAttributeViews)
+                for (String view : topViews)
                 {
                     Map<String, Object> attrs = Files.readAttributes(p, view+":*");
                     for (Entry<String, Object> entry : attrs.entrySet())

@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.zip.GZIPInputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,6 +38,11 @@ public class CPIOFileSystemTest
     {
     }
 
+    @Test
+    public void test0() throws URISyntaxException, IOException
+    {
+        GZIPInputStream i = new GZIPInputStream(null);
+    }
     @Test
     public void test1() throws URISyntaxException, IOException
     {

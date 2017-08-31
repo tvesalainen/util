@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import org.vesalainen.util.Lists;
 import org.vesalainen.vfs.VirtualFile.Type;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 
 /**
  *
@@ -49,7 +49,7 @@ public class VirtualFileStore extends FileStore
     public VirtualFileStore(VirtualFileSystem fileSystem, String... views)
     {
         this.fileSystem = fileSystem;
-        Lists.addAll(supportedFileAttributeViews, views);
+        supportedFileAttributeViews.addAll(FileAttributeName.impliedSet(views));
     }
 
     public int getBlockSize()

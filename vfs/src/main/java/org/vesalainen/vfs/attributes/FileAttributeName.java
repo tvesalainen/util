@@ -27,14 +27,20 @@ import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 import org.vesalainen.util.Bijection;
 import org.vesalainen.util.HashBijection;
 import org.vesalainen.util.HashMapSet;
+import org.vesalainen.util.Lists;
 import org.vesalainen.util.MapSet;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 
@@ -130,7 +136,11 @@ public final class FileAttributeName
     }
     private static void initImplies(String view, Class<? extends FileAttributeView> viewClass)
     {
-        impliesMap.add(view, nameView.getFirst(viewClass));
+        String name = nameView.getFirst(viewClass);
+        if (name != null)
+        {
+            impliesMap.add(view, name);
+        }
         for (Class<?> itf : viewClass.getInterfaces())
         {
             if (FileAttributeView.class.isAssignableFrom(itf))
@@ -138,6 +148,45 @@ public final class FileAttributeName
                 initImplies(view, (Class<? extends FileAttributeView>) itf);
             }
         }
+    }
+    /**
+     * Returns a set that contains given views as well as all implied views.
+     * @param views
+     * @return 
+     */
+    public static final Set<String> impliedSet(String... views)
+    {
+        Set<String> set = new HashSet<>();
+        for (String view : views)
+        {
+            set.addAll(impliesMap.get(view));
+        }
+        return set;
+    }
+    public static final Set<String> topViews(Set<String> views)
+    {
+        return topViews(Lists.toArray(views, String.class));
+    }
+    public static final Set<String> topViews(String... views)
+    {
+        Set<String> set = Arrays.stream(views).collect(Collectors.toSet());
+        int len = views.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            String view = views[ii];
+            for (int jj=ii;jj<len;jj++)
+            {
+                if (ii != jj)
+                {
+                    Set<String> is = impliesMap.get(views[jj]);
+                    if (is.contains(view))
+                    {
+                        set.remove(view);
+                    }
+                }
+            }
+        }
+        return set;
     }
     public static final Class<?> type(Name name)
     {
