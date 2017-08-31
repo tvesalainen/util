@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -47,4 +48,5 @@ public interface MapList<K, V> extends MapCollection<K,List<V>,V>
      */
     @Override
     List<V> set(K key, Collection<V> value);
+    Comparator<V> getComparator();
 }

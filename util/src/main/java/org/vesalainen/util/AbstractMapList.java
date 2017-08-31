@@ -292,4 +292,11 @@ public abstract class AbstractMapList<K,V> implements MapList<K,V>
             return new ArrayList<>();
         }
     }
+
+    @Override
+    public Comparator<V> getComparator()
+    {
+        return comparator;
+    }
+    
 }
