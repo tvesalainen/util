@@ -22,15 +22,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
-import java.nio.channels.ByteChannel;
 import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
+import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
@@ -54,10 +55,11 @@ import java.util.zip.Inflater;
 import org.vesalainen.util.OperatingSystem;
 
 /**
- *
+ * GZIPChannel implements reading and writing GZIP files.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="https://www.ietf.org/rfc/rfc1952.txt">GZIP file format specification version 4.3</a>
  */
-public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSupport
+public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport
 {
     private static final int BUF_SIZE = 4096;
     public final static short MAGIC = (short)0x8b1f;
@@ -74,23 +76,42 @@ public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSup
     private Deflater deflater;
     private ByteBuffer compBuf = ByteBuffer.allocate(BUF_SIZE);
     private byte[] uncompBuf = new byte[BUF_SIZE];
+    private ByteBuffer skipBuffer = ByteBuffer.allocate(16);
     private final Path path;
     private String comment;
     private CRC32 crc32 = new CRC32();
     private FileTime lastModified;
     private Lock readLock = new ReentrantLock();
     private Lock writeLock = new ReentrantLock();
-
+    /**
+     * Creates GZIPChannel
+     * @param path
+     * @param options
+     * @throws IOException 
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...) 
+     */
     public GZIPChannel(Path path, OpenOption... options) throws IOException
     {
         this(path, FileChannel.open(path, options), Arrays.stream(options).collect(Collectors.toSet()));
     }
-
+    /**
+     * Creates GZIPChannel
+     * @param path
+     * @param options
+     * @param attrs
+     * @throws IOException 
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...)  
+     */
     public GZIPChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
         this(path, FileChannel.open(path, options, attrs), options);
     }
-
+    /**
+     * Creates GZIPChannel. Channel is closed when GZIPChannel is closed.
+     * @param path
+     * @param channel
+     * @param options 
+     */
     public GZIPChannel(Path path, FileChannel channel, Set<? extends OpenOption> options)
     {
         this.path = path;
@@ -107,6 +128,12 @@ public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSup
         compBuf.order(LITTLE_ENDIAN);
         compBuf.flip();
     }
+    /**
+     * Add file entries to this GZIPChannel. Channel will be closed after this
+     * call.
+     * @param paths
+     * @throws IOException 
+     */
     public void compress(Stream<Path> paths) throws IOException
     {
         boolean first = true;
@@ -131,9 +158,20 @@ public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSup
                 throw new IOException(p+" is not a regular file");
             }
         }
+        close();
     }
+    /**
+     * Extract files from this GZIPChannel to given directory.
+     * @param targetDir
+     * @param options
+     * @throws IOException 
+     */
     public void extractAll(Path targetDir, CopyOption... options) throws IOException
     {
+        if (!Files.isDirectory(path))
+        {
+            throw new NotDirectoryException(targetDir.toString());
+        }
         ensureReading();
         do
         {
@@ -143,6 +181,80 @@ public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSup
             Files.setLastModifiedTime(p, lastModified);
         } while (nextInput());
     }
+    /**
+     * return uncompressed position
+     * @return
+     * @throws IOException 
+     */
+    @Override
+    public long position() throws IOException
+    {
+        if (inflater == null && deflater == null)
+        {
+            return 0;
+        }
+        if (inflater != null)
+        {
+            return inflater.getBytesWritten();
+        }
+        else
+        {
+            return deflater.getBytesRead();
+        }
+    }
+    /**
+     * Changes uncompressed position. Only forward direction is allowed with
+     * small skips. This method is for alignment purposes mostly.
+     * @param newPosition
+     * @return
+     * @throws IOException 
+     */
+    @Override
+    public GZIPChannel position(long newPosition) throws IOException
+    {
+        int skip = (int) (newPosition - position());
+        if (skip < 0)
+        {
+            throw new UnsupportedOperationException("backwards position not supported");
+        }
+        if (skip > skipBuffer.capacity())
+        {
+            throw new UnsupportedOperationException(skip+" skip not supported");
+        }
+        skipBuffer.clear();
+        skipBuffer.limit(skip);
+        if (options.contains(READ))
+        {
+            read(skipBuffer);
+        }
+        else
+        {
+            write(skipBuffer);
+        }
+        return this;
+    }
+    /**
+     * Return position
+     * @return
+     * @throws IOException 
+     */
+    @Override
+    public long size() throws IOException
+    {
+        return position();
+    }
+    /**
+     * Throws UnsupportedOperationException
+     * @param size
+     * @return
+     * @throws IOException 
+     */
+    @Override
+    public SeekableByteChannel truncate(long size) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
