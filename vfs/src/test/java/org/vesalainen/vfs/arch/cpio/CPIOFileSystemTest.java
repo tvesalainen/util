@@ -39,11 +39,6 @@ public class CPIOFileSystemTest
     }
 
     @Test
-    public void test0() throws URISyntaxException, IOException
-    {
-        GZIPInputStream i = new GZIPInputStream(null);
-    }
-    @Test
     public void test1() throws URISyntaxException, IOException
     {
         URL url = CPIOFileSystemTest.class.getResource("/lsb.cpio");

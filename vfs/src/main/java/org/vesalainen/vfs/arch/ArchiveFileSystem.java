@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.vesalainen.nio.channels.FilterSeekableByteChannel;
+import org.vesalainen.nio.channels.GZIPChannel;
 import org.vesalainen.util.ArrayHelp;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
@@ -67,6 +68,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         super(provider);
         this.path = path;
         this.env = env;
+        this.headerSupplier = headerSupplier;
         Set<? extends OpenOption> opts = (Set<? extends OpenOption>) env.get(OPEN_OPTIONS);
         if (opts == null)
         {
@@ -85,10 +87,13 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         {
             attrs = new FileAttribute<?>[0];
         }
-        channel = FileChannel.open(path, opts, attrs);
         if (path.toString().endsWith(".gz"))
         {
-            channel = new FilterSeekableByteChannel(channel, GZIPInputStream::new, GZIPOutputStream::new);
+            channel = new GZIPChannel(path, opts);
+        }
+        else
+        {
+            channel = FileChannel.open(path, opts, attrs);
         }
         addFileStore("/", new VirtualFileStore(this, views), true);
         load();
@@ -129,6 +134,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             {
                 throw new IllegalArgumentException("size missing in "+pth);
             }
+            Files.createDirectories(pth.getParent());
             try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
             {
                 ch.transferFrom(channel, 0, size);

@@ -28,6 +28,7 @@ import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.vfs.arch.Header;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
@@ -38,8 +39,9 @@ import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
  */
 public class CPIOHeader extends Header
 {
-    private static final int SIZE = 110;
-    private ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+    static final String TRAILER = "TRAILER!!!";
+    private static final int HEADER_SIZE = 110;
+    private ByteBuffer buffer = ByteBuffer.allocateDirect(HEADER_SIZE);
     private UnixFileAttributeView view;
     private static final byte[] MAGIC = "070701".getBytes(US_ASCII);
     private byte[] buf = new byte[8];
@@ -68,13 +70,13 @@ public class CPIOHeader extends Header
     @Override
     public boolean isEof()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return TRAILER.equals(filename);
     }
 
     @Override
     public String filename()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return filename;
     }
 
     @Override
@@ -83,9 +85,10 @@ public class CPIOHeader extends Header
         align(channel, 4);
         buffer.clear();
         int rc = channel.read(buffer);
-        if (rc != SIZE)
+        buffer.flip();
+        if (rc != HEADER_SIZE)
         {
-            throw new IOException(rc+" imput too small");
+            throw new IOException(rc+" input too small");
         }
         buffer.get(magic);
         if (!Arrays.equals(MAGIC, magic))
@@ -114,6 +117,7 @@ public class CPIOHeader extends Header
         mtime = get(buffer);
         view.setTimes(FileTime.from(mtime, TimeUnit.SECONDS), null, null);
         filesize = get(buffer);
+        attributes.put(FileAttributeName.getInstance(SIZE), (long)filesize);
         devmajor = get(buffer);
         devminor = get(buffer);
         rdevmajor = get(buffer);

@@ -202,7 +202,6 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
                 put(IS_DIRECTORY, true);
                 break;
             default:
-                put(IS_OTHER, true);
                 break;
         }
         // owner
