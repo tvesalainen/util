@@ -68,7 +68,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private final static int FEXTRA = 4;
     private final static int FNAME = 8;
     private final static int FCOMMENT = 16;
-    private FileChannel channel;
+    private SeekableByteChannel channel;
     private boolean readOnly;
     private String filename;
     private Set<OpenOption> options;
@@ -112,7 +112,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
      * @param channel
      * @param options 
      */
-    public GZIPChannel(Path path, FileChannel channel, Set<? extends OpenOption> options)
+    public GZIPChannel(Path path, SeekableByteChannel channel, Set<? extends OpenOption> options)
     {
         this.path = path;
         this.channel = channel;
