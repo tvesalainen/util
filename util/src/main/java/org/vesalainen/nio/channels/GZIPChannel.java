@@ -42,6 +42,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.CRC32;
@@ -55,7 +57,7 @@ import org.vesalainen.util.OperatingSystem;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GZIPChannel implements ByteChannel
+public class GZIPChannel implements ByteChannel, ScatteringSupport, GatheringSupport
 {
     private static final int BUF_SIZE = 4096;
     public final static short MAGIC = (short)0x8b1f;
@@ -76,6 +78,8 @@ public class GZIPChannel implements ByteChannel
     private String comment;
     private CRC32 crc32 = new CRC32();
     private FileTime lastModified;
+    private Lock readLock = new ReentrantLock();
+    private Lock writeLock = new ReentrantLock();
 
     public GZIPChannel(Path path, OpenOption... options) throws IOException
     {
@@ -143,6 +147,7 @@ public class GZIPChannel implements ByteChannel
     public int read(ByteBuffer dst) throws IOException
     {
         ensureReading();
+        readLock();
         try
         {
             int length = Math.min(uncompBuf.length, dst.remaining());
@@ -170,6 +175,10 @@ public class GZIPChannel implements ByteChannel
         catch (DataFormatException ex)
         {
             throw new IOException(ex);
+        }
+        finally
+        {
+            readUnlock();
         }
     }
     private void fillInflater() throws IOException
@@ -488,6 +497,30 @@ public class GZIPChannel implements ByteChannel
         channel.write(compBuf);
         crc32.reset();
         deflater.reset();
+    }
+
+    @Override
+    public void readLock()
+    {
+        readLock.lock();
+    }
+
+    @Override
+    public void readUnlock()
+    {
+        readLock.lock();
+    }
+
+    @Override
+    public void writeLock()
+    {
+        writeLock.lock();
+    }
+
+    @Override
+    public void writeUnlock()
+    {
+        writeLock.unlock();
     }
 
 }
