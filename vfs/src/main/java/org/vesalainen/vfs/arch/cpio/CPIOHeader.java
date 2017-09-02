@@ -21,7 +21,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.lang.Primitives;
@@ -32,6 +34,7 @@ import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
+import org.vesalainen.vfs.unix.UnixFileAttributes;
 
 /**
  *
@@ -43,6 +46,7 @@ public class CPIOHeader extends Header
     private static final int HEADER_SIZE = 110;
     private ByteBuffer buffer = ByteBuffer.allocateDirect(HEADER_SIZE);
     private UnixFileAttributeView view;
+    private UnixFileAttributes unix;
     private static final byte[] MAGIC = "070701".getBytes(US_ASCII);
     private byte[] buf = new byte[8];
     private CharSequence seq = CharSequences.getAsciiCharSequence(buf);
@@ -65,6 +69,7 @@ public class CPIOHeader extends Header
     public CPIOHeader()
     {
         view = new UnixFileAttributeViewImpl(this);
+        unix = view.readAttributes();
     }
     
     @Override
@@ -96,28 +101,12 @@ public class CPIOHeader extends Header
             throw new IllegalArgumentException("not a CPIO");
         }
         inode = get(buffer);
-        put(INODE, inode);
         mode = get(buffer);
-        if (PosixHelp.isRegularFile((short) mode))
-        {
-            put(IS_REGULAR, true);
-        }
-        if (PosixHelp.isDirectory((short) mode))
-        {
-            put(IS_DIRECTORY, true);
-        }
-        if (PosixHelp.isSymbolicLink((short) mode))
-        {
-            put(IS_SYMBOLIC_LINK, true);
-        }
-        view.mode(mode);
         uid = get(buffer);
         gid = get(buffer);
         nlink = get(buffer);
         mtime = get(buffer);
-        view.setTimes(FileTime.from(mtime, TimeUnit.SECONDS), null, null);
         filesize = get(buffer);
-        attributes.put(FileAttributeName.getInstance(SIZE), (long)filesize);
         devmajor = get(buffer);
         devminor = get(buffer);
         rdevmajor = get(buffer);
@@ -134,21 +123,113 @@ public class CPIOHeader extends Header
         byte[] b = new byte[namesize];
         buffer.flip();
         buffer.get(b);
-        filename = new String(b, US_ASCII);
+        filename = new String(b, 0, b.length-1, US_ASCII);
         skip(channel, 1);
+        if (!isEof())
+        {
+            // set attributes
+            put(INODE, inode);
+            if (PosixHelp.isRegularFile((short) mode))
+            {
+                put(IS_REGULAR, true);
+            }
+            else
+            {
+                if (PosixHelp.isDirectory((short) mode))
+                {
+                    put(IS_DIRECTORY, true);
+                }
+                else
+                {
+                    if (PosixHelp.isSymbolicLink((short) mode))
+                    {
+                        put(IS_SYMBOLIC_LINK, true);
+                    }
+                }
+            }
+            view.mode(mode);
+            view.setTimes(FileTime.from(mtime, TimeUnit.SECONDS), null, null);
+            attributes.put(FileAttributeName.getInstance(SIZE), (long)filesize);
+        }        
         align(channel, 4);
     }
 
     @Override
-    public void store(SeekableByteChannel channel, Map<String, Object> attributes) throws IOException
+    public void store(SeekableByteChannel channel, String fn, Map<String, Object> attributes) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        addAll(attributes);
+        this.filename = fn;
+        if (!isEof())
+        {
+            inode = unix.inode();
+            mode = unix.mode();
+            nlink = unix.nlink();
+            mtime = (int) unix.lastModifiedTime().to(TimeUnit.SECONDS);
+            filesize = (int) unix.size();
+            devminor = unix.device();
+        }
+        namesize = fn.length()+1;
+        align(channel, 4);
+        buffer.clear();
+        buffer.put(MAGIC);
+        put(buffer, inode);
+        put(buffer, mode);
+        put(buffer, uid);
+        put(buffer, gid);
+        put(buffer, nlink);
+        put(buffer, mtime);
+        put(buffer, filesize);
+        put(buffer, devmajor);
+        put(buffer, devminor);
+        put(buffer, rdevmajor);
+        put(buffer, rdevminor);
+        put(buffer, namesize);
+        put(buffer, checksum);
+        buffer.flip();
+        channel.write(buffer);
+        buffer.clear();
+        buffer.put(fn.getBytes(US_ASCII));
+        buffer.put((byte)0);
+        buffer.flip();
+        channel.write(buffer);
+        align(channel, 4);
     }
 
     @Override
     public void storeEof(SeekableByteChannel channel) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        align(channel, 4);
+        buffer.clear();
+        buffer.put(MAGIC);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 1);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, 0);
+        put(buffer, TRAILER.length()+1);
+        put(buffer, 0);
+        buffer.flip();
+        channel.write(buffer);
+        buffer.clear();
+        buffer.put(TRAILER.getBytes(US_ASCII));
+        buffer.put((byte)0);
+        buffer.flip();
+        channel.write(buffer);
+        long alignedPosition = alignedPosition(channel, 4);
+        buffer.clear();
+        int skip = (int) (alignedPosition - channel.position());
+        for (int ii=0;ii<skip;ii++)
+        {
+            buffer.put((byte)0);
+        }
+        buffer.flip();
+        channel.write(buffer);
     }
     
     private void put(ByteBuffer bb, int v) throws IOException

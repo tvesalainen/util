@@ -24,41 +24,20 @@ import java.nio.file.attribute.PosixFileAttributeView;
  */
 public interface UnixFileAttributeView extends PosixFileAttributeView
 {
-    /**
-     * Returns ID of device containing file
-     * @return 
-     */
-    int device();
-    /**
-     * Returns inode number
-     * @return 
-     */
-    int inode();
-    /**
-     * Returns set-user-ID bit
-     * @return 
-     */
-    boolean setUserId();
+
+    @Override
+    public UnixFileAttributes readAttributes();
+    
     /**
      * Sets set-user-ID bit
      * @param setUserId 
      */
     void setUserId(boolean setUserId);
     /**
-     * Returns set-group-ID bit
-     * @return 
-     */
-    boolean setGroupId();
-    /**
      * Sets set-group-ID bit
      * @param setGroupId 
      */
     void setGroupId(boolean setGroupId);
-    /**
-     * Returns sticky bit
-     * @return 
-     */
-    boolean stickyBit();
     /**
      * Sets sticky bit
      * @param stickyBit 
@@ -66,21 +45,9 @@ public interface UnixFileAttributeView extends PosixFileAttributeView
     void stickyBit(boolean stickyBit);
     /**
      * Sets permissions, set-UID, set-GID and sticky-bit as number. E.g. 0120744
-     * @return 
-     */
-    short mode();
-    /**
-     * Returns permissions, set-UID, set-GID and sticky-bit as number. E.g. 0120744.
-     * File type bits are masked. Like mode( mode & 07777)
      * @param mode 
      */
     void mode(int mode);
-    /**
-     * Sets permissions, set-UID, set-GID and sticky-bit as String E.g.
-     * lrwxr--r--.
-     * @return 
-     */
-    String modeString();
     /**
      * Returns permissions, set-UID, set-GID and sticky-bit as String E.g.
      * lrwxr--r--. mode can be 10 or 9 long. However file type is ignored.

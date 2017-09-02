@@ -254,10 +254,12 @@ public class VirtualFileChannel extends FileChannel
             checkWritable();
             if (position <= file.getSize())
             {
-                ByteBuffer view = file.writeView((int)position, (int)count);
-                assert view.position() == position;
-                assert view.limit() == position+count;
-                return src.read(view);
+                ByteBuffer writeView = file.writeView((int)position, (int)count);
+                assert writeView.position() == position;
+                assert writeView.limit() == position+count;
+                int rc = src.read(writeView);
+                file.commit(writeView.position());
+                return rc;
             }
             return 0;
         }
@@ -302,7 +304,9 @@ public class VirtualFileChannel extends FileChannel
                 throw new IllegalArgumentException(position+" < 0");
             }
             ByteBuffer writeView = file.writeView((int) position, src.remaining());
-            return (int) ByteBuffers.move(src, writeView);
+            int rc = (int) ByteBuffers.move(src, writeView);
+            file.commit(writeView.position());
+            return rc;
         }
         finally
         {

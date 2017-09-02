@@ -17,7 +17,6 @@
 package org.vesalainen.vfs.arch;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Map;
 import org.vesalainen.vfs.FileAttributeAccessStore;
@@ -65,6 +64,6 @@ public abstract class Header extends FileAttributeAccessStore
     public abstract boolean isEof();
     public abstract String filename();
     public abstract void load(SeekableByteChannel channel) throws IOException;
-    public abstract void store(SeekableByteChannel channel, Map<String,Object> attributes) throws IOException;
+    public abstract void store(SeekableByteChannel channel, String filename, Map<String,Object> attributes) throws IOException;
     public abstract void storeEof(SeekableByteChannel channel) throws IOException;
 }

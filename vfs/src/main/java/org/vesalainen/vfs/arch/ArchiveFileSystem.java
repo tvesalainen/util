@@ -30,11 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import org.vesalainen.nio.channels.FilterSeekableByteChannel;
 import org.vesalainen.nio.channels.GZIPChannel;
-import org.vesalainen.util.ArrayHelp;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystem;
@@ -72,7 +68,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         Set<? extends OpenOption> opts = (Set<? extends OpenOption>) env.get(OPEN_OPTIONS);
         if (opts == null)
         {
-            if (Files.exists(path))
+            if (Files.exists(path) && Files.size(path) > 0)
             {
                 opts = EnumSet.of(READ);
             }
@@ -96,11 +92,14 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             channel = FileChannel.open(path, opts, attrs);
         }
         addFileStore("/", new VirtualFileStore(this, views), true);
-        load();
+        if (isReadOnly())
+        {
+            load();
+        }
     }
 
     @Override
-    public boolean isReadOnly()
+    public final boolean isReadOnly()
     {
         return readOnly;
     }
@@ -135,9 +134,12 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                 throw new IllegalArgumentException("size missing in "+pth);
             }
             Files.createDirectories(pth.getParent());
-            try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+            if (size > 0)
             {
-                ch.transferFrom(channel, 0, size);
+                try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+                {
+                    ch.transferFrom(channel, 0, size);
+                }
             }
             header.clear();
             header.load(channel);
@@ -145,31 +147,46 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     }
     public final void store() throws IOException
     {
+        enumerateInodes();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
         Root root = getDefaultRoot();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
+        Map<String, Object> all = new HashMap<>();
         Files.walk(root).forEach((p)->
         {
             try
             {
-                Map<String, Object> all = new HashMap<>();
+                all.clear();
                 for (String view : topViews)
                 {
                     Map<String, Object> attrs = Files.readAttributes(p, view+":*");
                     for (Entry<String, Object> entry : attrs.entrySet())
                     {
-                        all.put(view+':'+entry.getKey(), entry.getValue());
+                        all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
                     }
                 }
                 header.clear();
-                header.store(channel, all);
+                header.store(channel, p.toString(), all);
+                Long size = (Long) all.get(SIZE);
+                if (size == null)
+                {
+                    throw new IllegalArgumentException("size missing in "+p);
+                }
+                if (size > 0)
+                {
+                    try (FileChannel ch = FileChannel.open(p, READ))
+                    {
+                        ch.transferTo(0, size, channel);
+                    }
+                }
             }
             catch (IOException ex)
             {
                 throw new RuntimeException(ex);
             }
         });
+        header.storeEof(channel);
     }
     
 }

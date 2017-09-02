@@ -93,6 +93,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         addFileAttributeView(UNIX_VIEW, UnixFileAttributeView.class, UnixFileAttributeViewImpl::new);
         
         FileSystemFactory.register(".cpio", CPIOFileSystem.class);
+        FileSystemFactory.register(".cpio.gz", CPIOFileSystem.class);
     }
 
     protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)

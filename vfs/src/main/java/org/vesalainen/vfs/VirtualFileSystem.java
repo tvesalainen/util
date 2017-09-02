@@ -181,5 +181,15 @@ public class VirtualFileSystem extends FileSystem
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+    /**
+     * Assigns pseude device, inode and counts nlink attributes
+     */
+    public void enumerateInodes()
+    {
+        int dev = 0;
+        for (VirtualFileStore store : stores.values())
+        {
+            store.enumerateInodes(dev++);
+        }
+    }
 }

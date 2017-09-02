@@ -31,8 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.HashMapSet;
+import org.vesalainen.util.MapSet;
 import org.vesalainen.vfs.VirtualFile.Type;
 import org.vesalainen.vfs.attributes.FileAttributeName;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
@@ -174,6 +179,19 @@ public class VirtualFileStore extends FileStore
     public Object getAttribute(String attribute) throws IOException
     {
         return storeAttributes.get(attribute);
+    }
+
+    void enumerateInodes(int dev)
+    {
+        MapSet<VirtualFile,Path> map = new HashMapSet<>();
+        files.forEach((p,f)->map.add(f, p));
+        AtomicInteger inode = new AtomicInteger(0);
+        map.forEach((f,p)->
+        {
+            f.setAttribute(DEVICE, dev);
+            f.setAttribute(INODE, inode.getAndIncrement());
+            f.setAttribute(NLINK, p.size());
+        });
     }
 
     public class DirectoryStreamImpl implements DirectoryStream<Path>

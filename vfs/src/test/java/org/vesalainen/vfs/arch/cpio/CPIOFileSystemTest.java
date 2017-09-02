@@ -16,14 +16,14 @@
  */
 package org.vesalainen.vfs.arch.cpio;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.zip.GZIPInputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -38,12 +38,49 @@ public class CPIOFileSystemTest
     {
     }
 
-    @Test
-    public void test1() throws URISyntaxException, IOException
+    //@Test
+    public void testReadCPIO() throws URISyntaxException, IOException
     {
         URL url = CPIOFileSystemTest.class.getResource("/lsb.cpio");
         Path path = Paths.get(url.toURI());
-        FileSystems.newFileSystem(path, null);
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        for (Path root : fs.getRootDirectories())
+        {
+            Files.walk(root).forEach((p)->System.err.println(p));
+        }
+        Path pom = fs.getPath("/opt/org.vesalainen/foo/pom.xml");
+        assertEquals(1032, Files.size(pom));
+        byte[] readAllBytes = Files.readAllBytes(pom);
+        assertEquals(1032, readAllBytes.length);
+    }
+    //@Test
+    public void testReadCPIOGZ() throws URISyntaxException, IOException
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/lsb.cpio.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        for (Path root : fs.getRootDirectories())
+        {
+            Files.walk(root).forEach((p)->System.err.println(p));
+        }
+        Path pom = fs.getPath("/opt/org.vesalainen/foo/pom.xml");
+        assertEquals(1032, Files.size(pom));
+        byte[] readAllBytes = Files.readAllBytes(pom);
+        assertEquals(1032, readAllBytes.length);
+    }
+    @Test
+    public void testWriteCPIO() throws URISyntaxException, IOException
+    {
+        Path path = Paths.get("z:\\writeTest.cpio");
+        Files.deleteIfExists(path);
+        Files.createFile(path);
+        try (FileSystem fs = FileSystems.newFileSystem(path, null))
+        {
+            Path lpom = Paths.get("pom.xml");
+            Path cpom = fs.getPath("pom.xml");
+            Files.copy(lpom, cpom);
+        }
+        assertTrue(Files.exists(path));
     }
     
 }

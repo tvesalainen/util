@@ -16,6 +16,8 @@
  */
 package org.vesalainen.vfs.unix;
 
+import java.io.IOException;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import static java.nio.file.attribute.PosixFilePermission.*;
 import java.util.EnumSet;
@@ -31,28 +33,17 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  */
 public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implements UnixFileAttributeView
 {
-
+    private UnixFileAttributes unixFileAttributes = new UnixFileAttributesImpl();
+    
     public UnixFileAttributeViewImpl(FileAttributeAccess access)
     {
         super(UNIX_VIEW, access);
     }
 
     @Override
-    public int device()
+    public UnixFileAttributes readAttributes() throws IOException
     {
-        return (int) get(DEVICE);
-    }
-
-    @Override
-    public int inode()
-    {
-        return (int) get(INODE);
-    }
-
-    @Override
-    public boolean setUserId()
-    {
-        return (boolean) get(SETUID);
+        return unixFileAttributes;
     }
 
     @Override
@@ -62,21 +53,9 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     }
 
     @Override
-    public boolean setGroupId()
-    {
-        return (boolean) get(SETGID);
-    }
-
-    @Override
     public void setGroupId(boolean setGroupId)
     {
         put(SETGID, setGroupId);
-    }
-
-    @Override
-    public boolean stickyBit()
-    {
-        return (boolean) get(STICKY);
     }
 
     @Override
@@ -86,21 +65,9 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     }
 
     @Override
-    public short mode()
-    {
-        return getMode();
-    }
-
-    @Override
     public void mode(int mode)
     {
         fromMode((short) ((short) mode & 07777));
-    }
-
-    @Override
-    public String modeString()
-    {
-        return PosixHelp.toString(mode());
     }
 
     @Override
@@ -262,5 +229,57 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
                 put(STICKY, true);
             }
         }
+    }
+    public class UnixFileAttributesImpl extends PosixFileAttributesImpl implements UnixFileAttributes
+    {
+        @Override
+        public int device()
+        {
+            return (int) get(DEVICE);
+        }
+
+        @Override
+        public int inode()
+        {
+            return (int) get(INODE);
+        }
+
+        @Override
+        public int nlink()
+        {
+            return (int) get(NLINK);
+        }
+
+        @Override
+        public boolean setUserId()
+        {
+            return (boolean) get(SETUID);
+        }
+
+        @Override
+        public boolean setGroupId()
+        {
+            return (boolean) get(SETGID);
+        }
+
+        @Override
+        public boolean stickyBit()
+        {
+            return (boolean) get(STICKY);
+        }
+
+        @Override
+        public short mode()
+        {
+            return getMode();
+        }
+
+        @Override
+        public String modeString()
+        {
+            return PosixHelp.toString(mode());
+        }
+
+        
     }
 }

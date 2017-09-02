@@ -28,14 +28,11 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import org.vesalainen.util.Bijection;
 import org.vesalainen.util.HashBijection;
@@ -60,6 +57,7 @@ public final class FileAttributeName
     
     public static final String DEVICE = UNIX_VIEW+":org.vesalainen.device";
     public static final String INODE = UNIX_VIEW+":org.vesalainen.inode";
+    public static final String NLINK = UNIX_VIEW+":org.vesalainen.nlink";
     public static final String SETUID = UNIX_VIEW+":org.vesalainen.setuid";
     public static final String SETGID = UNIX_VIEW+":org.vesalainen.setgid";
     public static final String STICKY = UNIX_VIEW+":org.vesalainen.sticky";
@@ -89,11 +87,43 @@ public final class FileAttributeName
     private static final Map<String,Class<?>> types;
     private static final Bijection<String,Class<? extends FileAttributeView>> nameView;
     private static final MapSet<String,String> impliesMap = new HashMapSet<>();
+    private static final Map<String,Name> nameMap = new HashMap<>();
+    
     static
     {
+        addName(DEVICE);
+        addName(INODE);
+        addName(NLINK);
+        addName(SETUID);
+        addName(SETGID);
+        addName(STICKY);
+        // posix
+        addName(PERMISSIONS);
+        addName(GROUP);
+        // basic
+        addName(LAST_MODIFIED_TIME);
+        addName(LAST_ACCESS_TIME);
+        addName(CREATION_TIME);
+        addName(SIZE);
+        addName(IS_REGULAR);
+        addName(IS_DIRECTORY);
+        addName(IS_SYMBOLIC_LINK);
+        addName(IS_OTHER);
+        addName(FILE_KEY);
+
+        addName(OWNER);
+
+        addName(ACL);
+
+        addName(READONLY);
+        addName(HIDDEN);
+        addName(SYSTEM);
+        addName(ARCHIVE);
+
         types = new HashMap<>();
         types.put(DEVICE, Integer.class);
         types.put(INODE, Integer.class);
+        types.put(NLINK, Integer.class);
         types.put(SETUID, Boolean.class);
         types.put(SETGID, Boolean.class);
         types.put(STICKY, Boolean.class);
@@ -212,6 +242,16 @@ public final class FileAttributeName
         }
     }
 
+    private static void addName(String attr)
+    {
+        Name name = getInstance(attr);
+        Name old = nameMap.put(name.name, name);
+        if (old != null)
+        {
+            throw new IllegalArgumentException(name+" ambiguous");
+        }
+    }
+
     public static class FileAttributeNameMatcher
     {
         private Set<String> views;
@@ -271,8 +311,6 @@ public final class FileAttributeName
         }
         
     }
-    
-    private static final Map<String,Name> nameMap = new WeakHashMap<>();
     
     public static final Name getInstance(String attribute)
     {

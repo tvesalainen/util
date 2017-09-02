@@ -98,7 +98,7 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         switch (name.toString())
         {
             case FileAttributeName.SIZE:
-                throw new IllegalArgumentException("not allowed to set " + name);
+                break;
             default:
                 if (FileAttributeName.USER_VIEW.equals(name) && (value instanceof ByteBuffer))
                 {
@@ -226,6 +226,10 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
                 map.put(n.getName(), a);
             }
         });
+        if (matcher.any(SIZE))
+        {
+            map.put(SIZE, (long)getSize());
+        }
         return map;
     }
 

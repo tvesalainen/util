@@ -46,7 +46,7 @@ public class FileAttributeAccessStore implements FileAttributeAccess
 
     public void clear()
     {
-        attributes.clear();;
+        attributes.clear();
     }
     
     public void addAll(Map<String,Object> map)
