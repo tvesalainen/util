@@ -221,15 +221,18 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         {
             throw new UnsupportedOperationException(skip+" skip not supported");
         }
-        skipBuffer.clear();
-        skipBuffer.limit(skip);
-        if (options.contains(READ))
+        if (skip > 0)
         {
-            read(skipBuffer);
-        }
-        else
-        {
-            write(skipBuffer);
+            skipBuffer.clear();
+            skipBuffer.limit(skip);
+            if (options.contains(READ))
+            {
+                read(skipBuffer);
+            }
+            else
+            {
+                write(skipBuffer);
+            }
         }
         return this;
     }
@@ -258,6 +261,10 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
+        if (!dst.hasRemaining())
+        {
+            return 0;
+        }
         ensureReading();
         readLock();
         try
