@@ -286,7 +286,8 @@ public class MultiPath extends BasePath
     {
         if (toString == null)
         {
-            toString = names.stream().map((p)->p.toString()).collect(Collectors.joining("/", isAbsolute()?"/":"", ""));
+            String prefix = root != null ? root.toString()+'/' : "";
+            toString = names.stream().map((p)->p.toString()).collect(Collectors.joining("/", prefix, ""));
         }
         return toString;
     }

@@ -61,6 +61,7 @@ import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.ArrayHelp;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystem;
+import org.vesalainen.vfs.arch.tar.TARFileSystem;
 import org.vesalainen.vfs.attributes.AclFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.DosFileAttributeViewImpl;
@@ -94,6 +95,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         
         FileSystemFactory.register(".cpio", CPIOFileSystem.class);
         FileSystemFactory.register(".cpio.gz", CPIOFileSystem.class);
+        FileSystemFactory.register(".tar", TARFileSystem.class);
+        FileSystemFactory.register(".tar.gz", TARFileSystem.class);
     }
 
     protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)

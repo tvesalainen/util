@@ -19,6 +19,7 @@ package org.vesalainen.vfs;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
@@ -143,6 +144,10 @@ public class VirtualFileSystem extends FileSystem
                 first = rest;
                 break;
             }
+        }
+        if (first.startsWith(getSeparator()) && root == null)
+        {
+            throw new InvalidPathException(first, "doesn't start with root like "+stores.keySet(), 0);
         }
         return MultiPath.getInstance(this, root, first, more);
     }

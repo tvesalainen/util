@@ -17,7 +17,6 @@
 package org.vesalainen.vfs.unix;
 
 import java.io.IOException;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import static java.nio.file.attribute.PosixFilePermission.*;
 import java.util.EnumSet;
@@ -41,7 +40,7 @@ public class UnixFileAttributeViewImpl extends PosixFileAttributeViewImpl implem
     }
 
     @Override
-    public UnixFileAttributes readAttributes() throws IOException
+    public UnixFileAttributes readAttributes()
     {
         return unixFileAttributes;
     }

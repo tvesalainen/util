@@ -204,7 +204,7 @@ public final class FileAttributeName
         for (int ii=0;ii<len;ii++)
         {
             String view = views[ii];
-            for (int jj=ii;jj<len;jj++)
+            for (int jj=0;jj<len;jj++)
             {
                 if (ii != jj)
                 {

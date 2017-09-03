@@ -52,6 +52,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     protected Supplier<Header> headerSupplier;
     protected SeekableByteChannel channel;
     protected boolean readOnly;
+    protected String filename;
 
     protected ArchiveFileSystem(
             VirtualFileSystemProvider provider, 
@@ -83,15 +84,26 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         {
             attrs = new FileAttribute<?>[0];
         }
+        filename = path.getFileName().toString();
         if (path.toString().endsWith(".gz"))
         {
-            channel = new GZIPChannel(path, opts);
+            GZIPChannel gzipChannel = new GZIPChannel(path, opts);
+            channel = gzipChannel;
+            if (readOnly)
+            {
+                filename = gzipChannel.getFilename();
+                filename = filename == null ? "" : filename;
+            }
+            else
+            {
+                gzipChannel.setFilename(filename);
+            }
         }
         else
         {
             channel = FileChannel.open(path, opts, attrs);
         }
-        addFileStore("/", new VirtualFileStore(this, views), true);
+        addFileStore('/'+filename, new VirtualFileStore(this, views), true);
         if (isReadOnly())
         {
             load();
@@ -115,7 +127,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     {
         if (!readOnly)
         {
-            store();
+            store(getDefaultRoot());
         }
         channel.close();
     }
@@ -126,7 +138,12 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         header.load(channel);
         while (!header.isEof())
         {
-            Path pth = getPath(header.filename());
+            String fn = header.getFilename();
+            if (fn.startsWith(getSeparator()))
+            {
+                fn = fn.substring(1);
+            }
+            Path pth = getPath(fn);
             FileAttribute<?>[] fileAttributes = header.fileAttributes();
             Long size = (long) header.get(SIZE);
             if (size == null)
@@ -145,37 +162,37 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             header.load(channel);
         }
     }
-    public final void store() throws IOException
+    public final void store(Root root) throws IOException
     {
         enumerateInodes();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
-        Root root = getDefaultRoot();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
         Map<String, Object> all = new HashMap<>();
-        Files.walk(root).forEach((p)->
+        Files.walk(root).filter((p->p!=root)).forEach((p)->
         {
             try
             {
+                Path r = root.relativize(p);
                 all.clear();
                 for (String view : topViews)
                 {
-                    Map<String, Object> attrs = Files.readAttributes(p, view+":*");
+                    Map<String, Object> attrs = Files.readAttributes(r, view+":*");
                     for (Entry<String, Object> entry : attrs.entrySet())
                     {
                         all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
                     }
                 }
                 header.clear();
-                header.store(channel, p.toString(), all);
+                header.store(channel, r.toString(), all);
                 Long size = (Long) all.get(SIZE);
                 if (size == null)
                 {
-                    throw new IllegalArgumentException("size missing in "+p);
+                    throw new IllegalArgumentException("size missing in "+r);
                 }
                 if (size > 0)
                 {
-                    try (FileChannel ch = FileChannel.open(p, READ))
+                    try (FileChannel ch = FileChannel.open(r, READ))
                     {
                         ch.transferTo(0, size, channel);
                     }

@@ -55,7 +55,7 @@ public class FileAttributeNameTest
     {
         String[] expArr = new String[] {UNIX_VIEW, DOS_VIEW, ACL_VIEW};
         Set<String> exp = Arrays.stream(expArr).collect(Collectors.toSet());
-        Set<String> topViews = FileAttributeName.topViews(BASIC_VIEW, UNIX_VIEW, DOS_VIEW, ACL_VIEW);
+        Set<String> topViews = FileAttributeName.topViews(BASIC_VIEW, POSIX_VIEW, UNIX_VIEW, DOS_VIEW, ACL_VIEW);
         assertEquals(exp, topViews);
     }
     

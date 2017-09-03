@@ -38,7 +38,7 @@ public class CPIOFileSystemTest
     {
     }
 
-    //@Test
+    @Test
     public void testReadCPIO() throws URISyntaxException, IOException
     {
         URL url = CPIOFileSystemTest.class.getResource("/lsb.cpio");
@@ -48,12 +48,12 @@ public class CPIOFileSystemTest
         {
             Files.walk(root).forEach((p)->System.err.println(p));
         }
-        Path pom = fs.getPath("/opt/org.vesalainen/foo/pom.xml");
+        Path pom = fs.getPath("opt/org.vesalainen/foo/pom.xml");
         assertEquals(1032, Files.size(pom));
         byte[] readAllBytes = Files.readAllBytes(pom);
         assertEquals(1032, readAllBytes.length);
     }
-    //@Test
+    @Test
     public void testReadCPIOGZ() throws URISyntaxException, IOException
     {
         URL url = CPIOFileSystemTest.class.getResource("/lsb.cpio.gz");
@@ -63,7 +63,7 @@ public class CPIOFileSystemTest
         {
             Files.walk(root).forEach((p)->System.err.println(p));
         }
-        Path pom = fs.getPath("/opt/org.vesalainen/foo/pom.xml");
+        Path pom = fs.getPath("opt/org.vesalainen/foo/pom.xml");
         assertEquals(1032, Files.size(pom));
         byte[] readAllBytes = Files.readAllBytes(pom);
         assertEquals(1032, readAllBytes.length);
@@ -72,6 +72,20 @@ public class CPIOFileSystemTest
     public void testWriteCPIO() throws URISyntaxException, IOException
     {
         Path path = Paths.get("z:\\writeTest.cpio");
+        Files.deleteIfExists(path);
+        Files.createFile(path);
+        try (FileSystem fs = FileSystems.newFileSystem(path, null))
+        {
+            Path lpom = Paths.get("pom.xml");
+            Path cpom = fs.getPath("pom.xml");
+            Files.copy(lpom, cpom);
+        }
+        assertTrue(Files.exists(path));
+    }
+    @Test
+    public void testWriteCPIOGZ() throws URISyntaxException, IOException
+    {
+        Path path = Paths.get("z:\\writeTest.cpio.gz");
         Files.deleteIfExists(path);
         Files.createFile(path);
         try (FileSystem fs = FileSystems.newFileSystem(path, null))

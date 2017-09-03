@@ -228,7 +228,7 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         });
         if (matcher.any(SIZE))
         {
-            map.put(SIZE, (long)getSize());
+            map.put("size", (long)getSize());
         }
         return map;
     }

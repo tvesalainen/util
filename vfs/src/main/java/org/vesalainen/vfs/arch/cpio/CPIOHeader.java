@@ -21,9 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.lang.Primitives;
@@ -35,12 +33,13 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
 import org.vesalainen.vfs.unix.UnixFileAttributes;
+import org.vesalainen.vfs.unix.UnixFileHeader;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CPIOHeader extends Header
+public class CPIOHeader extends UnixFileHeader
 {
     static final String TRAILER = "TRAILER!!!";
     private static final int HEADER_SIZE = 110;
@@ -51,20 +50,8 @@ public class CPIOHeader extends Header
     private byte[] buf = new byte[8];
     private CharSequence seq = CharSequences.getAsciiCharSequence(buf);
     private byte[] magic = MAGIC;
-    private int inode;
-    private int mode;
-    private int uid;
-    private int gid;
-    private int nlink = 1;
-    private int mtime;
-    private int filesize;
-    private int devmajor;
-    private int devminor;
-    private int rdevmajor;
-    private int rdevminor;
     private int namesize;
     private int checksum;
-    private String filename;
 
     public CPIOHeader()
     {
@@ -76,12 +63,6 @@ public class CPIOHeader extends Header
     public boolean isEof()
     {
         return TRAILER.equals(filename);
-    }
-
-    @Override
-    public String filename()
-    {
-        return filename;
     }
 
     @Override
