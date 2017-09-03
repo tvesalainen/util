@@ -555,19 +555,23 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         writeHeader();
     }
     /**
-     * Returns original filename without path or null name doesn't exist.
+     * Returns original filename without path or null if name doesn't exist.
+     * Usable only in when reading.
      * @return 
      */
-    public String getFilename()
+    public String getFilename() throws IOException
     {
+        ensureReading();
         return filename;
     }
     /**
      * Returns comment or null.
+     * Usable only in when reading.
      * @return 
      */
-    public String getComment()
+    public String getComment() throws IOException
     {
+        ensureReading();
         return comment;
     }
     /**
