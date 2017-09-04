@@ -16,69 +16,257 @@
  */
 package org.vesalainen.vfs.arch.tar;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.*;
 import java.util.Map;
+import java.util.function.IntPredicate;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.vfs.unix.UnixFileAttributeView;
-import org.vesalainen.vfs.unix.UnixFileAttributes;
 import org.vesalainen.vfs.unix.UnixFileHeader;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_03">pax - portable archive interchange</a>
  */
 public class TARHeader extends UnixFileHeader
 {
-    private static final int HEADER_SIZE = 512;
-    private ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE);
-    private UnixFileAttributeView view;
-    private UnixFileAttributes unix;
-    private static final byte[] MAGIC = "ustar".getBytes(US_ASCII);
-    private CharSequence seq = CharSequences.getAsciiCharSequence(buffer.array());
+    private static final int BLOCK_SIZE = 512;
+    private ByteBuffer buffer = ByteBuffer.allocate(8192);
+    private static final String USTAR = "ustar";
+    private static final String GNU = "ustar ";
+    private static final String OLDGNU = "ustar  ";
+    private String charset;
+    private String hdrcharset;
+    private boolean eof;
 
+    @Override
+    public void clear()
+    {
+        super.clear();
+    }
+    
     @Override
     public boolean isEof()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getFilename()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return eof;
     }
 
     @Override
     public void load(SeekableByteChannel channel) throws IOException
     {
+        long position = channel.position();
+        long skip = nextBlock(position) - position;
+        if (skip > 0)
+        {
+            buffer.clear();
+            buffer.limit((int) skip);
+            channel.read(buffer);
+        }
         buffer.clear();
+        buffer.limit(BLOCK_SIZE);
         channel.read(buffer);
-        filename = getString(0, 100);
-        mode = getInt(100, 8);
-        uid = getInt(108, 8);
-        gid = getInt(116, 8);
-        filesize = getInt(124, 12);
-        mtime = getInt(136, 12);
-        int chksum = getInt(148, 8);
-        int typeflag = getInt(156, 1);
-        String linkname = getString(157, 100);
-        String magic = getString(257, 6);
-        //int version = getInt(263, 2);
-        String uname = getString(265, 32);
-        String gname = getString(297, 32);
-        //devmajor = getInt(329, 8);
-        //devminor = getInt(337, 8);
-        String prefix = getString(345, 155);
+        buffer.flip();
+        CharSequence seq = CharSequences.getAsciiCharSequence(buffer);
+        eof = CharSequences.indexOf(seq, (c)->c!=0) == -1;
+        if (eof)
+        {
+            return;
+        }
+        String magic = getString(seq, 257, 6);
+        byte typeflag = buffer.get(156);
+        int extHdrSize = getInt(seq, 124, 12);
+        long extHdrBlockSize = nextBlock(extHdrSize);
+        switch (typeflag)
+        {
+            case 'g':   // global
+                switch (magic)
+                {
+                    case USTAR:
+                        buffer.clear();
+                        buffer.limit(BLOCK_SIZE);
+                        channel.read(buffer);
+                        buffer.flip();
+                        paxHeader(buffer);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("'"+magic+"' magic not supported with global extension");
+                }
+                break;
+        }
+        switch (typeflag)
+        {
+            case 0:
+            case '7':   
+            case '0':   // regular
+            case '1':   // hard linkname
+            case '2':   // symbolic linkname
+            case '5':   // directory
+                switch (magic)
+                {
+                    case USTAR:
+                        ustarHeader(buffer);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("'"+magic+"' magic not supported");
+                }
+                break;
+            case 'x':   // extended
+                switch (magic)
+                {
+                    case USTAR:
+                        buffer.clear();
+                        buffer.limit(BLOCK_SIZE);
+                        channel.read(buffer);
+                        buffer.flip();
+                        ByteBuffer extendedHeader = buffer.slice();
+                        extendedHeader.limit(extHdrSize);
+                        buffer.position(BLOCK_SIZE);
+                        buffer.limit(BLOCK_SIZE + (int) extHdrBlockSize);
+                        channel.read(buffer);
+                        buffer.position(BLOCK_SIZE);
+                        ustarHeader(buffer.slice());
+                        paxHeader(extendedHeader);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("'"+magic+"' magic not supported with extension");
+                }
+                break;
+            case 'g':   // global
+                break;  // handled already
+            default:
+                throw new UnsupportedOperationException((char)typeflag+" not supported");
+        }
+        updateAttributes();
+    }
+
+    private void ustarHeader(ByteBuffer bb) throws IOException
+    {
+        CharSequence seq = CharSequences.getAsciiCharSequence(bb);
+        filename = getString(seq, 0, 100);
+        mode = getInt(seq, 100, 8);
+        uid = getInt(seq, 108, 8);
+        gid = getInt(seq, 116, 8);
+        size = getInt(seq, 124, 12);
+        mtime = getInt(seq, 136, 12);
+        int chksum = getInt(seq, 148, 8);
+        byte typeflag = bb.get(156);
+        linkname = getString(seq, 157, 100);
+        uname = getString(seq, 265, 32);
+        gname = getString(seq, 297, 32);
+        devmajor = getInt(seq, 329, 8);
+        devminor = getInt(seq, 337, 8);
+        String prefix = getString(seq, 345, 155);
         if (!prefix.isEmpty())
         {
             filename = prefix+filename;
         }
+        switch (typeflag)
+        {
+            case 0:
+            case '7':   
+            case '0':   // regular
+                type = Type.REGULAR;
+                break;
+            case '2':   // symbolic linkname
+                type = Type.SYMBOLIC;
+                break;
+            case '5':   // directory
+                type = Type.DIRECTORY;
+                break;
+            case '1':   // hard linkname
+                type = Type.HARD;
+                break;
+            default:
+                throw new UnsupportedOperationException((char)typeflag+" not supported");
+        }
     }
-
+    private void paxHeader(ByteBuffer bb)
+    {
+        while (bb.hasRemaining())
+        {
+            int length = readDecimal(bb);
+            String key = readValue(bb, '=');
+            switch (key)
+            {
+                case "atime":
+                    atime = readLong(bb);
+                    break;
+                case "mtime":
+                    mtime = readLong(bb);
+                    break;
+                case "ctime":
+                    ctime = readLong(bb);
+                    break;
+                case "comment":
+                    readValue(bb, '=');
+                    break;
+                case "uid":
+                    uid = readDecimal(bb);
+                    break;
+                case "gid":
+                    gid = readDecimal(bb);
+                    break;
+                case "uname":
+                    uname = readValue(bb, '\n');
+                    break;
+                case "gname":
+                    gname = readValue(bb, '\n');
+                    break;
+                case "linkpath":
+                    linkname = readValue(bb, '\n');
+                    break;
+                case "path":
+                    filename = readValue(bb, '\n');
+                    break;
+                case "size":
+                    size = readLong(bb);
+                    break;
+                case "charset":
+                    charset = readValue(bb, '\n');
+                    break;
+                case "hdrcharset":
+                    hdrcharset = readValue(bb, '\n');
+                    break;
+                default:
+                    throw new UnsupportedOperationException(key+" not supported");
+            }
+        }
+    }
+    private long nextBlock(long position)
+    {
+        return position % BLOCK_SIZE > 0 ? (position / BLOCK_SIZE)*BLOCK_SIZE + BLOCK_SIZE : position;
+    }
+    private long readLong(ByteBuffer bb)
+    {
+        String string = readValue(bb, '\n');
+        return (long) Double.parseDouble(string);
+    }
+    private int readDecimal(ByteBuffer bb)
+    {
+        int res = 0;
+        char cc = (char) bb.get();
+        while (Character.isDigit(cc))
+        {
+            res = 10*res+Character.digit(cc, 10);
+            cc = (char) bb.get();
+        }
+        return res;
+    }
+    private String readValue(ByteBuffer bb, char end)
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte b = bb.get();
+        while (b != end)
+        {
+            baos.write(b);
+            b = bb.get();
+        }
+        return new String(baos.toByteArray(), UTF_8);
+    }
     @Override
     public void store(SeekableByteChannel channel, String filename, Map<String, Object> attributes) throws IOException
     {
@@ -91,20 +279,20 @@ public class TARHeader extends UnixFileHeader
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private int getInt(int offset, int length)
+    private int getInt(CharSequence seq, int offset, int length)
     {
-        return Primitives.parseInt(getZeroTerminated(offset, length), 8);
+        return Primitives.parseInt(getTerminated(seq, offset, length, (c)->!Character.isDigit(c)), 8);
     }
-    private String getString(int offset, int length)
+    private String getString(CharSequence seq, int offset, int length)
     {
-        return getZeroTerminated(offset, length).toString();
+        return getTerminated(seq, offset, length, (c)->c==0).toString();
     }
-    private CharSequence getZeroTerminated(int offset, int length)
+    private CharSequence getTerminated(CharSequence seq, int offset, int length, IntPredicate predicate)
     {
         int ii=0;
         for (;ii<length;ii++)
         {
-            if (seq.charAt(ii + offset) == 0)
+            if (predicate.test(seq.charAt(ii + offset)))
             {
                 break;
             }

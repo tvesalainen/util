@@ -229,7 +229,7 @@ public final class FileAttributeName
         {
             if (!value.getClass().equals(byte[].class) && !(value instanceof ByteBuffer))
             {
-                throw new IllegalArgumentException(value+" not expected type byte[]/ByteBuffer");
+                throw new ClassCastException(value+" not expected type byte[]/ByteBuffer");
             }
         }
         else
@@ -237,7 +237,7 @@ public final class FileAttributeName
             Class<?> type = FileAttributeName.type(name);
             if (type == null || !type.isAssignableFrom(value.getClass()))
             {
-                throw new IllegalArgumentException(value+" not expected type "+type);
+                throw new ClassCastException(value+" not expected type "+type);
             }
         }
     }

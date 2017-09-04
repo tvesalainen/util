@@ -66,6 +66,7 @@ import org.vesalainen.vfs.attributes.AclFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.DosFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
+import org.vesalainen.vfs.attributes.FileAttributeName;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
@@ -434,6 +435,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
+        }
+        Name attr = FileAttributeName.getInstance(attribute);
+        if ("size".equals(attr.getName()))
+        {
+            throw new IllegalArgumentException(attribute+" setting not supported");
         }
         VirtualFile file = find(path, options);
         file.setAttribute(attribute, value);

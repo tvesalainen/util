@@ -28,6 +28,14 @@ import org.vesalainen.vfs.attributes.FileAttributeName;
  */
 public abstract class Header extends FileAttributeAccessStore
 {
+    public enum Type {REGULAR, DIRECTORY, HARD, SYMBOLIC};
+    protected Type type;
+
+    public Type getType()
+    {
+        return type;
+    }
+
     public Object get(String name)
     {
         return get(FileAttributeName.getInstance(name), null);
@@ -63,6 +71,7 @@ public abstract class Header extends FileAttributeAccessStore
     
     public abstract boolean isEof();
     public abstract String getFilename();
+    public abstract String getLinkname();
     public abstract void load(SeekableByteChannel channel) throws IOException;
     public abstract void store(SeekableByteChannel channel, String filename, Map<String,Object> attributes) throws IOException;
     public abstract void storeEof(SeekableByteChannel channel) throws IOException;

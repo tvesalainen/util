@@ -71,23 +71,16 @@ public class FileAttributeAccessStore implements FileAttributeAccess
     @Override
     public void put(FileAttributeName.Name name, Object value)
     {
-        switch (name.toString())
+        if (FileAttributeName.USER_VIEW.equals(name) && (value instanceof ByteBuffer))
         {
-            case FileAttributeName.SIZE:
-                throw new IllegalArgumentException("not allowed to set " + name);
-            default:
-                if (FileAttributeName.USER_VIEW.equals(name) && (value instanceof ByteBuffer))
-                {
-                    ByteBuffer bb = (ByteBuffer) value;
-                    byte[] arr = new byte[bb.remaining()];
-                    bb.get(arr);
-                    attributes.put(name, arr);
-                }
-                else
-                {
-                    attributes.put(name, value);
-                }
-                break;
+            ByteBuffer bb = (ByteBuffer) value;
+            byte[] arr = new byte[bb.remaining()];
+            bb.get(arr);
+            attributes.put(name, arr);
+        }
+        else
+        {
+            attributes.put(name, value);
         }
     }
 

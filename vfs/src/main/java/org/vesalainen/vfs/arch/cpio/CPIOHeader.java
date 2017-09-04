@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
@@ -44,8 +43,6 @@ public class CPIOHeader extends UnixFileHeader
     static final String TRAILER = "TRAILER!!!";
     private static final int HEADER_SIZE = 110;
     private ByteBuffer buffer = ByteBuffer.allocateDirect(HEADER_SIZE);
-    private UnixFileAttributeView view;
-    private UnixFileAttributes unix;
     private static final byte[] MAGIC = "070701".getBytes(US_ASCII);
     private byte[] buf = new byte[8];
     private CharSequence seq = CharSequences.getAsciiCharSequence(buf);
@@ -53,12 +50,6 @@ public class CPIOHeader extends UnixFileHeader
     private int namesize;
     private int checksum;
 
-    public CPIOHeader()
-    {
-        view = new UnixFileAttributeViewImpl(this);
-        unix = view.readAttributes();
-    }
-    
     @Override
     public boolean isEof()
     {
@@ -87,7 +78,7 @@ public class CPIOHeader extends UnixFileHeader
         gid = get(buffer);
         nlink = get(buffer);
         mtime = get(buffer);
-        filesize = get(buffer);
+        size = get(buffer);
         devmajor = get(buffer);
         devminor = get(buffer);
         rdevmajor = get(buffer);
@@ -130,7 +121,7 @@ public class CPIOHeader extends UnixFileHeader
             }
             view.mode(mode);
             view.setTimes(FileTime.from(mtime, TimeUnit.SECONDS), null, null);
-            attributes.put(FileAttributeName.getInstance(SIZE), (long)filesize);
+            attributes.put(FileAttributeName.getInstance(SIZE), (long)size);
         }        
         align(channel, 4);
     }
@@ -146,7 +137,7 @@ public class CPIOHeader extends UnixFileHeader
             mode = unix.mode();
             nlink = unix.nlink();
             mtime = (int) unix.lastModifiedTime().to(TimeUnit.SECONDS);
-            filesize = (int) unix.size();
+            size = (int) unix.size();
             devminor = unix.device();
         }
         namesize = fn.length()+1;
@@ -158,8 +149,8 @@ public class CPIOHeader extends UnixFileHeader
         put(buffer, uid);
         put(buffer, gid);
         put(buffer, nlink);
-        put(buffer, mtime);
-        put(buffer, filesize);
+        put(buffer, (int)mtime);
+        put(buffer, (int)size);
         put(buffer, devmajor);
         put(buffer, devminor);
         put(buffer, rdevmajor);

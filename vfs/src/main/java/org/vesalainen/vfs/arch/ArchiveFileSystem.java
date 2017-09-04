@@ -143,20 +143,50 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             {
                 fn = fn.substring(1);
             }
-            Path pth = getPath(fn);
+            Path pth = getPath(fn).normalize();
             FileAttribute<?>[] fileAttributes = header.fileAttributes();
             Long size = (long) header.get(SIZE);
             if (size == null)
             {
                 throw new IllegalArgumentException("size missing in "+pth);
             }
-            Files.createDirectories(pth.getParent());
-            if (size > 0)
+            Path parent = pth.getParent();
+            if (parent != null)
             {
-                try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
-                {
-                    ch.transferFrom(channel, 0, size);
-                }
+                Files.createDirectories(parent);
+            }
+            String linkname = header.getLinkname();
+            Path linkTarget = null;
+            if (linkname != null)
+            {
+                linkTarget = getPath(linkname);
+            }
+            switch (header.getType())
+            {
+                case DIRECTORY:
+                    Files.createDirectory(pth, fileAttributes);
+                    break;
+                case SYMBOLIC:
+                    Files.createSymbolicLink(pth, linkTarget, fileAttributes);
+                    break;
+                case HARD:
+                    Files.createLink(pth, linkTarget);
+                    break;
+                case REGULAR:
+                    if (size > 0)
+                    {
+                        try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+                        {
+                            long pos = 0;
+                            while (size > 0)
+                            {
+                                long count = ch.transferFrom(channel, pos, size);
+                                pos += count;
+                                size -= count;
+                            }
+                        }
+                    }
+                    break;
             }
             header.clear();
             header.load(channel);
