@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -633,6 +634,16 @@ public class CharSequences
         return new ASCIICharSequence(path);
     }
     /**
+     * Creates a CharSequence from a ByteBuffer. ByteBuffer must support array.
+     * @param bb
+     * @return
+     * @throws IOException 
+     */
+    public static final CharSequence getAsciiCharSequence(ByteBuffer bb) throws IOException
+    {
+        return new ASCIICharSequence(bb);
+    }
+    /**
      * Creates a CharSequence from byte buffer.
      * @param buf
      * @return 
@@ -666,6 +677,11 @@ public class CharSequences
         public ASCIICharSequence(Path path) throws IOException
         {
             this(Files.readAllBytes(path));
+        }
+
+        public ASCIICharSequence(ByteBuffer bb)
+        {
+            this(bb.array(), bb.arrayOffset(), bb.capacity());
         }
 
         public ASCIICharSequence(byte[] buf)
