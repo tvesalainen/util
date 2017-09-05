@@ -20,18 +20,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.vfs.attributes.FileAttributeName;
-import static org.vesalainen.vfs.attributes.FileAttributeName.*;
-import org.vesalainen.vfs.unix.UnixFileAttributeView;
-import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
-import org.vesalainen.vfs.unix.UnixFileAttributes;
+import static org.vesalainen.vfs.arch.Header.Type.*;
+import org.vesalainen.vfs.unix.INode;
 import org.vesalainen.vfs.unix.UnixFileHeader;
 
 /**
@@ -42,13 +39,14 @@ public class CPIOHeader extends UnixFileHeader
 {
     static final String TRAILER = "TRAILER!!!";
     private static final int HEADER_SIZE = 110;
-    private ByteBuffer buffer = ByteBuffer.allocateDirect(HEADER_SIZE);
+    private ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
     private static final byte[] MAGIC = "070701".getBytes(US_ASCII);
     private byte[] buf = new byte[8];
     private CharSequence seq = CharSequences.getAsciiCharSequence(buf);
-    private byte[] magic = MAGIC;
+    private byte[] magic = Arrays.copyOf(MAGIC, MAGIC.length);
     private int namesize;
     private int checksum;
+    private Map<INode,String> inodes = new HashMap<>();
 
     @Override
     public boolean isEof()
@@ -61,6 +59,7 @@ public class CPIOHeader extends UnixFileHeader
     {
         align(channel, 4);
         buffer.clear();
+        buffer.limit(HEADER_SIZE);
         int rc = channel.read(buffer);
         buffer.flip();
         if (rc != HEADER_SIZE)
@@ -70,7 +69,7 @@ public class CPIOHeader extends UnixFileHeader
         buffer.get(magic);
         if (!Arrays.equals(MAGIC, magic))
         {
-            throw new IllegalArgumentException("not a CPIO");
+            throw new IllegalArgumentException("not a newc CPIO");
         }
         inode = get(buffer);
         mode = get(buffer);
@@ -85,47 +84,63 @@ public class CPIOHeader extends UnixFileHeader
         rdevminor = get(buffer);
         namesize = get(buffer);
         checksum = get(buffer);
-        buffer.clear();
-        buffer.limit(namesize);
-        rc = channel.read(buffer);
-        if (rc != namesize)
-        {
-            throw new IOException(rc+" imput too small");
-        }
-        byte[] b = new byte[namesize];
-        buffer.flip();
-        buffer.get(b);
-        filename = new String(b, 0, b.length-1, US_ASCII);
+        filename = readString(channel, buffer, namesize-1);
         skip(channel, 1);
         if (!isEof())
         {
-            // set attributes
-            put(INODE, inode);
-            if (PosixHelp.isRegularFile((short) mode))
+            INode in = new INode(devminor, inode);
+            linkname = inodes.get(in);
+            if (linkname == null)
             {
-                put(IS_REGULAR, true);
+                inodes.put(in, filename);
+            }
+            if (linkname != null)
+            {
+                type = HARD;
             }
             else
             {
-                if (PosixHelp.isDirectory((short) mode))
+                if (PosixHelp.isRegularFile((short) mode))
                 {
-                    put(IS_DIRECTORY, true);
+                    type = REGULAR;
                 }
                 else
                 {
-                    if (PosixHelp.isSymbolicLink((short) mode))
+                    if (PosixHelp.isDirectory((short) mode))
                     {
-                        put(IS_SYMBOLIC_LINK, true);
+                        type = DIRECTORY;
+                    }
+                    else
+                    {
+                        if (PosixHelp.isSymbolicLink((short) mode))
+                        {
+                            type = SYMBOLIC;
+                        }
                     }
                 }
             }
-            view.mode(mode);
-            view.setTimes(FileTime.from(mtime, TimeUnit.SECONDS), null, null);
-            attributes.put(FileAttributeName.getInstance(SIZE), (long)size);
         }        
         align(channel, 4);
+        if (type == SYMBOLIC)
+        {
+            linkname = readString(channel, buffer, (int) size);
+        }
+        updateAttributes();
     }
-
+    private String readString(SeekableByteChannel channel, ByteBuffer bb, int length) throws IOException
+    {
+        bb.clear();
+        bb.limit(length);
+        int rc = channel.read(bb);
+        if (rc != length)
+        {
+            throw new IOException(rc+" input too small");
+        }
+        byte[] b = new byte[length];
+        bb.flip();
+        bb.get(b);
+        return new String(b, 0, b.length, US_ASCII);
+    }
     @Override
     public void store(SeekableByteChannel channel, String fn, Map<String, Object> attributes) throws IOException
     {

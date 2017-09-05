@@ -37,8 +37,8 @@ public class TARHeader extends UnixFileHeader
     private static final int BLOCK_SIZE = 512;
     private ByteBuffer buffer = ByteBuffer.allocate(8192);
     private static final String USTAR = "ustar";
-    private static final String GNU = "ustar ";
-    private static final String OLDGNU = "ustar  ";
+    private static final String GNU = "ustar  ";
+    private static final String V7 = "";
     private String charset;
     private String hdrcharset;
     private boolean eof;
@@ -74,12 +74,14 @@ public class TARHeader extends UnixFileHeader
         eof = CharSequences.indexOf(seq, (c)->c!=0) == -1;
         if (eof)
         {
+            buffer.clear();
+            buffer.limit(BLOCK_SIZE);
+            channel.read(buffer);
             return;
         }
-        String magic = getString(seq, 257, 6);
+        String magic = getString(seq, 257, 8);
         byte typeflag = buffer.get(156);
         int extHdrSize = getInt(seq, 124, 12);
-        long extHdrBlockSize = nextBlock(extHdrSize);
         switch (typeflag)
         {
             case 'g':   // global
@@ -108,6 +110,8 @@ public class TARHeader extends UnixFileHeader
                 switch (magic)
                 {
                     case USTAR:
+                    case GNU:
+                    case V7:
                         ustarHeader(buffer);
                         break;
                     default:
@@ -118,17 +122,7 @@ public class TARHeader extends UnixFileHeader
                 switch (magic)
                 {
                     case USTAR:
-                        buffer.clear();
-                        buffer.limit(BLOCK_SIZE);
-                        channel.read(buffer);
-                        buffer.flip();
-                        ByteBuffer extendedHeader = buffer.slice();
-                        extendedHeader.limit(extHdrSize);
-                        buffer.position(BLOCK_SIZE);
-                        buffer.limit(BLOCK_SIZE + (int) extHdrBlockSize);
-                        channel.read(buffer);
-                        buffer.position(BLOCK_SIZE);
-                        ustarHeader(buffer.slice());
+                        ByteBuffer extendedHeader = getExtendedHeader(channel, extHdrSize);
                         paxHeader(extendedHeader);
                         break;
                     default:
@@ -137,12 +131,49 @@ public class TARHeader extends UnixFileHeader
                 break;
             case 'g':   // global
                 break;  // handled already
+            case 'L':   
+                switch (magic)
+                {
+                    case GNU:
+                        ByteBuffer extendedHeader = getExtendedHeader(channel, extHdrSize);
+                        gnuLHeader(extendedHeader);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("'"+magic+"' magic not supported with "+(char)typeflag+" typeflag");
+                }
+                break;  // handled already
+            case 'K':   
+                switch (magic)
+                {
+                    case GNU:
+                        ByteBuffer extendedHeader = getExtendedHeader(channel, extHdrSize);
+                        gnuKHeader(extendedHeader);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("'"+magic+"' magic not supported with "+(char)typeflag+" typeflag");
+                }
+                break;  // handled already
             default:
                 throw new UnsupportedOperationException((char)typeflag+" not supported");
         }
         updateAttributes();
     }
-
+    private ByteBuffer getExtendedHeader(SeekableByteChannel channel, int extHdrSize) throws IOException
+    {
+        long extHdrBlockSize = nextBlock(extHdrSize);
+        buffer.clear();
+        buffer.limit(BLOCK_SIZE);
+        channel.read(buffer);
+        buffer.flip();
+        ByteBuffer extendedHeader = buffer.slice();
+        extendedHeader.limit(extHdrSize);
+        buffer.position(BLOCK_SIZE);
+        buffer.limit(BLOCK_SIZE + (int) extHdrBlockSize);
+        channel.read(buffer);
+        buffer.position(BLOCK_SIZE);
+        ustarHeader(buffer.slice());
+        return extendedHeader;
+    }
     private void ustarHeader(ByteBuffer bb) throws IOException
     {
         CharSequence seq = CharSequences.getAsciiCharSequence(bb);
@@ -236,6 +267,16 @@ public class TARHeader extends UnixFileHeader
             }
         }
     }
+    private void gnuLHeader(ByteBuffer bb) throws IOException
+    {
+        CharSequence seq = CharSequences.getAsciiCharSequence(bb);
+        filename = seq.subSequence(0, seq.length()-1).toString();
+    }
+    private void gnuKHeader(ByteBuffer bb) throws IOException
+    {
+        CharSequence seq = CharSequences.getAsciiCharSequence(bb);
+        linkname = seq.subSequence(0, seq.length()-1).toString();
+    }
     private long nextBlock(long position)
     {
         return position % BLOCK_SIZE > 0 ? (position / BLOCK_SIZE)*BLOCK_SIZE + BLOCK_SIZE : position;
@@ -281,7 +322,15 @@ public class TARHeader extends UnixFileHeader
     
     private int getInt(CharSequence seq, int offset, int length)
     {
-        return Primitives.parseInt(getTerminated(seq, offset, length, (c)->!Character.isDigit(c)), 8);
+        CharSequence terminated = getTerminated(seq, offset, length, (c)->!Character.isDigit(c));
+        if (terminated.length() > 0)
+        {
+            return Primitives.parseInt(terminated, 8);
+        }
+        else
+        {
+            return 0;
+        }
     }
     private String getString(CharSequence seq, int offset, int length)
     {
@@ -299,4 +348,5 @@ public class TARHeader extends UnixFileHeader
         }
         return seq.subSequence(offset, ii+offset);
     }
+
 }

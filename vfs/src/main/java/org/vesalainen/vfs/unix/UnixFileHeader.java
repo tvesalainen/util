@@ -59,6 +59,7 @@ public abstract class UnixFileHeader extends Header
     @Override
     public void clear()
     {
+        super.clear();
         type = null;
         inode = 0;
         mode = 0;

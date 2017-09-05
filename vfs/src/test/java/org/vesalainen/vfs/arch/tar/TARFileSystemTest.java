@@ -24,9 +24,16 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystemTest;
+import org.vesalainen.vfs.unix.UnixFileAttributes;
 
 /**
  *
@@ -39,20 +46,106 @@ public class TARFileSystemTest
     {
     }
 
-    @Test
-    public void testReadTAR() throws URISyntaxException, IOException
+    //@Test
+    public void testReadPosix() throws URISyntaxException, IOException
     {
-        URL url = CPIOFileSystemTest.class.getResource("/test.tar");
+        URL url = CPIOFileSystemTest.class.getResource("/posix.tar.gz");
         Path path = Paths.get(url.toURI());
         FileSystem fs = FileSystems.newFileSystem(path, null);
-        for (Path root : fs.getRootDirectories())
-        {
-            Files.walk(root).forEach((p)->System.err.println(p));
-        }
-        Path pom = fs.getPath("router2.xml");
-        assertEquals(1032, Files.size(pom));
-        byte[] readAllBytes = Files.readAllBytes(pom);
-        assertEquals(1032, readAllBytes.length);
+        testFileSystem(fs);
+        testUserAndGroup(fs);
+        testLongNames(fs);
+    }
+    //@Test
+    public void testReadUSTAR() throws URISyntaxException, IOException
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/ustar.tar.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+        testUserAndGroup(fs);
+    }
+    //@Test
+    public void testReadGNU() throws URISyntaxException, IOException
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/gnu.tar.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+        testUserAndGroup(fs);
+        testLongNames(fs);
+    }
+    //@Test
+    public void testReadOldGNU() throws URISyntaxException, IOException
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/oldgnu.tar.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+        testUserAndGroup(fs);
+        testLongNames(fs);
+    }
+    //@Test
+    public void testReadV7() throws URISyntaxException, IOException
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/v7.tar.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+    }
+    @Test
+    public void testSVR4CPIO() throws URISyntaxException, IOException   // The new (SVR4) portable format with a checksum added.
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/newc.cpio.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+    }
+    private void testFileSystem(FileSystem fs) throws IOException
+    {
+        Path smallhard = fs.getPath("smallhard");
+        Path smallsymbolic = fs.getPath("smallsymbolic");
+        Path smalltxt = fs.getPath("small.txt");
+        assertEquals(26, Files.size(smallhard));
+        assertEquals(26, Files.size(smalltxt));
+        assertTrue(Files.isSameFile(smallhard, smalltxt));
+        Set<PosixFilePermission> expPerm = PosixFilePermissions.fromString("rw-r--r--");
+        assertEquals(expPerm, Files.getPosixFilePermissions(smalltxt));
+        assertTrue(Files.isSymbolicLink(smallsymbolic));
+        assertEquals(smalltxt, Files.readSymbolicLink(smallsymbolic));
+        // attributes
+        UnixFileAttributes unixAttrs = Files.readAttributes(smalltxt, UnixFileAttributes.class);
+        assertNotNull(unixAttrs);
+        assertFalse(unixAttrs.setUserId());
+        assertFalse(unixAttrs.setGroupId());
+        assertEquals("-rw-r--r--", unixAttrs.modeString());
+    }
+    private void testUserAndGroup(FileSystem fs) throws IOException
+    {
+        Path smalltxt = fs.getPath("small.txt");
+        UnixFileAttributes unixAttrs = Files.readAttributes(smalltxt, UnixFileAttributes.class);
+        UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
+        assertNotNull(upls);
+        UserPrincipal expUser = upls.lookupPrincipalByName("pi");
+        GroupPrincipal expGroup = upls.lookupPrincipalByGroupName("pi");
+        assertEquals(expUser.getName(), unixAttrs.owner().getName());
+        assertEquals(expGroup.getName(), unixAttrs.group().getName());
+    }
+    private void testLongNames(FileSystem fs) throws IOException
+    {
+        Path filetxt = fs.getPath("file.txt");
+        Path hard = fs.getPath("hard");
+        Path longName = fs.getPath("very-long-name-exceeds-all-limitations-altogether");
+        Path hardPath = longName.resolve(hard);
+        Path filePath = longName.resolve(longName).resolve(longName).resolve(filetxt);
+        assertTrue(Files.exists(filePath));
+        assertEquals(90737, Files.size(filePath));
+        assertTrue(Files.isSameFile(hardPath, filePath));
+        UnixFileAttributes unixAttrs = Files.readAttributes(filePath, UnixFileAttributes.class);
+        assertNotNull(unixAttrs);
+        assertTrue(unixAttrs.setUserId());
+        assertFalse(unixAttrs.setGroupId());
+        assertEquals("-rws--x--x", unixAttrs.modeString());
     }
     
 }

@@ -24,6 +24,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.vesalainen.vfs.VirtualFileSystem;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
 
 /**
  *
@@ -192,7 +194,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             header.load(channel);
         }
     }
-    public final void store(Root root) throws IOException
+    public final void store(Root root) throws IOException   // TODO hard link
     {
         enumerateInodes();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
@@ -234,6 +236,12 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             }
         });
         header.storeEof(channel);
+    }
+
+    @Override
+    public UserPrincipalLookupService getUserPrincipalLookupService()
+    {
+        return new UserPrincipalLookupServiceImpl();
     }
     
 }
