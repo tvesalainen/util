@@ -269,27 +269,36 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         readLock();
         try
         {
-            int length = Math.min(uncompBuf.length, dst.remaining());
-            int rc;
-            while ((rc = inflater.inflate(uncompBuf, 0, length)) == 0)
+            int count = 0;
+            while (dst.hasRemaining())
             {
-                if (inflater.needsDictionary())
+                int length = Math.min(uncompBuf.length, dst.remaining());
+                int rc;
+                while ((rc = inflater.inflate(uncompBuf, 0, length)) == 0)
                 {
-                    throw new IOException("inflater needs dictionary");
+                    if (inflater.needsDictionary())
+                    {
+                        throw new IOException("inflater needs dictionary");
+                    }
+                    if (inflater.finished())
+                    {
+                        if (count > 0)
+                        {
+                            return count;
+                        }
+                        readTrailer();
+                        return -1;
+                    }
+                    if (inflater.needsInput())
+                    {
+                        fillInflater();
+                    }
                 }
-                if (inflater.finished())
-                {
-                    readTrailer();
-                    return -1;
-                }
-                if (inflater.needsInput())
-                {
-                    fillInflater();
-                }
+                crc32.update(uncompBuf, 0, rc);
+                dst.put(uncompBuf, 0, rc);
+                count += rc;
             }
-            crc32.update(uncompBuf, 0, rc);
-            dst.put(uncompBuf, 0, rc);
-            return rc;
+            return count;
         }
         catch (DataFormatException ex)
         {
