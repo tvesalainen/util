@@ -635,6 +635,7 @@ public class CharSequences
     }
     /**
      * Creates a CharSequence from a ByteBuffer. ByteBuffer must support array.
+     * From position to limit.
      * @param bb
      * @return
      * @throws IOException 
@@ -681,7 +682,7 @@ public class CharSequences
 
         public ASCIICharSequence(ByteBuffer bb)
         {
-            this(bb.array(), bb.arrayOffset(), bb.capacity());
+            this(bb.array(), bb.arrayOffset()+bb.position(), bb.remaining());
         }
 
         public ASCIICharSequence(byte[] buf)
