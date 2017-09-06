@@ -55,13 +55,12 @@ import java.util.zip.Inflater;
 import org.vesalainen.util.OperatingSystem;
 
 /**
- * GZIPChannel implements reading and writing GZIP files.
+ * GZIPChannel implements reading and writing of GZIP files.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.ietf.org/rfc/rfc1952.txt">GZIP file format specification version 4.3</a>
  */
 public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport
 {
-    private static final int BUF_SIZE = 4096;
     public final static short MAGIC = (short)0x8b1f;
     private final static int FTEXT = 1;
     private final static int FHCRC = 2;
@@ -69,14 +68,16 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private final static int FNAME = 8;
     private final static int FCOMMENT = 16;
     private SeekableByteChannel channel;
+    private int bufSize = 4096;
+    private int maxSkipSize;
     private boolean readOnly;
     private String filename;
     private Set<OpenOption> options;
     private Inflater inflater;
     private Deflater deflater;
-    private ByteBuffer compBuf = ByteBuffer.allocate(BUF_SIZE);
-    private byte[] uncompBuf = new byte[BUF_SIZE];
-    private ByteBuffer skipBuffer = ByteBuffer.allocate(16);
+    private ByteBuffer compBuf;
+    private byte[] uncompBuf;
+    private ByteBuffer skipBuffer;
     private final Path path;
     private String comment;
     private CRC32 crc32 = new CRC32();
@@ -86,13 +87,38 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     /**
      * Creates GZIPChannel
      * @param path
+     * @param bufSize Size of internal buffers
+     * @param maxSkipSize Maximum bytes of forward skip
+     * @param options
+     * @throws IOException 
+     */
+    public GZIPChannel(Path path, int bufSize, int maxSkipSize, OpenOption... options) throws IOException
+    {
+        this(path, FileChannel.open(path, options), bufSize, maxSkipSize, Arrays.stream(options).collect(Collectors.toSet()));
+    }
+    /**
+     * Creates GZIPChannel
+     * @param path
      * @param options
      * @throws IOException 
      * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...) 
      */
     public GZIPChannel(Path path, OpenOption... options) throws IOException
     {
-        this(path, FileChannel.open(path, options), Arrays.stream(options).collect(Collectors.toSet()));
+        this(path, FileChannel.open(path, options), 4096, 0, Arrays.stream(options).collect(Collectors.toSet()));
+    }
+    /**
+     * Creates GZIPChannel
+     * @param path
+     * @param options
+     * @param bufSize Size of internal buffers
+     * @param maxSkipSize Maximum bytes of forward skip
+     * @param attrs
+     * @throws IOException 
+     */
+    public GZIPChannel(Path path, Set<? extends OpenOption> options, int bufSize, int maxSkipSize, FileAttribute<?>... attrs) throws IOException
+    {
+        this(path, FileChannel.open(path, options, attrs), bufSize, maxSkipSize, options);
     }
     /**
      * Creates GZIPChannel
@@ -104,18 +130,30 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
      */
     public GZIPChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
-        this(path, FileChannel.open(path, options, attrs), options);
+        this(path, FileChannel.open(path, options, attrs), 4096, 0, options);
     }
     /**
      * Creates GZIPChannel. Channel is closed when GZIPChannel is closed.
      * @param path
      * @param channel
+     * @param bufSize Size of internal buffers
+     * @param maxSkipSize Maximum bytes of forward skip
      * @param options 
      */
-    public GZIPChannel(Path path, SeekableByteChannel channel, Set<? extends OpenOption> options)
+    public GZIPChannel(Path path, SeekableByteChannel channel, int bufSize, int maxSkipSize, Set<? extends OpenOption> options)
     {
         this.path = path;
         this.channel = channel;
+        this.bufSize = bufSize;
+        if (bufSize < 256)
+        {
+            throw new IllegalArgumentException("bufSize too small");
+        }
+        this.maxSkipSize = maxSkipSize;
+        if (maxSkipSize < 0)
+        {
+            throw new IllegalArgumentException("maxSkipSize negative");
+        }
         this.options = new HashSet<>(options);
         if (options.contains(READ) && options.contains(WRITE))
         {
@@ -124,6 +162,12 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         if (!options.contains(WRITE))
         {
             this.options.add(READ);
+        }
+        compBuf = ByteBuffer.allocate(bufSize);
+        uncompBuf = new byte[bufSize];
+        if (maxSkipSize > 0)
+        {
+            skipBuffer = ByteBuffer.allocate(maxSkipSize);
         }
         compBuf.order(LITTLE_ENDIAN);
         compBuf.flip();
@@ -219,10 +263,14 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         }
         if (skip > skipBuffer.capacity())
         {
-            throw new UnsupportedOperationException(skip+" skip not supported");
+            throw new UnsupportedOperationException(skip+" skip not supported maxSkipSize="+maxSkipSize);
         }
         if (skip > 0)
         {
+            if (skipBuffer == null)
+            {
+                throw new UnsupportedOperationException("skip not supported maxSkipSize="+maxSkipSize);
+            }
             skipBuffer.clear();
             skipBuffer.limit(skip);
             if (options.contains(READ))
