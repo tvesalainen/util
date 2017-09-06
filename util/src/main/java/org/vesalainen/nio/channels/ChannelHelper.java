@@ -24,11 +24,17 @@ import java.net.SocketException;
 import java.net.SocketOption;
 import static java.net.StandardSocketOptions.*;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 /**
  *
@@ -463,5 +469,113 @@ public class ChannelHelper
         }
 
     }
+    /**
+     * Returns a ByteChannel having feature that for every read/write method the
+     * tracer function is called with read/write data between position and limit.
+     * <p>
+     * This is planned to support calculating digestives.
+     * @param channel
+     * @param tracer
+     * @return 
+     */
+    public static final ByteChannel traceableChannel(ByteChannel channel, Consumer<ByteBuffer> tracer)
+    {
+        return new TraceableByteChannel(channel, tracer);
+    }
+    /**
+     * Returns a SeeekableByteChannel having feature that for every read/write method the
+     * tracer function is called with read/write data between position and limit.
+     * <p>
+     * This is planned to support calculating digestives.
+     * @param channel
+     * @param tracer
+     * @return 
+     */
+    public static final SeekableByteChannel traceableChannel(SeekableByteChannel channel, Consumer<ByteBuffer> tracer)
+    {
+        return new TraceableSeekableByteChannel(channel, tracer);
+    }
+    public static class TraceableSeekableByteChannel<T extends SeekableByteChannel> extends TraceableByteChannel<SeekableByteChannel> implements SeekableByteChannel
+    {
 
+        public TraceableSeekableByteChannel(SeekableByteChannel channel, Consumer<ByteBuffer> tracer)
+        {
+            super(channel, tracer);
+        }
+
+        @Override
+        public long position() throws IOException
+        {
+            return ch.position();
+        }
+
+        @Override
+        public SeekableByteChannel position(long newPosition) throws IOException
+        {
+            ch.position(newPosition);
+            return this;
+        }
+
+        @Override
+        public long size() throws IOException
+        {
+            return ch.size();
+        }
+
+        @Override
+        public SeekableByteChannel truncate(long size) throws IOException
+        {
+            ch.truncate(size);
+            return this;
+        }
+        
+    }
+    public static class TraceableByteChannel<T extends ByteChannel> implements ByteChannel
+    {
+        protected T ch;
+        private Consumer<ByteBuffer> tracer;
+
+        public TraceableByteChannel(T channel, Consumer<ByteBuffer> tracer)
+        {
+            this.ch = channel;
+            this.tracer = tracer;
+        }
+
+        @Override
+        public int read(ByteBuffer dst) throws IOException
+        {
+            int before = dst.position();
+            int rc = ch.read(dst);
+            int after = dst.position();
+            dst.position(before);
+            tracer.accept(dst);
+            dst.position(after);
+            return rc;
+        }
+
+        @Override
+        public int write(ByteBuffer src) throws IOException
+        {
+            int before = src.position();
+            int rc = ch.write(src);
+            int after = src.position();
+            src.position(before);
+            tracer.accept(src);
+            src.position(after);
+            return rc;
+        }
+        
+        @Override
+        public boolean isOpen()
+        {
+            return ch.isOpen();
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            ch.close();
+        }
+
+    }
 }
