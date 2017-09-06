@@ -32,7 +32,7 @@ public class TARFileSystem extends ArchiveFileSystem
 {
     public TARFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
-        super(provider, path, env, TARHeader::new, UNIX_VIEW, USER_VIEW);
+        super(provider, path, env, TARHeader::new, 4096, 512, UNIX_VIEW, USER_VIEW);
     }
     
 }

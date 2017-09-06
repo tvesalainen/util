@@ -26,7 +26,6 @@ import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
 import static org.junit.Assert.*;
 import org.vesalainen.vfs.FileAttributeAccessStore;
-import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
@@ -53,8 +52,9 @@ public class UnixFileAttributeViewImplTest
         Map<Name,Object> map = new HashMap<>();
         UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessStore(map));
         assertEquals(UNIX_VIEW, u.name());
-        assertFalse(u.setGroupId());
-        assertFalse(u.stickyBit());
+        UnixFileAttributes ua = u.readAttributes();
+        assertFalse(ua.setGroupId());
+        assertFalse(ua.stickyBit());
         PosixFileAttributes p = u.readAttributes();
         assertEquals(Collections.EMPTY_SET, p.permissions());
         assertNull(p.group());
@@ -65,11 +65,12 @@ public class UnixFileAttributeViewImplTest
         Map<Name,Object> map = new HashMap<>();
         map.put(FileAttributeName.getInstance(IS_SYMBOLIC_LINK), true);
         UnixFileAttributeViewImpl u = new UnixFileAttributeViewImpl(new FileAttributeAccessStore(map));
+        UnixFileAttributes ua = u.readAttributes();
         String m = "lrwsrwsrwt";
         u.mode(m);
-        assertEquals(m, u.modeString());
-        assertTrue(u.setUserId());
-        assertTrue(u.setGroupId());
-        assertTrue(u.stickyBit());
+        assertEquals(m, ua.modeString());
+        assertTrue(ua.setUserId());
+        assertTrue(ua.setGroupId());
+        assertTrue(ua.stickyBit());
     }
 }

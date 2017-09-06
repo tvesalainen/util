@@ -27,10 +27,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileTime;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import org.vesalainen.lang.Primitives;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
@@ -81,11 +87,11 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
     }
 
     @Override
-    public Object get(FileAttributeName.Name name, Object def)
+    public Object get(Name name, Object def)
     {
         switch (name.toString())
         {
-            case FileAttributeName.SIZE:
+            case SIZE:
                 return (long) content.limit();
             default:
                 return super.get(name, def);
@@ -97,10 +103,10 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
     {
         switch (name.toString())
         {
-            case FileAttributeName.SIZE:
+            case SIZE:
                 break;
             default:
-                if (FileAttributeName.USER_VIEW.equals(name) && (value instanceof ByteBuffer))
+                if (USER_VIEW.equals(name) && (value instanceof ByteBuffer))
                 {
                     ByteBuffer bb = (ByteBuffer) value;
                     byte[] arr = new byte[bb.remaining()];
@@ -229,6 +235,30 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         if (matcher.any(SIZE))
         {
             map.put("size", (long)getSize());
+        }
+        if (matcher.any(CONTENT))
+        {
+            map.put(CONTENT, readView(0));
+        }
+        if (matcher.any(CRC32))
+        {
+            CRC32 crc32 = new CRC32();
+            crc32.update(readView(0));
+            long value = crc32.getValue(); 
+            map.put(CONTENT, Primitives.writeLong(value));
+        }
+        if (matcher.any(MD5))
+        {
+            try
+            {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                md.update(readView(0));
+                map.put(MD5, md.digest());
+            }
+            catch (NoSuchAlgorithmException ex)
+            {
+                return null;
+            }
         }
         return map;
     }

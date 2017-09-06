@@ -437,7 +437,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
         }
         Name attr = FileAttributeName.getInstance(attribute);
-        if ("size".equals(attr.getName()))
+        if ("size".equals(attr.getName()) || DIGEST_VIEW.equals(attr.getView()))
         {
             throw new IllegalArgumentException(attribute+" setting not supported");
         }

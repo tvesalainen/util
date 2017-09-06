@@ -93,10 +93,34 @@ public class TARFileSystemTest
         FileSystem fs = FileSystems.newFileSystem(path, null);
         testFileSystem(fs);
     }
-    @Test
+    //@Test
     public void testSVR4CPIO() throws URISyntaxException, IOException   // The new (SVR4) portable format with a checksum added.
     {
         URL url = CPIOFileSystemTest.class.getResource("/newc.cpio.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+    }
+    @Test
+    public void testCRCCPIO() throws URISyntaxException, IOException   // The new (SVR4) portable format with a checksum added.
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/crc.cpio.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+    }
+    //@Test
+    public void testASCIICPIO() throws URISyntaxException, IOException   // The new (SVR4) portable format with a checksum added.
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/ascii.cpio.gz");
+        Path path = Paths.get(url.toURI());
+        FileSystem fs = FileSystems.newFileSystem(path, null);
+        testFileSystem(fs);
+    }
+    //@Test
+    public void testBinaryCPIO() throws URISyntaxException, IOException   // The new (SVR4) portable format with a checksum added.
+    {
+        URL url = CPIOFileSystemTest.class.getResource("/bin.cpio.gz");
         Path path = Paths.get(url.toURI());
         FileSystem fs = FileSystems.newFileSystem(path, null);
         testFileSystem(fs);

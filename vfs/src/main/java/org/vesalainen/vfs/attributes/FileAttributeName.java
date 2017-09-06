@@ -53,14 +53,19 @@ public final class FileAttributeName
     public static final String OWNER_VIEW = "owner";
     public static final String DOS_VIEW = "dos";
     public static final String USER_VIEW = "user";
-    public static final String UNIX_VIEW = "org.vesalainen.unix";
+    public static final String UNIX_VIEW = "org.vesalainen.vfs.unix";
+    public static final String DIGEST_VIEW = "org.vesalainen.vfs.digest";
+    // digest
+    public static final String CONTENT = DIGEST_VIEW+":org.vesalainen.vfs.content";
+    public static final String CRC32 = DIGEST_VIEW+":org.vesalainen.vfs.crc32";
+    public static final String MD5 = DIGEST_VIEW+":org.vesalainen.vfs.md5";
     
-    public static final String DEVICE = UNIX_VIEW+":org.vesalainen.device";
-    public static final String INODE = UNIX_VIEW+":org.vesalainen.inode";
-    public static final String NLINK = UNIX_VIEW+":org.vesalainen.nlink";
-    public static final String SETUID = UNIX_VIEW+":org.vesalainen.setuid";
-    public static final String SETGID = UNIX_VIEW+":org.vesalainen.setgid";
-    public static final String STICKY = UNIX_VIEW+":org.vesalainen.sticky";
+    public static final String DEVICE = UNIX_VIEW+":org.vesalainen.vfs.device";
+    public static final String INODE = UNIX_VIEW+":org.vesalainen.vfs.inode";
+    public static final String NLINK = UNIX_VIEW+":org.vesalainen.vfs.nlink";
+    public static final String SETUID = UNIX_VIEW+":org.vesalainen.vfs.setuid";
+    public static final String SETGID = UNIX_VIEW+":org.vesalainen.vfs.setgid";
+    public static final String STICKY = UNIX_VIEW+":org.vesalainen.vfs.sticky";
     // posix
     public static final String PERMISSIONS = "posix:permissions";
     public static final String GROUP = "posix:group";
@@ -120,6 +125,10 @@ public final class FileAttributeName
         addName(SYSTEM);
         addName(ARCHIVE);
 
+        addName(CONTENT);
+        addName(CRC32);
+        addName(MD5);
+        
         types = new HashMap<>();
         types.put(DEVICE, Integer.class);
         types.put(INODE, Integer.class);
@@ -225,7 +234,7 @@ public final class FileAttributeName
     public static final void check(Name name, Object value)
     {
         Objects.requireNonNull(value, "value can't be null");
-        if (USER_VIEW.equals(name.view))
+        if (DIGEST_VIEW.equals(name.view))
         {
             if (!value.getClass().equals(byte[].class) && !(value instanceof ByteBuffer))
             {
@@ -234,10 +243,20 @@ public final class FileAttributeName
         }
         else
         {
-            Class<?> type = FileAttributeName.type(name);
-            if (type == null || !type.isAssignableFrom(value.getClass()))
+            if (USER_VIEW.equals(name.view))
             {
-                throw new ClassCastException(value+" not expected type "+type);
+                if (!value.getClass().equals(byte[].class) && !(value instanceof ByteBuffer))
+                {
+                    throw new ClassCastException(value+" not expected type byte[]/ByteBuffer");
+                }
+            }
+            else
+            {
+                Class<?> type = FileAttributeName.type(name);
+                if (type == null || !type.isAssignableFrom(value.getClass()))
+                {
+                    throw new ClassCastException(value+" not expected type "+type);
+                }
             }
         }
     }

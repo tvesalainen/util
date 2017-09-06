@@ -17,6 +17,7 @@
 package org.vesalainen.vfs.arch;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +63,8 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             Path path, 
             Map<String, ?> env,
             Supplier<Header> headerSupplier,
+            int bufSize,
+            int maxSkipSize,
             String... views
     ) throws IOException
     {
@@ -89,7 +93,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         filename = path.getFileName().toString();
         if (path.toString().endsWith(".gz"))
         {
-            GZIPChannel gzipChannel = new GZIPChannel(path, opts);
+            GZIPChannel gzipChannel = new GZIPChannel(path, opts, bufSize, maxSkipSize);
             channel = gzipChannel;
             if (readOnly)
             {
@@ -188,7 +192,46 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                             }
                         }
                     }
+                    else
+                    {
+                        Files.createFile(pth, fileAttributes);
+                    }
                     break;
+            }
+            if (size > 0)
+            {
+                switch (header.getType())
+                {
+                    case HARD:
+                    case REGULAR:
+                        try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+                        {
+                            long pos = 0;
+                            while (size > 0)
+                            {
+                                long count = ch.transferFrom(channel, pos, size);
+                                pos += count;
+                                size -= count;
+                            }
+                        }
+                        break;
+                    case SYMBOLIC:
+                        break;  // handled
+                    default:    // directory might have 4096 bytes of useless bytes
+                        ByteBuffer b = ByteBuffer.allocateDirect(size.intValue());
+                        channel.read(b);
+                        break;
+                }
+            }
+            // checksum
+            String digestAlgorithm = header.digestAlgorithm();
+            if (digestAlgorithm != null)
+            {
+                byte[] digest = (byte[]) Files.getAttribute(pth, digestAlgorithm);
+                if (!Arrays.equals(header.digest(), digest))
+                {
+                    throw new IllegalArgumentException(digestAlgorithm+" don't match");
+                }
             }
             header.clear();
             header.load(channel);

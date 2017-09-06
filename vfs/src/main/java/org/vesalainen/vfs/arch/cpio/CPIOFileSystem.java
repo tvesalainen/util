@@ -32,7 +32,7 @@ public class CPIOFileSystem extends ArchiveFileSystem
 
     public CPIOFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
-        super(provider, path, env, CPIOHeader::new, UNIX_VIEW, USER_VIEW);
+        super(provider, path, env, CPIOHeader::new, 4096, 4, UNIX_VIEW, USER_VIEW);
     }
 
     

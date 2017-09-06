@@ -44,12 +44,12 @@ public abstract class Header extends FileAttributeAccessStore
     {
         put(FileAttributeName.getInstance(name), value);
     }
-    protected static void align(SeekableByteChannel ch, long align) throws IOException
+    public static void align(SeekableByteChannel ch, long align) throws IOException
     {
         ch.position(alignedPosition(ch, align));
     }
 
-    protected static long alignedPosition(SeekableByteChannel ch, long align) throws IOException
+    public static long alignedPosition(SeekableByteChannel ch, long align) throws IOException
     {
         long position = ch.position();
         long mod = position % align;
@@ -75,4 +75,6 @@ public abstract class Header extends FileAttributeAccessStore
     public abstract void load(SeekableByteChannel channel) throws IOException;
     public abstract void store(SeekableByteChannel channel, String filename, Map<String,Object> attributes) throws IOException;
     public abstract void storeEof(SeekableByteChannel channel) throws IOException;
+    public abstract byte[] digest();
+    public abstract String digestAlgorithm();
 }

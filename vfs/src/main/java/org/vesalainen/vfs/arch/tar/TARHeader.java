@@ -58,14 +58,7 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void load(SeekableByteChannel channel) throws IOException
     {
-        long position = channel.position();
-        long skip = nextBlock(position) - position;
-        if (skip > 0)
-        {
-            buffer.clear();
-            buffer.limit((int) skip);
-            channel.read(buffer);
-        }
+        align(channel, 512);
         buffer.clear();
         buffer.limit(BLOCK_SIZE);
         channel.read(buffer);
@@ -181,8 +174,8 @@ public class TARHeader extends UnixFileHeader
         mode = getInt(seq, 100, 8);
         uid = getInt(seq, 108, 8);
         gid = getInt(seq, 116, 8);
-        size = getInt(seq, 124, 12);
-        mtime = getInt(seq, 136, 12);
+        size = getLong(seq, 124, 12);
+        mtime = getLong(seq, 136, 12);
         int chksum = getInt(seq, 148, 8);
         byte typeflag = bb.get(156);
         linkname = getString(seq, 157, 100);
@@ -319,6 +312,18 @@ public class TARHeader extends UnixFileHeader
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public byte[] digest()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String digestAlgorithm()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     private int getInt(CharSequence seq, int offset, int length)
     {
@@ -326,6 +331,18 @@ public class TARHeader extends UnixFileHeader
         if (terminated.length() > 0)
         {
             return Primitives.parseInt(terminated, 8);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    private long getLong(CharSequence seq, int offset, int length)
+    {
+        CharSequence terminated = getTerminated(seq, offset, length, (c)->!Character.isDigit(c));
+        if (terminated.length() > 0)
+        {
+            return Primitives.parseLong(terminated, 8);
         }
         else
         {
