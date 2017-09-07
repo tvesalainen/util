@@ -57,8 +57,11 @@ public final class FileAttributeName
     public static final String DIGEST_VIEW = "org.vesalainen.vfs.digest";
     // digest
     public static final String CONTENT = DIGEST_VIEW+":org.vesalainen.vfs.content";
+    public static final String CPIO_CHECKSUM = DIGEST_VIEW+":org.vesalainen.vfs.cpiochecksum";
     public static final String CRC32 = DIGEST_VIEW+":org.vesalainen.vfs.crc32";
     public static final String MD5 = DIGEST_VIEW+":org.vesalainen.vfs.md5";
+    public static final String SHA1 = DIGEST_VIEW+":org.vesalainen.vfs.sha1";
+    public static final String SHA256 = DIGEST_VIEW+":org.vesalainen.vfs.sha256";
     
     public static final String DEVICE = UNIX_VIEW+":org.vesalainen.vfs.device";
     public static final String INODE = UNIX_VIEW+":org.vesalainen.vfs.inode";
@@ -126,8 +129,11 @@ public final class FileAttributeName
         addName(ARCHIVE);
 
         addName(CONTENT);
+        addName(CPIO_CHECKSUM);
         addName(CRC32);
         addName(MD5);
+        addName(SHA1);
+        addName(SHA256);
         
         types = new HashMap<>();
         types.put(DEVICE, Integer.class);
@@ -159,6 +165,7 @@ public final class FileAttributeName
         nameView.put(POSIX_VIEW, PosixFileAttributeView.class);
         nameView.put(USER_VIEW, UserDefinedFileAttributeView.class);
         nameView.put(UNIX_VIEW, UnixFileAttributeView.class);
+        nameView.put(DIGEST_VIEW, DigestFileAttributeView.class);
         
         initImplies(BASIC_VIEW);
         initImplies(ACL_VIEW);
@@ -167,6 +174,7 @@ public final class FileAttributeName
         initImplies(POSIX_VIEW);
         initImplies(USER_VIEW);
         initImplies(UNIX_VIEW);
+        initImplies(DIGEST_VIEW);
     }
     private static void initImplies(String view)
     {

@@ -77,4 +77,5 @@ public abstract class Header extends FileAttributeAccessStore
     public abstract void storeEof(SeekableByteChannel channel) throws IOException;
     public abstract byte[] digest();
     public abstract String digestAlgorithm();
+    public abstract boolean hasDigest();
 }

@@ -90,6 +90,10 @@ public class Root extends SinglePath
     @Override
     public Path subpath(int beginIndex, int endIndex)
     {
+        if (beginIndex == 0 && endIndex == 0)
+        {
+            return SinglePath.getInstance(fileSystem, "");
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

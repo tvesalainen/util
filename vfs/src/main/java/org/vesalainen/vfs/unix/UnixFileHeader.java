@@ -79,6 +79,7 @@ public abstract class UnixFileHeader extends Header
         uname = null;
         gname = null;
     }
+
     @Override
     public String getFilename()
     {

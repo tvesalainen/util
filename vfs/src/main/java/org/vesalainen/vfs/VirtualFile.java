@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.vesalainen.lang.Primitives;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
+import org.vesalainen.vfs.arch.cpio.SimpleChecksum;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -234,35 +235,57 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         });
         if (matcher.any(SIZE))
         {
-            map.put("size", (long)getSize());
+            map.put(extName(SIZE), (long)getSize());
         }
         if (matcher.any(CONTENT))
         {
-            map.put(CONTENT, readView(0));
+            map.put(extName(CONTENT), readView(0));
+        }
+        if (matcher.any(CPIO_CHECKSUM))
+        {
+            SimpleChecksum checksum = new SimpleChecksum();
+            checksum.update(readView(0));
+            long value = checksum.getValue(); 
+            map.put(extName(CPIO_CHECKSUM), Primitives.writeInt((int) value));
         }
         if (matcher.any(CRC32))
         {
             CRC32 crc32 = new CRC32();
             crc32.update(readView(0));
             long value = crc32.getValue(); 
-            map.put(CONTENT, Primitives.writeLong(value));
+            map.put(extName(CRC32), Primitives.writeInt((int) value));
         }
         if (matcher.any(MD5))
         {
-            try
-            {
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                md.update(readView(0));
-                map.put(MD5, md.digest());
-            }
-            catch (NoSuchAlgorithmException ex)
-            {
-                return null;
-            }
+            map.put(extName(MD5), getMessageDigest("MD5"));
+        }
+        if (matcher.any(SHA1))
+        {
+            map.put(extName(SHA1), getMessageDigest("SHA_1"));
+        }
+        if (matcher.any(SHA256))
+        {
+            map.put(extName(SHA256), getMessageDigest("SHA_256"));
         }
         return map;
     }
-
+    private String extName(String name)
+    {
+        return FileAttributeName.getInstance(name).getName();
+    }
+    private byte[] getMessageDigest(String algorithm)
+    {
+        try
+        {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.update(readView(0));
+            return md.digest();
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            return null;
+        }
+    }
     protected void checkAttribute(Name name, Object value)
     {
         FileAttributeName.check(name, value);

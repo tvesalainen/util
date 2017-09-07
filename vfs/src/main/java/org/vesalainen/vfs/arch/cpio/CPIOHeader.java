@@ -29,8 +29,7 @@ import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.HexDump;
 import static org.vesalainen.vfs.arch.Header.Type.*;
 import static org.vesalainen.vfs.arch.Header.align;
-import static org.vesalainen.vfs.attributes.FileAttributeName.CRC32;
-import static org.vesalainen.vfs.attributes.FileAttributeName.DIGEST_VIEW;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.INode;
 import org.vesalainen.vfs.unix.UnixFileHeader;
 
@@ -58,6 +57,14 @@ public class CPIOHeader extends UnixFileHeader
     public boolean isEof()
     {
         return TRAILER.equals(filename);
+    }
+
+    @Override
+    public void clear()
+    {
+        super.clear();
+        namesize = 0;
+        checksum = 0;
     }
 
     @Override
@@ -214,11 +221,17 @@ public class CPIOHeader extends UnixFileHeader
         buffer.flip();
         channel.write(buffer);
     }
-
+    
+    @Override
+    public boolean hasDigest()
+    {
+        return digestAlgorithm() != null && checksum != 0;
+    }
+    
     @Override
     public byte[] digest()
     {
-        return Primitives.writeLong(checksum);
+        return Primitives.writeInt(checksum);
     }
 
     @Override
@@ -289,7 +302,7 @@ public class CPIOHeader extends UnixFileHeader
         @Override
         protected String digestAlgorithm()
         {
-            return CRC32;
+            return CPIO_CHECKSUM;
         }
         
     }

@@ -223,12 +223,13 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                         break;
                 }
             }
-            // checksum
-            String digestAlgorithm = header.digestAlgorithm();
-            if (digestAlgorithm != null)
+            if (header.hasDigest())
             {
+                // checksum
+                String digestAlgorithm = header.digestAlgorithm();
                 byte[] digest = (byte[]) Files.getAttribute(pth, digestAlgorithm);
-                if (!Arrays.equals(header.digest(), digest))
+                byte[] digestHdr = header.digest();
+                if (!Arrays.equals(digestHdr, digest))
                 {
                     throw new IllegalArgumentException(digestAlgorithm+" don't match");
                 }

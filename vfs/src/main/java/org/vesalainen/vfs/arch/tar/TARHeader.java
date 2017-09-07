@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.function.IntPredicate;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.util.CharSequences;
+import org.vesalainen.util.HexDump;
+import org.vesalainen.vfs.arch.cpio.SimpleChecksum;
 import org.vesalainen.vfs.unix.UnixFileHeader;
 
 /**
@@ -188,6 +190,18 @@ public class TARHeader extends UnixFileHeader
         {
             filename = prefix+filename;
         }
+        // checksum
+        for (int ii=0;ii<8;ii++)
+        {
+            bb.put(ii+148, (byte)' ');
+        }
+        SimpleChecksum checksum = new SimpleChecksum();
+        checksum.update(buffer);
+        long value = checksum.getValue();
+        if (chksum != value)
+        {
+            throw new IllegalArgumentException("checksum failed");
+        }
         switch (typeflag)
         {
             case 0:
@@ -323,6 +337,12 @@ public class TARHeader extends UnixFileHeader
     public String digestAlgorithm()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean hasDigest()
+    {
+        return false;
     }
     
     private int getInt(CharSequence seq, int offset, int length)
