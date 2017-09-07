@@ -278,7 +278,8 @@ public class FileUtil
         {
             if (Files.isDirectory(source) && Files.isDirectory(target))
             {
-                final Path dir = target.resolve(source.getFileName());
+                Path fileName = source.getFileName();
+                final Path dir = fileName != null ? target.resolve(fileName) : target;
                 Files.createDirectories(target);
                 Files.walk(source).forEach((p)->
                 {
