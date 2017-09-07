@@ -159,13 +159,13 @@ public class VirtualFileSystemProviderTest
     public void testCreateSymbolicLink() throws URISyntaxException, IOException
     {
         Path source = Paths.get("pom.xml");
-        List<String> exp = Files.readAllLines(source, US_ASCII);
         Path target = fileSystem.getPath("foo");
         Files.copy(source, target);
         Path link = fileSystem.getPath("bar");
         Files.createSymbolicLink(link, target);
         assertTrue(Files.isSymbolicLink(link));
-        assertEquals(target, Files.readSymbolicLink(link));
+        Path real = fileSystem.getPath("foo/bar");
+        assertEquals(real, Files.readSymbolicLink(link));
         assertEquals(Files.size(source), Files.size(link));
         assertTrue(Files.isSymbolicLink(link));
     }

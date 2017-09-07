@@ -24,6 +24,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.*;
 import org.junit.Test;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystemTest;
@@ -57,7 +58,7 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
         try (FileSystem nfs = FileSystems.newFileSystem(path, null))
         {
             Path root = nfs.getRootDirectories().iterator().next();
-            FileUtil.copy(fsroot, root);
+            FileUtil.copy(fsroot, root, COPY_ATTRIBUTES);
             testFileSystem(nfs);
             testUserAndGroup(nfs);
             testLongNames(nfs);

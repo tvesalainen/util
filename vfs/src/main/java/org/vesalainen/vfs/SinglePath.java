@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 
 /**
@@ -130,6 +129,7 @@ public class SinglePath extends BasePath
     @Override
     public boolean startsWith(Path other)
     {
+        checkFileSystemIsSame(other);
         if (!other.isAbsolute() && other.getNameCount() == 1)
         {
             return equals(other.getName(0));
@@ -140,6 +140,7 @@ public class SinglePath extends BasePath
     @Override
     public boolean endsWith(Path other)
     {
+        checkFileSystemIsSame(other);
         return startsWith(other);
     }
 
@@ -165,6 +166,7 @@ public class SinglePath extends BasePath
     @Override
     public int compareTo(Path other)
     {
+        checkFileSystemIsSame(other);
         if (other instanceof SinglePath)
         {
             SinglePath sp = (SinglePath) other;

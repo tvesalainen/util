@@ -109,7 +109,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         {
             channel = FileChannel.open(path, opts, attrs);
         }
-        addFileStore('/'+filename, new VirtualFileStore(this, views), true);
+        addFileStore('/'+filename+'/', new VirtualFileStore(this, views), true);
         if (isReadOnly())
         {
             load();

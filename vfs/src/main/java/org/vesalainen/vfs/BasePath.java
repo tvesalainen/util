@@ -70,6 +70,7 @@ public abstract class BasePath implements Path
     @Override
     public Path resolve(Path other)
     {
+        checkFileSystemIsSame(other);
         if (other.isAbsolute())
         {
             return other;
@@ -105,12 +106,14 @@ public abstract class BasePath implements Path
     @Override
     public Path resolveSibling(Path other)
     {
+        checkFileSystemIsSame(other);
         return getParent().resolve(other);  // could be more efficient!!!
     }
 
     @Override
     public Path relativize(Path other)
     {
+        checkFileSystemIsSame(other);
         if (other.startsWith(this) && isAbsolute() == other.isAbsolute())
         {
             return other.subpath(getNameCount(), other.getNameCount());
@@ -172,4 +175,20 @@ public abstract class BasePath implements Path
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    protected void checkFileSystemIsSame(Path path)
+    {
+        if (!fileSystem.equals(path.getFileSystem()))
+        {
+            throw new UnsupportedOperationException("mixing filesystems not supported");
+        }
+    }
+    public static final void checkFileSystemIsSame(Path p1, Path p2)
+    {
+        Objects.requireNonNull(p1);
+        Objects.requireNonNull(p2);
+        if (p1.getFileSystem() != p2.getFileSystem())
+        {
+            throw new UnsupportedOperationException("mixing filesystems not supported");
+        }
+    }
 }

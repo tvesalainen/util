@@ -516,7 +516,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     {
         VirtualFile srcFile = find(src);
         VirtualFile trgFile = find(trg);
-        Map<String, Object> attrs = srcFile.readAttributes("*");
-        attrs.forEach((n,a)->trgFile.setAttribute(n, a));
+        Set<String> topViews = FileAttributeName.topViews(trg.getFileSystem().supportedFileAttributeViews());
+        for (String view : topViews)
+        {
+            Map<String, Object> attrs = srcFile.readAttributes(view+":*");
+            attrs.forEach((n,a)->trgFile.setAttribute(n, a));
+        }
     }
 }

@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -100,6 +99,7 @@ public class Root extends SinglePath
     @Override
     public boolean startsWith(Path other)
     {
+        checkFileSystemIsSame(other);
         if (other instanceof Root)
         {
             return true;
@@ -110,6 +110,7 @@ public class Root extends SinglePath
     @Override
     public boolean endsWith(Path other)
     {
+        checkFileSystemIsSame(other);
         if (other instanceof Root)
         {
             return true;
