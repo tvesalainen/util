@@ -34,6 +34,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -278,24 +280,47 @@ public class FileUtil
         {
             if (Files.isDirectory(source) && Files.isDirectory(target))
             {
+                Map<Path,Path> fileMap = new HashMap<>();
                 Path fileName = source.getFileName();
-                final Path dir = fileName != null ? target.resolve(fileName) : target;
+                final Path dir = fileName != null ? target.resolve(fileName.toString()) : target;
                 Files.createDirectories(target);
                 Files.walk(source).forEach((p)->
                 {
                     try
                     {
-                        Path rel = source.relativize(p);
-                        Path trg = dir.resolve(rel);
+                        Path trg = dir.resolve(source.relativize(p).toString());
                         if (Files.isDirectory(p))
                         {
                             Files.createDirectories(trg);
                         }
                         else
                         {
-                            if (Files.isRegularFile(p))
+                            if (Files.isSymbolicLink(p))
                             {
-                                Files.copy(p, trg, options);
+                                Path symLink = Files.readSymbolicLink(p);
+                                Path symTrg = dir.resolve(source.relativize(symLink.toAbsolutePath()).toString());
+                                Files.createSymbolicLink(trg, symTrg);
+                            }
+                            else
+                            {
+                                if (Files.isRegularFile(p))
+                                {
+                                    boolean hardLink = false;
+                                    for (Path sp : fileMap.keySet())
+                                    {
+                                        if (Files.isSameFile(p, sp))
+                                        {
+                                            Path ht = fileMap.get(sp);
+                                            Files.createLink(trg, ht);
+                                            hardLink = true;
+                                        }
+                                    }
+                                    if (!hardLink)
+                                    {
+                                        Files.copy(p, trg, options);
+                                        fileMap.put(p, trg);
+                                    }
+                                }
                             }
                         }
                     }
