@@ -17,6 +17,7 @@
 package org.vesalainen.nio;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import org.vesalainen.util.ArrayIterator;
 
 /**
@@ -25,6 +26,25 @@ import org.vesalainen.util.ArrayIterator;
  */
 public class ByteBuffers
 {
+    /**
+     * Fills data from position to limit with zeroes.
+     * @param bb 
+     */
+    public static final void clearRemaining(ByteBuffer bb)
+    {
+        if (bb.hasArray())
+        {
+            Arrays.fill(bb.array(), bb.arrayOffset()+bb.position(), bb.arrayOffset()+bb.limit(), (byte)0);
+        }
+        else
+        {
+            int limit = bb.limit();
+            for (int ii=bb.position();ii<limit;ii++)
+            {
+                bb.put(ii, (byte)0);
+            }
+        }
+    }
     /**
      * Moves bytes from buf to bb as much as is possible. Positions are moved
      * according to move.
