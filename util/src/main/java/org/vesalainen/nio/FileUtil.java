@@ -282,7 +282,7 @@ public class FileUtil
             {
                 Map<Path,Path> fileMap = new HashMap<>();
                 Path fileName = source.getFileName();
-                final Path dir = fileName != null ? target.resolve(fileName.toString()) : target;
+                final Path dir = fileName != null ? target.resolve(fileName) : target;
                 Files.createDirectories(target);
                 Files.walk(source).forEach((p)->
                 {
@@ -298,7 +298,7 @@ public class FileUtil
                             if (Files.isSymbolicLink(p))
                             {
                                 Path symLink = Files.readSymbolicLink(p);
-                                Path symTrg = dir.resolve(source.relativize(symLink.toAbsolutePath()).toString());
+                                Path symTrg = source.relativize(symLink.toAbsolutePath());
                                 Files.createSymbolicLink(trg, symTrg);
                             }
                             else
