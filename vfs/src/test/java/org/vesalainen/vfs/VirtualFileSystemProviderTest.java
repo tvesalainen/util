@@ -156,7 +156,7 @@ public class VirtualFileSystemProviderTest
         assertFalse(Files.exists(target));
     }
     @Test
-    public void testCreateSymbolicLink() throws URISyntaxException, IOException
+    public void testCreateSymbolicLink1() throws URISyntaxException, IOException
     {
         Path source = Paths.get("pom.xml");
         Path target = fileSystem.getPath("foo");
@@ -164,10 +164,25 @@ public class VirtualFileSystemProviderTest
         Path link = fileSystem.getPath("bar");
         Files.createSymbolicLink(link, target);
         assertTrue(Files.isSymbolicLink(link));
-        Path real = fileSystem.getPath("foo/bar");
+        Path real = fileSystem.getPath("foo");
         assertEquals(real, Files.readSymbolicLink(link));
         assertEquals(Files.size(source), Files.size(link));
         assertTrue(Files.isSymbolicLink(link));
+    }
+    @Test
+    public void testCreateSymbolicLink2() throws URISyntaxException, IOException
+    {
+        Path path = fileSystem.getPath("/foo/bar/goo");
+        Files.createDirectories(path);
+        Path link = fileSystem.getPath("/foo/bar/goo/target");
+        Path target = fileSystem.getPath("../../file");
+        Files.createSymbolicLink(link, target);
+        Path exp = fileSystem.getPath("/foo/file");
+        assertEquals(target, Files.readSymbolicLink(link));
+        assertEquals(exp, link.resolveSibling(target).normalize());
+        Files.createFile(exp);
+        assertTrue(Files.exists(link));
+        assertTrue(Files.isRegularFile(link));
     }
     @Test
     public void testCreateLink() throws URISyntaxException, IOException

@@ -18,9 +18,11 @@ package org.vesalainen.vfs.unix;
 
 import java.io.IOException;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.vfs.arch.Header;
+import static org.vesalainen.vfs.arch.Header.Type.*;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
@@ -34,8 +36,8 @@ public abstract class UnixFileHeader extends Header
     
     protected int inode;
     protected int mode;
-    protected int uid;
-    protected int gid;
+    protected long uid;
+    protected long gid;
     protected int nlink = 1;
     protected long mtime;
     protected long atime;
@@ -92,7 +94,40 @@ public abstract class UnixFileHeader extends Header
         return linkname;
     }
 
-    protected void updateAttributes() throws IOException
+    protected void fromAttributes() throws IOException
+    {
+        if (unix.isDirectory())
+        {
+            type = DIRECTORY;
+        }
+        if (unix.isRegularFile())
+        {
+            type = REGULAR;
+        }
+        if (unix.isSymbolicLink())
+        {
+            type = SYMBOLIC;
+        }
+        inode = unix.inode();
+        mode = unix.mode();
+        nlink = unix.nlink();
+        mtime = unix.lastModifiedTime().to(TimeUnit.SECONDS);
+        atime = unix.lastAccessTime().to(TimeUnit.SECONDS);
+        ctime = unix.creationTime().to(TimeUnit.SECONDS);
+        size = (int) unix.size();
+        devminor = unix.device();
+        UserPrincipal owner = unix.owner();
+        if (owner != null)
+        {
+            uname = owner.getName();
+        }
+        GroupPrincipal group = unix.group();
+        if (group != null)
+        {
+            gname = group.getName();
+        }
+    }
+    protected void toAttributes() throws IOException
     {
         switch (type)
         {

@@ -38,6 +38,7 @@ import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystem;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
+import static org.vesalainen.vfs.arch.FileFormat.*;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
@@ -48,12 +49,26 @@ import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
  */
 public abstract class ArchiveFileSystem extends VirtualFileSystem
 {
+    /**
+     * Options for file as Set<? extends OpenOption> 
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...) 
+     */
     public static final String OPEN_OPTIONS = "openOptions";
+    /**
+     * Attributes for file as FileAttribute<?>[] 
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...) 
+     */
     public static final String FILE_ATTRIBUTES = "fileAttributes";
+    /**
+     * Format of created file.
+     * @see org.vesalainen.vfs.arch.FileFormat
+     */
+    public static final String FORMAT = "format";
     
     protected Path path;
     protected Map<String, ?> env;
     protected Supplier<Header> headerSupplier;
+    protected FileFormat format;
     protected SeekableByteChannel channel;
     protected boolean readOnly;
     protected String filename;
@@ -90,8 +105,21 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         {
             attrs = new FileAttribute<?>[0];
         }
+        format = (FileFormat) env.get(FORMAT);
+        String pathString = path.toString();
+        if (format == null)
+        {
+            if (pathString.endsWith(".tar.gz") || pathString.endsWith(".tar"))
+            {
+                format = TAR_PAX;
+            }
+            else
+            {
+                format = CPIO_CRC;
+            }
+        }
         filename = path.getFileName().toString();
-        if (path.toString().endsWith(".gz"))
+        if (pathString.endsWith(".gz"))
         {
             GZIPChannel gzipChannel = new GZIPChannel(path, opts, bufSize, maxSkipSize);
             channel = gzipChannel;
@@ -260,7 +288,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                     }
                 }
                 header.clear();
-                header.store(channel, r.toString(), all);
+                header.store(channel, r.toString(), format, all);
                 Long size = (Long) all.get(SIZE);
                 if (size == null)
                 {

@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.HexDump;
+import org.vesalainen.vfs.arch.FileFormat;
 import static org.vesalainen.vfs.arch.Header.Type.*;
 import static org.vesalainen.vfs.arch.Header.align;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -127,7 +128,7 @@ public class CPIOHeader extends UnixFileHeader
             {
                 linkname = readString(channel, buffer, (int) size);
             }
-            updateAttributes();
+            toAttributes();
         }        
     }
     private String readString(SeekableByteChannel channel, ByteBuffer bb, int length) throws IOException
@@ -145,18 +146,13 @@ public class CPIOHeader extends UnixFileHeader
         return new String(b, 0, b.length, US_ASCII);
     }
     @Override
-    public void store(SeekableByteChannel channel, String fn, Map<String, Object> attributes) throws IOException
+    public void store(SeekableByteChannel channel, String fn, FileFormat format, Map<String, Object> attributes) throws IOException
     {
         addAll(attributes);
         this.filename = fn;
         if (!isEof())
         {
-            inode = unix.inode();
-            mode = unix.mode();
-            nlink = unix.nlink();
-            mtime = (int) unix.lastModifiedTime().to(TimeUnit.SECONDS);
-            size = (int) unix.size();
-            devminor = unix.device();
+            fromAttributes();
         }
         namesize = fn.length()+1;
         align(channel, 4);

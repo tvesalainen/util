@@ -50,6 +50,11 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
     }
 
     @Test
+    public void test0() throws URISyntaxException, IOException
+    {
+        int ceil = (int) Math.log10(100);
+    }
+    @Test
     public void testWritePosix() throws URISyntaxException, IOException
     {
         Path path = Paths.get("z:\\test\\posix.tar.gz");

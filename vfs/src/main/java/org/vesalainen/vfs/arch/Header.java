@@ -73,7 +73,7 @@ public abstract class Header extends FileAttributeAccessStore
     public abstract String getFilename();
     public abstract String getLinkname();
     public abstract void load(SeekableByteChannel channel) throws IOException;
-    public abstract void store(SeekableByteChannel channel, String filename, Map<String,Object> attributes) throws IOException;
+    public abstract void store(SeekableByteChannel channel, String filename, FileFormat format, Map<String,Object> attributes) throws IOException;
     public abstract void storeEof(SeekableByteChannel channel) throws IOException;
     public abstract byte[] digest();
     public abstract String digestAlgorithm();

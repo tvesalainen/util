@@ -70,7 +70,6 @@ public abstract class BasePath implements Path
     @Override
     public Path resolve(Path other)
     {
-        checkFileSystemIsSame(other);
         if (other.isAbsolute())
         {
             return other;
@@ -106,8 +105,7 @@ public abstract class BasePath implements Path
     @Override
     public Path resolveSibling(Path other)
     {
-        checkFileSystemIsSame(other);
-        return getParent().resolve(other);  // could be more efficient!!!
+        return getParent().resolve(other);
     }
 
     @Override

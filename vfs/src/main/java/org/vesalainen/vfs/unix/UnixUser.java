@@ -25,7 +25,7 @@ import java.nio.file.attribute.UserPrincipal;
 public class UnixUser extends UnixPrincipal implements UserPrincipal
 {
     
-    public UnixUser(String name, int id)
+    public UnixUser(String name, long id)
     {
         super(name, id);
     }

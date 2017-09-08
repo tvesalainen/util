@@ -14,20 +14,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.unix;
-
-import java.nio.file.attribute.GroupPrincipal;
+package org.vesalainen.vfs.arch;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class UnixGroup extends UnixPrincipal implements GroupPrincipal
+public enum FileFormat
 {
-    
-    public UnixGroup(String name, long id)
-    {
-        super(name, id);
-    }
-    
+    /**
+     * The obsolete binary format. 070707
+     */
+    CPIO_BIN,
+    /**
+     * The old (POSIX.1) portable format. 070707
+     */
+    CPIO_ODC,
+    /**
+     * The new (SVR4) portable format. 070701
+     */
+    CPIO_NEWC,
+    /**
+     * The new (SVR4) portable format with a checksum added. 070702
+     */
+    CPIO_CRC,
+    /**
+     * GNU tar 1.13.x format
+     */
+    TAR_GNU,
+    /**
+     * GNU format as per tar <= 1.12
+     */
+    TAR_OLDGNU,
+    /**
+     * POSIX 1003.1-2001 (pax) format
+     */
+    TAR_PAX,
+    /**
+     * POSIX 1003.1-1988 (ustar) format
+     */
+    TAR_USTAR,
+    /**
+     * old V7 tar format
+     */
+    TAR_V7
 }

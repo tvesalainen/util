@@ -112,7 +112,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         VirtualFile file = store(p).get(p);
         if (file != null && !ArrayHelp.contains(options, NOFOLLOW_LINKS) && file.isSymbolicLink())
         {
-            return getFile(file.getSymbolicTarget(), options);
+            Path normalized = path.resolveSibling(file.getSymbolicTarget()).normalize();
+            return getFile(normalized, options);
         }
         else
         {

@@ -25,9 +25,9 @@ import java.security.Principal;
 public class UnixPrincipal implements Principal
 {
     private String name;
-    private int id;
+    private long id;
 
-    protected UnixPrincipal(String name, int id)
+    protected UnixPrincipal(String name, long id)
     {
         this.name = name;
         this.id = id;
@@ -39,7 +39,7 @@ public class UnixPrincipal implements Principal
         return name;
     }
 
-    public int getId()
+    public long getId()
     {
         return id;
     }
