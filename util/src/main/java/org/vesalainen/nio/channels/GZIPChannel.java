@@ -52,6 +52,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import static java.util.zip.Deflater.*;
 import java.util.zip.Inflater;
+import org.vesalainen.util.HexDump;
 import org.vesalainen.util.OperatingSystem;
 
 /**
@@ -376,19 +377,19 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         int count = src.remaining();
         while (src.hasRemaining())
         {
-            if (deflater.needsInput())
+            compBuf.clear();
+            int rc = deflater.deflate(compBuf.array());
+            if (rc > 0)
+            {
+                compBuf.limit(rc);
+                ChannelHelper.writeAll(channel, compBuf);
+            }
+            if (rc == 0 && deflater.needsInput())
             {
                 int len = Math.min(src.remaining(), uncompBuf.length);
                 src.get(uncompBuf, 0, len);
                 deflater.setInput(uncompBuf, 0, len);
                 crc32.update(uncompBuf, 0, len);
-            }
-            compBuf.clear();
-            int rc = deflater.deflate(compBuf.array());
-            if (rc > 0)
-            {
-                compBuf.position(rc);
-                channel.write(compBuf);
             }
         }
         return count;
@@ -454,6 +455,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         compBuf.compact();
         channel.read(compBuf);
         compBuf.flip();
+        System.err.println(HexDump.remainingToHex(compBuf));
         short magic = compBuf.getShort();
         if (magic != MAGIC)
         {
@@ -673,7 +675,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
             compBuf.clear();
             int rc = deflater.deflate(compBuf.array());
             compBuf.limit(rc);
-            channel.write(compBuf);
+            ChannelHelper.writeAll(channel, compBuf);
         }
         compBuf.clear();
         compBuf.putInt((int) (crc32.getValue() & 0xffffffffL));
