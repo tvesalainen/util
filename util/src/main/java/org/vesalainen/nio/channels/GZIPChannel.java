@@ -377,19 +377,19 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         int count = src.remaining();
         while (src.hasRemaining())
         {
+            if (deflater.needsInput())
+            {
+                int len = Math.min(src.remaining(), uncompBuf.length);
+                src.get(uncompBuf, 0, len);
+                deflater.setInput(uncompBuf, 0, len);
+                crc32.update(uncompBuf, 0, len);
+            }
             compBuf.clear();
             int rc = deflater.deflate(compBuf.array());
             if (rc > 0)
             {
                 compBuf.limit(rc);
                 ChannelHelper.writeAll(channel, compBuf);
-            }
-            if (rc == 0 && deflater.needsInput())
-            {
-                int len = Math.min(src.remaining(), uncompBuf.length);
-                src.get(uncompBuf, 0, len);
-                deflater.setInput(uncompBuf, 0, len);
-                crc32.update(uncompBuf, 0, len);
             }
         }
         return count;
