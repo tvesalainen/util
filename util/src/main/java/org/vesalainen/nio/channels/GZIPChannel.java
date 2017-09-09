@@ -570,8 +570,8 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         channel.read(compBuf);
         compBuf.flip();
         int crc = compBuf.getInt();
-        long value = crc32.getValue();
-        if (crc != (value & 0xffffffff))
+        int value = (int) crc32.getValue();
+        if (crc != value)
         {
             throw new IOException("CRC32 mismatch");
         }
