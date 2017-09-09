@@ -455,7 +455,6 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         compBuf.compact();
         channel.read(compBuf);
         compBuf.flip();
-        System.err.println(HexDump.remainingToHex(compBuf));
         short magic = compBuf.getShort();
         if (magic != MAGIC)
         {
