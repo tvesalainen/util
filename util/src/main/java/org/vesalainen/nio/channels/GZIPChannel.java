@@ -668,9 +668,14 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private void writeTrailer() throws IOException
     {
         deflater.finish();
+        while (!deflater.finished())
+        {
+            compBuf.clear();
+            int rc = deflater.deflate(compBuf.array());
+            compBuf.limit(rc);
+            channel.write(compBuf);
+        }
         compBuf.clear();
-        int rc = deflater.deflate(compBuf.array());
-        compBuf.position(rc);
         compBuf.putInt((int) (crc32.getValue() & 0xffffffffL));
         compBuf.putInt((int) (deflater.getBytesRead() & 0xffffffffL));
         compBuf.flip();
