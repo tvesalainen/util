@@ -186,11 +186,11 @@ public class VirtualFileStore extends FileStore
         MapSet<VirtualFile,Path> map = new HashMapSet<>();
         files.forEach((p,f)->map.add(f, p));
         AtomicInteger inode = new AtomicInteger(0);
-        map.forEach((f,p)->
+        map.keySet().forEach((f)->
         {
             f.setAttribute(DEVICE, dev);
             f.setAttribute(INODE, inode.getAndIncrement());
-            f.setAttribute(NLINK, p.size());
+            f.setAttribute(NLINK, map.get(f).size());
         });
     }
 

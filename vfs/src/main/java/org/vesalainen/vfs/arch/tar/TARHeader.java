@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.attribute.FileTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntPredicate;
@@ -29,6 +30,7 @@ import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.vfs.arch.FileFormat;
+import static org.vesalainen.vfs.arch.Header.Type.*;
 import org.vesalainen.vfs.arch.cpio.SimpleChecksum;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.UnixFileHeader;
@@ -50,6 +52,7 @@ public class TARHeader extends UnixFileHeader
     private String charset;
     private String hdrcharset;
     private boolean eof;
+    private SimpleChecksum checksum = new SimpleChecksum();
 
     @Override
     public void clear()
@@ -194,14 +197,14 @@ public class TARHeader extends UnixFileHeader
         String prefix = getString(seq, 345, 155);
         if (!prefix.isEmpty())
         {
-            filename = prefix+filename;
+            filename = prefix+'/'+filename;
         }
         // checksum
         for (int ii=0;ii<8;ii++)
         {
             bb.put(ii+148, (byte)' ');
         }
-        SimpleChecksum checksum = new SimpleChecksum();
+        checksum.reset();
         checksum.update(buffer);
         long value = checksum.getValue();
         if (chksum != value)
@@ -322,33 +325,41 @@ public class TARHeader extends UnixFileHeader
         return new String(baos.toByteArray(), UTF_8);
     }
     @Override
-    public void store(SeekableByteChannel channel, String filename, FileFormat format, Map<String, Object> attributes) throws IOException
+    public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes) throws IOException
     {
+        align(channel, BLOCK_SIZE);
         addAll(attributes);
+        fromAttributes();
+        mode &= 07777;
+        this.filename = filename;
+        this.linkname = linkname;
+        if (type == REGULAR && linkname != null)
+        {
+            type = HARD;
+            size = 0;
+        }
         switch (format)
         {
             case TAR_PAX:
-                writePaxHeader(channel, filename, attributes);
+                writePaxHeader(channel);
                 break;
             case TAR_GNU:
-                writeGnuHeader(channel, filename, attributes);
+                writeGnuHeader(channel);
                 break;
             default:
                 throw new UnsupportedOperationException(format+" not supported");
         }
     }
 
-    private void writePaxHeader(SeekableByteChannel channel, String filename, Map<String, Object> attributes) throws IOException
+    private void writePaxHeader(SeekableByteChannel channel) throws IOException
     {
-        buffer.clear().limit(BLOCK_SIZE);
-        putUstarHeader(buffer, "./PaxHeaders.5208/"+filename, size, (byte)'x', linkname, USTAR_MAGIC, null);
-        buffer.clear().limit(BLOCK_SIZE);
-        channel.write(buffer);
-        buffer.clear().limit(BLOCK_SIZE);
+        buffer.position(BLOCK_SIZE).limit(buffer.capacity());
         putPaxHeader(buffer);
-        buffer.clear().limit(BLOCK_SIZE);
-        channel.write(buffer);
-        buffer.clear().limit(BLOCK_SIZE);
+        int extLen = (int) buffer.position()-BLOCK_SIZE;
+        int extHdrLen = (int) nextBlock(extLen);
+        buffer.position(0).limit(BLOCK_SIZE);
+        putUstarHeader(buffer, "./PaxHeaders.5208/"+filename, extLen, (byte)'x', linkname, USTAR_MAGIC, null);
+        buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
         String[] sfn = splitFilename(filename);
         if (sfn != null)
         {
@@ -358,11 +369,11 @@ public class TARHeader extends UnixFileHeader
         {
             putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, null);
         }
-        buffer.clear().limit(BLOCK_SIZE);
+        buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
         channel.write(buffer);
     }
 
-    private void writeGnuHeader(SeekableByteChannel channel, String filename, Map<String, Object> attributes)
+    private void writeGnuHeader(SeekableByteChannel channel)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -422,21 +433,20 @@ public class TARHeader extends UnixFileHeader
         {
             return new String[] {name, null};
         }
-        int idx = 0;
-        idx = name.indexOf('/', idx);
+        int idx = name.indexOf('/');
         while (idx != -1 && idx <= 135)
         {
             if (length - idx - 1 <= 100)
             {
                 return new String[] {name.substring(idx+1), name.substring(0, idx)};
             }
-            idx = name.indexOf('/', idx);
+            idx = name.indexOf('/', idx+1);
         }
         return null;    // don't fit
     }
     private void putPaxData(ByteBuffer bb, String key, double value) throws IOException
     {
-        putPaxData(bb, key, Double.toString(value));
+        putPaxData(bb, key, String.format(Locale.US, "%f", value));
     }
     private void putPaxData(ByteBuffer bb, String key, long value) throws IOException
     {
@@ -465,12 +475,14 @@ public class TARHeader extends UnixFileHeader
     private void putUstarHeader(ByteBuffer bb, String name, long siz, byte typeflag, String linkname, byte[] magic, String prefix)
     {
         ByteBuffers.clearRemaining(bb);
+        ByteBuffer chkSumBuffer = bb.slice();
         put(bb, name, 100);
         put(bb, mode, 8);
         put(bb, uid, 8);
         put(bb, gid, 8);
         put(bb, siz, 12);
         put(bb, mtime, 12);
+        int chksumMark = bb.position();
         put(bb, "        ", 8);
         bb.put(typeflag);
         put(bb, linkname, 100);
@@ -481,6 +493,11 @@ public class TARHeader extends UnixFileHeader
         put(bb, devmajor, 8);
         put(bb, devminor, 8);
         put(bb, prefix, 155);
+        checksum.reset();
+        checksum.update(chkSumBuffer);
+        long value = checksum.getValue();
+        bb.position(chksumMark);
+        put(bb, value, 8);
     }
     private void put(ByteBuffer bb, long value, int length)
     {
@@ -496,7 +513,8 @@ public class TARHeader extends UnixFileHeader
         }
         for (int ii=0;ii<len;ii++)
         {
-            bb.put((byte) Character.forDigit((int) (value/div), radix));
+            int v = (int) (Long.divideUnsigned(value, div)%radix);
+            bb.put((byte) Character.forDigit(v , radix));
             div /= radix;
         }
         bb.put((byte)0);
@@ -540,6 +558,12 @@ public class TARHeader extends UnixFileHeader
     public boolean hasDigest()
     {
         return false;
+    }
+
+    @Override
+    public long size()
+    {
+        return size;
     }
     
     private int getInt(CharSequence seq, int offset, int length)

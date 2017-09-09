@@ -50,14 +50,13 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
     }
 
     @Test
-    public void test0() throws URISyntaxException, IOException
+    public void testWritePosix() throws IOException
     {
-        int ceil = (int) Math.log10(100);
+        testWrite("z:\\test\\posix.tar.gz");
     }
-    @Test
-    public void testWritePosix() throws URISyntaxException, IOException
+    public void testWrite(String filename) throws IOException
     {
-        Path path = Paths.get("z:\\test\\posix.tar.gz");
+        Path path = Paths.get(filename);
         Files.deleteIfExists(path);
         Files.createFile(path);
         try (FileSystem nfs = FileSystems.newFileSystem(path, null))
@@ -68,5 +67,9 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
             testUserAndGroup(nfs);
             testLongNames(nfs);
         }
+        FileSystem tfs = FileSystems.newFileSystem(path, null);
+        testFileSystem(tfs);
+        testUserAndGroup(tfs);
+        testLongNames(tfs);
     }
 }

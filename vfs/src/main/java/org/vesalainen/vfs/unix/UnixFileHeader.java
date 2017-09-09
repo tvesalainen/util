@@ -96,25 +96,13 @@ public abstract class UnixFileHeader extends Header
 
     protected void fromAttributes() throws IOException
     {
-        if (unix.isDirectory())
-        {
-            type = DIRECTORY;
-        }
-        if (unix.isRegularFile())
-        {
-            type = REGULAR;
-        }
-        if (unix.isSymbolicLink())
-        {
-            type = SYMBOLIC;
-        }
         inode = unix.inode();
         mode = unix.mode();
         nlink = unix.nlink();
         mtime = unix.lastModifiedTime().to(TimeUnit.SECONDS);
         atime = unix.lastAccessTime().to(TimeUnit.SECONDS);
         ctime = unix.creationTime().to(TimeUnit.SECONDS);
-        size = (int) unix.size();
+        size = unix.size();
         devminor = unix.device();
         UserPrincipal owner = unix.owner();
         if (owner != null)
@@ -125,6 +113,25 @@ public abstract class UnixFileHeader extends Header
         if (group != null)
         {
             gname = group.getName();
+        }
+        if (unix.isRegularFile())
+        {
+            type = REGULAR;
+        }
+        else
+        {
+            if (unix.isDirectory())
+            {
+                type = DIRECTORY;
+            }
+            else
+            {
+                if (unix.isSymbolicLink())
+                {
+                    type = SYMBOLIC;
+                    size = 0;
+                }
+            }
         }
     }
     protected void toAttributes() throws IOException

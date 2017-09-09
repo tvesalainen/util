@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
@@ -29,6 +30,7 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,6 +43,7 @@ import org.vesalainen.vfs.VirtualFileSystemProvider;
 import static org.vesalainen.vfs.arch.FileFormat.*;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.unix.INode;
 import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
 
 /**
@@ -269,6 +272,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     public final void store(Root root) throws IOException   // TODO hard link
     {
         enumerateInodes();
+        Map<INode,Path> inodes = new HashMap<>();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
@@ -281,19 +285,27 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                 all.clear();
                 for (String view : topViews)
                 {
-                    Map<String, Object> attrs = Files.readAttributes(r, view+":*");
+                    Map<String, Object> attrs = Files.readAttributes(r, view+":*", NOFOLLOW_LINKS);
                     for (Entry<String, Object> entry : attrs.entrySet())
                     {
                         all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
                     }
                 }
-                header.clear();
-                header.store(channel, r.toString(), format, all);
-                Long size = (Long) all.get(SIZE);
-                if (size == null)
+                INode inode = new INode((int)all.get(DEVICE), (int)all.get(INODE));
+                Path link;
+                if (Files.isSymbolicLink(r))
                 {
-                    throw new IllegalArgumentException("size missing in "+r);
+                    link = Files.readSymbolicLink(r);
                 }
+                else
+                {
+                    link = inodes.get(inode);
+                }
+                String linkname = link != null ? link.toString() : null;
+                inodes.put(inode, r);
+                header.clear();
+                header.store(channel, r.toString(), format, linkname, all);
+                long size = header.size();
                 if (size > 0)
                 {
                     try (FileChannel ch = FileChannel.open(r, READ))
