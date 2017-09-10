@@ -288,10 +288,10 @@ public class FileUtil
                 {
                     try
                     {
-                        Path trg = dir.resolve(source.relativize(p).toString());
+                        Path trg = dir.resolve(source.relativize(p));
                         if (Files.isDirectory(p))
                         {
-                            Files.createDirectories(trg);
+                            Files.copy(p, trg, options);
                         }
                         else
                         {
