@@ -18,6 +18,7 @@ package org.vesalainen.vfs;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
@@ -30,7 +31,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.NoSuchFileException;
@@ -57,6 +57,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.ArrayHelp;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
@@ -80,10 +82,22 @@ import org.vesalainen.vfs.attributes.UserDefinedFileAttributeViewImpl;
  */
 public class VirtualFileSystemProvider extends FileSystemProvider
 {
-    static final String SCHEME = "org.vesalainen.vfs";
+    public static final String SCHEME = "org.vesalainen.vfs";
+    public static URI URI;
     protected Map<String,Class<? extends FileAttributeView>> viewClasses = new HashMap<>();
     protected Map<String,Function<FileAttributeAccess,? extends FileAttributeView>> viewSuppliers = new HashMap<>();
 
+    static
+    {
+        try
+        {
+            URI = new URI("org.vesalainen.vfs:///", null, null);
+        }
+        catch (URISyntaxException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
     public VirtualFileSystemProvider()
     {
         addFileAttributeView(BASIC_VIEW, BasicFileAttributeView.class, BasicFileAttributeViewImpl::new);

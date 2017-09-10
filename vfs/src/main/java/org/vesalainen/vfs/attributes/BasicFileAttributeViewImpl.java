@@ -22,8 +22,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**

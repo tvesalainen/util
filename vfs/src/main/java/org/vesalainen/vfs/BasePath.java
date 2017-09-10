@@ -70,6 +70,7 @@ public abstract class BasePath implements Path
     @Override
     public Path resolve(Path other)
     {
+        other = checkFileSystem(other);
         if (other.isAbsolute())
         {
             return other;
@@ -187,6 +188,34 @@ public abstract class BasePath implements Path
         if (p1.getFileSystem() != p2.getFileSystem())
         {
             throw new UnsupportedOperationException("mixing filesystems not supported");
+        }
+    }
+
+    private Path checkFileSystem(Path other)
+    {
+        if (fileSystem.equals(other.getFileSystem()))
+        {
+            return other;
+        }
+        if (other.isAbsolute())
+        {
+            throw new UnsupportedOperationException("importing absolute path from another file system not supported");
+        }
+        switch (other.getNameCount())
+        {
+            case 0:
+                return fileSystem.getPath("");
+            case 1:
+                return fileSystem.getPath(other.getName(0).toString());
+            default:
+                String first = other.getName(0).toString();
+                String[] more = new String[other.getNameCount()-1];
+                for (int ii=0;ii<more.length;ii++)
+                {
+                    more[ii] = other.getName(ii+1).toString();
+                }
+                return fileSystem.getPath(first, more);
+                
         }
     }
 }

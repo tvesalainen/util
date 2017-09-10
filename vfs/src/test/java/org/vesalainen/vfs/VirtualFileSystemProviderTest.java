@@ -62,7 +62,7 @@ public class VirtualFileSystemProviderTest
     FileSystem fileSystem;
     public VirtualFileSystemProviderTest() throws URISyntaxException, IOException
     {
-        fileSystem = FileSystems.getFileSystem(new URI("org.vesalainen.vfs:///", null, null));
+        fileSystem = FileSystems.getFileSystem(VirtualFileSystemProvider.URI);
         Files.createDirectories(fileSystem.getPath("/etc/default/java"));
         Files.createDirectories(fileSystem.getPath("/usr/local/bin"));
         Files.createDirectories(fileSystem.getPath("/usr/local/lib"));

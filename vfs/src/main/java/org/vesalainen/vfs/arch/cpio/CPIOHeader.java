@@ -31,7 +31,7 @@ import org.vesalainen.vfs.arch.FileFormat;
 import static org.vesalainen.vfs.arch.Header.Type.*;
 import static org.vesalainen.vfs.arch.Header.align;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
-import org.vesalainen.vfs.unix.INode;
+import org.vesalainen.vfs.unix.Inode;
 import org.vesalainen.vfs.unix.UnixFileHeader;
 
 /**
@@ -44,7 +44,7 @@ public class CPIOHeader extends UnixFileHeader
     private ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
     private int namesize;
     private int checksum;
-    private Map<INode,String> inodes = new HashMap<>();
+    private Map<Inode,String> inodes = new HashMap<>();
     private Handler[] handlers = new Handler[] 
     {
         new NewAsciiHeader(),
@@ -92,7 +92,7 @@ public class CPIOHeader extends UnixFileHeader
         handler.load(channel, buffer);
         if (!isEof())
         {
-            INode in = new INode(devminor, inode);
+            Inode in = new Inode(devminor, inode);
             linkname = inodes.get(in);
             if (linkname == null)
             {

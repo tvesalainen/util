@@ -123,6 +123,12 @@ public class FileAttributeAccessStore implements FileAttributeAccess
         {
             return value;
         }
+
+        @Override
+        public String toString()
+        {
+            return "FileAttribute{" + name + " : " + value + '}';
+        }
         
     }
 }

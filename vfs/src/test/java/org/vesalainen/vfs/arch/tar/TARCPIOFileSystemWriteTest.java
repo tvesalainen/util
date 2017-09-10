@@ -25,8 +25,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.*;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.vesalainen.nio.FileUtil;
+import org.vesalainen.vfs.VirtualFileSystemProvider;
+import org.vesalainen.vfs.arch.ArchiveFileSystem;
+import org.vesalainen.vfs.arch.FileFormat;
+import static org.vesalainen.vfs.arch.FileFormat.*;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystemTest;
 
 /**
@@ -52,14 +58,22 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
     @Test
     public void testWritePosix() throws IOException
     {
-        testWrite("z:\\test\\posix.tar.gz");
+        testWrite("z:\\test\\posix.tar.gz", TAR_PAX);
     }
-    public void testWrite(String filename) throws IOException
+    @Test
+    public void testWriteGnu() throws IOException
+    {
+        testWrite("z:\\test\\gnu.tar.gz", TAR_GNU);
+    }
+    public void testWrite(String filename, FileFormat format) throws IOException
     {
         Path path = Paths.get(filename);
         Files.deleteIfExists(path);
         Files.createFile(path);
-        try (FileSystem nfs = FileSystems.newFileSystem(path, null))
+        Map<String,Object> env = new HashMap<>();
+        env.put(ArchiveFileSystem.FORMAT, format);
+        FileSystem fileSystem = FileSystems.getFileSystem(VirtualFileSystemProvider.URI);
+        try (FileSystem nfs = fileSystem.provider().newFileSystem(path, env))
         {
             Path root = nfs.getRootDirectories().iterator().next();
             FileUtil.copy(fsroot, root, COPY_ATTRIBUTES);

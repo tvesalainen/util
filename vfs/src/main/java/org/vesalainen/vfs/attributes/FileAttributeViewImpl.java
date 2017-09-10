@@ -18,7 +18,6 @@ package org.vesalainen.vfs.attributes;
 
 import java.nio.file.attribute.FileAttributeView;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import org.vesalainen.vfs.attributes.FileAttributeName.Name;
 

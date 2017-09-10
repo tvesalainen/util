@@ -30,7 +30,6 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -43,7 +42,7 @@ import org.vesalainen.vfs.VirtualFileSystemProvider;
 import static org.vesalainen.vfs.arch.FileFormat.*;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
-import org.vesalainen.vfs.unix.INode;
+import org.vesalainen.vfs.unix.Inode;
 import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
 
 /**
@@ -109,10 +108,10 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             attrs = new FileAttribute<?>[0];
         }
         format = (FileFormat) env.get(FORMAT);
-        String pathString = path.toString();
+        filename = path.getFileName().toString();
         if (format == null)
         {
-            if (pathString.endsWith(".tar.gz") || pathString.endsWith(".tar"))
+            if (filename.endsWith(".tar.gz") || filename.endsWith(".tar"))
             {
                 format = TAR_PAX;
             }
@@ -121,8 +120,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                 format = CPIO_CRC;
             }
         }
-        filename = path.getFileName().toString();
-        if (pathString.endsWith(".gz"))
+        if (filename.endsWith(".gz"))
         {
             GZIPChannel gzipChannel = new GZIPChannel(path, opts, bufSize, maxSkipSize);
             channel = gzipChannel;
@@ -272,7 +270,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     public final void store(Root root) throws IOException   // TODO hard link
     {
         enumerateInodes();
-        Map<INode,Path> inodes = new HashMap<>();
+        Map<Inode,Path> inodes = new HashMap<>();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
@@ -291,7 +289,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                         all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
                     }
                 }
-                INode inode = new INode((int)all.get(DEVICE), (int)all.get(INODE));
+                Inode inode = new Inode((int)all.get(DEVICE), (int)all.get(INODE));
                 Path link;
                 if (Files.isSymbolicLink(r))
                 {

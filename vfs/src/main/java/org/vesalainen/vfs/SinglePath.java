@@ -16,6 +16,7 @@
  */
 package org.vesalainen.vfs;
 
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
@@ -42,6 +43,10 @@ public class SinglePath extends BasePath
 
     static final SinglePath getInstance(VirtualFileSystem fileSystem, String name)
     {
+        if (name.indexOf(0) != -1)
+        {
+            throw new InvalidPathException(name, "contains null (0) character", name.indexOf(0));
+        }
         Map<String, SinglePath> map = cache.get(fileSystem);
         if (map == null)
         {

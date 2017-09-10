@@ -53,6 +53,7 @@ public class TARHeader extends UnixFileHeader
     private String hdrcharset;
     private boolean eof;
     private SimpleChecksum checksum = new SimpleChecksum();
+    private String[] splitPath; // {path, prefix}
 
     @Override
     public void clear()
@@ -332,6 +333,7 @@ public class TARHeader extends UnixFileHeader
         fromAttributes();
         mode &= 07777;
         this.filename = filename;
+        splitPath = splitFilename(filename);
         this.linkname = linkname;
         if (type == REGULAR && linkname != null)
         {
@@ -345,6 +347,9 @@ public class TARHeader extends UnixFileHeader
                 break;
             case TAR_GNU:
                 writeGnuHeader(channel);
+                break;
+            case TAR_USTAR:
+                writeUstarHeader(channel);
                 break;
             default:
                 throw new UnsupportedOperationException(format+" not supported");
@@ -360,10 +365,9 @@ public class TARHeader extends UnixFileHeader
         buffer.position(0).limit(BLOCK_SIZE);
         putUstarHeader(buffer, "./PaxHeaders.5208/"+filename, extLen, (byte)'x', linkname, USTAR_MAGIC, null);
         buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
-        String[] sfn = splitFilename(filename);
-        if (sfn != null)
+        if (splitPath != null)
         {
-            putUstarHeader(buffer, sfn[0], size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, sfn[1]);
+            putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, splitPath[1]);
         }
         else
         {
@@ -373,10 +377,77 @@ public class TARHeader extends UnixFileHeader
         channel.write(buffer);
     }
 
-    private void writeGnuHeader(SeekableByteChannel channel)
+    private void writeGnuHeader(SeekableByteChannel channel) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (filename.chars().anyMatch((c)->c>127))
+        {
+            throw new UnsupportedOperationException(filename+" characters not us-ascii not supported");
+        }
+        if (linkname != null && linkname.chars().anyMatch((c)->c>127))
+        {
+            throw new UnsupportedOperationException(linkname+" characters not us-ascii not supported");
+        }
+        if (splitPath != null && (linkname == null || linkname.length() <= 100))
+        {
+            buffer.position(0).limit(BLOCK_SIZE);
+            putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, GNU_MAGIC, splitPath[1]);
+            buffer.position(0).limit(BLOCK_SIZE);
+            channel.write(buffer);
+        }
+        else
+        {
+            if (splitPath == null)
+            {
+                buffer.position(BLOCK_SIZE).limit(buffer.capacity());
+                buffer.put(filename.getBytes(US_ASCII)).put((byte)0);
+                int extLen = (int) buffer.position()-BLOCK_SIZE;
+                int extHdrLen = (int) nextBlock(extLen);
+                buffer.position(0).limit(BLOCK_SIZE);
+                putUstarHeader(buffer, "././@LongLink/"+filename, extLen, (byte)'L', linkname, GNU_MAGIC, null);
+                buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
+                putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, GNU_MAGIC, null);
+                buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
+                channel.write(buffer);
+            }
+            if (linkname != null && linkname.length() > 100)
+            {
+                buffer.position(BLOCK_SIZE).limit(buffer.capacity());
+                buffer.put(linkname.getBytes(US_ASCII)).put((byte)0);
+                int extLen = (int) buffer.position()-BLOCK_SIZE;
+                int extHdrLen = (int) nextBlock(extLen);
+                buffer.position(0).limit(BLOCK_SIZE);
+                putUstarHeader(buffer, "././@LongLink/"+filename, extLen, (byte)'K', linkname, GNU_MAGIC, null);
+                buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
+                putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, GNU_MAGIC, null);
+                buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
+                channel.write(buffer);
+            }
+        }
     }
+    private void writeUstarHeader(SeekableByteChannel channel) throws IOException
+    {
+        if (filename.chars().anyMatch((c)->c>127))
+        {
+            throw new UnsupportedOperationException(filename+" characters not us-ascii not supported");
+        }
+        if (linkname != null && linkname.chars().anyMatch((c)->c>127))
+        {
+            throw new UnsupportedOperationException(linkname+" characters not us-ascii not supported");
+        }
+        if (splitPath == null)
+        {
+            throw new UnsupportedOperationException(filename+" too long");
+        }
+        if (linkname != null && linkname.length() > 100)
+        {
+            throw new UnsupportedOperationException(linkname+" too long");
+        }
+        buffer.position(0).limit(BLOCK_SIZE);
+        putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, splitPath[1]);
+        buffer.position(0).limit(BLOCK_SIZE);
+        channel.write(buffer);
+    }
+
     private byte typeFlagFromAttributes()
     {
         switch (type)
@@ -406,12 +477,14 @@ public class TARHeader extends UnixFileHeader
         {
             putPaxData(bb, "uid", uid);
         }
-        if (linkname != null && linkname.length() >= 100)
+        if (linkname != null)
         {
-            putPaxData(bb, "linkpath", linkname);
+            if (linkname.length() >= 100 || linkname.chars().anyMatch((c)->c>127))
+            {
+                putPaxData(bb, "linkpath", linkname);
+            }
         }
-        String[] splitFilename = splitFilename(filename);
-        if (splitFilename == null)
+        if (splitPath == null || filename.chars().anyMatch((c)->c>127))
         {
             putPaxData(bb, "path", filename);
         }
