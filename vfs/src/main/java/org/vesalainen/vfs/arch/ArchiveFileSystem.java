@@ -252,7 +252,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                         break;
                 }
             }
-            if (header.hasDigest())
+            if (header.supportsDigest())
             {
                 // checksum
                 String digestAlgorithm = header.digestAlgorithm();
@@ -302,11 +302,18 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                 String linkname = link != null ? link.toString() : null;
                 inodes.put(inode, r);
                 header.clear();
-                header.store(channel, r.toString(), format, linkname, all);
+                byte[] digest = null;
+                // checksum
+                String digestAlgorithm = header.digestAlgorithm();
+                if (digestAlgorithm != null)
+                {
+                    digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
+                }
+                header.store(channel, r.toString(), format, linkname, all, digest);
                 long size = header.size();
                 if (size > 0)
                 {
-                    try (FileChannel ch = FileChannel.open(r, READ))
+                    try (FileChannel ch = FileChannel.open(r, READ, NOFOLLOW_LINKS))
                     {
                         ch.transferTo(0, size, channel);
                     }
@@ -317,7 +324,8 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
                 throw new RuntimeException(ex);
             }
         });
-        header.storeEof(channel);
+        header.clear();
+        header.storeEof(channel, format);
     }
 
     @Override

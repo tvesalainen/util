@@ -55,15 +55,35 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
         testLongNames(fs);
     }
 
-    @Test
+    //@Test
     public void testWritePosix() throws IOException
     {
         testWrite("z:\\test\\posix.tar.gz", TAR_PAX);
     }
-    @Test
+    //@Test
     public void testWriteGnu() throws IOException
     {
         testWrite("z:\\test\\gnu.tar.gz", TAR_GNU);
+    }
+    //@Test
+    public void testWriteNewC() throws IOException
+    {
+        testWrite("z:\\test\\newc.cpio.gz", CPIO_NEWC);
+    }
+    //@Test
+    public void testWriteCRC() throws IOException
+    {
+        testWrite("z:\\test\\crc.cpio.gz", CPIO_CRC);
+    }
+    //@Test
+    public void testWriteODC() throws IOException
+    {
+        testWrite("z:\\test\\odc.cpio.gz", CPIO_ODC);
+    }
+    @Test
+    public void testWriteBin() throws IOException
+    {
+        testWrite("z:\\test\\bin.cpio.gz", CPIO_BIN);
     }
     public void testWrite(String filename, FileFormat format) throws IOException
     {
@@ -83,7 +103,10 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
         }
         FileSystem tfs = FileSystems.newFileSystem(path, null);
         testFileSystem(tfs);
-        testUserAndGroup(tfs);
+        if (format.name().startsWith("TAR_"))
+        {
+            testUserAndGroup(tfs);
+        }
         testLongNames(tfs);
     }
 }

@@ -23,7 +23,7 @@ import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import org.vesalainen.lang.Casts;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.HexDump;
@@ -45,14 +45,16 @@ public class CPIOHeader extends UnixFileHeader
     private int namesize;
     private int checksum;
     private Map<Inode,String> inodes = new HashMap<>();
-    private Handler[] handlers = new Handler[] 
-    {
-        new NewAsciiHeader(),
-        new CRCHeader(),
-        new BinaryHeader(),
-        new AsciiHeader()
-    };
+    private Map<FileFormat,Handler> handlers = new HashMap<>(); 
     private Handler handler;
+
+    public CPIOHeader()
+    {
+        handlers.put(FileFormat.CPIO_NEWC, new NewAsciiHeader());
+        handlers.put(FileFormat.CPIO_CRC, new CRCHeader());
+        handlers.put(FileFormat.CPIO_BIN, new BinaryHeader());
+        handlers.put(FileFormat.CPIO_ODC, new AsciiHeader());
+    }
 
     @Override
     public boolean isEof()
@@ -76,7 +78,7 @@ public class CPIOHeader extends UnixFileHeader
         {
             buffer.limit(6);
             channel.read(buffer);
-            for (Handler h : handlers)
+            for (Handler h : handlers.values())
             {
                 if (h.isMyHeader(buffer))
                 {
@@ -146,18 +148,36 @@ public class CPIOHeader extends UnixFileHeader
         return new String(b, 0, b.length, US_ASCII);
     }
     @Override
-    public void store(SeekableByteChannel channel, String fn, FileFormat format, Map<String, Object> attributes) throws IOException
+    public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
     {
         addAll(attributes);
-        this.filename = fn;
+        this.filename = filename;
         if (!isEof())
         {
             fromAttributes();
         }
-        namesize = fn.length()+1;
+        namesize = filename.length()+1;
+        switch (format)
+        {
+            case CPIO_NEWC:
+                putNewC(channel, (byte)'1', 0);
+                break;
+            case CPIO_CRC:
+                putNewC(channel, (byte)'2', Primitives.readInt(digest));
+                break;
+            case CPIO_ODC:
+                putAscii(channel, (byte)'7');
+                break;
+            case CPIO_BIN:
+                putBin(channel, (byte)'7');
+                break;
+        }
+    }
+    private void putNewC(SeekableByteChannel channel, byte id, int chksum) throws IOException
+    {
         align(channel, 4);
         buffer.clear();
-        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'1');
+        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put(id);
         put(buffer, inode, 8, 16);
         put(buffer, mode, 8, 16);
         put(buffer, uid, 8, 16);
@@ -169,57 +189,90 @@ public class CPIOHeader extends UnixFileHeader
         put(buffer, devminor, 8, 16);
         put(buffer, rdevmajor, 8, 16);
         put(buffer, rdevminor, 8, 16);
-        put(buffer, namesize, 8, 16);
+        put(buffer, filename.length()+1, 8, 16);
         put(buffer, checksum, 8, 16);
         buffer.flip();
         channel.write(buffer);
         buffer.clear();
-        buffer.put(fn.getBytes(US_ASCII));
+        buffer.put(filename.getBytes(US_ASCII));
         buffer.put((byte)0);
         buffer.flip();
         channel.write(buffer);
         align(channel, 4);
+    }
+    private void putAscii(SeekableByteChannel channel, byte id) throws IOException
+    {
+        buffer.clear();
+        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put(id);
+        put(buffer, rdevminor, 6, 8);
+        put(buffer, inode, 6, 8);
+        put(buffer, mode, 6, 8);
+        put(buffer, uid, 6, 8);
+        put(buffer, gid, 6, 8);
+        put(buffer, nlink, 6, 8);
+        put(buffer, 0, 6, 8);
+        put(buffer, mtime, 11, 8);
+        put(buffer, filename.length()+1, 6, 8);
+        put(buffer, size, 11, 8);
+        buffer.flip();
+        channel.write(buffer);
+        buffer.clear();
+        buffer.put(filename.getBytes(US_ASCII));
+        buffer.put((byte)0);
+        buffer.flip();
+        channel.write(buffer);
+    }
+
+    private void putBin(SeekableByteChannel channel, byte b) throws IOException
+    {
+        align(channel, 2);
+        buffer.clear();
+        buffer.putShort((short)070707);
+        buffer.putShort((short)devminor);
+        buffer.putShort((short)inode);
+        buffer.putShort((short)mode);
+        buffer.putShort((short)uid);
+        buffer.putShort((short)gid);
+        buffer.putShort((short)nlink);
+        buffer.putShort((short)0);
+        buffer.putShort((short) (mtime>>16));
+        buffer.putShort((short) (mtime & 0xffff));
+        buffer.putShort((short) (filename.length()+1));
+        buffer.putShort((short) (size>>16));
+        buffer.putShort((short) (size & 0xffff));
+        buffer.flip();
+        channel.write(buffer);
+        buffer.clear();
+        buffer.put(filename.getBytes(US_ASCII));
+        buffer.put((byte)0);
+        buffer.flip();
+        channel.write(buffer);
+        System.err.println(filename);
     }
 
     @Override
-    public void storeEof(SeekableByteChannel channel) throws IOException
+    public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
-        align(channel, 4);
-        buffer.clear();
-        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'1');
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 1, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, 0, 8, 16);
-        put(buffer, TRAILER.length()+1, 8, 16);
-        put(buffer, 0, 8, 16);
-        buffer.flip();
-        channel.write(buffer);
-        buffer.clear();
-        buffer.put(TRAILER.getBytes(US_ASCII));
-        buffer.put((byte)0);
-        buffer.flip();
-        channel.write(buffer);
-        long alignedPosition = alignedPosition(channel, 4);
-        buffer.clear();
-        int skip = (int) (alignedPosition - channel.position());
-        for (int ii=0;ii<skip;ii++)
+        filename = TRAILER;
+        switch (format)
         {
-            buffer.put((byte)0);
+            case CPIO_NEWC:
+                putNewC(channel, (byte)'1', 0);
+                break;
+            case CPIO_CRC:
+                putNewC(channel, (byte)'2', 0);
+                break;
+            case CPIO_ODC:
+                putAscii(channel, (byte)'7');
+                break;
+            case CPIO_BIN:
+                putBin(channel, (byte)'7');
+                break;
         }
-        buffer.flip();
-        channel.write(buffer);
     }
     
     @Override
-    public boolean hasDigest()
+    public boolean supportsDigest()
     {
         return digestAlgorithm() != null && checksum != 0;
     }
@@ -233,21 +286,40 @@ public class CPIOHeader extends UnixFileHeader
     @Override
     public String digestAlgorithm()
     {
-        return handler.digestAlgorithm();
+        if (handler != null)
+        {
+            return handler.digestAlgorithm();
+        }
+        else
+        {
+            return CPIO_CHECKSUM;
+        }
+    }
+
+    @Override
+    public long size()
+    {
+        switch (type)
+        {
+            case REGULAR:
+            case SYMBOLIC:
+                return size;
+            default:
+                return 0;
+        }
     }
     
+    private void put(ByteBuffer bb, short v, int length, int radix) throws IOException
+    {
+        put(bb, Casts.castUnsignedLong(v), length, radix);
+    }
+    private void put(ByteBuffer bb, int v, int length, int radix) throws IOException
+    {
+        put(bb, Casts.castUnsignedLong(v), length, radix);
+    }
     private void put(ByteBuffer bb, long v, int length, int radix) throws IOException
     {
-        long div = radix;
-        for (int ii=2;ii<length;ii++)
-        {
-            div *= radix;
-        }
-        for (int ii=0;ii<length;ii++)
-        {
-            bb.put((byte) Character.forDigit((int) (v/div), radix));
-            div /= radix;
-        }
+        Primitives.toDigits(v, length, radix).forEach((i)->bb.put((byte)i));
     }
     private int getInt(ByteBuffer bb, int length, int radix) throws IOException
     {
@@ -269,6 +341,7 @@ public class CPIOHeader extends UnixFileHeader
         }
         return res;
     }
+
     private abstract class Handler
     {
         protected abstract void align(SeekableByteChannel ch) throws IOException;
@@ -340,7 +413,7 @@ public class CPIOHeader extends UnixFileHeader
             }
             bb.position(6);
             inode = getInt(bb, 8, 16);
-            mode = getInt(bb, 8, 16);
+            mode = Casts.castUnsignedShort(getInt(bb, 8, 16));
             uid = getInt(bb, 8, 16);
             gid = getInt(bb, 8, 16);
             nlink = getInt(bb, 8, 16);
@@ -397,7 +470,7 @@ public class CPIOHeader extends UnixFileHeader
             bb.position(6);
             devminor = getInt(bb, 6, 8);
             inode = getInt(bb, 6, 8);
-            mode = getInt(bb, 6, 8);
+            mode = Casts.castUnsignedShort(getInt(bb, 6, 8));
             uid = getInt(bb, 6, 8);
             gid = getInt(bb, 6, 8);
             nlink = getInt(bb, 6, 8);
@@ -474,6 +547,7 @@ public class CPIOHeader extends UnixFileHeader
             size = bb.getShort()*0x10000+bb.getShort();
             filename = readString(channel, bb, namesize-1);
             skip(channel, 1);
+            System.err.println(filename);
         }
 
         @Override

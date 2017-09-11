@@ -35,7 +35,7 @@ public abstract class UnixFileHeader extends Header
     protected UnixFileAttributes unix;
     
     protected int inode;
-    protected int mode;
+    protected short mode;
     protected long uid;
     protected long gid;
     protected int nlink = 1;
@@ -129,7 +129,6 @@ public abstract class UnixFileHeader extends Header
                 if (unix.isSymbolicLink())
                 {
                     type = SYMBOLIC;
-                    size = 0;
                 }
             }
         }

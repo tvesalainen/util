@@ -52,6 +52,7 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.Lists;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystem;
 import org.vesalainen.vfs.arch.tar.TARFileSystem;
@@ -120,14 +122,14 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         viewSuppliers.put(name, func);
     }
     
-    private VirtualFile getFile(Path path, CopyOption... options)
+    private VirtualFile getFile(Path path, boolean nofollow_links)
     {
         Path p = path.toAbsolutePath();
         VirtualFile file = store(p).get(p);
-        if (file != null && !ArrayHelp.contains(options, NOFOLLOW_LINKS) && file.isSymbolicLink())
+        if (file != null && !nofollow_links && file.isSymbolicLink())
         {
             Path normalized = path.resolveSibling(file.getSymbolicTarget()).normalize();
-            return getFile(normalized, options);
+            return getFile(normalized, nofollow_links);
         }
         else
         {
@@ -186,7 +188,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
         Path p = path.toAbsolutePath();
-        VirtualFile file = getFile(p);
+        VirtualFile file = getFile(p, options.contains(NOFOLLOW_LINKS));
         Set<OpenOption> opts = new HashSet<>(options);
         if (!opts.contains(READ) && !opts.contains(WRITE) && !opts.contains(APPEND))
         {
@@ -372,8 +374,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public boolean isSameFile(Path path, Path path2) throws IOException
     {
-        VirtualFile file = getFile(path);
-        VirtualFile file2 = getFile(path2);
+        VirtualFile file = getFile(path, false);
+        VirtualFile file2 = getFile(path2, false);
         return file != null && file2 != null && file.equals(file2);
     }
 
@@ -414,7 +416,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
         }
-        VirtualFile file = getFile(path, options);
+        VirtualFile file = getFile(path, ArrayHelp.contains(options, NOFOLLOW_LINKS));
         if (file != null)
         {
             return file.getFileAttributeView(type);
@@ -495,7 +497,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     }
     private VirtualFile find(Path path,  CopyOption... options) throws NoSuchFileException
     {
-        VirtualFile file = getFile(path.toAbsolutePath(), options);
+        VirtualFile file = getFile(path.toAbsolutePath(), ArrayHelp.contains(options, NOFOLLOW_LINKS));
         if (file == null)
         {
             throw new NoSuchFileException(path.toString());
@@ -504,7 +506,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     }
     private void checkNotExists(Path path) throws FileAlreadyExistsException
     {
-        VirtualFile file = getFile(path);
+        VirtualFile file = getFile(path, false);
         if (file != null)
         {
             throw new FileAlreadyExistsException(path.toString());
@@ -515,7 +517,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         Path parent = path.toAbsolutePath().getParent();
         if (parent != null)
         {
-            VirtualFile dir = getFile(parent);
+            VirtualFile dir = getFile(parent, false);
             if (dir == null)
             {
                 throw new IOException(parent+" doesn't exist");

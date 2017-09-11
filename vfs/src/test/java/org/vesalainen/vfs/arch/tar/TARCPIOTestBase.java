@@ -52,6 +52,7 @@ public class TARCPIOTestBase
         Set<PosixFilePermission> expPerm = PosixFilePermissions.fromString("rw-r--r--");
         assertEquals(expPerm, Files.getPosixFilePermissions(smalltxt));
         assertTrue(Files.isSymbolicLink(smallsymbolic));
+        assertTrue(Files.size(smallsymbolic) > 0);
         assertEquals(smalltxt, Files.readSymbolicLink(smallsymbolic));
         // attributes
         UnixFileAttributes unixAttrs = Files.readAttributes(smalltxt, UnixFileAttributes.class);

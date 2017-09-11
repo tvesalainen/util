@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntPredicate;
+import org.vesalainen.lang.Casts;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.CharSequences;
@@ -183,7 +184,7 @@ public class TARHeader extends UnixFileHeader
     {
         CharSequence seq = CharSequences.getAsciiCharSequence(bb);
         filename = getString(seq, 0, 100);
-        mode = getInt(seq, 100, 8);
+        mode = Casts.castShort(getInt(seq, 100, 8));
         uid = getInt(seq, 108, 8);
         gid = getInt(seq, 116, 8);
         size = getLong(seq, 124, 12);
@@ -326,7 +327,7 @@ public class TARHeader extends UnixFileHeader
         return new String(baos.toByteArray(), UTF_8);
     }
     @Override
-    public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes) throws IOException
+    public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
     {
         align(channel, BLOCK_SIZE);
         addAll(attributes);
@@ -338,6 +339,10 @@ public class TARHeader extends UnixFileHeader
         if (type == REGULAR && linkname != null)
         {
             type = HARD;
+            size = 0;
+        }
+        if (type == SYMBOLIC)
+        {
             size = 0;
         }
         switch (format)
@@ -608,7 +613,7 @@ public class TARHeader extends UnixFileHeader
         bb.position(newPosition);
     }
     @Override
-    public void storeEof(SeekableByteChannel channel) throws IOException
+    public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
         align(channel, BLOCK_SIZE);
         align(channel, BLOCK_SIZE);
@@ -624,11 +629,11 @@ public class TARHeader extends UnixFileHeader
     @Override
     public String digestAlgorithm()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
-    public boolean hasDigest()
+    public boolean supportsDigest()
     {
         return false;
     }

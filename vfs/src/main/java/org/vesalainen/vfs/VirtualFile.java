@@ -318,7 +318,7 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         if (waterMark > content.capacity())
         {
             int blockSize = fileStore.getBlockSize();
-            int newCapacity = ((waterMark / blockSize) + 1) * blockSize;
+            int newCapacity = Math.max(((waterMark / blockSize) + 1) * blockSize, 2*content.capacity());
             ByteBuffer newBB = ByteBuffer.allocateDirect(newCapacity);
             newBB.put(content);
             newBB.flip();
