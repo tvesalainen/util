@@ -34,8 +34,11 @@ public class CastsTest
     @Test
     public void test1()
     {
-        assertEquals(255, castUnsignedInt((byte)255));
-        assertEquals(63210, castUnsignedInt((short)63210));
+        assertEquals(255, castUnsignedInt((byte)-1));
+        assertEquals(65535, castUnsignedInt((short)-1));
+        assertEquals(255, castUnsignedLong((byte)-1));
+        assertEquals(65535, castUnsignedLong((short)-1));
+        assertEquals(4294967295L, castUnsignedLong((int)-1));
     }
     
 }

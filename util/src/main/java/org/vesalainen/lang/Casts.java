@@ -42,7 +42,7 @@ public class Casts
     }
     public static final long castUnsignedLong(int v)
     {
-        return v & 0xffffffff;
+        return v & 0xffffffffL;
     }
     public static final int castInt(long v)
     {
