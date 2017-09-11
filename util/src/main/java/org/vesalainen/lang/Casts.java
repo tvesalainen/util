@@ -52,6 +52,14 @@ public class Casts
         }
         return (long) v;
     }
+    public static final int castUnsignedInt(long v)
+    {
+        if ((v & 0xffffffff) != v)
+        {
+            throw new IllegalArgumentException(v+" cannot be cast to int");
+        }
+        return (int) v;
+    }
     public static final int castInt(long v)
     {
         if (v > Integer.MAX_VALUE || v < Integer.MIN_VALUE)
@@ -67,6 +75,14 @@ public class Casts
             throw new IllegalArgumentException(v+" cannot be cast to int");
         }
         return (int) v;
+    }
+    public static final short castUnsignedShort(long v)
+    {
+        if ((v & 0xffff) != v)
+        {
+            throw new IllegalArgumentException(v+" cannot be cast to unsigned short");
+        }
+        return (short) v;
     }
     public static final short castShort(long v)
     {
