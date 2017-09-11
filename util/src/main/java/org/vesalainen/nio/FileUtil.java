@@ -252,7 +252,9 @@ public class FileUtil
     }
     /**
      * Enhances Files.copy to directory. If both source and target are 
-     * directories the source directory structure is copied to target.
+     * directories the source directory structure is copied to target. Supports 
+     * also copying from file system to another. I.e source and target doesn't 
+     * have to be from same file system.
      * @param source
      * @param target
      * @param options
