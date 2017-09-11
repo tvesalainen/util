@@ -44,6 +44,14 @@ public class Casts
     {
         return v & 0xffffffffL;
     }
+    public static final long castLong(double v)
+    {
+        if (v > Long.MAX_VALUE || v < Long.MIN_VALUE)
+        {
+            throw new IllegalArgumentException(v+" cannot be cast to long");
+        }
+        return (long) v;
+    }
     public static final int castInt(long v)
     {
         if (v > Integer.MAX_VALUE || v < Integer.MIN_VALUE)

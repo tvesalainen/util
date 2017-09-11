@@ -17,12 +17,21 @@
 
 package org.vesalainen.lang;
 
+import java.util.PrimitiveIterator;
+import java.util.PrimitiveIterator.OfInt;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 import org.vesalainen.util.CharSequences;
 
 /**
  * Numbers class contains number parsing methods parsing numbers from CharSequence
  * rather that String. This is the main difference to parsing methods in Integer,
  * Float, ...
+ * <p>
+ * Additionally there are more useful methods.
  * 
  * <p>For most numbers, methods in this class return the same as methods in 
  * java.lang. 
@@ -37,9 +46,51 @@ import org.vesalainen.util.CharSequences;
  */
 public class Primitives
 {
-    private static final int IntLimit = Integer.MAX_VALUE/10-10;
-    private static final long LongLimit = Long.MAX_VALUE/10-10;
+    private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
+    private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
+    /**
+     * Returns IntStream where each item is a digit. I.e zero leading digits.
+     * @param v
+     * @param length
+     * @param radix
+     * @return 
+     */
+    public static final IntStream toDigits(long v, int length, int radix)
+    {
+        Spliterator.OfInt spliterator = Spliterators.spliterator(new PRimIt(v, length, radix), Long.MAX_VALUE, 0);
+        return StreamSupport.intStream(spliterator, false);
+    }
+    private static class PRimIt implements PrimitiveIterator.OfInt
+    {
+        private long v;
+        private int radix;
+        private long div;
 
+        public PRimIt(long v, int length, int radix)
+        {
+            this.v = v;
+            this.radix = radix;
+            div = Casts.castLong(Math.pow(radix, length-1));
+            if (Long.divideUnsigned(v, div) >= div)
+            {
+                throw new IllegalArgumentException(v+" doesn't fit to length="+length);
+            }
+        }
+        
+        @Override
+        public int nextInt()
+        {
+            long d = Long.divideUnsigned(v, div);
+            div /= radix;
+            return Character.forDigit((int) Long.remainderUnsigned(d, radix), radix);
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return div > 0;
+        }
+    }
     private enum FloatState {Significand, Decimal, Exponent};
     /**
      * Write value to byte array
@@ -573,7 +624,7 @@ public class Primitives
                     int digit = Character.digit(cp, 10);
                     if (digit != -1)
                     {
-                        if (!overFlow && significand > IntLimit)
+                        if (!overFlow && significand > INT_LIMIT)
                         {
                             overFlow = true;
                         }
@@ -724,7 +775,7 @@ public class Primitives
                     int digit = Character.digit(cp, 10);
                     if (digit != -1)
                     {
-                        if (!overFlow && significand > LongLimit)
+                        if (!overFlow && significand > LONG_LIMIT)
                         {
                             overFlow = true;
                         }

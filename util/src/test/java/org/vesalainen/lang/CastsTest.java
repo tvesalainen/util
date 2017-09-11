@@ -39,6 +39,7 @@ public class CastsTest
         assertEquals(255, castUnsignedLong((byte)-1));
         assertEquals(65535, castUnsignedLong((short)-1));
         assertEquals(4294967295L, castUnsignedLong((int)-1));
+        assertEquals(0x80000000L, castUnsignedLong((int)0x80000000));
     }
     
 }

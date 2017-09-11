@@ -887,4 +887,27 @@ public class PrimitivesTest
         assertEquals(0b01110101, Primitives.parseInt("0b01110101"));
         assertEquals(0b01110101, Primitives.parseLong("0b01110101"));
     }
+    @Test
+    public void testToDigits()
+    {
+        assertEquals("00001234", Primitives.toDigits(1234, 8, 10).collect(StringBuilder::new, (s,c)->s.append((char)c), null).toString());
+        assertEquals("9223372036854775807", Primitives.toDigits(Long.MAX_VALUE, 19, 10).collect(StringBuilder::new, (s,c)->s.append((char)c), null).toString());
+        assertEquals("007fffffff", Primitives.toDigits(Integer.MAX_VALUE, 10, 16).collect(StringBuilder::new, (s,c)->s.append((char)c), null).toString());
+        try
+        {
+            String str = Primitives.toDigits(100, 2, 10).collect(StringBuilder::new, (s,c)->s.append((char)c), null).toString();
+            fail("IllegalArgumentException");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+        try
+        {
+            String str = Primitives.toDigits(100, 1000, 10).collect(StringBuilder::new, (s,c)->s.append((char)c), null).toString();
+            fail("IllegalArgumentException");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+    }
 }
