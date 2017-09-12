@@ -85,6 +85,8 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private FileTime lastModified;
     private Lock readLock = new ReentrantLock();
     private Lock writeLock = new ReentrantLock();
+    private boolean closeChannel;
+    private boolean isClosed;
     /**
      * Creates GZIPChannel
      * @param path
@@ -96,6 +98,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     public GZIPChannel(Path path, int bufSize, int maxSkipSize, OpenOption... options) throws IOException
     {
         this(path, FileChannel.open(path, options), bufSize, maxSkipSize, Arrays.stream(options).collect(Collectors.toSet()));
+        closeChannel = true;
     }
     /**
      * Creates GZIPChannel
@@ -107,6 +110,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     public GZIPChannel(Path path, OpenOption... options) throws IOException
     {
         this(path, FileChannel.open(path, options), 4096, 0, Arrays.stream(options).collect(Collectors.toSet()));
+        closeChannel = true;
     }
     /**
      * Creates GZIPChannel
@@ -120,6 +124,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     public GZIPChannel(Path path, Set<? extends OpenOption> options, int bufSize, int maxSkipSize, FileAttribute<?>... attrs) throws IOException
     {
         this(path, FileChannel.open(path, options, attrs), bufSize, maxSkipSize, options);
+        closeChannel = true;
     }
     /**
      * Creates GZIPChannel
@@ -132,6 +137,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     public GZIPChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
         this(path, FileChannel.open(path, options, attrs), 4096, 0, options);
+        closeChannel = true;
     }
     /**
      * Creates GZIPChannel. Channel is closed when GZIPChannel is closed.
@@ -394,26 +400,44 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         }
         return count;
     }
-
+    /**
+     * Returns true if not closed
+     * @return 
+     */
     @Override
     public boolean isOpen()
     {
-        return channel.isOpen();
+        return !isClosed;
     }
-
+    /**
+     * Closes channel. Underlying channel is closed only if it was opened
+     * by one of constructors.
+     * @throws IOException 
+     */
     @Override
     public void close() throws IOException
     {
-        if (channel.isOpen())
+        if (!isClosed)
         {
-            if (deflater != null)
+            flush();
+            if (closeChannel)
             {
-                writeTrailer();
+                channel.close();
             }
-            channel.close();
+            isClosed = true;
         }
     }
-
+    /**
+     * Finishes compression in write mode.
+     * @throws IOException 
+     */
+    public void flush() throws IOException
+    {
+        if (deflater != null)
+        {
+            writeTrailer();
+        }
+    }
     private void ensureReading() throws IOException
     {
         if (!isOpen())
