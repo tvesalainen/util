@@ -19,7 +19,6 @@ package org.vesalainen.util;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -27,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,13 +45,31 @@ public class WeakList<T> implements List<T>
     private final List<WeakReference<T>> list = new ArrayList<>();
     private boolean gc;
     private Set<T> lock;
-
+    private BiPredicate eq = Objects::equals;
+    /**
+     * Creates a WeakList using equals for comparison
+     * @see java.util.Objects#equals(java.lang.Object, java.lang.Object) 
+     */
     public WeakList()
     {
+        this(Objects::equals);
+    }
+    /**
+     * Creates a WeakList using given predicate for comparison
+     * @param eq 
+     */
+    public WeakList(BiPredicate eq)
+    {
+        this.eq = eq;
     }
 
     public WeakList(Collection<T> col)
     {
+        this(Objects::equals, col);
+    }
+    public WeakList(BiPredicate eq, Collection<T> col)
+    {
+        this.eq = eq;
         addAll(col);
     }
     /**
@@ -91,7 +109,7 @@ public class WeakList<T> implements List<T>
     @Override
     public boolean contains(Object o)
     {
-        return stream().anyMatch((x)->{return x.equals(o);});
+        return stream().anyMatch((x)->{return eq.test(x, o);});
     }
 
     @Override
@@ -153,7 +171,7 @@ public class WeakList<T> implements List<T>
             }
             else
             {
-                if (Objects.equals(t, o))
+                if (eq.test(t, o))
                 {
                     iterator.remove();
                     return true;
@@ -170,7 +188,7 @@ public class WeakList<T> implements List<T>
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c)
+    public final boolean addAll(Collection<? extends T> c)
     {
         for (T t : c)
         {

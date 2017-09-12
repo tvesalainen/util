@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 /**
@@ -29,7 +30,23 @@ import java.util.stream.Stream;
  */
 public class WeakSet<T> implements Set<T>
 {
-    private WeakList<T> list = new WeakList<>();
+    private WeakList<T> list;
+    /**
+     * Creates WeakSet using equals for comparison.
+     * @see java.util.Objects#equals(java.lang.Object, java.lang.Object) 
+     */
+    public WeakSet()
+    {
+        list = new WeakList<>();
+    }
+    /**
+     * Creates WeakSet using given predicate for comparison.
+     * @param eq 
+     */
+    public WeakSet(BiPredicate eq)
+    {
+        list = new WeakList<>(eq);
+    }
 
     public void lock()
     {
