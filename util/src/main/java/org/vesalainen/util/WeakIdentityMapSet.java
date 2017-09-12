@@ -17,7 +17,6 @@
 package org.vesalainen.util;
 
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,7 +26,7 @@ import java.util.Set;
 public class WeakIdentityMapSet<K,V> extends AbstractMapSet<K,V>
 {
 
-    public WeakIdentityMapSet(Map<K, Set<V>> map)
+    public WeakIdentityMapSet()
     {
         super(new IdentityHashMap<>());
     }
