@@ -411,7 +411,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     }
     /**
      * Closes channel. Underlying channel is closed only if it was opened
-     * by one of constructors.
+     * by one of the constructors.
      * @throws IOException 
      */
     @Override
