@@ -33,10 +33,11 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.vesalainen.lang.Primitives;
+import org.vesalainen.util.MapSet;
+import org.vesalainen.util.WeakIdentityMapSet;
+import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.arch.cpio.SimpleChecksum;
 import org.vesalainen.vfs.attributes.FileAttributeAccess;
@@ -47,15 +48,16 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFile extends FileAttributeAccessStore implements FileAttributeAccess
+public final class VirtualFile extends FileAttributeAccessStore implements FileAttributeAccess, AttachedLogger
 {
 
-    protected enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
-    protected VirtualFileStore fileStore;
-    protected Type type;
-    protected ByteBuffer content;
-    protected Map<String,? extends FileAttributeView> viewMap;
-    protected Path symbolicTarget;
+    public enum Type {REGULAR, DIRECTORY, SYMBOLIC_LINK};
+    private VirtualFileStore fileStore;
+    private Type type;
+    private ByteBuffer content;
+    private Map<String,? extends FileAttributeView> viewMap;
+    private Path symbolicTarget;
+    private MapSet<ByteBuffer,ByteBuffer> refSet = new WeakIdentityMapSet<>();
 
     protected VirtualFile(VirtualFileStore fileStore, Type type, Set<String> views, FileAttribute<?>... attrs) throws IOException
     {
@@ -85,6 +87,11 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         setAttribute(CREATION_TIME, now);
         setAttribute(LAST_ACCESS_TIME, now);
         setAttribute(LAST_MODIFIED_TIME, now);
+    }
+
+    public VirtualFileStore getFileStore()
+    {
+        return fileStore;
     }
 
     @Override
@@ -317,6 +324,10 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
         int waterMark = position+needs;
         if (waterMark > content.capacity())
         {
+            if (refSet.containsKey(content))
+            {
+                throw new IOException("cannot grow file because of writable mapping for content. (non carbage collected mapping?)");
+            }
             int blockSize = fileStore.getBlockSize();
             int newCapacity = Math.max(((waterMark / blockSize) + 1) * blockSize, 2*content.capacity());
             ByteBuffer newBB = ByteBuffer.allocateDirect(newCapacity);
@@ -325,18 +336,24 @@ public class VirtualFile extends FileAttributeAccessStore implements FileAttribu
             content = newBB;
         }
         ByteBuffer bb = content.duplicate();
-        bb.position(position);
-        bb.limit(waterMark);
+        refSet.add(content, bb);
+        bb.limit(waterMark).position(position);
         return bb;
+    }
+    private void growIfNeeded(int position, int needs) throws IOException
+    {
+        
     }
         /**
      * called after writing to commit that writing succeeded up to position.
      * If position > size the size is updated.
      * @param pos 
      */
-    void commit(int pos)
+    void commit(ByteBuffer bb)
     {
-        content.limit(Math.max(content.limit(), pos));
+        content.limit(Math.max(content.limit(), bb.position()));
+        boolean removed = refSet.removeItem(content, bb);
+        assert removed;
     }
     /**
      * File size is set to pos unconditionally.

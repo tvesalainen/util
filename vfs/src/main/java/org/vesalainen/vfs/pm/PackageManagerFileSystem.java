@@ -14,33 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.arch.cpio;
+package org.vesalainen.vfs.pm;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Map;
-import org.vesalainen.vfs.VirtualFileStore;
+import java.nio.channels.SeekableByteChannel;
+import java.util.function.Supplier;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.arch.FileFormat;
+import org.vesalainen.vfs.arch.Header;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CPIOFileSystem extends ArchiveFileSystem
+public class PackageManagerFileSystem extends ArchiveFileSystem
 {
 
-    public CPIOFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    public PackageManagerFileSystem(VirtualFileSystemProvider provider, Supplier<Header> headerSupplier, FileFormat format, SeekableByteChannel channel, boolean readOnly)
     {
-        super(provider, path, env, CPIOHeader::new, 4096, 4);
-        String filename = path.getFileName().toString();
-        addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
-        if (isReadOnly())
-        {
-            load();
-        }
+        super(provider, headerSupplier, format, channel, readOnly);
     }
-
     
 }

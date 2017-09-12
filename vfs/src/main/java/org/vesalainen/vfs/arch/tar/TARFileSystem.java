@@ -19,10 +19,10 @@ package org.vesalainen.vfs.arch.tar;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import static org.vesalainen.vfs.attributes.FileAttributeName.UNIX_VIEW;
-import static org.vesalainen.vfs.attributes.FileAttributeName.USER_VIEW;
+import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
@@ -32,7 +32,13 @@ public class TARFileSystem extends ArchiveFileSystem
 {
     public TARFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
-        super(provider, path, env, TARHeader::new, 4096, 512, UNIX_VIEW, USER_VIEW);
+        super(provider, path, env, TARHeader::new, 4096, 512);
+        String filename = path.getFileName().toString();
+        addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
+        if (isReadOnly())
+        {
+            load();
+        }
     }
     
 }

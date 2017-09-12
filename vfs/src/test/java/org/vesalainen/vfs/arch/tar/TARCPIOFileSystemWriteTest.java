@@ -30,6 +30,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
+import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.arch.ArchiveFileSystem;
 import org.vesalainen.vfs.arch.FileFormat;
 import static org.vesalainen.vfs.arch.FileFormat.*;
@@ -58,42 +59,42 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
     @Test
     public void testWritePosix() throws IOException
     {
-        testWrite("z:\\test\\posix.tar.gz", TAR_PAX);
+        testWrite("posix.tar.gz", TAR_PAX);
     }
     @Test
     public void testWriteGnu() throws IOException
     {
-        testWrite("z:\\test\\gnu.tar.gz", TAR_GNU);
+        testWrite("gnu.tar.gz", TAR_GNU);
     }
     @Test
     public void testWriteNewC() throws IOException
     {
-        testWrite("z:\\test\\newc.cpio.gz", CPIO_NEWC);
+        testWrite("newc.cpio.gz", CPIO_NEWC);
     }
     @Test
     public void testWriteCRC() throws IOException
     {
-        testWrite("z:\\test\\crc.cpio.gz", CPIO_CRC);
+        testWrite("crc.cpio.gz", CPIO_CRC);
     }
     @Test
     public void testWriteODC() throws IOException
     {
-        testWrite("z:\\test\\odc.cpio.gz", CPIO_ODC);
+        testWrite("odc.cpio.gz", CPIO_ODC);
     }
     @Test
     public void testWriteBin() throws IOException
     {
-        testWrite("z:\\test\\bin.cpio.gz", CPIO_BIN);
+        testWrite("bin.cpio.gz", CPIO_BIN);
     }
     public void testWrite(String filename, FileFormat format) throws IOException
     {
-        Path path = Paths.get(filename);
+        FileSystem fs = VirtualFileSystems.getDefault();
+        Path path = fs.getPath(filename);
         Files.deleteIfExists(path);
         Files.createFile(path);
         Map<String,Object> env = new HashMap<>();
         env.put(ArchiveFileSystem.FORMAT, format);
-        FileSystem fileSystem = FileSystems.getFileSystem(VirtualFileSystemProvider.URI);
-        try (FileSystem nfs = fileSystem.provider().newFileSystem(path, env))
+        try (FileSystem nfs = VirtualFileSystems.newFileSystem(path, env))
         {
             Path root = nfs.getRootDirectories().iterator().next();
             FileUtil.copy(fsroot, root, COPY_ATTRIBUTES);

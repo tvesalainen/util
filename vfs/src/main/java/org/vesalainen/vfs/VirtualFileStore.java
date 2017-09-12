@@ -32,9 +32,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.vesalainen.util.HashMapList;
+import org.vesalainen.bean.BeanHelper;
+import org.vesalainen.bean.BeanHelperException;
 import org.vesalainen.util.HashMapSet;
 import org.vesalainen.util.MapSet;
+import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.vfs.VirtualFile.Type;
 import org.vesalainen.vfs.attributes.FileAttributeName;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -43,11 +45,11 @@ import static org.vesalainen.vfs.attributes.FileAttributeName.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFileStore extends FileStore
+public class VirtualFileStore extends FileStore implements AttachedLogger
 {
     protected VirtualFileSystem fileSystem;
     protected ConcurrentNavigableMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
-    protected Map<String,Object> storeAttributes = new HashMap<>();
+    private Map<String,? extends FileStoreAttributeView> viewMap;
     protected Set<String> supportedFileAttributeViews = new HashSet<>();
     protected int blockSize = 4096;
 
@@ -166,19 +168,44 @@ public class VirtualFileStore extends FileStore
     @Override
     public boolean supportsFileAttributeView(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (FileStoreAttributeView view : viewMap.values())
+        {
+            if (view.name().equals(name))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public <V extends FileStoreAttributeView> V getFileStoreAttributeView(Class<V> type)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (FileStoreAttributeView view : viewMap.values())
+        {
+            Class<?>[] interfaces = view.getClass().getInterfaces();
+            if (interfaces.length > 0 && interfaces[0].equals(type))
+            {
+                return (V) view;
+            }
+        }
+        return null;
     }
 
     @Override
     public Object getAttribute(String attribute) throws IOException
     {
-        return storeAttributes.get(attribute);
+        for (FileStoreAttributeView view : viewMap.values())
+        {
+            try
+            {
+                return BeanHelper.getValue(view, attribute);
+            }
+            catch (BeanHelperException ex)
+            {
+            }
+        }
+        return null;
     }
 
     void enumerateInodes(int dev)

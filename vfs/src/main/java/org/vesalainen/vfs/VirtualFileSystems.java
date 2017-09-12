@@ -14,33 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.arch.cpio;
+package org.vesalainen.vfs;
 
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Map;
-import org.vesalainen.vfs.VirtualFileStore;
-import org.vesalainen.vfs.VirtualFileSystemProvider;
-import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import static org.vesalainen.vfs.VirtualFileSystemProvider.URI;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CPIOFileSystem extends ArchiveFileSystem
+public final class VirtualFileSystems
 {
-
-    public CPIOFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    /**
+     * Returns reference to default virtual file system
+     * @return 
+     */
+    public static final FileSystem getDefault()
     {
-        super(provider, path, env, CPIOHeader::new, 4096, 4);
-        String filename = path.getFileName().toString();
-        addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
-        if (isReadOnly())
-        {
-            load();
-        }
+        return FileSystems.getFileSystem(URI);  
     }
-
-    
+    /**
+     * Constructs a new FileSystem to access the contents of a file as a file system.
+     * @param path
+     * @param env
+     * @return
+     * @throws IOException 
+     */
+    public static final FileSystem newFileSystem(Path path, Map<String,?> env) throws IOException
+    {
+        return getDefault().provider().newFileSystem(path, env);
+    }
 }

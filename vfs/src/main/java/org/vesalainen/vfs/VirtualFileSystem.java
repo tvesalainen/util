@@ -31,13 +31,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFileSystem extends FileSystem
+public class VirtualFileSystem extends FileSystem implements AttachedLogger
 {
     private VirtualFileSystemProvider provider;
     // roots in reverse order so that longest fits first
@@ -54,16 +55,22 @@ public class VirtualFileSystem extends FileSystem
         this.provider = provider;
     }
 
-    public final void addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
+    public final Root addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
     {
+        fine("addFileStore(%s, %s, %s)", root, store, defaultStore);
         Root r = new Root(this, root);
         stores.put(r, store);
         supportedFileAttributeViews.addAll(store.supportedFileAttributeViews());
         store.create(r, DIRECTORY);
         if (defaultStore)
         {
+            if (this.defaultRoot != null)
+            {
+                throw new IllegalArgumentException("defaultRoot already set");
+            }
             this.defaultRoot = r;
         }
+        return r;
     }
     public VirtualFileStore getFileStore(Path path)
     {
@@ -155,6 +162,7 @@ public class VirtualFileSystem extends FileSystem
     @Override
     public PathMatcher getPathMatcher(String syntaxAndPattern)
     {
+        fine("getPathMatcher(%s)", syntaxAndPattern);
         String[] split = syntaxAndPattern.split(":");
         if (split.length != 2)
         {

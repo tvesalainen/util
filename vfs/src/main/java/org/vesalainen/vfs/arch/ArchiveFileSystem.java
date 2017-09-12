@@ -35,8 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.vesalainen.nio.channels.GZIPChannel;
+import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.vfs.Root;
-import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystem;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import static org.vesalainen.vfs.arch.FileFormat.*;
@@ -49,7 +49,7 @@ import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class ArchiveFileSystem extends VirtualFileSystem
+public abstract class ArchiveFileSystem extends VirtualFileSystem implements AttachedLogger
 {
     /**
      * Options for file as Set<? extends OpenOption> 
@@ -73,7 +73,15 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
     protected FileFormat format;
     protected SeekableByteChannel channel;
     protected boolean readOnly;
-    protected String filename;
+
+    public ArchiveFileSystem(VirtualFileSystemProvider provider, Supplier<Header> headerSupplier, FileFormat format, SeekableByteChannel channel, boolean readOnly)
+    {
+        super(provider);
+        this.headerSupplier = headerSupplier;
+        this.format = format;
+        this.channel = channel;
+        this.readOnly = readOnly;
+    }
 
     protected ArchiveFileSystem(
             VirtualFileSystemProvider provider, 
@@ -81,8 +89,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             Map<String, ?> env,
             Supplier<Header> headerSupplier,
             int bufSize,
-            int maxSkipSize,
-            String... views
+            int maxSkipSize
     ) throws IOException
     {
         super(provider);
@@ -108,7 +115,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             attrs = new FileAttribute<?>[0];
         }
         format = (FileFormat) env.get(FORMAT);
-        filename = path.getFileName().toString();
+        String filename = path.getFileName().toString();
         if (format == null)
         {
             if (filename.endsWith(".tar.gz") || filename.endsWith(".tar"))
@@ -137,11 +144,6 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
         else
         {
             channel = FileChannel.open(path, opts, attrs);
-        }
-        addFileStore('/'+filename+'/', new VirtualFileStore(this, views), true);
-        if (isReadOnly())
-        {
-            load();
         }
     }
 
@@ -267,7 +269,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem
             header.load(channel);
         }
     }
-    public final void store(Root root) throws IOException   // TODO hard link
+    public final void store(Root root) throws IOException
     {
         enumerateInodes();
         Map<Inode,Path> inodes = new HashMap<>();

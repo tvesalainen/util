@@ -33,14 +33,16 @@ import static java.nio.file.StandardOpenOption.*;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.vesalainen.lang.Casts;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.nio.channels.ChannelHelper;
+import org.vesalainen.util.logging.AttachedLogger;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFileChannel extends FileChannel
+public class VirtualFileChannel extends FileChannel implements AttachedLogger
 {
     private Path path;
     private VirtualFile file;
@@ -137,7 +139,11 @@ public class VirtualFileChannel extends FileChannel
             writeLock.unlock();
         }
     }
-
+    /**
+     * This method does nothing.
+     * @param metaData
+     * @throws IOException 
+     */
     @Override
     public void force(boolean metaData) throws IOException
     {
@@ -258,7 +264,7 @@ public class VirtualFileChannel extends FileChannel
                 assert writeView.position() == position;
                 assert writeView.limit() == position+count;
                 int rc = src.read(writeView);
-                file.commit(writeView.position());
+                file.commit(writeView);
                 return rc;
             }
             return 0;
@@ -279,7 +285,7 @@ public class VirtualFileChannel extends FileChannel
             ByteBuffer writeView = file.writeView(currentPosition, src.remaining());
             int rc = (int) ByteBuffers.move(src, writeView);
             currentPosition = writeView.position();
-            file.commit(writeView.position());
+            file.commit(writeView);
             return rc;
         }
         finally
@@ -305,7 +311,7 @@ public class VirtualFileChannel extends FileChannel
             }
             ByteBuffer writeView = file.writeView((int) position, src.remaining());
             int rc = (int) ByteBuffers.move(src, writeView);
-            file.commit(writeView.position());
+            file.commit(writeView);
             return rc;
         }
         finally
@@ -325,7 +331,11 @@ public class VirtualFileChannel extends FileChannel
         }
     }
     /**
-     * Throws UnsupportedOperationException
+     * Returns DirectByteBuffer which just happens to be a MappedByteBuffer. If
+     * thinks change in the future this method throws UnsupportedOperationException.
+     * This is not likely to happen, but you have been warned!
+     * <p>
+     * PRIVATE mode is not supported. 
      * @param mode
      * @param position
      * @param size
@@ -335,19 +345,61 @@ public class VirtualFileChannel extends FileChannel
     @Override
     public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ByteBuffer writeView;
+        if (MapMode.READ_WRITE == mode)
+        {
+            writeView = file.writeView(Casts.castInt(position), Casts.castInt(size));
+        }
+        else
+        {
+            if (MapMode.READ_ONLY == mode)
+            {
+                writeView = file.readView(Casts.castInt(position));
+            }
+            else
+            {
+                throw new UnsupportedOperationException(mode+" not supported");
+            }
+        }
+        if (writeView instanceof MappedByteBuffer)
+        {
+            ByteBuffer slice = writeView.slice();
+            return (MappedByteBuffer) slice;
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
-
+    /**
+     * Returns always a lock. Locking virtual file makes no sense. Dummy 
+     * implementation is provided so that existing applications don't throw 
+     * exception.
+     * @param position
+     * @param size
+     * @param shared
+     * @return
+     * @throws IOException 
+     */
     @Override
     public FileLock lock(long position, long size, boolean shared) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FileLockImpl(this, position, size, shared);
     }
-
+    /**
+     * Returns always a lock. Locking virtual file makes no sense. Dummy 
+     * implementation is provided so that existing applications don't throw 
+     * exception.
+     * @param position
+     * @param size
+     * @param shared
+     * @return
+     * @throws IOException 
+     */
     @Override
     public FileLock tryLock(long position, long size, boolean shared) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FileLockImpl(this, position, size, shared);
     }
 
     @Override
@@ -385,5 +437,34 @@ public class VirtualFileChannel extends FileChannel
         {
             writeLock.unlock();
         }
+    }
+    public class FileLockImpl extends FileLock
+    {
+        private boolean released;
+        
+        public FileLockImpl(FileChannel channel, long position, long size, boolean shared)
+        {
+            super(channel, position, size, shared);
+        }
+
+        @Override
+        public boolean isValid()
+        {
+            return !released && !isOpen();
+        }
+
+        @Override
+        public void release() throws IOException
+        {
+            if (released)
+            {
+                if (!isOpen())
+                {
+                    throw new ClosedChannelException();
+                }
+                released = true;
+            }
+        }
+        
     }
 }

@@ -52,17 +52,14 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.ArrayHelp;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.vfs.VirtualFile.Type.*;
 import org.vesalainen.vfs.arch.cpio.CPIOFileSystem;
 import org.vesalainen.vfs.arch.tar.TARFileSystem;
@@ -82,7 +79,7 @@ import org.vesalainen.vfs.attributes.UserDefinedFileAttributeViewImpl;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class VirtualFileSystemProvider extends FileSystemProvider
+public class VirtualFileSystemProvider extends FileSystemProvider implements AttachedLogger
 {
     public static final String SCHEME = "org.vesalainen.vfs";
     public static URI URI;
@@ -151,12 +148,14 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public FileSystem newFileSystem(Path path, Map<String, ?> env) throws IOException
     {
+        fine("newFileSystem(%s)", path);
         return FileSystemFactory.getInstance(this, path, env);
     }
 
     @Override
     public FileSystem getFileSystem(URI uri)
     {
+        fine("getFileSystem(%s)", uri);
         if (SCHEME.equalsIgnoreCase(uri.getScheme()))
         {
             try 
@@ -182,11 +181,13 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
+        fine("newByteChannel(%s)", path);
         return newFileChannel(path, options, attrs);
     }
     @Override
     public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
+        fine("newFileChannel(%s)", path);
         Path p = path.toAbsolutePath();
         VirtualFile file = getFile(p, options.contains(NOFOLLOW_LINKS));
         Set<OpenOption> opts = new HashSet<>(options);
@@ -231,6 +232,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path dir, DirectoryStream.Filter<? super Path> filter) throws IOException
     {
+        fine("newDirectoryStream(%s)", dir);
         VirtualFile dirFile = find(dir);
         if (!dirFile.isDirectory())
         {
@@ -242,6 +244,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException
     {
+        fine("createDirectory(%s)", dir);
         Path d = dir.toAbsolutePath();
         checkNotExists(d);
         checkHasDirectory(d);
@@ -251,6 +254,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void delete(Path path) throws IOException
     {
+        fine("delete(%s)", path);
         Path p = path.toAbsolutePath();
         find(p);
         store(p).remove(p);
@@ -259,6 +263,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void createLink(Path link, Path existing) throws IOException
     {
+        fine("createLink(%s, %s)", link, existing);
         Path l = link.toAbsolutePath();
         checkNotExists(l);
         Path e = existing.toAbsolutePath();
@@ -276,6 +281,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void createSymbolicLink(Path link, Path target, FileAttribute<?>... attrs) throws IOException
     {
+        fine("createSymbolicLink(%s, %s)", link, target);
         Path l = link.toAbsolutePath();
         checkNotExists(l);
         checkHasDirectory(l);
@@ -283,12 +289,13 @@ public class VirtualFileSystemProvider extends FileSystemProvider
         VirtualFile created = store(l).create(l, SYMBOLIC_LINK, attrs);
         ByteBuffer writeView = created.writeView(0, bytes.length);
         writeView.put(bytes);
-        created.commit(writeView.position());
+        created.commit(writeView);
     }
 
     @Override
     public Path readSymbolicLink(Path link) throws IOException
     {
+        fine("readSymbolicLink(%s)", link);
         VirtualFile l = find(link, NOFOLLOW_LINKS);
         if (!l.isSymbolicLink())
         {
@@ -300,6 +307,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void copy(Path source, Path target, CopyOption... options) throws IOException
     {
+        fine("copy(%s, %s)", source, target);
         if (!ArrayHelp.containsOnly(options, REPLACE_EXISTING, COPY_ATTRIBUTES, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
@@ -323,7 +331,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
                 ByteBuffer rv = srcFile.readView(0);
                 ByteBuffer wv = trgFile.writeView(0, rv.remaining());
                 long len = ByteBuffers.move(rv, wv);
-                trgFile.commit((int) len);
+                trgFile.commit(wv);
                 break;
             case DIRECTORY:
                 createDirectory(trg);
@@ -343,6 +351,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void move(Path source, Path target, CopyOption... options) throws IOException
     {
+        fine("move(%s, %s)", source, target);
         if (!ArrayHelp.containsOnly(options, REPLACE_EXISTING, ATOMIC_MOVE))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
@@ -374,6 +383,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public boolean isSameFile(Path path, Path path2) throws IOException
     {
+        fine("isSameFile(%s, %s)", path, path2);
         VirtualFile file = getFile(path, false);
         VirtualFile file2 = getFile(path2, false);
         return file != null && file2 != null && file.equals(file2);
@@ -382,6 +392,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public boolean isHidden(Path path) throws IOException
     {
+        fine("isHidden(%s)", path);
         VirtualFile file = find(path);
         DosFileAttributeView dfaw = file.getFileAttributeView(DosFileAttributeView.class);
         if (dfaw != null)
@@ -395,13 +406,15 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public FileStore getFileStore(Path path) throws IOException
     {
+        fine("getFileStore(%s)", path);
         VirtualFile file = find(path);
-        return file.fileStore;
+        return file.getFileStore();
     }
 
     @Override
     public void checkAccess(Path path, AccessMode... modes) throws IOException
     {
+        fine("checkAccess(%s)", path);
         VirtualFile file = find(path);
         if (!file.checkAccess(modes))
         {
@@ -412,6 +425,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options)
     {
+        fine("getFileAttributeView(%s)", path);
         if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
@@ -427,6 +441,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException
     {
+        fine("readAttributes(%s)", path);
         if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
@@ -438,6 +453,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException
     {
+        fine("readAttributes(%s)", path);
         if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");
@@ -449,6 +465,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider
     @Override
     public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException
     {
+        fine("setAttribute(%s, %s, %s)", path, attribute, value);
         if (!ArrayHelp.containsOnly(options, NOFOLLOW_LINKS))
         {
             throw new UnsupportedOperationException("some of "+Arrays.toString(options)+" not supported");

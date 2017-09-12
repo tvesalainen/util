@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.DirectoryNotEmptyException;
@@ -40,12 +41,14 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.nio.file.attribute.UserAttrs;
 import org.vesalainen.regex.Regex;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl;
 import org.vesalainen.vfs.attributes.BasicFileAttributeViewImpl.BasicFileAttributesImpl;
 import org.vesalainen.vfs.attributes.PosixFileAttributeViewImpl;
@@ -62,7 +65,8 @@ public class VirtualFileSystemProviderTest
     FileSystem fileSystem;
     public VirtualFileSystemProviderTest() throws URISyntaxException, IOException
     {
-        fileSystem = FileSystems.getFileSystem(VirtualFileSystemProvider.URI);
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
+        fileSystem = VirtualFileSystems.getDefault();
         Files.createDirectories(fileSystem.getPath("/etc/default/java"));
         Files.createDirectories(fileSystem.getPath("/usr/local/bin"));
         Files.createDirectories(fileSystem.getPath("/usr/local/lib"));
@@ -359,6 +363,11 @@ public class VirtualFileSystemProviderTest
             long tf = ch.transferFrom(ch2, 1, 3);
             assertEquals(3, tf);
             assertArrayEquals("0sd6sd6789".getBytes(), Files.readAllBytes(path));
+            // map
+            MappedByteBuffer mpp = ch.map(FileChannel.MapMode.READ_WRITE, 50, 100);
+            assertFalse(mpp.isReadOnly());
+            assertEquals(0, mpp.position());
+            assertEquals(100, mpp.limit());
         }
     }
  }
