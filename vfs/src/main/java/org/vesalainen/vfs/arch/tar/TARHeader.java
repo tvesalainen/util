@@ -184,7 +184,7 @@ public class TARHeader extends UnixFileHeader
     {
         CharSequence seq = CharSequences.getAsciiCharSequence(bb);
         filename = getString(seq, 0, 100);
-        mode = Casts.castShort(getInt(seq, 100, 8));
+        mode = Casts.castUnsignedShort(getInt(seq, 100, 8));
         uid = getInt(seq, 108, 8);
         gid = getInt(seq, 116, 8);
         size = getLong(seq, 124, 12);

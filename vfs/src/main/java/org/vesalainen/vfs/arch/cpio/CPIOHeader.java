@@ -157,6 +157,14 @@ public class CPIOHeader extends UnixFileHeader
             fromAttributes();
         }
         namesize = filename.length()+1;
+        handler = handlers.get(format);
+        int chksum = 0;
+        if (digest != null)
+        {
+            chksum = Primitives.readInt(digest);
+        }
+        handler.store(channel, chksum);
+        /*
         switch (format)
         {
             case CPIO_NEWC:
@@ -168,10 +176,8 @@ public class CPIOHeader extends UnixFileHeader
             case CPIO_ODC:
                 putAscii(channel, (byte)'7');
                 break;
-            case CPIO_BIN:
-                putBin(channel, (byte)'7');
-                break;
         }
+        */
     }
     private void putNewC(SeekableByteChannel channel, byte id, int chksum) throws IOException
     {
@@ -200,75 +206,12 @@ public class CPIOHeader extends UnixFileHeader
         channel.write(buffer);
         align(channel, 4);
     }
-    private void putAscii(SeekableByteChannel channel, byte id) throws IOException
-    {
-        buffer.clear();
-        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put(id);
-        put(buffer, rdevminor, 6, 8);
-        put(buffer, inode, 6, 8);
-        put(buffer, mode, 6, 8);
-        put(buffer, uid, 6, 8);
-        put(buffer, gid, 6, 8);
-        put(buffer, nlink, 6, 8);
-        put(buffer, 0, 6, 8);
-        put(buffer, mtime, 11, 8);
-        put(buffer, filename.length()+1, 6, 8);
-        put(buffer, size, 11, 8);
-        buffer.flip();
-        channel.write(buffer);
-        buffer.clear();
-        buffer.put(filename.getBytes(US_ASCII));
-        buffer.put((byte)0);
-        buffer.flip();
-        channel.write(buffer);
-    }
-
-    private void putBin(SeekableByteChannel channel, byte b) throws IOException
-    {
-        align(channel, 2);
-        buffer.clear();
-        buffer.putShort((short)070707);
-        buffer.putShort((short)devminor);
-        buffer.putShort((short)inode);
-        buffer.putShort((short)mode);
-        buffer.putShort((short)uid);
-        buffer.putShort((short)gid);
-        buffer.putShort((short)nlink);
-        buffer.putShort((short)0);
-        buffer.putShort((short) (mtime>>16));
-        buffer.putShort((short) (mtime & 0xffff));
-        buffer.putShort((short) (filename.length()+1));
-        buffer.putShort((short) (size>>16));
-        buffer.putShort((short) (size & 0xffff));
-        buffer.flip();
-        channel.write(buffer);
-        buffer.clear();
-        buffer.put(filename.getBytes(US_ASCII));
-        buffer.put((byte)0);
-        buffer.flip();
-        channel.write(buffer);
-        System.err.println(filename);
-    }
-
     @Override
     public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
         filename = TRAILER;
-        switch (format)
-        {
-            case CPIO_NEWC:
-                putNewC(channel, (byte)'1', 0);
-                break;
-            case CPIO_CRC:
-                putNewC(channel, (byte)'2', 0);
-                break;
-            case CPIO_ODC:
-                putAscii(channel, (byte)'7');
-                break;
-            case CPIO_BIN:
-                putBin(channel, (byte)'7');
-                break;
-        }
+        handler = handlers.get(format);
+        handler.store(channel, 0);
     }
     
     @Override
@@ -347,7 +290,7 @@ public class CPIOHeader extends UnixFileHeader
         protected abstract void align(SeekableByteChannel ch) throws IOException;
         protected abstract boolean isMyHeader(ByteBuffer buffer);
         protected abstract void load(SeekableByteChannel ch, ByteBuffer buffer) throws IOException;
-        protected abstract void store(SeekableByteChannel ch) throws IOException;
+        protected abstract void store(SeekableByteChannel ch, int chksum) throws IOException;
         protected String digestAlgorithm()
         {
             return null;
@@ -366,6 +309,12 @@ public class CPIOHeader extends UnixFileHeader
                 }
             }
             return true;
+        }
+
+        @Override
+        protected void store(SeekableByteChannel ch, int chksum) throws IOException
+        {
+            store(ch, (byte)'2', chksum);
         }
 
         @Override
@@ -430,9 +379,37 @@ public class CPIOHeader extends UnixFileHeader
         }
 
         @Override
-        protected void store(SeekableByteChannel ch)
+        protected void store(SeekableByteChannel ch, int chksum) throws IOException
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            store(ch, (byte)'1', chksum);
+        }
+
+        protected void store(SeekableByteChannel channel, byte id, int chksum) throws IOException
+        {
+            align(channel);
+            buffer.clear();
+            buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put(id);
+            put(buffer, inode, 8, 16);
+            put(buffer, mode, 8, 16);
+            put(buffer, uid, 8, 16);
+            put(buffer, gid, 8, 16);
+            put(buffer, nlink, 8, 16);
+            put(buffer, mtime, 8, 16);
+            put(buffer, size, 8, 16);
+            put(buffer, devmajor, 8, 16);
+            put(buffer, devminor, 8, 16);
+            put(buffer, rdevmajor, 8, 16);
+            put(buffer, rdevminor, 8, 16);
+            put(buffer, filename.length()+1, 8, 16);
+            put(buffer, checksum, 8, 16);
+            buffer.flip();
+            channel.write(buffer);
+            buffer.clear();
+            buffer.put(filename.getBytes(US_ASCII));
+            buffer.put((byte)0);
+            buffer.flip();
+            channel.write(buffer);
+            align(channel);
         }
 
     }
@@ -483,9 +460,27 @@ public class CPIOHeader extends UnixFileHeader
         }
 
         @Override
-        protected void store(SeekableByteChannel ch)
+        protected void store(SeekableByteChannel channel, int chksum) throws IOException
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        buffer.clear();
+        buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7');
+        put(buffer, rdevminor, 6, 8);
+        put(buffer, inode, 6, 8);
+        put(buffer, mode, 6, 8);
+        put(buffer, uid, 6, 8);
+        put(buffer, gid, 6, 8);
+        put(buffer, nlink, 6, 8);
+        put(buffer, 0, 6, 8);
+        put(buffer, mtime, 11, 8);
+        put(buffer, filename.length()+1, 6, 8);
+        put(buffer, size, 11, 8);
+        buffer.flip();
+        channel.write(buffer);
+        buffer.clear();
+        buffer.put(filename.getBytes(US_ASCII));
+        buffer.put((byte)0);
+        buffer.flip();
+        channel.write(buffer);
         }
 
     }
@@ -547,13 +542,35 @@ public class CPIOHeader extends UnixFileHeader
             size = bb.getShort()*0x10000+bb.getShort();
             filename = readString(channel, bb, namesize-1);
             skip(channel, 1);
-            System.err.println(filename);
+            align(channel);
         }
 
         @Override
-        protected void store(SeekableByteChannel ch)
+        protected void store(SeekableByteChannel channel, int chksum) throws IOException
         {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            align(channel);
+            buffer.clear();
+            buffer.putShort((short)070707);
+            buffer.putShort((short)devminor);
+            buffer.putShort((short)inode);
+            buffer.putShort((short)mode);
+            buffer.putShort((short)uid);
+            buffer.putShort((short)gid);
+            buffer.putShort((short)nlink);
+            buffer.putShort((short)0);
+            buffer.putShort((short) (mtime>>16));
+            buffer.putShort((short) (mtime & 0xffff));
+            buffer.putShort((short) (filename.length()+1));
+            buffer.putShort((short) (size>>16));
+            buffer.putShort((short) (size & 0xffff));
+            buffer.flip();
+            channel.write(buffer);
+            buffer.clear();
+            buffer.put(filename.getBytes(US_ASCII));
+            buffer.put((byte)0);
+            buffer.flip();
+            channel.write(buffer);
+            align(channel);
         }
 
     }
