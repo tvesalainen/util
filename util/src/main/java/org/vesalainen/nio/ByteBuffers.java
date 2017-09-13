@@ -16,7 +16,9 @@
  */
 package org.vesalainen.nio;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import org.vesalainen.util.ArrayIterator;
 
@@ -26,7 +28,49 @@ import org.vesalainen.util.ArrayIterator;
  */
 public class ByteBuffers
 {
+      /**
+     * Increments position so that position mod align == 0
+     * @param bb
+     * @param align
+     * @throws IOException 
+     */
+    public static final void align(ByteBuffer bb, int align) throws IOException
+    {
+        bb.position(alignedPosition(bb, align));
+    }
     /**
+     * Returns Incremented position so that position mod align == 0, but doesn't
+     * change channels position.
+     * @param bb
+     * @param align
+     * @return
+     * @throws IOException 
+     */
+    public static final int alignedPosition(ByteBuffer bb, int align) throws IOException
+    {
+        int position = bb.position();
+        int mod = position % align;
+        if (mod > 0)
+        {
+            return position + align - mod;
+        }
+        else
+        {
+            return position;
+        }
+    }
+    /**
+     * Adds skip to position.
+     * @param bb
+     * @param skip
+     * @throws IOException 
+     */
+    public static final void skip(ByteBuffer bb, int skip) throws IOException
+    {
+        bb.position(bb.position() + skip);
+    }
+
+  /**
      * Fills data from position to limit with zeroes.
      * @param bb 
      */
