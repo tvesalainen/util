@@ -24,24 +24,62 @@ import java.net.SocketException;
 import java.net.SocketOption;
 import static java.net.StandardSocketOptions.*;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ChannelHelper
+public final class ChannelHelper
 {
+    /**
+     * Increments position so that position mod align == 0
+     * @param ch
+     * @param align
+     * @throws IOException 
+     */
+    public static final void align(SeekableByteChannel ch, long align) throws IOException
+    {
+        ch.position(alignedPosition(ch, align));
+    }
+    /**
+     * Returns Incremented position so that position mod align == 0, but doesn't
+     * change channels position.
+     * @param ch
+     * @param align
+     * @return
+     * @throws IOException 
+     */
+    public static final long alignedPosition(SeekableByteChannel ch, long align) throws IOException
+    {
+        long position = ch.position();
+        long mod = position % align;
+        if (mod > 0)
+        {
+            return position + align - mod;
+        }
+        else
+        {
+            return position;
+        }
+    }
+    /**
+     * Adds skip to position.
+     * @param ch
+     * @param skip
+     * @throws IOException 
+     */
+    protected static final void skip(SeekableByteChannel ch, long skip) throws IOException
+    {
+        ch.position(ch.position() + skip);
+    }
+
     /**
      * ScatteringChannel support
      * @param channel
