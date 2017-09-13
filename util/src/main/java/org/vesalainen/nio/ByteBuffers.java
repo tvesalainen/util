@@ -31,10 +31,9 @@ public class ByteBuffers
       /**
      * Increments position so that position mod align == 0
      * @param bb
-     * @param align
-     * @throws IOException 
+     * @param align 
      */
-    public static final void align(ByteBuffer bb, int align) throws IOException
+    public static final void align(ByteBuffer bb, int align)
     {
         bb.position(alignedPosition(bb, align));
     }
@@ -43,10 +42,9 @@ public class ByteBuffers
      * change channels position.
      * @param bb
      * @param align
-     * @return
-     * @throws IOException 
+     * @return 
      */
-    public static final int alignedPosition(ByteBuffer bb, int align) throws IOException
+    public static final int alignedPosition(ByteBuffer bb, int align)
     {
         int position = bb.position();
         int mod = position % align;
@@ -62,10 +60,9 @@ public class ByteBuffers
     /**
      * Adds skip to position.
      * @param bb
-     * @param skip
-     * @throws IOException 
+     * @param skip 
      */
-    public static final void skip(ByteBuffer bb, int skip) throws IOException
+    public static final void skip(ByteBuffer bb, int skip)
     {
         bb.position(bb.position() + skip);
     }
