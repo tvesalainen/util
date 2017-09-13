@@ -75,7 +75,7 @@ public final class ChannelHelper
      * @param skip
      * @throws IOException 
      */
-    protected static final void skip(SeekableByteChannel ch, long skip) throws IOException
+    public static final void skip(SeekableByteChannel ch, long skip) throws IOException
     {
         ch.position(ch.position() + skip);
     }
