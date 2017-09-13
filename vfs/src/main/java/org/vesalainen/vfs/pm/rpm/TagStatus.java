@@ -14,25 +14,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.pm;
-
-import java.nio.channels.SeekableByteChannel;
-import java.util.function.Supplier;
-import org.vesalainen.vfs.VirtualFileSystemProvider;
-import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import org.vesalainen.vfs.arch.FileFormat;
-import org.vesalainen.vfs.arch.Header;
+package org.vesalainen.vfs.pm.rpm;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PackageManagerFileSystem extends ArchiveFileSystem
+public enum TagStatus
 {
-
-    public PackageManagerFileSystem(VirtualFileSystemProvider provider, Supplier<Header> headerSupplier, FileFormat format, SeekableByteChannel channel, boolean readOnly)
-    {
-        super(provider, headerSupplier, format, channel, readOnly);
-    }
+    /**
+     * This Index Record shall be present.
+     */
+    Required,
+    /**
+     * This Index Record may be present.
+     */
+    Optional,
+    /**
+     * This Index Record may be present, but does not contribute to the processing of the package.
+     */
+    Informational,
+    /**
+     * This Index Record should not be present.
+     */
+    Deprecated,
+    /**
+     * This Index Record shall not be present.
+     */
+    Obsolete,
+    /**
+     * This Index Record shall not be present.
+     */
+    Reserved,
+    /**
+     * This tag is not part of LSB
+     */
+    NotLSB
     
 }

@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.vesalainen.lang.Casts;
 import org.vesalainen.lang.Primitives;
+import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.arch.FileFormat;
 import static org.vesalainen.vfs.arch.Header.Type.*;
-import static org.vesalainen.vfs.arch.Header.align;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.unix.Inode;
 import org.vesalainen.vfs.unix.UnixFileHeader;
@@ -181,7 +181,7 @@ public class CPIOHeader extends UnixFileHeader
     }
     private void putNewC(SeekableByteChannel channel, byte id, int chksum) throws IOException
     {
-        align(channel, 4);
+        ChannelHelper.align(channel, 4);
         buffer.clear();
         buffer.put((byte)'0').put((byte)'7').put((byte)'0').put((byte)'7').put((byte)'0').put(id);
         put(buffer, inode, 8, 16);
@@ -204,7 +204,7 @@ public class CPIOHeader extends UnixFileHeader
         buffer.put((byte)0);
         buffer.flip();
         channel.write(buffer);
-        align(channel, 4);
+        ChannelHelper.align(channel, 4);
     }
     @Override
     public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
@@ -343,7 +343,7 @@ public class CPIOHeader extends UnixFileHeader
         @Override
         protected void align(SeekableByteChannel ch) throws IOException
         {
-            UnixFileHeader.align(ch, 4);
+            ChannelHelper.align(ch, 4);
         }
 
         @Override
@@ -375,7 +375,7 @@ public class CPIOHeader extends UnixFileHeader
             namesize = getInt(bb, 8, 16);
             checksum = getInt(bb, 8, 16);
             filename = readString(channel, bb, namesize-1);
-            skip(channel, 1);
+            ChannelHelper.skip(channel, 1);
         }
 
         @Override
@@ -456,7 +456,7 @@ public class CPIOHeader extends UnixFileHeader
             namesize = getInt(bb, 6, 8);
             size = getInt(bb, 11, 8);
             filename = readString(channel, bb, namesize-1);
-            skip(channel, 1);
+            ChannelHelper.skip(channel, 1);
         }
 
         @Override
@@ -508,7 +508,7 @@ public class CPIOHeader extends UnixFileHeader
         @Override
         protected void align(SeekableByteChannel ch) throws IOException
         {
-            UnixFileHeader.align(ch, 2);
+            ChannelHelper.align(ch, 2);
         }
 
         @Override
@@ -541,7 +541,7 @@ public class CPIOHeader extends UnixFileHeader
             namesize = bb.getShort();
             size = bb.getShort()*0x10000+bb.getShort();
             filename = readString(channel, bb, namesize-1);
-            skip(channel, 1);
+            ChannelHelper.skip(channel, 1);
             align(channel);
         }
 

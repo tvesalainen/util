@@ -29,6 +29,7 @@ import java.util.function.IntPredicate;
 import org.vesalainen.lang.Casts;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.ByteBuffers;
+import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.vfs.arch.FileFormat;
 import static org.vesalainen.vfs.arch.Header.Type.*;
@@ -71,7 +72,7 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void load(SeekableByteChannel channel) throws IOException
     {
-        align(channel, 512);
+        ChannelHelper.align(channel, 512);
         buffer.clear();
         buffer.limit(BLOCK_SIZE);
         channel.read(buffer);
@@ -329,7 +330,7 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
     {
-        align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, BLOCK_SIZE);
         addAll(attributes);
         fromAttributes();
         mode &= 07777;
@@ -615,9 +616,9 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
-        align(channel, BLOCK_SIZE);
-        align(channel, BLOCK_SIZE);
-        align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, BLOCK_SIZE);
     }
 
     @Override

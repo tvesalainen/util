@@ -44,30 +44,6 @@ public abstract class Header extends FileAttributeAccessStore
     {
         put(FileAttributeName.getInstance(name), value);
     }
-    public static void align(SeekableByteChannel ch, long align) throws IOException
-    {
-        ch.position(alignedPosition(ch, align));
-    }
-
-    public static long alignedPosition(SeekableByteChannel ch, long align) throws IOException
-    {
-        long position = ch.position();
-        long mod = position % align;
-        if (mod > 0)
-        {
-            return position + align - mod;
-        }
-        else
-        {
-            return position;
-        }
-    }
-
-    protected static void skip(SeekableByteChannel ch, long skip) throws IOException
-    {
-        ch.position(ch.position() + skip);
-    }
-
     
     public abstract boolean isEof();
     public abstract String getFilename();

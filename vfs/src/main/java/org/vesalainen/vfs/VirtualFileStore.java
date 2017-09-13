@@ -49,7 +49,7 @@ public class VirtualFileStore extends FileStore implements AttachedLogger
 {
     protected VirtualFileSystem fileSystem;
     protected ConcurrentNavigableMap<Path,VirtualFile> files = new ConcurrentSkipListMap<>();
-    private Map<String,? extends FileStoreAttributeView> viewMap;
+    private Map<String,FileStoreAttributeView> viewMap = new HashMap<>();
     protected Set<String> supportedFileAttributeViews = new HashSet<>();
     protected int blockSize = 4096;
 
@@ -59,6 +59,10 @@ public class VirtualFileStore extends FileStore implements AttachedLogger
         supportedFileAttributeViews.addAll(FileAttributeName.impliedSet(views));
     }
 
+    public  void addFileStoreAttributeView(FileStoreAttributeView view)
+    {
+        viewMap.put(view.name(), view);
+    }
     public int getBlockSize()
     {
         return blockSize;

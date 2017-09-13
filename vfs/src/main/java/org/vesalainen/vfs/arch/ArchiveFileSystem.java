@@ -51,51 +51,148 @@ import org.vesalainen.vfs.unix.UserPrincipalLookupServiceImpl;
  */
 public abstract class ArchiveFileSystem extends VirtualFileSystem implements AttachedLogger
 {
+
     /**
-     * Options for file as Set<? extends OpenOption> 
-     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...) 
+     * Options for file as Set<? extends OpenOption>
+     *
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path,
+     * java.util.Set, java.nio.file.attribute.FileAttribute...)
      */
     public static final String OPEN_OPTIONS = "openOptions";
     /**
-     * Attributes for file as FileAttribute<?>[] 
-     * @see java.nio.channels.FileChannel#open(java.nio.file.Path, java.util.Set, java.nio.file.attribute.FileAttribute...) 
+     * Attributes for file as FileAttribute<?>[]
+     *
+     * @see java.nio.channels.FileChannel#open(java.nio.file.Path,
+     * java.util.Set, java.nio.file.attribute.FileAttribute...)
      */
     public static final String FILE_ATTRIBUTES = "fileAttributes";
     /**
      * Format of created file.
+     *
      * @see org.vesalainen.vfs.arch.FileFormat
      */
     public static final String FORMAT = "format";
-    
-    protected Path path;
-    protected Map<String, ?> env;
-    protected Supplier<Header> headerSupplier;
-    protected FileFormat format;
-    protected SeekableByteChannel channel;
-    protected boolean readOnly;
 
-    public ArchiveFileSystem(VirtualFileSystemProvider provider, Supplier<Header> headerSupplier, FileFormat format, SeekableByteChannel channel, boolean readOnly)
-    {
-        super(provider);
-        this.headerSupplier = headerSupplier;
-        this.format = format;
-        this.channel = channel;
-        this.readOnly = readOnly;
-    }
+    protected Path path;
+    protected Supplier<Header> headerSupplier;
+    protected Set<? extends OpenOption> openOptions;
+    protected FileAttribute<?>[] fileAttributes;
+    protected FileFormat format;
+    protected boolean readOnly;
+    protected SeekableByteChannel channel;
 
     protected ArchiveFileSystem(
-            VirtualFileSystemProvider provider, 
-            Path path, 
+            VirtualFileSystemProvider provider,
+            Path path,
             Map<String, ?> env,
             Supplier<Header> headerSupplier,
             int bufSize,
             int maxSkipSize
     ) throws IOException
     {
+        this(   provider,
+                path,
+                headerSupplier,
+                getOpenOptions(path, env),
+                getFileAttributes(env),
+                getFileFormat(path, env),
+                bufSize,
+                maxSkipSize);
+    }
+
+    protected ArchiveFileSystem(
+            VirtualFileSystemProvider provider, 
+            Path path, 
+            Supplier<Header> headerSupplier, 
+            Set<? extends OpenOption> openOptions, 
+            FileAttribute<?>[] fileAttributes, 
+            FileFormat format, 
+            int bufSize, 
+            int maxSkipSize) throws IOException
+    {
+        this(provider, 
+                path, 
+                headerSupplier, 
+                openOptions, 
+                fileAttributes, 
+                format, 
+                openChannel(path, openOptions, bufSize, maxSkipSize, fileAttributes));
+    }
+
+    protected ArchiveFileSystem(
+            VirtualFileSystemProvider provider, 
+            Path path, 
+            Supplier<Header> headerSupplier, 
+            Set<? extends OpenOption> openOptions, 
+            FileAttribute<?>[] fileAttributes, 
+            FileFormat format, 
+            SeekableByteChannel channel)
+    {
         super(provider);
         this.path = path;
-        this.env = env;
         this.headerSupplier = headerSupplier;
+        this.openOptions = openOptions;
+        this.fileAttributes = fileAttributes;
+        this.format = format;
+        this.channel = channel;
+        readOnly = !openOptions.contains(WRITE);
+    }
+
+    private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, int bufSize, int maxSkipSize, FileAttribute<?>... attrs) throws IOException
+    {
+        SeekableByteChannel ch;
+        String filename = path.getFileName().toString();
+        if (filename.endsWith(".gz"))
+        {
+            GZIPChannel gzipChannel = new GZIPChannel(path, options, bufSize, maxSkipSize, attrs);
+            ch = gzipChannel;
+            if (!options.contains(WRITE))
+            {
+                filename = gzipChannel.getFilename();
+                filename = filename == null ? "" : filename;
+            }
+            else
+            {
+                gzipChannel.setFilename(filename);
+            }
+        }
+        else
+        {
+            ch = FileChannel.open(path, options, attrs);
+        }
+        return ch;
+    }
+
+    protected static final FileFormat getFileFormat(Path path, Map<String, ?> env)
+    {
+        FileFormat fmt = (FileFormat) env.get(FORMAT);
+        String filename = path.getFileName().toString();
+        if (fmt == null)
+        {
+            if (filename.endsWith(".tar.gz") || filename.endsWith(".tar"))
+            {
+                fmt = TAR_PAX;
+            }
+            else
+            {
+                fmt = CPIO_CRC;
+            }
+        }
+        return fmt;
+    }
+
+    protected static final FileAttribute<?>[] getFileAttributes(Map<String, ?> env)
+    {
+        FileAttribute<?>[] attrs = (FileAttribute<?>[]) env.get(FILE_ATTRIBUTES);
+        if (attrs == null)
+        {
+            attrs = new FileAttribute<?>[0];
+        }
+        return attrs;
+    }
+
+    protected static final Set<? extends OpenOption> getOpenOptions(Path path, Map<String, ?> env) throws IOException
+    {
         Set<? extends OpenOption> opts = (Set<? extends OpenOption>) env.get(OPEN_OPTIONS);
         if (opts == null)
         {
@@ -108,43 +205,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                 opts = EnumSet.of(WRITE, CREATE);
             }
         }
-        readOnly = !opts.contains(WRITE);
-        FileAttribute<?>[] attrs = (FileAttribute<?>[]) env.get(FILE_ATTRIBUTES);
-        if (attrs == null)
-        {
-            attrs = new FileAttribute<?>[0];
-        }
-        format = (FileFormat) env.get(FORMAT);
-        String filename = path.getFileName().toString();
-        if (format == null)
-        {
-            if (filename.endsWith(".tar.gz") || filename.endsWith(".tar"))
-            {
-                format = TAR_PAX;
-            }
-            else
-            {
-                format = CPIO_CRC;
-            }
-        }
-        if (filename.endsWith(".gz"))
-        {
-            GZIPChannel gzipChannel = new GZIPChannel(path, opts, bufSize, maxSkipSize);
-            channel = gzipChannel;
-            if (readOnly)
-            {
-                filename = gzipChannel.getFilename();
-                filename = filename == null ? "" : filename;
-            }
-            else
-            {
-                gzipChannel.setFilename(filename);
-            }
-        }
-        else
-        {
-            channel = FileChannel.open(path, opts, attrs);
-        }
+        return opts;
     }
 
     @Override
@@ -168,7 +229,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         }
         channel.close();
     }
-    
+
     public final void load() throws IOException
     {
         Header header = headerSupplier.get();
@@ -185,7 +246,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
             Long size = (long) header.get(SIZE);
             if (size == null)
             {
-                throw new IllegalArgumentException("size missing in "+pth);
+                throw new IllegalArgumentException("size missing in " + pth);
             }
             Path parent = pth.getParent();
             if (parent != null)
@@ -262,69 +323,71 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                 byte[] digestHdr = header.digest();
                 if (!Arrays.equals(digestHdr, digest))
                 {
-                    throw new IllegalArgumentException(digestAlgorithm+" don't match");
+                    throw new IllegalArgumentException(digestAlgorithm + " don't match");
                 }
             }
             header.clear();
             header.load(channel);
         }
     }
+
     public final void store(Root root) throws IOException
     {
         enumerateInodes();
-        Map<Inode,Path> inodes = new HashMap<>();
+        Map<Inode, Path> inodes = new HashMap<>();
         Set<String> supportedFileAttributeViews = supportedFileAttributeViews();
         Header header = headerSupplier.get();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
         Map<String, Object> all = new HashMap<>();
-        Files.walk(root).filter((p->p!=root)).forEach((p)->
-        {
-            try
-            {
-                Path r = root.relativize(p);
-                all.clear();
-                for (String view : topViews)
+        Files.walk(root).filter((p -> p != root)).forEach((p)
+                -> 
                 {
-                    Map<String, Object> attrs = Files.readAttributes(r, view+":*", NOFOLLOW_LINKS);
-                    for (Entry<String, Object> entry : attrs.entrySet())
+                    try
                     {
-                        all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
+                        Path r = root.relativize(p);
+                        all.clear();
+                        for (String view : topViews)
+                        {
+                            Map<String, Object> attrs = Files.readAttributes(r, view + ":*", NOFOLLOW_LINKS);
+                            for (Entry<String, Object> entry : attrs.entrySet())
+                            {
+                                all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
+                            }
+                        }
+                        Inode inode = new Inode((int) all.get(DEVICE), (int) all.get(INODE));
+                        Path link;
+                        if (Files.isSymbolicLink(r))
+                        {
+                            link = Files.readSymbolicLink(r);
+                        }
+                        else
+                        {
+                            link = inodes.get(inode);
+                        }
+                        String linkname = link != null ? link.toString() : null;
+                        inodes.put(inode, r);
+                        header.clear();
+                        byte[] digest = null;
+                        // checksum
+                        String digestAlgorithm = header.digestAlgorithm();
+                        if (digestAlgorithm != null)
+                        {
+                            digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
+                        }
+                        header.store(channel, r.toString(), format, linkname, all, digest);
+                        long size = header.size();
+                        if (size > 0)
+                        {
+                            try (FileChannel ch = FileChannel.open(r, READ, NOFOLLOW_LINKS))
+                            {
+                                ch.transferTo(0, size, channel);
+                            }
+                        }
                     }
-                }
-                Inode inode = new Inode((int)all.get(DEVICE), (int)all.get(INODE));
-                Path link;
-                if (Files.isSymbolicLink(r))
-                {
-                    link = Files.readSymbolicLink(r);
-                }
-                else
-                {
-                    link = inodes.get(inode);
-                }
-                String linkname = link != null ? link.toString() : null;
-                inodes.put(inode, r);
-                header.clear();
-                byte[] digest = null;
-                // checksum
-                String digestAlgorithm = header.digestAlgorithm();
-                if (digestAlgorithm != null)
-                {
-                    digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
-                }
-                header.store(channel, r.toString(), format, linkname, all, digest);
-                long size = header.size();
-                if (size > 0)
-                {
-                    try (FileChannel ch = FileChannel.open(r, READ, NOFOLLOW_LINKS))
+                    catch (IOException ex)
                     {
-                        ch.transferTo(0, size, channel);
+                        throw new RuntimeException(ex);
                     }
-                }
-            }
-            catch (IOException ex)
-            {
-                throw new RuntimeException(ex);
-            }
         });
         header.clear();
         header.storeEof(channel, format);
@@ -335,5 +398,5 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
     {
         return new UserPrincipalLookupServiceImpl();
     }
-    
+
 }
