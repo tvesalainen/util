@@ -20,7 +20,7 @@ package org.vesalainen.vfs.pm;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Dependency
+public interface DependencyCondition
 {
     String getName();
     String getVersion();

@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.nio.channels.SeekableByteChannel;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.nio.channels.ChannelHelper;
 //import static org.vesalainen.pm.rpm.IndexType.*;
 import org.vesalainen.util.HexDump;
@@ -75,6 +77,7 @@ public final class HeaderStructure
             IndexRecord indexRecord = loadIndexRecord(bb);
             addIndexRecord(indexRecord);
         }
+        storage = null;
     }
 
     HeaderStructure()
@@ -89,7 +92,7 @@ public final class HeaderStructure
     void save(SeekableByteChannel ch) throws IOException
     {
         ChannelHelper.align(ch, 8);
-        int size = indexRecords.stream().mapToInt((i)->i.size()).sum();
+        int size = countSize();
         ByteBuffer bb = ByteBuffer.allocateDirect(size).order(BIG_ENDIAN);
         bb.clear();
         bb.put(magic);
@@ -110,7 +113,29 @@ public final class HeaderStructure
         bb.putInt(hsizeIndex, hsize);
         ch.write(bb);
     }
-    
+    private int countSize()
+    {
+        int hdr = 0;
+        int stor = 0;
+        for (IndexRecord ir : indexRecords)
+        {
+            hdr += 16;
+            int count = ir.getCount();
+            IndexType type = ir.getType();
+            int size = type.getSize();
+            if (size != -1)
+            {
+                int mod = stor % size;
+                stor = mod>0 ? stor - size - mod : stor;
+                stor += count*size;
+            }
+            else
+            {
+                stor += count;
+            }
+        }
+        return hdr  + stor;
+    }
     public void append(Appendable out) throws IOException
     {
         for (IndexRecord ir : indexRecords)
@@ -139,20 +164,20 @@ public final class HeaderStructure
         switch (type)
         {
             case INT16:
-                return new IndexRecord<>(tag, type, offset, count, Types.getInt16(storage, offset, count));
+                return new IndexRecord<>(tag, type, offset, count, getInt16(storage, offset, count));
             case INT32:
-                return new IndexRecord<>(tag, type, offset, count, Types.getInt32(storage, offset, count));
+                return new IndexRecord<>(tag, type, offset, count, getInt32(storage, offset, count));
             case STRING:
             case I18NSTRING:
             case STRING_ARRAY:
-                return new IndexRecord<>(tag, type, offset, count, Types.getStringArray(storage, offset, count));
+                return new IndexRecord<>(tag, type, offset, count, getStringArray(storage, offset, count));
             case BIN:
-                return new IndexRecord(tag, type, offset, count, Types.getBin(storage, offset, count));
+                return new IndexRecord(tag, type, offset, count, getBin(storage, offset, count));
             default:
                 throw new UnsupportedOperationException("not supported\n");
         }
     }
-    private IndexRecord createIndexRecord(HeaderTag tag)
+    IndexRecord createIndexRecord(HeaderTag tag)
     {
         IndexType type = tag.getType();
         switch (type)
@@ -171,7 +196,170 @@ public final class HeaderStructure
                 throw new UnsupportedOperationException("not supported\n");
         }
     }
-    private class IndexRecord<T>
+    public static byte[] getChar(ByteBuffer bb, int index, int count)
+    {
+        byte[] buf = new byte[count];
+        for (int ii=0;ii<count;ii++)
+        {
+            buf[ii] = bb.get(index+ii);
+        }
+        return buf;
+    }
+    public static byte[] getInt8(ByteBuffer bb, int index, int count)
+    {
+        return getChar(bb, index, count);
+    }
+    public static List<Short> getInt16(ByteBuffer bb, int index, int count)
+    {
+        List<Short> list = new ArrayList<>();
+        for (int ii=0;ii<count;ii++)
+        {
+            list.add(bb.getShort(index+2*ii));
+        }
+        return list;
+    }
+    public static List<Integer> getInt32(ByteBuffer bb, int index, int count)
+    {
+        List<Integer> list = new ArrayList<>();
+        for (int ii=0;ii<count;ii++)
+        {
+            list.add(bb.getInt(index+4*ii));
+        }
+        return list;
+    }
+    public static String getString(ByteBuffer bb, int index)
+    {
+        return getStringArray(bb, index, 1).get(0);
+    }
+    public static List<String> getStringArray(ByteBuffer bb, int index, int count)
+    {
+        StringBuilder sb = new StringBuilder();
+        List<String> list = new ArrayList<>();
+        for (int ii=index;count>0;ii++)
+        {
+            byte cc = bb.get(ii);
+            if (cc == 0)
+            {
+                list.add(sb.toString());
+                sb.setLength(0);
+                count--;
+            }
+            else
+            {
+                sb.append((char)cc);
+            }
+        }
+        return list;
+    }
+    public static byte[] getBin(ByteBuffer bb, int index, int count)
+    {
+        byte[] buf = new byte[count];
+        for (int ii=0;ii<count;ii++)
+        {
+            buf[ii] = bb.get(index+ii);
+        }
+        return buf;
+    }
+    public static Object getData(ByteBuffer bb, int index, int count, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+                return getInt16(bb, index, count);
+            case INT32:
+                return getInt32(bb, index, count);
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return getStringArray(bb, index, count);
+            case BIN:
+                return getBin(bb, index, count);
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+    public static <T> int setData(ByteBuffer bb, List<T> list, byte[] bin, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+                return setInt16(bb, (List<Short>) list);
+            case INT32:
+                return setInt32(bb, (List<Integer>) list);
+            case STRING:
+                if (list.size() != 1)
+                {
+                    throw new IllegalArgumentException("STRING size != 1 = "+list.size());
+                }
+            case I18NSTRING:
+            case STRING_ARRAY:
+                return setStringArray(bb, (List<String>) list);
+            case BIN:
+                return setBin(bb, bin);
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+
+    private static int setInt16(ByteBuffer bb, List<Short> list)
+    {
+        ByteBuffers.align(bb, 2);
+        int position = bb.position();
+        for (Short s : list)
+        {
+            bb.putShort(s.shortValue());
+        }
+        return position;
+    }
+
+    private static int setInt32(ByteBuffer bb, List<Integer> list)
+    {
+        ByteBuffers.align(bb, 4);
+        int position = bb.position();
+        for (Integer i : list)
+        {
+            bb.putInt(i.intValue());
+        }
+        return position;
+    }
+
+    private static int setStringArray(ByteBuffer bb, List<String> list)
+    {
+        int position = bb.position();
+        for (String s : list)
+        {
+            byte[] bytes = s.getBytes(US_ASCII);
+            bb.put(bytes).put((byte)0);
+        }
+        return position;
+    }
+
+    private static int setBin(ByteBuffer bb, byte[] bin)
+    {
+        int position = bb.position();
+        bb.put(bin);
+        return position;
+    }
+    public static int getCount(Object data, IndexType type)
+    {
+        switch (type)
+        {
+            case INT16:
+            case INT32:
+            case STRING:
+            case I18NSTRING:
+            case STRING_ARRAY:
+                List<?> list = (List<?>) data;
+                return list.size();
+            case BIN:
+                byte[] buf = (byte[]) data;
+                return buf.length;
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+    }
+
+    public class IndexRecord<T>
     {
         private HeaderTag tag;
         private IndexType type;
@@ -217,22 +405,22 @@ public final class HeaderStructure
         }
         public void save(ByteBuffer bb)
         {
-            offset = Types.setData(storage, list, bin, type);
+            offset = setData(storage, list, bin, type);
             count = getCount();
             bb.putInt(tag.getTagValue());
             bb.putInt(type.ordinal());
             bb.putInt(offset);
             bb.putInt(count);
         }
-        boolean contains(T item)
+        public boolean contains(T item)
         {
             return list.contains(item);
         }
-        int indexOf(T item)
+        public int indexOf(T item)
         {
             return list.indexOf(item);
         }
-        int addItem(T item)
+        public int addItem(T item)
         {
             if (type == STRING && !list.isEmpty())
             {
@@ -247,7 +435,7 @@ public final class HeaderStructure
             this.bin = bin;
         }
         
-        int getCount()
+        public int getCount()
         {
             if (bin != null)
             {
@@ -258,11 +446,11 @@ public final class HeaderStructure
                 return list.size();
             }
         }
-        List<T> getArray(IndexType it)
+        public List<T> getArray(IndexType it)
         {
             return list;
         }
-        T getSingle(IndexType it)
+        public T getSingle(IndexType it)
         {
             List<T> list = getArray(it);
             if (list.size() != 1)
@@ -271,7 +459,7 @@ public final class HeaderStructure
             }
             return list.get(0);
         }
-        public byte[] getBin()
+        public byte[] getBinValue()
         {
             if (type != BIN)
             {
@@ -285,18 +473,18 @@ public final class HeaderStructure
             switch (type)
             {
                 case INT16:
-                    out.append(String.format("value=%s \n", Types.getInt16(storage, offset, count)));
+                    out.append(String.format("value=%s \n", getInt16(storage, offset, count)));
                     break;
                 case INT32:
-                    out.append(String.format("value=%s \n", Types.getInt32(storage, offset, count)));
+                    out.append(String.format("value=%s \n", getInt32(storage, offset, count)));
                     break;
                 case STRING:
                 case I18NSTRING:
                 case STRING_ARRAY:
-                    out.append(String.format("value=%s \n", Types.getStringArray(storage, offset, count)));
+                    out.append(String.format("value=%s \n", getStringArray(storage, offset, count)));
                     break;
                 case BIN:
-                    out.append(String.format("%s\n", HexDump.toHex(Types.getBin(storage, offset, count))));
+                    out.append(String.format("%s\n", HexDump.toHex(getBin(storage, offset, count))));
                     break;
                 default:
                     out.append("not supported\n");

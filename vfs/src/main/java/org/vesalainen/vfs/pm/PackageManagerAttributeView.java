@@ -17,6 +17,7 @@
 package org.vesalainen.vfs.pm;
 
 import java.nio.file.attribute.FileStoreAttributeView;
+import java.util.Collection;
 import java.util.Set;
 import static org.vesalainen.vfs.pm.Condition.*;
 
@@ -47,13 +48,13 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * Returns all conflict names
      * @return 
      */
-    Set<String> getConflicts();
+    Collection<String> getConflicts();
     /**
      * Returns conflict
      * @param name
      * @return 
      */
-    Dependency getConflict(String name);
+    DependencyCondition getConflict(String name);
     /**
      * Add virtual package name that this package provides.
      * @param name
@@ -75,13 +76,13 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * Returns all provide names
      * @return 
      */
-    Set<String> getProvides();
+    Collection<String> getProvides();
     /**
      * Returns provide
      * @param name
      * @return 
      */
-    Dependency getProvide(String name);
+    DependencyCondition getProvide(String name);
     /**
      * Add package name that this package requires.
      * @param name
@@ -103,13 +104,13 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * Returns all require names
      * @return 
      */
-    Set<String> getRequires();
+    Collection<String> getRequires();
     /**
      * Returns require
      * @param name
      * @return 
      */
-    Dependency getRequire(String name);
+    DependencyCondition getRequire(String name);
     /**
      * Sets architecture of this package
      * @param architecture

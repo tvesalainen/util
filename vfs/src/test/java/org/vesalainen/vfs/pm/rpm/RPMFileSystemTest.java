@@ -19,13 +19,16 @@ package org.vesalainen.vfs.pm.rpm;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.vfs.VirtualFileSystems;
+import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 
 /**
  *
@@ -38,7 +41,7 @@ public class RPMFileSystemTest
     {
     }
 
-    @Test
+    //@Test
     public void testRead() throws URISyntaxException, IOException
     {
         URL url = RPMFileSystemTest.class.getResource("/redhat-lsb-4.0-2.1.4.el5.i386.rpm");
@@ -48,5 +51,35 @@ public class RPMFileSystemTest
             
         }
     }
-    
+    @Test
+    public void testWrite() throws URISyntaxException, IOException
+    {
+        FileSystem dfs = VirtualFileSystems.getDefault();
+        Path path = dfs.getPath("test.rpm");
+        Files.createFile(path);
+        try (FileSystem rmpFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
+        {
+            FileStore fs = rmpFS.getFileStores().iterator().next();
+            PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
+            view
+                .setPackageName("test2")
+                .setVersion("1.0")
+                .setRelease("r1")
+                .setArchitecture("noarch")
+                .setDescription("description...")
+                .setApplicationArea("area")
+                .setLicense("GPL")
+                .setOperatingSystem("linux")
+                .setSummary("summary...")
+                .addRequire("lsb")
+                .addRequire("java7-runtime-headless")
+                .setPostInstallation("echo qwerty >/tmp/test\n")
+                ;
+                    
+            Path pom = Paths.get("pom.xml");
+            Path trg = dfs.getPath("/etc/default/pom.xml");
+            Files.createDirectories(trg.getParent());
+            Files.copy(pom, trg);
+        }
+    }    
 }

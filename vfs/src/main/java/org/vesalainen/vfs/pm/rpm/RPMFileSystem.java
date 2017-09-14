@@ -17,14 +17,34 @@
 package org.vesalainen.vfs.pm.rpm;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.vesalainen.nio.channels.ChannelHelper;
+import org.vesalainen.nio.channels.GZIPChannel;
+import org.vesalainen.nio.file.PathHelper;
+import org.vesalainen.util.HexUtil;
+import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import org.vesalainen.vfs.arch.ArchiveFileSystem;
@@ -33,26 +53,35 @@ import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.cpio.CPIOHeader;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.pm.Condition;
-import org.vesalainen.vfs.pm.Dependency;
+import org.vesalainen.vfs.pm.DependencyCondition;
+import org.vesalainen.vfs.pm.FileUse;
+import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
+import org.vesalainen.vfs.pm.rpm.HeaderStructure.IndexRecord;
+import static org.vesalainen.vfs.pm.rpm.HeaderTag.*;
+import org.vesalainen.vfs.unix.UnixFileAttributeView;
+import org.vesalainen.vfs.unix.UnixFileAttributes;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/book1.html">Linux Standard Base Core Specification 4.0</a>
  */
 public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
+    private static final String INTERPRETER = "/bin/sh";
 
     private Lead lead;
     private HeaderStructure signature;
     private HeaderStructure header;
+    private MessageDigest md5;
 
     public RPMFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
         this(provider, path, CPIOHeader::new, getOpenOptions(path, env), getFileAttributes(env), getFileFormat(path, env));
     }
 
-    protected RPMFileSystem(
+    private RPMFileSystem(
             VirtualFileSystemProvider provider, 
             Path path, 
             Supplier<Header> headerSupplier, 
@@ -64,9 +93,25 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         VirtualFileStore defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
         defStore.addFileStoreAttributeView(this);
         addFileStore("/",defStore , true);
+        try
+        {
+            md5 = MessageDigest.getInstance("MD5");
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            throw new UnsupportedOperationException(ex);
+        }
         if (isReadOnly())
         {
             loadRPM();
+        }
+        else
+        {
+            signature = new HeaderStructure();
+            header = new HeaderStructure();
+            addString(RPMTAG_PAYLOADFORMAT, "cpio");
+            addString(RPMTAG_PAYLOADCOMPRESSOR, "gzip");
+            addString(RPMTAG_PAYLOADFLAGS, "9");
         }
     }
 
@@ -74,8 +119,149 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     {
         lead = new Lead(channel);
         signature = new HeaderStructure(channel, true);
-        header = new HeaderStructure(channel, false);
-        load(); // CPIO
+        ChannelHelper.align(channel, 8);
+        int restSize = (int) (channel.size()-channel.position());
+        int sigSize = getInt32(RPMSIGTAG_SIZE);
+        if (sigSize != restSize)
+        {
+            throw new IllegalArgumentException("sig size don't match");
+        }
+        md5.reset();
+        UpdateCounter counter = new UpdateCounter(md5::update);
+        SeekableByteChannel md5Channel = ChannelHelper.traceableChannel(channel, counter);
+        header = new HeaderStructure(md5Channel, false);
+        GZIPChannel gzipChannel = new GZIPChannel(path, md5Channel, 4096, 8, openOptions);
+        load(gzipChannel); // CPIO
+        
+        byte[] digest = md5.digest();
+        byte[] dig = getBin(RPMSIGTAG_MD5);
+        if (!Arrays.equals(dig, digest))
+        {
+            throw new IllegalArgumentException("md5 don't match");
+        }
+        // set file attributes
+        List<Integer> sizes = getInt32Array(RPMTAG_FILESIZES);
+        List<String> md5List = getStringArray(RPMTAG_FILEMD5S);
+        List<Integer> fileFlags = getInt32Array(RPMTAG_FILEFLAGS);
+        List<String> users = getStringArray(RPMTAG_FILEUSERNAME);
+        List<String> groups = getStringArray(RPMTAG_FILEGROUPNAME);
+        List<String> langs = getStringArray(RPMTAG_FILELANGS);
+        UserPrincipalLookupService upls = getUserPrincipalLookupService();
+        int index = 0;
+        for (String fn : getFilenames())
+        {
+            Path p = getPath(fn);
+            if (Files.exists(p))
+            {
+                // checks
+                if (Files.isRegularFile(p))
+                {
+                    if (Files.size(p) != sizes.get(index))
+                    {
+                        throw new IllegalArgumentException(p+" sizes dont match");
+                    }
+                    byte[] fileDigest = (byte[]) Files.getAttribute(p, MD5);
+                    String digStr = HexUtil.toString(fileDigest);
+                    if (!digStr.equalsIgnoreCase(md5List.get(index)))
+                    {
+                        throw new IllegalArgumentException(p+" md5 conflict");
+                    }
+                }
+                // attributes
+                UnixFileAttributeView unix = Files.getFileAttributeView(p, UnixFileAttributeView.class);
+                PackageFileAttributes.setUsage(p, FileFlag.fromFileFlags(fileFlags.get(index)));
+                PackageFileAttributes.setLanguage(path, langs.get(index));
+                UserPrincipal user = upls.lookupPrincipalByName(users.get(index));
+                unix.setOwner(user);
+                GroupPrincipal group = upls.lookupPrincipalByGroupName(groups.get(index));
+                unix.setGroup(group);
+            }
+            index++;
+        }
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        if (!readOnly)
+        {
+            storeRPM();
+        }
+    }
+    private void storeRPM() throws IOException
+    {
+        lead = new Lead(getName());
+        setFileHeaders();
+        checkRequiredTags();
+        //store(channel, root);
+    }
+    private void setFileHeaders() throws IOException
+    {
+        enumerateInodes();
+        Root root = (Root) getPath("/");
+        walk(root).forEach((p)->
+        {
+            try
+            {
+                String trg = p.toString();
+                int idx = trg.lastIndexOf('/');
+                if (idx == -1)
+                {
+                    throw new IllegalArgumentException("directory missing "+p);
+                }
+                String dir = trg.substring(0, idx+1);
+                String base = trg.substring(idx+1);
+                int index;
+                addString(RPMTAG_BASENAMES, base);
+                if (!contains(RPMTAG_DIRNAMES, dir))
+                {
+                    index = addString(RPMTAG_DIRNAMES, dir);
+                }
+                else
+                {
+                    index = indexOf(RPMTAG_DIRNAMES, dir);
+                }
+                UnixFileAttributeView view = Files.getFileAttributeView(p, UnixFileAttributeView.class);
+                UnixFileAttributes unix = view.readAttributes();
+                addInt32(RPMTAG_DIRINDEXES, index);
+                addInt32(RPMTAG_FILESIZES, (int) unix.size());
+                addInt32(RPMTAG_FILEMTIMES, (int) unix.lastModifiedTime().to(TimeUnit.SECONDS));
+                // md5
+                byte[] digest = (byte[]) Files.getAttribute(p, MD5);
+                addString(RPMTAG_FILEMD5S, HexUtil.toString(digest));
+
+                addInt16(RPMTAG_FILEMODES, unix.mode());
+                addInt16(RPMTAG_FILERDEVS, (short)0);
+                if (Files.isSymbolicLink(p))
+                {
+                    Path link = Files.readSymbolicLink(p);
+                    addString(RPMTAG_FILELINKTOS, link.toString());
+                }
+                else
+                {
+                    addString(RPMTAG_FILELINKTOS, "");
+                }
+                Set<FileUse> usage = PackageFileAttributes.getUsage(p);
+                
+                addInt32(RPMTAG_FILEFLAGS, FileFlag.or(usage));
+                UserPrincipal owner = unix.owner();
+                addString(RPMTAG_FILEUSERNAME, owner != null ? owner.getName() : "");
+                GroupPrincipal group = unix.group();
+                addString(RPMTAG_FILEGROUPNAME, group != null ? group.getName() : "");
+                addInt32(RPMTAG_FILEDEVICES, unix.device());
+                addInt32(RPMTAG_FILEINODES, unix.inode());
+                String language = PackageFileAttributes.getLanguage(p);
+                addString(RPMTAG_FILELANGS, language != null ? language : "");
+            }
+            catch (IOException ex)
+            {
+                Logger.getLogger(RPMFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+    private String getName()
+    {
+        return String.format("%s-%s-%s", getString(RPMTAG_NAME), getString(RPMTAG_VERSION), getString(RPMTAG_RELEASE));
     }
     private void checkFormat(FileFormat fmt)
     {
@@ -95,286 +281,649 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         return FileChannel.open(path, options, attrs);
     }    
 
-    @Override
-    public PackageManagerAttributeView addConflict(String name, String version, Condition... dependency)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Set<String> getConflicts()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Dependency getConflict(String name)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView addProvide(String name, String version, Condition... dependency)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Set<String> getProvides()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Dependency getProvide(String name)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView addRequire(String name, String version, Condition... dependency)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Set<String> getRequires()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Dependency getRequire(String name)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setArchitecture(String architecture)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getArchitecture()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setDescription(String description)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getDescription()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setCopyright(String copyright)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getCopyright()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setLicense(String license)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getLicense()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    /**
+     * Set RPMTAG_NAME
+     * @param name
+     * @return 
+     */
     @Override
     public PackageManagerAttributeView setPackageName(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        addString(RPMTAG_NAME, name);
+        return this;
     }
 
     @Override
     public String getPackageName()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getString(RPMTAG_NAME);
     }
-
-    @Override
-    public PackageManagerAttributeView setOperatingSystem(String os)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getOperatingSystem()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPostInstallation()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPostInstallationInterpreter()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPostUnInstallation()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPostUnInstallationInterpreter()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPreInstallation()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPreInstallationInterpreter()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPreUnInstallation()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPreUnInstallationInterpreter()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getDefaultInterpreter()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setPostInstallation(String script, String interpreter)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setPostUnInstallation(String script, String interpreter)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setPreInstallation(String script, String interpreter)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setPreUnInstallation(String script, String interpreter)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setRelease(String release)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getRelease()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PackageManagerAttributeView setSummary(String summary)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getSummary()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
+    /**
+     * Set RPMTAG_VERSION
+     * @param version
+     * @return 
+     */
     @Override
     public PackageManagerAttributeView setVersion(String version)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        addString(RPMTAG_VERSION, version);
+        return this;
     }
 
     @Override
     public String getVersion()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getString(RPMTAG_VERSION);
+    }
+    
+    /**
+     * Set RPMTAG_RELEASE
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setRelease(String v)
+    {
+        addString(RPMTAG_RELEASE, v);
+        return this;
     }
 
     @Override
-    public PackageManagerAttributeView setApplicationArea(String area)
+    public String getRelease()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getString(RPMTAG_RELEASE);
+    }
+    
+    /**
+     * Set RPMTAG_SUMMARY
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setSummary(String v)
+    {
+        addString(RPMTAG_SUMMARY, v);
+        return this;
+    }
+
+    @Override
+    public String getSummary()
+    {
+        return getString(RPMTAG_SUMMARY);
+    }
+    
+    /**
+     * Set RPMTAG_DESCRIPTION
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setDescription(String v)
+    {
+        addString(RPMTAG_DESCRIPTION, v);
+        return this;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return getString(RPMTAG_DESCRIPTION);
+    }
+    
+    /**
+     * No operation
+     * @param copyright
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setCopyright(String copyright)
+    {
+        return this;
+    }
+
+    @Override
+    public String getCopyright()
+    {
+        return null;
+    }
+    
+    /**
+     * Set RPMTAG_LICENSE
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setLicense(String v)
+    {
+        addString(RPMTAG_LICENSE, v);
+        return this;
+    }
+
+    @Override
+    public String getLicense()
+    {
+        return getString(RPMTAG_LICENSE);
+    }
+    
+    /**
+     * Set RPMTAG_GROUP
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setApplicationArea(String v)
+    {
+        addString(RPMTAG_GROUP, v);
+        return this;
     }
 
     @Override
     public String getApplicationArea()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getString(RPMTAG_GROUP);
+    }
+    
+    /**
+     * Set RPMTAG_OS
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setOperatingSystem(String v)
+    {
+        addString(RPMTAG_OS, v);
+        return this;
     }
 
     @Override
+    public String getOperatingSystem()
+    {
+        return getString(RPMTAG_OS);
+    }
+    
+    /**
+     * Set RPMTAG_ARCH
+     * @param v
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setArchitecture(String v)
+    {
+        addString(RPMTAG_ARCH, v);
+        return this;
+    }
+
+    @Override
+    public String getArchitecture()
+    {
+        return getString(RPMTAG_ARCH);
+    }
+    
+    /**
+     * Returns "/bin/sh"
+     * @return 
+     */
+    @Override
+    public String getDefaultInterpreter()
+    {
+        return INTERPRETER;
+    }
+    /**
+     * Set RPMTAG_PREIN and RPMTAG_PREINPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setPreInstallation(String script, String interpreter)
+    {
+        addString(RPMTAG_PREIN, script);
+        addString(RPMTAG_PREINPROG, interpreter);
+        ensureBinSh();
+        return this;
+    }
+
+    @Override
+    public String getPreInstallation()
+    {
+        return getString(RPMTAG_PREIN);
+    }
+
+    @Override
+    public String getPreInstallationInterpreter()
+    {
+        return getString(RPMTAG_PREINPROG);
+    }
+    
+    /**
+     * Set RPMTAG_POSTIN and RPMTAG_POSTINPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setPostInstallation(String script, String interpreter)
+    {
+        addString(RPMTAG_POSTIN, script);
+        addString(RPMTAG_POSTINPROG, interpreter);
+        ensureBinSh();
+        return this;
+    }
+    @Override
+    public String getPostInstallation()
+    {
+        return getString(RPMTAG_POSTIN);
+    }
+
+    @Override
+    public String getPostInstallationInterpreter()
+    {
+        return getString(RPMTAG_POSTINPROG);
+    }
+    
+    /**
+     * Set RPMTAG_PREUN and RPMTAG_PREUNPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setPreUnInstallation(String script, String interpreter)
+    {
+        addString(RPMTAG_PREUN, script);
+        addString(RPMTAG_PREUNPROG, interpreter);
+        ensureBinSh();
+        return this;
+    }
+    @Override
+    public String getPreUnInstallation()
+    {
+        return getString(RPMTAG_PREUN);
+    }
+
+    @Override
+    public String getPreUnInstallationInterpreter()
+    {
+        return getString(RPMTAG_PREUNPROG);
+    }
+    /**
+     * Set RPMTAG_POSTUN and RPMTAG_POSTUNPROG
+     * @param script
+     * @param interpreter
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setPostUnInstallation(String script, String interpreter)
+    {
+        addString(RPMTAG_POSTUN, script);
+        addString(RPMTAG_POSTUNPROG, interpreter);
+        ensureBinSh();
+        return this;
+    }
+    @Override
+    public String getPostUnInstallation()
+    {
+        return getString(RPMTAG_POSTUN);
+    }
+
+    @Override
+    public String getPostUnInstallationInterpreter()
+    {
+        return getString(RPMTAG_POSTUNPROG);
+    }
+
+    private void ensureBinSh()
+    {
+        if (!contains(RPMTAG_REQUIRENAME, "/bin/sh"))
+        {
+            addRequire("/bin/sh");
+        }
+    }
+    /**
+     * Add RPMTAG_PROVIDENAME, RPMTAG_PROVIDEVERSION and RPMTAG_PROVIDEFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView addProvide(String name, String version, Condition... dependency)
+    {
+        addString(RPMTAG_PROVIDENAME, name);
+        addString(RPMTAG_PROVIDEVERSION, version);
+        addInt32(RPMTAG_PROVIDEFLAGS, Dependency.or(dependency));
+        ensureVersionReq(version);
+        return this;
+    }
+
+    @Override
+    public Collection<String> getProvides()
+    {
+        return getStringArray(RPMTAG_PROVIDENAME);
+    }
+
+    @Override
+    public DependencyCondition getProvide(String name)
+    {
+        return new DependencyConditionImpl(getString(RPMTAG_PROVIDENAME), getString(RPMTAG_PROVIDEVERSION), Dependency.toArray(getInt32(RPMTAG_PROVIDEFLAGS)));
+    }
+    
+    /**
+     * Add RPMTAG_REQUIRENAME, RPMTAG_REQUIREVERSION and RPMTAG_REQUIREFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView addRequire(String name, String version, Condition... dependency)
+    {
+        addString(RPMTAG_REQUIRENAME, name);
+        addString(RPMTAG_REQUIREVERSION, version);
+        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        ensureVersionReq(version);
+        return this;
+    }
+    @Override
+    public Collection<String> getRequires()
+    {
+        return getStringArray(RPMTAG_REQUIRENAME);
+    }
+
+    @Override
+    public DependencyCondition getRequire(String name)
+    {
+        return new DependencyConditionImpl(getString(RPMTAG_REQUIRENAME), getString(RPMTAG_REQUIREVERSION), Dependency.toArray(getInt32(RPMTAG_REQUIREFLAGS)));
+    }
+    
+    private PackageManagerAttributeView addRequireInt(String name, String version, int... dependency)
+    {
+        addString(RPMTAG_REQUIRENAME, name);
+        addString(RPMTAG_REQUIREVERSION, version);
+        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        ensureVersionReq(version);
+        return this;
+    }
+    /**
+     * Add RPMTAG_CONFLICTNAME, RPMTAG_CONFLICTVERSION and RPMTAG_CONFLICTFLAGS
+     * @param name
+     * @param version
+     * @param dependency
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView addConflict(String name, String version, Condition... dependency)
+    {
+        addString(RPMTAG_CONFLICTNAME, name);
+        addString(RPMTAG_CONFLICTVERSION, version);
+        addInt32(RPMTAG_CONFLICTFLAGS, Dependency.or(dependency));
+        ensureVersionReq(version);
+        return this;
+    }
+    @Override
+    public Collection<String> getConflicts()
+    {
+        return getStringArray(RPMTAG_CONFLICTNAME);
+    }
+    @Override
+    public DependencyCondition getConflict(String name)
+    {
+        return new DependencyConditionImpl(getString(RPMTAG_CONFLICTNAME), getString(RPMTAG_CONFLICTVERSION), Dependency.toArray(getInt32(RPMTAG_CONFLICTFLAGS)));
+    }
+
+    private void ensureVersionReq(String version)
+    {
+        if (!version.isEmpty() && !contains(RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
+        {
+            addRequireInt("rpmlib(VersionedDependencies)", "3.0.3-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+        }
+    }
+    /**
+     * Does nothing.
+     * @param priority
+     * @return 
+     */
+    @Override
     public PackageManagerAttributeView setPriority(String priority)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public String getPriority()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return null;
     }
-
+    
+    /**
+     * Does nothing.
+     * @param maintainer
+     * @return 
+     */
     @Override
     public PackageManagerAttributeView setMaintainer(String maintainer)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public String getMaintainer()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return null;
     }
-
+    
     @Override
     public String name()
     {
         return "org.vesalainen.vfs.pm.rpm";
     }
 
+    private void checkRequiredTags()
+    {
+        Set<HeaderTag> required = EnumSet.noneOf(HeaderTag.class);
+        for (HeaderTag tag : HeaderTag.values())
+        {
+            if (tag.getTagStatus() == TagStatus.Required)
+            {
+                required.add(tag);
+            }
+        }
+        required.removeAll(signature.getAllTags());
+        required.removeAll(header.getAllTags());
+        if (!required.isEmpty())
+        {
+            throw new IllegalArgumentException("required tags missing " + required);
+        }
+    }
+
+    public int getFileCount()
+    {
+        return getCount(HeaderTag.RPMTAG_FILESIZES);
+    }
+
+    public int getCount(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getCount();
+    }
+
+    public short getInt16(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (short) indexRecord.getSingle(IndexType.INT16);
+    }
+
+    public int getInt32(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (int) indexRecord.getSingle(IndexType.INT32);
+    }
+
+    public String getString(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return (String) indexRecord.getSingle(IndexType.STRING);
+    }
+
+    public List<Short> getInt16Array(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(IndexType.INT16);
+    }
+
+    public List<Integer> getInt32Array(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(IndexType.INT32);
+    }
+
+    public List<String> getStringArray(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getArray(IndexType.STRING);
+    }
+
+    public byte[] getBin(HeaderTag tag)
+    {
+        IndexRecord indexRecord = getIndexRecord(tag);
+        return indexRecord.getBinValue();
+    }
+
+    protected IndexRecord getIndexRecord(HeaderTag tag)
+    {
+        if (tag.isSignature())
+        {
+            return signature.getIndexRecord(tag);
+        }
+        else
+        {
+            return header.getIndexRecord(tag);
+        }
+    }
+
+    protected IndexRecord getOrCreateIndexRecord(HeaderTag tag)
+    {
+        IndexRecord indexRecord;
+        if (tag.isSignature())
+        {
+            indexRecord = signature.getIndexRecord(tag);
+            if (indexRecord == null)
+            {
+                indexRecord = signature.createIndexRecord(tag);
+                signature.addIndexRecord(indexRecord);
+            }
+        }
+        else
+        {
+            indexRecord = header.getIndexRecord(tag);
+            if (indexRecord == null)
+            {
+                indexRecord = header.createIndexRecord(tag);
+                header.addIndexRecord(indexRecord);
+            }
+        }
+        return indexRecord;
+    }
+
+    protected <T> boolean contains(HeaderTag tag)
+    {
+        IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected <T> boolean contains(HeaderTag tag, T value)
+    {
+        IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return indexRecord.contains(value);
+        }
+        return false;
+    }
+
+    protected <T> int indexOf(HeaderTag tag, T value)
+    {
+        IndexRecord<T> indexRecord = getIndexRecord(tag);
+        if (indexRecord != null)
+        {
+            return indexRecord.indexOf(value);
+        }
+        return -1;
+    }
+
+    protected final int addInt16(HeaderTag tag, short value)
+    {
+        IndexRecord<Short> indexRecord = getOrCreateIndexRecord(tag);
+        return indexRecord.addItem(value);
+    }
+
+    protected final int addInt32(HeaderTag tag, int value)
+    {
+        IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
+        return indexRecord.addItem(value);
+    }
+
+    protected final int addString(HeaderTag tag, String value)
+    {
+        IndexRecord<String> indexRecord = getOrCreateIndexRecord(tag);
+        return indexRecord.addItem(value);
+    }
+
+    protected final void setBin(HeaderTag tag, byte[] bin)
+    {
+        IndexRecord indexRecord = getOrCreateIndexRecord(tag);
+        indexRecord.setBin(bin);
+    }
+
+    public List<String> getFilenames()
+    {
+        List<Integer> ind = getInt32Array(RPMTAG_DIRINDEXES);
+        List<String> base = getStringArray(RPMTAG_BASENAMES);
+        List<String> dir = getStringArray(RPMTAG_DIRNAMES);
+        List<String> list = new ArrayList<>();
+        int len = ind.size();
+        for (int ii=0;ii<len;ii++)
+        {
+            list.add(dir.get(ind.get(ii))+base.get(ii));
+        }
+        return list;
+    }
+
+    public static class DependencyConditionImpl implements DependencyCondition
+    {
+        private String name;
+        private String version;
+        private Condition[] conditions;
+
+        public DependencyConditionImpl(String name, String version, Condition[] conditions)
+        {
+            this.name = name;
+            this.version = version;
+            this.conditions = conditions;
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+
+        @Override
+        public String getVersion()
+        {
+            return version;
+        }
+
+        @Override
+        public Condition[] getConditions()
+        {
+            return conditions;
+        }
+        
+    }
 }

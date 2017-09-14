@@ -195,14 +195,19 @@ public class VirtualFileSystem extends FileSystem implements AttachedLogger
         throw new UnsupportedOperationException("Not supported yet.");
     }
     /**
-     * Assigns pseude device, inode and counts nlink attributes
+     * Assigns pseudo device, inode and counts nlink attributes
      */
+    private boolean enumerated;
     public void enumerateInodes()
     {
-        int dev = 0;
-        for (VirtualFileStore store : stores.values())
+        if (!enumerated)
         {
-            store.enumerateInodes(dev++);
+            enumerated = true;
+            int dev = 0;
+            for (VirtualFileStore store : stores.values())
+            {
+                store.enumerateInodes(dev++);
+            }
         }
     }
 }

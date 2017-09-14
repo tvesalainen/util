@@ -23,12 +23,15 @@ import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import org.vesalainen.util.logging.AttachedLogger;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class FileSystemFactory
+public abstract class FileSystemFactory implements AttachedLogger
 {
     private static final Map<String,Class<? extends VirtualFileSystem>> map = new HashMap<>();
     
@@ -52,14 +55,18 @@ public abstract class FileSystemFactory
     
     public static final FileSystem getInstance(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
+        JavaLogging logger = JavaLogging.getLogger(FileSystemFactory.class);
         try
         {
+            logger.fine("getInstance(%s)", path);
             String pathString = path.toString();
             String extension = null;
             for (String ext : map.keySet())
             {
+                logger.finest("try suffix %s to %s", ext, pathString);
                 if (pathString.endsWith(ext))
                 {
+                    logger.finest("matched %s", ext);
                     extension = ext;
                     break;
                 }
@@ -78,6 +85,7 @@ public abstract class FileSystemFactory
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
+            logger.log(Level.SEVERE, ex, "%s", ex.getMessage());
             throw new IOException(ex);
         }
     }

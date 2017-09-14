@@ -37,7 +37,7 @@ public class TARFileSystem extends ArchiveFileSystem
         addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
         if (isReadOnly())
         {
-            load();
+            load(channel);
         }
     }
     

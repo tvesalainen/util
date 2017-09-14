@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.vesalainen.nio.channels.GZIPChannel;
 import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.vfs.Root;
@@ -225,15 +226,15 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
     {
         if (!readOnly)
         {
-            store(getDefaultRoot());
+            store(channel, getDefaultRoot());
         }
         channel.close();
     }
 
-    public final void load() throws IOException
+    protected final void load(SeekableByteChannel ch) throws IOException
     {
         Header header = headerSupplier.get();
-        header.load(channel);
+        header.load(ch);
         while (!header.isEof())
         {
             String fn = header.getFilename();
@@ -273,12 +274,12 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                 case REGULAR:
                     if (size > 0)
                     {
-                        try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+                        try (FileChannel fileChannel = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
                         {
                             long pos = 0;
                             while (size > 0)
                             {
-                                long count = ch.transferFrom(channel, pos, size);
+                                long count = fileChannel.transferFrom(ch, pos, size);
                                 pos += count;
                                 size -= count;
                             }
@@ -296,12 +297,12 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                 {
                     case HARD:
                     case REGULAR:
-                        try (FileChannel ch = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
+                        try (FileChannel fileChannel = FileChannel.open(pth, EnumSet.of(WRITE, CREATE), fileAttributes))
                         {
                             long pos = 0;
                             while (size > 0)
                             {
-                                long count = ch.transferFrom(channel, pos, size);
+                                long count = fileChannel.transferFrom(ch, pos, size);
                                 pos += count;
                                 size -= count;
                             }
@@ -311,7 +312,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                         break;  // handled
                     default:    // directory might have 4096 bytes of useless bytes
                         ByteBuffer b = ByteBuffer.allocateDirect(size.intValue());
-                        channel.read(b);
+                        ch.read(b);
                         break;
                 }
             }
@@ -327,11 +328,15 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                 }
             }
             header.clear();
-            header.load(channel);
+            header.load(ch);
         }
     }
 
-    public final void store(Root root) throws IOException
+    protected final Stream<Path> walk(Root root) throws IOException
+    {
+        return Files.walk(root).filter((p -> p != root));
+    }
+    protected final void store(SeekableByteChannel ch, Root root) throws IOException
     {
         enumerateInodes();
         Map<Inode, Path> inodes = new HashMap<>();
@@ -339,7 +344,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         Header header = headerSupplier.get();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
         Map<String, Object> all = new HashMap<>();
-        Files.walk(root).filter((p -> p != root)).forEach((p)
+        walk(root).forEach((p)
                 -> 
                 {
                     try
@@ -374,13 +379,13 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                         {
                             digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
                         }
-                        header.store(channel, r.toString(), format, linkname, all, digest);
+                        header.store(ch, r.toString(), format, linkname, all, digest);
                         long size = header.size();
                         if (size > 0)
                         {
-                            try (FileChannel ch = FileChannel.open(r, READ, NOFOLLOW_LINKS))
+                            try (FileChannel fileChannel = FileChannel.open(r, READ, NOFOLLOW_LINKS))
                             {
-                                ch.transferTo(0, size, channel);
+                                fileChannel.transferTo(0, size, ch);
                             }
                         }
                     }
@@ -390,7 +395,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                     }
         });
         header.clear();
-        header.storeEof(channel, format);
+        header.storeEof(ch, format);
     }
 
     @Override
