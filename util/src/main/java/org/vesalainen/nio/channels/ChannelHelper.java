@@ -31,6 +31,8 @@ import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
+import org.vesalainen.util.function.IOToIntFunction;
 
 /**
  *
@@ -582,27 +584,25 @@ public final class ChannelHelper
         @Override
         public int read(ByteBuffer dst) throws IOException
         {
-            int before = dst.position();
-            int rc = ch.read(dst);
-            int after = dst.position();
-            dst.position(before);
-            tracer.accept(dst);
-            dst.position(after);
-            return rc;
+            return trace(dst, ch::read);
         }
 
         @Override
         public int write(ByteBuffer src) throws IOException
         {
-            int before = src.position();
-            int rc = ch.write(src);
-            int after = src.position();
-            src.position(before);
-            tracer.accept(src);
-            src.position(after);
+            return trace(src, ch::write);
+        }
+        private int trace(ByteBuffer bb, IOToIntFunction<ByteBuffer> io) throws IOException
+        {
+            int posBefore = bb.position();
+            int limit = bb.limit();
+            int rc = io.applyAsInt(bb);
+            int posAfter = bb.position();
+            bb.limit(posAfter).position(posBefore);
+            tracer.accept(bb);
+            bb.limit(limit).position(posAfter);
             return rc;
         }
-        
         @Override
         public boolean isOpen()
         {
