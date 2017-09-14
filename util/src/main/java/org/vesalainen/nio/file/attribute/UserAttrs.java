@@ -105,7 +105,14 @@ public final class UserAttrs
     public static final void setStringAttribute(Path path, String attribute, String value, LinkOption... options) throws IOException
     {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
-        Files.setAttribute(path, attribute, value.getBytes(UTF_8), options);
+        if (value != null)
+        {
+            Files.setAttribute(path, attribute, value.getBytes(UTF_8), options);
+        }
+        else
+        {
+            Files.setAttribute(path, attribute, null, options);
+        }
     }
     /**
      * Returns user-defined-attribute
