@@ -115,20 +115,33 @@ public final class UserAttrs
         }
     }
     /**
-     * Returns user-defined-attribute
+     * Returns user-defined-attribute -1 if not found.
      * @param path
-     * @param attribute user:attribute name. user: can be omitted.
+     * @param attribute
      * @param options
      * @return
      * @throws IOException 
      */
     public static final short getShortAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        return getShortAttribute(path, attribute, (short)-1, options);
+    }
+    /**
+     * Returns user-defined-attribute
+     * @param path
+     * @param attribute user:attribute name. user: can be omitted.
+     * @param def Default value if attribute doesn't exist
+     * @param options
+     * @return
+     * @throws IOException 
+     */
+    public static final short getShortAttribute(Path path, String attribute, short def, LinkOption... options) throws IOException
+    {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return def;
         }      
         if (attr.length != 2)
         {
@@ -137,20 +150,33 @@ public final class UserAttrs
         return Primitives.readShort(attr);
     }
     /**
-     * Returns user-defined-attribute
+     * Returns user-defined-attribute -1 if not found.
      * @param path
-     * @param attribute user:attribute name. user: can be omitted.
+     * @param attribute
      * @param options
      * @return
      * @throws IOException 
      */
     public static final int getIntAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        return getIntAttribute(path, attribute, -1, options);
+    }
+    /**
+     * Returns user-defined-attribute
+     * @param path
+     * @param attribute user:attribute name. user: can be omitted.
+     * @param def Default value if attribute doesn't exist
+     * @param options
+     * @return
+     * @throws IOException 
+     */
+    public static final int getIntAttribute(Path path, String attribute, int def, LinkOption... options) throws IOException
+    {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return def;
         }      
         if (attr.length != 4)
         {
@@ -159,20 +185,33 @@ public final class UserAttrs
         return Primitives.readInt(attr);
     }
     /**
-     * Returns user-defined-attribute
+     * Returns user-defined-attribute -1 if not found.
      * @param path
-     * @param attribute user:attribute name. user: can be omitted.
+     * @param attribute
      * @param options
      * @return
      * @throws IOException 
      */
     public static final long getLongAttribute(Path path, String attribute, LinkOption... options) throws IOException
     {
+        return getLongAttribute(path, attribute, -1, options);
+    }
+    /**
+     * Returns user-defined-attribute
+     * @param path
+     * @param attribute user:attribute name. user: can be omitted.
+     * @param def Default value if attribute doesn't exist
+     * @param options
+     * @return
+     * @throws IOException 
+     */
+    public static final long getLongAttribute(Path path, String attribute, long def, LinkOption... options) throws IOException
+    {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return def;
         }      
         if (attr.length != 8)
         {
@@ -181,20 +220,34 @@ public final class UserAttrs
         return Primitives.readLong(attr);
     }
     /**
+     * Returns user-defined-attribute NaN if not found.
+     * @param path
+     * @param attribute
+     * @param options
+     * @return
+     * @throws IOException 
+     * @see java.lang.Float#NaN
+     */
+    public static final float getFloatAttribute(Path path, String attribute, LinkOption... options) throws IOException
+    {
+        return getFloatAttribute(path, attribute, Float.NaN, options);
+    }
+    /**
      * Returns user-defined-attribute
      * @param path
      * @param attribute user:attribute name. user: can be omitted.
+     * @param def Default value if attribute doesn't exist
      * @param options
      * @return
      * @throws IOException 
      */
-    public static final float getFloatAttribute(Path path, String attribute, LinkOption... options) throws IOException
+    public static final float getFloatAttribute(Path path, String attribute, float def, LinkOption... options) throws IOException
     {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return def;
         }      
         if (attr.length != 4)
         {
@@ -203,20 +256,34 @@ public final class UserAttrs
         return Primitives.readFloat(attr);
     }
     /**
+     * Returns user-defined-attribute NaN if not found.
+     * @param path
+     * @param attribute
+     * @param options
+     * @return
+     * @throws IOException 
+     * @see java.lang.Double#NaN
+     */
+    public static final double getDoubleAttribute(Path path, String attribute, LinkOption... options) throws IOException
+    {
+        return getDoubleAttribute(path, attribute, Double.NaN, options);
+    }
+    /**
      * Returns user-defined-attribute
      * @param path
      * @param attribute user:attribute name. user: can be omitted.
+     * @param def Default value if attribute doesn't exist
      * @param options
      * @return
      * @throws IOException 
      */
-    public static final double getDoubleAttribute(Path path, String attribute, LinkOption... options) throws IOException
+    public static final double getDoubleAttribute(Path path, String attribute, double def, LinkOption... options) throws IOException
     {
         attribute = attribute.startsWith("user:") ? attribute : "user:"+attribute;
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return def;
         }      
         if (attr.length != 8)
         {
@@ -238,7 +305,7 @@ public final class UserAttrs
         byte[] attr = (byte[]) Files.getAttribute(path, attribute, options);
         if (attr == null)
         {
-            throw new IllegalArgumentException(attribute+" not found");
+            return null;
         }      
         return new String(attr, UTF_8);
     }
