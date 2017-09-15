@@ -467,4 +467,10 @@ public class VirtualFileChannel extends FileChannel implements AttachedLogger
         }
         
     }
+
+    @Override
+    public String toString()
+    {
+        return "VirtualFileChannel{" + "path=" + path + ", currentPosition=" + currentPosition + '}';
+    }
 }

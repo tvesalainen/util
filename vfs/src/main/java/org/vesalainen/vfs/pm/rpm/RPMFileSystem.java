@@ -17,7 +17,6 @@
 package org.vesalainen.vfs.pm.rpm;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -40,9 +39,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.nio.channels.GZIPChannel;
-import org.vesalainen.nio.file.PathHelper;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
@@ -115,6 +115,12 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         }
     }
 
+    @Override
+    protected Stream<Path> walk(Root root) throws IOException
+    {
+        return super.walk(root).filter((p)->!Files.isDirectory(p));
+    }
+
     private void loadRPM() throws IOException
     {
         lead = new Lead(channel);
@@ -170,7 +176,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
                 // attributes
                 UnixFileAttributeView unix = Files.getFileAttributeView(p, UnixFileAttributeView.class);
                 PackageFileAttributes.setUsage(p, FileFlag.fromFileFlags(fileFlags.get(index)));
-                PackageFileAttributes.setLanguage(path, langs.get(index));
+                PackageFileAttributes.setLanguage(p, langs.get(index));
                 UserPrincipal user = upls.lookupPrincipalByName(users.get(index));
                 unix.setOwner(user);
                 GroupPrincipal group = upls.lookupPrincipalByGroupName(groups.get(index));
@@ -187,13 +193,41 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         {
             storeRPM();
         }
+        channel.close();
     }
     private void storeRPM() throws IOException
     {
         lead = new Lead(getName());
         setFileHeaders();
+        addProvide(getString(RPMTAG_NAME), getString(RPMTAG_VERSION), Condition.EQUAL);
+        addRequireInt("rpmlib(CompressedFileNames)", "3.0.4-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+        addInt32(RPMTAG_SIZE, getInt32Array(RPMTAG_FILESIZES).stream().collect(Collectors.summingInt((i) -> i)));
+        
+        // placeholders
+        md5.reset();
+        setBin(RPMSIGTAG_MD5, md5.digest());
+        addInt32(RPMSIGTAG_SIZE, 0);
+        
         checkRequiredTags();
-        //store(channel, root);
+        
+        lead.save(channel);
+        long sigPos = channel.position();
+        signature.save(channel);
+        
+        UpdateCounter counter = new UpdateCounter(md5::update);
+        SeekableByteChannel md5Channel = ChannelHelper.traceableChannel(channel, counter);
+        
+        header.save(md5Channel);
+        
+        GZIPChannel gzipChannel = new GZIPChannel(path, md5Channel, 4096, 4, openOptions);
+        Root root = (Root) getPath("/");
+        store(gzipChannel, root);
+        gzipChannel.flush();
+        // md5
+        setBin(RPMSIGTAG_MD5, md5.digest());
+        setInt32(RPMSIGTAG_SIZE, counter.getCount(), 0);
+        channel.position(sigPos);
+        signature.save(channel);
     }
     private void setFileHeaders() throws IOException
     {
@@ -203,23 +237,18 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         {
             try
             {
-                String trg = p.toString();
-                int idx = trg.lastIndexOf('/');
-                if (idx == -1)
-                {
-                    throw new IllegalArgumentException("directory missing "+p);
-                }
-                String dir = trg.substring(0, idx+1);
-                String base = trg.substring(idx+1);
+                Path  dir = p.getParent();
+                Path base = p.getFileName();
                 int index;
-                addString(RPMTAG_BASENAMES, base);
-                if (!contains(RPMTAG_DIRNAMES, dir))
+                addString(RPMTAG_BASENAMES, base.toString());
+                String dirStr = dir.toString()+'/';
+                if (!contains(RPMTAG_DIRNAMES, dirStr))
                 {
-                    index = addString(RPMTAG_DIRNAMES, dir);
+                    index = addString(RPMTAG_DIRNAMES, dirStr);
                 }
                 else
                 {
-                    index = indexOf(RPMTAG_DIRNAMES, dir);
+                    index = indexOf(RPMTAG_DIRNAMES, dirStr);
                 }
                 UnixFileAttributeView view = Files.getFileAttributeView(p, UnixFileAttributeView.class);
                 UnixFileAttributes unix = view.readAttributes();
@@ -245,9 +274,9 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
                 
                 addInt32(RPMTAG_FILEFLAGS, FileFlag.or(usage));
                 UserPrincipal owner = unix.owner();
-                addString(RPMTAG_FILEUSERNAME, owner != null ? owner.getName() : "");
+                addString(RPMTAG_FILEUSERNAME, owner != null ? owner.getName() : "root");
                 GroupPrincipal group = unix.group();
-                addString(RPMTAG_FILEGROUPNAME, group != null ? group.getName() : "");
+                addString(RPMTAG_FILEGROUPNAME, group != null ? group.getName() : "root");
                 addInt32(RPMTAG_FILEDEVICES, unix.device());
                 addInt32(RPMTAG_FILEINODES, unix.inode());
                 String language = PackageFileAttributes.getLanguage(p);
@@ -866,6 +895,12 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     {
         IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
         return indexRecord.addItem(value);
+    }
+
+    protected final int setInt32(HeaderTag tag, int value, int index)
+    {
+        IndexRecord<Integer> indexRecord = getOrCreateIndexRecord(tag);
+        return indexRecord.setItem(value, index);
     }
 
     protected final int addString(HeaderTag tag, String value)

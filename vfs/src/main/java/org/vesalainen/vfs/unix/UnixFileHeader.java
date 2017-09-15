@@ -21,6 +21,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.concurrent.TimeUnit;
+import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.vfs.arch.Header;
 import static org.vesalainen.vfs.arch.Header.Type.*;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
@@ -174,4 +175,11 @@ public abstract class UnixFileHeader extends Header
             view.setGroup(new UnixGroup(gname, gid));
         }
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%o", mode) + filename + "linkname=" + linkname + ", uname=" + uname + ", gname=" + gname;
+    }
+    
 }

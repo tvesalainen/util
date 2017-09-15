@@ -31,13 +31,14 @@ import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.nio.channels.ChannelHelper;
 //import static org.vesalainen.pm.rpm.IndexType.*;
 import org.vesalainen.util.HexDump;
+import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.vfs.pm.rpm.IndexType.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public final class HeaderStructure
+public final class HeaderStructure implements AttachedLogger
 {
     private static final byte[] HEADER_MAGIC = new byte[]{(byte) 0x8e, (byte) 0xad, (byte) 0xe8, (byte) 0x01};
     private boolean signature;
@@ -76,6 +77,7 @@ public final class HeaderStructure
         {
             IndexRecord indexRecord = loadIndexRecord(bb);
             addIndexRecord(indexRecord);
+            finest("loaded: %s", indexRecord);
         }
         storage = null;
     }
@@ -92,7 +94,7 @@ public final class HeaderStructure
     void save(SeekableByteChannel ch) throws IOException
     {
         ChannelHelper.align(ch, 8);
-        int size = countSize();
+        int size = countSize() + 16;
         ByteBuffer bb = ByteBuffer.allocateDirect(size).order(BIG_ENDIAN);
         bb.clear();
         bb.put(magic);
@@ -111,6 +113,9 @@ public final class HeaderStructure
         storage.flip();
         hsize = storage.remaining();
         bb.putInt(hsizeIndex, hsize);
+        bb.position(bb.position()+hsize);
+        assert !bb.hasRemaining();
+        bb.flip();
         ch.write(bb);
     }
     private int countSize()
@@ -120,19 +125,15 @@ public final class HeaderStructure
         for (IndexRecord ir : indexRecords)
         {
             hdr += 16;
-            int count = ir.getCount();
             IndexType type = ir.getType();
-            int size = type.getSize();
-            if (size != -1)
+            int typeSize = type.getSize();
+            if (typeSize != -1)
             {
-                int mod = stor % size;
-                stor = mod>0 ? stor - size - mod : stor;
-                stor += count*size;
+                int mod = stor % typeSize;
+                stor = mod>0 ? stor + typeSize - mod : stor;
             }
-            else
-            {
-                stor += count;
-            }
+            stor += ir.size();
+            System.err.println(ir+" "+hdr+" "+stor);
         }
         return hdr  + stor;
     }
@@ -140,7 +141,7 @@ public final class HeaderStructure
     {
         for (IndexRecord ir : indexRecords)
         {
-            ir.append(out);
+            out.append(ir.toString());
         }
     }
     public IndexRecord getIndexRecord(HeaderTag tag)
@@ -401,10 +402,25 @@ public final class HeaderStructure
 
         public int size()
         {
-            return count*type.getSize();
+            int s = 0;
+            switch (type)
+            {
+                case STRING:
+                case STRING_ARRAY:
+                case I18NSTRING:
+                    for (T item : list)
+                    {
+                        String str = (String) item;
+                        s += str.length()+1;
+                    }
+                    return s;
+                default:
+                    return getCount()*type.getSize();
+            }
         }
         public void save(ByteBuffer bb)
         {
+            finest("stored: %s", this);
             offset = setData(storage, list, bin, type);
             count = getCount();
             bb.putInt(tag.getTagValue());
@@ -427,6 +443,15 @@ public final class HeaderStructure
                 throw new IllegalArgumentException("more that one item in STRING");
             }
             list.add(item);
+            return list.size()-1;
+        }
+        public int setItem(T item, int index)
+        {
+            if (type == STRING && !list.isEmpty())
+            {
+                throw new IllegalArgumentException("more that one item in STRING");
+            }
+            list.set(index, item);
             return list.size()-1;
         }
 
@@ -467,28 +492,31 @@ public final class HeaderStructure
             }
             return bin;
         }
-        public void append(Appendable out) throws IOException
+        @Override
+        public String toString()
         {
-            out.append(tag.name()).append(String.format(" type=%s offset=%d count=%d\n", type, offset, count));
+            StringBuilder sb = new StringBuilder();
+            sb.append(tag.name()).append(String.format(" type=%s offset=%d count=%d\n", type, offset, count));
             switch (type)
             {
                 case INT16:
-                    out.append(String.format("value=%s \n", getInt16(storage, offset, count)));
+                    sb.append(String.format("value=%s \n", getInt16(storage, offset, count)));
                     break;
                 case INT32:
-                    out.append(String.format("value=%s \n", getInt32(storage, offset, count)));
+                    sb.append(String.format("value=%s \n", getInt32(storage, offset, count)));
                     break;
                 case STRING:
                 case I18NSTRING:
                 case STRING_ARRAY:
-                    out.append(String.format("value=%s \n", getStringArray(storage, offset, count)));
+                    sb.append(String.format("value=%s \n", getStringArray(storage, offset, count)));
                     break;
                 case BIN:
-                    out.append(String.format("%s\n", HexDump.toHex(getBin(storage, offset, count))));
+                    sb.append(String.format("%s\n", HexDump.toHex(getBin(storage, offset, count))));
                     break;
                 default:
-                    out.append("not supported\n");
+                    sb.append("not supported\n");
             }
+            return sb.toString();
         }
 
         public HeaderTag getTag()

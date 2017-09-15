@@ -78,6 +78,7 @@ public class Lead
         bb.putShort(osnum);
         bb.putShort(signatureType);
         bb.put(reserved);
+        bb.flip();
         ch.write(bb);
     }
     private String readString(ByteBuffer bb, int size)

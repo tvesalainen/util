@@ -24,10 +24,16 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.vfs.VirtualFileSystems;
+import org.vesalainen.vfs.pm.FileUse;
+import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 
 /**
@@ -39,6 +45,7 @@ public class RPMFileSystemTest
     
     public RPMFileSystemTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.ALL);
     }
 
     //@Test
@@ -54,6 +61,7 @@ public class RPMFileSystemTest
     @Test
     public void testWrite() throws URISyntaxException, IOException
     {
+        long pomSize = 0;
         FileSystem dfs = VirtualFileSystems.getDefault();
         Path path = dfs.getPath("test.rpm");
         Files.createFile(path);
@@ -77,9 +85,39 @@ public class RPMFileSystemTest
                 ;
                     
             Path pom = Paths.get("pom.xml");
-            Path trg = dfs.getPath("/etc/default/pom.xml");
+            pomSize = Files.size(pom);
+            Path trg = rmpFS.getPath("/etc/default/pom.xml");
             Files.createDirectories(trg.getParent());
             Files.copy(pom, trg);
+            PackageFileAttributes.setLanguage(trg, "C");
+            PackageFileAttributes.setUsage(trg, FileUse.CONFIGURATION);
         }
+        try (FileSystem rmpFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
+        {
+            FileStore fs = rmpFS.getFileStores().iterator().next();
+            PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
+            assertEquals("test2", view.getPackageName());
+            assertEquals("1.0", view.getVersion());
+            assertEquals("r1", view.getRelease());
+            assertEquals("noarch", view.getArchitecture());
+            assertEquals("description...", view.getDescription());
+            assertEquals("area", view.getApplicationArea());
+            assertEquals("GPL", view.getLicense());
+            assertEquals("linux", view.getOperatingSystem());
+            assertEquals("summary...", view.getSummary());
+            Collection<String> requires = view.getRequires();
+            assertTrue(requires.contains("lsb"));
+            assertTrue(requires.contains("java7-runtime-headless"));
+            assertEquals("echo qwerty >/tmp/test\n", view.getPostInstallation());
+            
+            Path trg = rmpFS.getPath("/etc/default/pom.xml");
+            assertEquals(pomSize, Files.size(trg));
+            assertEquals("C", PackageFileAttributes.getLanguage(trg));
+            Set<FileUse> usage = PackageFileAttributes.getUsage(trg);
+            assertTrue(usage.contains(FileUse.CONFIGURATION));
+            assertFalse(usage.contains(FileUse.DOCUMENTATION));
+        }
+        Path rpm = Paths.get("z:\\test\\test.rpm");
+        //Files.copy(path, rpm);
     }    
 }

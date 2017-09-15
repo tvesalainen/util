@@ -22,16 +22,16 @@ package org.vesalainen.vfs.pm.rpm;
  */
 public enum IndexType
 {
-    NULL(-1),
+    NULL(1),
     CHAR(1),
     INT8(1),
     INT16(2),
     INT32(4),
     INT64(-1),
-    STRING(-1),
+    STRING(1),
     BIN(1),
-    STRING_ARRAY(-1),
-    I18NSTRING(-1);
+    STRING_ARRAY(1),
+    I18NSTRING(1);
     
     private int size;
 

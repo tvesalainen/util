@@ -237,6 +237,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         header.load(ch);
         while (!header.isEof())
         {
+            finest("load %s: %s", format, header);
             String fn = header.getFilename();
             if (fn.startsWith(getSeparator()))
             {
@@ -332,7 +333,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         }
     }
 
-    protected final Stream<Path> walk(Root root) throws IOException
+    protected Stream<Path> walk(Root root) throws IOException
     {
         return Files.walk(root).filter((p -> p != root));
     }
@@ -380,6 +381,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                             digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
                         }
                         header.store(ch, r.toString(), format, linkname, all, digest);
+                        finest("store %s: %s", format, header);
                         long size = header.size();
                         if (size > 0)
                         {

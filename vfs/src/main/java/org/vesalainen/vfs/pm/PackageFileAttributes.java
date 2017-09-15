@@ -43,7 +43,7 @@ public class PackageFileAttributes
     }
     public static final Set<FileUse> getUsage(Path path) throws IOException
     {
-        int at = UserAttrs.getIntAttribute(path, USAGE);
+        int at = UserAttrs.getIntAttribute(path, USAGE, 0);
         return EnumSetFlagger.getSet(FileUse.class, at);
     }
     public static final void setLanguage(Path path, String language) throws IOException
