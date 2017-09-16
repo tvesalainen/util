@@ -74,6 +74,7 @@ import org.vesalainen.vfs.unix.UnixFileAttributeViewImpl;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.attributes.FileOwnerAttributeViewImpl;
 import org.vesalainen.vfs.attributes.UserDefinedFileAttributeViewImpl;
+import org.vesalainen.vfs.pm.deb.DEBFileSystem;
 import org.vesalainen.vfs.pm.rpm.RPMFileSystem;
 
 /**
@@ -113,6 +114,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider implements Att
         FileSystemFactory.register(".tar", TARFileSystem.class);
         FileSystemFactory.register(".tar.gz", TARFileSystem.class);
         FileSystemFactory.register(".rpm", RPMFileSystem.class);
+        FileSystemFactory.register(".deb", DEBFileSystem.class);
     }
 
     protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)

@@ -14,34 +14,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.arch.cpio;
+package org.vesalainen.vfs.pm.deb;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
-import java.util.Map;
-import org.vesalainen.vfs.Root;
-import org.vesalainen.vfs.VirtualFileStore;
-import org.vesalainen.vfs.VirtualFileSystemProvider;
-import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import java.nio.file.Paths;
+import java.util.Collections;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.vesalainen.vfs.VirtualFileSystems;
+import org.vesalainen.vfs.pm.rpm.RPMFileSystemTest;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CPIOFileSystem extends ArchiveFileSystem
+public class DEBFileSystemTest
 {
-
-    public CPIOFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    
+    public DEBFileSystemTest()
     {
-        super(provider, path, env, CPIOHeader::new, 4096, 4);
-        String filename = path.getFileName().toString();
-        Root root = addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
-        if (isReadOnly())
-        {
-            load(channel, root);
-        }
     }
 
+    @Test
+    public void testRead() throws URISyntaxException, IOException
+    {
+        URL url = DEBFileSystemTest.class.getResource("/test2_1.0-1_all.deb");
+        Path path = Paths.get(url.toURI());
+        try (FileSystem debFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
+        {
+            
+        }
+    }
     
 }

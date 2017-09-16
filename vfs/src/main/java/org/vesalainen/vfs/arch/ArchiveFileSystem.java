@@ -170,7 +170,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         String filename = path.getFileName().toString();
         if (fmt == null)
         {
-            if (filename.endsWith(".tar.gz") || filename.endsWith(".tar"))
+            if (filename.endsWith(".tar.gz") || filename.endsWith(".tar") || filename.endsWith(".deb"))
             {
                 fmt = TAR_PAX;
             }
@@ -231,7 +231,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         channel.close();
     }
 
-    protected final void load(SeekableByteChannel ch) throws IOException
+    protected final void load(SeekableByteChannel ch, Root root) throws IOException
     {
         Header header = headerSupplier.get();
         header.load(ch);
@@ -243,7 +243,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
             {
                 fn = fn.substring(1);
             }
-            Path pth = getPath(fn).normalize();
+            Path pth = root.resolve(getPath(fn).normalize());
             FileAttribute<?>[] fileAttributes = header.fileAttributes();
             Long size = (long) header.get(SIZE);
             if (size == null)

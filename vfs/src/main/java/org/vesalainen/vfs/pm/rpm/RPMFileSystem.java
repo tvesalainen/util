@@ -75,6 +75,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private HeaderStructure signature;
     private HeaderStructure header;
     private MessageDigest md5;
+    private final Root root;
 
     public RPMFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
@@ -86,13 +87,14 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
             Path path, 
             Supplier<Header> headerSupplier, 
             Set<? extends OpenOption> openOptions, 
-            FileAttribute<?>[] fileAttributes, FileFormat format) throws IOException
+            FileAttribute<?>[] fileAttributes, 
+            FileFormat format) throws IOException
     {
         super(provider, path, headerSupplier, openOptions, fileAttributes, format, openChannel(path, openOptions, fileAttributes));
         checkFormat(format);
         VirtualFileStore defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
         defStore.addFileStoreAttributeView(this);
-        addFileStore("/",defStore , true);
+        root = addFileStore("/",defStore , true);
         try
         {
             md5 = MessageDigest.getInstance("MD5");
@@ -137,7 +139,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         SeekableByteChannel md5Channel = ChannelHelper.traceableChannel(channel, counter);
         header = new HeaderStructure(md5Channel, false);
         GZIPChannel gzipChannel = new GZIPChannel(path, md5Channel, 4096, 8, openOptions);
-        load(gzipChannel); // CPIO
+        load(gzipChannel, root); // CPIO
         
         byte[] digest = md5.digest();
         byte[] dig = getBin(RPMSIGTAG_MD5);
