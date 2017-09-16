@@ -428,7 +428,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         }
     }
     /**
-     * Finishes compression in write mode.
+     * Finishes
      * @throws IOException 
      */
     public void flush() throws IOException
@@ -436,6 +436,19 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         if (deflater != null)
         {
             writeTrailer();
+        }
+        else
+        {
+            if (inflater != null)
+            {
+                ByteBuffer bb = ByteBuffer.allocate(4096);
+                int rc = read(bb);
+                while (rc != -1)
+                {
+                    bb.clear();
+                    rc = read(bb);
+                }
+            }
         }
     }
     private void ensureReading() throws IOException
@@ -593,6 +606,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         compBuf.compact();
         channel.read(compBuf);
         compBuf.flip();
+        System.err.println(HexDump.remainingToHex(compBuf));
         int crc = compBuf.getInt();
         int value = (int) crc32.getValue();
         if (crc != value)
@@ -604,6 +618,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         {
             throw new IOException("Size mismatch");
         }
+        channel.position(channel.position()-compBuf.remaining());
     }
     /**
      * After read returns -1 call nextInput to advance to nextInput file.
