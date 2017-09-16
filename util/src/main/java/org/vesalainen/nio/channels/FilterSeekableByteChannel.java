@@ -22,17 +22,19 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SeekableByteChannel;
+import static java.nio.file.StandardOpenOption.READ;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.vesalainen.lang.Casts;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.function.IOFunction;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <T>
  */
 public class FilterSeekableByteChannel implements SeekableByteChannel
 {
-    protected static final int BUF_SIZE = 4096;
     protected ByteChannel channel;
     private InputStream in;
     private byte[] buf;
@@ -40,15 +42,37 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     private int length;
     private OutputStream out;
     private long position;
-    private long skip;
-
+    private int bufSize = 4096;
+    private int maxSkipSize;
+    private ByteBuffer skipBuffer;
+    private Lock readLock = new ReentrantLock();
+    private Lock writeLock = new ReentrantLock();
+    private boolean closeChannel;
+    private boolean isClosed;
+    /**
+     * Creates FilterSeekableByteChannel. Only one of in/out functions is allowed.
+     * @param channel
+     * @param bufSize Buffer size
+     * @param maxSkipSize Maximum forward position size
+     * @param fin
+     * @param fout
+     * @throws IOException 
+     */
     public FilterSeekableByteChannel(
             ByteChannel channel, 
+            int bufSize, 
+            int maxSkipSize, 
             IOFunction<? super InputStream,? extends InputStream> fin,
             IOFunction<? super OutputStream,? extends OutputStream> fout
     ) throws IOException
     {
+        if ((fin != null) && (fout != null))
+        {
+            throw new IllegalArgumentException("Only one of in/out functions is allowed.");
+        }
         this.channel = channel;
+        this.bufSize = bufSize;
+        this.maxSkipSize = maxSkipSize;
         if (fin != null)
         {
             this.in = fin.apply(new Input());
@@ -57,35 +81,53 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         {
             this.out = fout.apply(new Output());
         }
-        this.buf = new byte[BUF_SIZE];
+        this.buf = new byte[bufSize];
+        if (maxSkipSize > 0)
+        {
+            skipBuffer = ByteBuffer.allocate(maxSkipSize);
+        }
     }
 
-    public static FilterSeekableByteChannel openInput(ByteChannel channel, IOFunction<? super InputStream,? extends InputStream> fin) throws IOException
-    {
-        return new FilterSeekableByteChannel(channel, fin, null);
-    }
-    public static FilterSeekableByteChannel openOutput(ByteChannel channel, IOFunction<? super OutputStream,? extends OutputStream> fout) throws IOException
-    {
-        return new FilterSeekableByteChannel(channel, null, fout);
-    }
     @Override
     public long position() throws IOException
     {
         return position;
     }
     /**
-     * Throws UnsupportedOperationException
+     * Changes un filtered position. Only forward direction is allowed with
+     * small skips. This method is for alignment purposes mostly.
      * @param newPosition
      * @return
      * @throws IOException 
      */
     @Override
-    public SeekableByteChannel position(long newPosition) throws IOException
+    public FilterSeekableByteChannel position(long newPosition) throws IOException
     {
-        skip = newPosition - position;
+        int skip = (int) (newPosition - position());
         if (skip < 0)
         {
-            throw new UnsupportedOperationException("setting position backwards not supported.");
+            throw new UnsupportedOperationException("backwards position not supported");
+        }
+        if (skip > skipBuffer.capacity())
+        {
+            throw new UnsupportedOperationException(skip+" skip not supported maxSkipSize="+maxSkipSize);
+        }
+        if (skip > 0)
+        {
+            if (skipBuffer == null)
+            {
+                throw new UnsupportedOperationException("skip not supported maxSkipSize="+maxSkipSize);
+            }
+            skipBuffer.clear();
+            skipBuffer.limit(skip);
+            if (in != null)
+            {
+                read(skipBuffer);
+            }
+            else
+            {
+                write(skipBuffer);
+            }
         }
         return this;
     }
@@ -100,7 +142,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         throw new UnsupportedOperationException("Not supported yet.");
     }
     /**
-     * Throws UnsupportedOperationException
+     * 
      * @param size
      * @return
      * @throws IOException 
@@ -126,55 +168,53 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
-        skip();
-        if (length == 0)
+        readLock.lock();
+        try
         {
-            length = in.read(buf);
-            if (length == -1)
+            if (length == 0)
             {
-                return -1;
+                length = in.read(buf);
+                if (length == -1)
+                {
+                    return -1;
+                }
+                offset = 0;
             }
-            offset = 0;
-            skip();
+            int count = ByteBuffers.move(buf, offset, length, dst);
+            offset += count;
+            length -= count;
+            position += count;
+            return count;
         }
-        int count = ByteBuffers.move(buf, offset, length, dst);
-        offset += count;
-        length -= count;
-        position += count;
-        return count;
-    }
-    private void skip()
-    {
-        if (skip > 0 && length > 0)
+        finally
         {
-            long s = Math.min(length, skip);
-            offset += s;
-            length -= s;
-            position += s;
-            skip -= s;
+            readLock.unlock();
         }
     }
     @Override
     public int write(ByteBuffer src) throws IOException
     {
-        while (skip > 0)
+        writeLock.lock();
+        try
         {
-            out.write(0);
-            skip--;
+            int res = src.remaining();
+            while (src.hasRemaining())
+            {
+                int count = ByteBuffers.move(src, buf, 0, buf.length);
+                out.write(buf, 0, count);
+            }
+            position += res;
+            return res;
         }
-        int res = src.remaining();
-        while (src.hasRemaining())
+        finally
         {
-            int count = ByteBuffers.move(src, buf, 0, buf.length);
-            out.write(buf, 0, count);
+            writeLock.unlock();
         }
-        position += res;
-        return res;
     }
 
     private class Output extends OutputStream
     {
-        private ByteBuffer bb = ByteBuffer.allocateDirect(BUF_SIZE);
+        private ByteBuffer bb = ByteBuffer.allocateDirect(bufSize);
 
         @Override
         public void write(byte[] buf, int off, int len) throws IOException
@@ -200,10 +240,29 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
 
     private class Input extends InputStream
     {
-        private ByteBuffer bb = ByteBuffer.allocateDirect(BUF_SIZE);
+        private ByteBuffer bb;
+
+        public Input()
+        {
+            bb = ByteBuffer.allocateDirect(bufSize);
+            bb.compact();
+        }
+        
         
         @Override
         public int read(byte[] b, int off, int len) throws IOException
+        {
+            if (fill())
+            {
+                return ByteBuffers.move(bb, b, off, len);
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        
+        private boolean fill() throws IOException
         {
             if (!bb.hasRemaining())
             {
@@ -211,16 +270,23 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
                 int rc = channel.read(bb);
                 if (rc == -1)
                 {
-                    return -1;
+                    return false;
                 }
+                bb.flip();
             }
-            return ByteBuffers.move(bb, b, off, len);
+            return true;
         }
-        
         @Override
         public int read() throws IOException
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (fill())
+            {
+                return Casts.castUnsignedInt(bb.get());
+            }
+            else
+            {
+                return -1;
+            }
         }
 
     }

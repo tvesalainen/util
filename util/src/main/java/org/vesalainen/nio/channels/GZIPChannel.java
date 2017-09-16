@@ -71,7 +71,6 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private SeekableByteChannel channel;
     private int bufSize = 4096;
     private int maxSkipSize;
-    private boolean readOnly;
     private String filename;
     private Set<OpenOption> options;
     private Inflater inflater;

@@ -116,4 +116,12 @@ public class Casts
         }
         return (byte) v;
     }
+    public static final byte castUnsignedByte(long v)
+    {
+        if ((v & 0xff) != v)
+        {
+            throw new IllegalArgumentException(v+" cannot be cast to byte");
+        }
+        return (byte) v;
+    }
 }
