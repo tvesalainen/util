@@ -21,9 +21,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import org.vesalainen.regex.Regex;
 import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -33,7 +35,8 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public abstract class FileSystemFactory implements AttachedLogger
 {
-    private static final Map<String,Class<? extends VirtualFileSystem>> map = new HashMap<>();
+    private static final Map<PathMatcher,Class<? extends VirtualFileSystem>> map = new HashMap<>();
+    private static final Glob GLOB = Glob.newInstance();
     
     protected VirtualFileSystemProvider provider;
     protected Path path;
@@ -50,7 +53,7 @@ public abstract class FileSystemFactory implements AttachedLogger
     
     public static final void register(String extension, Class<? extends VirtualFileSystem> fileSystem)
     {
-        map.put(extension, fileSystem);
+        map.put(GLOB.globMatcher(extension, Regex.Option.CASE_INSENSITIVE), fileSystem);
     }
     
     public static final FileSystem getInstance(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
@@ -59,34 +62,22 @@ public abstract class FileSystemFactory implements AttachedLogger
         try
         {
             logger.fine("getInstance(%s)", path);
-            String pathString = path.toString();
-            String extension = null;
-            for (String ext : map.keySet())
+            for (Map.Entry<PathMatcher, Class<? extends VirtualFileSystem>> entry : map.entrySet())
             {
-                logger.finest("try suffix %s to %s", ext, pathString);
-                if (pathString.endsWith(ext))
+                if (entry.getKey().matches(path))
                 {
-                    logger.finest("matched %s", ext);
-                    extension = ext;
-                    break;
+                    logger.finest("matched %s", path);
+                    Class<? extends VirtualFileSystem> cls = entry.getValue();
+                    Constructor<? extends VirtualFileSystem> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
+                    return constructor.newInstance(provider, path, env);
                 }
             }
-            if (extension == null)
-            {
-                throw new UnsupportedOperationException(path+" not supported");
-            }
-            Class<? extends VirtualFileSystem> cls = map.get(extension);
-            if (cls == null)
-            {
-                throw new UnsupportedOperationException(extension+" not supported");
-            }
-            Constructor<? extends VirtualFileSystem> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
-            return constructor.newInstance(provider, path, env);
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
             logger.log(Level.SEVERE, ex, "%s", ex.getMessage());
             throw new IOException(ex);
         }
+        throw new UnsupportedOperationException(path+" not supported");
     }
 }

@@ -165,7 +165,7 @@ public class Root extends SinglePath
     {
         if (other instanceof Root)
         {
-            return 0;
+            return super.compareTo(other);
         }
         return -1;
     }

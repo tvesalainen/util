@@ -247,7 +247,9 @@ public class VirtualFileSystemProviderTest
         assertTrue(iterator.hasNext());
         while (iterator.hasNext())
         {
-            assertEquals(fileSystem.getPath("/usr/local/bin/README"), iterator.next());
+            Path next = iterator.next();
+            Path exp = fileSystem.getPath("/usr/local/bin/README");
+            assertEquals(exp, next);
         }
     }
     @Test

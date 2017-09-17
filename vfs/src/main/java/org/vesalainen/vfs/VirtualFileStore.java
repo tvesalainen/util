@@ -272,6 +272,10 @@ public class VirtualFileStore extends FileStore implements AttachedLogger
         @Override
         public boolean hasNext()
         {
+            if (next != null)
+            {
+                return true;
+            }
             try
             {
                 while (iterator.hasNext())
@@ -304,7 +308,9 @@ public class VirtualFileStore extends FileStore implements AttachedLogger
         @Override
         public Path next()
         {
-            return next;
+            Path res = next;
+            next = null;
+            return res;
         }
         
     }

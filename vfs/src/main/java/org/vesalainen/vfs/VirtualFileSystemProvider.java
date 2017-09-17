@@ -109,12 +109,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider implements Att
         addFileAttributeView(USER_VIEW, UserDefinedFileAttributeView.class, UserDefinedFileAttributeViewImpl::new);
         addFileAttributeView(UNIX_VIEW, UnixFileAttributeView.class, UnixFileAttributeViewImpl::new);
         
-        FileSystemFactory.register(".cpio", CPIOFileSystem.class);
-        FileSystemFactory.register(".cpio.gz", CPIOFileSystem.class);
-        FileSystemFactory.register(".tar", TARFileSystem.class);
-        FileSystemFactory.register(".tar.gz", TARFileSystem.class);
-        FileSystemFactory.register(".rpm", RPMFileSystem.class);
-        FileSystemFactory.register(".deb", DEBFileSystem.class);
+        FileSystemFactory.register("*.cpio", CPIOFileSystem.class);
+        FileSystemFactory.register("*.cpio.*", CPIOFileSystem.class);
+        FileSystemFactory.register("*.tar", TARFileSystem.class);
+        FileSystemFactory.register("*.tar.*", TARFileSystem.class);
+        FileSystemFactory.register("*.rpm", RPMFileSystem.class);
+        FileSystemFactory.register("*.deb", DEBFileSystem.class);
     }
 
     protected final void addFileAttributeView(String name, Class<? extends FileAttributeView> cls, Function<FileAttributeAccess,? extends FileAttributeView> func)

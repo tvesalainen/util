@@ -30,9 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.tukaani.xz.XZInputStream;
-import org.vesalainen.nio.channels.FilterSeekableByteChannel;
+import org.vesalainen.nio.channels.FilterChannel;
 import org.vesalainen.nio.channels.GZIPChannel;
 import org.vesalainen.util.HexDump;
+import org.vesalainen.vfs.CompressorFactory;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
@@ -87,16 +88,20 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
     private void loadDEB() throws IOException
     {
+        long pos = 0;
         ByteBuffer bb = ByteBuffer.allocate(8);
         channel.read(bb);
         if (!Arrays.equals(AR_MAGIC, bb.array()))
         {
             throw new UnsupportedOperationException("not a deb file");
         }
+        pos += 8;
         ArHeader packageSection = new ArHeader(channel);
+        pos += 60;
         int arSize = packageSection.getSize();
         bb.clear().limit(arSize);
         channel.read(bb);
+        pos += arSize;
         for (int ii=0;ii<arSize;ii++)
         {
             if (DEB_VERSION[ii] != bb.get(ii))
@@ -105,33 +110,18 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             }
         }
         ArHeader controlSection = new ArHeader(channel);
-        if (!controlSection.getFilename().endsWith(".gz"))
-        {
-            throw new UnsupportedOperationException(controlSection.getFilename()+" unsupported file format");
-        }
-        try (GZIPChannel gzipChannel = new GZIPChannel(path, channel, 4096, 512, openOptions))
-        {
-            load(gzipChannel, controlRoot);
-        }
+        pos += 60;
+        Path controlfile = getPath(controlSection.getFilename());
+        FilterChannel controlChannel = new FilterChannel(channel, 4096, 512, CompressorFactory.input(controlfile), null);
+        load(controlChannel, controlRoot);
+        pos += controlSection.getSize();
+        channel.position(pos);
         ArHeader dataSection = new ArHeader(channel);
-        String datafile = dataSection.getFilename();
-        if (datafile.endsWith(".gz"))
-        {
-            try (GZIPChannel gzipChannel = new GZIPChannel(path, channel, 4096, 512, openOptions))
-            {
-                load(gzipChannel, root);
-            }
-        }
-        else
-        {
-            if (datafile.endsWith(".xz"))
-            {
-                try (FilterSeekableByteChannel xzChannel = new FilterSeekableByteChannel(channel, 4096, 512, XZInputStream::new, null))
-                {
-                    load(xzChannel, root);
-                }
-            }
-        }
+        pos += 60;
+        Path datafile = getPath(dataSection.getFilename());
+        FilterChannel dataChannel = new FilterChannel(channel, 4096, 512, CompressorFactory.input(datafile), null);
+        load(dataChannel, root);
+        pos += dataSection.getSize();
     }
     private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
