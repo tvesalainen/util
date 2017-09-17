@@ -16,13 +16,15 @@
  */
 package org.vesalainen.nio.channels;
 
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.NonReadableChannelException;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
-import static java.nio.file.StandardOpenOption.READ;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.vesalainen.lang.Casts;
@@ -30,12 +32,20 @@ import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.function.IOFunction;
 
 /**
- *
+ * FilterChannel provides channel interface for stream filtering.
+ * <p>
+ * Example:
+ * <code>
+   try (FilterChannel xzChannel = new FilterChannel(channel, 4096, 512, XZInputStream::new, null))
+   {
+       load(xzChannel, root);
+   }
+* </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterSeekableByteChannel implements SeekableByteChannel
+public class FilterChannel implements SeekableByteChannel, Flushable
 {
-    protected ByteChannel channel;
+    protected SeekableByteChannel channel;
     private InputStream in;
     private byte[] buf;
     private int offset;
@@ -47,8 +57,9 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     private ByteBuffer skipBuffer;
     private Lock readLock = new ReentrantLock();
     private Lock writeLock = new ReentrantLock();
-    private boolean closeChannel;
     private boolean isClosed;
+    private ByteBuffer outBuf;
+    private ByteBuffer inBuf;
     /**
      * Creates FilterSeekableByteChannel. Only one of in/out functions is allowed.
      * @param channel
@@ -58,8 +69,8 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
      * @param fout
      * @throws IOException 
      */
-    public FilterSeekableByteChannel(
-            ByteChannel channel, 
+    public FilterChannel(
+            SeekableByteChannel channel, 
             int bufSize, 
             int maxSkipSize, 
             IOFunction<? super InputStream,? extends InputStream> fin,
@@ -87,22 +98,34 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
             skipBuffer = ByteBuffer.allocate(maxSkipSize);
         }
     }
-
+    /**
+     * Returns unfiltered position.
+     * @return
+     * @throws IOException 
+     */
     @Override
     public long position() throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         return position;
     }
     /**
-     * Changes un filtered position. Only forward direction is allowed with
+     * Changes unfiltered position. Only forward direction is allowed with
      * small skips. This method is for alignment purposes mostly.
      * @param newPosition
      * @return
      * @throws IOException 
      */
     @Override
-    public FilterSeekableByteChannel position(long newPosition) throws IOException
+    public FilterChannel position(long newPosition) throws IOException
     {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
         int skip = (int) (newPosition - position());
         if (skip < 0)
         {
@@ -139,7 +162,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public long size() throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported.");
     }
     /**
      * 
@@ -150,24 +173,60 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public SeekableByteChannel truncate(long size) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
     public boolean isOpen()
     {
-        return channel.isOpen();
+        return !isClosed;
     }
-
+    /**
+     * Calls flush() and sets closed. Doesn't close underlying channel!
+     * @throws IOException 
+     */
     @Override
     public void close() throws IOException
     {
-        channel.close();
+        flush();
+        isClosed = true;
+    }
+    /**
+     * For output calls flush() in underlying OutputStream.
+     * For input reads underlying InputStream until -1. Underlying channel is
+     * positioned to the next byte after.
+     * @throws IOException 
+     */
+    @Override
+    public void flush() throws IOException
+    {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (in != null)
+        {
+            ByteBuffer bb = ByteBuffer.allocate(bufSize);
+            int rc = read(bb);
+            while (rc != -1)
+            {
+                bb.clear();
+                rc = read(bb);
+            }
+            channel.position(channel.position()-inBuf.remaining());
+            inBuf.clear();
+            inBuf.compact();
+        }
+        else
+        {
+            out.flush();
+        }
     }
     
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
+        ensureReading();
         readLock.lock();
         try
         {
@@ -194,6 +253,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
     @Override
     public int write(ByteBuffer src) throws IOException
     {
+        ensureWriting();
         writeLock.lock();
         try
         {
@@ -211,20 +271,49 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
             writeLock.unlock();
         }
     }
+    private void ensureReading() throws IOException
+    {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (in == null)
+        {
+            throw new NonReadableChannelException();
+        }
+    }
+
+    private void ensureWriting() throws IOException
+    {
+        if (!isOpen())
+        {
+            throw new ClosedChannelException();
+        }
+        if (out == null)
+        {
+            throw new NonWritableChannelException();
+        }
+    }
+
 
     private class Output extends OutputStream
     {
-        private ByteBuffer bb = ByteBuffer.allocateDirect(bufSize);
+        private byte[] buf = new byte[1];
+
+        public Output()
+        {
+            outBuf = ByteBuffer.allocateDirect(bufSize);
+        }
 
         @Override
         public void write(byte[] buf, int off, int len) throws IOException
         {
             while (len > 0)
             {
-                bb.clear();
-                int count = ByteBuffers.move(buf, off, len, bb);
-                bb.flip();
-                ChannelHelper.writeAll(channel, bb);
+                outBuf.clear();
+                int count = ByteBuffers.move(buf, off, len, outBuf);
+                outBuf.flip();
+                ChannelHelper.writeAll(channel, outBuf);
                 off += count;
                 len -= count;
             }
@@ -233,28 +322,27 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         @Override
         public void write(int b) throws IOException
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            buf[0] = Casts.castUnsignedByte(b);
+            write(buf);
         }
         
     }
 
     private class Input extends InputStream
     {
-        private ByteBuffer bb;
 
         public Input()
         {
-            bb = ByteBuffer.allocateDirect(bufSize);
-            bb.compact();
+            inBuf = ByteBuffer.allocateDirect(bufSize);
+            inBuf.compact();
         }
-        
-        
+
         @Override
         public int read(byte[] b, int off, int len) throws IOException
         {
             if (fill())
             {
-                return ByteBuffers.move(bb, b, off, len);
+                return ByteBuffers.move(inBuf, b, off, len);
             }
             else
             {
@@ -264,15 +352,16 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         
         private boolean fill() throws IOException
         {
-            if (!bb.hasRemaining())
+            if (!inBuf.hasRemaining())
             {
-                bb.clear();
-                int rc = channel.read(bb);
+                inBuf.clear();
+                int rc = channel.read(inBuf);
                 if (rc == -1)
                 {
+                    inBuf.compact();
                     return false;
                 }
-                bb.flip();
+                inBuf.flip();
             }
             return true;
         }
@@ -281,7 +370,7 @@ public class FilterSeekableByteChannel implements SeekableByteChannel
         {
             if (fill())
             {
-                return Casts.castUnsignedInt(bb.get());
+                return Casts.castUnsignedInt(inBuf.get());
             }
             else
             {

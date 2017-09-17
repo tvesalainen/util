@@ -17,6 +17,7 @@
 package org.vesalainen.nio.channels;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,7 +61,7 @@ import org.vesalainen.util.OperatingSystem;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.ietf.org/rfc/rfc1952.txt">GZIP file format specification version 4.3</a>
  */
-public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport
+public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport, Flushable
 {
     public final static short MAGIC = (short)0x8b1f;
     private final static int FTEXT = 1;
@@ -430,6 +431,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
      * Finishes
      * @throws IOException 
      */
+    @Override
     public void flush() throws IOException
     {
         if (deflater != null)
@@ -440,7 +442,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         {
             if (inflater != null)
             {
-                ByteBuffer bb = ByteBuffer.allocate(4096);
+                ByteBuffer bb = ByteBuffer.allocate(bufSize);
                 int rc = read(bb);
                 while (rc != -1)
                 {
