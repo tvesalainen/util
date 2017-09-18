@@ -57,6 +57,9 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private static final String INTERPRETER = "/bin/sh";
     private final Root root;
     private final Root controlRoot;
+    private Control control;
+    private Conffiles conffiles;
+    private Docs docs;
 
     public DEBFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
@@ -77,7 +80,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         defStore.addFileStoreAttributeView(this);
         root = addFileStore("/",defStore , true);
         VirtualFileStore controlStore = new VirtualFileStore(this, UNIX_VIEW);
-        controlRoot = addFileStore("/control/",controlStore , false);
+        controlRoot = addFileStore("/control",controlStore , false);
         if (isReadOnly())
         {
             loadDEB();
@@ -122,6 +125,9 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         FilterChannel dataChannel = new FilterChannel(channel, 4096, 512, CompressorFactory.input(datafile), null);
         load(dataChannel, root);
         pos += dataSection.getSize();
+        control = new Control(controlRoot);
+        conffiles = new Conffiles(controlRoot);
+        docs = new Docs(controlRoot);
     }
     private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
@@ -145,7 +151,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView addConflict(String name, String version, Condition... dependency)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.addConflict(name, version, dependency);
+        return this;
     }
 
     @Override
@@ -163,7 +170,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView addProvide(String name, String version, Condition... dependency)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.addProvides(name);
+        return this;
     }
 
     @Override
@@ -181,7 +189,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView addRequire(String name, String version, Condition... dependency)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.addDepends(name, version, dependency);
+        return this;
     }
 
     @Override
@@ -199,7 +208,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setArchitecture(String architecture)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setArchitecture(architecture);
+        return this;
     }
 
     @Override
@@ -211,7 +221,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setDescription(String description)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setDescription(description);
+        return this;
     }
 
     @Override
@@ -247,7 +258,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setPackageName(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setPackage(name);
+        return this;
     }
 
     @Override
@@ -373,7 +385,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setVersion(String version)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setVersion(version);
+        return this;
     }
 
     @Override
@@ -385,7 +398,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setApplicationArea(String area)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setSection(area);
+        return this;
     }
 
     @Override
@@ -397,7 +411,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setPriority(String priority)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setPriority(priority);
+        return this;
     }
 
     @Override
@@ -409,7 +424,8 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setMaintainer(String maintainer)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setMaintainer(maintainer);
+        return this;
     }
 
     @Override

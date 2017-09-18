@@ -36,7 +36,7 @@ public class CPIOFileSystem extends ArchiveFileSystem
     {
         super(provider, path, env, CPIOHeader::new, 4096, 4);
         String filename = path.getFileName().toString();
-        Root root = addFileStore('/'+filename+'/', new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
+        Root root = addFileStore('/'+filename, new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
         if (isReadOnly())
         {
             load(channel, root);

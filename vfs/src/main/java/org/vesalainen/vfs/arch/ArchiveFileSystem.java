@@ -266,7 +266,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
             switch (header.getType())
             {
                 case DIRECTORY:
-                    Files.createDirectory(pth, fileAttributes);
+                    Files.createDirectories(pth, fileAttributes);
                     break;
                 case SYMBOLIC:
                     Files.createSymbolicLink(pth, linkTarget, fileAttributes);

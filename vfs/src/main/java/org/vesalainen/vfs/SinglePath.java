@@ -21,8 +21,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  *
@@ -30,7 +28,6 @@ import java.util.WeakHashMap;
  */
 public class SinglePath extends BasePath
 {
-    private static final Map<VirtualFileSystem,Map<String,SinglePath>> cache = new WeakHashMap<>();
     protected String name;
     protected final List<Path> singleton;
 
@@ -47,19 +44,17 @@ public class SinglePath extends BasePath
         {
             throw new InvalidPathException(name, "contains null (0) character", name.indexOf(0));
         }
-        Map<String, SinglePath> map = cache.get(fileSystem);
-        if (map == null)
-        {
-            map = new WeakHashMap<>();
-            cache.put(fileSystem, map);
-        }
-        SinglePath sp = map.get(name);
+        Path sp = fileSystem.pathCache.get(name);
         if (sp == null)
         {
             sp = new SinglePath(fileSystem, name);
-            map.put(name, sp);
+            fileSystem.pathCache.put(name, sp);
         }
-        return sp;
+        if (!(sp instanceof SinglePath))
+        {
+            System.err.println();
+        }
+        return (SinglePath) sp;
     }
     static final boolean isEmpty(Path path)
     {
@@ -108,7 +103,14 @@ public class SinglePath extends BasePath
     @Override
     public int getNameCount()
     {
-        return 1;
+        if (name.isEmpty())
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     @Override

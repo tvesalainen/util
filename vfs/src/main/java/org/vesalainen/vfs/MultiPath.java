@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
  */
 public class MultiPath extends BasePath
 {
-    private static final Map<VirtualFileSystem,Map<List<Path>,MultiPath>> cache = new WeakHashMap<>();
     
     private List<Path> list = new ArrayList<>(); 
     private List<Path> names;
@@ -94,23 +93,21 @@ public class MultiPath extends BasePath
     }
     static final Path getInstance(VirtualFileSystem fileSystem, List<Path> lst)
     {
-        if (lst.size() == 1)
+        switch (lst.size())
         {
-            return SinglePath.getInstance(fileSystem, lst.get(0).toString());
+            case 0:
+                return SinglePath.getInstance(fileSystem, "");
+            case 1:
+                return SinglePath.getInstance(fileSystem, lst.get(0).toString());
+            default:
+                Path mp = fileSystem.pathCache.get(MultiPath.toString(lst));
+                if (mp == null)
+                {
+                    mp = new MultiPath(fileSystem, lst);
+                    fileSystem.pathCache.put(mp.toString(), mp);
+                }
+                return mp;
         }
-        Map<List<Path>,MultiPath> map = cache.get(fileSystem);
-        if (map == null)
-        {
-            map = new WeakHashMap<>();
-            cache.put(fileSystem, map);
-        }
-        MultiPath mp = map.get(lst);
-        if (mp == null)
-        {
-            mp = new MultiPath(fileSystem, lst);
-            map.put(lst, mp);
-        }
-        return mp;
     }
     private static void add(VirtualFileSystem fileSystem, List<Path> names, String first, String... more)
     {
@@ -286,12 +283,20 @@ public class MultiPath extends BasePath
     {
         if (toString == null)
         {
-            String prefix = root != null ? root.toString() : "";
-            toString = names.stream().map((p)->p.toString()).collect(Collectors.joining("/", prefix, ""));
+            toString = toString(list);
         }
         return toString;
     }
 
+    static final String toString(List<Path> list)
+    {
+        String toString = list.stream().map((p)->p.toString()).collect(Collectors.joining("/"));
+        if (toString.startsWith("//"))
+        {
+            toString = toString.substring(1);
+        }
+        return toString;
+    }
     @Override
     public int hashCode()
     {

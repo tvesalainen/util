@@ -27,7 +27,9 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -41,6 +43,7 @@ import static org.vesalainen.vfs.VirtualFile.Type.*;
 public class VirtualFileSystem extends FileSystem implements AttachedLogger
 {
     private VirtualFileSystemProvider provider;
+    final Map<String,Path> pathCache = new HashMap<>();
     // roots in reverse order so that longest fits first
     private ConcurrentNavigableMap<Root,VirtualFileStore> stores = new ConcurrentSkipListMap<>(Collections.reverseOrder()); 
     private Set<Path> rootSet = Collections.unmodifiableSet(stores.keySet());
@@ -137,6 +140,14 @@ public class VirtualFileSystem extends FileSystem implements AttachedLogger
     @Override
     public Path getPath(String first, String... more)
     {
+        if (more.length == 0)
+        {
+            Path p = pathCache.get(first);
+            if (p != null)
+            {
+                return p;
+            }
+        }
         Root root = null;
         for (Root r : stores.keySet())
         {

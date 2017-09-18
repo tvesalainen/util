@@ -14,32 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.arch.tar;
+package org.vesalainen.vfs.pm.deb;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
-import org.vesalainen.vfs.Root;
-import org.vesalainen.vfs.VirtualFileStore;
-import org.vesalainen.vfs.VirtualFileSystemProvider;
-import org.vesalainen.vfs.arch.ArchiveFileSystem;
-import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TARFileSystem extends ArchiveFileSystem
+public class Docs extends FilesBase
 {
-    public TARFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    
+    public Docs()
     {
-        super(provider, path, env, TARHeader::new, 4096, 512);
-        String filename = path.getFileName().toString();
-        Root root = addFileStore('/'+filename, new VirtualFileStore(this, UNIX_VIEW, USER_VIEW), true);
-        if (isReadOnly())
-        {
-            load(channel, root);
-        }
+        super("docs");
+    }
+
+    public Docs(Path debian) throws IOException
+    {
+        super("docs", debian);
     }
     
 }

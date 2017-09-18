@@ -20,11 +20,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.pm.rpm.RPMFileSystemTest;
 
@@ -37,6 +42,7 @@ public class DEBFileSystemTest
     
     public DEBFileSystemTest()
     {
+        //JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
     }
 
     @Test
@@ -46,7 +52,29 @@ public class DEBFileSystemTest
         Path path = Paths.get(url.toURI());
         try (FileSystem debFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
-            
+            Path root = debFS.getPath("/control");
+            Files.walk(root).forEach((p)->
+            {
+                System.err.println(p);
+                try
+                {
+                    Files.readAllLines(p).forEach((l)->System.err.println(l));
+                }
+                catch (IOException ex)
+                {
+                    Logger.getLogger(DEBFileSystemTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            Path root2 = debFS.getPath("/");
+            Files.walk(root2).forEach((p)->System.err.println(p));
+            Files.lines(debFS.getPath("/usr/share/doc/test2/copyright")).forEach((l)->System.err.println(l));
+            GZIPInputStream gi = new GZIPInputStream(Files.newInputStream(debFS.getPath("/usr/share/doc/test2/changelog.Debian.gz")));
+            int cc = gi.read();
+            while (cc != -1)
+            {
+                System.err.print((char)cc);
+                cc = gi.read();
+            }
         }
     }
     
