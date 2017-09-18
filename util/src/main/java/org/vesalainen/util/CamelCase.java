@@ -24,7 +24,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * Helper class for camel-case tokens
- * <p>Camel Case Token in delimited by non alphabet or case change
+ * <p>Camel Case Token is delimitedLower by non alphabet or case change
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class CamelCase
@@ -66,9 +66,19 @@ public class CamelCase
      * @param delim
      * @return 
      */
-    public static final String delimited(String text, String delim)
+    public static final String delimitedLower(String text, String delim)
     {
         return stream(text).map((String s)->{return s.toLowerCase();}).collect(Collectors.joining(delim));
+    }
+    /**
+     * Returns Camel-Case if delim = '-'
+     * @param text
+     * @param delim
+     * @return 
+     */
+    public static final String delimited(String text, String delim)
+    {
+        return stream(text).collect(Collectors.joining(delim));
     }
     private static String lower(String text)
     {
@@ -93,7 +103,7 @@ public class CamelCase
         }
         if (text.length() > 1)
         {
-            return Character.toUpperCase(text.charAt(0))+text.substring(1);
+            return Character.toUpperCase(text.charAt(0))+text.substring(1).toLowerCase();
         }
         else
         {
