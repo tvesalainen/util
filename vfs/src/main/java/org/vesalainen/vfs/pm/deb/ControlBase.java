@@ -18,14 +18,13 @@ package org.vesalainen.vfs.pm.deb;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.vesalainen.util.Lists;
+import static org.vesalainen.vfs.pm.deb.FieldType.*;
 
 /**
  *
@@ -56,48 +55,69 @@ public class ControlBase
         if (Files.exists(control))
         {
             List<String> lines = Files.readAllLines(control, UTF_8);
-            Field field = null;
-            StringBuilder sb = new StringBuilder();
-            for (String line : lines)
+            if (!lines.isEmpty() && checkFirstLine(lines.get(0)))
             {
-                char cc = line.charAt(0);
-                if (cc == ' ' || cc == '\t')
+                Field field = null;
+                StringBuilder sb = new StringBuilder();
+                for (String line : lines)
                 {
-                    if (line.charAt(1) == '.')
+                    if (line.isEmpty())
                     {
-                        sb.append("\n");
+                        paragraph = new  Paragraph();
+                        paragraphs.add(paragraph);
                     }
                     else
                     {
-                        sb.append(line);
+                        char cc = line.charAt(0);
+                        if (cc == ' ' || cc == '\t')
+                        {
+                            if (line.charAt(1) == '.')
+                            {
+                                sb.append("\n");
+                            }
+                            else
+                            {
+                                sb.append(line);
+                            }
+                        }
+                        else
+                        {
+                            if (field != null)
+                            {
+                                if (field.getType() == SIMPLE)
+                                {
+                                    paragraph.add(field, sb.toString().split("[, ]+"));
+                                }
+                                else
+                                {
+                                    paragraph.add(field, sb.toString());
+                                }
+                                field = null;
+                                sb.setLength(0);
+                            }
+                            int idx = line.indexOf(':');
+                            if (idx == -1)
+                            {
+                                throw new IllegalArgumentException(line);
+                            }
+                            field = Field.get(line.substring(0, idx));
+                            sb.append(line.substring(idx+1).trim());
+                        }
+                        if (field != null)
+                        {
+                            paragraph.add(field, sb.toString().split("[, ]+"));
+                            field = null;
+                            sb.setLength(0);
+                        }
                     }
-                }
-                else
-                {
-                    if (field != null)
-                    {
-                        paragraph.add(field, sb.toString().split("[, ]+"));
-                        field = null;
-                        sb.setLength(0);
-                    }
-                    int idx = line.indexOf(':');
-                    if (idx == -1)
-                    {
-                        throw new IllegalArgumentException(line);
-                    }
-                    field = Field.get(line.substring(0, idx));
-                    sb.append(line.substring(idx+1).trim());
-                }
-                if (field != null)
-                {
-                    paragraph.add(field, sb.toString().split("[, ]+"));
-                    field = null;
-                    sb.setLength(0);
                 }
             }
         }
     }
-
+    protected boolean checkFirstLine(String line)
+    {
+        return true;
+    }
     void save(Path debian) throws IOException
     {
         Path control = debian.resolve(name);

@@ -48,7 +48,7 @@ public class DEBFileSystemTest
     @Test
     public void testRead() throws URISyntaxException, IOException
     {
-        URL url = DEBFileSystemTest.class.getResource("/test2_1.0-1_all.deb");
+        URL url = DEBFileSystemTest.class.getResource("/time_1.7-25_armhf.deb");
         Path path = Paths.get(url.toURI());
         try (FileSystem debFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
@@ -67,8 +67,8 @@ public class DEBFileSystemTest
             });
             Path root2 = debFS.getPath("/");
             Files.walk(root2).forEach((p)->System.err.println(p));
-            Files.lines(debFS.getPath("/usr/share/doc/test2/copyright")).forEach((l)->System.err.println(l));
-            GZIPInputStream gi = new GZIPInputStream(Files.newInputStream(debFS.getPath("/usr/share/doc/test2/changelog.Debian.gz")));
+            Files.lines(debFS.getPath("/usr/share/doc/time/copyright")).forEach((l)->System.err.println(l));
+            GZIPInputStream gi = new GZIPInputStream(Files.newInputStream(debFS.getPath("/usr/share/doc/time/changelog.gz")));
             int cc = gi.read();
             while (cc != -1)
             {

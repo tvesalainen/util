@@ -21,17 +21,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.tukaani.xz.XZInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.nio.channels.FilterChannel;
-import org.vesalainen.nio.channels.GZIPChannel;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.CompressorFactory;
 import org.vesalainen.vfs.Root;
@@ -44,6 +46,8 @@ import org.vesalainen.vfs.arch.tar.TARHeader;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.pm.Condition;
 import org.vesalainen.vfs.pm.DependencyCondition;
+import org.vesalainen.vfs.pm.FileUse;
+import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 
 /**
@@ -60,6 +64,9 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private Control control;
     private Conffiles conffiles;
     private Docs docs;
+    private ChangeLog changeLog;
+    private Copyright copyright;
+    private MD5Sums md5Sums;
 
     public DEBFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
@@ -128,11 +135,34 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         control = new Control(controlRoot);
         conffiles = new Conffiles(controlRoot);
         docs = new Docs(controlRoot);
+        Path docPath = getPath("/usr/share/doc");
+        Path packageDocPath = docPath.resolve(getPackageName());
+        Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
+        changeLog = new ChangeLog(changeLogPath);
+        copyright = new Copyright(packageDocPath);
+        md5Sums = new MD5Sums(controlRoot, root);
+        setFileAttributes();
     }
     private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
     {
         return FileChannel.open(path, options, attrs);
     }    
+    private void setFileAttributes() throws IOException
+    {
+        for (Path p : docs.getFiles())
+        {
+            EnumSet<FileUse> usage = PackageFileAttributes.getUsage(p);
+            usage.add(FileUse.DOCUMENTATION);
+            PackageFileAttributes.setUsage(p, usage);
+        }
+        for (Path p : conffiles.getFiles())
+        {
+            EnumSet<FileUse> usage = PackageFileAttributes.getUsage(p);
+            usage.add(FileUse.CONFIGURATION);
+            PackageFileAttributes.setUsage(p, usage);
+        }
+    }
+
     private void checkFormat(FileFormat fmt)
     {
         switch (fmt)
@@ -265,7 +295,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public String getPackageName()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getPackage();
     }
 
     @Override

@@ -16,7 +16,7 @@
  */
 package org.vesalainen.vfs.pm.deb;
 
-import org.vesalainen.util.CamelCase;
+import org.vesalainen.text.CamelCase;
 import static org.vesalainen.vfs.pm.deb.FieldStatus.*;
 import static org.vesalainen.vfs.pm.deb.FieldType.*;
 
@@ -54,7 +54,14 @@ public enum Field
     INSTALLED_SIZE,
     CLOSES,
     CHECKSUMS_SHA1(MULTILINE),
-    CHECKSUMS_SHA256(MULTILINE);
+    CHECKSUMS_SHA256(MULTILINE),
+    BREAKS,
+    REPLACES,
+    MULTI_ARCH,
+    FORMAT,
+    UPSTREAM_NAME,
+    UPSTREAM_CONTACT,
+    COMMENT;
     private FieldType type = SIMPLE;
     private FieldStatus status = OPTIONAL;
 

@@ -37,11 +37,13 @@ public class PackageFileAttributes
     
     public static final void setUsage(Path path, FileUse... use) throws IOException
     {
-        EnumSet<FileUse> set = EnumSet.noneOf(FileUse.class);
-        set.addAll(Lists.create(use));
-        UserAttrs.setIntAttribute(path, USAGE, EnumSetFlagger.getFlag(set));
+        
     }
-    public static final Set<FileUse> getUsage(Path path) throws IOException
+    public static final void setUsage(Path path, EnumSet<FileUse> use) throws IOException
+    {
+        UserAttrs.setIntAttribute(path, USAGE, EnumSetFlagger.getFlag(use));
+    }
+    public static final EnumSet<FileUse> getUsage(Path path) throws IOException
     {
         int at = UserAttrs.getIntAttribute(path, USAGE, 0);
         return EnumSetFlagger.getSet(FileUse.class, at);

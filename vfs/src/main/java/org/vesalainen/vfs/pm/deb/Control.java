@@ -33,6 +33,7 @@ public class Control extends ControlBase
     public Control(Path debian) throws IOException
     {
         super(debian, "control");
+        binary = paragraphs.get(0);
     }
 
     Control()
@@ -45,40 +46,72 @@ public class Control extends ControlBase
         binary.add(PACKAGE, v);
         return this;
     }
+    public String getPackage()
+    {
+        return binary.get(PACKAGE);
+    }
     public Control setVersion(String v)
     {
         binary.add(VERSION, v);
         return this;
+    }
+    public String getVersion()
+    {
+        return binary.get(VERSION);
     }
     public Control setMaintainer(String v)
     {
         binary.add(MAINTAINER, v);
         return this;
     }
+    public String getMaintainer()
+    {
+        return binary.get(MAINTAINER);
+    }
     public Control setSection(String v)
     {
         binary.add(SECTION, v);
         return this;
+    }
+    public String getSection()
+    {
+        return binary.get(SECTION);
     }
     public Control setPriority(String v)
     {
         binary.add(PRIORITY, v);
         return this;
     }
+    public String getPriority()
+    {
+        return binary.get(PRIORITY);
+    }
     public Control setHomePage(String v)
     {
         binary.add(HOMEPAGE, v);
         return this;
+    }
+    public String getHomePage()
+    {
+        return binary.get(HOMEPAGE);
     }
     public Control setArchitecture(String v)
     {
         binary.add(ARCHITECTURE, "noarch".equalsIgnoreCase(v) ? "all" : v);
         return this;
     }
+    public String getArchitecture()
+    {
+        return binary.get(ARCHITECTURE);
+    }
     public Control setDescription(String v)
     {
         binary.add(DESCRIPTION, v);
         return this;
+    }
+    public String getDescription()
+    {
+        return binary.get(DESCRIPTION);
     }
     public Control addDepends(String depends)
     {

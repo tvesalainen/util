@@ -18,15 +18,12 @@ package org.vesalainen.vfs.pm.deb;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,6 +63,12 @@ public class FilesBase
     {
         return files.contains(path);
     }
+
+    public Set<Path> getFiles()
+    {
+        return files;
+    }
+    
     public void addFile(Path filepath)
     {
         files.add(filepath);
