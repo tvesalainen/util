@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util;
+package org.vesalainen.text;
 
+import org.vesalainen.text.CamelCase;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
