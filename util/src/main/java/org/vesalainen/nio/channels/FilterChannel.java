@@ -230,20 +230,30 @@ public class FilterChannel implements SeekableByteChannel, Flushable
         readLock.lock();
         try
         {
-            if (length == 0)
+            int res = 0;
+            while (dst.hasRemaining())
             {
-                length = in.read(buf);
-                if (length == -1)
+                if (length == 0)
                 {
-                    return -1;
+                    length = in.read(buf);
+                    if (length == -1)
+                    {
+                        if (res > 0)
+                        {
+                            length = 0;
+                            return res;
+                        }
+                        return -1;
+                    }
+                    offset = 0;
                 }
-                offset = 0;
+                int count = ByteBuffers.move(buf, offset, length, dst);
+                offset += count;
+                length -= count;
+                position += count;
+                res += count;
             }
-            int count = ByteBuffers.move(buf, offset, length, dst);
-            offset += count;
-            length -= count;
-            position += count;
-            return count;
+            return res;
         }
         finally
         {
