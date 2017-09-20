@@ -18,8 +18,12 @@ package org.vesalainen.vfs.pm.deb;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.vesalainen.vfs.pm.Condition;
+import org.vesalainen.vfs.pm.Dependency;
 import static org.vesalainen.vfs.pm.deb.Field.*;
 
 /**
@@ -29,11 +33,69 @@ import static org.vesalainen.vfs.pm.deb.Field.*;
 public class Control extends ControlBase
 {
     private Paragraph binary;
+    private Map<String, Dependency> conflicts = new HashMap<>();
+    private Map<String, Dependency> provides = new HashMap<>();
+    private Map<String, Dependency> dependencies = new HashMap<>();
+    private String summary = "";
+    private String description = "";
+    private String upstreamVersion;
+    private String debianRevision;
 
     public Control(Path debian) throws IOException
     {
         super(debian, "control");
         binary = paragraphs.get(0);
+        String ver = binary.get(VERSION);
+        int lidx = ver.lastIndexOf('-');
+        if (lidx != -1)
+        {
+            upstreamVersion = ver.substring(0, lidx);
+            debianRevision = ver.substring(lidx+1);
+        }
+        else
+        {
+            upstreamVersion = ver;
+            debianRevision = "0";
+        }
+        String desc = binary.get(DESCRIPTION);
+        int idx = desc.indexOf('\n');
+        if (idx != -1)
+        {
+            summary = desc.substring(0, idx);
+            description = desc.substring(idx+1);
+        }
+        else
+        {
+            summary = desc;
+            description = "";
+        }
+        List<String> conflictList = binary.getList(CONFLICTS);
+        if (conflictList != null)
+        {
+            for (String conflict : conflictList)
+            {
+                DEPDependency dep = new DEPDependency(conflict);
+                conflicts.put(dep.getName(), dep);
+            }
+        }
+        List<String> providesList = binary.getList(PROVIDES);
+        if (providesList != null)
+        {
+            for (String provide : providesList)
+            {
+                DEPDependency dep = new DEPDependency(provide);
+                provides.put(dep.getName(), dep);
+            }
+        }
+        List<String> dependsList = binary.getList(DEPENDS);
+        if (dependsList != null)
+        {
+            for (String require : dependsList)
+            {
+                DEPDependency dep = new DEPDependency(require);
+                dependencies.put(dep.getName(), dep);
+            }
+        }
     }
 
     Control()
@@ -41,6 +103,35 @@ public class Control extends ControlBase
         super("control", new Paragraph());
         binary = paragraphs.get(0);
     }
+
+    @Override
+    void save(Path debian) throws IOException
+    {
+        binary.set(VERSION, upstreamVersion+'-'+debianRevision);
+        binary.set(DESCRIPTION, summary+'\n'+description);
+        super.save(debian);
+    }
+
+    public String getUpstreamVersion()
+    {
+        return upstreamVersion;
+    }
+
+    public void setUpstreamVersion(String upstreamVersion)
+    {
+        this.upstreamVersion = upstreamVersion;
+    }
+
+    public String getDebianRevision()
+    {
+        return debianRevision;
+    }
+
+    public void setDebianRevision(String debianRevision)
+    {
+        this.debianRevision = debianRevision;
+    }
+    
     public Control setPackage(String v)
     {
         binary.add(PACKAGE, v);
@@ -49,15 +140,6 @@ public class Control extends ControlBase
     public String getPackage()
     {
         return binary.get(PACKAGE);
-    }
-    public Control setVersion(String v)
-    {
-        binary.add(VERSION, v);
-        return this;
-    }
-    public String getVersion()
-    {
-        return binary.get(VERSION);
     }
     public Control setMaintainer(String v)
     {
@@ -104,24 +186,37 @@ public class Control extends ControlBase
     {
         return binary.get(ARCHITECTURE);
     }
-    public Control setDescription(String v)
+
+    public String getSummary()
     {
-        binary.add(DESCRIPTION, v);
-        return this;
+        return summary;
     }
+
+    public void setSummary(String summary)
+    {
+        this.summary = summary;
+    }
+
     public String getDescription()
     {
-        return binary.get(DESCRIPTION);
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
     public Control addDepends(String depends)
     {
         return addDepends(depends, "");
     }
-    public Control addDepends(String depends, String version, Condition... dependencies)
+    public Control addDepends(String depends, String version, Condition... deps)
     {
         if (!depends.startsWith("/"))
         {
-            addRelationship(DEPENDS, depends, version, dependencies);
+            DEPDependency dep = new DEPDependency(depends, version, deps);
+            binary.add(DEPENDS, dep.toString());
+            dependencies.put(dep.getName(), dep);
         }
         return this;
     }
@@ -133,18 +228,18 @@ public class Control extends ControlBase
     {
         if (!depends.startsWith("/"))
         {
-            addRelationship(CONFLICTS, depends, version, dependencies);
+            DEPDependency dep = new DEPDependency(depends, version, dependencies);
+            binary.add(CONFLICTS, dep.toString());
+            conflicts.put(dep.getName(), dep);
         }
         return this;
     }
-    public Control addProvides(String provides)
+    public Control addProvides(String provide)
     {
-        binary.add(PROVIDES, provides);
+        binary.add(PROVIDES, provide);
+        DEPDependency dep = new DEPDependency(provide, null);
+        provides.put(dep.getName(), dep);
         return this;
-    }
-    private void addRelationship(Field field, String depends, String version, Condition... dependencies)
-    {
-        binary.add(field, toString(depends, version, dependencies));
     }
     public Control addBinary(Field field, String... values)
     {
@@ -152,44 +247,34 @@ public class Control extends ControlBase
         return this;
     }
 
-    String toString(String depends, String version, Condition... deps)
+    public Collection<String> getConflicts()
     {
-        if (version == null || version.isEmpty())
-        {
-            return depends;
-        }
-        if (deps.length < 1 || deps.length > 2)
-        {
-            throw new IllegalArgumentException(Arrays.toString(deps)+" illegal combination");
-        }
-        if (deps.length == 1)
-        {
-            switch (deps[0])
-            {
-                case LESS:
-                    return depends+" (<< "+version+")";
-                case GREATER:
-                    return depends+" (>> "+version+")";
-                case EQUAL:
-                    return depends+" (= "+version+")";
-                default:
-                    throw new UnsupportedOperationException(deps[0]+" not supported");
-            }
-        }
-        else
-        {
-            Arrays.sort(deps);
-            switch (deps[1])
-            {
-                case LESS:
-                    return depends+" (<= "+version+")";
-                case GREATER:
-                    return depends+" (>= "+version+")";
-                default:
-                    throw new UnsupportedOperationException(Arrays.toString(deps)+" dependency not supported");
-            }
+        return conflicts.keySet();
+    }
 
-        }
+    public Dependency getConflict(String name)
+    {
+        return conflicts.get(name);
+    }
+
+    public Collection<String> getProvides()
+    {
+        return provides.keySet();
+    }
+
+    public Dependency getProvide(String name)
+    {
+        return provides.get(name);
+    }
+
+    public Collection<String> getRequires()
+    {
+        return dependencies.keySet();
+    }
+
+    public Dependency getRequire(String name)
+    {
+        return dependencies.get(name);
     }
 
 }

@@ -21,18 +21,16 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.nio.channels.FilterChannel;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.CompressorFactory;
@@ -45,10 +43,10 @@ import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.tar.TARHeader;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.pm.Condition;
-import org.vesalainen.vfs.pm.DependencyCondition;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
+import org.vesalainen.vfs.pm.Dependency;
 
 /**
  *
@@ -67,6 +65,10 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private ChangeLog changeLog;
     private Copyright copyright;
     private MD5Sums md5Sums;
+    private MaintainerScript preinst;
+    private MaintainerScript postinst;
+    private MaintainerScript prerm;
+    private MaintainerScript postrm;
 
     public DEBFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
@@ -141,6 +143,10 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         changeLog = new ChangeLog(changeLogPath);
         copyright = new Copyright(packageDocPath);
         md5Sums = new MD5Sums(controlRoot, root);
+        preinst = new MaintainerScript(controlRoot, "preinst");
+        postinst = new MaintainerScript(controlRoot, "postinst");
+        prerm = new MaintainerScript(controlRoot, "prerm");
+        postrm = new MaintainerScript(controlRoot, "postrm");
         setFileAttributes();
     }
     private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
@@ -188,13 +194,12 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public Collection<String> getConflicts()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getConflicts();
     }
-
     @Override
-    public DependencyCondition getConflict(String name)
+    public Dependency getConflict(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getConflict(name);
     }
 
     @Override
@@ -207,13 +212,13 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public Collection<String> getProvides()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getProvides();
     }
 
     @Override
-    public DependencyCondition getProvide(String name)
+    public Dependency getProvide(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getProvide(name);
     }
 
     @Override
@@ -226,13 +231,13 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public Collection<String> getRequires()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getRequires();
     }
 
     @Override
-    public DependencyCondition getRequire(String name)
+    public Dependency getRequire(String name)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getRequire(name);
     }
 
     @Override
@@ -245,7 +250,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public String getArchitecture()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getArchitecture();
     }
 
     @Override
@@ -258,37 +263,40 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public String getDescription()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getDescription();
     }
 
     @Override
-    public PackageManagerAttributeView setCopyright(String copyright)
+    public PackageManagerAttributeView setCopyright(String cr)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        copyright.setCopyright(cr);
+        return this;
     }
 
     @Override
     public String getCopyright()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return copyright.getCopyright();
     }
 
     @Override
     public PackageManagerAttributeView setLicense(String license)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        copyright.setLicense(license);
+        return this;
     }
 
     @Override
     public String getLicense()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return copyright.getLicense();
     }
 
     @Override
     public PackageManagerAttributeView setPackageName(String name)
     {
         control.setPackage(name);
+        changeLog.setPackageName(name);
         return this;
     }
 
@@ -301,130 +309,152 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setOperatingSystem(String os)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public String getOperatingSystem()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "linux";
     }
 
     @Override
     public String getPostInstallation()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return postinst.getScript();
     }
 
     @Override
     public String getPostInstallationInterpreter()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return postinst.getInterpreter();
     }
 
     @Override
     public String getPostUnInstallation()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return postrm.getScript();
     }
 
     @Override
     public String getPostUnInstallationInterpreter()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return postrm.getInterpreter();
     }
 
     @Override
     public String getPreInstallation()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return preinst.getScript();
     }
 
     @Override
     public String getPreInstallationInterpreter()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return preinst.getInterpreter();
     }
 
     @Override
     public String getPreUnInstallation()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return prerm.getScript();
     }
 
     @Override
     public String getPreUnInstallationInterpreter()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return prerm.getInterpreter();
     }
 
     @Override
     public String getDefaultInterpreter()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return INTERPRETER;
     }
 
     @Override
     public PackageManagerAttributeView setPostInstallation(String script, String interpreter)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        postinst.set(interpreter, script);
+        return this;
     }
 
     @Override
     public PackageManagerAttributeView setPostUnInstallation(String script, String interpreter)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        postrm.set(interpreter, script);
+        return this;
     }
 
     @Override
     public PackageManagerAttributeView setPreInstallation(String script, String interpreter)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        preinst.set(interpreter, script);
+        return this;
     }
 
     @Override
     public PackageManagerAttributeView setPreUnInstallation(String script, String interpreter)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        prerm.set(interpreter, script);
+        return this;
+    }
+    /**
+     * sets upstream_version
+     * @param version
+     * @return 
+     */
+    @Override
+    public PackageManagerAttributeView setVersion(String version)
+    {
+        control.setUpstreamVersion(version);
+        changeLog.setUpstreamVersion(version);
+        return this;
+    }
+    /**
+     * Gets upstream_version
+     * @return 
+     */
+    @Override
+    public String getVersion()
+    {
+        return control.getUpstreamVersion();
     }
 
+    /**
+     * Sets debian_revision
+     * @param release
+     * @return 
+     */
     @Override
     public PackageManagerAttributeView setRelease(String release)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setDebianRevision(release);
+        changeLog.setDebianRevision(release);
+        return this;
     }
-
+    /**
+     * Gets debian_revision
+     * @return 
+     */
     @Override
     public String getRelease()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getDebianRevision();
     }
 
     @Override
     public PackageManagerAttributeView setSummary(String summary)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        control.setSummary(summary);
+        return this;
     }
 
     @Override
     public String getSummary()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getSummary();
     }
-
-    @Override
-    public PackageManagerAttributeView setVersion(String version)
-    {
-        control.setVersion(version);
-        return this;
-    }
-
-    @Override
-    public String getVersion()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     @Override
     public PackageManagerAttributeView setApplicationArea(String area)
     {
@@ -435,7 +465,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public String getApplicationArea()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getSection();
     }
 
     @Override
@@ -448,20 +478,21 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public String getPriority()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getPriority();
     }
 
     @Override
     public PackageManagerAttributeView setMaintainer(String maintainer)
     {
         control.setMaintainer(maintainer);
+        changeLog.setMaintainer(maintainer);
         return this;
     }
 
     @Override
     public String getMaintainer()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return control.getMaintainer();
     }
 
     @Override

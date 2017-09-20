@@ -53,7 +53,6 @@ import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.cpio.CPIOHeader;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.pm.Condition;
-import org.vesalainen.vfs.pm.DependencyCondition;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
@@ -61,6 +60,7 @@ import org.vesalainen.vfs.pm.rpm.HeaderStructure.IndexRecord;
 import static org.vesalainen.vfs.pm.rpm.HeaderTag.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributes;
+import org.vesalainen.vfs.pm.Dependency;
 
 /**
  *
@@ -202,7 +202,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         lead = new Lead(getName());
         setFileHeaders();
         addProvide(getString(RPMTAG_NAME), getString(RPMTAG_VERSION), Condition.EQUAL);
-        addRequireInt("rpmlib(CompressedFileNames)", "3.0.4-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+        addRequireInt("rpmlib(CompressedFileNames)", "3.0.4-1", RPMDependency.EQUAL, RPMDependency.LESS, RPMDependency.RPMLIB);
         addInt32(RPMTAG_SIZE, getInt32Array(RPMTAG_FILESIZES).stream().collect(Collectors.summingInt((i) -> i)));
         
         // placeholders
@@ -623,7 +623,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     {
         addString(RPMTAG_PROVIDENAME, name);
         addString(RPMTAG_PROVIDEVERSION, version);
-        addInt32(RPMTAG_PROVIDEFLAGS, Dependency.or(dependency));
+        addInt32(RPMTAG_PROVIDEFLAGS, RPMDependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
@@ -635,9 +635,9 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
 
     @Override
-    public DependencyCondition getProvide(String name)
+    public Dependency getProvide(String name)
     {
-        return new DependencyConditionImpl(getString(RPMTAG_PROVIDENAME), getString(RPMTAG_PROVIDEVERSION), Dependency.toArray(getInt32(RPMTAG_PROVIDEFLAGS)));
+        return new DependencyConditionImpl(getString(RPMTAG_PROVIDENAME), getString(RPMTAG_PROVIDEVERSION), RPMDependency.toArray(getInt32(RPMTAG_PROVIDEFLAGS)));
     }
     
     /**
@@ -652,7 +652,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     {
         addString(RPMTAG_REQUIRENAME, name);
         addString(RPMTAG_REQUIREVERSION, version);
-        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        addInt32(RPMTAG_REQUIREFLAGS, RPMDependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
@@ -663,16 +663,16 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
 
     @Override
-    public DependencyCondition getRequire(String name)
+    public Dependency getRequire(String name)
     {
-        return new DependencyConditionImpl(getString(RPMTAG_REQUIRENAME), getString(RPMTAG_REQUIREVERSION), Dependency.toArray(getInt32(RPMTAG_REQUIREFLAGS)));
+        return new DependencyConditionImpl(getString(RPMTAG_REQUIRENAME), getString(RPMTAG_REQUIREVERSION), RPMDependency.toArray(getInt32(RPMTAG_REQUIREFLAGS)));
     }
     
     private PackageManagerAttributeView addRequireInt(String name, String version, int... dependency)
     {
         addString(RPMTAG_REQUIRENAME, name);
         addString(RPMTAG_REQUIREVERSION, version);
-        addInt32(RPMTAG_REQUIREFLAGS, Dependency.or(dependency));
+        addInt32(RPMTAG_REQUIREFLAGS, RPMDependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
@@ -688,7 +688,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     {
         addString(RPMTAG_CONFLICTNAME, name);
         addString(RPMTAG_CONFLICTVERSION, version);
-        addInt32(RPMTAG_CONFLICTFLAGS, Dependency.or(dependency));
+        addInt32(RPMTAG_CONFLICTFLAGS, RPMDependency.or(dependency));
         ensureVersionReq(version);
         return this;
     }
@@ -698,16 +698,16 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         return getStringArray(RPMTAG_CONFLICTNAME);
     }
     @Override
-    public DependencyCondition getConflict(String name)
+    public Dependency getConflict(String name)
     {
-        return new DependencyConditionImpl(getString(RPMTAG_CONFLICTNAME), getString(RPMTAG_CONFLICTVERSION), Dependency.toArray(getInt32(RPMTAG_CONFLICTFLAGS)));
+        return new DependencyConditionImpl(getString(RPMTAG_CONFLICTNAME), getString(RPMTAG_CONFLICTVERSION), RPMDependency.toArray(getInt32(RPMTAG_CONFLICTFLAGS)));
     }
 
     private void ensureVersionReq(String version)
     {
         if (!version.isEmpty() && !contains(RPMTAG_REQUIRENAME, "rpmlib(VersionedDependencies)"))
         {
-            addRequireInt("rpmlib(VersionedDependencies)", "3.0.3-1", Dependency.EQUAL, Dependency.LESS, Dependency.RPMLIB);
+            addRequireInt("rpmlib(VersionedDependencies)", "3.0.3-1", RPMDependency.EQUAL, RPMDependency.LESS, RPMDependency.RPMLIB);
         }
     }
     /**
@@ -931,7 +931,7 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
         return list;
     }
 
-    public static class DependencyConditionImpl implements DependencyCondition
+    public static class DependencyConditionImpl implements Dependency
     {
         private String name;
         private String version;

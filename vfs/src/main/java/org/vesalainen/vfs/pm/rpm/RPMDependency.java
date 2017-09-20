@@ -23,7 +23,7 @@ import org.vesalainen.vfs.pm.Condition;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Dependency
+public class RPMDependency
 {
     public static final int LESS = 0x02;
     public static final int GREATER = 0x04;

@@ -105,7 +105,7 @@ public class ControlBase
                         }
                         if (field != null)
                         {
-                            paragraph.add(field, sb.toString().split("[, ]+"));
+                            paragraph.add(field, sb.toString().split(","));
                             field = null;
                             sb.setLength(0);
                         }

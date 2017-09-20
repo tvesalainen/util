@@ -41,7 +41,7 @@ import org.vesalainen.vfs.CompressorFactory;
  */
 public class ChangeLog
 {
-    private String name;
+    private String packageName;
     private String version;
     private String release;
     private List<String> distributions = new ArrayList<>();
@@ -69,7 +69,7 @@ public class ChangeLog
                 {
                     throw new IllegalArgumentException(line+" illegal");
                 }
-                name = split[0];
+                packageName = split[0];
                 String[] split2 = split[1].substring(1, split[1].length()-1).split("-");
                 if (split2.length != 2)
                 {
@@ -114,7 +114,7 @@ public class ChangeLog
 
     public void set(String name, String version, String release, String maintainer)
     {
-        this.name = name;
+        this.packageName = name;
         this.version = version;
         this.release = release;
         this.maintainer = maintainer;
@@ -145,7 +145,7 @@ public class ChangeLog
         try (BufferedWriter bf = Files.newBufferedWriter(changelog, UTF_8))
         {
             bf.append(String.format("%s (%s-%s) %s; urgency=%s\n", 
-                    name, 
+                    packageName, 
                     version, 
                     release,
                     distributions.stream().collect(Collectors.joining(" ")),
@@ -159,6 +159,46 @@ public class ChangeLog
             }
             bf.append(String.format(" -- %s  %s\n\n", maintainer, ZonedDateTime.now().format(RFC_1123_DATE_TIME)));
         }
-        
     }
+
+    public String getPackageName()
+    {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName)
+    {
+        this.packageName = packageName;
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public void setUpstreamVersion(String version)
+    {
+        this.version = version;
+    }
+
+    public String getRelease()
+    {
+        return release;
+    }
+
+    public void setDebianRevision(String release)
+    {
+        this.release = release;
+    }
+
+    public String getMaintainer()
+    {
+        return maintainer;
+    }
+
+    public void setMaintainer(String maintainer)
+    {
+        this.maintainer = maintainer;
+    }
+    
 }

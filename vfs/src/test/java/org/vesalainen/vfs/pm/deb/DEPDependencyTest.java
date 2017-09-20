@@ -14,15 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.vfs.pm;
+package org.vesalainen.vfs.pm.deb;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.vesalainen.util.ArrayHelp;
+import static org.vesalainen.vfs.pm.Condition.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface DependencyCondition
+public class DEPDependencyTest
 {
-    String getName();
-    String getVersion();
-    Condition[] getConditions();
+    
+    public DEPDependencyTest()
+    {
+    }
+
+    @Test
+    public void test1()
+    {
+        DEPDependency d = new DEPDependency("libc6 (>= 2.2.1)");
+        assertEquals("libc6", d.getName());
+        assertEquals("2.2.1", d.getVersion());
+        assertTrue(ArrayHelp.contains(d.getConditions(), GREATER));
+        assertTrue(ArrayHelp.contains(d.getConditions(), EQUAL));
+        assertEquals("libc6 (>= 2.2.1)", d.toString());
+    }
+    
 }

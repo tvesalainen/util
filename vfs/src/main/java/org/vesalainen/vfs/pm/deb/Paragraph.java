@@ -36,6 +36,12 @@ public class Paragraph
     private static final int MARGIN = 80;
     private Map<Field,List<String>> fields = new EnumMap<>(Field.class);
     
+    public void set(Field field, String value)
+    {
+        List<String> list = new ArrayList<>();
+        fields.put(field, list);
+        list.add(value);
+    }
     public void add(Field field, String... values)
     {
         List<String> list = fields.get(field);
@@ -45,6 +51,10 @@ public class Paragraph
             fields.put(field, list);
         }
         Lists.addAll(list, values);
+    }
+    public List<String> getList(Field field)
+    {
+        return fields.get(field);
     }
     public String get(Field field)
     {

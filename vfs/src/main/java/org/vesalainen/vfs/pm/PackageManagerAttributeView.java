@@ -54,7 +54,7 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * @param name
      * @return 
      */
-    DependencyCondition getConflict(String name);
+    Dependency getConflict(String name);
     /**
      * Add virtual package name that this package provides.
      * @param name
@@ -82,7 +82,7 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * @param name
      * @return 
      */
-    DependencyCondition getProvide(String name);
+    Dependency getProvide(String name);
     /**
      * Add package name that this package requires.
      * @param name
@@ -110,7 +110,7 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * @param name
      * @return 
      */
-    DependencyCondition getRequire(String name);
+    Dependency getRequire(String name);
     /**
      * Sets architecture of this package
      * @param architecture
