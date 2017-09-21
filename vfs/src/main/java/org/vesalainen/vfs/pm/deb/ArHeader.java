@@ -37,6 +37,7 @@ import org.vesalainen.util.CharSequences;
  */
 public class ArHeader
 {
+    public static final int AR_HEADER_SIZE = 60;
     private String filename;
     private FileTime lastModifiedTime;
     private int uid;
@@ -63,7 +64,7 @@ public class ArHeader
     public ArHeader(SeekableByteChannel ch) throws IOException
     {
         ChannelHelper.align(ch, 2);
-        ByteBuffer bb = ByteBuffer.allocate(60);
+        ByteBuffer bb = ByteBuffer.allocate(AR_HEADER_SIZE);
         ch.read(bb);
         bb.flip();
         CharSequence seq = CharSequences.getAsciiCharSequence(bb);
@@ -80,7 +81,7 @@ public class ArHeader
     public void save(SeekableByteChannel ch) throws IOException
     {
         ChannelHelper.align(ch, 2);
-        AppendableByteChannel abc = new AppendableByteChannel(ch, 60, false);
+        AppendableByteChannel abc = new AppendableByteChannel(ch, AR_HEADER_SIZE, false);
         Formatter formatter = new Formatter(abc);
         formatter.format(Locale.US, 
                 "%-16s%-12d%-6d%-6d%-8o%-10d%c%c", 

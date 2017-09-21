@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -31,9 +32,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.nio.channels.FilterChannel;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.CompressorFactory;
+import static org.vesalainen.vfs.CompressorFactory.Compressor.*;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
@@ -41,12 +46,15 @@ import org.vesalainen.vfs.arch.ArchiveFileSystem;
 import org.vesalainen.vfs.arch.FileFormat;
 import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.tar.TARHeader;
+import static org.vesalainen.vfs.arch.tar.TARHeader.TAR_BLOCK_SIZE;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
 import org.vesalainen.vfs.pm.Condition;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 import org.vesalainen.vfs.pm.Dependency;
+import static org.vesalainen.vfs.pm.FileUse.*;
+import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
 
 /**
  *
@@ -54,6 +62,7 @@ import org.vesalainen.vfs.pm.Dependency;
  */
 public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
+    private static final int BUF_SIZE = 4096;
     private static final byte[] AR_MAGIC = "!<arch>\n".getBytes(US_ASCII);
     private static final byte[] DEB_VERSION = "2.0\n".getBytes(US_ASCII);
     private static final String INTERPRETER = "/bin/sh";
@@ -96,8 +105,121 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         }
         else
         {
+            control = new Control();
+            conffiles = new Conffiles();
+            docs = new Docs();
+            changeLog = new ChangeLog();
+            copyright = new Copyright();
+            preinst = new MaintainerScript(controlRoot, "preinst");
+            postinst = new MaintainerScript(controlRoot, "postinst");
+            prerm = new MaintainerScript(controlRoot, "prerm");
+            postrm = new MaintainerScript(controlRoot, "postrm");
         }
     }
+
+    @Override
+    public void close() throws IOException
+    {
+        if (!isReadOnly())
+        {
+            storeDEB();
+        }
+    }
+    private void storeDEB() throws IOException
+    {
+        getFileAttributes();
+        Path docPath = getPath("/usr/share/doc");
+        Path packageDocPath = docPath.resolve(getPackageName());
+        Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
+        control.save(controlRoot);
+        conffiles.save(controlRoot);
+        docs.save(controlRoot);
+        changeLog.save(changeLogPath);
+        copyright.save(packageDocPath);
+        MD5Sums.save(controlRoot, root);
+        preinst.save();
+        postinst.save();
+        prerm.save();
+        postrm.save();
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.put(AR_MAGIC);
+        channel.write(bb);
+        ArHeader packageSection = new ArHeader("debian-binary", 4);
+        packageSection.save(channel);
+        bb.clear();
+        bb.put(DEB_VERSION);
+        bb.flip();
+        channel.write(bb);
+        // control
+        long controlArStart = channel.position();
+        ChannelHelper.skip(channel, ArHeader.AR_HEADER_SIZE);
+        long controlStart = channel.position();
+        try (FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(GZIP)))
+        {
+            store(controlChannel, controlRoot);
+        }
+        long controlEnd = channel.position();
+        ArHeader controlSection = new ArHeader("control.tar.gz", (int) (controlEnd-controlStart));
+        channel.position(controlArStart);
+        controlSection.save(channel);
+        channel.position(controlEnd);
+        // data
+        long dataArStart = channel.position();
+        ChannelHelper.skip(channel, ArHeader.AR_HEADER_SIZE);
+        long dataStart = channel.position();
+        try (FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(XZ)))
+        {
+            store(dataChannel, root);
+        }
+        long dataEnd = channel.position();
+        ArHeader dataSection = new ArHeader("data.tar.gz", (int) (dataEnd-dataStart));
+        channel.position(dataArStart);
+        dataSection.save(channel);
+        channel.position(dataEnd);
+    }
+    private void getFileAttributes() throws IOException
+    {
+        walk(root).filter((p)->Files.isRegularFile(p)).forEach((p)->
+        {
+            try
+            {
+                FileCopyright fileCopyright = null;
+                String cr = PackageFileAttributes.getCopyright(p);
+                if (cr != null)
+                {
+                    if (fileCopyright == null)
+                    {
+                        fileCopyright = copyright.addFile(p);
+                    }
+                    fileCopyright.addCopyright(cr);
+                }
+                String lic = PackageFileAttributes.getLicense(p);
+                if (lic != null)
+                {
+                    if (fileCopyright == null)
+                    {
+                        fileCopyright = copyright.addFile(p);
+                    }
+                    fileCopyright.addLicense(lic);
+                }
+                EnumSet<FileUse> usage = PackageFileAttributes.getUsage(p);
+                if (usage.contains(DOCUMENTATION))
+                {
+                    docs.addFile(p);
+                }
+                if (usage.contains(CONFIGURATION))
+                {
+                    conffiles.addFile(p);
+                }
+            }
+            catch (IOException ex)
+            {
+                Logger.getLogger(DEBFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+
+    
     private void loadDEB() throws IOException
     {
         long pos = 0;
@@ -124,14 +246,14 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         ArHeader controlSection = new ArHeader(channel);
         pos += 60;
         Path controlfile = getPath(controlSection.getFilename());
-        FilterChannel controlChannel = new FilterChannel(channel, 4096, 512, CompressorFactory.input(controlfile), null);
+        FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(controlfile), null);
         load(controlChannel, controlRoot);
         pos += controlSection.getSize();
         channel.position(pos);
         ArHeader dataSection = new ArHeader(channel);
         pos += 60;
         Path datafile = getPath(dataSection.getFilename());
-        FilterChannel dataChannel = new FilterChannel(channel, 4096, 512, CompressorFactory.input(datafile), null);
+        FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(datafile), null);
         load(dataChannel, root);
         pos += dataSection.getSize();
         control = new Control(controlRoot);

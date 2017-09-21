@@ -16,20 +16,28 @@
  */
 package org.vesalainen.vfs;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZInputStream;
+import org.tukaani.xz.XZOutputStream;
 import org.vesalainen.regex.Regex;
 import org.vesalainen.util.function.IOFunction;
 
 /**
- *
+ * CompressorFactory contains methods for creating supplier functions needed
+ * if FilterChannel.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see org.vesalainen.nio.channels.FilterChannel
  */
 public final class CompressorFactory
 {
+    public enum Compressor {GZIP, XZ}
     public static final PathMatcher GZIP_MATCHER;
     public static final PathMatcher XZ_MATCHER;
     static
@@ -37,6 +45,18 @@ public final class CompressorFactory
         Glob glob = Glob.newInstance();
         GZIP_MATCHER = glob.globMatcher("*.gz", Regex.Option.CASE_INSENSITIVE);
         XZ_MATCHER = glob.globMatcher("*.xz", Regex.Option.CASE_INSENSITIVE);
+    }
+    public static final IOFunction<? super OutputStream,? extends OutputStream> output(Compressor comp)
+    {
+        switch (comp)
+        {
+            case GZIP:
+                return GZIPOutputStream::new;
+            case XZ:
+                return CompressorFactory::createXZOutputStream;
+            default:
+                throw new UnsupportedOperationException(comp+" not supported");
+        }
     }
     public static final IOFunction<? super InputStream,? extends InputStream> input(Path path)
     {
@@ -49,5 +69,9 @@ public final class CompressorFactory
             return XZInputStream::new;
         }
         throw new UnsupportedOperationException(path+" not supported");
+    }
+    private static XZOutputStream createXZOutputStream(OutputStream out) throws IOException
+    {
+        return new XZOutputStream(out, new LZMA2Options());
     }
 }

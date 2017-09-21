@@ -44,9 +44,9 @@ import org.vesalainen.vfs.unix.UnixFileHeader;
  */
 public class TARHeader extends UnixFileHeader
 {
+    public static final int TAR_BLOCK_SIZE = 512;
     private static final byte[] GNU_MAGIC = new byte[]{'u', 's', 't', 'a', 'r', ' ', ' ', (byte)0};
     private static final byte[] USTAR_MAGIC = new byte[]{'u', 's', 't', 'a', 'r', (byte)0, '0', '0'};
-    private static final int BLOCK_SIZE = 512;
     private ByteBuffer buffer = ByteBuffer.allocate(8192);
     private static final String USTAR = "ustar";
     private static final String GNU = "ustar  ";
@@ -72,9 +72,9 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void load(SeekableByteChannel channel) throws IOException
     {
-        ChannelHelper.align(channel, 512);
+        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
         buffer.clear();
-        buffer.limit(BLOCK_SIZE);
+        buffer.limit(TAR_BLOCK_SIZE);
         channel.read(buffer);
         buffer.flip();
         CharSequence seq = CharSequences.getAsciiCharSequence(buffer);
@@ -82,7 +82,7 @@ public class TARHeader extends UnixFileHeader
         if (eof)
         {
             buffer.clear();
-            buffer.limit(BLOCK_SIZE);
+            buffer.limit(TAR_BLOCK_SIZE);
             channel.read(buffer);
             return;
         }
@@ -96,7 +96,7 @@ public class TARHeader extends UnixFileHeader
                 {
                     case USTAR:
                         buffer.clear();
-                        buffer.limit(BLOCK_SIZE);
+                        buffer.limit(TAR_BLOCK_SIZE);
                         channel.read(buffer);
                         buffer.flip();
                         readPaxheader(buffer);
@@ -169,15 +169,15 @@ public class TARHeader extends UnixFileHeader
     {
         long extHdrBlockSize = nextBlock(extHdrSize);
         buffer.clear();
-        buffer.limit(BLOCK_SIZE);
+        buffer.limit(TAR_BLOCK_SIZE);
         channel.read(buffer);
         buffer.flip();
         ByteBuffer extendedHeader = buffer.slice();
         extendedHeader.limit(extHdrSize);
-        buffer.position(BLOCK_SIZE);
-        buffer.limit(BLOCK_SIZE + (int) extHdrBlockSize);
+        buffer.position(TAR_BLOCK_SIZE);
+        buffer.limit(TAR_BLOCK_SIZE + (int) extHdrBlockSize);
         channel.read(buffer);
-        buffer.position(BLOCK_SIZE);
+        buffer.position(TAR_BLOCK_SIZE);
         readUstarHeader(buffer.slice());
         return extendedHeader;
     }
@@ -298,7 +298,7 @@ public class TARHeader extends UnixFileHeader
     }
     private long nextBlock(long position)
     {
-        return position % BLOCK_SIZE > 0 ? (position / BLOCK_SIZE)*BLOCK_SIZE + BLOCK_SIZE : position;
+        return position % TAR_BLOCK_SIZE > 0 ? (position / TAR_BLOCK_SIZE)*TAR_BLOCK_SIZE + TAR_BLOCK_SIZE : position;
     }
     private long readLong(ByteBuffer bb)
     {
@@ -330,7 +330,7 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
     {
-        ChannelHelper.align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
         addAll(attributes);
         fromAttributes();
         mode &= 07777;
@@ -364,13 +364,13 @@ public class TARHeader extends UnixFileHeader
 
     private void writePaxHeader(SeekableByteChannel channel) throws IOException
     {
-        buffer.position(BLOCK_SIZE).limit(buffer.capacity());
+        buffer.position(TAR_BLOCK_SIZE).limit(buffer.capacity());
         putPaxHeader(buffer);
-        int extLen = (int) buffer.position()-BLOCK_SIZE;
+        int extLen = (int) buffer.position()-TAR_BLOCK_SIZE;
         int extHdrLen = (int) nextBlock(extLen);
-        buffer.position(0).limit(BLOCK_SIZE);
+        buffer.position(0).limit(TAR_BLOCK_SIZE);
         putUstarHeader(buffer, "./PaxHeaders.5208/"+filename, extLen, (byte)'x', linkname, USTAR_MAGIC, null);
-        buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
+        buffer.limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE).position(TAR_BLOCK_SIZE+extHdrLen);
         if (splitPath != null)
         {
             putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, splitPath[1]);
@@ -379,7 +379,7 @@ public class TARHeader extends UnixFileHeader
         {
             putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, null);
         }
-        buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
+        buffer.position(0).limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE);
         channel.write(buffer);
     }
 
@@ -395,37 +395,37 @@ public class TARHeader extends UnixFileHeader
         }
         if (splitPath != null && (linkname == null || linkname.length() <= 100))
         {
-            buffer.position(0).limit(BLOCK_SIZE);
+            buffer.position(0).limit(TAR_BLOCK_SIZE);
             putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, GNU_MAGIC, splitPath[1]);
-            buffer.position(0).limit(BLOCK_SIZE);
+            buffer.position(0).limit(TAR_BLOCK_SIZE);
             channel.write(buffer);
         }
         else
         {
             if (splitPath == null)
             {
-                buffer.position(BLOCK_SIZE).limit(buffer.capacity());
+                buffer.position(TAR_BLOCK_SIZE).limit(buffer.capacity());
                 buffer.put(filename.getBytes(US_ASCII)).put((byte)0);
-                int extLen = (int) buffer.position()-BLOCK_SIZE;
+                int extLen = (int) buffer.position()-TAR_BLOCK_SIZE;
                 int extHdrLen = (int) nextBlock(extLen);
-                buffer.position(0).limit(BLOCK_SIZE);
+                buffer.position(0).limit(TAR_BLOCK_SIZE);
                 putUstarHeader(buffer, "././@LongLink/"+filename, extLen, (byte)'L', linkname, GNU_MAGIC, null);
-                buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
+                buffer.limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE).position(TAR_BLOCK_SIZE+extHdrLen);
                 putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, GNU_MAGIC, null);
-                buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
+                buffer.position(0).limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE);
                 channel.write(buffer);
             }
             if (linkname != null && linkname.length() > 100)
             {
-                buffer.position(BLOCK_SIZE).limit(buffer.capacity());
+                buffer.position(TAR_BLOCK_SIZE).limit(buffer.capacity());
                 buffer.put(linkname.getBytes(US_ASCII)).put((byte)0);
-                int extLen = (int) buffer.position()-BLOCK_SIZE;
+                int extLen = (int) buffer.position()-TAR_BLOCK_SIZE;
                 int extHdrLen = (int) nextBlock(extLen);
-                buffer.position(0).limit(BLOCK_SIZE);
+                buffer.position(0).limit(TAR_BLOCK_SIZE);
                 putUstarHeader(buffer, "././@LongLink/"+filename, extLen, (byte)'K', linkname, GNU_MAGIC, null);
-                buffer.limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE).position(BLOCK_SIZE+extHdrLen);
+                buffer.limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE).position(TAR_BLOCK_SIZE+extHdrLen);
                 putUstarHeader(buffer, filename, size, typeFlagFromAttributes(), linkname, GNU_MAGIC, null);
-                buffer.position(0).limit(BLOCK_SIZE+extHdrLen+BLOCK_SIZE);
+                buffer.position(0).limit(TAR_BLOCK_SIZE+extHdrLen+TAR_BLOCK_SIZE);
                 channel.write(buffer);
             }
         }
@@ -448,9 +448,9 @@ public class TARHeader extends UnixFileHeader
         {
             throw new UnsupportedOperationException(linkname+" too long");
         }
-        buffer.position(0).limit(BLOCK_SIZE);
+        buffer.position(0).limit(TAR_BLOCK_SIZE);
         putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, USTAR_MAGIC, splitPath[1]);
-        buffer.position(0).limit(BLOCK_SIZE);
+        buffer.position(0).limit(TAR_BLOCK_SIZE);
         channel.write(buffer);
     }
 
@@ -616,9 +616,9 @@ public class TARHeader extends UnixFileHeader
     @Override
     public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
-        ChannelHelper.align(channel, BLOCK_SIZE);
-        ChannelHelper.align(channel, BLOCK_SIZE);
-        ChannelHelper.align(channel, BLOCK_SIZE);
+        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
+        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
+        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
     }
 
     @Override
