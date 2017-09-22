@@ -43,7 +43,7 @@ import org.vesalainen.util.function.IOFunction;
 * </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterChannel implements SeekableByteChannel, Flushable
+public class FilterChannel implements SeekableByteChannel
 {
     protected SeekableByteChannel channel;
     private InputStream in;
@@ -57,7 +57,6 @@ public class FilterChannel implements SeekableByteChannel, Flushable
     private ByteBuffer skipBuffer;
     private Lock readLock = new ReentrantLock();
     private Lock writeLock = new ReentrantLock();
-    private boolean isClosed;
     private ByteBuffer outBuf;
     private ByteBuffer inBuf;
     /**
@@ -179,7 +178,7 @@ public class FilterChannel implements SeekableByteChannel, Flushable
     @Override
     public boolean isOpen()
     {
-        return !isClosed;
+        return in != null || out != null;
     }
     /**
      * Calls flush() and sets closed. Doesn't close underlying channel!
@@ -188,38 +187,15 @@ public class FilterChannel implements SeekableByteChannel, Flushable
     @Override
     public void close() throws IOException
     {
-        flush();
-        isClosed = true;
-    }
-    /**
-     * For output calls flush() in underlying OutputStream.
-     * For input reads underlying InputStream until -1. Underlying channel is
-     * positioned to the next byte after.
-     * @throws IOException 
-     */
-    @Override
-    public void flush() throws IOException
-    {
-        if (!isOpen())
-        {
-            throw new ClosedChannelException();
-        }
         if (in != null)
         {
-            ByteBuffer bb = ByteBuffer.allocate(bufSize);
-            int rc = read(bb);
-            while (rc != -1)
-            {
-                bb.clear();
-                rc = read(bb);
-            }
-            channel.position(channel.position()-inBuf.remaining());
-            inBuf.clear();
-            inBuf.compact();
+            in.close();
+            in = null;
         }
-        else
+        if (out != null)
         {
-            out.flush();
+            out.close();
+            out = null;
         }
     }
     
@@ -238,9 +214,9 @@ public class FilterChannel implements SeekableByteChannel, Flushable
                     length = in.read(buf);
                     if (length == -1)
                     {
+                        length = 0;
                         if (res > 0)
                         {
-                            length = 0;
                             return res;
                         }
                         return -1;

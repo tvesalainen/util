@@ -68,7 +68,7 @@ public class ByteBuffers
     }
 
   /**
-     * Fills data from position to limit with zeroes.
+     * Fills data from position to limit with zeroes. Doesn't change position.
      * @param bb 
      */
     public static final void clearRemaining(ByteBuffer bb)
