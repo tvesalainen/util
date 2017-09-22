@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import org.vesalainen.regex.Regex;
+import org.vesalainen.regex.RegexMatcher;
 import org.vesalainen.util.logging.AttachedLogger;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -35,7 +36,7 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public abstract class FileSystemFactory implements AttachedLogger
 {
-    private static final Map<PathMatcher,Class<? extends VirtualFileSystem>> map = new HashMap<>();
+    private static RegexMatcher<Class<? extends VirtualFileSystem>> matcher;
     private static final Glob GLOB = Glob.newInstance();
     
     protected VirtualFileSystemProvider provider;
@@ -51,33 +52,44 @@ public abstract class FileSystemFactory implements AttachedLogger
 
     public abstract FileSystem create() throws IOException;
     
-    public static final void register(String extension, Class<? extends VirtualFileSystem> fileSystem)
+    public static final void register(String expression, Class<? extends VirtualFileSystem> fileSystem)
     {
-        map.put(GLOB.globMatcher(extension, Regex.Option.CASE_INSENSITIVE), fileSystem);
+        if (matcher == null)
+        {
+            matcher = new RegexMatcher(expression, fileSystem, Regex.Option.CASE_INSENSITIVE);
+        }
+        else
+        {
+            if (matcher.isCompiled())
+            {
+                throw new IllegalStateException("cannot register after getInstance call");
+            }
+            matcher.addExpression(expression, fileSystem, Regex.Option.CASE_INSENSITIVE);
+        }
     }
     
     public static final FileSystem getInstance(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
+        if (!matcher.isCompiled())
+        {
+            matcher.compile();
+        }
         JavaLogging logger = JavaLogging.getLogger(FileSystemFactory.class);
         try
         {
             logger.fine("getInstance(%s)", path);
-            for (Map.Entry<PathMatcher, Class<? extends VirtualFileSystem>> entry : map.entrySet())
+            Class<? extends VirtualFileSystem> cls = matcher.match(path.getFileName().toString());
+            if (cls == null)
             {
-                if (entry.getKey().matches(path))
-                {
-                    logger.finest("matched %s", path);
-                    Class<? extends VirtualFileSystem> cls = entry.getValue();
-                    Constructor<? extends VirtualFileSystem> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
-                    return constructor.newInstance(provider, path, env);
-                }
+                throw new UnsupportedOperationException(path+" not supported");
             }
+            Constructor<? extends VirtualFileSystem> constructor = cls.getConstructor(VirtualFileSystemProvider.class, Path.class, Map.class);
+            return constructor.newInstance(provider, path, env);
         }
         catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
         {
             logger.log(Level.SEVERE, ex, "%s", ex.getMessage());
             throw new IOException(ex);
         }
-        throw new UnsupportedOperationException(path+" not supported");
     }
 }

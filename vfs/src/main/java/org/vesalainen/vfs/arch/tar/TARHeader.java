@@ -617,8 +617,9 @@ public class TARHeader extends UnixFileHeader
     public void storeEof(SeekableByteChannel channel, FileFormat format) throws IOException
     {
         ChannelHelper.align(channel, TAR_BLOCK_SIZE);
-        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
-        ChannelHelper.align(channel, TAR_BLOCK_SIZE);
+        buffer.clear().limit(2*TAR_BLOCK_SIZE);
+        ByteBuffers.clearRemaining(buffer);
+        channel.write(buffer);
     }
 
     @Override

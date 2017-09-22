@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.nio.channels.FilterChannel;
+import org.vesalainen.regex.RegexMatcher;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.CompressorFactory;
 import static org.vesalainen.vfs.CompressorFactory.Compressor.*;
@@ -62,6 +63,9 @@ import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
  */
 public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
+    private static final RegexMatcher<Boolean> PACKAGE_MATCHER = new RegexMatcher("[a-z][0-9a-z\\.\\+\\-]+", true).compile();
+    private static final RegexMatcher<Boolean> UPSTREAM_VERSION_MATCHER = new RegexMatcher("[0-9][0-9a-zA-Z\\.\\+\\-~]*", true).compile();
+    private static final RegexMatcher<Boolean> DEBIAN_REVISION_MATCHER = new RegexMatcher("[0-9a-zA-Z\\.\\+~]*", true).compile();
     private static final int BUF_SIZE = 4096;
     private static final byte[] AR_MAGIC = "!<arch>\n".getBytes(US_ASCII);
     private static final byte[] DEB_VERSION = "2.0\n".getBytes(US_ASCII);
@@ -73,7 +77,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private Docs docs;
     private ChangeLog changeLog;
     private Copyright copyright;
-    private MD5Sums md5Sums;
     private MaintainerScript preinst;
     private MaintainerScript postinst;
     private MaintainerScript prerm;
@@ -114,6 +117,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             postinst = new MaintainerScript(controlRoot, "postinst");
             prerm = new MaintainerScript(controlRoot, "prerm");
             postrm = new MaintainerScript(controlRoot, "postrm");
+            provisionFromPath();
         }
     }
 
@@ -124,12 +128,14 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         {
             storeDEB();
         }
+        channel.close();
     }
     private void storeDEB() throws IOException
     {
         getFileAttributes();
         Path docPath = getPath("/usr/share/doc");
         Path packageDocPath = docPath.resolve(getPackageName());
+        Files.createDirectories(packageDocPath);
         Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
         control.save(controlRoot);
         conffiles.save(controlRoot);
@@ -141,8 +147,9 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         postinst.save();
         prerm.save();
         postrm.save();
+        
         ByteBuffer bb = ByteBuffer.allocate(8);
-        bb.put(AR_MAGIC);
+        bb.put(AR_MAGIC).flip();
         channel.write(bb);
         ArHeader packageSection = new ArHeader("debian-binary", 4);
         packageSection.save(channel);
@@ -172,7 +179,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             store(dataChannel, root);
         }
         long dataEnd = channel.position();
-        ArHeader dataSection = new ArHeader("data.tar.gz", (int) (dataEnd-dataStart));
+        ArHeader dataSection = new ArHeader("data.tar.xz", (int) (dataEnd-dataStart));
         channel.position(dataArStart);
         dataSection.save(channel);
         channel.position(dataEnd);
@@ -227,11 +234,11 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         channel.read(bb);
         if (!Arrays.equals(AR_MAGIC, bb.array()))
         {
-            throw new UnsupportedOperationException("not a deb file");
+            throw new UnsupportedOperationException(HexDump.toHex(bb, 0, 8)+" not a deb file");
         }
-        pos += 8;
+        pos = channel.position();
         ArHeader packageSection = new ArHeader(channel);
-        pos += 60;
+        pos = channel.position();
         int arSize = packageSection.getSize();
         bb.clear().limit(arSize);
         channel.read(bb);
@@ -244,14 +251,14 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             }
         }
         ArHeader controlSection = new ArHeader(channel);
-        pos += 60;
+        pos = channel.position();
         Path controlfile = getPath(controlSection.getFilename());
         FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(controlfile), null);
         load(controlChannel, controlRoot);
         pos += controlSection.getSize();
         channel.position(pos);
         ArHeader dataSection = new ArHeader(channel);
-        pos += 60;
+        pos = channel.position();
         Path datafile = getPath(dataSection.getFilename());
         FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(datafile), null);
         load(dataChannel, root);
@@ -264,7 +271,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
         changeLog = new ChangeLog(changeLogPath);
         copyright = new Copyright(packageDocPath);
-        md5Sums = new MD5Sums(controlRoot, root);
+        MD5Sums md5Sums = new MD5Sums(controlRoot, root);
         preinst = new MaintainerScript(controlRoot, "preinst");
         postinst = new MaintainerScript(controlRoot, "postinst");
         prerm = new MaintainerScript(controlRoot, "prerm");
@@ -417,6 +424,10 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setPackageName(String name)
     {
+        if (PACKAGE_MATCHER.match(name) == null)
+        {
+            throw new IllegalArgumentException(name+" syntax error");
+        }
         control.setPackage(name);
         changeLog.setPackageName(name);
         return this;
@@ -529,6 +540,10 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setVersion(String version)
     {
+        if (UPSTREAM_VERSION_MATCHER.match(version) == null)
+        {
+            throw new IllegalArgumentException(version+" syntax error");
+        }
         control.setUpstreamVersion(version);
         changeLog.setUpstreamVersion(version);
         return this;
@@ -551,6 +566,10 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     @Override
     public PackageManagerAttributeView setRelease(String release)
     {
+        if (DEBIAN_REVISION_MATCHER.match(release) == null)
+        {
+            throw new IllegalArgumentException(release+" syntax error");
+        }
         control.setDebianRevision(release);
         changeLog.setDebianRevision(release);
         return this;
@@ -621,6 +640,32 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     public String name()
     {
         return "org.vesalainen.vfs.pm.deb";
+    }
+
+    private void provisionFromPath()
+    {
+        String[] split = path.getFileName().toString().split("_");
+        if (split.length == 3)
+        {
+            setPackageName(split[0]);
+            int idx = split[1].lastIndexOf('-');
+            if (idx != -1)
+            {
+                setVersion(split[1].substring(0, idx));
+                setRelease(split[1].substring(idx+1));
+            }
+            else
+            {
+                setVersion(split[1]);
+                setRelease("0");
+            }
+            idx = split[2].indexOf(".deb");
+            setArchitecture(split[2].substring(0, idx));
+        }
+        else
+        {
+            warning("filename %s is illegal", path);
+        }
     }
 
 }

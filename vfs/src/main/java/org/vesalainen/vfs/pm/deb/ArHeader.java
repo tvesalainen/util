@@ -94,6 +94,7 @@ public class ArHeader
                 0x60,
                 0x0a);
         formatter.flush();
+        abc.flush();
         ChannelHelper.align(ch, 2);
     }
     public String getFilename()

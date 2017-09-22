@@ -16,6 +16,7 @@
  */
 package org.vesalainen.vfs.pm.deb;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.time.ZonedDateTime;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.vesalainen.nio.channels.FilterChannel;
 import org.vesalainen.util.Lists;
@@ -135,14 +137,20 @@ public class ChangeLog
         this.distributions = Lists.create(distributions);
     }
     
-    public void save(Path debian) throws IOException
+    public void save(Path path) throws IOException
     {
+        Objects.requireNonNull(packageName, "packageName");
+        Objects.requireNonNull(version, "version");
+        Objects.requireNonNull(release, "release");
+        Objects.requireNonNull(urgency, "urgency");
+        Objects.requireNonNull(maintainer, "maintainer");
         if (changeDetails.isEmpty())
         {
             changeDetails.add("TO DO");
         }
-        Path changelog = debian.resolve("changelog");
-        try (BufferedWriter bf = Files.newBufferedWriter(changelog, UTF_8))
+        try (FileChannel ch = FileChannel.open(path, CREATE, WRITE);
+            FilterChannel channel = new FilterChannel(ch, 4096, 0, null, CompressorFactory.output(path));
+            BufferedWriter bf = new BufferedWriter(Channels.newWriter(channel, "UTf-8"));)
         {
             bf.append(String.format("%s (%s-%s) %s; urgency=%s\n", 
                     packageName, 

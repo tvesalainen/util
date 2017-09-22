@@ -37,7 +37,9 @@ public class PackageFileAttributes
     
     public static final void setUsage(Path path, FileUse... use) throws IOException
     {
-        
+        EnumSet<FileUse> set = EnumSet.noneOf(FileUse.class);
+        Lists.addAll(set, use);
+        setUsage(path, set);
     }
     public static final void setUsage(Path path, EnumSet<FileUse> use) throws IOException
     {

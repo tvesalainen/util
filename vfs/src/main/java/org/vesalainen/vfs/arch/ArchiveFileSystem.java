@@ -354,56 +354,56 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         Header header = headerSupplier.get();
         Set<String> topViews = FileAttributeName.topViews(supportedFileAttributeViews);
         Map<String, Object> all = new HashMap<>();
-        walk(root).forEach((p)
-                -> 
+        walk(root).forEach((sourcePath)
+            -> 
+            {
+                try
                 {
-                    try
+                    Path targetPath = root.relativize(sourcePath);
+                    all.clear();
+                    for (String view : topViews)
                     {
-                        Path r = root.relativize(p);
-                        all.clear();
-                        for (String view : topViews)
+                        Map<String, Object> attrs = Files.readAttributes(sourcePath, view + ":*", NOFOLLOW_LINKS);
+                        for (Entry<String, Object> entry : attrs.entrySet())
                         {
-                            Map<String, Object> attrs = Files.readAttributes(r, view + ":*", NOFOLLOW_LINKS);
-                            for (Entry<String, Object> entry : attrs.entrySet())
-                            {
-                                all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
-                            }
-                        }
-                        Inode inode = new Inode((int) all.get(DEVICE), (int) all.get(INODE));
-                        Path link;
-                        if (Files.isSymbolicLink(r))
-                        {
-                            link = Files.readSymbolicLink(r);
-                        }
-                        else
-                        {
-                            link = inodes.get(inode);
-                        }
-                        String linkname = link != null ? link.toString() : null;
-                        inodes.put(inode, r);
-                        header.clear();
-                        byte[] digest = null;
-                        // checksum
-                        String digestAlgorithm = header.digestAlgorithm();
-                        if (digestAlgorithm != null)
-                        {
-                            digest = (byte[]) Files.getAttribute(r, digestAlgorithm);
-                        }
-                        header.store(ch, r.toString(), format, linkname, all, digest);
-                        finest("store %s: %s", format, header);
-                        long size = header.size();
-                        if (size > 0)
-                        {
-                            try (FileChannel fileChannel = FileChannel.open(r, READ, NOFOLLOW_LINKS))
-                            {
-                                fileChannel.transferTo(0, size, ch);
-                            }
+                            all.put(FileAttributeName.getInstance(entry.getKey()).toString(), entry.getValue());
                         }
                     }
-                    catch (IOException ex)
+                    Inode inode = new Inode((int) all.get(DEVICE), (int) all.get(INODE));
+                    Path link;
+                    if (Files.isSymbolicLink(sourcePath))
                     {
-                        throw new RuntimeException(ex);
+                        link = Files.readSymbolicLink(sourcePath);
                     }
+                    else
+                    {
+                        link = inodes.get(inode);
+                    }
+                    String linkname = link != null ? link.toString() : null;
+                    inodes.put(inode, sourcePath);
+                    header.clear();
+                    byte[] digest = null;
+                    // checksum
+                    String digestAlgorithm = header.digestAlgorithm();
+                    if (digestAlgorithm != null)
+                    {
+                        digest = (byte[]) Files.getAttribute(sourcePath, digestAlgorithm);
+                    }
+                    header.store(ch, targetPath.toString(), format, linkname, all, digest);
+                    finest("store %s: %s", format, header);
+                    long size = header.size();
+                    if (size > 0)
+                    {
+                        try (FileChannel fileChannel = FileChannel.open(sourcePath, READ, NOFOLLOW_LINKS))
+                        {
+                            fileChannel.transferTo(0, size, ch);
+                        }
+                    }
+                }
+                catch (IOException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
         });
         header.clear();
         header.storeEof(ch, format);

@@ -28,6 +28,7 @@ import org.tukaani.xz.XZInputStream;
 import org.tukaani.xz.XZOutputStream;
 import org.vesalainen.regex.Regex;
 import org.vesalainen.util.function.IOFunction;
+import static org.vesalainen.vfs.CompressorFactory.Compressor.*;
 
 /**
  * CompressorFactory contains methods for creating supplier functions needed
@@ -46,6 +47,10 @@ public final class CompressorFactory
         GZIP_MATCHER = glob.globMatcher("*.gz", Regex.Option.CASE_INSENSITIVE);
         XZ_MATCHER = glob.globMatcher("*.xz", Regex.Option.CASE_INSENSITIVE);
     }
+    public static final IOFunction<? super OutputStream,? extends OutputStream> output(Path path)
+    {
+        return output(compressor(path));
+    }
     public static final IOFunction<? super OutputStream,? extends OutputStream> output(Compressor comp)
     {
         switch (comp)
@@ -60,13 +65,29 @@ public final class CompressorFactory
     }
     public static final IOFunction<? super InputStream,? extends InputStream> input(Path path)
     {
+        return input(compressor(path));
+    }
+    public static final IOFunction<? super InputStream,? extends InputStream> input(Compressor comp)
+    {
+        switch (comp)
+        {
+            case GZIP:
+                return GZIPInputStream::new;
+            case XZ:
+                return XZInputStream::new;
+            default:
+                throw new UnsupportedOperationException(comp+" not supported");
+        }
+    }
+    private static final Compressor compressor(Path path)
+    {
         if (GZIP_MATCHER.matches(path))
         {
-            return GZIPInputStream::new;
+            return GZIP;
         }
         if (XZ_MATCHER.matches(path))
         {
-            return XZInputStream::new;
+            return XZ;
         }
         throw new UnsupportedOperationException(path+" not supported");
     }
