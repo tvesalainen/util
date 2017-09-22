@@ -332,7 +332,7 @@ public class FilterChannel implements SeekableByteChannel, Flushable
         @Override
         public void write(int b) throws IOException
         {
-            buf[0] = Casts.castUnsignedByte(b);
+            buf[0] = (byte) b;
             write(buf);
         }
         
