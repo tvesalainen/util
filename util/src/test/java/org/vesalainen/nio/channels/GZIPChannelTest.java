@@ -68,7 +68,7 @@ public class GZIPChannelTest
         ByteBuffer bb = ByteBuffer.allocate(4096);
         try (GZIPChannel ch = new GZIPChannel(path, READ))
         {
-            Path dir = Paths.get(".");
+            Path dir = Paths.get("c:\\temp");
             ch.extractAll(dir, REPLACE_EXISTING);
         }
     }

@@ -53,7 +53,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import static java.util.zip.Deflater.*;
 import java.util.zip.Inflater;
-import org.vesalainen.util.HexDump;
 import org.vesalainen.util.OperatingSystem;
 
 /**
@@ -87,6 +86,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
     private Lock writeLock = new ReentrantLock();
     private boolean closeChannel;
     private boolean isClosed;
+    private boolean trailerRead;
     /**
      * Creates GZIPChannel
      * @param path
@@ -219,7 +219,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
      */
     public void extractAll(Path targetDir, CopyOption... options) throws IOException
     {
-        if (!Files.isDirectory(path))
+        if (!Files.isDirectory(targetDir))
         {
             throw new NotDirectoryException(targetDir.toString());
         }
@@ -442,12 +442,15 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         {
             if (inflater != null)
             {
-                ByteBuffer bb = ByteBuffer.allocate(bufSize);
-                int rc = read(bb);
-                while (rc != -1)
+                if (inflater.finished() && !trailerRead)
                 {
-                    bb.clear();
-                    rc = read(bb);
+                    ByteBuffer bb = ByteBuffer.allocate(bufSize);
+                    int rc = read(bb);
+                    while (rc != -1)
+                    {
+                        bb.clear();
+                        rc = read(bb);
+                    }
                 }
             }
         }
@@ -488,6 +491,7 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
 
     private void readHeader() throws IOException
     {
+        trailerRead = false;
         filename = null;
         comment = null;
         compBuf.compact();
@@ -607,7 +611,6 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
         compBuf.compact();
         channel.read(compBuf);
         compBuf.flip();
-        System.err.println(HexDump.remainingToHex(compBuf));
         int crc = compBuf.getInt();
         int value = (int) crc32.getValue();
         if (crc != value)
@@ -620,6 +623,9 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
             throw new IOException("Size mismatch");
         }
         channel.position(channel.position()-compBuf.remaining());
+        compBuf.clear();
+        compBuf.compact();
+        trailerRead = true;
     }
     /**
      * After read returns -1 call nextInput to advance to nextInput file.
