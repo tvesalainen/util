@@ -30,8 +30,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 import java.util.function.Consumer;
-import java.util.function.ToIntFunction;
 import org.vesalainen.util.function.IOToIntFunction;
 
 /**
@@ -40,6 +40,42 @@ import org.vesalainen.util.function.IOToIntFunction;
  */
 public final class ChannelHelper
 {
+    /**
+     * Writes string bytes to channel using charset.
+     * @param ch
+     * @param text
+     * @param charset
+     * @throws IOException 
+     */
+    public static final void write(WritableByteChannel ch, String text, Charset charset) throws IOException
+    {
+        write(ch, text.getBytes(charset));
+    }
+    /**
+     * Writes bytes to channel
+     * @param ch
+     * @param bytes
+     * @throws IOException 
+     */
+    public static final void write(WritableByteChannel ch, byte[] bytes) throws IOException
+    {
+        write(ch, bytes, 0, bytes.length);
+    }
+    /**
+     * Writes length bytes to channel starting at offset
+     * @param ch
+     * @param bytes
+     * @param offset
+     * @param length
+     * @throws IOException 
+     */
+    public static final void write(WritableByteChannel ch, byte[] bytes, int offset, int length) throws IOException
+    {
+        ByteBuffer bb = ByteBuffer.allocate(length);
+        bb.put(bytes, offset, length);
+        bb.flip();
+        writeAll(ch, bb);
+    }
     /**
      * Increments position so that position mod align == 0
      * @param ch
