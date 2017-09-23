@@ -16,6 +16,7 @@
  */
 package org.vesalainen.nio.channels;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +41,37 @@ import org.vesalainen.util.function.IOToIntFunction;
  */
 public final class ChannelHelper
 {
+    /**
+     * Read length bytes from channel and constructs a String using given charset.
+     * Throws EOFException if couldn't read length bytes because of eof.
+     * @param ch
+     * @param length
+     * @param charset
+     * @return
+     * @throws IOException 
+     */
+    public static final String read(ReadableByteChannel ch, int length, Charset charset) throws IOException
+    {
+        return new String(read(ch, length), charset);
+    }
+    /**
+     * Read length bytes from channel. 
+     * Throws EOFException if couldn't read length bytes because of eof.
+     * @param ch
+     * @param length
+     * @return
+     * @throws IOException 
+     */
+    public static final byte[] read(ReadableByteChannel ch, int length) throws IOException
+    {
+        ByteBuffer bb = ByteBuffer.allocate(length);
+        readAll(ch, bb);
+        if (bb.hasRemaining())
+        {
+            throw new EOFException("couldn't read "+length+" bytes");
+        }
+        return bb.array();
+    }
     /**
      * Writes string bytes to channel using charset.
      * @param ch
@@ -75,6 +107,31 @@ public final class ChannelHelper
         bb.put(bytes, offset, length);
         bb.flip();
         writeAll(ch, bb);
+    }
+    /**
+     * Read channel until dst has remaining or eof.
+     * @param ch
+     * @param dst
+     * @return Returns number of bytes or -1 if no bytes were read and eof reached.
+     * @throws IOException 
+     */
+    public static final int readAll(ReadableByteChannel ch, ByteBuffer dst) throws IOException
+    {
+        int count = 0;
+        while (dst.hasRemaining())
+        {
+            int rc = ch.read(dst);
+            if (rc == -1)
+            {
+                if (count > 0)
+                {
+                    return count;
+                }
+                return -1;
+            }
+            count += rc;
+        }
+        return count;
     }
     /**
      * Increments position so that position mod align == 0
