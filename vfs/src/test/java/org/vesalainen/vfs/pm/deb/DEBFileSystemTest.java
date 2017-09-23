@@ -37,7 +37,6 @@ import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
-import org.vesalainen.vfs.pm.rpm.RPMFileSystemTest;
 
 /**
  *
@@ -48,7 +47,7 @@ public class DEBFileSystemTest
     
     public DEBFileSystemTest()
     {
-        //JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.INFO);
     }
 
     @Test

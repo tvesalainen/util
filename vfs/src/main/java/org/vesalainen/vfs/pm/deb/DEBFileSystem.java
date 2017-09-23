@@ -17,7 +17,6 @@
 package org.vesalainen.vfs.pm.deb;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -28,7 +27,6 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -55,6 +53,7 @@ import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 import org.vesalainen.vfs.pm.Dependency;
 import static org.vesalainen.vfs.pm.FileUse.*;
+import org.vesalainen.vfs.pm.deb.Ar.ArHeader;
 import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
 
 /**
@@ -67,7 +66,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private static final RegexMatcher<Boolean> UPSTREAM_VERSION_MATCHER = new RegexMatcher("[0-9][0-9a-zA-Z\\.\\+\\-~]*", true).compile();
     private static final RegexMatcher<Boolean> DEBIAN_REVISION_MATCHER = new RegexMatcher("[0-9a-zA-Z\\.\\+~]*", true).compile();
     private static final int BUF_SIZE = 4096;
-    private static final byte[] AR_MAGIC = "!<arch>\n".getBytes(US_ASCII);
     private static final byte[] DEB_VERSION = "2.0\n".getBytes(US_ASCII);
     private static final String INTERPRETER = "/bin/sh";
     private final Root root;
@@ -147,42 +145,27 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         postinst.save();
         prerm.save();
         postrm.save();
-        
-        ByteBuffer bb = ByteBuffer.allocate(8);
-        bb.put(AR_MAGIC).flip();
-        channel.write(bb);
-        ArHeader packageSection = new ArHeader("debian-binary", 4);
-        packageSection.save(channel);
-        bb.clear();
-        bb.put(DEB_VERSION);
-        bb.flip();
-        channel.write(bb);
-        // control
-        long controlArStart = channel.position();
-        ChannelHelper.skip(channel, ArHeader.AR_HEADER_SIZE);
-        long controlStart = channel.position();
-        try (FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(GZIP)))
+
+        try (Ar ar = new Ar(channel, false))
         {
-            store(controlChannel, controlRoot);
+            ar.addEntry("debian-binary");
+            info("debian-binary %d", channel.position());
+            ChannelHelper.write(channel, DEB_VERSION);
+            // control
+            ar.addEntry("control.tar.gz");
+            info("control %d", channel.position());
+            try (FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(GZIP)))
+            {
+                store(controlChannel, controlRoot);
+            }
+            // data
+            ar.addEntry("data.tar.xz");
+            info("data %d", channel.position());
+            try (FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(XZ)))
+            {
+                store(dataChannel, root);
+            }
         }
-        long controlEnd = channel.position();
-        ArHeader controlSection = new ArHeader("control.tar.gz", (int) (controlEnd-controlStart));
-        channel.position(controlArStart);
-        controlSection.save(channel);
-        channel.position(controlEnd);
-        // data
-        long dataArStart = channel.position();
-        ChannelHelper.skip(channel, ArHeader.AR_HEADER_SIZE);
-        long dataStart = channel.position();
-        try (FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(XZ)))
-        {
-            store(dataChannel, root);
-        }
-        long dataEnd = channel.position();
-        ArHeader dataSection = new ArHeader("data.tar.xz", (int) (dataEnd-dataStart));
-        channel.position(dataArStart);
-        dataSection.save(channel);
-        channel.position(dataEnd);
     }
     private void getFileAttributes() throws IOException
     {
@@ -229,40 +212,32 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     
     private void loadDEB() throws IOException
     {
-        long pos = 0;
-        ByteBuffer bb = ByteBuffer.allocate(8);
-        channel.read(bb);
-        if (!Arrays.equals(AR_MAGIC, bb.array()))
+        try (Ar ar = new Ar(channel, true))
         {
-            throw new UnsupportedOperationException(HexDump.toHex(bb, 0, 8)+" not a deb file");
-        }
-        pos = channel.position();
-        ArHeader packageSection = new ArHeader(channel);
-        pos = channel.position();
-        int arSize = packageSection.getSize();
-        bb.clear().limit(arSize);
-        channel.read(bb);
-        pos += arSize;
-        for (int ii=0;ii<arSize;ii++)
-        {
-            if (DEB_VERSION[ii] != bb.get(ii))
+            ArHeader packageSection = ar.getEntry();
+            if (!"debian-binary".equals(packageSection.getFilename()) || packageSection.getSize() != 4)
             {
-                throw new UnsupportedOperationException(HexDump.toHex(bb, 0, arSize)+" wrong version deb file");
+                throw new UnsupportedOperationException("not a deb file");
             }
+            info("debian-binary %d", channel.position());
+            byte[] debVer = ChannelHelper.read(channel, DEB_VERSION.length);
+            if (!Arrays.equals(DEB_VERSION, debVer))
+            {
+                throw new UnsupportedOperationException(HexDump.toHex(debVer)+" wrong version deb file");
+            }
+            // control
+            ArHeader controlSection = ar.getEntry();
+            Path controlfile = getPath(controlSection.getFilename());
+            info("control %d", channel.position());
+            FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(controlfile), null);
+            load(controlChannel, controlRoot);
+            // data
+            ArHeader dataSection = ar.getEntry();
+            Path datafile = getPath(dataSection.getFilename());
+            info("data %d", channel.position());
+            FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(datafile), null);
+            load(dataChannel, root);
         }
-        ArHeader controlSection = new ArHeader(channel);
-        pos = channel.position();
-        Path controlfile = getPath(controlSection.getFilename());
-        FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(controlfile), null);
-        load(controlChannel, controlRoot);
-        pos += controlSection.getSize();
-        channel.position(pos);
-        ArHeader dataSection = new ArHeader(channel);
-        pos = channel.position();
-        Path datafile = getPath(dataSection.getFilename());
-        FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, CompressorFactory.input(datafile), null);
-        load(dataChannel, root);
-        pos += dataSection.getSize();
         control = new Control(controlRoot);
         conffiles = new Conffiles(controlRoot);
         docs = new Docs(controlRoot);

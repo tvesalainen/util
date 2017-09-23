@@ -77,41 +77,61 @@ public class ControlBase
                             }
                             else
                             {
-                                sb.append(line);
+                                sb.append('\n'+line.trim());
                             }
                         }
                         else
                         {
-                            if (field != null)
+                            Field fld = extractField(line);
+                            if (fld != null)
                             {
-                                if (field.getType() == SIMPLE)
+                                if (field != null)
                                 {
-                                    paragraph.add(field, sb.toString().split("[, ]+"));
+                                    if (field.getType() == SIMPLE)
+                                    {
+                                        paragraph.add(field, sb.toString().split("[, ]+"));
+                                    }
+                                    else
+                                    {
+                                        paragraph.add(field, sb.toString());
+                                    }
                                 }
-                                else
-                                {
-                                    paragraph.add(field, sb.toString());
-                                }
-                                field = null;
+                                field = fld;
                                 sb.setLength(0);
+                                int idx = line.indexOf(':');
+                                sb.append(line.substring(idx+1).trim());
                             }
-                            int idx = line.indexOf(':');
-                            if (idx == -1)
-                            {
-                                throw new IllegalArgumentException(line);
-                            }
-                            field = Field.get(line.substring(0, idx));
-                            sb.append(line.substring(idx+1).trim());
-                        }
-                        if (field != null)
-                        {
-                            paragraph.add(field, sb.toString().split(","));
-                            field = null;
-                            sb.setLength(0);
                         }
                     }
                 }
+                if (field != null)
+                {
+                    if (field.getType() == SIMPLE)
+                    {
+                        paragraph.add(field, sb.toString().split("[, ]+"));
+                    }
+                    else
+                    {
+                        paragraph.add(field, sb.toString());
+                    }
+                }
             }
+        }
+    }
+    private Field extractField(String line)
+    {
+        int idx = line.indexOf(':');
+        if (idx == -1)
+        {
+            return null;
+        }
+        try
+        {
+            return Field.get(line.substring(0, idx));
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return null;
         }
     }
     protected boolean checkFirstLine(String line)
