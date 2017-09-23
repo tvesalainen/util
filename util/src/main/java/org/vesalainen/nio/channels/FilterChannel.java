@@ -180,10 +180,6 @@ public class FilterChannel implements SeekableByteChannel
     {
         return in != null || out != null;
     }
-    /**
-     * Calls flush() and sets closed. Doesn't close underlying channel!
-     * @throws IOException 
-     */
     @Override
     public void close() throws IOException
     {
