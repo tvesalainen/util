@@ -380,7 +380,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
                         link = inodes.get(inode);
                     }
                     String linkname = link != null ? link.toString() : null;
-                    inodes.put(inode, sourcePath);
+                    inodes.put(inode, targetPath);
                     header.clear();
                     byte[] digest = null;
                     // checksum

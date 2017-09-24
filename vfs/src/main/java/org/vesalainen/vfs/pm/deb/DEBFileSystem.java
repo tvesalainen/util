@@ -612,6 +612,18 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
 
     @Override
+    public PackageManagerAttributeView addChangeLog(String log)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getChangeLog()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public String name()
     {
         return "org.vesalainen.vfs.pm.deb";

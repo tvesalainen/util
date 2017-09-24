@@ -63,6 +63,7 @@ public class ControlBase
                 {
                     if (line.isEmpty())
                     {
+                        setField(paragraph, field, sb);
                         paragraph = new  Paragraph();
                         paragraphs.add(paragraph);
                     }
@@ -85,17 +86,7 @@ public class ControlBase
                             Field fld = extractField(line);
                             if (fld != null)
                             {
-                                if (field != null)
-                                {
-                                    if (field.getType() == SIMPLE)
-                                    {
-                                        paragraph.add(field, sb.toString().split("[, ]+"));
-                                    }
-                                    else
-                                    {
-                                        paragraph.add(field, sb.toString());
-                                    }
-                                }
+                                setField(paragraph, field, sb);
                                 field = fld;
                                 sb.setLength(0);
                                 int idx = line.indexOf(':');
@@ -104,17 +95,21 @@ public class ControlBase
                         }
                     }
                 }
-                if (field != null)
-                {
-                    if (field.getType() == SIMPLE)
-                    {
-                        paragraph.add(field, sb.toString().split("[, ]+"));
-                    }
-                    else
-                    {
-                        paragraph.add(field, sb.toString());
-                    }
-                }
+                setField(paragraph, field, sb);
+            }
+        }
+    }
+    private void setField(Paragraph paragraph, Field field, StringBuilder sb)
+    {
+        if (field != null)
+        {
+            if (field.getType() == SIMPLE)
+            {
+                paragraph.add(field, sb.toString().split(","));
+            }
+            else
+            {
+                paragraph.add(field, sb.toString());
             }
         }
     }

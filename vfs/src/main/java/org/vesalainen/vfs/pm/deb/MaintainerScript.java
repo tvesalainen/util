@@ -47,7 +47,7 @@ public class MaintainerScript
                     throw new IllegalArgumentException(first+" missing interpreter");
                 }
                 script = first.substring(2).trim();
-                script = r.lines().collect(Collectors.joining("\n"));
+                script = r.lines().collect(Collectors.joining("\n", "", "\n"));
             }
         }
     }

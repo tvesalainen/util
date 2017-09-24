@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.vesalainen.nio.channels.FilterChannel;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.Lists;
 import org.vesalainen.vfs.CompressorFactory;
 
@@ -125,7 +126,22 @@ public class ChangeLog
 
     public void addChangeDetail(String text)
     {
-        changeDetails.add(text);
+        CharSequences.split(text, '\n').forEach((line)->
+        {
+            String str = line.toString();
+            if (str.startsWith("*"))
+            {
+                changeDetails.add(str);
+            }
+            else
+            {
+                changeDetails.add("* "+str);
+            }
+        });
+    }
+    public List<String> getChangeDetails()
+    {
+        return changeDetails;
     }
     public void setUrgency(String urgency)
     {

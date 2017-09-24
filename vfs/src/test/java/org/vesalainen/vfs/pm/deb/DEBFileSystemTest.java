@@ -83,10 +83,9 @@ public class DEBFileSystemTest
                     
             Path pom = Paths.get("pom.xml");
             pomSize = Files.size(pom);
-            Path trg = debFS.getPath("/etc/default/pom.xml");
+            Path trg = debFS.getPath("/opt/org.vesalainen.test/pom.xml");
             Files.createDirectories(trg.getParent());
             Files.copy(pom, trg);
-            PackageFileAttributes.setLanguage(trg, "C");
             PackageFileAttributes.setUsage(trg, FileUse.CONFIGURATION);
         }
         try (FileSystem debFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
@@ -115,9 +114,8 @@ public class DEBFileSystemTest
             assertTrue(requires.contains("java7-runtime-headless"));
             assertEquals("echo qwerty >/tmp/test\n", view.getPostInstallation());
             
-            Path trg = debFS.getPath("/etc/default/pom.xml");
+            Path trg = debFS.getPath("/opt/org.vesalainen.test/pom.xml");
             assertEquals(pomSize, Files.size(trg));
-            assertEquals("C", PackageFileAttributes.getLanguage(trg));
             Set<FileUse> usage = PackageFileAttributes.getUsage(trg);
             assertTrue(usage.contains(FileUse.CONFIGURATION));
             assertFalse(usage.contains(FileUse.DOCUMENTATION));
@@ -125,7 +123,7 @@ public class DEBFileSystemTest
         Path rpm = Paths.get("z:\\test\\test.rpm");
         //Files.copy(path, rpm);
     }    
-    //@Test
+    @Test
     public void testRead() throws URISyntaxException, IOException
     {
         URL url = DEBFileSystemTest.class.getResource("/time_1.7-25_armhf.deb");
@@ -147,9 +145,19 @@ public class DEBFileSystemTest
             });
             Path root2 = debFS.getPath("/");
             Files.walk(root2).forEach((p)->System.err.println(p));
+            System.err.println("----------------------------------------------------------------------------");
             Files.lines(debFS.getPath("/usr/share/doc/time/copyright")).forEach((l)->System.err.println(l));
+            System.err.println("----------------------------------------------------------------------------");
             GZIPInputStream gi = new GZIPInputStream(Files.newInputStream(debFS.getPath("/usr/share/doc/time/changelog.gz")));
             int cc = gi.read();
+            while (cc != -1)
+            {
+                System.err.print((char)cc);
+                cc = gi.read();
+            }
+            System.err.println("----------------------------------------------------------------------------");
+            gi = new GZIPInputStream(Files.newInputStream(debFS.getPath("usr/share/doc/time/changelog.Debian.gz")));
+            cc = gi.read();
             while (cc != -1)
             {
                 System.err.print((char)cc);

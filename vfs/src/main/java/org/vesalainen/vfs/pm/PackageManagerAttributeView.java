@@ -18,7 +18,6 @@ package org.vesalainen.vfs.pm;
 
 import java.nio.file.attribute.FileStoreAttributeView;
 import java.util.Collection;
-import java.util.Set;
 import static org.vesalainen.vfs.pm.Condition.*;
 
 /**
@@ -357,4 +356,15 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * @return 
      */
     String getMaintainer();
+    /**
+     * Adds change log lines
+     * @param log
+     * @return 
+     */
+    PackageManagerAttributeView addChangeLog(String log);
+    /**
+     * Gets change log lines
+     * @return 
+     */
+    String getChangeLog();
 }

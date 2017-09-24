@@ -48,7 +48,7 @@ public class RPMFileSystemTest
         JavaLogging.setConsoleHandler("org.vesalainen", Level.ALL);
     }
 
-    //@Test
+    @Test
     public void testRead() throws URISyntaxException, IOException
     {
         URL url = RPMFileSystemTest.class.getResource("/redhat-lsb-4.0-2.1.4.el5.i386.rpm");
