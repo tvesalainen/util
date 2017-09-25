@@ -24,9 +24,12 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -47,6 +50,7 @@ import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.tar.TARHeader;
 import static org.vesalainen.vfs.arch.tar.TARHeader.TAR_BLOCK_SIZE;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.pm.ChangeLog;
 import org.vesalainen.vfs.pm.Condition;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
@@ -73,7 +77,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     private Control control;
     private Conffiles conffiles;
     private Docs docs;
-    private ChangeLog changeLog;
+    private ChangeLogFile changeLog;
     private Copyright copyright;
     private MaintainerScript preinst;
     private MaintainerScript postinst;
@@ -109,7 +113,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             control = new Control();
             conffiles = new Conffiles();
             docs = new Docs();
-            changeLog = new ChangeLog();
+            changeLog = new ChangeLogFile();
             copyright = new Copyright();
             preinst = new MaintainerScript(controlRoot, "preinst");
             postinst = new MaintainerScript(controlRoot, "postinst");
@@ -130,6 +134,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
     private void storeDEB() throws IOException
     {
+        checkChangeLog();
         getFileAttributes();
         Path docPath = getPath("/usr/share/doc");
         Path packageDocPath = docPath.resolve(getPackageName());
@@ -244,7 +249,7 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         Path docPath = getPath("/usr/share/doc");
         Path packageDocPath = docPath.resolve(getPackageName());
         Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
-        changeLog = new ChangeLog(changeLogPath);
+        changeLog = new ChangeLogFile(changeLogPath);
         copyright = new Copyright(packageDocPath);
         MD5Sums md5Sums = new MD5Sums(controlRoot, root);
         preinst = new MaintainerScript(controlRoot, "preinst");
@@ -404,7 +409,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             throw new IllegalArgumentException(name+" syntax error");
         }
         control.setPackage(name);
-        changeLog.setPackageName(name);
         return this;
     }
 
@@ -520,7 +524,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             throw new IllegalArgumentException(version+" syntax error");
         }
         control.setUpstreamVersion(version);
-        changeLog.setUpstreamVersion(version);
         return this;
     }
     /**
@@ -546,7 +549,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
             throw new IllegalArgumentException(release+" syntax error");
         }
         control.setDebianRevision(release);
-        changeLog.setDebianRevision(release);
         return this;
     }
     /**
@@ -601,7 +603,6 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     public PackageManagerAttributeView setMaintainer(String maintainer)
     {
         control.setMaintainer(maintainer);
-        changeLog.setMaintainer(maintainer);
         return this;
     }
 
@@ -612,15 +613,23 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
 
     @Override
-    public PackageManagerAttributeView addChangeLog(String log)
+    public PackageManagerAttributeView addChangeLog(ChangeLog log)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (log instanceof DebianChangeLog)
+        {
+            changeLog.addChangeLog((DebianChangeLog) log);
+        }
+        else
+        {
+            throw new IllegalArgumentException(log+" should be instance of "+DebianChangeLog.class);
+        }
+        return this;
     }
 
     @Override
-    public String getChangeLog()
+    public List<? extends ChangeLog> getChangeLogs()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return changeLog.getLogs();
     }
 
     @Override
@@ -652,6 +661,24 @@ public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAt
         else
         {
             warning("filename %s is illegal", path);
+        }
+    }
+
+    private void checkChangeLog()
+    {
+        if (changeLog.isEmpty())
+        {
+            DebianChangeLog log = new DebianChangeLog(
+                    getPackageName(), 
+                    getVersion(), 
+                    getRelease(), 
+                    "low", 
+                    getMaintainer(), 
+                    FileTime.from(Instant.now()), 
+                    "* change log missing",
+                    "unstable"
+            );
+            changeLog.addChangeLog(log);
         }
     }
 

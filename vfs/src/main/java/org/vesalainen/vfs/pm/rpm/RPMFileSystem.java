@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -52,6 +53,7 @@ import org.vesalainen.vfs.arch.FileFormat;
 import org.vesalainen.vfs.arch.Header;
 import org.vesalainen.vfs.arch.cpio.CPIOHeader;
 import static org.vesalainen.vfs.attributes.FileAttributeName.*;
+import org.vesalainen.vfs.pm.ChangeLog;
 import org.vesalainen.vfs.pm.Condition;
 import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
@@ -61,6 +63,7 @@ import static org.vesalainen.vfs.pm.rpm.HeaderTag.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributes;
 import org.vesalainen.vfs.pm.Dependency;
+import org.vesalainen.vfs.pm.SimpleChangeLog;
 
 /**
  *
@@ -745,17 +748,34 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
     }
 
     @Override
-    public PackageManagerAttributeView addChangeLog(String log)
+    public PackageManagerAttributeView addChangeLog(ChangeLog changeLog)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        addString(RPMTAG_CHANGELOGNAME, changeLog.getMaintainer());
+        addString(RPMTAG_CHANGELOGTEXT, changeLog.getText());
+        addInt32(RPMTAG_CHANGELOGTIME, (int) changeLog.getTime().to(TimeUnit.SECONDS));
+        return this;
     }
 
     @Override
-    public String getChangeLog()
+    public List<ChangeLog> getChangeLogs()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<ChangeLog> list = new ArrayList<>();
+        List<String> names = getStringArray(RPMTAG_CHANGELOGNAME);
+        List<String> texts = getStringArray(RPMTAG_CHANGELOGTEXT);
+        List<Integer> times = getInt32Array(RPMTAG_CHANGELOGTIME);
+        if (names.size() != texts.size() || names.size() != times.size())
+        {
+            throw new IllegalArgumentException("change log sizes differ???");
+        }
+        int len = names.size();
+        for (int ii=0;ii<len;ii++)
+        {
+            SimpleChangeLog log = new SimpleChangeLog(names.get(ii), FileTime.from(times.get(ii), TimeUnit.SECONDS), texts.get(ii));
+            list.add(log);
+        }
+        return list;
     }
-    
+
     @Override
     public String name()
     {
