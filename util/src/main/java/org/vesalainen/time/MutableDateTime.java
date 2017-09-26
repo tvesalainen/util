@@ -44,10 +44,10 @@ public interface MutableDateTime
         ChronoField.SECOND_OF_MINUTE,
         ChronoField.MILLI_OF_SECOND
     };
-    public static final long SecondInMillis = 1000;
-    public static final long MinuteInMillis = SecondInMillis*60;
-    public static final long HourInMillis = MinuteInMillis*60;
-    public static final long DayInMillis = HourInMillis*24;
+    static final long SECOND_IN_MILLIS = 1000;
+    static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS*60;
+    static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60;
+    static final long DAY_IN_MILLIS = HOUR_IN_MILLIS*24;
     static final Map<String,Long> millisMap = new HashMap<>();
     /**
      * Returns milliseconds from 1970-01-01 00:00:00Z
@@ -68,12 +68,12 @@ public interface MutableDateTime
             epochMillis = millisMap.get(yearMonth);
         }
         return
-                -SecondInMillis*getOffsetSecond() +
+                -SECOND_IN_MILLIS*getOffsetSecond() +
                 epochMillis +
-                DayInMillis*(getDay()-1) +
-                HourInMillis*getHour() +
-                MinuteInMillis*getMinute() +
-                SecondInMillis*getSecond() +
+                DAY_IN_MILLIS*(getDay()-1) +
+                HOUR_IN_MILLIS*getHour() +
+                MINUTE_IN_MILLIS*getMinute() +
+                SECOND_IN_MILLIS*getSecond() +
                 getMilliSecond();
     }
     /**
