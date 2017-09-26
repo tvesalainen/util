@@ -19,6 +19,7 @@ package org.vesalainen.time;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -84,7 +85,7 @@ public class SimpleMutableDateTest
     {
         SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
         ZonedDateTime zdt = smt.zonedDateTime();
-        for (ChronoField cf : smt.getFields().keySet())
+        for (TemporalField cf : smt.getFields().keySet())
         {
             assertEquals(smt.get(cf), zdt.get(cf));
         }
@@ -98,7 +99,7 @@ public class SimpleMutableDateTest
         long millis = 10000000;
         smt.plusMilliSeconds(millis);
         ZonedDateTime pzdt = zdt.plusNanos(millis*1000000);
-        for (ChronoField cf : smt.getFields().keySet())
+        for (TemporalField cf : smt.getFields().keySet())
         {
             assertEquals(smt.get(cf), pzdt.get(cf));
         }

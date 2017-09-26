@@ -22,9 +22,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import static java.time.temporal.ChronoField.*;
+import java.time.temporal.TemporalField;
 import java.util.EnumMap;
 import org.vesalainen.util.IntMap;
-import org.vesalainen.util.IntReference;
 
 /**
  *
@@ -32,7 +33,7 @@ import org.vesalainen.util.IntReference;
  */
 public class SimpleMutableDateTime implements MutableDateTime, Cloneable
 {
-    private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
+    private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<>(ChronoField.class));
     /**
      * Creates uninitialized SimpleMutableDateTime
      */
@@ -200,12 +201,12 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         }
     }
     /**
-     * Creates ZonedDateTime with same fields and UTC ZoneId.
+     * Creates ZonedDateTime.
      * @return 
      */
     public ZonedDateTime zonedDateTime()
     {
-        return zonedDateTime(ZoneOffset.UTC);
+        return zonedDateTime(ZoneOffset.ofTotalSeconds(get(OFFSET_SECONDS)));
     }
     /**
      * Creates ZonedDateTime with same fields and given ZoneId.
@@ -273,18 +274,19 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
      * Returns the inner field map.
      * @return 
      */
-    public IntMap<ChronoField> getFields()
+    public IntMap<? extends TemporalField> getFields()
     {
         return fields;
     }
     
     @Override
-    public int get(ChronoField chronoField)
+    public long getLong(TemporalField chronoField)
     {
         checkField(chronoField);
-        if (fields.containsKey(chronoField))
+        ChronoField cf = (ChronoField)chronoField;
+        if (fields.containsKey(cf))
         {
-            return fields.getInt(chronoField);
+            return fields.getInt(cf);
         }
         else
         {
@@ -292,15 +294,16 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         }
     }
     @Override
-    public void set(ChronoField chronoField, int amount)
+    public void set(TemporalField chronoField, int amount)
     {
         checkField(chronoField);
+        ChronoField cf = (ChronoField) chronoField;
         if (ChronoField.YEAR.equals(chronoField))
         {
             amount = convertTo4DigitYear(amount);
         }
-        chronoField.checkValidIntValue(amount);
-        fields.put(chronoField, amount);
+        cf.checkValidIntValue(amount);
+        fields.put(cf, amount);
     }
 
     @Override
@@ -322,7 +325,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public int hashCode()
     {
         int hash = 0;
-        for (ChronoField cf : SupportedFields)
+        for (TemporalField cf : SupportedFields)
         {
             hash += get(cf);
         }

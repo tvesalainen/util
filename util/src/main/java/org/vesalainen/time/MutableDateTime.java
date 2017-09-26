@@ -20,6 +20,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,13 +30,13 @@ import java.util.Map;
  * This interface defines simple mutable access to time fields.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface MutableDateTime
+public interface MutableDateTime extends TemporalAccessor
 {
     /**
      * This interface supports only these fields. Using other ChronoFields is 
      * undefined.
      */
-    static final ChronoField[] SupportedFields = new ChronoField[]{
+    static final TemporalField[] SupportedFields = new ChronoField[]{
         ChronoField.OFFSET_SECONDS,
         ChronoField.YEAR,
         ChronoField.MONTH_OF_YEAR, 
@@ -42,7 +44,8 @@ public interface MutableDateTime
         ChronoField.HOUR_OF_DAY, 
         ChronoField.MINUTE_OF_HOUR, 
         ChronoField.SECOND_OF_MINUTE,
-        ChronoField.MILLI_OF_SECOND
+        ChronoField.MILLI_OF_SECOND,
+        ChronoField.DAY_OF_WEEK
     };
     static final long SECOND_IN_MILLIS = 1000;
     static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS*60;
@@ -102,34 +105,38 @@ public interface MutableDateTime
     {
         return millis()/1000;
     }
-    /**
-     * Checks if chronoField is supported. Throws IllegalArgumentException if not.
-     * @param chronoField 
-     * @throws IllegalArgumentException
-     */
-    default void checkField(ChronoField chronoField)
+
+    public default void checkField(TemporalField field)
     {
-        for (ChronoField cf : SupportedFields)
+        if (!isSupported(field))
         {
-            if (cf.equals(chronoField))
+            throw new UnsupportedOperationException(field+" is not supported");
+        }
+    }
+    @Override
+    public default boolean isSupported(TemporalField field)
+    {
+        for (TemporalField cf : SupportedFields)
+        {
+            if (cf.equals(field))
             {
-                return;
+                return true;
             }
         }
-        throw new IllegalArgumentException(chronoField+" not supported");
+        return false;
     }
     /**
      * Returns time field value. See get-methods for constraints
      * @param chronoField
      * @return 
      */
-    int get(ChronoField chronoField);
+    //int get(TemporalField chronoField);
     /**
      * Sets time field value. See set-methods for constraints
      * @param chronoField
      * @param amount 
      */
-    void set(ChronoField chronoField, int amount);
+    void set(TemporalField chronoField, int amount);
     /**
      * Copies fields to this from given MutableDateTime.
      * <p>
@@ -156,7 +163,7 @@ public interface MutableDateTime
      */
     default void setZonedDateTime(ZonedDateTime zonedDateTime)
     {
-        for (ChronoField cf : SupportedFields)
+        for (TemporalField cf : SupportedFields)
         {
             set(cf, zonedDateTime.get(cf));
         }
@@ -168,7 +175,7 @@ public interface MutableDateTime
      */
     default boolean equals(MutableDateTime mt)
     {
-        for (ChronoField cf : SupportedFields)
+        for (TemporalField cf : SupportedFields)
         {
             if (get(cf) != mt.get(cf))
             {
@@ -381,7 +388,7 @@ public interface MutableDateTime
      */
     default GregorianCalendar getGregorianCalendar()
     {
-        return new GregorianCalendar(getYear(), getMonth()+1, getDay(), getHour(), getMinute(), getSecond());
+        return new GregorianCalendar(getYear(), getMonth()-1, getDay(), getHour(), getMinute(), getSecond());
     }
 
 }

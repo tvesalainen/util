@@ -35,11 +35,8 @@ import org.vesalainen.util.IntReference;
  * base clock the clock is running or fixed.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MutableClock extends Clock implements TemporalAccessor, MutableDateTime
+public class MutableClock extends Clock implements MutableDateTime
 {
-    private static final long SecondInMillis = 1000;
-    private static final long MinuteInMillis = SecondInMillis*60;
-    private static final long HourInMillis = MinuteInMillis*60;
     protected IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
     protected Clock clock;
     protected boolean needCalc;
@@ -104,9 +101,9 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableDate
         long millis = 0;
         millis += clock.millis() - getUpdated();
         millis += dateMillis;
-        millis += get(ChronoField.HOUR_OF_DAY)*HourInMillis;
-        millis += get(ChronoField.MINUTE_OF_HOUR)*MinuteInMillis;
-        millis += get(ChronoField.SECOND_OF_MINUTE)*SecondInMillis;
+        millis += get(ChronoField.HOUR_OF_DAY)*HOUR_IN_MILLIS;
+        millis += get(ChronoField.MINUTE_OF_HOUR)*MINUTE_IN_MILLIS;
+        millis += get(ChronoField.SECOND_OF_MINUTE)*SECOND_IN_MILLIS;
         millis += get(ChronoField.MILLI_OF_SECOND);
         return millis;
     }
@@ -132,29 +129,6 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableDate
             get(ChronoField.MILLI_OF_SECOND)*1000000,
             clock.getZone());
     }
-    @Override
-    public boolean isSupported(TemporalField field)
-    {
-        if (field instanceof ChronoField)
-        {
-            ChronoField chronoField = (ChronoField) field;
-            switch (chronoField)
-            {
-                case YEAR:
-                case MONTH_OF_YEAR:
-                case DAY_OF_MONTH:
-                case HOUR_OF_DAY:
-                case MINUTE_OF_HOUR:
-                case SECOND_OF_MINUTE:
-                case MILLI_OF_SECOND:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        return false;
-    }
-
     @Override
     public long getLong(TemporalField field)
     {
@@ -183,12 +157,13 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableDate
     }
 
     @Override
-    public int get(ChronoField chronoField)
+    public int get(TemporalField chronoField)
     {
         checkField(chronoField);
-        if (fields.containsKey(chronoField))
+        ChronoField cf = (ChronoField) chronoField;
+        if (fields.containsKey(cf))
         {
-            return fields.getInt(chronoField);
+            return fields.getInt(cf);
         }
         else
         {
@@ -196,24 +171,25 @@ public class MutableClock extends Clock implements TemporalAccessor, MutableDate
         }
     }
     @Override
-    public void set(ChronoField chronoField, int amount)
+    public void set(TemporalField chronoField, int amount)
     {
         checkField(chronoField);
+        ChronoField cf = (ChronoField) chronoField;
         if (ChronoField.YEAR.equals(chronoField))
         {
             amount = convertTo4DigitYear(amount);
         }
-        chronoField.checkValidIntValue(amount);
+        cf.checkValidIntValue(amount);
         int value = -1;
-        if (fields.containsKey(chronoField))
+        if (fields.containsKey(cf))
         {
-            value = fields.getInt(chronoField);
+            value = fields.getInt(cf);
         }
         if (value != amount)
         {
             updated = clock.millis();
-            fields.put(chronoField, amount);
-            if (isDateField(chronoField))
+            fields.put(cf, amount);
+            if (isDateField(cf))
             {
                 needCalc = true;
             }
