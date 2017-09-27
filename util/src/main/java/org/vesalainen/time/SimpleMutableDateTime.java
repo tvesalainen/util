@@ -18,22 +18,30 @@ package org.vesalainen.time;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import static java.time.temporal.ChronoField.*;
+import java.time.temporal.ChronoUnit;
+import static java.time.temporal.ChronoUnit.*;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.EnumMap;
-import org.vesalainen.util.IntMap;
+import org.vesalainen.util.LongMap;
 
 /**
- *
+ * SimpleMutableDateTime is a mutable Temporal implementation which supports creating
+ * date objects from fields. Supported fields are from year to millis.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SimpleMutableDateTime implements MutableDateTime, Cloneable
+public class SimpleMutableDateTime implements Temporal, MutableDateTime, Cloneable
 {
-    private IntMap<ChronoField> fields = new IntMap<>(new EnumMap<>(ChronoField.class));
+    private LongMap<ChronoField> fields = new LongMap<>(new EnumMap<>(ChronoField.class));
     /**
      * Creates uninitialized SimpleMutableDateTime
      */
@@ -68,7 +76,22 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
      */
     public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond, ZoneId zoneId)
     {
-        this(year, month, day, hour, minute, second, milliSecond, ZoneIdToOffsetSecond(zoneId));
+        this(year, month, day, hour, minute, second, milliSecond, zoneId.getRules().getOffset(LocalDateTime.of(year, month, month, hour, minute, second, milliSecond*1000000)));
+    }
+    /**
+     * Creates SimpleMutableDateTime 
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @param second
+     * @param milliSecond
+     * @param zoneOffset 
+     */
+    public SimpleMutableDateTime(int year, int month, int day, int hour, int minute, int second, int milliSecond, ZoneOffset zoneOffset)
+    {
+        this(year, month, day, hour, minute, second, milliSecond, zoneOffset.getTotalSeconds());
     }
     /**
      * Creates SimpleMutableDateTime 
@@ -87,16 +110,118 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         setDate(year, month, day);
         setTime(hour, minute, second, milliSecond);
     }
-    private static int ZoneIdToOffsetSecond(ZoneId zoneId)
+    public static final SimpleMutableDateTime from(TemporalAccessor temporal)
     {
-        ZoneOffset normalized = (ZoneOffset) zoneId.normalized();
-        return normalized.getTotalSeconds();
+        SimpleMutableDateTime smt = SimpleMutableDateTime.epoch();
+        int offset = 0;
+        if (temporal.isSupported(OFFSET_SECONDS))
+        {
+            offset = temporal.get(OFFSET_SECONDS);
+            smt.setOffsetSecond(offset);
+        }
+        if (
+                temporal.isSupported(YEAR) && 
+                temporal.isSupported(MONTH_OF_YEAR) &&
+                temporal.isSupported(DAY_OF_MONTH) &&
+                temporal.isSupported(HOUR_OF_DAY) &&
+                temporal.isSupported(MINUTE_OF_HOUR) &&
+                temporal.isSupported(SECOND_OF_MINUTE) &&
+                temporal.isSupported(MILLI_OF_SECOND)
+                )
+        {
+            smt.set(YEAR, temporal.get(YEAR));
+            smt.set(MONTH_OF_YEAR, temporal.get(MONTH_OF_YEAR));
+            smt.set(DAY_OF_MONTH, temporal.get(DAY_OF_MONTH));
+            smt.set(HOUR_OF_DAY, temporal.get(HOUR_OF_DAY));
+            smt.set(MINUTE_OF_HOUR, temporal.get(MINUTE_OF_HOUR));
+            smt.set(SECOND_OF_MINUTE, temporal.get(SECOND_OF_MINUTE));
+            smt.set(MILLI_OF_SECOND, temporal.get(MILLI_OF_SECOND));
+            return smt;
+        }
+        if (temporal.isSupported(INSTANT_SECONDS))
+        {
+            long sec = temporal.getLong(INSTANT_SECONDS);
+            long nano = temporal.getLong(NANO_OF_SECOND);
+            long millis = sec*1000+nano/1000000+offset*1000;
+            smt.plusMilliSeconds(millis);
+            return smt;
+        }
+        throw new UnsupportedOperationException(temporal+" not supported");
     }
     @Override
     public SimpleMutableDateTime clone()
     {
         return new SimpleMutableDateTime(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond(), getOffsetSecond());
     }
+
+    @Override
+    public boolean isSupported(TemporalUnit unit)
+    {
+        if (unit instanceof ChronoUnit)
+        {
+            switch ((ChronoUnit)unit)
+            {
+                case YEARS:
+                case MONTHS:
+                case DAYS:
+                case HOURS:
+                case MINUTES:
+                case SECONDS:
+                case MILLIS:
+                case HALF_DAYS:
+                case WEEKS:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public Temporal plus(long amountToAdd, TemporalUnit unit)
+    {
+        if (!isSupported(unit))
+        {
+            throw new UnsupportedTemporalTypeException(unit+" not supported");
+        }
+        long seconds = unit.getDuration().toMillis();
+        SimpleMutableDateTime clone = clone();
+        clone.plusMilliSeconds(amountToAdd*seconds);
+        return clone;
+    }
+
+    @Override
+    public long until(Temporal endExclusive, TemporalUnit unit)
+    {
+        long sec1 = getLong(ChronoField.INSTANT_SECONDS);
+        long nano1 = getLong(ChronoField.NANO_OF_SECOND);
+        long millis1 = sec1*1000+nano1/1000000;
+        long sec2 = endExclusive.getLong(ChronoField.INSTANT_SECONDS);
+        long nano2 = endExclusive.getLong(ChronoField.NANO_OF_SECOND);
+        long millis2 = sec2*1000+nano2/1000000;
+        long unitMillis = unit.getDuration().toMillis();
+        return (millis2-millis1)/unitMillis;
+    }
+
+    @Override
+    public Temporal with(TemporalField field, long newValue)
+    {
+        if (field instanceof ChronoField)
+        {
+            SimpleMutableDateTime clone = clone();
+            clone.set(field, newValue);
+            return clone;
+        }
+        else
+        {
+            return field.adjustInto(this, newValue);
+        }
+    }
+    
     /**
      * Adds delta years. Delta can be negative. Affects only year field.
      * @param delta 
@@ -138,9 +263,9 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
             }
             else
             {
-                ZonedDateTime zonedDateTime = zonedDateTime();
+                ZonedDateTime zonedDateTime = ZonedDateTime.from(this);
                 ZonedDateTime plusDays = zonedDateTime.plusDays(delta);
-                setZonedDateTime(plusDays);
+                set(plusDays);
             }
         }
     }
@@ -201,6 +326,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         }
     }
     /**
+     * @deprecated Use ZonedDateTime::from
      * Creates ZonedDateTime.
      * @return 
      */
@@ -209,6 +335,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         return zonedDateTime(ZoneOffset.ofTotalSeconds(get(OFFSET_SECONDS)));
     }
     /**
+     * @deprecated Use ZonedDateTime::from
      * Creates ZonedDateTime with same fields and given ZoneId.
      * @param zoneId
      * @return 
@@ -241,8 +368,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public static final SimpleMutableDateTime now(Clock clock)
     {
         ZonedDateTime zdt = ZonedDateTime.now(clock);
-        SimpleMutableDateTime smt = new SimpleMutableDateTime();
-        smt.setZonedDateTime(zdt);
+        SimpleMutableDateTime smt = SimpleMutableDateTime.from(zdt);
         return smt;
     }
     /**
@@ -254,9 +380,12 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public static final SimpleMutableDateTime ofEpochMilli(long millis)
     {
         ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC);
-        SimpleMutableDateTime smt = new SimpleMutableDateTime();
-        smt.setZonedDateTime(zdt);
+        SimpleMutableDateTime smt = SimpleMutableDateTime.from(zdt);
         return smt;
+    }
+    public static final SimpleMutableDateTime ofEpoch()
+    {
+        return new SimpleMutableDateTime(1970, 0, 0, 0, 0, 0, 0, 0);
     }
     /**
      * Creates SimpleMutableDateTime and initializes it to given ZoneId.
@@ -266,15 +395,14 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public static final SimpleMutableDateTime now(ZoneId zoneId)
     {
         ZonedDateTime zdt = ZonedDateTime.now(zoneId);
-        SimpleMutableDateTime smt = new SimpleMutableDateTime();
-        smt.setZonedDateTime(zdt);
+        SimpleMutableDateTime smt = SimpleMutableDateTime.from(zdt);
         return smt;
     }
     /**
      * Returns the inner field map.
      * @return 
      */
-    public IntMap<? extends TemporalField> getFields()
+    public LongMap<? extends TemporalField> getFields()
     {
         return fields;
     }
@@ -286,15 +414,23 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         ChronoField cf = (ChronoField)chronoField;
         if (fields.containsKey(cf))
         {
-            return fields.getInt(cf);
+            return fields.getLong(cf);
         }
         else
         {
-            return (int) chronoField.range().getMinimum();
+            switch (cf)
+            {
+                case INSTANT_SECONDS:
+                    return Math.floorDiv(millis(), 1000);
+                case NANO_OF_SECOND:
+                    return Math.floorMod(millis(), 1000)*1000000;
+                default:
+                    return chronoField.range().getMinimum();
+            }
         }
     }
     @Override
-    public void set(TemporalField chronoField, int amount)
+    public void set(TemporalField chronoField, long amount)
     {
         checkField(chronoField);
         ChronoField cf = (ChronoField) chronoField;
@@ -302,7 +438,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
         {
             amount = convertTo4DigitYear(amount);
         }
-        cf.checkValidIntValue(amount);
+        cf.checkValidValue(amount);
         fields.put(cf, amount);
     }
 
@@ -325,7 +461,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     public int hashCode()
     {
         int hash = 0;
-        for (TemporalField cf : SupportedFields)
+        for (TemporalField cf : SUPPORTED_FIELDS)
         {
             hash += get(cf);
         }

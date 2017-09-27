@@ -23,12 +23,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
 import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.EnumMap;
-import org.vesalainen.util.IntMap;
-import org.vesalainen.util.IntReference;
+import org.vesalainen.util.LongMap;
 
 /**
  * A mutable clock implementation. Clock fields can be changed. Depending on
@@ -37,7 +35,7 @@ import org.vesalainen.util.IntReference;
  */
 public class MutableClock extends Clock implements MutableDateTime
 {
-    protected IntMap<ChronoField> fields = new IntMap<>(new EnumMap<ChronoField,IntReference>(ChronoField.class));
+    protected LongMap<ChronoField> fields = new LongMap<>(new EnumMap<>(ChronoField.class));
     protected Clock clock;
     protected boolean needCalc;
     protected long dateMillis;
@@ -129,23 +127,6 @@ public class MutableClock extends Clock implements MutableDateTime
             get(ChronoField.MILLI_OF_SECOND)*1000000,
             clock.getZone());
     }
-    @Override
-    public long getLong(TemporalField field)
-    {
-        if (field instanceof ChronoField)
-        {
-            ChronoField chronoField = (ChronoField) field;
-            if (fields.containsKey(chronoField))
-            {
-                return fields.getInt(chronoField);
-            }
-            else
-            {
-                throw new DateTimeException("no value for "+field);
-            }
-        }
-        throw new UnsupportedTemporalTypeException(field.toString());
-    }
     /**
      * Sets time by using milli seconds from epoch.
      * @param millis 
@@ -153,17 +134,17 @@ public class MutableClock extends Clock implements MutableDateTime
     public void setMillis(long millis)
     {
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC);
-        setZonedDateTime(zonedDateTime);
+        set(zonedDateTime);
     }
 
     @Override
-    public int get(TemporalField chronoField)
+    public long getLong(TemporalField chronoField)
     {
         checkField(chronoField);
         ChronoField cf = (ChronoField) chronoField;
         if (fields.containsKey(cf))
         {
-            return fields.getInt(cf);
+            return fields.getLong(cf);
         }
         else
         {
@@ -171,7 +152,7 @@ public class MutableClock extends Clock implements MutableDateTime
         }
     }
     @Override
-    public void set(TemporalField chronoField, int amount)
+    public void set(TemporalField chronoField, long amount)
     {
         checkField(chronoField);
         ChronoField cf = (ChronoField) chronoField;
@@ -179,11 +160,11 @@ public class MutableClock extends Clock implements MutableDateTime
         {
             amount = convertTo4DigitYear(amount);
         }
-        cf.checkValidIntValue(amount);
-        int value = -1;
+        cf.checkValidValue(amount);
+        long value = -1;
         if (fields.containsKey(cf))
         {
-            value = fields.getInt(cf);
+            value = fields.getLong(cf);
         }
         if (value != amount)
         {

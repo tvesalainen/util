@@ -36,7 +36,7 @@ public interface MutableDateTime extends TemporalAccessor
      * This interface supports only these fields. Using other ChronoFields is 
      * undefined.
      */
-    static final TemporalField[] SupportedFields = new ChronoField[]{
+    static final TemporalField[] SUPPORTED_FIELDS = new ChronoField[]{
         ChronoField.OFFSET_SECONDS,
         ChronoField.YEAR,
         ChronoField.MONTH_OF_YEAR, 
@@ -45,7 +45,9 @@ public interface MutableDateTime extends TemporalAccessor
         ChronoField.MINUTE_OF_HOUR, 
         ChronoField.SECOND_OF_MINUTE,
         ChronoField.MILLI_OF_SECOND,
-        ChronoField.DAY_OF_WEEK
+        ChronoField.DAY_OF_WEEK,
+        ChronoField.INSTANT_SECONDS,
+        ChronoField.NANO_OF_SECOND
     };
     static final long SECOND_IN_MILLIS = 1000;
     static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS*60;
@@ -116,7 +118,7 @@ public interface MutableDateTime extends TemporalAccessor
     @Override
     public default boolean isSupported(TemporalField field)
     {
-        for (TemporalField cf : SupportedFields)
+        for (TemporalField cf : SUPPORTED_FIELDS)
         {
             if (cf.equals(field))
             {
@@ -126,18 +128,13 @@ public interface MutableDateTime extends TemporalAccessor
         return false;
     }
     /**
-     * Returns time field value. See get-methods for constraints
-     * @param chronoField
-     * @return 
-     */
-    //int get(TemporalField chronoField);
-    /**
      * Sets time field value. See set-methods for constraints
      * @param chronoField
      * @param amount 
      */
-    void set(TemporalField chronoField, int amount);
+    void set(TemporalField chronoField, long amount);
     /**
+     * @deprecated Use SimpleMutabledateTime::from
      * Copies fields to this from given MutableDateTime.
      * <p>
      * This implementation just calls get and set methods for every supported
@@ -156,6 +153,7 @@ public interface MutableDateTime extends TemporalAccessor
         setMilliSecond(mt.getMilliSecond());
     }
     /**
+     * @deprecated Use set
      * Sets fields from ZonedDateTime.
      * <p>
      * Note! Zone is ignored.
@@ -163,9 +161,22 @@ public interface MutableDateTime extends TemporalAccessor
      */
     default void setZonedDateTime(ZonedDateTime zonedDateTime)
     {
-        for (TemporalField cf : SupportedFields)
+        for (TemporalField cf : SUPPORTED_FIELDS)
         {
-            set(cf, zonedDateTime.get(cf));
+            set(cf, zonedDateTime.getLong(cf));
+        }
+    }
+    /**
+     * Sets fields from ZonedDateTime.
+     * <p>
+     * Note! Zone is ignored.
+     * @param temporal 
+     */
+    default void set(TemporalAccessor temporal)
+    {
+        for (TemporalField cf : SUPPORTED_FIELDS)
+        {
+            set(cf, temporal.getLong(cf));
         }
     }
     /**
@@ -175,9 +186,9 @@ public interface MutableDateTime extends TemporalAccessor
      */
     default boolean equals(MutableDateTime mt)
     {
-        for (TemporalField cf : SupportedFields)
+        for (TemporalField cf : SUPPORTED_FIELDS)
         {
-            if (get(cf) != mt.get(cf))
+            if (getLong(cf) != mt.getLong(cf))
             {
                 return false;
             }
@@ -348,21 +359,12 @@ public interface MutableDateTime extends TemporalAccessor
         set(ChronoField.OFFSET_SECONDS, offsetSecond);
     }
     /**
-     * Sets ZoneID
-     * @param zoneId 
-     */
-    default void setZoneId(ZoneId zoneId)
-    {
-        ZoneOffset normalized = (ZoneOffset) zoneId.normalized();
-        setOffsetSecond(normalized.getTotalSeconds());
-    }
-    /**
      * Converts 2 digit year to 4 digit. If year &lt; 70 add 2000. If 
      * year &lt; 100 add 1900.
      * @param year
      * @return 
      */
-    default int convertTo4DigitYear(int year)
+    default long convertTo4DigitYear(long year)
     {
         if (year < 70)
         {
