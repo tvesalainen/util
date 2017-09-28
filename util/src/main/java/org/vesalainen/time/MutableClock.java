@@ -68,6 +68,12 @@ public class MutableClock extends Clock implements MutableDateTime
     }
 
     @Override
+    public void setZone(ZoneId zoneId)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public Clock withZone(ZoneId zone)
     {
         return new MutableClock(clock.withZone(zone));

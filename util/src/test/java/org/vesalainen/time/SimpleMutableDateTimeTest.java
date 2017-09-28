@@ -57,31 +57,6 @@ public class SimpleMutableDateTimeTest
     }
     
     @Test
-    public void testMillis1()
-    {
-        ZonedDateTime zdt = ZonedDateTime.of(1959, 1, 31, 6, 30, 0, 0, ZoneOffset.UTC);
-        long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableDateTime smt = SimpleMutableDateTime.from(zdt);
-        assertEquals(exp, smt.millis());
-    }
-    @Test
-    public void testMillis2()
-    {
-        ZoneOffset zo = ZoneOffset.ofHours(3);
-        ZonedDateTime zdt = ZonedDateTime.of(1984, 4, 15, 13, 59, 12, 321000000, zo);
-        long exp = zdt.toInstant().toEpochMilli();
-        SimpleMutableDateTime smt = SimpleMutableDateTime.from(zdt);
-        assertEquals(exp, smt.millis());
-    }
-    @Test
-    public void testCompare()
-    {
-        SimpleMutableDateTime smt1 = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
-        SimpleMutableDateTime smt2 = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 14);
-        assertTrue(smt1.isBefore(smt2));
-        assertTrue(smt2.isAfter(smt1));
-    }
-    @Test
     public void testZonedDateTime()
     {
         SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
@@ -139,6 +114,7 @@ public class SimpleMutableDateTimeTest
         smt.plusYears(-1);
         assertEquals(exp, smt);
     }
+    /*
     @Test
     public void testPlus()
     {
@@ -168,6 +144,7 @@ public class SimpleMutableDateTimeTest
     public void testWith()
     {
         SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13, ZoneId.of("EET"));
+        ZoneId from = ZoneId.from(smt);
         SimpleMutableDateTime exp = new SimpleMutableDateTime(1998, 11, 13, 10, 11, 12, 13, ZoneId.of("EET"));
         Temporal with = smt.with(ChronoField.DAY_OF_MONTH, 13);
         assertEquals(exp, with);
@@ -180,4 +157,5 @@ public class SimpleMutableDateTimeTest
         ZonedDateTime from = ZonedDateTime.from(smt);
         assertEquals(exp, from);
     }
+*/
 }

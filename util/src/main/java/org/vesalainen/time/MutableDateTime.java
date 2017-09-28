@@ -17,14 +17,15 @@
 package org.vesalainen.time;
 
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import static java.time.temporal.ChronoField.*;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
+import java.util.EnumSet;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This interface defines simple mutable access to time fields.
@@ -36,78 +37,21 @@ public interface MutableDateTime extends TemporalAccessor
      * This interface supports only these fields. Using other ChronoFields is 
      * undefined.
      */
-    static final TemporalField[] SUPPORTED_FIELDS = new ChronoField[]{
-        ChronoField.OFFSET_SECONDS,
-        ChronoField.YEAR,
-        ChronoField.MONTH_OF_YEAR, 
-        ChronoField.DAY_OF_MONTH, 
-        ChronoField.HOUR_OF_DAY, 
-        ChronoField.MINUTE_OF_HOUR, 
-        ChronoField.SECOND_OF_MINUTE,
-        ChronoField.MILLI_OF_SECOND,
-        ChronoField.DAY_OF_WEEK,
-        ChronoField.INSTANT_SECONDS,
-        ChronoField.NANO_OF_SECOND
-    };
+    static final Set<ChronoField> SUPPORTED_FIELDS = EnumSet.of(
+        YEAR,
+        MONTH_OF_YEAR, 
+        DAY_OF_MONTH, 
+        HOUR_OF_DAY, 
+        MINUTE_OF_HOUR, 
+        SECOND_OF_MINUTE,
+        MILLI_OF_SECOND,
+        DAY_OF_WEEK);
+
     static final long SECOND_IN_MILLIS = 1000;
     static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS*60;
     static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60;
     static final long DAY_IN_MILLIS = HOUR_IN_MILLIS*24;
-    static final Map<String,Long> millisMap = new HashMap<>();
-    /**
-     * Returns milliseconds from 1970-01-01 00:00:00Z
-     * @return 
-     */
-    default long millis()
-    {
-        String yearMonth = String.format("%d-%d", getYear(), getMonth());
-        long epochMillis;
-        if (!millisMap.containsKey(yearMonth))
-        {
-            ZonedDateTime zdt = ZonedDateTime.of(getYear(), getMonth(), 1, 0, 0, 0, 0, ZoneOffset.UTC);
-            epochMillis = zdt.toEpochSecond()*1000;
-            millisMap.put(yearMonth, epochMillis);
-        }
-        else
-        {
-            epochMillis = millisMap.get(yearMonth);
-        }
-        return
-                -SECOND_IN_MILLIS*getOffsetSecond() +
-                epochMillis +
-                DAY_IN_MILLIS*(getDay()-1) +
-                HOUR_IN_MILLIS*getHour() +
-                MINUTE_IN_MILLIS*getMinute() +
-                SECOND_IN_MILLIS*getSecond() +
-                getMilliSecond();
-    }
-    /**
-     * Checks if the instant of this date-time is after that of the specified date-time.
-     * @param other
-     * @return 
-     */
-    default boolean isAfter(MutableDateTime other)
-    {
-        return millis() > other.millis();
-    }
-    /**
-     * Checks if the instant of this date-time is before that of the specified date-time.
-     * @param other
-     * @return 
-     */
-    default boolean isBefore(MutableDateTime other)
-    {
-        return millis() < other.millis();
-    }
-    /**
-     * Returns seconds from 1970-01-01 00:00:00Z
-     * @return 
-     */
-    default long seconds()
-    {
-        return millis()/1000;
-    }
-
+    
     public default void checkField(TemporalField field)
     {
         if (!isSupported(field))
@@ -118,12 +62,10 @@ public interface MutableDateTime extends TemporalAccessor
     @Override
     public default boolean isSupported(TemporalField field)
     {
-        for (TemporalField cf : SUPPORTED_FIELDS)
+        if (field instanceof ChronoField)
         {
-            if (cf.equals(field))
-            {
-                return true;
-            }
+            ChronoField cf = (ChronoField) field;
+            return SUPPORTED_FIELDS.contains(cf);
         }
         return false;
     }
@@ -133,25 +75,6 @@ public interface MutableDateTime extends TemporalAccessor
      * @param amount 
      */
     void set(TemporalField chronoField, long amount);
-    /**
-     * @deprecated Use SimpleMutabledateTime::from
-     * Copies fields to this from given MutableDateTime.
-     * <p>
-     * This implementation just calls get and set methods for every supported
-     * field. 
-     * @param mt 
-     */
-    default void set(MutableDateTime mt)
-    {
-        setOffsetSecond(mt.getOffsetSecond());
-        setYear(mt.getYear());
-        setMonth(mt.getMonth());
-        setDay(mt.getDay());
-        setHour(mt.getHour());
-        setMinute(mt.getMinute());
-        setSecond(mt.getSecond());
-        setMilliSecond(mt.getMilliSecond());
-    }
     /**
      * @deprecated Use set
      * Sets fields from ZonedDateTime.
@@ -193,7 +116,7 @@ public interface MutableDateTime extends TemporalAccessor
                 return false;
             }
         }
-        return true;
+        return Objects.equals(getZone(), mt.getZone());
     }
     /**
      * Return Year (4 digits)
@@ -252,21 +175,15 @@ public interface MutableDateTime extends TemporalAccessor
         return get(ChronoField.MILLI_OF_SECOND);
     }
     /**
-     * Returns the offset from UTC.
-     * @return 
-     */
-    default int getOffsetSecond()
-    {
-        return get(ChronoField.OFFSET_SECONDS);
-    }
-    /**
      * Returns ZoneId
      * @return 
      */
-    default ZoneId getZoneId()
-    {
-        return ZoneOffset.ofTotalSeconds(getOffsetSecond());
-    }
+    ZoneId getZone();
+    /**
+     * Sets ZoneId
+     * @param zoneId 
+     */
+    void setZone(ZoneId zoneId);
     /**
      * Set utc time
      * @param hour 0 - 23
@@ -351,14 +268,6 @@ public interface MutableDateTime extends TemporalAccessor
         set(ChronoField.YEAR, convertTo4DigitYear(year));
     }
     /**
-     * Set offset to UTC.
-     * @param offsetSecond 
-     */
-    default void setOffsetSecond(int offsetSecond)
-    {
-        set(ChronoField.OFFSET_SECONDS, offsetSecond);
-    }
-    /**
      * Converts 2 digit year to 4 digit. If year &lt; 70 add 2000. If 
      * year &lt; 100 add 1900.
      * @param year
@@ -381,16 +290,6 @@ public interface MutableDateTime extends TemporalAccessor
                 return year;
             }
         }
-    }
-    /**
-     * Returns Gregorian calendar constructed from MutableDateTime. 
-     * <p>
-     * Note! Milli seconds are ignored.
-     * @return 
-     */
-    default GregorianCalendar getGregorianCalendar()
-    {
-        return new GregorianCalendar(getYear(), getMonth()-1, getDay(), getHour(), getMinute(), getSecond());
     }
 
 }
