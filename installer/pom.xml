@@ -65,6 +65,10 @@
         </dependency>
         <dependency>
             <groupId>org.vesalainen</groupId>
+            <artifactId>vfs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.vesalainen</groupId>
             <artifactId>test</artifactId>
         </dependency>
         <dependency>
