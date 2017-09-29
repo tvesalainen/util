@@ -63,6 +63,8 @@ import static org.vesalainen.vfs.pm.rpm.HeaderTag.*;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 import org.vesalainen.vfs.unix.UnixFileAttributes;
 import org.vesalainen.vfs.pm.Dependency;
+import org.vesalainen.vfs.pm.PackageFilename;
+import org.vesalainen.vfs.pm.PackageFilenameFactory;
 import org.vesalainen.vfs.pm.SimpleChangeLog;
 
 /**
@@ -967,22 +969,16 @@ public final class RPMFileSystem extends ArchiveFileSystem implements PackageMan
 
     private void provisionFromPath()
     {
-        String[] split = path.getFileName().toString().split("-");
-        if (split.length != 3)
+        PackageFilename fn = PackageFilenameFactory.getInstance(path);
+        if (!fn.isValid())
         {
             warning(path+" not according to naming convention");
             return;
         }
-        String[] split1 = split[2].split("\\.");
-        if (split1.length != 3)
-        {
-            warning(path+" not according to naming convention");
-            return;
-        }
-        setPackageName(split[0]);
-        setVersion(split[1]);
-        setRelease(split1[0]);
-        setArchitecture(split1[1]);
+        setPackageName(fn.getPackage());
+        setVersion(fn.getVersion());
+        setRelease(fn.getRelease());
+        setArchitecture(fn.getArchitecture());
     }
 
     public static class DependencyConditionImpl implements Dependency

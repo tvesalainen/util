@@ -57,6 +57,8 @@ import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 import org.vesalainen.vfs.pm.Dependency;
 import static org.vesalainen.vfs.pm.FileUse.*;
+import org.vesalainen.vfs.pm.PackageFilename;
+import org.vesalainen.vfs.pm.PackageFilenameFactory;
 import org.vesalainen.vfs.pm.deb.Ar.ArHeader;
 import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
 
@@ -640,28 +642,16 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
 
     private void provisionFromPath()
     {
-        String[] split = path.getFileName().toString().split("_");
-        if (split.length == 3)
+        PackageFilename fn = PackageFilenameFactory.getInstance(path);
+        if (!fn.isValid())
         {
-            setPackageName(split[0]);
-            int idx = split[1].lastIndexOf('-');
-            if (idx != -1)
-            {
-                setVersion(split[1].substring(0, idx));
-                setRelease(split[1].substring(idx+1));
-            }
-            else
-            {
-                setVersion(split[1]);
-                setRelease("0");
-            }
-            idx = split[2].indexOf(".deb");
-            setArchitecture(split[2].substring(0, idx));
+            warning(path+" not according to naming convention");
+            return;
         }
-        else
-        {
-            warning("filename %s is illegal", path);
-        }
+        setPackageName(fn.getPackage());
+        setVersion(fn.getVersion());
+        setRelease(fn.getRelease());
+        setArchitecture(fn.getArchitecture());
     }
 
     private void checkChangeLog()
