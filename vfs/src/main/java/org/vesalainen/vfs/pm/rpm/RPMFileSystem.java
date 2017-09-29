@@ -70,7 +70,7 @@ import org.vesalainen.vfs.pm.SimpleChangeLog;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/book1.html">Linux Standard Base Core Specification 4.0</a>
  */
-public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
+public final class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
     private static final String INTERPRETER = "/bin/sh";
 
@@ -117,6 +117,8 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
             addString(RPMTAG_PAYLOADFORMAT, "cpio");
             addString(RPMTAG_PAYLOADCOMPRESSOR, "gzip");
             addString(RPMTAG_PAYLOADFLAGS, "9");
+            provisionFromPath();
+            setOperatingSystem("linux");
         }
     }
 
@@ -961,6 +963,26 @@ public class RPMFileSystem extends ArchiveFileSystem implements PackageManagerAt
             list.add(dir.get(ind.get(ii))+base.get(ii));
         }
         return list;
+    }
+
+    private void provisionFromPath()
+    {
+        String[] split = path.getFileName().toString().split("-");
+        if (split.length != 3)
+        {
+            warning(path+" not according to naming convention");
+            return;
+        }
+        String[] split1 = split[2].split("\\.");
+        if (split1.length != 3)
+        {
+            warning(path+" not according to naming convention");
+            return;
+        }
+        setPackageName(split[0]);
+        setVersion(split[1]);
+        setRelease(split1[0]);
+        setArchitecture(split1[1]);
     }
 
     public static class DependencyConditionImpl implements Dependency

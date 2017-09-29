@@ -64,7 +64,7 @@ import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
+public final class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
     private static final RegexMatcher<Boolean> PACKAGE_MATCHER = new RegexMatcher("[a-z][0-9a-z\\.\\+\\-]+", true).compile();
     private static final RegexMatcher<Boolean> UPSTREAM_VERSION_MATCHER = new RegexMatcher("[0-9][0-9a-zA-Z\\.\\+\\-~]*", true).compile();

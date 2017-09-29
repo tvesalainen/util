@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.vesalainen.nio.channels.FilterChannel;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.vfs.CompressorFactory;
 
 /**
@@ -62,6 +63,10 @@ public class ChangeLogFile
                     }
                     line = bufferedReader.readLine();
                 }
+            }
+            catch (IllegalArgumentException ex)
+            {
+                JavaLogging.getLogger(ChangeLogFile.class).warning("rejected "+path+" after %s", ex.getMessage());
             }
             Collections.sort(logs);
         }

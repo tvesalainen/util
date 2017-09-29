@@ -112,7 +112,7 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      */
     Dependency getRequire(String name);
     /**
-     * Sets architecture of this package
+     * Sets architecture of this package. Default is architecture independent.
      * @param architecture
      * @return 
      */
@@ -167,7 +167,7 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      */
     String getPackageName();
     /**
-     * Set operating system
+     * Set operating system. Default is operating system independent.
      * @param os
      * @return 
      */

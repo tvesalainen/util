@@ -438,11 +438,14 @@ public final class HeaderStructure implements AttachedLogger
         }
         public int addItem(T item)
         {
-            if (type == STRING && !list.isEmpty())
+            if (type == STRING)
             {
-                throw new IllegalArgumentException("more that one item in STRING");
+                list.add(0, item);
             }
-            list.add(item);
+            else
+            {
+                list.add(item);
+            }
             return list.size()-1;
         }
         public int setItem(T item, int index)

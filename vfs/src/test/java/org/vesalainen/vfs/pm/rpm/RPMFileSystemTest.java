@@ -63,21 +63,16 @@ public class RPMFileSystemTest
     {
         long pomSize = 0;
         FileSystem dfs = VirtualFileSystems.getDefault();
-        Path path = dfs.getPath("test.rpm");
+        Path path = dfs.getPath("test-1.0-r1.noarch.rpm");
         Files.createFile(path);
         try (FileSystem rmpFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
             FileStore fs = rmpFS.getFileStores().iterator().next();
             PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
             view
-                .setPackageName("test2")
-                .setVersion("1.0")
-                .setRelease("r1")
-                .setArchitecture("noarch")
                 .setDescription("description...")
                 .setApplicationArea("area")
                 .setLicense("GPL")
-                .setOperatingSystem("linux")
                 .setSummary("summary...")
                 .addRequire("lsb")
                 .addRequire("java7-runtime-headless")
@@ -96,7 +91,7 @@ public class RPMFileSystemTest
         {
             FileStore fs = rmpFS.getFileStores().iterator().next();
             PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
-            assertEquals("test2", view.getPackageName());
+            assertEquals("test", view.getPackageName());
             assertEquals("1.0", view.getVersion());
             assertEquals("r1", view.getRelease());
             assertEquals("noarch", view.getArchitecture());

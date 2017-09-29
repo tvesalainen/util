@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.vesalainen.parsers.date.Dates;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.Lists;
 import org.vesalainen.vfs.pm.SimpleChangeLog;
@@ -117,7 +118,7 @@ public class DebianChangeLog extends SimpleChangeLog
         maintainer = s.substring(0, idx+1);
         s = s.substring(idx+2).trim();
         System.err.println("'"+s+"'");
-        ZonedDateTime date = ZonedDateTime.parse(s, RFC_1123_DATE_TIME);
+        ZonedDateTime date = Dates.parseRFC1123(s);
         this.time = FileTime.from(date.toInstant());
         this.text = changeDetails.stream().collect(Collectors.joining("\n", "", "\n"));
     }
