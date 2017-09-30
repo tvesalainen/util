@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          ${artifactId}
+# Provides:          ${package}
 # Required-Start:    
 # Required-Stop:     
 # Default-Start:     2 3 4 5
@@ -12,17 +12,17 @@
 
 # Author: Timo Vesalainen <timo.vesalainen@iki.fi>
 #
-# RUN: update-rc.d nmea-router defaults
+# RUN: update-rc.d ${package} defaults
 # 
 # Do NOT "set -e"
 
 #
-# see /etc/default/${artifactId}
+# see /etc/default/${package}
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="${description}"
-NAME="${artifactId}"
+NAME="${package}"
 PNAME="${name}"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME

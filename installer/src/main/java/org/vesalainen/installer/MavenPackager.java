@@ -16,20 +16,42 @@
  */
 package org.vesalainen.installer;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import static java.nio.charset.StandardCharsets.*;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.vesalainen.bean.ExpressionParser;
+import org.vesalainen.graph.Graphs;
 import org.vesalainen.test.pom.FileModelResolver;
 import org.vesalainen.test.pom.ModelFactory;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.LoggingCommandLine;
+import org.vesalainen.vfs.VirtualFileSystems;
+import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageFilenameFactory;
+import org.vesalainen.vfs.pm.PackageManagerAttributeView;
 
 /**
  *
@@ -37,32 +59,40 @@ import org.vesalainen.vfs.pm.PackageFilenameFactory;
  */
 public class MavenPackager extends LoggingCommandLine
 {
+    private static final String DEFAULT_TEMPLATE = "/etc/default/default.tmpl";
+    private static final String INIT_D_TEMPLATE = "/etc/init.d/init.tmpl";
     private ModelFactory factory;
     private Model root;
-    private File localRepository;
+    private Path localRepository;
+    private Path packageDirectory;
     private String packageType;
+    private boolean shortName;  // use artifactId / groupId.artifactId as package name.
     private String groupId;
     private String artifactId;
     private String version;
     private FileModelResolver fileModelResolver;
     private String classpath;
     private ExpressionParser expressionParser;
+    private String maintainer;
 
     public MavenPackager()
     {
         String lr = System.getProperty("localRepository");
         if (lr != null)
         {
-            addOption("-lr", "Local Repository", null, new File(lr));
+            addOption("-lr", "Local Repository", null, Paths.get(lr));
         }
         else
         {
             addOption(File.class, "-lr", "Local Repository", null, true);
         }
+        addOption(Path.class, "-pd", "package directory");
         addOption("-pt", "Package type deb/rpm def=deb", null, "deb");
         addOption("-g", "Group Id");
         addOption("-a", "Artifact Id");
         addOption(String.class, "-v", "Version", null, false);
+        addOption("-short", "use artifactId as package name", null, false);
+        addOption(String.class, "-maintainer", "Maintainer of package", null, false);
         setLogLevel(Level.CONFIG);
         setPushLevel(Level.CONFIG);
     }
@@ -74,9 +104,12 @@ public class MavenPackager extends LoggingCommandLine
         super.command(args);
         localRepository = getOption("-lr");
         config("localRepository=%s", localRepository);
-        factory = new ModelFactory(localRepository, null);
+        packageDirectory = getOption("-pd");
+        config("packageDirectory=%s", packageDirectory);
+        factory = new ModelFactory(localRepository.toFile(), null);
         fileModelResolver = factory.getFileModelResolver();
         packageType = getOption("-pt");
+        config("packageType=%s", packageType);
         groupId = getOption("-g");
         config("groupId=%s", groupId);
         artifactId = getOption("-a");
@@ -92,24 +125,54 @@ public class MavenPackager extends LoggingCommandLine
             version = versions.get(versions.size()-1).toString();
         }
         config("version=%s", version);
+        shortName = getOption("-short");
+        maintainer = getOption("-maintainer");
+        config("shortName=%s", shortName);
         root = factory.getLocalModel(groupId, artifactId, version);
         expressionParser = new ExpressionParser(root)
                             .addMapper((s)->root.getProperties().getProperty(s))
                             .addMapper(this);
     }
-    private void createPackage()
+    private void createPackage() throws IOException
     {
-        
-    }
-    private Path createPath()
-    {
-        for (int rr = 1;;rr++)
+        Path path = PackageFilenameFactory.getPath(packageDirectory, packageType, getPackage(), version, null);
+        config("package=%s", path);
+        Files.createFile(path);
+        try (FileSystem pkgFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
-            Path path = PackageFilenameFactory.getPath(packageType, groupId+"."+artifactId, version, String.valueOf(rr), null);
-            if (!Files.exists(path))
+            PackageManagerAttributeView view = PackageManagerAttributeView.from(pkgFS);
+            view.setSummary(root.getName());
+            config("summary=%s", root.getName());
+            view.setDescription(root.getDescription());
+            config("description=%s", root.getDescription());
+            String javaReq = getJavaReq();
+            if (javaReq != null)
             {
-                return path;
+                view.addRequire(javaReq);
+                config("require=%s", javaReq);
             }
+            String license = getLicense(root);
+            view.setLicense(license);
+            config("license=%s", license);
+            String developers = getDevelopers(root);
+            view.setCopyright(developers);
+            config("copyright=%s", developers);
+            if (maintainer != null)
+            {
+                view.setMaintainer(maintainer);
+                config("maintainer=%s", maintainer);
+            }
+            else
+            {
+                view.setMaintainer(developers);
+                warning("maintainer=%s as developers", developers);
+            }
+            copyJarsEtc(pkgFS.getPath("/opt/"+groupId+"/"+artifactId));
+            Path etcInitDPath = pkgFS.getPath("/etc/init.d/"+getPackage());
+            createEtcInit(etcInitDPath);
+            view.setPostInstallation("/usr/lib/lsb/install_initd "+etcInitDPath+"\nservice "+getPackage()+" start\n");
+            view.setPreUnInstallation("service "+getPackage()+" stop\n/usr/lib/lsb/remove_initd "+etcInitDPath+"\n");
+            createEtcDefault(pkgFS.getPath("/etc/default/"+getPackage()));
         }
     }
     static void createPackage(String... args) throws IOException, URISyntaxException, InterruptedException
@@ -118,7 +181,17 @@ public class MavenPackager extends LoggingCommandLine
         packager.command(args);
         packager.createPackage();
     }
-    
+    public String getPackage()
+    {
+        if (shortName)
+        {
+            return artifactId;
+        }
+        else
+        {
+            return groupId+"."+artifactId;
+        }
+    }
     public static void main(String... args)
     {
         try
@@ -130,4 +203,140 @@ public class MavenPackager extends LoggingCommandLine
             ex.printStackTrace();
         }
     }
+
+    private void copyJarsEtc(Path optPackage) throws IOException
+    {
+        Path jarDir = optPackage.resolve("jar");
+        List<Path> jars = new ArrayList<>();
+        List<Model> models = getDependencies().collect(Collectors.toList());
+        for (Model model : models)
+        {
+            String grp = model.getGroupId();
+            String art = model.getArtifactId();
+            String ver = model.getVersion();
+            String packaging = model.getPackaging();
+            String filename = fileModelResolver.getFilename(grp, art, ver, "jar");
+            Path source = localRepository.resolve(filename);
+            Path target = jarDir.resolve(localRepository.relativize(source));
+            Files.createDirectories(target.getParent());
+            Files.copy(source, target);
+            jars.add(target);
+            Files.setPosixFilePermissions(target, PosixFilePermissions.fromString("rw-r--r--"));
+            config("copied %s -> %s", source, target);
+            String license = getLicense(model);
+            PackageFileAttributes.setLicense(target, license);
+            String developers = getDevelopers(model);
+            PackageFileAttributes.setCopyright(target, developers);
+        }
+        classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(":"));
+    }
+    private String getDevelopers(Model model)
+    {
+        return model.getDevelopers().stream().filter((d)->!d.getName().isEmpty()).map((d)->d.getName()+" <"+d.getEmail()+">").collect(Collectors.joining(", "));
+    }
+    private String getLicense(Model model)
+    {
+        return model.getLicenses().stream().map((l)->l.getName()).collect(Collectors.joining(", "));
+    }
+    private void createEtcInit(Path etcInitD) throws IOException
+    {
+        createFromResource(etcInitD, INIT_D_TEMPLATE, "rwxr-xr-x");
+    }
+    private void createEtcDefault(Path etcDefault) throws IOException
+    {
+        createFromResource(etcDefault, DEFAULT_TEMPLATE, "rw-r--r--");
+    }
+    private void createFromResource(Path path, String resource, String permissions) throws IOException
+    {
+        Files.createDirectories(path.getParent());
+        try (   BufferedReader br = new BufferedReader(new InputStreamReader(MavenPackager.class.getResourceAsStream(resource), UTF_8));
+                BufferedWriter bw = Files.newBufferedWriter(path);
+                )
+        {
+            String line = br.readLine();
+            while (line != null)
+            {
+                expressionParser.replace(line, bw);
+                bw.append('\n');
+                line = br.readLine();
+            }
+        }
+        Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(permissions));
+        config("created %s", path);
+    }
+    private Stream<String> getDependencyNames()
+    {
+        return getDependencies().map((m)->
+        {
+            fine("dependency %s", m);
+            String grp = m.getGroupId();
+            String art = m.getArtifactId();
+            String ver = m.getVersion();
+            String packaging = m.getPackaging();
+            return fileModelResolver.getFilename(grp, art, ver, "jar");
+        });
+}
+    private Stream<Model> getDependencies()
+    {
+        return Graphs.breadthFirst(root, 
+                (y)->y.getDependencies()
+                .stream()
+                .filter((d)->!"true".equals(d.getOptional()))
+                .filter((d)->"compile".equals(d.getScope()) || "runtime".equals(d.getScope()))
+                .peek((d)->fine("%s", d))
+                .map(factory::getVersionResolver)
+                .map((v)->v.resolv())
+                .map(factory::getLocalModel)
+                );
+    }
+    public String getMainClass()
+    {
+        Build build = root.getBuild();
+        Map<String, Plugin> pluginsAsMap = build.getPluginsAsMap();
+        Plugin assemblyPlugin = pluginsAsMap.get("org.apache.maven.plugins:maven-assembly-plugin");
+        Objects.requireNonNull(assemblyPlugin, root+" doesn't have main class in org.apache.maven.plugins:maven-assembly-plugin");
+        Map<String, PluginExecution> executionsAsMap = assemblyPlugin.getExecutionsAsMap();
+        PluginExecution createExecutableJar = executionsAsMap.get("create-executable-jar");
+        Objects.requireNonNull(createExecutableJar, root+" doesn't have create-executable-jar in org.apache.maven.plugins:maven-assembly-plugin");
+        Xpp3Dom configuration = (Xpp3Dom) createExecutableJar.getConfiguration();
+        Objects.requireNonNull(configuration, root+" doesn't have configuration in org.apache.maven.plugins:maven-assembly-plugin");
+        Xpp3Dom archive = configuration.getChild("archive");
+        Objects.requireNonNull(archive, root+" doesn't have archive in org.apache.maven.plugins:maven-assembly-plugin");
+        Xpp3Dom manifest = archive.getChild("manifest");
+        Objects.requireNonNull(manifest, root+" doesn't have manifest in org.apache.maven.plugins:maven-assembly-plugin");
+        Xpp3Dom mainClass = manifest.getChild("mainClass");
+        Objects.requireNonNull(mainClass, root+" doesn't have mainClass in org.apache.maven.plugins:maven-assembly-plugin");
+        return mainClass.getValue();
+    }
+
+    public String getClasspath()
+    {
+        return classpath;
+    }
+
+    private String getJavaReq()
+    {
+        if ("deb".equals(packageType))
+        {
+            String target = root.getProperties().getProperty("maven.compiler.target", "1.5");
+            switch (target)
+            {
+                case "1.5":
+                    return "java5-runtime";
+                case "1.6":
+                    return "java6-runtime";
+                case "1.7":
+                    return "java7-runtime";
+                case "1.8":
+                    return "java8-runtime";
+                case "1.9":
+                    return "java9-runtime";
+                default:
+                    warning("java version %s dependency name unknown");
+                    return null;
+            }
+        }
+        return null;
+    }
+
 }
