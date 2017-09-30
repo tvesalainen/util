@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -101,6 +102,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
         catch (CmdArgsException ex)
         {
             Logger logger = Logger.getLogger(CmdArgs.class.getName());
+            logger.log(Level.SEVERE, Arrays.toString(args));
             logger.log(Level.SEVERE, ex.getMessage(), ex);
             logger.log(Level.SEVERE, ex.usage());
             System.exit(-1);
