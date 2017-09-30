@@ -55,20 +55,11 @@ public class DEBFileSystemTest
     {
         long pomSize = 0;
         FileSystem dfs = VirtualFileSystems.getDefault();
-        Path path = dfs.getPath("test_1.0-r1_all.deb");
+        Path path = dfs.getPath("test_1.0-1_all.deb");
         Files.createFile(path);
         try (FileSystem debFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
-            PackageManagerAttributeView view = null;
-            for (FileStore fs : debFS.getFileStores())
-            {
-                view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
-                if (view != null)
-                {
-                    break;
-                    
-                }
-            }
+            PackageManagerAttributeView view = PackageManagerAttributeView.from(debFS);
             view
                 .setDescription("description...")
                 .setApplicationArea("area")
@@ -102,7 +93,7 @@ public class DEBFileSystemTest
             }
             assertEquals("test", view.getPackageName());
             assertEquals("1.0", view.getVersion());
-            assertEquals("r1", view.getRelease());
+            assertEquals("1", view.getRelease());
             assertEquals("all", view.getArchitecture());
             assertEquals("description...", view.getDescription());
             assertEquals("area", view.getApplicationArea());

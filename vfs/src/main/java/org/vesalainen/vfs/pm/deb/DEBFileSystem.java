@@ -85,6 +85,8 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
     private MaintainerScript postinst;
     private MaintainerScript prerm;
     private MaintainerScript postrm;
+    private final VirtualFileStore defStore;
+    private final VirtualFileStore controlStore;
 
     public DEBFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
     {
@@ -101,10 +103,10 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
     {
         super(provider, path, headerSupplier, openOptions, fileAttributes, format, openChannel(path, openOptions, fileAttributes));
         checkFormat(format);
-        VirtualFileStore defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
+        defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
         defStore.addFileStoreAttributeView(this);
         root = addFileStore("/",defStore , true);
-        VirtualFileStore controlStore = new VirtualFileStore(this, UNIX_VIEW);
+        controlStore = new VirtualFileStore(this, UNIX_VIEW);
         controlRoot = addFileStore("/control",controlStore , false);
         if (isReadOnly())
         {
@@ -142,6 +144,8 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
         Path packageDocPath = docPath.resolve(getPackageName());
         Files.createDirectories(packageDocPath);
         Path changeLogPath = packageDocPath.resolve("changelog.Debian.gz");
+        long totalSpace = defStore.getTotalSpace();
+        control.setInstalledSize((int) (totalSpace/1024));
         control.save(controlRoot);
         conffiles.save(controlRoot);
         docs.save(controlRoot);
@@ -650,7 +654,7 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
         }
         setPackageName(fn.getPackage());
         setVersion(fn.getVersion());
-        setRelease(fn.getRelease());
+        setRelease(String.valueOf(fn.getRelease()));
         setArchitecture(fn.getArchitecture());
     }
 

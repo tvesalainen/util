@@ -145,7 +145,7 @@ public abstract class Glob
     @Terminal(expression="[^\\*\\.\\?\\[\\{/]+")
     protected String literal(String literal)
     {
-        return literal;
+        return Regex.escape(literal);
     }
     @ParseMethod(start="parts")
     public abstract String parse(CharSequence text);

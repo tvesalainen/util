@@ -16,15 +16,25 @@
  */
 package org.vesalainen.vfs.pm;
 
+import java.nio.file.Path;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface PackageFilename
+public interface PackageFilename extends Comparable<PackageFilename>
 {
+    Path getPath();
     boolean isValid();
     String getPackage();
     String getVersion();
-    String getRelease();
+    int getRelease();
     String getArchitecture();
+
+    @Override
+    public default int compareTo(PackageFilename o)
+    {
+        return o.getRelease() - getRelease();
+    }
+    
 }

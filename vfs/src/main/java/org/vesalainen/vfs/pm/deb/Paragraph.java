@@ -59,6 +59,10 @@ public class Paragraph
     public String get(Field field)
     {
         List<String> list = fields.get(field);
+        if (list == null)
+        {
+            throw new IllegalArgumentException(field+" is missing");
+        }
         switch (field.getType())
         {
             case SIMPLE:

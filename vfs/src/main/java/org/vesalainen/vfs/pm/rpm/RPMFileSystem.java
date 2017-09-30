@@ -977,7 +977,7 @@ public final class RPMFileSystem extends ArchiveFileSystem implements PackageMan
         }
         setPackageName(fn.getPackage());
         setVersion(fn.getVersion());
-        setRelease(fn.getRelease());
+        setRelease(String.valueOf(fn.getRelease()));
         setArchitecture(fn.getArchitecture());
     }
 

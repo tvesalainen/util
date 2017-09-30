@@ -16,9 +16,13 @@
  */
 package org.vesalainen.vfs.pm;
 
+import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.vfs.VirtualFileSystems;
 
 /**
  *
@@ -26,9 +30,12 @@ import static org.junit.Assert.*;
  */
 public class PackageFilenameFactoryTest
 {
-    
+    private FileSystem fs;
+    private Path dir;
     public PackageFilenameFactoryTest()
     {
+        FileSystem fs = VirtualFileSystems.getDefault();
+        dir = fs.getPath("/");
     }
 
     @Test
@@ -37,9 +44,9 @@ public class PackageFilenameFactoryTest
         String type = "deb";
         String packageName = "pkg";
         String version = "0.9";
-        String release = "r1";
+        int release = 2;
         String architecture = "linux";
-        Path path = PackageFilenameFactory.getPath(type, packageName, version, release, architecture);
+        Path path = PackageFilenameFactory.getPath(dir, type, packageName, version, release, architecture);
         PackageFilename fn = PackageFilenameFactory.getInstance(path);
         assertTrue(fn.isValid());
         assertEquals(packageName, fn.getPackage());
@@ -53,15 +60,55 @@ public class PackageFilenameFactoryTest
         String type = "rpm";
         String packageName = "pkg";
         String version = "0.9";
-        String release = "r1";
+        int release = 2;
         String architecture = "linux";
-        Path path = PackageFilenameFactory.getPath(type, packageName, version, release, architecture);
+        Path path = PackageFilenameFactory.getPath(dir, type, packageName, version, release, architecture);
         PackageFilename fn = PackageFilenameFactory.getInstance(path);
         assertTrue(fn.isValid());
         assertEquals(packageName, fn.getPackage());
         assertEquals(version, fn.getVersion());
         assertEquals(release, fn.getRelease());
         assertEquals(architecture, fn.getArchitecture());
+    }
+    @Test
+    public void testDebRelease() throws IOException
+    {
+        String type = "deb";
+        String packageName = "pkg";
+        String version = "0.9";
+        String architecture = "linux";
+        Path path = PackageFilenameFactory.getPath(dir, type, packageName, version, architecture);
+        PackageFilename fn = PackageFilenameFactory.getInstance(path);
+        assertTrue(fn.isValid());
+        assertEquals(packageName, fn.getPackage());
+        assertEquals(version, fn.getVersion());
+        assertEquals(1, fn.getRelease());
+        assertEquals(architecture, fn.getArchitecture());
+        Files.createFile(path);
+        path = PackageFilenameFactory.getPath(dir, type, packageName, version, architecture);
+        fn = PackageFilenameFactory.getInstance(path);
+        assertTrue(fn.isValid());
+        assertEquals(2, fn.getRelease());
+    }
+    @Test
+    public void testRpmRelease() throws IOException
+    {
+        String type = "rpm";
+        String packageName = "pkg";
+        String version = "0.9";
+        String architecture = "linux";
+        Path path = PackageFilenameFactory.getPath(dir, type, packageName, version, architecture);
+        PackageFilename fn = PackageFilenameFactory.getInstance(path);
+        assertTrue(fn.isValid());
+        assertEquals(packageName, fn.getPackage());
+        assertEquals(version, fn.getVersion());
+        assertEquals(1, fn.getRelease());
+        assertEquals(architecture, fn.getArchitecture());
+        Files.createFile(path);
+        path = PackageFilenameFactory.getPath(dir, type, packageName, version, architecture);
+        fn = PackageFilenameFactory.getInstance(path);
+        assertTrue(fn.isValid());
+        assertEquals(2, fn.getRelease());
     }
     
 }

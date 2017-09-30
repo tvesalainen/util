@@ -16,6 +16,8 @@
  */
 package org.vesalainen.vfs.pm;
 
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
 import java.nio.file.attribute.FileStoreAttributeView;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +29,24 @@ import static org.vesalainen.vfs.pm.Condition.*;
  */
 public interface PackageManagerAttributeView extends FileStoreAttributeView
 {
+    /**
+     * Returns first PackageManagerAttributeView from file systems file stores.
+     * Returns null if not found.
+     * @param fileSystem
+     * @return 
+     */
+    public static PackageManagerAttributeView from(FileSystem fileSystem)
+    {
+        for (FileStore fs : fileSystem.getFileStores())
+        {
+            PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
+            if (view != null)
+            {
+                return view;
+            }
+        }
+        return null;
+    }
     /**
      * Add conflicting package name
      * @param name

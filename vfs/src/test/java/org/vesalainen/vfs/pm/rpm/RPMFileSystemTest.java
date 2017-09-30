@@ -63,7 +63,7 @@ public class RPMFileSystemTest
     {
         long pomSize = 0;
         FileSystem dfs = VirtualFileSystems.getDefault();
-        Path path = dfs.getPath("test-1.0-r1.noarch.rpm");
+        Path path = dfs.getPath("test-1.0-1.noarch.rpm");
         Files.createFile(path);
         try (FileSystem rmpFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
@@ -93,7 +93,7 @@ public class RPMFileSystemTest
             PackageManagerAttributeView view = fs.getFileStoreAttributeView(PackageManagerAttributeView.class);
             assertEquals("test", view.getPackageName());
             assertEquals("1.0", view.getVersion());
-            assertEquals("r1", view.getRelease());
+            assertEquals("1", view.getRelease());
             assertEquals("noarch", view.getArchitecture());
             assertEquals("description...", view.getDescription());
             assertEquals("area", view.getApplicationArea());

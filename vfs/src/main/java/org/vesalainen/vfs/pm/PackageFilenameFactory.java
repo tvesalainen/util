@@ -16,8 +16,15 @@
  */
 package org.vesalainen.vfs.pm;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.vesalainen.vfs.Glob;
 
 /**
  *
@@ -25,14 +32,38 @@ import java.nio.file.Paths;
  */
 public final class PackageFilenameFactory
 {
-    public static Path getPath(String type, String packageName, String version, String release, String architecture)
+    
+    public static Path getPath(Path dir, String type, String packageName, String version, String architecture) throws IOException
+    {
+        List<PackageFilename> filenames = new ArrayList<>();
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dir, getFilename(type, packageName, version, "*", architecture).toString()))
+        {
+            ds.forEach((p)->filenames.add(getInstance(p)));
+        }
+        Collections.sort(filenames);
+        if (filenames.isEmpty())
+        {
+            return getPath(dir, type, packageName, version, 1, architecture);
+        }
+        else
+        {
+            PackageFilename last = filenames.get(0);
+            int iv = last.getRelease();
+            return getPath(dir, type, packageName, version, iv+1, architecture);
+        }
+    }
+    public static Path getPath(Path dir, String type, String packageName, String version, int release, String architecture)
+    {
+        return dir.resolve(getFilename(type, packageName, version, String.valueOf(release), architecture));
+    }
+    public static String getFilename(String type, String packageName, String version, String release, String architecture)
     {
         switch (type)
         {
             case "deb":
-                return Paths.get(String.format("%s_%s-%s_%s.deb", packageName, version, release, architecture != null ? architecture : "all"));
+                return String.format("%s_%s-%s_%s.deb", packageName, version, release, architecture != null ? architecture : "all");
             case "rpm":
-                return Paths.get(String.format("%s-%s-%s.%s.rpm", packageName, version, release, architecture != null ? architecture : "noarch"));
+                return String.format("%s-%s-%s.%s.rpm", packageName, version, release, architecture != null ? architecture : "noarch");
             default:
                 throw new UnsupportedOperationException(type+" not supported");
         }
@@ -61,6 +92,7 @@ public final class PackageFilenameFactory
         
         public RpmFilename(Path path)
         {
+            this.path = path;
             String[] split = path.getFileName().toString().split("-");
             if (split.length != 3)
             {
@@ -75,8 +107,16 @@ public final class PackageFilenameFactory
             }
             packageName = split[0];
             version = split[1];
-            release = split1[0];
+            try
+            {
+                release = Integer.parseInt(split1[0]);
+            }
+            catch (NumberFormatException ex)
+            {
+                return;
+            }
             architecture = split1[1];
+            valid = true;
         }
 
     }
@@ -85,6 +125,7 @@ public final class PackageFilenameFactory
         
         public DebFilename(Path path)
         {
+            this.path = path;
             String[] split = path.getFileName().toString().split("_");
             if (split.length == 3)
             {
@@ -93,30 +134,41 @@ public final class PackageFilenameFactory
                 if (idx != -1)
                 {
                     version = split[1].substring(0, idx);
-                    release = split[1].substring(idx+1);
+                    try
+                    {
+                        release = Integer.parseInt(split[1].substring(idx+1));
+                    }
+                    catch (NumberFormatException ex)
+                    {
+                        return;
+                    }
                 }
                 else
                 {
                     version = split[1];
-                    version = "0";
+                    release = 0;
                 }
                 idx = split[2].indexOf(".deb");
                 architecture = split[2].substring(0, idx);
-            }
-            else
-            {
-                valid = false;
+                valid = true;
             }
         }
 
     }
     public static class PackageFilenameImpl implements PackageFilename
     {
-        protected boolean valid = true;
+        protected Path path;
+        protected boolean valid;
         protected String packageName;
         protected String version;
-        protected String release;
+        protected int release;
         protected String architecture;
+
+        @Override
+        public Path getPath()
+        {
+            return path;
+        }
         
         @Override
         public boolean isValid()
@@ -137,7 +189,7 @@ public final class PackageFilenameFactory
         }
 
         @Override
-        public String getRelease()
+        public int getRelease()
         {
             return release;
         }

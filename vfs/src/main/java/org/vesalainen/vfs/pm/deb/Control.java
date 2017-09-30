@@ -202,6 +202,22 @@ public class Control extends ControlBase
         return description;
     }
 
+    public void setInstalledSize(int kb)
+    {
+        binary.set(INSTALLED_SIZE, String.valueOf(kb));
+    }
+    public int getInstalledSize()
+    {
+        String size = binary.get(INSTALLED_SIZE);
+        if (size != null)
+        {
+            return Integer.parseInt(size);
+        }
+        else
+        {
+            return -1;
+        }
+    }
     public void setDescription(String description)
     {
         this.description = description;
