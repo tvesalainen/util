@@ -21,6 +21,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -356,6 +358,10 @@ public class ConvertUtility
                 if (YearMonth.class.isAssignableFrom(expectedReturnType))
                 {
                     return (T) YearMonth.parse(string);
+                }
+                if (Path.class.isAssignableFrom(expectedReturnType))
+                {
+                    return (T) Paths.get(string);
                 }
                 try
                 {
