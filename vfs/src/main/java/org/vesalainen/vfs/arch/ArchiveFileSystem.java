@@ -172,7 +172,7 @@ public abstract class ArchiveFileSystem extends VirtualFileSystem implements Att
         {
             if (filename.endsWith(".tar.gz") || filename.endsWith(".tar") || filename.endsWith(".deb"))
             {
-                fmt = TAR_PAX;
+                fmt = TAR_GNU;
             }
             else
             {

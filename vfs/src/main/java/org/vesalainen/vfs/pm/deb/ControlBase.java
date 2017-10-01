@@ -21,8 +21,10 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
+import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.Lists;
 import static org.vesalainen.vfs.pm.deb.FieldType.*;
 

@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -69,12 +70,15 @@ public final class VirtualFile extends FileAttributeAccessStore implements FileA
         {
             case REGULAR:
                 setAttribute(IS_REGULAR, true);
+                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rw-r--r--"));
                 break;
             case DIRECTORY:
                 setAttribute(IS_DIRECTORY, true);
+                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rwxr-xr-x"));
                 break;
             case SYMBOLIC_LINK:
                 setAttribute(IS_SYMBOLIC_LINK, true);
+                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rwxrwxrwx"));
                 break;
             default:
                 throw new UnsupportedOperationException(type.name());

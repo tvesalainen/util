@@ -62,7 +62,6 @@ public class DEBFileSystemTest
             PackageManagerAttributeView view = PackageManagerAttributeView.from(debFS);
             view
                 .setDescription("description...")
-                .setApplicationArea("area")
                 .setLicense("GPL")
                 .setOperatingSystem("linux")
                 .setSummary("summary...")
@@ -96,7 +95,7 @@ public class DEBFileSystemTest
             assertEquals("1", view.getRelease());
             assertEquals("all", view.getArchitecture());
             assertEquals("description...", view.getDescription());
-            assertEquals("area", view.getApplicationArea());
+            assertEquals("java", view.getApplicationArea());
             assertEquals("GPL", view.getLicense());
             assertEquals("linux", view.getOperatingSystem());
             assertEquals("summary...", view.getSummary());

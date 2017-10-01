@@ -124,6 +124,8 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
             prerm = new MaintainerScript(controlRoot, "prerm");
             postrm = new MaintainerScript(controlRoot, "postrm");
             provisionFromPath();
+            setApplicationArea("java");
+            setPriority("optional");
         }
     }
 

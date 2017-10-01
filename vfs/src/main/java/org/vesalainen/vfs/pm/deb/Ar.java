@@ -75,7 +75,7 @@ public class Ar implements AutoCloseable
     }
     public void addEntry(String filename) throws IOException
     {
-        addEntry(filename, FileTime.from(Instant.now()), 0, 0, (short)010644);
+        addEntry(filename, FileTime.from(Instant.now()), 0, 0, (short)0100644);
     }
     public void addEntry(String filename, FileTime lastModified, int owner, int group, short mode) throws IOException
     {

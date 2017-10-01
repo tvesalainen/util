@@ -25,10 +25,13 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import org.vesalainen.nio.channels.FilterChannel;
+import org.vesalainen.nio.file.attribute.PosixHelp;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.vfs.CompressorFactory;
 
