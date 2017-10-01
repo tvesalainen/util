@@ -1,15 +1,13 @@
-# these are the settings for java server applications managed by maven_installer
+# ${generatedText}
 
-CONFIG=
-LOGLEVEL=CONFIG
-PUSHLEVEL=CONFIG
-##### DON'T EDIT LINES BELOW
 VERSION=${version}
 CLASS=${mainClass}
 CLASSPATH=${classpath}
-LOGSETTING="-ll $LOGLEVEL -pl $PUSHLEVEL -lp /var/log/${package}%g.log"
-JMX=${jmxSettings}
-##### DON'T EDIT LINES ABOVE
+LOGSETTING="-lx ${logConfigPath}"
+CONFIG=${configPath}
+# enable jmx by giving free port number and uncomment following two lines.
+#JMX_PORT=<free port>
+#JMX=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=$JMX_PORT -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
 DAEMON=$JAVA
 DAEMON_ARGS="$JMX -server -classpath $CLASSPATH $CLASS $LOGSETTING $CONFIG"
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ${generatedText} -->
+<java-logging-config xmlns="http://vesalainen.org/schema/java-logging-config">
+<!-- you can create your own properties -->
+    <properties>
+        <locale>fi_FI</locale>
+        <formatter>org.vesalainen.util.logging.MinimalFormatter</formatter>
+        <useParentHandlers>false</useParentHandlers>
+        <size>256</size>
+        <dir>/var/log</dir>
+    </properties>
+    <logger name="${package}" level="info" useParentHandlers="&{useParentHandlers}">
+        <fileHandler pattern="${dir}/${package}%g.log" formatter="&{formatter}">
+        </fileHandler>
+    </logger>
+</java-logging-config>
+
