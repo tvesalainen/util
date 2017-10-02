@@ -38,7 +38,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.model.Build;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -76,6 +75,7 @@ public class MavenPackager extends LoggingCommandLine
     private String classpath;
     private ExpressionParser expressionParser;
     private String maintainer;
+    private FileSystem fileSystem;
 
     public MavenPackager()
     {
@@ -142,6 +142,7 @@ public class MavenPackager extends LoggingCommandLine
         Files.createFile(path);
         try (FileSystem pkgFS = VirtualFileSystems.newFileSystem(path, Collections.EMPTY_MAP))
         {
+            fileSystem = pkgFS;
             PackageManagerAttributeView view = PackageManagerAttributeView.from(pkgFS);
             view.setSummary(root.getName());
             config("summary=%s", root.getName());
@@ -169,34 +170,41 @@ public class MavenPackager extends LoggingCommandLine
                 view.setMaintainer(developers);
                 warning("maintainer=%s as developers", developers);
             }
-            copyJarsEtc(appDir(pkgFS));
-            Path etcInitDPath = initPath(pkgFS);
+            view.setUrl(root.getUrl());
+            config("url=%s", root.getUrl());
+            copyJarsEtc(appDir());
+            Path etcInitDPath = initPath();
             createEtcInit(etcInitDPath);
-            view.setPostInstallation("/usr/lib/lsb/install_initd "+etcInitDPath+"\nservice "+getPackage()+" start\n");
-            view.setPreUnInstallation("service "+getPackage()+" stop\n/usr/lib/lsb/remove_initd "+etcInitDPath+"\n");
-            createEtcDefault(etcDefaultPath(pkgFS));
-            createLogConfig(getLogConfigPath(pkgFS));
+            view.setPostInstallation("update-rc.d "+getPackage()+" defaults\nservice "+getPackage()+" start\n");
+            view.setPreUnInstallation("service "+getPackage()+" stop\nupdate-rc.d "+getPackage()+" remove\n");
+            createEtcDefault(etcDefaultPath());
+            createLogConfig(getLogConfigPath());
+            fileSystem = null;
         }
     }
-    private Path appDir(FileSystem fs)
+    private Path appDir()
     {
-        return fs.getPath("/opt/"+groupId+"/"+artifactId);
+        return fileSystem.getPath("/opt/"+groupId+"/"+artifactId);
     }
-    private Path initPath(FileSystem fs)
+    private Path initPath()
     {
-        return fs.getPath("/etc/init.d/"+getPackage());
+        return fileSystem.getPath("/etc/init.d/"+getPackage());
     }
-    public Path etcDefaultPath(FileSystem fs)
+    public Path etcDefaultPath()
     {
-        return fs.getPath("/etc/default/"+getPackage());
+        return fileSystem.getPath("/etc/default/"+getPackage());
     }
-    public Path getLogConfigPath(FileSystem fs)
+    public Path getLogConfigPath()
     {
-        return fs.getPath("/etc/opt/"+getPackage()+"/log-config.xml");
+        return fileSystem.getPath("/etc/opt/"+getPackage()+"/log-config.xml");
     }
-    public Path getConfigPath(FileSystem fs)
+    public Path getConfigPath()
     {
-        return fs.getPath("/etc/opt/"+getPackage()+"/config.xml");
+        return fileSystem.getPath("/etc/opt/"+getPackage()+"/config.xml");
+    }
+    public String getLsbDescription()
+    {
+        return root.getDescription().replace("\n", "\n#   ");
     }
     public String getGeneratedText()
     {
