@@ -21,9 +21,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.Arrays;
@@ -31,7 +29,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +38,7 @@ import org.vesalainen.regex.RegexMatcher;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.vfs.CompressorFactory;
 import static org.vesalainen.vfs.CompressorFactory.Compressor.*;
+import org.vesalainen.vfs.Env;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
@@ -88,20 +86,23 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
     private final VirtualFileStore defStore;
     private final VirtualFileStore controlStore;
 
-    public DEBFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    public DEBFileSystem(
+            VirtualFileSystemProvider provider, 
+            Path path, 
+            Map<String, ?> env
+    ) throws IOException
     {
-        this(provider, path, TARHeader::new, getOpenOptions(path, env), getFileAttributes(env), getFileFormat(path, env));
+        this(provider, path, env, TARHeader::new);
     }
 
     private DEBFileSystem(
             VirtualFileSystemProvider provider, 
             Path path, 
-            Supplier<Header> headerSupplier, 
-            Set<? extends OpenOption> openOptions, 
-            FileAttribute<?>[] fileAttributes, 
-            FileFormat format) throws IOException
+            Map<String, ?> env,
+            Supplier<Header> headerSupplier
+            ) throws IOException
     {
-        super(provider, path, headerSupplier, openOptions, fileAttributes, format, openChannel(path, openOptions, fileAttributes));
+        super(provider, path, env, headerSupplier, openChannel(path, env));
         checkFormat(format);
         defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
         defStore.addFileStoreAttributeView(this);
@@ -266,9 +267,9 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
         postrm = new MaintainerScript(controlRoot, "postrm");
         setFileAttributes();
     }
-    private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
+    private static SeekableByteChannel openChannel(Path path, Map<String, ?> env) throws IOException
     {
-        return FileChannel.open(path, options, attrs);
+        return FileChannel.open(path, Env.getOpenOptions(path, env), Env.getFileAttributes(env));
     }    
     private void setFileAttributes() throws IOException
     {
@@ -638,6 +639,19 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
     public List<? extends ChangeLog> getChangeLogs()
     {
         return changeLog.getLogs();
+    }
+
+    @Override
+    public String getUrl()
+    {
+        return control.getHomePage();
+    }
+
+    @Override
+    public PackageManagerAttributeView setUrl(String url)
+    {
+        control.setHomePage(url);
+        return this;
     }
 
     @Override

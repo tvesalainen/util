@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.vesalainen.nio.FileUtil;
+import org.vesalainen.vfs.Env;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
 import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.arch.ArchiveFileSystem;
@@ -93,7 +94,7 @@ public class TARCPIOFileSystemWriteTest extends TARCPIOTestBase
         Files.deleteIfExists(path);
         Files.createFile(path);
         Map<String,Object> env = new HashMap<>();
-        env.put(ArchiveFileSystem.FORMAT, format);
+        env.put(Env.FORMAT, format);
         try (FileSystem nfs = VirtualFileSystems.newFileSystem(path, env))
         {
             Path root = nfs.getRootDirectories().iterator().next();

@@ -200,7 +200,7 @@ public class TARHeader extends UnixFileHeader
         String prefix = getString(seq, 345, 155);
         if (!prefix.isEmpty())
         {
-            filename = prefix+'/'+filename;
+            filename = prefix+filename;
         }
         // checksum
         for (int ii=0;ii<8;ii++)
@@ -328,24 +328,41 @@ public class TARHeader extends UnixFileHeader
         return new String(baos.toByteArray(), UTF_8);
     }
     @Override
-    public void store(SeekableByteChannel channel, String filename, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
+    public void store(SeekableByteChannel channel, String fn, FileFormat format, String linkname, Map<String, Object> attributes, byte[] digest) throws IOException
     {
         ChannelHelper.align(channel, TAR_BLOCK_SIZE);
         addAll(attributes);
         fromAttributes();
         mode &= 07777;
-        this.filename = filename;
-        splitPath = splitFilename(filename);
+        if (fn.startsWith("./"))
+        {
+            this.filename = fn;
+        }
+        else
+        {
+            this.filename = "./"+fn;
+        }
         this.linkname = linkname;
-        if (type == REGULAR && linkname != null)
+        switch (type)
         {
-            type = HARD;
-            size = 0;
+            case REGULAR:
+                if (linkname != null)
+                {
+                    type = HARD;
+                    size = 0;
+                }
+                break;
+            case DIRECTORY:
+                if (!filename.endsWith("/"))
+                {
+                    filename = filename+"/";
+                }
+                break;
+            case SYMBOLIC:
+                size = 0;
+                break;
         }
-        if (type == SYMBOLIC)
-        {
-            size = 0;
-        }
+        splitPath = splitFilename(filename);
         switch (format)
         {
             case TAR_PAX:
@@ -393,7 +410,7 @@ public class TARHeader extends UnixFileHeader
         {
             throw new UnsupportedOperationException(linkname+" characters not us-ascii not supported");
         }
-        if (splitPath != null && (linkname == null || linkname.length() <= 100))
+        if (filename.length() <= 100 && (linkname == null || linkname.length() <= 100))
         {
             buffer.position(0).limit(TAR_BLOCK_SIZE);
             putUstarHeader(buffer, splitPath[0], size, typeFlagFromAttributes(), linkname, GNU_MAGIC, splitPath[1]);
@@ -402,7 +419,7 @@ public class TARHeader extends UnixFileHeader
         }
         else
         {
-            if (splitPath == null)
+            if (filename.length() > 100)
             {
                 buffer.position(TAR_BLOCK_SIZE).limit(buffer.capacity());
                 buffer.put(filename.getBytes(US_ASCII)).put((byte)0);
@@ -517,7 +534,7 @@ public class TARHeader extends UnixFileHeader
         {
             if (length - idx - 1 <= 100)
             {
-                return new String[] {name.substring(idx+1), name.substring(0, idx)};
+                return new String[] {name.substring(idx+1), name.substring(0, idx+1)};
             }
             idx = name.indexOf('/', idx+1);
         }

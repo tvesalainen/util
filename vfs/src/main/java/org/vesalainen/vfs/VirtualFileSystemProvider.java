@@ -52,6 +52,7 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -166,7 +167,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider implements Att
         {
             try 
             {
-                VirtualFileSystem vfs = new VirtualFileSystem(this);
+                VirtualFileSystem vfs = new VirtualFileSystem(this, Collections.EMPTY_MAP);
                 vfs.addFileStore("/", new VirtualFileStore(vfs, BASIC_VIEW, POSIX_VIEW, UNIX_VIEW, USER_VIEW), true);
                 return vfs;
             }

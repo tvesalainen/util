@@ -396,4 +396,15 @@ public interface PackageManagerAttributeView extends FileStoreAttributeView
      * @return 
      */
     List<? extends ChangeLog> getChangeLogs();
+    /**
+     * Returns package url
+     * @return 
+     */
+    String getUrl();
+    /**
+     * Set package url
+     * @param url
+     * @return 
+     */
+    PackageManagerAttributeView setUrl(String url);
 }

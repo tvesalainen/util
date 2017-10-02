@@ -66,19 +66,29 @@ public final class VirtualFile extends FileAttributeAccessStore implements FileA
         this.type = type;
         this.content = ByteBuffer.allocateDirect(0);
         this.viewMap = fileStore.provider().createViewMap(this, views);
+        VirtualFileSystem fileSystem = fileStore.getFileSystem();
         switch (type)
         {
             case REGULAR:
                 setAttribute(IS_REGULAR, true);
-                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rw-r--r--"));
+                for (FileAttribute fa : fileSystem.getDefaultRegularAttributes())
+                {
+                    setAttribute(fa.name(), fa.value());
+                }
                 break;
             case DIRECTORY:
                 setAttribute(IS_DIRECTORY, true);
-                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rwxr-xr-x"));
+                for (FileAttribute fa : fileSystem.getDefaultDirectoryAttributes())
+                {
+                    setAttribute(fa.name(), fa.value());
+                }
                 break;
             case SYMBOLIC_LINK:
                 setAttribute(IS_SYMBOLIC_LINK, true);
-                setAttribute(PERMISSIONS, PosixFilePermissions.fromString("rwxrwxrwx"));
+                for (FileAttribute fa : fileSystem.getDefaultSymbolicLinkAttributes())
+                {
+                    setAttribute(fa.name(), fa.value());
+                }
                 break;
             default:
                 throw new UnsupportedOperationException(type.name());

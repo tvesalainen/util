@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
@@ -45,6 +43,7 @@ import java.util.stream.Stream;
 import org.vesalainen.nio.channels.ChannelHelper;
 import org.vesalainen.nio.channels.GZIPChannel;
 import org.vesalainen.util.HexUtil;
+import org.vesalainen.vfs.Env;
 import org.vesalainen.vfs.Root;
 import org.vesalainen.vfs.VirtualFileStore;
 import org.vesalainen.vfs.VirtualFileSystemProvider;
@@ -82,20 +81,23 @@ public final class RPMFileSystem extends ArchiveFileSystem implements PackageMan
     private MessageDigest md5;
     private final Root root;
 
-    public RPMFileSystem(VirtualFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException
+    public RPMFileSystem(
+            VirtualFileSystemProvider provider, 
+            Path path, 
+            Map<String, ?> env
+    ) throws IOException
     {
-        this(provider, path, CPIOHeader::new, getOpenOptions(path, env), getFileAttributes(env), getFileFormat(path, env));
+        this(provider, path, env, CPIOHeader::new);
     }
 
     private RPMFileSystem(
             VirtualFileSystemProvider provider, 
             Path path, 
-            Supplier<Header> headerSupplier, 
-            Set<? extends OpenOption> openOptions, 
-            FileAttribute<?>[] fileAttributes, 
-            FileFormat format) throws IOException
+            Map<String, ?> env,
+            Supplier<Header> headerSupplier
+            ) throws IOException
     {
-        super(provider, path, headerSupplier, openOptions, fileAttributes, format, openChannel(path, openOptions, fileAttributes));
+        super(provider, path, env, headerSupplier, openChannel(path, env));
         checkFormat(format);
         VirtualFileStore defStore = new VirtualFileStore(this, UNIX_VIEW, USER_VIEW);
         defStore.addFileStoreAttributeView(this);
@@ -314,9 +316,9 @@ public final class RPMFileSystem extends ArchiveFileSystem implements PackageMan
                 throw new UnsupportedOperationException(fmt.name());
         }
     }
-    private static SeekableByteChannel openChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException
+    private static SeekableByteChannel openChannel(Path path, Map<String, ?> env) throws IOException
     {
-        return FileChannel.open(path, options, attrs);
+        return FileChannel.open(path, Env.getOpenOptions(path, env), Env.getFileAttributes(env));
     }    
 
     /**
@@ -778,6 +780,19 @@ public final class RPMFileSystem extends ArchiveFileSystem implements PackageMan
             list.add(log);
         }
         return list;
+    }
+
+    @Override
+    public String getUrl()
+    {
+        return getString(RPMTAG_URL);
+    }
+
+    @Override
+    public PackageManagerAttributeView setUrl(String url)
+    {
+        addString(RPMTAG_URL, url);
+        return this;
     }
 
     @Override

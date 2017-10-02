@@ -23,6 +23,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
@@ -52,10 +53,16 @@ public class VirtualFileSystem extends FileSystem implements AttachedLogger
     private Set<String> supportedFileAttributeViews = new HashSet<>();
     private Set<String> supportedFileAttributeViewsSecured = Collections.unmodifiableSet(supportedFileAttributeViews);
     private Glob glob;
+    private FileAttribute<?>[] defaultRegularAttributes;
+    private FileAttribute<?>[] defaultDirectoryAttributes;
+    private FileAttribute<?>[] defaultSymbolicLinkAttributes;
 
-    public VirtualFileSystem(VirtualFileSystemProvider provider)
+    public VirtualFileSystem(VirtualFileSystemProvider provider, Map<String, ?> env)
     {
         this.provider = provider;
+        this.defaultRegularAttributes = Env.getDefaultRegularFileAttributes(env);
+        this.defaultDirectoryAttributes = Env.getDefaultDirectoryFileAttributes(env);
+        this.defaultSymbolicLinkAttributes = Env.getDefaultSymbolicLinkFileAttributes(env);
     }
 
     public final Root addFileStore(String root, VirtualFileStore store, boolean defaultStore) throws IOException
@@ -221,4 +228,20 @@ public class VirtualFileSystem extends FileSystem implements AttachedLogger
             }
         }
     }
+
+    FileAttribute<?>[] getDefaultRegularAttributes()
+    {
+        return defaultRegularAttributes;
+    }
+
+    FileAttribute<?>[] getDefaultDirectoryAttributes()
+    {
+        return defaultDirectoryAttributes;
+    }
+
+    FileAttribute<?>[] getDefaultSymbolicLinkAttributes()
+    {
+        return defaultSymbolicLinkAttributes;
+    }
+    
 }
