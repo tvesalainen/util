@@ -17,14 +17,12 @@
 package org.vesalainen.time;
 
 import java.time.Clock;
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalField;
-import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.EnumMap;
 import org.vesalainen.util.LongMap;
 
@@ -59,6 +57,11 @@ public class MutableClock extends Clock implements MutableDateTime
     void setClock(Clock clock)
     {
         this.clock = clock;
+    }
+
+    public LongMap<ChronoField> getFields()
+    {
+        return fields;
     }
 
     @Override

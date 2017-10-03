@@ -56,7 +56,8 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
         IntReference w = map.get(key);
         if (w == null)
         {
-            w = Recycler.get(IntReference.class, (IntReference r)->r.setValue(value));
+            w = new IntReference();
+            w.value = value;
             map.put(key, w);
         }
         else

@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
+ * @deprecated KISS!!!
  * Recycler class is used to recycle Recyclable objects.
  * <p>This kind of recycling is for special cases only. Implementation has to take
  * care that recycled object is not referenced. This kind of recycling can leed

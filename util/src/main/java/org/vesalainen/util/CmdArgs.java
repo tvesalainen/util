@@ -101,6 +101,7 @@ public class CmdArgs extends AbstractProvisioner implements AttachedLogger
         }
         catch (CmdArgsException ex)
         {
+            ex.printStackTrace();
             Logger logger = Logger.getLogger(CmdArgs.class.getName());
             logger.log(Level.SEVERE, Arrays.toString(args));
             logger.log(Level.SEVERE, ex.getMessage(), ex);

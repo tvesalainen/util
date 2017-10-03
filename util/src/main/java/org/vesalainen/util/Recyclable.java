@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 /**
+ * @deprecated KISS!!!
  * Recyclable object can be recycled with Recycler.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see org.vesalainen.util.Recycler
