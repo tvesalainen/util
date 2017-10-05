@@ -32,12 +32,21 @@ import org.vesalainen.util.immutable.UnmodifiableMap;
 public class DistinguishMap<K,V> extends UnmodifiableMap<K,V>
 {
     private MapSet<K,V> mapList = new HashMapSet<>();
-    
+    /**
+     * Map all keys values to value
+     * @param keys
+     * @param value 
+     */
     public synchronized void add(Set<K> keys, V value)
     {
         keys.forEach((k)->mapList.add(k, value));
         calc();
     }
+    /**
+     * Unmap all keys values from value.
+     * @param keys
+     * @param value 
+     */
     public synchronized void remove(Set<K> keys, V value)
     {
         keys.forEach((k)->mapList.removeItem(k, value));
