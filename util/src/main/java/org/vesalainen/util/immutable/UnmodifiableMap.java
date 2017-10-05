@@ -31,7 +31,7 @@ import java.util.function.Function;
  */
 public class UnmodifiableMap<K,V> implements Map<K,V>
 {
-    private Map<K,V> map;
+    protected Map<K,V> inner;
     private Set<Entry<K, V>> entrySet;
     private Set<K> keySet;
     private Collection<V> values;
@@ -43,7 +43,7 @@ public class UnmodifiableMap<K,V> implements Map<K,V>
 
     public UnmodifiableMap(Map<K, V> map)
     {
-        this.map = map;
+        this.inner = map;
         this.keySet = new UnmodifiableSet(map.keySet());
         this.entrySet = new UnmodifiableSet(map.entrySet());
         this.values = new UnmodifiableCollection(map.values());
@@ -53,31 +53,31 @@ public class UnmodifiableMap<K,V> implements Map<K,V>
     @Override
     public int size()
     {
-        return map.size();
+        return inner.size();
     }
 
     @Override
     public boolean isEmpty()
     {
-        return map.isEmpty();
+        return inner.isEmpty();
     }
 
     @Override
     public boolean containsKey(Object key)
     {
-        return map.containsKey(key);
+        return inner.containsKey(key);
     }
 
     @Override
     public boolean containsValue(Object value)
     {
-        return map.containsValue(value);
+        return inner.containsValue(value);
     }
 
     @Override
     public V get(Object key)
     {
-        return map.get(key);
+        return inner.get(key);
     }
 
     @Override
@@ -125,25 +125,25 @@ public class UnmodifiableMap<K,V> implements Map<K,V>
     @Override
     public boolean equals(Object o)
     {
-        return map.equals(o);
+        return inner.equals(o);
     }
 
     @Override
     public int hashCode()
     {
-        return map.hashCode();
+        return inner.hashCode();
     }
 
     @Override
     public V getOrDefault(Object key, V defaultValue)
     {
-        return map.getOrDefault(key, defaultValue);
+        return inner.getOrDefault(key, defaultValue);
     }
 
     @Override
     public void forEach(BiConsumer<? super K, ? super V> action)
     {
-        map.forEach(action);
+        inner.forEach(action);
     }
 
     @Override

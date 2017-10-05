@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class UnmodifiableSet<T> implements Set<T>
 {
-    private Set<T> set;
+    protected Set<T> inner;
 
     public UnmodifiableSet()
     {
@@ -40,43 +40,43 @@ public class UnmodifiableSet<T> implements Set<T>
 
     public UnmodifiableSet(Set<T> set)
     {
-        this.set = set;
+        this.inner = set;
     }
 
     @Override
     public int size()
     {
-        return set.size();
+        return inner.size();
     }
 
     @Override
     public boolean isEmpty()
     {
-        return set.isEmpty();
+        return inner.isEmpty();
     }
 
     @Override
     public boolean contains(Object o)
     {
-        return set.contains(o);
+        return inner.contains(o);
     }
 
     @Override
     public Iterator<T> iterator()
     {
-        return new UnmodifiableIterator(set.iterator());
+        return new UnmodifiableIterator(inner.iterator());
     }
 
     @Override
     public Object[] toArray()
     {
-        return set.toArray();
+        return inner.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a)
     {
-        return set.toArray(a);
+        return inner.toArray(a);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class UnmodifiableSet<T> implements Set<T>
     @Override
     public boolean containsAll(Collection<?> c)
     {
-        return set.containsAll(c);
+        return inner.containsAll(c);
     }
 
     @Override
@@ -124,19 +124,19 @@ public class UnmodifiableSet<T> implements Set<T>
     @Override
     public boolean equals(Object o)
     {
-        return set.equals(o);
+        return inner.equals(o);
     }
 
     @Override
     public int hashCode()
     {
-        return set.hashCode();
+        return inner.hashCode();
     }
 
     @Override
     public Spliterator<T> spliterator()
     {
-        return set.spliterator();
+        return inner.spliterator();
     }
 
     @Override
@@ -148,19 +148,19 @@ public class UnmodifiableSet<T> implements Set<T>
     @Override
     public Stream<T> stream()
     {
-        return set.stream();
+        return inner.stream();
     }
 
     @Override
     public Stream<T> parallelStream()
     {
-        return set.parallelStream();
+        return inner.parallelStream();
     }
 
     @Override
     public void forEach(Consumer<? super T> action)
     {
-        set.forEach(action);
+        inner.forEach(action);
     }
     
 }
