@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.vesalainen.bean.BeanHelper;
 
 /**
  * AbstractProvisioner provisions values to @Setting annotated methods. When 
@@ -69,6 +70,10 @@ public abstract class AbstractProvisioner
             if (setting != null)
             {
                 String name = setting.value();
+                if (name.isEmpty())
+                {
+                    name = BeanHelper.property(method.getName());
+                }
                 Class<?>[] params = method.getParameterTypes();
                 if (params.length != 1)
                 {
@@ -165,7 +170,7 @@ public abstract class AbstractProvisioner
     @Target(ElementType.METHOD)
     public @interface Setting
     {
-        String value();
+        String value() default "";
         boolean mandatory() default false;
     }
     private class InstanceMethod
