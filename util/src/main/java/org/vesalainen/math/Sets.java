@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,6 +93,61 @@ public final class Sets
      * @return 
      */
     public static final <T> Set<T> symmetricDifference(Set<T>... sets)
+    {
+        return difference(union(sets), intersection(sets));
+    }
+    /**
+     * Union of the sets A and B, denoted A ∪ B, is the set of all objects that 
+     * are a member of A, or B, or both
+     * @param <T>
+     * @param sets
+     * @return 
+     */
+    public static final <T> Set<T> union(Collection<Set<T>> sets)
+    {
+        Set<T> set = new HashSet<>();
+        for (Set<T> s : sets)
+        {
+            set.addAll(s);
+        }
+        return set;
+    }
+    /**
+     * Intersection of the sets A and B, denoted A ∩ B, is the set of all 
+     * objects that are members of both A and B
+     * @param <T>
+     * @param sets
+     * @return 
+     */
+    public static final <T> Set<T> intersection(Collection<Set<T>> sets)
+    {
+        Set<T> set = union(sets);
+        for (Set<T> s : sets)
+        {
+            set.retainAll(s);
+        }
+        return set;
+    }
+    /**
+     * return true if intersection is not empty
+     * @param <T>
+     * @param sets
+     * @return 
+     */
+    public static final <T> boolean intersect(Collection<Set<T>> sets)
+    {
+        Set<T> set = intersection(sets);
+        return !set.isEmpty();
+    }
+    /**
+     * Symmetric difference of sets A and B, denoted A △ B or A ⊖ B, 
+     * is the set of all objects that are a member of exactly one of A and B 
+     * (elements which are in one of the sets, but not in both)
+     * @param <T>
+     * @param sets
+     * @return 
+     */
+    public static final <T> Set<T> symmetricDifference(Collection<Set<T>> sets)
     {
         return difference(union(sets), intersection(sets));
     }
