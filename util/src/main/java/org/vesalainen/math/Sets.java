@@ -92,9 +92,9 @@ public final class Sets
      * @param sets
      * @return 
      */
-    public static final <T> Set<T> symmetricDifference(Set<T>... sets)
+    public static final <T> Set<T> symmetricDifference(Set<T> u, Set<T> a)
     {
-        return difference(union(sets), intersection(sets));
+        return difference(union(u, a), intersection(u, a));
     }
     /**
      * Union of the sets A and B, denoted A ∪ B, is the set of all objects that 
@@ -138,18 +138,6 @@ public final class Sets
     {
         Set<T> set = intersection(sets);
         return !set.isEmpty();
-    }
-    /**
-     * Symmetric difference of sets A and B, denoted A △ B or A ⊖ B, 
-     * is the set of all objects that are a member of exactly one of A and B 
-     * (elements which are in one of the sets, but not in both)
-     * @param <T>
-     * @param sets
-     * @return 
-     */
-    public static final <T> Set<T> symmetricDifference(Collection<Set<T>> sets)
-    {
-        return difference(union(sets), intersection(sets));
     }
     /**
      * Sets target content to be the same as source without clearing the target.
