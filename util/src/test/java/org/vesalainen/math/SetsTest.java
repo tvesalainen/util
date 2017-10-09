@@ -29,6 +29,7 @@ public class SetsTest
 {
     private Set<Integer> A = set(1, 2, 3);
     private Set<Integer> B = set(2, 3, 4);
+    private Set<Integer> C = set(3, 4, 5);
     public SetsTest()
     {
     }
@@ -52,10 +53,41 @@ public class SetsTest
         assertEquals(exp, Sets.difference(A, B));
     }
     @Test
-    public void testSymmetricDifference()
+    public void testSymmetricDifference0()
+    {
+        Set<Integer> exp = set();
+        assertEquals(exp, Sets.symmetricDifference());
+    }
+    @Test
+    public void testSymmetricDifference1()
+    {
+        assertEquals(A, Sets.symmetricDifference(A));
+    }
+    @Test
+    public void testSymmetricDifference2()
     {
         Set<Integer> exp = set(1, 4);
         assertEquals(exp, Sets.symmetricDifference(A, B));
+    }
+    @Test
+    public void testSymmetricDifference3()
+    {
+        Set<Integer> exp = set(1, 5);
+        assertEquals(exp, Sets.symmetricDifference(A, B, C));
+    }
+    @Test
+    public void testCartesianProduct()
+    {
+        Set<OrderedPair<Integer,String>> exp = set(pair(1, "red"), pair(1, "white"), pair(2, "red"), pair(2, "white"));
+        Set<Integer> is = set(1, 2);
+        Set<String> ss = set("red", "white");
+        assertEquals(exp, Sets.cartesianProduct(is, ss));
+    }
+    @Test
+    public void testPowerSet()
+    {
+        Set<Set<Integer>> exp = set(set(), set(1), set(2), set(1,2));
+        assertEquals(exp, Sets.powerSet(set(1, 2)));
     }
     @Test
     public void testAssign()
@@ -64,6 +96,10 @@ public class SetsTest
         Set<Integer> set = set(1, 2, 3);
         Sets.assign(exp, set);
         assertEquals(exp, set);
+    }
+    private static <A,B> OrderedPair<A,B> pair(A a, B b)
+    {
+        return new OrderedPair(a, b);
     }
     private static <T> Set<T> set(T... value)
     {

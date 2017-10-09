@@ -17,8 +17,13 @@
 package org.vesalainen.math;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import org.vesalainen.util.HashMapSet;
+import org.vesalainen.util.Lists;
+import org.vesalainen.util.MapSet;
 
 /**
  *
@@ -92,9 +97,33 @@ public final class Sets
      * @param sets
      * @return 
      */
-    public static final <T> Set<T> symmetricDifference(Set<T> u, Set<T> a)
+    public static final <T> Set<T> symmetricDifference(Set<T>... sets)
     {
-        return difference(union(u, a), intersection(u, a));
+        return symmetricDifference(Lists.create(sets));
+    }
+    /**
+     * Symmetric difference of sets A and B, denoted A △ B or A ⊖ B, 
+     * is the set of all objects that are a member of exactly one of A and B 
+     * (elements which are in one of the sets, but not in both)
+     * @param <T>
+     * @param sets
+     * @return 
+     */
+    public static final <T> Set<T> symmetricDifference(Collection<Set<T>> sets)
+    {
+        MapSet<T,Integer> mapSet = new HashMapSet<>();
+        int index = 0;
+        for (Set<T> set : sets)
+        {
+            for (T t : set)
+            {
+                mapSet.add(t, index);
+            }
+            index++;
+        }
+        final Set<T> diff = new HashSet<>();
+        mapSet.forEach((t,s)->{if (s.size() == 1) diff.add(t);});
+        return diff;
     }
     /**
      * Union of the sets A and B, denoted A ∪ B, is the set of all objects that 
@@ -140,6 +169,54 @@ public final class Sets
         return !set.isEmpty();
     }
     /**
+     * Cartesian product of A and B, denoted A × B, is the set whose members are 
+     * all possible ordered pairs (a, b) where a is a member of A and b is a 
+     * member of B.
+     * @param <A>
+     * @param <B>
+     * @param a
+     * @param b
+     * @return 
+     */
+    public static final <A,B> Set<OrderedPair<A,B>> cartesianProduct(Set<A> a, Set<B> b)
+    {
+        Set<OrderedPair<A,B>> set = new HashSet<>();
+        for (A t : a)
+        {
+            for (B v : b)
+            {
+                set.add(new OrderedPair(t, v));
+            }
+        }
+        return set;
+    }
+    /**
+     * Power set of a set A is the set whose members are all possible subsets of A.
+     * @param <T>
+     * @param set
+     * @return 
+     */
+    public static final <T> Set<Set<T>> powerSet(Set<T> set)
+    {
+        Set<Set<T>> powerSet = new HashSet<>();
+        powerSet.add(Collections.EMPTY_SET);
+        powerSet(powerSet, set);
+        return powerSet;
+    }
+    private static <T> void powerSet(Set<Set<T>> powerSet, Set<T> set)
+    {
+        if (!set.isEmpty())
+        {
+            powerSet.add(set);
+            for (T t : set)
+            {
+                Set<T> workSet = new HashSet<>(set);
+                workSet.remove(t);
+                powerSet(powerSet, workSet);
+            }
+        }
+    }
+    /**
      * Sets target content to be the same as source without clearing the target.
      * @param <T>
      * @param source
@@ -150,4 +227,5 @@ public final class Sets
         target.retainAll(source);
         target.addAll(source);
     }
+
 }
