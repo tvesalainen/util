@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util;
+package org.vesalainen.math;
 
+import org.vesalainen.math.SymmetricDifferenceMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.Test;
@@ -25,10 +26,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DistinguishMapTest
+public class SymmetricDifferenceMapTest
 {
     
-    public DistinguishMapTest()
+    public SymmetricDifferenceMapTest()
     {
     }
 
@@ -50,7 +51,7 @@ public class DistinguishMapTest
         windKeys.add("WHV");
         windKeys.add("DBT");
         windKeys.add("TXT");
-        DistinguishMap<String,String> dm = new DistinguishMap<>();
+        SymmetricDifferenceMap<String,String> dm = new SymmetricDifferenceMap<>();
         dm.add(gpsKeys, "gps");
         assertEquals(gpsKeys, dm.keySet());
         dm.add(aisKeys, "ais");

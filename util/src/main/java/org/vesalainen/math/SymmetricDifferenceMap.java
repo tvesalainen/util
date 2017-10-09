@@ -14,24 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.util;
+package org.vesalainen.math;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.vesalainen.util.HashMapSet;
+import org.vesalainen.util.MapSet;
 import org.vesalainen.util.immutable.UnmodifiableMap;
 
 /**
- * DistinguishMap maintains several mappings from K to V but only unique mappings
- * are visible.
+ * SymmetricDifferenceMap maintains several mappings from K to V but only unique mappings
+ are visible. In other words keySet is symmetric difference of addded key sets.
  * <p>
  * If A and B maps to foo and B and C maps to bar then only A to foo and C to bar
  * are visible. After you remove bar mappings B and C then A and B maps to foo.
  * <p>
- * This class is not thread safe!
+ * This class is thread safe!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DistinguishMap<K,V> extends UnmodifiableMap<K,V>
+public class SymmetricDifferenceMap<K,V> extends UnmodifiableMap<K,V>
 {
     private MapSet<K,V> mapList = new HashMapSet<>();
+
+    public SymmetricDifferenceMap()
+    {
+        super(new ConcurrentHashMap<>());
+    }
+    
     /**
      * Map all keys values to value
      * @param keys
@@ -54,12 +64,16 @@ public class DistinguishMap<K,V> extends UnmodifiableMap<K,V>
     }
     private void calc()
     {
-        inner.clear();
+        inner.keySet().retainAll(mapList.keySet());
         mapList.forEach((k,v)->
         {
             if (v.size() == 1)
             {
                 inner.put(k, v.iterator().next());
+            }
+            else
+            {
+                inner.remove(k);
             }
         });
     }
