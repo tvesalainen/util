@@ -19,7 +19,6 @@ package org.vesalainen.math;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.vesalainen.util.HashMapSet;
 import org.vesalainen.util.Lists;
