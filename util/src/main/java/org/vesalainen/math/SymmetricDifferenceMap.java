@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.vesalainen.util.HashMapSet;
@@ -32,6 +31,7 @@ import org.vesalainen.util.immutable.UnmodifiableMap;
  * <p>
  * This class is thread safe!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="https://en.wikipedia.org/wiki/Set_theory">Set theory</a>
  */
 public class SymmetricDifferenceMap<K,V> extends UnmodifiableMap<K,V>
 {
