@@ -298,5 +298,11 @@ public abstract class AbstractMapList<K,V> implements MapList<K,V>
     {
         return comparator;
     }
+
+    @Override
+    public String toString()
+    {
+        return map.toString();
+    }
     
 }

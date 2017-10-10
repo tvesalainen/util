@@ -279,4 +279,10 @@ public abstract class AbstractMapSet<K,V> implements MapSet<K, V>, Serializable
         return map.merge(key, value, remappingFunction);
     }
     
+    @Override
+    public String toString()
+    {
+        return map.toString();
+    }
+    
 }

@@ -82,7 +82,7 @@ public abstract class AbstractPrimitiveMap<K,V extends PrimitiveReference>
     @Override
     public String toString()
     {
-        return "size=" + size();
+        return map.toString();
     }
     
 }
