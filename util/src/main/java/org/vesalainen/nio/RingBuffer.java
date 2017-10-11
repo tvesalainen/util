@@ -23,6 +23,18 @@ import java.nio.BufferUnderflowException;
 /**
  * A RingBuffer wrapper for Buffer. 
  * <p>This class acts also as CharSequence between mark and position.
+ * <p>
+ * Example:
+ * <pre>
+ *   AAAAMMMMMMMMMMMMMRRRRRRRRRRRRAAAAAAAA
+ *       ^            ^           ^
+ *       |            |           limit
+ *       |            position
+ *       mark
+ *       |--marked----|-remaining-|
+ *       |CharSequence|
+ * </pre>
+ *  A bytes are available for reading.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <B> Buffer type
  * @param <R> Reader type
@@ -117,7 +129,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     public final void mark()
     {
         mark = position;
-        marked = 0;
+            marked = 0;
     }
     /**
      * Return item as int value at index position from mark. If mark is not set 
@@ -158,6 +170,8 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
             pos = position;
             position = (position+1) % capacity;
             remaining--;
+            assert marked >= 0 && marked <= capacity;
+            assert remaining >= 0 && remaining <= capacity;
             return pos;
         }
         else
@@ -183,6 +197,8 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         }
         position = (position+remaining) % capacity;
         remaining = 0;
+        assert marked >= 0 && marked <= capacity;
+        assert remaining >= 0 && remaining <= capacity;
     }
     /**
      * Reads more items to buffer between limit and mark/position. Read will not
@@ -200,6 +216,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
             limit = (limit+count)%capacity;
             remaining += count;
         }
+        assert remaining >= 0 && remaining <= capacity;
         return count;
     }
     /**
