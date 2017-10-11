@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  *
@@ -122,6 +123,15 @@ public class HexDump
     public static final String toHex(byte[] buf, int offset, int length)
     {
         return toHex(Arrays.copyOfRange(buf, offset, offset+length));
+    }
+    /**
+     * Creates readable view to byte array content.
+     * @param supplier
+     * @return 
+     */
+    public static final String toHex(Supplier<byte[]> supplier)
+    {
+        return toHex(supplier.get());
     }
     /**
      * Creates readable view to byte array content.
