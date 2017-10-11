@@ -170,8 +170,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
             pos = position;
             position = (position+1) % capacity;
             remaining--;
-            assert marked >= 0 && marked <= capacity;
-            assert remaining >= 0 && remaining <= capacity;
+            check();
             return pos;
         }
         else
@@ -197,8 +196,18 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         }
         position = (position+remaining) % capacity;
         remaining = 0;
-        assert marked >= 0 && marked <= capacity;
-        assert remaining >= 0 && remaining <= capacity;
+        check();
+    }
+    private void check()
+    {
+        if (remaining < 0 && remaining > capacity)
+        {
+            throw new IllegalArgumentException(remaining+" illegal remaining at %s"+toString());
+        }
+        if (marked < 0 && marked > capacity)
+        {
+            throw new IllegalArgumentException(marked+" illegal marked at %s"+toString());
+        }
     }
     /**
      * Reads more items to buffer between limit and mark/position. Read will not
@@ -216,7 +225,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
             limit = (limit+count)%capacity;
             remaining += count;
         }
-        assert remaining >= 0 && remaining <= capacity;
+        check();
         return count;
     }
     /**
