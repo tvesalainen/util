@@ -135,7 +135,7 @@ public class RingByteBufferTest
             matcher.add(matcher1, gbc1);
             matcher.add(matcher2, gbc2);
             boolean mark = true;
-            RingByteBuffer rbb = new RingByteBuffer(100);
+            RingByteBuffer rbb = new RingByteBuffer(100, 13, false);
             int rc = rbb.read(fc);
             while (rc > 0)
             {

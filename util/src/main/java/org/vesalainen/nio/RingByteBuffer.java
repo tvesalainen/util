@@ -30,14 +30,38 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     private final ByteBuffer bb1;
     private final ByteBuffer bb2;
     private final ByteBuffer[] ar2;
-    
+    private int readLimit;
+    /**
+     * Creates heap RingByteBuffer with readLimit same as size
+     * @param size 
+     */
     public RingByteBuffer(int size)
     {
         this(size, false);
     }
+    /**
+     * Creates RingByteBuffer with readLimit same as size
+     * @param size
+     * @param direct 
+     */
     public RingByteBuffer(int size, boolean direct)
     {
+        this(size, size, direct);
+    }
+    /**
+     * Creates RingByteBuffer
+     * @param size Buffer size
+     * @param readLimit maximum number of bytes read from channel
+     * @param direct heap/direct
+     */
+    public RingByteBuffer(int size, int readLimit, boolean direct)
+    {
         super(size, direct);
+        if (readLimit < 0 || readLimit > size)
+        {
+            throw new IllegalArgumentException(readLimit+" not in range");
+        }
+        this.readLimit = readLimit;
         bb1 = buffer.duplicate();
         bb2 = buffer.duplicate();
         ar2 = new ByteBuffer[] {bb1, bb2};
@@ -83,7 +107,8 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     protected int read(ScatteringByteChannel reader, int position, int limit) throws IOException
     {
-        bb1.limit(limit);
+        int len = Math.min(readLimit, limit - position);
+        bb1.limit(position+len);
         bb1.position(position);
         return (int) reader.read(ar2, 0, 1);
     }
@@ -91,11 +116,25 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     protected int read(ScatteringByteChannel reader, int position1, int limit1, int position2, int limit2) throws IOException
     {
-        bb1.limit(limit1);
-        bb1.position(position1);
-        bb2.limit(limit2);
-        bb2.position(position2);
-        return (int) reader.read(ar2);
+        int len1 = limit1 - position1;
+        if (len1 > readLimit)
+        {
+            int len = Math.min(readLimit, len1);
+            bb1.limit(position+len);
+            bb1.position(position);
+            return (int) reader.read(ar2, 0, 1);
+        }
+        else
+        {
+            bb1.limit(limit1);
+            bb1.position(position1);
+            
+            int len2 = limit2 - position2;
+            int len = Math.min(readLimit-len1, len2);
+            bb2.limit(position2+len);
+            bb2.position(position2);
+            return (int) reader.read(ar2);
+        }
     }
 
     @Override
