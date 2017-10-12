@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -61,6 +62,8 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     private final boolean loop;
     private List<InetAddress> locals;
     private InetSocketAddress from;
+    private ReentrantLock readLock = new ReentrantLock();
+    private ReentrantLock writeLock = new ReentrantLock();
     
     public UnconnectedDatagramChannel(DatagramChannel channel, InetSocketAddress address, int maxDatagramSize, boolean direct, boolean loop) throws SocketException
     {
@@ -129,34 +132,50 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     @Override
     public int read(ByteBuffer dst) throws IOException
     {
-        int rem = dst.remaining();
-        int p1 = dst.position();
-        from = (InetSocketAddress) channel.receive(dst);
-        if (from == null)
+        readLock.lock();
+        try
         {
-            return 0;
+            int rem = dst.remaining();
+            int p1 = dst.position();
+            from = (InetSocketAddress) channel.receive(dst);
+            if (from == null)
+            {
+                return 0;
+            }
+            if (!loop && locals.contains(from.getAddress()))
+            {
+                // reject local send if OS doesn't support IP_MULTICAST_LOOP option
+                dst.position(p1);
+                log.warning("local send %s while IP_MULTICAST_LOOP false", from);
+                return 0;
+            }
+            int p2 = dst.position();
+            log(Level.FINEST, "receive", dst, p1, p2-p1);
+            return rem-dst.remaining();
         }
-        if (!loop && locals.contains(from.getAddress()))
+        finally
         {
-            // reject local send if OS doesn't support IP_MULTICAST_LOOP option
-            dst.position(p1);
-            log.warning("local send %s while IP_MULTICAST_LOOP false", from);
-            return 0;
+            readLock.unlock();
         }
-        int p2 = dst.position();
-        log(Level.FINEST, "receive", dst, p1, p2-p1);
-        return rem-dst.remaining();
     }
 
     @Override
     public int write(ByteBuffer src) throws IOException
     {
-        int rem = src.remaining();
-        int p1 = src.position();
-        channel.send(src, address);
-        int p2 = src.position();
-        log(Level.FINEST, "send", src, p1, p2-p1);
-        return rem-src.remaining();
+        writeLock.lock();
+        try
+        {
+            int rem = src.remaining();
+            int p1 = src.position();
+            channel.send(src, address);
+            int p2 = src.position();
+            log(Level.FINEST, "send", src, p1, p2-p1);
+            return rem-src.remaining();
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     /**
      * Returns the last sender address.
@@ -190,20 +209,28 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     @Override
     public long write(ByteBuffer[] srcs, int offset, int length) throws IOException
     {
-        if (length == 1)
+        writeLock.lock();
+        try
         {
-            return write(srcs[offset]);
-        }
-        else
-        {
-            writeBuffer.clear();
-            for  (int ii=0;ii<length;ii++)
+            if (length == 1)
             {
-                ByteBuffer bb = srcs[ii+offset];
-                writeBuffer.put(bb);
+                return write(srcs[offset]);
             }
-            writeBuffer.flip();
-            return write(writeBuffer);
+            else
+            {
+                writeBuffer.clear();
+                for  (int ii=0;ii<length;ii++)
+                {
+                    ByteBuffer bb = srcs[ii+offset];
+                    writeBuffer.put(bb);
+                }
+                writeBuffer.flip();
+                return write(writeBuffer);
+            }
+        }
+        finally
+        {
+            writeLock.unlock();
         }
     }
 
@@ -216,31 +243,39 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     @Override
     public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
     {
-        if (length == 1 || dsts[offset].remaining() > readBuffer.capacity())
+        readLock.lock();
+        try
         {
-            return read(dsts[offset]);
-        }
-        else
-        {
-            readBuffer.clear();
-            int res = read(readBuffer);
-            readBuffer.flip();
-            for  (int ii=0;ii<length && readBuffer.hasRemaining();ii++)
+            if (length == 1 || dsts[offset].remaining() > readBuffer.capacity())
             {
-                ByteBuffer bb = dsts[ii+offset];
-                if (bb.remaining() >= readBuffer.remaining())
-                {
-                    bb.put(readBuffer);
-                }
-                else
-                {
-                    int lim = readBuffer.limit();
-                    readBuffer.limit(readBuffer.position()+bb.remaining());
-                    bb.put(readBuffer);
-                    readBuffer.limit(lim);
-                }
+                return read(dsts[offset]);
             }
-            return res;
+            else
+            {
+                readBuffer.clear();
+                int res = read(readBuffer);
+                readBuffer.flip();
+                for  (int ii=0;ii<length && readBuffer.hasRemaining();ii++)
+                {
+                    ByteBuffer bb = dsts[ii+offset];
+                    if (bb.remaining() >= readBuffer.remaining())
+                    {
+                        bb.put(readBuffer);
+                    }
+                    else
+                    {
+                        int lim = readBuffer.limit();
+                        readBuffer.limit(readBuffer.position()+bb.remaining());
+                        bb.put(readBuffer);
+                        readBuffer.limit(lim);
+                    }
+                }
+                return res;
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 
