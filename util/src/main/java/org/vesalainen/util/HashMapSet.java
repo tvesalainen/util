@@ -17,8 +17,10 @@
 package org.vesalainen.util;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,11 +31,17 @@ import java.util.Set;
  */
 public class HashMapSet<K,V> extends AbstractMapSet<K,V> implements Serializable
 {
+    public static final HashMapSet EMPTY_MAP_SET = new HashMapSet(Collections.EMPTY_MAP);
     private static final long serialVersionUID = 1L;
 
     public HashMapSet()
     {
         super(new HashMap<K,Set<V>>());
+    }
+
+    private HashMapSet(Map<K, Set<V>> map)
+    {
+        super(map);
     }
 
     @Override

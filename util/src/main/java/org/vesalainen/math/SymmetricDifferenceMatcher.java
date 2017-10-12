@@ -45,9 +45,25 @@ import org.vesalainen.util.MapSet;
  */
 public class SymmetricDifferenceMatcher<I,T>
 {
-    private final MapSet<I,T> mapSet = new HashMapSet<>();
-    private final MapSet<T,I> reverseMap = new HashMapSet<>();
-    private final Set<T> unresolved = Collections.unmodifiableSet(reverseMap.keySet());
+    public static final SymmetricDifferenceMatcher EMPTY_MATCHER = new SymmetricDifferenceMatcher(HashMapSet.EMPTY_MAP_SET, HashMapSet.EMPTY_MAP_SET);
+    private final MapSet<I,T> mapSet;
+    private final MapSet<T,I> reverseMap;
+    private final Set<T> unresolved;
+
+    public SymmetricDifferenceMatcher()
+    {
+        this.mapSet = new HashMapSet<>();
+        this.reverseMap = new HashMapSet<>();
+        unresolved = Collections.unmodifiableSet(reverseMap.keySet());
+    }
+
+    private SymmetricDifferenceMatcher(MapSet<I, T> mapSet, MapSet<T, I> reverseMap)
+    {
+        this.mapSet = new HashMapSet<>();
+        this.reverseMap = reverseMap;
+        unresolved = Collections.EMPTY_SET;
+    }
+    
     /**
      * Maps item to target 
      * @param item
