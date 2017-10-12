@@ -87,6 +87,38 @@ public class SymmetricDifferenceMatcher<I,T>
         }
     }
     /**
+     * Remove mapping: item to target
+     * @param item
+     * @param target 
+     */
+    public void unmap(I item, T target)
+    {
+        mapSet.removeItem(item, target);
+        reverseMap.removeItem(target, item);
+    }
+    /**
+     * Remove collection mappings to target
+     * @param items
+     * @param target 
+     */
+    public void unmap(Collection<I> items, T target)
+    {
+        for (I item : items)
+        {
+            unmap(item, target);
+        }
+    }
+    /**
+     * Remove all mappings to target
+     * @param target 
+     */
+    public void unmap(T target)
+    {
+        Set<I> items = reverseMap.get(target);
+        items.forEach((i)->mapSet.removeItem(i, target));
+        reverseMap.remove(target);
+    }
+    /**
      * Returns target if one of collection items match. Otherwise returns null.
      * Matched targets mappings are removed.
      * @param items
@@ -116,9 +148,7 @@ public class SymmetricDifferenceMatcher<I,T>
         if (set.size() == 1)
         {
             T match = set.iterator().next();
-            Set<I> items = reverseMap.get(match);
-            items.forEach((i)->mapSet.removeItem(i, match));
-            reverseMap.remove(match);
+            unmap(match);
             return match;
         }
         return null;
