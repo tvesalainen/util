@@ -140,31 +140,13 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             {
                 RunnableScheduledFuture<?> runnable = delayQueue.take();
                 log(LEVEL, "activated %s", runnable);
-                Runner runner = new Runner(runnable);
-                submit(runner);
+                execute(runnable);
             }
             catch (InterruptedException ex)
             {
                 severe("interrupted");
                 return;
             }
-        }
-    }
-    private class Runner implements Runnable
-    {
-        private RunnableScheduledFuture<?> runnable;
-
-        public Runner(RunnableScheduledFuture<?> runnable)
-        {
-            this.runnable = runnable;
-        }
-        
-        @Override
-        public void run()
-        {
-            log(LEVEL, "started %s", runnable);
-            runnable.run();
-            log(LEVEL, "ended %s", runnable);
         }
     }
     private class RunnableScheduledFutureImpl<V> extends FutureTask<V> implements RunnableScheduledFuture<V>
