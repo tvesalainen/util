@@ -36,7 +36,7 @@ import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
 
 /**
- * CachedScheduledThreadPool is a ScheduledExecutorService implementation which unlike 
+ * A ScheduledExecutorService which unlike 
  * ScheduledThreadPoolExecutor is not fixed-sized.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
