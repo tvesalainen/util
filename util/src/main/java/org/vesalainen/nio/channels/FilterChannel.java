@@ -43,9 +43,9 @@ import org.vesalainen.util.function.IOFunction;
  </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterChannel implements ByteChannel, ScatteringSupport, GatheringSupport
+public class FilterChannel<T extends ByteChannel> implements ByteChannel, ScatteringSupport, GatheringSupport
 {
-    protected SeekableByteChannel channel;
+    protected T channel;
     protected InputStream in;
     protected byte[] buf;
     protected int offset;
@@ -66,7 +66,7 @@ public class FilterChannel implements ByteChannel, ScatteringSupport, GatheringS
      * @throws IOException 
      */
     public FilterChannel(
-            SeekableByteChannel channel, 
+            T channel, 
             int bufSize, 
             IOFunction<? super InputStream,? extends InputStream> fin,
             IOFunction<? super OutputStream,? extends OutputStream> fout

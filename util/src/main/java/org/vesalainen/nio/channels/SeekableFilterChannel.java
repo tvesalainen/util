@@ -42,7 +42,7 @@ import org.vesalainen.util.function.IOFunction;
  </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SeekableFilterChannel extends FilterChannel implements SeekableByteChannel
+public class SeekableFilterChannel extends FilterChannel<SeekableByteChannel> implements SeekableByteChannel
 {
     private int maxSkipSize;
     private ByteBuffer skipBuffer;
