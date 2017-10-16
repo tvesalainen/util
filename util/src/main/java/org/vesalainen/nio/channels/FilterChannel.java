@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
@@ -31,38 +32,35 @@ import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.function.IOFunction;
 
 /**
- * FilterChannel provides channel interface for stream filtering.
+ * SeekableFilterChannel provides channel interface for stream filtering.
  * <p>
  * Example:
  * <code>
-   try (FilterChannel xzChannel = new FilterChannel(channel, 4096, 512, XZInputStream::new, null))
+   try (SeekableFilterChannel xzChannel = new SeekableFilterChannel(channel, 4096, 512, XZInputStream::new, null))
    {
        load(xzChannel, root);
    }
-* </code>
+ </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport
+public class FilterChannel implements ByteChannel, ScatteringSupport, GatheringSupport
 {
     protected SeekableByteChannel channel;
-    private InputStream in;
-    private byte[] buf;
-    private int offset;
-    private int length;
-    private OutputStream out;
-    private long position;
-    private int bufSize = 4096;
-    private int maxSkipSize;
-    private ByteBuffer skipBuffer;
-    private Lock readLock = new ReentrantLock();
-    private Lock writeLock = new ReentrantLock();
-    private ByteBuffer outBuf;
-    private ByteBuffer inBuf;
+    protected InputStream in;
+    protected byte[] buf;
+    protected int offset;
+    protected int length;
+    protected OutputStream out;
+    protected long position;
+    protected int bufSize = 4096;
+    protected Lock readLock = new ReentrantLock();
+    protected Lock writeLock = new ReentrantLock();
+    protected ByteBuffer outBuf;
+    protected ByteBuffer inBuf;
     /**
      * Creates FilterSeekableByteChannel. Only one of in/out functions is allowed.
      * @param channel
      * @param bufSize Buffer size
-     * @param maxSkipSize Maximum forward position size
      * @param fin
      * @param fout
      * @throws IOException 
@@ -70,7 +68,6 @@ public class FilterChannel implements SeekableByteChannel, ScatteringSupport, Ga
     public FilterChannel(
             SeekableByteChannel channel, 
             int bufSize, 
-            int maxSkipSize, 
             IOFunction<? super InputStream,? extends InputStream> fin,
             IOFunction<? super OutputStream,? extends OutputStream> fout
     ) throws IOException
@@ -81,7 +78,6 @@ public class FilterChannel implements SeekableByteChannel, ScatteringSupport, Ga
         }
         this.channel = channel;
         this.bufSize = bufSize;
-        this.maxSkipSize = maxSkipSize;
         if (fin != null)
         {
             this.in = fin.apply(new Input());
@@ -91,89 +87,7 @@ public class FilterChannel implements SeekableByteChannel, ScatteringSupport, Ga
             this.out = fout.apply(new Output());
         }
         this.buf = new byte[bufSize];
-        if (maxSkipSize > 0)
-        {
-            skipBuffer = ByteBuffer.allocate(maxSkipSize);
-        }
     }
-    /**
-     * Returns unfiltered position.
-     * @return
-     * @throws IOException 
-     */
-    @Override
-    public long position() throws IOException
-    {
-        if (!isOpen())
-        {
-            throw new ClosedChannelException();
-        }
-        return position;
-    }
-    /**
-     * Changes unfiltered position. Only forward direction is allowed with
-     * small skips. This method is for alignment purposes mostly.
-     * @param newPosition
-     * @return
-     * @throws IOException 
-     */
-    @Override
-    public FilterChannel position(long newPosition) throws IOException
-    {
-        if (!isOpen())
-        {
-            throw new ClosedChannelException();
-        }
-        int skip = (int) (newPosition - position());
-        if (skip < 0)
-        {
-            throw new UnsupportedOperationException("backwards position not supported");
-        }
-        if (skip > skipBuffer.capacity())
-        {
-            throw new UnsupportedOperationException(skip+" skip not supported maxSkipSize="+maxSkipSize);
-        }
-        if (skip > 0)
-        {
-            if (skipBuffer == null)
-            {
-                throw new UnsupportedOperationException("skip not supported maxSkipSize="+maxSkipSize);
-            }
-            skipBuffer.clear();
-            skipBuffer.limit(skip);
-            if (in != null)
-            {
-                read(skipBuffer);
-            }
-            else
-            {
-                write(skipBuffer);
-            }
-        }
-        return this;
-    }
-    /**
-     * Throws UnsupportedOperationException
-     * @return
-     * @throws IOException 
-     */
-    @Override
-    public long size() throws IOException
-    {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    /**
-     * 
-     * @param size
-     * @return
-     * @throws IOException 
-     */
-    @Override
-    public SeekableByteChannel truncate(long size) throws IOException
-    {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
     @Override
     public boolean isOpen()
     {
