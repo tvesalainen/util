@@ -16,7 +16,6 @@
  */
 package org.vesalainen.nio.channels;
 
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,7 +42,7 @@ import org.vesalainen.util.function.IOFunction;
 * </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterChannel implements SeekableByteChannel
+public class FilterChannel implements SeekableByteChannel, ScatteringSupport, GatheringSupport
 {
     protected SeekableByteChannel channel;
     private InputStream in;
@@ -199,7 +198,7 @@ public class FilterChannel implements SeekableByteChannel
     public int read(ByteBuffer dst) throws IOException
     {
         ensureReading();
-        readLock.lock();
+        readLock();
         try
         {
             int res = 0;
@@ -229,14 +228,14 @@ public class FilterChannel implements SeekableByteChannel
         }
         finally
         {
-            readLock.unlock();
+            readUnlock();
         }
     }
     @Override
     public int write(ByteBuffer src) throws IOException
     {
         ensureWriting();
-        writeLock.lock();
+        writeLock();
         try
         {
             int res = src.remaining();
@@ -250,7 +249,7 @@ public class FilterChannel implements SeekableByteChannel
         }
         finally
         {
-            writeLock.unlock();
+            writeUnlock();
         }
     }
     private void ensureReading() throws IOException
@@ -308,6 +307,30 @@ public class FilterChannel implements SeekableByteChannel
             write(buf);
         }
         
+    }
+
+    @Override
+    public void readLock()
+    {
+        readLock.lock();
+    }
+
+    @Override
+    public void readUnlock()
+    {
+        readLock.lock();
+    }
+
+    @Override
+    public void writeLock()
+    {
+        writeLock.lock();
+    }
+
+    @Override
+    public void writeUnlock()
+    {
+        writeLock.unlock();
     }
 
     private class Input extends InputStream
