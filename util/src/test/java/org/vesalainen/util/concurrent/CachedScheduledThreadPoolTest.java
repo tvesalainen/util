@@ -73,7 +73,7 @@ public class CachedScheduledThreadPoolTest
         ScheduledFuture<?> future = pool.scheduleAtFixedRate(this::sleeper, 10, 20, TimeUnit.MILLISECONDS);
         Thread.sleep(500);
         future.cancel(false);
-        assertTrue(times.size()>20);
+        assertTrue(times.size()>18);
     }
     @Test
     public void testScheduleWithFixedDelay() throws InterruptedException, ExecutionException
