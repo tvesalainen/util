@@ -16,6 +16,7 @@
  */
 package org.vesalainen.nio.channels;
 
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +35,9 @@ import org.vesalainen.util.function.IOFunction;
 /**
  * FilterChannel provides channel interface for stream filtering.
  * <p>
+ * Note! Only way of finishing underlying output without closing the channel 
+ * is to call flush. If underlying stream needs finish etc. it must be wrapped.
+ * <p>
  * Example:
  * <code>
    try (FilterChannel xzChannel = new FilterChannel(channel, 4096, 512, XZInputStream::new, null))
@@ -43,7 +47,7 @@ import org.vesalainen.util.function.IOFunction;
 * </code>
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FilterChannel implements SeekableByteChannel, GatheringSupport, ScatteringSupport
+public class FilterChannel implements SeekableByteChannel, GatheringSupport, ScatteringSupport, Flushable
 {
     protected ByteChannel channel;
     private InputStream in;
@@ -180,6 +184,22 @@ public class FilterChannel implements SeekableByteChannel, GatheringSupport, Sca
     {
         return in != null || out != null;
     }
+    /**
+     * Calls flush on OutputStream
+     * @throws IOException 
+     */
+    @Override
+    public void flush() throws IOException
+    {
+        if (out != null)
+        {
+            out.flush();
+        }
+    }
+    /**
+     * Closes Input/OutputStream and then closes channel
+     * @throws IOException 
+     */
     @Override
     public void close() throws IOException
     {
@@ -193,6 +213,7 @@ public class FilterChannel implements SeekableByteChannel, GatheringSupport, Sca
             out.close();
             out = null;
         }
+        channel.close();
     }
     
     @Override
