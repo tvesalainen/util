@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -32,6 +33,12 @@ public class ConditionalSet<T> extends HashSet<T>
 
     public ConditionalSet(Predicate<T> predicate)
     {
+        this.predicate = predicate;
+    }
+
+    public ConditionalSet(Collection<? extends T> c, Predicate<T> predicate)
+    {
+        super(c);
         this.predicate = predicate;
     }
 
