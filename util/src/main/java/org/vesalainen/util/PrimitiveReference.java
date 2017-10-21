@@ -20,7 +20,7 @@ package org.vesalainen.util;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class PrimitiveReference implements Recyclable
+public abstract class PrimitiveReference
 {
     
 }
