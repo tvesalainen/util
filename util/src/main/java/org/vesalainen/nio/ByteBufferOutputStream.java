@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.nio.channels;
+package org.vesalainen.nio;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,7 +22,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 /**
- * @deprecated Moved to org.vesalainen.nio
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class ByteBufferOutputStream extends OutputStream
