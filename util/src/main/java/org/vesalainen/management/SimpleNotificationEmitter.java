@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import javax.management.ListenerNotFoundException;
@@ -37,8 +38,9 @@ import org.vesalainen.util.logging.JavaLogging;
  * NotificationEmitter implementation which tries to minimize cpu load in
  * transmitting part in particular if there are no listeners.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <U> Type of user-data
  */
-public class SimpleNotificationEmitter<T> implements NotificationEmitter
+public class SimpleNotificationEmitter<U> implements NotificationEmitter
 {
     private MapList<NotificationListener,ListenerWrapper> map = new HashMapList<>();
     private String type;
@@ -68,23 +70,27 @@ public class SimpleNotificationEmitter<T> implements NotificationEmitter
     }
     /**
      * Send notification. supplier is called only if there are listeners
-     * @param notificationSupplier 
+     * @param textSupplier
+     * @param userDataSupplier
+     * @param timestampSupplier 
      */
-    public synchronized void sendNotification(Supplier<String> textSupplier, Supplier<T> userDataSupplier)
+    public synchronized void sendNotification(Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
     {
         if (!map.isEmpty())
         {
-            sendNotification(textSupplier.get(), userDataSupplier.get());
+            sendNotification(textSupplier.get(), userDataSupplier.get(), timestampSupplier.getAsLong());
         }
     }
     /**
      * Send notification.
-     * @param notification 
+     * @param text
+     * @param userData
+     * @param timestamp 
      */
-    public synchronized void sendNotification(String text, T userData)
+    public synchronized void sendNotification(String text, U userData, long timestamp)
     {
         map.allValues()
-                .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(text, userData, System.currentTimeMillis())));
+                .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(text, userData, timestamp)));
     }
     @Override
     public synchronized void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException
@@ -135,7 +141,7 @@ public class SimpleNotificationEmitter<T> implements NotificationEmitter
             this.handback = handback;
         }
 
-        public void sendNotification(String text, T userData, long timeStamp)
+        public void sendNotification(String text, U userData, long timeStamp)
         {
             Notification notification = new Notification(type, source, sequenceNumber.incrementAndGet(), timeStamp, text);
             notification.setUserData(userData);
