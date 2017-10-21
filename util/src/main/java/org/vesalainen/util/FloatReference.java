@@ -23,15 +23,18 @@ public final class FloatReference extends PrimitiveReference
 {
     float value;
 
+    public FloatReference(float value)
+    {
+        this.value = value;
+    }
+
     public float getValue()
     {
-        assert !isRecycled();
         return value;
     }
 
     public void setValue(float value)
     {
-        assert !isRecycled();
         this.value = value;
     }
     
@@ -41,10 +44,4 @@ public final class FloatReference extends PrimitiveReference
         return "value=" + value;
     }
 
-    @Override
-    public void clear()
-    {
-        value = 0;
-    }
-    
 }

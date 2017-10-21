@@ -23,15 +23,18 @@ public final class DoubleReference extends PrimitiveReference
 {
     double value;
 
+    public DoubleReference(double value)
+    {
+        this.value = value;
+    }
+
     public double getValue()
     {
-        assert !isRecycled();
         return value;
     }
 
     public void setValue(double value)
     {
-        assert !isRecycled();
         this.value = value;
     }
 
@@ -39,12 +42,6 @@ public final class DoubleReference extends PrimitiveReference
     public String toString()
     {
         return "value=" + value;
-    }
-    
-    @Override
-    public void clear()
-    {
-        value = 0;
     }
     
 }

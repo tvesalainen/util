@@ -38,12 +38,8 @@ public class FloatGenerator<T>
      */
     public boolean provide(float value)
     {
-        FloatReference ref = Recycler.get(FloatReference.class, (FloatReference r)->r.setValue(value));
+        FloatReference ref = new FloatReference(value);
         boolean res = queue.offer(ref);
-        if (!res)
-        {
-            Recycler.recycle(ref);
-        }
         return res;
     }
     /**
@@ -56,7 +52,6 @@ public class FloatGenerator<T>
         {
             FloatReference ref = queue.take();
             float value = ref.getValue();
-            Recycler.recycle(ref);
             return value;
         }
         catch (InterruptedException ex)

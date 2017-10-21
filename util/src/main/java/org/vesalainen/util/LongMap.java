@@ -56,7 +56,7 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
         LongReference w = map.get(key);
         if (w == null)
         {
-            w = Recycler.get(LongReference.class, (LongReference r)->r.setValue(value));
+            w = new LongReference(value);
             map.put(key, w);
         }
         else

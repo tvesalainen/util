@@ -24,15 +24,18 @@ public final class IntReference extends PrimitiveReference
 {
     int value;
 
+    public IntReference(int value)
+    {
+        this.value = value;
+    }
+
     public int getValue()
     {
-        assert !isRecycled();
         return value;
     }
 
     public void setValue(int value)
     {
-        assert !isRecycled();
         this.value = value;
     }
 
@@ -40,12 +43,6 @@ public final class IntReference extends PrimitiveReference
     public String toString()
     {
         return "value=" + value;
-    }
-    
-    @Override
-    public void clear()
-    {
-        value = 0;
     }
     
 }

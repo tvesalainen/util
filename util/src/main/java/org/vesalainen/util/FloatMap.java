@@ -44,8 +44,7 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
         FloatReference w = map.get(key);
         if (w == null)
         {
-            w = new FloatReference();
-            w.value = value;
+            w = new FloatReference(value);
             map.put(key, w);
         }
         else

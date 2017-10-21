@@ -24,15 +24,18 @@ public final class LongReference extends PrimitiveReference
 {
     long value;
 
+    public LongReference(long value)
+    {
+        this.value = value;
+    }
+
     public long getValue()
     {
-        assert !isRecycled();
         return value;
     }
 
     public void setValue(long value)
     {
-        assert !isRecycled();
         this.value = value;
     }
 
@@ -40,12 +43,6 @@ public final class LongReference extends PrimitiveReference
     public String toString()
     {
         return "value=" + value;
-    }
-    
-    @Override
-    public void clear()
-    {
-        value = 0;
     }
     
 }
