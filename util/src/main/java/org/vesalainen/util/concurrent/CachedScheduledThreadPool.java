@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
 
@@ -144,7 +145,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             }
             catch (InterruptedException ex)
             {
-                severe("interrupted");
+                severe("waiter interrupted");
                 return;
             }
         }
@@ -154,6 +155,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         private boolean fixedDelay;
         private long period;
         private long expires;
+        private Throwable throwable;
 
         public RunnableScheduledFutureImpl(Runnable command, long delay, TimeUnit unit)
         {
@@ -198,23 +200,38 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         {
             if (isPeriodic())
             {
+                boolean ok = true;
                 if (fixedDelay)
                 {
-                    super.runAndReset();
+                    ok = super.runAndReset();
                     expires = clock.millis()+period;
                 }
                 else
                 {
                     long next = clock.millis()+period;
-                    super.runAndReset();
+                    ok = super.runAndReset();
                     expires = next;
                 }
-                delayQueue.add(this);
+                if (ok)
+                {
+                    delayQueue.add(this);
+                }
+                else
+                {
+                    log(SEVERE, throwable, "runAndReset failed %s", throwable.getMessage());
+                }
             }
             else
             {
                 super.run();
             }
+        }
+
+        @Override
+        protected void setException(Throwable t)
+        {
+            super.setException(t);
+            throwable = t;
         }
 
         @Override
