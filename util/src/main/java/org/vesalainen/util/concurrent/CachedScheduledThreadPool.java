@@ -218,7 +218,14 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                 }
                 else
                 {
-                    log(SEVERE, throwable, "runAndReset failed %s", throwable.getMessage());
+                    if (throwable != null)
+                    {
+                        log(SEVERE, throwable, "runAndReset failed %s", throwable.getMessage());
+                    }
+                    else
+                    {
+                        log(LEVEL,"runAndReset failed (cancelled)");
+                    }
                 }
             }
             else
