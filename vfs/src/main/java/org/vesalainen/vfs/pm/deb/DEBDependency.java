@@ -25,20 +25,20 @@ import org.vesalainen.vfs.pm.Dependency;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DEPDependency implements Dependency
+public class DEBDependency implements Dependency
 {
     private String name;
     private String version;
     private Condition[] conditions;
 
-    public DEPDependency(String name, String version, Condition... condition)
+    public DEBDependency(String name, String version, Condition... condition)
     {
         this.name = name;
         this.version = version;
         this.conditions = condition;
     }
 
-    public DEPDependency(String str)
+    public DEBDependency(String str)
     {
         if (str.indexOf('|') != -1)
         {

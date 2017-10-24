@@ -35,7 +35,7 @@ public class DEPDependencyTest
     @Test
     public void test1()
     {
-        DEPDependency d = new DEPDependency("libc6 (>= 2.2.1)");
+        DEBDependency d = new DEBDependency("libc6 (>= 2.2.1)");
         assertEquals("libc6", d.getName());
         assertEquals("2.2.1", d.getVersion());
         assertTrue(ArrayHelp.contains(d.getConditions(), GREATER));

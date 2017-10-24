@@ -74,7 +74,7 @@ public class Control extends ControlBase
         {
             for (String conflict : conflictList)
             {
-                DEPDependency dep = new DEPDependency(conflict);
+                DEBDependency dep = new DEBDependency(conflict);
                 conflicts.put(dep.getName(), dep);
             }
         }
@@ -83,7 +83,7 @@ public class Control extends ControlBase
         {
             for (String provide : providesList)
             {
-                DEPDependency dep = new DEPDependency(provide);
+                DEBDependency dep = new DEBDependency(provide);
                 provides.put(dep.getName(), dep);
             }
         }
@@ -92,7 +92,7 @@ public class Control extends ControlBase
         {
             for (String require : dependsList)
             {
-                DEPDependency dep = new DEPDependency(require);
+                DEBDependency dep = new DEBDependency(require);
                 dependencies.put(dep.getName(), dep);
             }
         }
@@ -230,7 +230,7 @@ public class Control extends ControlBase
     {
         if (!depends.startsWith("/"))
         {
-            DEPDependency dep = new DEPDependency(depends, version, deps);
+            DEBDependency dep = new DEBDependency(depends, version, deps);
             binary.add(DEPENDS, dep.toString());
             dependencies.put(dep.getName(), dep);
         }
@@ -244,7 +244,7 @@ public class Control extends ControlBase
     {
         if (!depends.startsWith("/"))
         {
-            DEPDependency dep = new DEPDependency(depends, version, dependencies);
+            DEBDependency dep = new DEBDependency(depends, version, dependencies);
             binary.add(CONFLICTS, dep.toString());
             conflicts.put(dep.getName(), dep);
         }
@@ -253,7 +253,7 @@ public class Control extends ControlBase
     public Control addProvides(String provide)
     {
         binary.add(PROVIDES, provide);
-        DEPDependency dep = new DEPDependency(provide, null);
+        DEBDependency dep = new DEBDependency(provide, null);
         provides.put(dep.getName(), dep);
         return this;
     }

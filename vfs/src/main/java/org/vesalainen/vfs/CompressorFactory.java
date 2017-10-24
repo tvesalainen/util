@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import org.tukaani.xz.FilterOptions;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZInputStream;
 import org.tukaani.xz.XZOutputStream;
@@ -56,7 +57,7 @@ public final class CompressorFactory
         switch (comp)
         {
             case GZIP:
-                return GZIPOutputStream::new;
+                return CompressorFactory::createGZIPOutputStream;
             case XZ:
                 return CompressorFactory::createXZOutputStream;
             default:
@@ -91,8 +92,43 @@ public final class CompressorFactory
         }
         throw new UnsupportedOperationException(path+" not supported");
     }
+    private static GZIPOutputStream createGZIPOutputStream(OutputStream out) throws IOException
+    {
+        return new GZOut(out, true);
+    }
     private static XZOutputStream createXZOutputStream(OutputStream out) throws IOException
     {
-        return new XZOutputStream(out, new LZMA2Options());
+        return new XZOut(out, new LZMA2Options());
+    }
+    private static class XZOut extends XZOutputStream
+    {
+
+        public XZOut(OutputStream out, FilterOptions fo) throws IOException
+        {
+            super(out, fo);
+        }
+        
+        @Override
+        public void flush() throws IOException
+        {
+            super.finish();
+        }
+        
+    }
+    private static class GZOut extends GZIPOutputStream
+    {
+        
+        public GZOut(OutputStream out, boolean syncFlush) throws IOException
+        {
+            super(out, syncFlush);
+        }
+
+        @Override
+        public void flush() throws IOException
+        {
+            super.finish();
+            super.flush();
+        }
+        
     }
 }

@@ -168,17 +168,16 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
             // control
             ar.addEntry("control.tar.gz");
             info("control %d", channel.position());
-            try (FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(GZIP)))
-            {
-                store(controlChannel, controlRoot);
-            }
+            // no try-with-resources because we don't want to close channel
+            FilterChannel controlChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(GZIP));
+            store(controlChannel, controlRoot);
+            controlChannel.flush();
             // data
             ar.addEntry("data.tar.xz");
             info("data %d", channel.position());
-            try (FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(XZ)))
-            {
-                store(dataChannel, root);
-            }
+            FilterChannel dataChannel = new FilterChannel(channel, BUF_SIZE, TAR_BLOCK_SIZE, null, CompressorFactory.output(XZ));
+            store(dataChannel, root);
+            dataChannel.flush();
         }
     }
     private void getFileAttributes() throws IOException
