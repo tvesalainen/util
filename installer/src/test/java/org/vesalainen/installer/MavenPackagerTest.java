@@ -33,7 +33,7 @@ public class MavenPackagerTest
     @Test
     public void testDeb()
     {
-        MavenPackager.main("-pd", "z:\\", "-short", "true", "-g", "org.vesalainen", "-a", "dns-server");
+        MavenPackager.main("-pd", "z:\\", "-short", "true", "-g", "org.vesalainen.nmea", "-a", "nmea-router");
     }
     
 }

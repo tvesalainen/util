@@ -52,6 +52,7 @@ import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageFilenameFactory;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
+import org.vesalainen.vfs.pm.deb.DEBDependency;
 
 /**
  *
@@ -172,7 +173,7 @@ public class MavenPackager extends LoggingCommandLine
             }
             view.setUrl(root.getUrl());
             config("url=%s", root.getUrl());
-            copyJarsEtc(appDir());
+            copyJarsEtc(appDir(), view);
             Path etcInitDPath = initPath();
             createEtcInit(etcInitDPath);
             view.setPostInstallation("update-rc.d "+getPackage()+" defaults\nservice "+getPackage()+" start\n");
@@ -239,7 +240,7 @@ public class MavenPackager extends LoggingCommandLine
         }
     }
 
-    private void copyJarsEtc(Path optPackage) throws IOException
+    private void copyJarsEtc(Path optPackage, PackageManagerAttributeView view) throws IOException
     {
         Path jarDir = optPackage.resolve("jar");
         List<Path> jars = new ArrayList<>();
@@ -262,6 +263,11 @@ public class MavenPackager extends LoggingCommandLine
             PackageFileAttributes.setLicense(target, license);
             String developers = getDevelopers(model);
             PackageFileAttributes.setCopyright(target, developers);
+            String require = model.getProperties().getProperty("org.vesalainen.installer.require");
+            if (require != null)
+            {
+                view.addRequire(require);
+            }
         }
         classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(":"));
     }
@@ -328,6 +334,15 @@ public class MavenPackager extends LoggingCommandLine
                 .map((v)->v.resolv())
                 .map(factory::getLocalModel)
                 );
+    }
+    public String getMainJar()
+    {
+        Path appDir = appDir();
+        Path jarDir = appDir.resolve("jar");
+        String filename = fileModelResolver.getFilename(groupId, artifactId, version, "jar");
+        
+        Path target = jarDir.resolve(filename);
+        return target.toString();
     }
     public String getMainClass()
     {
