@@ -9,8 +9,8 @@
         <size>256</size>
         <dir>/var/log</dir>
     </properties>
-    <logger name="${package}" level="info" useParentHandlers="&{useParentHandlers}">
-        <fileHandler pattern="${dir}/${package}%g.log" formatter="&{formatter}">
+    <logger name="${groupId}" level="info" useParentHandlers="&{useParentHandlers}">
+        <fileHandler pattern="&{dir}/${package}%g.log" formatter="&{formatter}">
         </fileHandler>
     </logger>
 </java-logging-config>

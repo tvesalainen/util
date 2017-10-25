@@ -32,8 +32,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,6 +47,7 @@ import org.vesalainen.test.pom.ModelFactory;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.LoggingCommandLine;
 import org.vesalainen.vfs.VirtualFileSystems;
+import org.vesalainen.vfs.pm.Dependency;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageFilenameFactory;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
@@ -266,7 +265,10 @@ public class MavenPackager extends LoggingCommandLine
             String require = model.getProperties().getProperty("org.vesalainen.installer.require");
             if (require != null)
             {
-                view.addRequire(require);
+                for (Dependency req : DEBDependency.parse(require))
+                {
+                    view.addRequire(req.toString());
+                }
             }
         }
         classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(":"));
@@ -347,21 +349,31 @@ public class MavenPackager extends LoggingCommandLine
     public String getMainClass()
     {
         Build build = root.getBuild();
-        Map<String, Plugin> pluginsAsMap = build.getPluginsAsMap();
-        Plugin assemblyPlugin = pluginsAsMap.get("org.apache.maven.plugins:maven-assembly-plugin");
-        Objects.requireNonNull(assemblyPlugin, root+" doesn't have main class in org.apache.maven.plugins:maven-assembly-plugin");
-        Map<String, PluginExecution> executionsAsMap = assemblyPlugin.getExecutionsAsMap();
-        PluginExecution createExecutableJar = executionsAsMap.get("create-executable-jar");
-        Objects.requireNonNull(createExecutableJar, root+" doesn't have create-executable-jar in org.apache.maven.plugins:maven-assembly-plugin");
-        Xpp3Dom configuration = (Xpp3Dom) createExecutableJar.getConfiguration();
-        Objects.requireNonNull(configuration, root+" doesn't have configuration in org.apache.maven.plugins:maven-assembly-plugin");
-        Xpp3Dom archive = configuration.getChild("archive");
-        Objects.requireNonNull(archive, root+" doesn't have archive in org.apache.maven.plugins:maven-assembly-plugin");
-        Xpp3Dom manifest = archive.getChild("manifest");
-        Objects.requireNonNull(manifest, root+" doesn't have manifest in org.apache.maven.plugins:maven-assembly-plugin");
-        Xpp3Dom mainClass = manifest.getChild("mainClass");
-        Objects.requireNonNull(mainClass, root+" doesn't have mainClass in org.apache.maven.plugins:maven-assembly-plugin");
-        return mainClass.getValue();
+        for (Plugin plugin : build.getPlugins())
+        {
+            Xpp3Dom pluginConfigurations = (Xpp3Dom) plugin.getConfiguration();
+            if (pluginConfigurations != null)
+            {
+                String found = Xpp3DomSearch.find(pluginConfigurations, "mainClass");
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+            for (PluginExecution executions : plugin.getExecutions())
+            {
+                Xpp3Dom executionConfigurations = (Xpp3Dom) executions.getConfiguration();
+                if (executionConfigurations != null)
+                {
+                    String found = Xpp3DomSearch.find(executionConfigurations, "mainClass");
+                    if (found != null)
+                    {
+                        return found;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public String getClasspath()
