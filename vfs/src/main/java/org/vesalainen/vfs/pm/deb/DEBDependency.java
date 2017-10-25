@@ -16,7 +16,9 @@
  */
 package org.vesalainen.vfs.pm.deb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.vesalainen.vfs.pm.Condition;
 import static org.vesalainen.vfs.pm.Condition.*;
 import org.vesalainen.vfs.pm.Dependency;
@@ -78,6 +80,16 @@ public class DEBDependency implements Dependency
         }
     }
 
+    public static List<Dependency> parse(String text)
+    {
+        List<Dependency> list = new ArrayList<>();
+        for (String str : text.split(","))
+        {
+            list.add(new DEBDependency(str.trim()));
+        }
+        return list;
+    }
+    
     @Override
     public String getName()
     {

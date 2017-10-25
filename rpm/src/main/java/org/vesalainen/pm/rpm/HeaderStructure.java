@@ -20,13 +20,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import static org.vesalainen.pm.rpm.IndexType.*;
+//import static org.vesalainen.pm.rpm.IndexType.*;
 import org.vesalainen.util.HexDump;
 
 /**
@@ -35,8 +33,9 @@ import org.vesalainen.util.HexDump;
  */
 class HeaderStructure
 {
+    static final byte[] HEADER_MAGIC = new byte[]{(byte) 0x8e, (byte) 0xad, (byte) 0xe8, (byte) 0x01};
     boolean signature;
-    byte[] magic = RPM.HEADER_MAGIC;
+    byte[] magic = HEADER_MAGIC;
     byte[] reserved = new byte[4];
     int nindex;
     int hsize;

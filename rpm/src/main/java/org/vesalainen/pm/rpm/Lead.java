@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.Arrays;
-import static org.vesalainen.pm.rpm.RPM.LEAD_MAGIC;
 
 /**
  *
@@ -28,6 +27,7 @@ import static org.vesalainen.pm.rpm.RPM.LEAD_MAGIC;
  */
 public class Lead
 {
+    static final byte[] LEAD_MAGIC = new byte[]{(byte) 0xed, (byte) 0xab, (byte) 0xee, (byte) 0xdb};
     byte[] magic = LEAD_MAGIC;
     byte major = 3;
     byte minor;

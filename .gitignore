@@ -19,3 +19,5 @@ hs_err_pid*
 /installer/target/
 /rpm/nbproject/
 /rpm/target/
+/vfs/nbproject/
+/vfs/target/
