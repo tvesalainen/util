@@ -66,10 +66,10 @@ import org.vesalainen.vfs.pm.deb.Copyright.FileCopyright;
  */
 public final class DEBFileSystem extends ArchiveFileSystem implements PackageManagerAttributeView
 {
-    private static final RegexMatcher<Boolean> PACKAGE_MATCHER = new RegexMatcher("[a-z][0-9a-z\\.\\+\\-]+", true).compile();
-    private static final RegexMatcher<Boolean> UPSTREAM_VERSION_MATCHER = new RegexMatcher("[0-9][0-9a-zA-Z\\.\\+\\-~]*", true).compile();
-    private static final RegexMatcher<Boolean> DEBIAN_REVISION_MATCHER = new RegexMatcher("[0-9a-zA-Z\\.\\+~]*", true).compile();
-    private static final int BUF_SIZE = 4096;
+    private static final RegexMatcher<Boolean> PACKAGE_MATCHER = new RegexMatcher().addExpression("[a-z][0-9a-z\\.\\+\\-]+", true).compile();
+    private static final RegexMatcher<Boolean> UPSTREAM_VERSION_MATCHER = new RegexMatcher().addExpression("[0-9][0-9a-zA-Z\\.\\+\\-~]*", true).compile();
+    private static final RegexMatcher<Boolean> DEBIAN_REVISION_MATCHER = new RegexMatcher().addExpression("[0-9a-zA-Z\\.\\+~]*", true).compile();
+    private static final int BUF_SIZE = 8192;
     private static final byte[] DEB_VERSION = "2.0\n".getBytes(US_ASCII);
     private static final String INTERPRETER = "/bin/sh";
     private final Root root;
@@ -142,7 +142,7 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
     private void storeDEB() throws IOException
     {
         checkChangeLog();
-        getFileAttributes();
+        handleFileAttributes();
         Path docPath = getPath("/usr/share/doc");
         Path packageDocPath = docPath.resolve(getPackageName());
         Files.createDirectories(packageDocPath);
@@ -180,7 +180,7 @@ public final class DEBFileSystem extends ArchiveFileSystem implements PackageMan
             dataChannel.flush();
         }
     }
-    private void getFileAttributes() throws IOException
+    private void handleFileAttributes() throws IOException
     {
         walk(root).filter((p)->Files.isRegularFile(p)).forEach((p)->
         {
