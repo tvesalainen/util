@@ -48,6 +48,7 @@ import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.LoggingCommandLine;
 import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.pm.Dependency;
+import org.vesalainen.vfs.pm.FileUse;
 import org.vesalainen.vfs.pm.PackageFileAttributes;
 import org.vesalainen.vfs.pm.PackageFilenameFactory;
 import org.vesalainen.vfs.pm.PackageManagerAttributeView;
@@ -310,6 +311,7 @@ public class MavenPackager extends LoggingCommandLine
             }
         }
         Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(permissions));
+        PackageFileAttributes.setUsage(path, FileUse.CONFIGURATION);
         config("created %s", path);
     }
     private Stream<String> getDependencyNames()

@@ -6,12 +6,12 @@
         <locale>fi_FI</locale>
         <formatter>org.vesalainen.util.logging.MinimalFormatter</formatter>
         <useParentHandlers>false</useParentHandlers>
+        <level>CONFIG</level>
         <size>256</size>
         <dir>/var/log</dir>
     </properties>
-    <logger name="${groupId}" level="info" useParentHandlers="&{useParentHandlers}">
-        <fileHandler pattern="&{dir}/${package}%g.log" formatter="&{formatter}">
-        </fileHandler>
+    <logger name="${groupId}" level="&{level}" useParentHandlers="&{useParentHandlers}">
+        <fileHandler level="&{level}" pattern="&{dir}/${package}%g.log" formatter="&{formatter}"/>
     </logger>
 </java-logging-config>
 
