@@ -51,5 +51,29 @@ public class JavaLoggingTest
         assertNotNull(handlers);
         assertTrue(handlers.length > 0);
     }
+
+    /**
+     * Test of logIt method, of class JavaLogging.
+     */
+    @Test
+    public void testLogIt_Level_Supplier()
+    {
+    }
+
+    /**
+     * Test of logIt method, of class JavaLogging.
+     */
+    @Test
+    public void testLogIt_Level_String()
+    {
+    }
+
+    /**
+     * Test of logIt method, of class JavaLogging.
+     */
+    @Test
+    public void testLogIt_3args()
+    {
+    }
     
 }
