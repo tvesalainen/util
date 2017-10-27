@@ -36,13 +36,4 @@ public class Conffiles extends FilesBase
         super("conffiles", debian);
     }
     
-    @Override
-    public void addFile(Path filepath)
-    {
-        if (!filepath.startsWith("/etc"))
-        {
-            super.addFile(filepath);
-        }
-    }
-    
 }
