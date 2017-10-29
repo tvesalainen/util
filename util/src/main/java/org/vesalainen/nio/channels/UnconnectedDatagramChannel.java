@@ -343,4 +343,11 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     {
         channel.close();
     }
+
+    @Override
+    public String toString()
+    {
+        return "UnconnectedDatagramChannel{" + "channel=" + channel + '}';
+    }
+    
 }
