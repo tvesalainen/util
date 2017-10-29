@@ -347,7 +347,7 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     @Override
     public String toString()
     {
-        return "UnconnectedDatagramChannel{" + "channel=" + channel + '}';
+        return "UnconnectedDatagramChannel{" + address + '}';
     }
     
 }
