@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.vesalainen.util.IntReference;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -83,6 +85,10 @@ public class CachedScheduledThreadPoolT
         Thread.sleep(500);
         future.cancel(false);
         assertTrue(times.size()>15 && times.size()<20);
+        final IntReference ref = new IntReference(0);
+        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        after.get();
+        assertEquals(1, ref.getValue());
     }
     private void command()
     {
