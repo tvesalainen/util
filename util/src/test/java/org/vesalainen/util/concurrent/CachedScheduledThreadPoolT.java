@@ -24,13 +24,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.vesalainen.util.IntReference;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -85,10 +82,18 @@ public class CachedScheduledThreadPoolT
         Thread.sleep(500);
         future.cancel(false);
         assertTrue(times.size()>15 && times.size()<20);
+    }
+    @Test
+    public void testSubmitAfter() throws InterruptedException, ExecutionException
+    {
+        ScheduledFuture<?> future = pool.schedule(this::sleeper, 10, TimeUnit.MILLISECONDS);
         final IntReference ref = new IntReference(0);
+        long m1 = clock.millis();
         Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
         after.get();
+        long m2 = clock.millis();
         assertEquals(1, ref.getValue());
+        assertTrue(m2-m1 >= 20);
     }
     private void command()
     {
