@@ -51,7 +51,6 @@ import org.vesalainen.util.jaxb.JavaLoggingConfig.Properties;
 import org.vesalainen.util.jaxb.LoggerType;
 import org.vesalainen.util.jaxb.MemoryHandlerType;
 import org.vesalainen.util.jaxb.SocketHandlerType;
-import org.vesalainen.util.jaxb.StdType;
 import org.w3c.dom.Element;
 
 /**
@@ -186,42 +185,7 @@ public class JavaLogging extends BaseLogging
         }
         return list;
     }
-    /**
-     * Attaches stdout for logging
-     * @param name Log name
-     * @param level Log level
-     * @see java.lang.System#setOut(java.io.PrintStream) 
-     */
-    public static final void attachStdOut(String name, Level level)
-    {
-        try
-        {
-            LogOutputStream out = new LogOutputStream("stdout:%s", JavaLogging.getLogger(name), level);
-            System.setOut(out);
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-    /**
-     * Attaches stderr for logging
-     * @param name Log name
-     * @param level Log level
-     * @see java.lang.System#setErr(java.io.PrintStream) 
-     */
-    public static final void attachStdErr(String name, Level level)
-    {
-        try
-        {
-            LogOutputStream err = new LogOutputStream("stderr:%s", JavaLogging.getLogger(name), level);
-            System.setErr(err);
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
+    
     public static final void setConsoleHandler(String name, Level level)
     {
         setHandler(name, false, level, new MinimalFormatter(JavaLogging::getClock), null, new ConsoleHandler());
@@ -274,23 +238,6 @@ public class JavaLogging extends BaseLogging
                 }
             }
             ExpressionParser ep = new ExpressionParser(expressionMap);
-            
-            StdType stdout = javaLoggingConfig.getStdout();
-            if (stdout != null)
-            {
-                String name = ep.replace(stdout.getName());
-                String level = ep.replace(stdout.getLevel());
-                attachStdOut(name, BaseLogging.parseLevel(level));
-            }
-            
-            StdType stderr = javaLoggingConfig.getStderr();
-            if (stderr != null)
-            {
-                String name = ep.replace(stderr.getName());
-                String level = ep.replace(stderr.getLevel());
-                attachStdErr(name, BaseLogging.parseLevel(level));
-            }
-            
             for (LoggerType loggerType : javaLoggingConfig.getLogger())
             {
                 String name = ep.replace(loggerType.getName());

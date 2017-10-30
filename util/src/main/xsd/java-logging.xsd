@@ -32,8 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="logger" type="loggerType" maxOccurs="unbounded"/>
-                <xsd:element name="stdout" type="stdType" maxOccurs="1"/>
-                <xsd:element name="stderr" type="stdType" maxOccurs="1"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -101,9 +99,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="filter" type="xsd:string"/>
         <xsd:attribute name="errorManager" type="xsd:string" default="java.util.logging.ErrorManager"/>
         <xsd:attribute name="encoding" type="xsd:string" default="utf-8"/>
-    </xsd:complexType>
-    <xsd:complexType name="stdType">
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="level" type="xsd:string" default="INFO"/>
     </xsd:complexType>
 </xsd:schema>
