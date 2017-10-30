@@ -18,7 +18,6 @@ package org.vesalainen.util.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import static java.nio.charset.StandardCharsets.*;

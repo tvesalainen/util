@@ -16,10 +16,12 @@
  */
 package org.vesalainen.util.logging;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.OSProcess;
 
 /**
  *
@@ -30,14 +32,16 @@ public class LogOutputStreamTest
     
     public LogOutputStreamTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.INFO);
     }
 
     @Test
-    public void test() throws UnsupportedEncodingException
+    public void test() throws UnsupportedEncodingException, IOException, InterruptedException
     {
         LogOutputStream err = new LogOutputStream("err:%s", JavaLogging.getLogger("org.vesalainen"), Level.INFO);
         System.setErr(err);
         System.err.println("hello is it logging");
+        Runtime.getRuntime().exec("cmd echo foo >&2");
     }
     
 }
