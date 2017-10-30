@@ -84,7 +84,17 @@ public class CachedScheduledThreadPoolT
         assertTrue(times.size()>15 && times.size()<20);
     }
     @Test
-    public void testSubmitAfter() throws InterruptedException, ExecutionException
+    public void testSubmitAfter1() throws InterruptedException, ExecutionException
+    {
+        Future<?> future = pool.submit(this::command);
+        future.get();
+        final IntReference ref = new IntReference(0);
+        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        after.get();
+        assertEquals(1, ref.getValue());
+    }
+    @Test
+    public void testSubmitAfter2() throws InterruptedException, ExecutionException
     {
         ScheduledFuture<?> future = pool.schedule(this::sleeper, 10, TimeUnit.MILLISECONDS);
         final IntReference ref = new IntReference(0);

@@ -17,11 +17,13 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -32,10 +34,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
-import java.util.logging.Logger;
 import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
 
@@ -50,6 +50,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     private Clock clock = Clock.systemUTC();
     private DelayQueue<RunnableScheduledFuture<?>> delayQueue = new DelayQueue<>();
     private Future<?> waiterFuture;
+    private Map<Future<?>,FutureTask<?>> afterMap = Collections.synchronizedMap(new WeakHashMap<>());
     /**
      * Creates ScheduledThreadPool with 0 corePoolSize, unlimited maximumPoolSize,
      * keepAlive 1 minute and SynchronousQueue
@@ -149,33 +150,6 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     {
         return submitAfter(future, runnable, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
-    /**
-     * submits callable after waiting future to complete or timeout to exceed
-     * @param <V>
-     * @param future
-     * @param callable
-     * @param timeout
-     * @param unit
-     * @return 
-     */
-    public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
-    {
-        AfterTask<V> task = new AfterTask(future, callable, timeout, unit);
-        return submit(task, null);
-    }
-    /**
-     * submits runnable after waiting future to complete or timeout to exceed
-     * @param future
-     * @param runnable
-     * @param timeout
-     * @param unit
-     * @return 
-     */
-    public Future<?> submitAfter(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
-    {
-        AfterTask<?> task = new AfterTask(future, runnable, timeout, unit);
-        return submit(task);
-    }
     private void ensureWaiterRunning()
     {
         if (waiterFuture == null || waiterFuture.isDone())
@@ -201,6 +175,65 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             }
         }
     }
+    /**
+     * submits callable after waiting future to complete or timeout to exceed
+     * @param <V>
+     * @param future
+     * @param callable
+     * @param timeout
+     * @param unit
+     * @return 
+     */
+    public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
+    {
+        AfterTask<V> task = new AfterTask<>(future, callable, timeout, unit);
+        return (Future<V>) addAfterTask(task);
+    }
+    /**
+     * submits runnable after waiting future to complete or timeout to exceed
+     * @param future
+     * @param runnable
+     * @param timeout
+     * @param unit
+     * @return 
+     */
+    public Future<?> submitAfter(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
+    {
+        AfterTask<?> task = new AfterTask<>(future, runnable, timeout, unit);
+        return addAfterTask(task);
+    }
+
+    private synchronized Future<?> addAfterTask(AfterTask<?> afterTask)
+    {
+        Future<?> future = afterTask.getFuture();
+        if (afterMap.containsKey(future))
+        {
+            submit(afterTask);
+        }
+        else
+        {
+            afterMap.put(future, afterTask);
+        }
+        return afterTask;
+    }
+    @Override
+    protected synchronized void afterExecute(Runnable r, Throwable t)
+    {
+        super.afterExecute(r, t);
+        if (r instanceof Future)
+        {
+            FutureTask<?> task = afterMap.get(r);
+            if (task != null)
+            {
+                submit(task);
+            }
+            else
+            {
+                afterMap.put((Future<?>) r, null);
+            }
+        }
+    }
+    
     private class AfterTask<V> extends FutureTask<V>
     {
         private Future<V> future;
@@ -223,19 +256,11 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             this.unit = unit;
         }
 
-        @Override
-        public void run()
+        private Future<V> getFuture()
         {
-            try
-            {
-                future.get(timeout, unit);
-            }
-            catch (Exception ex)
-            {
-            }
-            super.run();
+            return future;
         }
-        
+
     }
     private class RunnableScheduledFutureImpl<V> extends FutureTask<V> implements RunnableScheduledFuture<V>
     {
