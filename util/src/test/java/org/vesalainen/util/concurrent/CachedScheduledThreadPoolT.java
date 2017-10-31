@@ -23,12 +23,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.vesalainen.util.IntReference;
+import org.vesalainen.util.Lists;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -97,13 +99,52 @@ public class CachedScheduledThreadPoolT
     public void testSubmitAfter2() throws InterruptedException, ExecutionException
     {
         ScheduledFuture<?> future = pool.schedule(this::sleeper, 10, TimeUnit.MILLISECONDS);
+        List<Future<?>> list = new ArrayList<>();
+        list.add(future);
+        pool.setRemoveCompleted(list);
         final IntReference ref = new IntReference(0);
         long m1 = clock.millis();
         Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
         after.get();
         long m2 = clock.millis();
         assertEquals(1, ref.getValue());
-        assertTrue(m2-m1 >= 20);
+        long elapsed = m2-m1;
+        assertTrue(elapsed+"<19", elapsed >= 19);
+        assertTrue(list.isEmpty());
+    }
+    @Test
+    public void testTimedSubmitAfter() throws InterruptedException, ExecutionException
+    {
+        ScheduledFuture<?> future = pool.schedule(this::sleeper, 10, TimeUnit.DAYS);
+        List<Future<?>> list = new ArrayList<>();
+        list.add(future);
+        pool.setRemoveCompleted(list);
+        long m1 = clock.millis();
+        Future<?> after = pool.submitAfter(future, this::command, 10, TimeUnit.MILLISECONDS);
+        try
+        {
+            after.get();
+            fail("should throw");
+        }
+        catch (ExecutionException ex)
+        {
+            long m2 = clock.millis();
+            assertTrue(m2-m1 >= 10);
+        }
+        assertFalse(list.isEmpty());
+    }
+    @Test
+    public void testWait() throws InterruptedException, ExecutionException
+    {
+        List<Future<?>> list = new ArrayList<>();
+        long m1 = clock.millis();
+        list.add(pool.submit(this::sleeper));
+        list.add(pool.submit(this::command));
+        pool.waitforAllCompleted(list);
+        long m2 = clock.millis();
+        long elapsed = m2-m1;
+        assertTrue(elapsed+"<10", elapsed >= 10);
+        assertTrue(list.isEmpty());
     }
     private void command()
     {
