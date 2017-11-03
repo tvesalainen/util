@@ -51,7 +51,7 @@ import static org.vesalainen.util.logging.BaseLogging.DEBUG;
  */
 public class CachedScheduledThreadPool extends ThreadPoolExecutor implements ScheduledExecutorService, AttachedLogger
 {
-    private static Level LEVEL = DEBUG;
+    private Level logLevel = Level.OFF;
     private Clock clock = Clock.systemUTC();
     private DelayQueue<RunnableScheduledFuture<?>> delayQueue = new DelayQueue<>();
     private Future<?> waiterFuture;
@@ -95,12 +95,17 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     {
         this.clock = clock;
     }
+
+    public void setLogLevel(Level level)
+    {
+        this.logLevel = level;
+    }
     
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit)
     {
         ensureWaiterRunning();
-        log(LEVEL, "schedule(%s, %d, %s)", command, delay, unit);
+        log(logLevel, "schedule(%s, %d, %s)", command, delay, unit);
         RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, delay, unit);
         delayQueue.add(future);
         return future;
@@ -110,7 +115,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit)
     {
         ensureWaiterRunning();
-        log(LEVEL, "schedule(%s, %d, %s)", callable, delay, unit);
+        log(logLevel, "schedule(%s, %d, %s)", callable, delay, unit);
         RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(callable, delay, unit);
         delayQueue.add(future);
         return future;
@@ -120,7 +125,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
     {
         ensureWaiterRunning();
-        log(LEVEL, "scheduleAtFixedRate(%s, %d, %d, %s)", command, initialDelay, period, unit);
+        log(logLevel, "scheduleAtFixedRate(%s, %d, %d, %s)", command, initialDelay, period, unit);
         RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, initialDelay, period, unit, false);
         delayQueue.add(future);
         return future;
@@ -130,7 +135,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit)
     {
         ensureWaiterRunning();
-        log(LEVEL, "scheduleWithFixedDelay(%s, %d, %d, %s)", command, initialDelay, delay, unit);
+        log(logLevel, "scheduleWithFixedDelay(%s, %d, %d, %s)", command, initialDelay, delay, unit);
         RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, initialDelay, delay, unit, true);
         delayQueue.add(future);
         return future;
@@ -161,7 +166,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         if (waiterFuture == null || waiterFuture.isDone())
         {
             waiterFuture = submit(this::waiter);
-            log(LEVEL, "waiter started");
+            log(logLevel, "waiter started");
         }
     }
     private void waiter()
@@ -171,7 +176,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             try
             {
                 RunnableScheduledFuture<?> runnable = delayQueue.take();
-                log(LEVEL, "activated %s", runnable);
+                log(logLevel, "activated %s", runnable);
                 execute(runnable);
             }
             catch (InterruptedException ex)
@@ -291,10 +296,12 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             if (task != null)
             {
                 submit(task);
+                log(logLevel, "submit %s after %s", task, future);
             }
             else
             {
                 afterMap.put(future, null);
+                log(logLevel, "store after %s", future);
             }
             Iterator<Entry<Collection<Future<?>>, CountDownLatch>> iterator = waitMap.entrySet().iterator();
             while (iterator.hasNext())
@@ -312,6 +319,10 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                     }
                 }
             }
+        }
+        else
+        {
+            log(logLevel, "afterExecute(%s) not future???", r);
         }
     }
     
@@ -431,7 +442,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                     }
                     else
                     {
-                        log(LEVEL,"runAndReset failed (cancelled)");
+                        log(logLevel,"runAndReset failed (cancelled)");
                     }
                 }
             }
