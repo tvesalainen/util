@@ -52,9 +52,10 @@ public class CachedScheduledThreadPoolT
         times = new ArrayList<>();
     }
     @After
-    public void after()
+    public void after() throws InterruptedException
     {
-        pool.shutdownNow();
+        pool.shutdown();
+        pool.awaitTermination(10, TimeUnit.MILLISECONDS);
     }
     @Test
     public void testSchedule() throws InterruptedException, ExecutionException
@@ -93,9 +94,48 @@ public class CachedScheduledThreadPoolT
         after.get();
         assertEquals(1, ref.getValue());
     }
+    @Test
+    public void testSubmitAfter2() throws InterruptedException, ExecutionException
+    {
+        Future<?> future = pool.submit(this::intrpt);
+        final IntReference ref = new IntReference(0);
+        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        after.get();
+        assertEquals(1, ref.getValue());
+    }
+    @Test
+    public void testSubmitAfter3() throws InterruptedException, ExecutionException
+    {
+        Future<?> future = pool.submit(this::excp);
+        final IntReference ref = new IntReference(0);
+        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        after.get();
+        assertEquals(1, ref.getValue());
+    }
+    @Test
+    public void testSubmitAfter4() throws InterruptedException, ExecutionException
+    {
+        long m1 = System.currentTimeMillis();
+        Future<?> future = pool.submit(this::sleeper);
+        final IntReference ref = new IntReference(0);
+        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        after.get();
+        long m2 = System.currentTimeMillis();
+        long elapsed = m2-m1;
+        assertTrue(elapsed+"<10", elapsed >= 10);
+        assertEquals(1, ref.getValue());
+    }
     private void command()
     {
         times.add(clock.millis());
+    }
+    private void intrpt()
+    {
+        Thread.currentThread().interrupt();
+    }
+    private void excp()
+    {
+        throw new RuntimeException();
     }
     private void sleeper()
     {
