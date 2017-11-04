@@ -19,6 +19,7 @@ package org.vesalainen.util.concurrent;
 import java.time.Clock;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
@@ -238,17 +239,17 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         {
             try
             {
-                log(logLevel, "call after task %s", this);
+                log(logLevel, "wait future %s", future);
                 future.get(timeout, unit);
-            }
-            catch (InterruptedException | ExecutionException ex)
-            {
-                log(logLevel, "exception %s after task %s", ex.getMessage(), this);
             }
             catch (TimeoutException ex)
             {
                 warning("waited task %s timeout -> task %s rejected", task, future);
                 return null;
+            }
+            catch (CancellationException | InterruptedException | ExecutionException ex)
+            {
+                log(logLevel, "%s %s after task %s", ex.getClass().getSimpleName(), ex.getMessage(), this);
             }
             try
             {
