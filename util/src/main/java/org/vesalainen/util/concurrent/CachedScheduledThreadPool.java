@@ -192,6 +192,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
     {
         AfterTask<V> task = new AfterTask<>(future, callable, timeout, unit);
+        log(logLevel, "submit after task %s", task);
         return (Future<V>) submit(task);
     }
     /**
@@ -206,6 +207,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public Future<?> submitAfter(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
     {
         AfterTask<?> task = new AfterTask<>(future, runnable, timeout, unit);
+        log(logLevel, "submit after task %s", task);
         return submit(task);
     }
     private class AfterTask<V> implements Callable<V>
@@ -236,17 +238,33 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         {
             try
             {
+                log(logLevel, "call after task %s", this);
                 future.get(timeout, unit);
             }
             catch (InterruptedException | ExecutionException ex)
             {
+                log(logLevel, "exception %s after task %s", ex.getMessage(), this);
             }
             catch (TimeoutException ex)
             {
                 warning("waited task %s timeout -> task %s rejected", task, future);
                 return null;
             }
-            return task.call();
+            try
+            {
+                log(logLevel, "enter after task %s", task);
+                return task.call();
+            }
+            finally
+            {
+                log(logLevel, "exit after task %s", task);
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return "AfterTask{" + "future=" + future + ", task=" + task + ", timeout=" + timeout + ", unit=" + unit + '}';
         }
 
     }
