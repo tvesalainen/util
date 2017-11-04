@@ -17,17 +17,12 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -51,12 +46,10 @@ import static org.vesalainen.util.logging.BaseLogging.DEBUG;
  */
 public class CachedScheduledThreadPool extends ThreadPoolExecutor implements ScheduledExecutorService, AttachedLogger
 {
-    private Level logLevel = Level.OFF;
+    private Level logLevel = DEBUG;
     private Clock clock = Clock.systemUTC();
     private DelayQueue<RunnableScheduledFuture<?>> delayQueue = new DelayQueue<>();
     private Future<?> waiterFuture;
-    private Map<Future<?>,FutureTask<?>> afterMap = new WeakHashMap<>();
-    private Map<Collection<Future<?>>,CountDownLatch> waitMap = new IdentityHashMap<>();
     /**
      * Creates ScheduledThreadPool with 0 corePoolSize, unlimited maximumPoolSize,
      * keepAlive 1 minute and SynchronousQueue
@@ -181,7 +174,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             }
             catch (InterruptedException ex)
             {
-                severe("waiter interrupted");
+                log(logLevel, "waiter interrupted");
                 return;
             }
         }
@@ -199,7 +192,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
     {
         AfterTask<V> task = new AfterTask<>(future, callable, timeout, unit);
-        return (Future<V>) addAfterTask(task);
+        return (Future<V>) submit(task);
     }
     /**
      * submits runnable after waiting future to complete or timeout to exceed. 
@@ -213,158 +206,47 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public Future<?> submitAfter(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
     {
         AfterTask<?> task = new AfterTask<>(future, runnable, timeout, unit);
-        return addAfterTask(task);
+        return submit(task);
     }
-    /**
-     * Given collection contains future instances. Those instances will be 
-     * removed from when they are completed.
-     * @param collection 
-     */
-    public synchronized void setRemoveCompleted(Collection<Future<?>> collection)
-    {
-        collection.removeIf((f)->f.isDone());
-        waitMap.put(collection, null);
-    }
-    /**
-     * Remove the collections.
-     * @param collection 
-     */
-    public synchronized void removeRemoveCompleted(Collection<Future<?>> collection)
-    {
-        collection.removeIf((f)->f.isDone());
-        waitMap.remove(collection);
-    }
-    /**
-     * Waits until all given futures are completed or thread is interrupted.
-     * Note that completed futures are removed from list!
-     * @param collection
-     * @throws InterruptedException 
-     */
-    public void waitforAllCompleted(Collection<Future<?>> collection) throws InterruptedException
-    {
-        waitforAllCompleted(collection, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-    }
-    /**
-     * Waits until all given futures are completed, thread is interrupted or
-     * timeout exceeds.
-     * Note that completed futures are removed from list!
-     * @param collection
-     * @param timeout
-     * @param unit
-     * @throws InterruptedException 
-     */
-    public void waitforAllCompleted(Collection<Future<?>> collection, long timeout, TimeUnit unit) throws InterruptedException
-    {
-        CountDownLatch latch;
-        synchronized(this)
-        {
-            collection.removeIf((f)->f.isDone());
-            if (collection.isEmpty())
-            {
-                return;
-            }
-            latch = waitMap.get(collection);
-            if (latch == null)
-            {
-                latch = new CountDownLatch(1);
-                waitMap.put(collection, latch);
-            }
-        }
-        latch.await(timeout, unit);
-    }
-    private synchronized Future<?> addAfterTask(AfterTask<?> afterTask)
-    {
-        Future<?> future = afterTask.getFuture();
-        if (afterMap.containsKey(future))
-        {
-            submit(afterTask);
-        }
-        else
-        {
-            afterMap.put(future, afterTask);
-        }
-        return afterTask;
-    }
-    @Override
-    protected synchronized void afterExecute(Runnable r, Throwable t)
-    {
-        super.afterExecute(r, t);
-        if (r instanceof Future)
-        {
-            Future<?> future = (Future<?>) r;
-            FutureTask<?> task = afterMap.get(future);
-            if (task != null)
-            {
-                submit(task);
-                log(logLevel, "submit %s after %s", task, future);
-            }
-            else
-            {
-                afterMap.put(future, null);
-                log(logLevel, "store after %s", future);
-            }
-            Iterator<Entry<Collection<Future<?>>, CountDownLatch>> iterator = waitMap.entrySet().iterator();
-            while (iterator.hasNext())
-            {
-                Entry<Collection<Future<?>>, CountDownLatch> entry = iterator.next();
-                Collection<Future<?>> key = entry.getKey();
-                key.remove(future);
-                if (key.isEmpty())
-                {
-                    CountDownLatch latch = entry.getValue();
-                    if (latch != null)
-                    {
-                        latch.countDown();
-                        iterator.remove();
-                    }
-                }
-            }
-        }
-        else
-        {
-            log(logLevel, "afterExecute(%s) not future???", r);
-        }
-    }
-    
-    private class AfterTask<V> extends FutureTask<V>
+    private class AfterTask<V> implements Callable<V>
     {
         private Future<V> future;
-        private Future<?> timeoutFuture;
-        
-        public AfterTask(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
-        {
-            super(callable);
-            this.future = future;
-            triggerTimer(timeout, unit);
-        }
+        private Callable<V> task;
+        private long timeout;
+        private TimeUnit unit;
 
+        public AfterTask(Future<V> future, Callable<V> task, long timeout, TimeUnit unit)
+        {
+            this.future = future;
+            this.task = task;
+            this.timeout = timeout;
+            this.unit = unit;
+        }
+        
         public AfterTask(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
         {
-            super(runnable, null);
             this.future = (Future<V>) future;
-            triggerTimer(timeout, unit);
-        }
-
-        private void triggerTimer(long timeout, TimeUnit unit)
-        {
-            if (timeout < Long.MAX_VALUE)
-            {
-                this.timeoutFuture = schedule(()->setException(new TimeoutException()), timeout, unit);
-            }
-        }
-        private Future<V> getFuture()
-        {
-            return future;
+            this.task = (Callable<V>) Executors.callable(runnable);
+            this.timeout = timeout;
+            this.unit = unit;
         }
 
         @Override
-        public void run()
+        public V call() throws Exception
         {
-            if (timeoutFuture != null)
+            try
             {
-                timeoutFuture.cancel(false);
+                future.get(timeout, unit);
             }
-            super.run();
+            catch (InterruptedException | ExecutionException ex)
+            {
+            }
+            catch (TimeoutException ex)
+            {
+                warning("waited task %s timeout -> task %s rejected", task, future);
+                return null;
+            }
+            return task.call();
         }
 
     }
