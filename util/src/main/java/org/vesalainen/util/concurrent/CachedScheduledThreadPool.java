@@ -137,23 +137,23 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     /**
      * submits callable after waiting future to complete
      * @param <V>
-     * @param future
+     * @param waiter
      * @param callable
      * @return 
      */
-    public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable)
+    public <V> Future<V> submitAfter(Waiter waiter, Callable<V> callable)
     {
-        return submitAfter(future, callable, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        return submitAfter(waiter, callable, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
     /**
      * submits callable after waiting future to complete
-     * @param future
+     * @param waiter
      * @param runnable
      * @return 
      */
-    public Future<?> submitAfter(Future<?> future, Runnable runnable)
+    public Future<?> submitAfter(Waiter waiter, Runnable runnable)
     {
-        return submitAfter(future, runnable, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        return submitAfter(waiter, runnable, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
     private void ensureWaiterRunning()
     {
@@ -184,51 +184,51 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
      * submits callable after waiting future to complete or timeout to exceed.
      * If timeout exceeds task is cancelled.
      * @param <V>
-     * @param future
+     * @param waiter
      * @param callable
      * @param timeout
      * @param unit
      * @return 
      */
-    public <V> Future<V> submitAfter(Future<V> future, Callable<V> callable, long timeout, TimeUnit unit)
+    public <V> Future<V> submitAfter(Waiter waiter, Callable<V> callable, long timeout, TimeUnit unit)
     {
-        AfterTask<V> task = new AfterTask<>(future, callable, timeout, unit);
+        AfterTask<V> task = new AfterTask<>(waiter, callable, timeout, unit);
         log(logLevel, "submit after task %s", task);
         return (Future<V>) submit(task);
     }
     /**
      * submits runnable after waiting future to complete or timeout to exceed. 
      * If timeout exceeds task is cancelled.
-     * @param future
+     * @param waiter
      * @param runnable
      * @param timeout
      * @param unit
      * @return 
      */
-    public Future<?> submitAfter(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
+    public Future<?> submitAfter(Waiter waiter, Runnable runnable, long timeout, TimeUnit unit)
     {
-        AfterTask<?> task = new AfterTask<>(future, runnable, timeout, unit);
+        AfterTask<?> task = new AfterTask<>(waiter, runnable, timeout, unit);
         log(logLevel, "submit after task %s", task);
         return submit(task);
     }
     private class AfterTask<V> implements Callable<V>
     {
-        private Future<V> future;
+        private Waiter waiter;
         private Callable<V> task;
         private long timeout;
         private TimeUnit unit;
 
-        public AfterTask(Future<V> future, Callable<V> task, long timeout, TimeUnit unit)
+        public AfterTask(Waiter waiter, Callable<V> task, long timeout, TimeUnit unit)
         {
-            this.future = future;
+            this.waiter = waiter;
             this.task = task;
             this.timeout = timeout;
             this.unit = unit;
         }
         
-        public AfterTask(Future<?> future, Runnable runnable, long timeout, TimeUnit unit)
+        public AfterTask(Waiter waiter, Runnable runnable, long timeout, TimeUnit unit)
         {
-            this.future = (Future<V>) future;
+            this.waiter = waiter;
             this.task = (Callable<V>) Executors.callable(runnable);
             this.timeout = timeout;
             this.unit = unit;
@@ -239,33 +239,29 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         {
             try
             {
-                log(logLevel, "wait future %s", future);
-                future.get(timeout, unit);
+                log(logLevel, "wait future %s", waiter);
+                if (waiter.wait(timeout, unit))
+                {
+                    log(logLevel, "enter after task %s", task);
+                    return task.call();
+                }
+                else
+                {
+                    warning("waited task %s timeout -> task %s rejected", task, waiter);
+                    return null;
+                }
             }
-            catch (TimeoutException ex)
+            catch (Exception ex)
             {
-                warning("waited task %s timeout -> task %s rejected", task, future);
-                return null;
-            }
-            catch (CancellationException | InterruptedException | ExecutionException ex)
-            {
-                log(logLevel, "%s %s after task %s", ex.getClass().getSimpleName(), ex.getMessage(), this);
-            }
-            try
-            {
-                log(logLevel, "enter after task %s", task);
-                return task.call();
-            }
-            finally
-            {
-                log(logLevel, "exit after task %s", task);
+                log(SEVERE, ex, "waiter got %s", ex.getMessage());
+                throw ex;
             }
         }
 
         @Override
         public String toString()
         {
-            return "AfterTask{" + "future=" + future + ", task=" + task + ", timeout=" + timeout + ", unit=" + unit + '}';
+            return "AfterTask{" + "future=" + waiter + ", task=" + task + ", timeout=" + timeout + ", unit=" + unit + '}';
         }
 
     }

@@ -90,7 +90,7 @@ public class CachedScheduledThreadPoolT
         Future<?> future = pool.submit(this::command);
         future.get();
         final IntReference ref = new IntReference(0);
-        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        Future<?> after = pool.submitAfter(Waiter.wrap(future), ()->ref.setValue(1));
         after.get();
         assertEquals(1, ref.getValue());
     }
@@ -99,7 +99,7 @@ public class CachedScheduledThreadPoolT
     {
         Future<?> future = pool.submit(this::intrpt);
         final IntReference ref = new IntReference(0);
-        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        Future<?> after = pool.submitAfter(Waiter.wrap(future), ()->ref.setValue(1));
         after.get();
         assertEquals(1, ref.getValue());
     }
@@ -108,7 +108,7 @@ public class CachedScheduledThreadPoolT
     {
         Future<?> future = pool.submit(this::excp);
         final IntReference ref = new IntReference(0);
-        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        Future<?> after = pool.submitAfter(Waiter.wrap(future), ()->ref.setValue(1));
         after.get();
         assertEquals(1, ref.getValue());
     }
@@ -118,7 +118,7 @@ public class CachedScheduledThreadPoolT
         long m1 = System.currentTimeMillis();
         Future<?> future = pool.submit(this::sleeper);
         final IntReference ref = new IntReference(0);
-        Future<?> after = pool.submitAfter(future, ()->ref.setValue(1));
+        Future<?> after = pool.submitAfter(Waiter.wrap(future), ()->ref.setValue(1));
         after.get();
         long m2 = System.currentTimeMillis();
         long elapsed = m2-m1;
