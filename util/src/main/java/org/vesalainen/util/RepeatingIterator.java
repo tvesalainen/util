@@ -22,19 +22,60 @@ import java.util.NoSuchElementException;
 /**
  * RepeatingIterator keeps iterating over collection while collection is not empty.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
 public class RepeatingIterator<T> implements Iterator<T>
 {
     private Iterable<T> iterable;
     private Iterator<T> iterator;
-
+    /**
+     * Creates RepeatingIterator for iterable
+     * @param iterable 
+     */
     public RepeatingIterator(Iterable<T> iterable)
+    {
+        this(iterable, null);
+    }
+    /**
+     * Creates RepeatingIterator for iterable and rewinds it so that given first is the
+     * first item.
+     * @param iterable
+     * @param first 
+     */
+    public RepeatingIterator(Iterable<T> iterable, T first)
     {
         this.iterable = iterable;
         this.iterator = iterable.iterator();
         if (!iterator.hasNext())
         {
             iterator = null;
+        }
+        else
+        {
+            if (first != null)
+            {
+                int idx = 0;
+                Iterator<T> it = iterable.iterator();
+                boolean found = false;
+                while (it.hasNext())
+                {
+                    T next = it.next();
+                    if (first.equals(next))
+                    {
+                        found = true;
+                        break;
+                    }
+                    idx++;
+                }
+                if (!found)
+                {
+                    throw new NoSuchElementException(first.toString());
+                }
+                for (int ii=0;ii<idx;ii++)
+                {
+                    iterator.next();
+                }
+            }
         }
     }
     

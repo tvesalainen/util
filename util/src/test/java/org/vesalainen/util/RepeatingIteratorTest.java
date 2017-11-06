@@ -52,5 +52,23 @@ public class RepeatingIteratorTest
         assertTrue(ri.hasNext());
         assertEquals("bar", ri.next());
     }
+    @Test
+    public void test2()
+    {
+        List<String> list = new ArrayList<>();
+        list.add("foo");
+        list.add("bar");
+        RepeatingIterator ri = new RepeatingIterator(list, "foo");
+        assertEquals("foo", ri.next());
+    }
+    @Test
+    public void test3()
+    {
+        List<String> list = new ArrayList<>();
+        list.add("foo");
+        list.add("bar");
+        RepeatingIterator ri = new RepeatingIterator(list, "bar");
+        assertEquals("bar", ri.next());
+    }
     
 }
