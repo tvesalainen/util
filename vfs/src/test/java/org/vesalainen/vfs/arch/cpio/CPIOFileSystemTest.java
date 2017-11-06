@@ -68,7 +68,7 @@ public class CPIOFileSystemTest
         byte[] readAllBytes = Files.readAllBytes(pom);
         assertEquals(1032, readAllBytes.length);
     }
-    @Test
+    //@Test
     public void testWriteCPIO() throws URISyntaxException, IOException
     {
         Path path = Paths.get("z:\\writeTest.cpio");
@@ -82,7 +82,7 @@ public class CPIOFileSystemTest
         }
         assertTrue(Files.exists(path));
     }
-    @Test
+    //@Test
     public void testWriteCPIOGZ() throws URISyntaxException, IOException
     {
         Path path = Paths.get("z:\\writeTest.cpio.gz");
