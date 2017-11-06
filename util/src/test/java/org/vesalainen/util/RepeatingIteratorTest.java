@@ -17,9 +17,12 @@
 package org.vesalainen.util;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.util.RepeatingIteratorTest.En.*;
 
 /**
  *
@@ -27,7 +30,8 @@ import static org.junit.Assert.*;
  */
 public class RepeatingIteratorTest
 {
-    
+   enum En {E1, E2, E3};
+   
     public RepeatingIteratorTest()
     {
     }
@@ -70,5 +74,12 @@ public class RepeatingIteratorTest
         RepeatingIterator ri = new RepeatingIterator(list, "bar");
         assertEquals("bar", ri.next());
     }
-    
+    @Test
+    public void test4()
+    {
+        Set<En> set = EnumSet.of(E1, E3);
+        RepeatingIterator<En> ri = new RepeatingIterator<>(set, E3);
+        ri.hasNext();
+        assertEquals(E3, ri.next());
+    }    
 }
