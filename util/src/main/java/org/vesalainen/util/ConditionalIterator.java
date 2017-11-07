@@ -39,6 +39,10 @@ public class ConditionalIterator<T> implements Iterator<T>
     @Override
     public boolean hasNext()
     {
+        if (next != null)
+        {
+            return true;
+        }
         while (iterator.hasNext())
         {
             next = iterator.next();
