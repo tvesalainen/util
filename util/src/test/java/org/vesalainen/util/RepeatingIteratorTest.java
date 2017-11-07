@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Test;
@@ -78,7 +79,33 @@ public class RepeatingIteratorTest
     public void test4()
     {
         Set<En> set = EnumSet.of(E1, E3);
+        System.err.println(set);
+        Set<En> set2 = new HashSet<>();
+        set2.add(E1);
+        set2.add(E3);
+        System.err.println(set2);
         RepeatingIterator<En> ri = new RepeatingIterator<>(set, E3);
+        ri.hasNext();
+        assertEquals(E3, ri.next());
+    }    
+    @Test
+    public void test4_b()
+    {
+        Set<En> set = EnumSet.allOf(En.class);
+        Set<En> set2 = new ConditionalSet<>(set, (e)->e != E2);
+        System.err.println(set2);
+        RepeatingIterator<En> ri = new RepeatingIterator<>(set2, E3);
+        ri.hasNext();
+        assertEquals(E3, ri.next());
+    }    
+    @Test
+    public void test5()
+    {
+        Set<En> set2 = new HashSet<>();
+        set2.add(E1);
+        set2.add(E3);
+        System.err.println(set2);
+        RepeatingIterator<En> ri = new RepeatingIterator<>(set2, E3);
         ri.hasNext();
         assertEquals(E3, ri.next());
     }    

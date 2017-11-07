@@ -16,7 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
