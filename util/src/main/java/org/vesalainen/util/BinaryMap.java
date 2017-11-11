@@ -18,8 +18,12 @@ package org.vesalainen.util;
 
 import java.util.AbstractMap;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.BiPredicate;
 
 /**
@@ -28,9 +32,9 @@ import java.util.function.BiPredicate;
  * @param <K>
  * @param <V>
  */
-public class BinaryMap<K,V> extends AbstractMap<K,V>
+public class BinaryMap<K,V> extends AbstractMap<K,V> implements NavigableMap<K,V>
 {
-    private BinarySet<Entry<K, V>> entrySet;
+    private NavigableSet<Entry<K, V>> entrySet;
     private Comparator<? super K> comparator;
 
     public BinaryMap()
@@ -44,6 +48,20 @@ public class BinaryMap<K,V> extends AbstractMap<K,V>
         this.entrySet = new BinarySet<>(Entry.comparingByKey(comparator));
     }
     
+    public BinaryMap(Map<K,V> map)
+    {
+        this.entrySet = new BinarySet<>(map.entrySet());
+    }
+    public BinaryMap(SortedMap<K,V> map)
+    {
+        this.comparator = map.comparator();
+        this.entrySet = new BinarySet<>(map.entrySet());
+    }
+    private BinaryMap(NavigableSet<Entry<K,V>> set, Comparator<? super K> keyComparator)
+    {
+        this.entrySet = set;
+    }
+
     /**
      * {@inheritDoc}
      * @param key
@@ -53,7 +71,8 @@ public class BinaryMap<K,V> extends AbstractMap<K,V>
     @Override
     public V put(K key, V value)
     {
-        Entry<K,V> oldEntry = entrySet.addEntry(entry(key, value));
+        BinarySet<Entry<K,V>> es = (BinarySet<Entry<K,V>>) entrySet;
+        Entry<K,V> oldEntry = es.addEntry(entry(key, value));
         if (oldEntry != null)
         {
             return oldEntry.getValue();
@@ -70,7 +89,7 @@ public class BinaryMap<K,V> extends AbstractMap<K,V>
         else
         {
             Objects.requireNonNull(comparator, "comparator missing from non Comparable key");
-            return new EntryImpl(comparator, key, value);
+            return new EntryImpl(Entry.comparingByKey(comparator), key, value);
         }
     }
     /**
@@ -81,8 +100,9 @@ public class BinaryMap<K,V> extends AbstractMap<K,V>
     @Override
     public V get(Object key)
     {
+        BinarySet<Entry<K,V>> es = (BinarySet<Entry<K,V>>) entrySet;
         Entry<K, V> entry = entry((K) key, null);
-        Entry<K, V> res = entrySet.get(entry);
+        Entry<K, V> res = es.get(entry);
         if (res != null)
         {
             return res.getValue();
@@ -105,13 +125,288 @@ public class BinaryMap<K,V> extends AbstractMap<K,V>
      */
     public Entry<K,V> get(K key, BiPredicate<K,V> predicate)
     {
+        BinarySet<Entry<K,V>> es = (BinarySet<Entry<K,V>>) entrySet;
         Entry<K, V> entry = entry((K) key, null);
-        return entrySet.get(entry, (e)->predicate.test(e.getKey(), e.getValue()));
+        return es.get(entry, (e)->predicate.test(e.getKey(), e.getValue()));
     }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
     @Override
     public Set<Entry<K, V>> entrySet()
     {
         return entrySet;
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public Entry<K, V> lowerEntry(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        return entrySet.lower(entry);
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public K lowerKey(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        Entry<K, V> lower = entrySet.lower(entry);
+        if (lower != null)
+        {
+            return lower.getKey();
+        }
+        return null;
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public Entry<K, V> floorEntry(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        return entrySet.floor(entry);
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public K floorKey(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        Entry<K, V> floor = entrySet.floor(entry);
+        if (floor != null)
+        {
+            return floor.getKey();
+        }
+        return null;
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public Entry<K, V> ceilingEntry(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        return entrySet.ceiling(entry);
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public K ceilingKey(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        Entry<K, V> ceiling = entrySet.ceiling(entry);
+        if (ceiling != null)
+        {
+            return ceiling.getKey();
+        }
+        return null;
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public Entry<K, V> higherEntry(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        return entrySet.higher(entry);
+    }
+    /**
+     * {@inheritDoc}
+     * @param key
+     * @return 
+     */
+    @Override
+    public K higherKey(K key)
+    {
+        Entry<K, V> entry = entry(key, null);
+        Entry<K, V> higher = entrySet.higher(entry);
+        if (higher != null)
+        {
+            return higher.getKey();
+        }
+        return null;
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public Entry<K, V> firstEntry()
+    {
+        return entrySet.first();
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public Entry<K, V> lastEntry()
+    {
+        return entrySet.last();
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public Entry<K, V> pollFirstEntry()
+    {
+        return entrySet.pollFirst();
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public Entry<K, V> pollLastEntry()
+    {
+        return entrySet.pollLast();
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public NavigableMap<K, V> descendingMap()
+    {
+        return new BinaryMap<>(entrySet.descendingSet(), comparator);
+    }
+    /**
+     * {@inheritDoc}
+     * Not supported yet!
+     * @return 
+     */
+    @Override
+    public NavigableSet<K> navigableKeySet()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    /**
+     * {@inheritDoc}
+     * Not supported yet!
+     * @return 
+     */
+    @Override
+    public NavigableSet<K> descendingKeySet()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    /**
+     * {@inheritDoc}
+     * @param fromKey
+     * @param fromInclusive
+     * @param toKey
+     * @param toInclusive
+     * @return 
+     */
+    @Override
+    public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive)
+    {
+        Entry<K, V> from = entry(fromKey, null);
+        Entry<K, V> to = entry(toKey, null);
+        return new BinaryMap<>(entrySet.subSet(from, fromInclusive, to, toInclusive), comparator);
+    }
+    /**
+     * {@inheritDoc}
+     * @param toKey
+     * @param inclusive
+     * @return 
+     */
+    @Override
+    public NavigableMap<K, V> headMap(K toKey, boolean inclusive)
+    {
+        Entry<K, V> to = entry(toKey, null);
+        return new BinaryMap<>(entrySet.headSet(to, inclusive), comparator);
+    }
+    /**
+     * {@inheritDoc}
+     * @param fromKey
+     * @param inclusive
+     * @return 
+     */
+    @Override
+    public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive)
+    {
+        Entry<K, V> from = entry(fromKey, null);
+        return new BinaryMap<>(entrySet.tailSet(from, inclusive), comparator);
+    }
+    /**
+     * {@inheritDoc}
+     * @param fromKey
+     * @param toKey
+     * @return 
+     */
+    @Override
+    public SortedMap<K, V> subMap(K fromKey, K toKey)
+    {
+        return subMap(fromKey, true, toKey, false);
+    }
+    /**
+     * {@inheritDoc}
+     * @param toKey
+     * @return 
+     */
+    @Override
+    public SortedMap<K, V> headMap(K toKey)
+    {
+        return headMap(toKey, false);
+    }
+    /**
+     * {@inheritDoc}
+     * @param fromKey
+     * @return 
+     */
+    @Override
+    public SortedMap<K, V> tailMap(K fromKey)
+    {
+        return tailMap(fromKey, true);
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override   
+    public Comparator<? super K> comparator()
+    {
+        return comparator;
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public K firstKey()
+    {
+        return entrySet.first().getKey();
+    }
+    /**
+     * {@inheritDoc}
+     * @return 
+     */
+    @Override
+    public K lastKey()
+    {
+        return entrySet.last().getKey();
     }
     
     public class NaturalImpl<K extends Comparable<K>,V> extends BaseEntry<K,V>
