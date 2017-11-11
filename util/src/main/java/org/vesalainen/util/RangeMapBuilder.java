@@ -33,6 +33,13 @@ public class RangeMapBuilder<T>
     private int max = Integer.MIN_VALUE;
     private BinaryMap<Range,T> map = new BinaryMap<>();
 
+    public void putAll(Map<? extends Range,? extends T> map)
+    {
+        for (Entry<? extends Range, ? extends T> entry : map.entrySet())
+        {
+            put(entry.getKey(), entry.getValue());
+        }
+    }
     public void put(Range range, T value)
     {
         for (Range r : map.keySet())
@@ -112,7 +119,12 @@ public class RangeMapBuilder<T>
         @Override
         public T get(int n)
         {
-            return array[n-offset];
+            int idx = n-offset;
+            if (idx < 0 || idx >= array.length)
+            {
+                return null;
+            }
+            return array[idx];
         }
 
         @Override

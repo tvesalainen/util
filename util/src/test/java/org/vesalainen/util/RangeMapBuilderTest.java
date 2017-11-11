@@ -42,6 +42,9 @@ public class RangeMapBuilderTest
         b.put(new SimpleRange('\r'), "cr");
         b.put(new SimpleRange(' '), "space");
         RangeMap<String> map = b.build();
+        assertEquals("digit", map.get('0'));
+        assertEquals("digit", map.get('9'));
+        assertNull(map.get('9'+1));
         assertEquals("lower", map.get('d'));
         assertEquals("upper", map.get('K'));
         assertEquals("tab", map.get('\t'));
