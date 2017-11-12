@@ -128,41 +128,6 @@ public class Streams
         
     }
     /**
-     * Creates a consumer which recycles item after use. This is intended to use
-     * in Stream forEach
-     * @param <T>
-     * @param consumer
-     * @return 
-     */
-    public static final <T extends Recyclable> Consumer<T> recyclingConsumer(Consumer<T> consumer)
-    {
-        return (t)->
-        {
-            consumer.accept(t);
-            Recycler.recycle(t);
-        };
-    }
-    /**
-     * Creates a predicate which recycles failing item. This is intended to use
-     * in Stream filters
-     * @param <T>
-     * @param predicate
-     * @return 
-     * @see java.util.stream.Stream#filter(java.util.function.Predicate) 
-     */
-    public static final <T extends Recyclable> Predicate<T> recyclingPredicate(Predicate<T> predicate)
-    {
-        return (t)->
-        {
-            boolean result = predicate.test(t);
-            if (!result)
-            {
-                Recycler.recycle(t);
-            }
-            return result;
-        };
-    }
-    /**
      * Compares two streams using natural order
      * @param <T>
      * @param s1
