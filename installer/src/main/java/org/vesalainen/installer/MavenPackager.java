@@ -180,6 +180,7 @@ public class MavenPackager extends LoggingCommandLine
             view.setPreUnInstallation("service "+getPackage()+" stop\nupdate-rc.d "+getPackage()+" remove\n");
             createEtcDefault(etcDefaultPath());
             createLogConfig(getLogConfigPath());
+            Files.createDirectories(getVarPath());
             fileSystem = null;
         }
     }
@@ -202,6 +203,10 @@ public class MavenPackager extends LoggingCommandLine
     public Path getConfigPath()
     {
         return fileSystem.getPath("/etc/opt/"+getPackage()+"/config.xml");
+    }
+    public Path getVarPath()
+    {
+        return fileSystem.getPath("/var/opt/"+getPackage());
     }
     public String getLsbDescription()
     {
