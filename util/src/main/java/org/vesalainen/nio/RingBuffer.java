@@ -19,6 +19,7 @@ package org.vesalainen.nio;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
+import java.nio.InvalidMarkException;
 
 /**
  * A RingBuffer wrapper for Buffer. 
@@ -53,7 +54,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     private final Splitter<W> writeSplitter;
     /**
      * Creates a RingBuffer of size. The backing buffer is either direct- or 
-     * heapbuffer depending on direct parameter.
+     * heap buffer depending on direct parameter.
      * <p>Method names which are same as in java.nio.Buffer have the same meaning.
      * Reading and writing differs from Buffer.
      * @param size
@@ -129,7 +130,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     public final void mark()
     {
         mark = position;
-            marked = 0;
+        marked = 0;
     }
     /**
      * Return item as int value at index position from mark. If mark is not set 
@@ -139,6 +140,10 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int getAt(int index)
     {
+        if (mark == -1)
+        {
+            throw new InvalidMarkException();
+        }
         if (index > marked)
         {
             throw new IndexOutOfBoundsException();
