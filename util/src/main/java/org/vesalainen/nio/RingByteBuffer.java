@@ -27,10 +27,6 @@ import java.nio.channels.ScatteringByteChannel;
  */
 public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,GatheringByteChannel>
 {
-    private final ByteBuffer bb1;
-    private final ByteBuffer bb2;
-    private final ByteBuffer[] ar2;
-    private int readLimit;
     /**
      * Creates heap RingByteBuffer with readLimit same as size
      * @param size 
@@ -56,15 +52,13 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public RingByteBuffer(int size, int readLimit, boolean direct)
     {
-        super(size, direct);
+        super(allocate(size, direct));
         if (readLimit < 0 || readLimit > size)
         {
             throw new IllegalArgumentException(readLimit+" not in range");
         }
-        this.readLimit = readLimit;
-        bb1 = buffer.duplicate();
-        bb2 = buffer.duplicate();
-        ar2 = new ByteBuffer[] {bb1, bb2};
+        setReadSplitter(new ScatteringByteChannelSplitter(buffer, readLimit));
+        setWriteSplitter(new GatheringByteChannelSplitter(buffer));
     }
     /**
      * Returns byte at current position and increments the position.
@@ -91,8 +85,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         return buffer.get((mark+index)%capacity) & 0xff;
     }
     
-    @Override
-    protected ByteBuffer allocate(int size, boolean direct)
+    private static ByteBuffer allocate(int size, boolean direct)
     {
         if (direct)
         {
@@ -105,54 +98,9 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     }
 
     @Override
-    protected int read(ScatteringByteChannel reader, int position, int limit) throws IOException
+    public int write(RingBuffer<ByteBuffer, ScatteringByteChannel, GatheringByteChannel> ring)
     {
-        int len = Math.min(readLimit, limit - position);
-        bb1.limit(position+len);
-        bb1.position(position);
-        return (int) reader.read(ar2, 0, 1);
-    }
-
-    @Override
-    protected int read(ScatteringByteChannel reader, int position1, int limit1, int position2, int limit2) throws IOException
-    {
-        int len1 = limit1 - position1;
-        if (len1 > readLimit)
-        {
-            int len = Math.min(readLimit, len1);
-            bb1.limit(position+len);
-            bb1.position(position);
-            return (int) reader.read(ar2, 0, 1);
-        }
-        else
-        {
-            bb1.limit(limit1);
-            bb1.position(position1);
-            
-            int len2 = limit2 - position2;
-            int len = Math.min(readLimit-len1, len2);
-            bb2.limit(position2+len);
-            bb2.position(position2);
-            return (int) reader.read(ar2);
-        }
-    }
-
-    @Override
-    protected int write(GatheringByteChannel writer, int position, int limit) throws IOException
-    {
-        bb1.limit(limit);
-        bb1.position(position);
-        return (int) writer.write(ar2, 0, 1);
-    }
-
-    @Override
-    protected int write(GatheringByteChannel writer, int position1, int limit1, int position2, int limit2) throws IOException
-    {
-        bb1.limit(limit1);
-        bb1.position(position1);
-        bb2.limit(limit2);
-        bb2.position(position2);
-        return (int) writer.write(ar2);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

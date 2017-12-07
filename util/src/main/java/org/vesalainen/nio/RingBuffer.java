@@ -50,56 +50,33 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     protected final int capacity;
     protected int remaining;
     protected int marked;
-    private final Splitter<R> readSplitter;
-    private final Splitter<W> writeSplitter;
+    private Splitter<R> readSplitter;
+    private Splitter<W> writeSplitter;
     /**
-     * Creates a RingBuffer of size. The backing buffer is either direct- or 
-     * heap buffer depending on direct parameter.
-     * <p>Method names which are same as in java.nio.Buffer have the same meaning.
-     * Reading and writing differs from Buffer.
-     * @param size
-     * @param direct 
+     * Creates a RingBuffer
+     * @param buffer 
      * @see java.nio.Buffer
      */
-    public RingBuffer(int size, boolean direct)
+    protected RingBuffer(B buffer)
     {
-        this.buffer = allocate(size, direct);
+        this.buffer = buffer;
         this.position = 0;
         this.mark = -1;
         this.limit = 0;
         this.capacity = buffer.capacity();
-        this.readSplitter = new Splitter<R>() 
-        {
-            @Override
-            protected int op(R reader, int position, int limit) throws IOException
-            {
-                return read(reader, position, limit);
-            }
-
-            @Override
-            protected int op(R reader, int position1, int limit1, int position2, int limit2) throws IOException
-            {
-                return read(reader, position1, limit1, position2, limit2);
-            }
-        };
-        this.writeSplitter = new Splitter<W>() 
-        {
-            @Override
-            protected int op(W writer, int position, int limit) throws IOException
-            {
-                return write(writer, position, limit);
-            }
-
-            @Override
-            protected int op(W writer, int position1, int limit1, int position2, int limit2) throws IOException
-            {
-                return write(writer, position1, limit1, position2, limit2);
-            }
-        };
      
     }
 
-    protected abstract B allocate(int size, boolean direct);
+    protected void setReadSplitter(Splitter<R> readSplitter)
+    {
+        this.readSplitter = readSplitter;
+    }
+
+    protected void setWriteSplitter(Splitter<W> writeSplitter)
+    {
+        this.writeSplitter = writeSplitter;
+    }
+
     /**
      * Returns true is there are remaining items between position and limit.
      * @return 
@@ -223,8 +200,12 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int read(R reader) throws IOException
     {
+        return read(reader, readSplitter);
+    }
+    protected <T> int read(T reader, Splitter<T> splitter) throws IOException
+    {
         int lim = mark == -1 ? position : mark;
-        int count = readSplitter.doIt(reader, limit, lim);
+        int count = splitter.doIt(reader, limit, lim);
         if (count != -1)
         {
             limit = (limit+count)%capacity;
@@ -233,29 +214,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         check();
         return count;
     }
-    /**
-     * Reads to buffer starting from position limit-position items. Return count
-     * of actual read items.
-     * @param reader
-     * @param position
-     * @param limit
-     * @return
-     * @throws IOException 
-     */
-    protected abstract int read(R reader, int position, int limit) throws IOException;
-    /**
-     * Reads to buffer first starting from position1 limit1-position1 count and 
-     * then continue reading at position2 limit2-position2 items. Return count 
-     * of actual read items.
-     * @param reader
-     * @param position1
-     * @param limit1
-     * @param position2
-     * @param limit2
-     * @return
-     * @throws IOException 
-     */
-    protected abstract int read(R reader, int position1, int limit1, int position2, int limit2) throws IOException;
     /**
      * Write buffers content from mark (included) to position (excluded)
      * @param writer
@@ -283,6 +241,13 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return count;
     }
     /**
+     * Write this buffers content from mark (included) to position (excluded). 
+     * Returns count of actual written items.
+     * @param ring
+     * @return 
+     */
+    public abstract int write(RingBuffer<B,R,W> ring);
+    /**
      * Returns the current position. Only use for this position is in marked write method.
      * @return 
      * @see org.vesalainen.nio.RingByteBuffer#write(java.lang.Object, int) 
@@ -291,29 +256,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     {
         return position;
     }
-    /**
-     * Writes to buffer starting from position limit-position count Return count 
-     * of actual written items.
-     * @param writer
-     * @param position
-     * @param limit
-     * @return
-     * @throws IOException 
-     */
-    protected abstract int write(W writer, int position, int limit) throws IOException;
-    /**
-     * Writes to buffer first starting from position1 limit1-position1 count and 
-     * then continue writing to position2 limit2-position2 items. Return count 
-     * of actual written items.
-     * @param writer
-     * @param position1
-     * @param limit1
-     * @param position2
-     * @param limit2
-     * @return
-     * @throws IOException 
-     */
-    protected abstract int write(W writer, int position1, int limit1, int position2, int limit2) throws IOException;
     /**
      * Returns input between mark and position as a string
      * @return 
@@ -362,31 +304,4 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return sb.toString();
     }
 
-    private abstract class Splitter<T>
-    {
-        public int doIt(T obj, int start, int end) throws IOException
-        {
-            int count;
-            int c = buffer.capacity();
-            if (start < end)
-            {
-                count = op(obj, start, end);
-            }
-            else
-            {
-                if (end > 0)
-                {
-                    count = op(obj, start, c, 0, end);
-                }
-                else
-                {
-                    count = op(obj, start, c);
-                }
-            }
-            return count;
-        }
-
-        protected abstract int op(T obj, int position, int limit) throws IOException;
-        protected abstract int op(T obj, int position1, int limit1, int position2, int limit2) throws IOException;
-    }
 }
