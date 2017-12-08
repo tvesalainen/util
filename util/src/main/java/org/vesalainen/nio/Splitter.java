@@ -31,7 +31,7 @@ public abstract class Splitter<T>
         this.size = size;
     }
     
-    public int doIt(T obj, int start, int end) throws IOException
+    public int split(T obj, int start, int end) throws IOException
     {
         int count;
         if (start < end)

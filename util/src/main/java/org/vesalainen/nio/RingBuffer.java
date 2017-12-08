@@ -205,7 +205,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     protected <T> int read(T reader, Splitter<T> splitter) throws IOException
     {
         int lim = mark == -1 ? position : mark;
-        int count = splitter.doIt(reader, limit, lim);
+        int count = splitter.split(reader, limit, lim);
         if (count != -1)
         {
             limit = (limit+count)%capacity;
@@ -237,7 +237,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         {
             return 0;
         }
-        int count = writeSplitter.doIt(writer, mrk, position);
+        int count = writeSplitter.split(writer, mrk, position);
         return count;
     }
     /**
