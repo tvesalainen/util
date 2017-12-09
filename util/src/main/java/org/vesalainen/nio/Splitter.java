@@ -31,22 +31,26 @@ public abstract class Splitter<T>
         this.size = size;
     }
     
-    public int split(T obj, int start, int end) throws IOException
+    public int split(T obj, int start, int length) throws IOException
     {
-        int count;
-        if (start < end)
+        int count = 0;
+        if (length > 0)
         {
-            count = op(obj, start, end);
-        }
-        else
-        {
-            if (end > 0)
+            int end = (start + length) % size;
+            if (start < end)
             {
-                count = op(obj, start, size, 0, end);
+                count = op(obj, start, end);
             }
             else
             {
-                count = op(obj, start, size);
+                if (end > 0)
+                {
+                    count = op(obj, start, size, 0, end);
+                }
+                else
+                {
+                    count = op(obj, start, size);
+                }
             }
         }
         return count;

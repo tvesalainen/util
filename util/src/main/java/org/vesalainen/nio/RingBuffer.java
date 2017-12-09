@@ -102,6 +102,22 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return remaining;
     }
     /**
+     * Returns the count of marked items between mark and position
+     * @return 
+     */
+    public final int marked()
+    {
+        return marked;
+    }
+    /**
+     * Returns the count of bytes available for reading
+     * @return 
+     */
+    public final int free()
+    {
+        return capacity-marked-remaining;
+    }
+    /**
      * Set mark to position.
      */
     public final void mark()
@@ -204,8 +220,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     }
     protected <T> int read(T reader, Splitter<T> splitter) throws IOException
     {
-        int lim = mark == -1 ? position : mark;
-        int count = splitter.split(reader, limit, lim);
+        int count = splitter.split(reader, limit, free());
         if (count != -1)
         {
             limit = (limit+count)%capacity;
@@ -237,7 +252,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         {
             return 0;
         }
-        int count = writeSplitter.split(writer, mrk, position);
+        int count = writeSplitter.split(writer, mrk, marked);
         return count;
     }
     /**
