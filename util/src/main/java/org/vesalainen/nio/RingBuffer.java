@@ -50,8 +50,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     protected final int capacity;
     protected int remaining;
     protected int marked;
-    private Splitter<R> readSplitter;
-    private Splitter<W> writeSplitter;
     /**
      * Creates a RingBuffer
      * @param buffer 
@@ -65,16 +63,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         this.limit = 0;
         this.capacity = buffer.capacity();
      
-    }
-
-    protected void setReadSplitter(Splitter<R> readSplitter)
-    {
-        this.readSplitter = readSplitter;
-    }
-
-    protected void setWriteSplitter(Splitter<W> writeSplitter)
-    {
-        this.writeSplitter = writeSplitter;
     }
 
     /**
@@ -214,13 +202,11 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      * @return 
      * @throws IOException 
      */
-    public int read(R reader) throws IOException
+    public abstract int read(R reader) throws IOException;
+    
+    protected <T> int read(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        return read(reader, readSplitter);
-    }
-    protected <T> int read(T reader, Splitter<T> splitter) throws IOException
-    {
-        int count = splitter.split(reader, limit, free());
+        int count = splitter.split(op, limit, free());
         if (count != -1)
         {
             limit = (limit+count)%capacity;
@@ -235,10 +221,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      * @return 
      * @throws IOException 
      */
-    public int write(W writer) throws IOException
-    {
-        return write(writer, mark);
-    }
+    public abstract int write(W writer) throws IOException;
     /**
      * Write buffers content from mrk (included) to position (excluded)
      * @param writer
@@ -246,13 +229,13 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      * @return 
      * @throws IOException 
      */
-    public int write(W writer, int mrk) throws IOException
+    protected int write(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        if (mrk == -1)
+        if (mark == -1)
         {
             return 0;
         }
-        int count = writeSplitter.split(writer, mrk, marked);
+        int count = splitter.split(op, mark, marked);
         return count;
     }
     /**

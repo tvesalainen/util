@@ -18,24 +18,41 @@ package org.vesalainen.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.GatheringByteChannel;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GatheringByteChannelSplitter extends GatheringSplitter<GatheringByteChannel>
+public class SparseByteBufferSplitter extends Splitter<SparseBufferOperator<ByteBuffer>>
 {
+    private final ByteBuffer bb1;
+    private final ByteBuffer bb2;
+    private final ByteBuffer[] ar2;
 
-    public GatheringByteChannelSplitter(ByteBuffer buffer)
+    public SparseByteBufferSplitter(ByteBuffer buffer)
     {
-        super(buffer);
+        super(buffer.capacity());
+        bb1 = buffer.duplicate();
+        bb2 = buffer.duplicate();
+        ar2 = new ByteBuffer[] {bb1, bb2};
+    }
+    
+    @Override
+    protected int op(SparseBufferOperator operator, int position, int limit) throws IOException
+    {
+        bb1.limit(limit);
+        bb1.position(position);
+        return (int) operator.apply(ar2, 0, 1);
     }
 
     @Override
-    protected int write(GatheringByteChannel writer, ByteBuffer[] dsts, int offset, int length) throws IOException
+    protected int op(SparseBufferOperator operator, int position1, int limit1, int position2, int limit2) throws IOException
     {
-        return (int) writer.write(dsts, offset, length);
+        bb1.limit(limit1);
+        bb1.position(position1);
+        bb2.limit(limit2);
+        bb2.position(position2);
+        return (int) operator.apply(ar2);
     }
     
 }

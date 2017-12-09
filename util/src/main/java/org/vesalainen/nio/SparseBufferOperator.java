@@ -17,25 +17,18 @@
 package org.vesalainen.nio;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ScatteringByteChannel;
+import java.nio.Buffer;
 
 /**
- *
+ * A FunctionalInterface for Scattering/Gathering operations.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ScatteringByteChannelSplitter extends ScatteringSplitter<ScatteringByteChannel>
+@FunctionalInterface
+public interface SparseBufferOperator<B extends Buffer>
 {
-
-    public ScatteringByteChannelSplitter(ByteBuffer buffer, int readLimit)
+    long apply(B[] bbs, int offset, int length) throws IOException;
+    default long apply(B[] bbs) throws IOException
     {
-        super(buffer, readLimit);
+        return apply(bbs, 0, bbs.length);
     }
-
-    @Override
-    protected int read(ScatteringByteChannel reader, ByteBuffer[] dsts, int offset, int length) throws IOException
-    {
-        return (int) reader.read(dsts, offset, length);
-    }
-    
 }

@@ -27,6 +27,7 @@ import java.nio.channels.ScatteringByteChannel;
  */
 public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,GatheringByteChannel>
 {
+    private SparseByteBufferSplitter splitter;
     /**
      * Creates heap RingByteBuffer with readLimit same as size
      * @param size 
@@ -42,23 +43,8 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public RingByteBuffer(int size, boolean direct)
     {
-        this(size, size, direct);
-    }
-    /**
-     * Creates RingByteBuffer
-     * @param size Buffer size
-     * @param readLimit maximum number of bytes read from channel
-     * @param direct heap/direct
-     */
-    public RingByteBuffer(int size, int readLimit, boolean direct)
-    {
         super(allocate(size, direct));
-        if (readLimit < 0 || readLimit > size)
-        {
-            throw new IllegalArgumentException(readLimit+" not in range");
-        }
-        setReadSplitter(new ScatteringByteChannelSplitter(buffer, readLimit));
-        setWriteSplitter(new GatheringByteChannelSplitter(buffer));
+        splitter = new SparseByteBufferSplitter(buffer);
     }
     /**
      * Returns byte at current position and increments the position.
@@ -97,6 +83,22 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         }
     }
 
+    @Override
+    public int read(ScatteringByteChannel reader) throws IOException
+    {
+        return read((dsts, offset, length)->reader.read(dsts, offset, length), splitter);
+    }
+
+    @Override
+    public int write(GatheringByteChannel writer) throws IOException
+    {
+        return write((dsts, offset, length)->writer.write(dsts, offset, length), splitter);
+    }
+
+    public int read(ByteBuffer bb)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     @Override
     public int write(RingBuffer<ByteBuffer, ScatteringByteChannel, GatheringByteChannel> ring)
     {
