@@ -19,18 +19,30 @@ package org.vesalainen.nio;
 import java.io.IOException;
 
 /**
- *
+ * Splitter is a helper class for RingBuffer, it's simple purpose is to decide
+ * if ring-buffer operation is for one or two contiguous sequences.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public abstract class Splitter<T>
 {
     private int size;
-
+    /**
+     * Creates Splitter for RingBugger of size.
+     * @param size 
+     */
     public Splitter(int size)
     {
         this.size = size;
     }
-    
+    /**
+     * Calls either of two op methods depending on start + length > size. If so
+     * calls op with 5 parameters, otherwise op with 3 parameters.
+     * @param obj
+     * @param start
+     * @param length
+     * @return
+     * @throws IOException 
+     */
     public int split(T obj, int start, int length) throws IOException
     {
         int count = 0;
@@ -55,9 +67,26 @@ public abstract class Splitter<T>
         }
         return count;
     }
-
+    /**
+     * One operation from position (included) to limit (excluded)
+     * @param obj
+     * @param position
+     * @param limit
+     * @return
+     * @throws IOException 
+     */
     protected abstract int op(T obj, int position, int limit) throws IOException;
-
+    /**
+     * Two operations from position1 (included) to limit2 (excluded) and
+     * from position2 (included) to limit2 (excluded)
+     * @param obj
+     * @param position1
+     * @param limit1
+     * @param position2
+     * @param limit2
+     * @return
+     * @throws IOException 
+     */
     protected abstract int op(T obj, int position1, int limit1, int position2, int limit2) throws IOException;
     
 }
