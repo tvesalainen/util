@@ -92,12 +92,30 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     public int write(GatheringByteChannel writer) throws IOException
     {
-        return write((dsts, offset, length)->writer.write(dsts, offset, length), splitter);
+        return write((srcs, offset, length)->writer.write(srcs, offset, length), splitter);
     }
-
-    public int read(ByteBuffer bb)
+    /**
+     * Reads bytes from bb as much as there is room in this buffer starting from 
+     * limit and not passing mark/position. Positions are updated in bb and also
+     * in this buffer.
+     * @param bb
+     * @return
+     * @throws IOException 
+     */
+    public int read(ByteBuffer bb) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return read((dsts, offset, length)->ByteBuffers.move(bb, dsts, offset, length), splitter);
+    }
+    /**
+     * Writes bytes from mark (included) to position (excluded) to bb as much as
+     * bb has remaining. bb positions are updated.
+     * @param bb
+     * @return
+     * @throws IOException 
+     */
+    public int write(ByteBuffer bb) throws IOException
+    {
+        return write((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), splitter);
     }
     @Override
     public int write(RingBuffer<ByteBuffer, ScatteringByteChannel, GatheringByteChannel> ring)
