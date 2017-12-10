@@ -141,29 +141,68 @@ public class ByteBuffers
             return remaining2;
         }
     }
+    /**
+     * Moves bytes from bbArray to bb as much as is possible. Positions are moved
+     * according to move. Returns number of bytes moved.
+     * @param bbArray
+     * @param offset
+     * @param length
+     * @param bb
+     * @return 
+     */
     public static final long move(ByteBuffer[] bbArray, int offset, int length, ByteBuffer bb)
     {
         return move(bbArray, offset, length, new ByteBuffer[]{bb}, 0, 1);
     }
+    /**
+     * Moves bytes from bbArray to bb as much as is possible. Positions are moved
+     * according to move. Returns number of bytes moved.
+     * @param bbArray
+     * @param bb
+     * @return 
+     */
     public static final long move(ByteBuffer[] bbArray, ByteBuffer bb)
     {
         return move(bbArray, 0, bbArray.length, new ByteBuffer[]{bb}, 0, 1);
     }
+    /**
+     * Moves bytes from bb to bbArray as much as is possible. Positions are moved
+     * according to move. Returns number of bytes moved.
+     * @param bb
+     * @param bbArray
+     * @param offset
+     * @param length
+     * @return 
+     */
     public static final long move(ByteBuffer bb, ByteBuffer[] bbArray, int offset, int length)
     {
         return move(new ByteBuffer[]{bb}, 0, 1, bbArray, offset, length);
     }
+    /**
+     * Moves bytes from bb to bbArray as much as is possible. Positions are moved
+     * according to move. Returns number of bytes moved.
+     * @param bb
+     * @param bbArray
+     * @return 
+     */
     public static final long move(ByteBuffer bb, ByteBuffer[] bbArray)
     {
         return move(new ByteBuffer[]{bb}, 0, 1, bbArray, 0, bbArray.length);
     }
+    /**
+     * Moves bytes from bbArray1 to bbArray2 as much as is possible. Positions are moved
+     * according to move. Returns number of bytes moved.
+     * @param bbArray1
+     * @param bbArray2
+     * @return 
+     */
     public static final long move(ByteBuffer[] bbArray1, ByteBuffer[] bbArray2)
     {
         return move(bbArray1, 0, bbArray2.length, bbArray2, 0, bbArray2.length);
     }
     /**
      * Moves bytes from ba1 to ba2 as much as is possible. Positions are moved
-     * according to move.
+     * according to move. Returns number of bytes moved.
      * @param bbArray1
      * @param offset1
      * @param length1
