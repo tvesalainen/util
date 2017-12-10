@@ -94,6 +94,40 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     {
         return write((srcs, offset, length)->writer.write(srcs, offset, length), splitter);
     }
+    public int read(ByteBuffer[] bbs, int offset, int length) throws IOException
+    {
+        splitter.lock();
+        try
+        {
+            int count = 0;
+            for (int ii=offset;ii<length;ii++)
+            {
+                count += read(bbs[ii]);
+            }
+            return count;
+        }
+        finally
+        {
+            splitter.unlock();
+        }  
+    }
+    public int write(ByteBuffer[] bbs, int offset, int length) throws IOException
+    {
+        splitter.lock();
+        try
+        {
+            int count = 0;
+            for (int ii=offset;ii<length;ii++)
+            {
+                count += write(bbs[ii]);
+            }
+            return count;
+        }
+        finally
+        {
+            splitter.unlock();
+        }  
+    }
     /**
      * Reads bytes from bb as much as there is room in this buffer starting from 
      * limit and not passing mark/position. Positions are updated in bb and also
@@ -117,10 +151,16 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     {
         return write((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), splitter);
     }
-    @Override
-    public int write(RingBuffer<ByteBuffer, ScatteringByteChannel, GatheringByteChannel> ring)
+    /**
+     * Write this buffers content from mark (included) to position (excluded). 
+     * Returns count of actual written items.
+     * @param ring
+     * @return 
+     * @throws java.io.IOException 
+     */
+    public int write(RingByteBuffer ring) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return write((srcs, offset, length)->ring.read(srcs, offset, length), splitter);
     }
 
     @Override

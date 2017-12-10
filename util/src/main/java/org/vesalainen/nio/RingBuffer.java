@@ -239,13 +239,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return count;
     }
     /**
-     * Write this buffers content from mark (included) to position (excluded). 
-     * Returns count of actual written items.
-     * @param ring
-     * @return 
-     */
-    public abstract int write(RingBuffer<B,R,W> ring);
-    /**
      * Returns the current position. Only use for this position is in marked write method.
      * @return 
      * @see org.vesalainen.nio.RingByteBuffer#write(java.lang.Object, int) 
