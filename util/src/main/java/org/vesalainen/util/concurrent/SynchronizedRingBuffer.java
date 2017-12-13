@@ -25,7 +25,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- *
+ * @deprecated Not used at all
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SynchronizedRingBuffer

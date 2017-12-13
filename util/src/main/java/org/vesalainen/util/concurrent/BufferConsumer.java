@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 /**
- *
+ * @deprecated Not used at all
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public abstract class BufferConsumer implements Runnable

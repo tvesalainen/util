@@ -19,6 +19,7 @@ package org.vesalainen.util.concurrent;
 import java.nio.ByteBuffer;
 
 /**
+ * @deprecated Not used at all
  * A support class for ByteBuffer used as ring buffer
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */

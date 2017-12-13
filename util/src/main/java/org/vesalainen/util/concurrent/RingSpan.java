@@ -17,7 +17,7 @@
 package org.vesalainen.util.concurrent;
 
 /**
- *
+ * @deprecated Not used at all
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class RingSpan
