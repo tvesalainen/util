@@ -27,7 +27,8 @@ import java.nio.channels.ScatteringByteChannel;
  */
 public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,GatheringByteChannel>
 {
-    private SparseByteBufferSplitter splitter;
+    private SparseByteBufferSplitter readSplitter;
+    private SparseByteBufferSplitter writeSplitter;
     /**
      * Creates heap RingByteBuffer with readLimit same as size
      * @param size 
@@ -44,7 +45,8 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     public RingByteBuffer(int size, boolean direct)
     {
         super(allocate(size, direct));
-        splitter = new SparseByteBufferSplitter(buffer);
+        readSplitter = new SparseByteBufferSplitter(buffer);
+        writeSplitter = new SparseByteBufferSplitter(buffer);
     }
     /**
      * Returns byte at current position and increments the position.
@@ -86,17 +88,17 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     public int read(ScatteringByteChannel reader) throws IOException
     {
-        return read((dsts, offset, length)->reader.read(dsts, offset, length), splitter);
+        return read((dsts, offset, length)->reader.read(dsts, offset, length), readSplitter);
     }
 
     @Override
     public int write(GatheringByteChannel writer) throws IOException
     {
-        return write((srcs, offset, length)->writer.write(srcs, offset, length), splitter);
+        return write((srcs, offset, length)->writer.write(srcs, offset, length), writeSplitter);
     }
     public int read(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
-        splitter.lock();
+        readLock.lock();
         try
         {
             int count = 0;
@@ -108,12 +110,12 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         }
         finally
         {
-            splitter.unlock();
+            readLock.unlock();
         }  
     }
     public int write(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
-        splitter.lock();
+        writeLock.lock();
         try
         {
             int count = 0;
@@ -125,7 +127,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         }
         finally
         {
-            splitter.unlock();
+            writeLock.unlock();
         }  
     }
     /**
@@ -138,7 +140,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public int read(ByteBuffer bb) throws IOException
     {
-        return read((dsts, offset, length)->ByteBuffers.move(bb, dsts, offset, length), splitter);
+        return read((dsts, offset, length)->ByteBuffers.move(bb, dsts, offset, length), readSplitter);
     }
     /**
      * Writes bytes from mark (included) to position (excluded) to bb as much as
@@ -149,7 +151,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public int write(ByteBuffer bb) throws IOException
     {
-        return write((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), splitter);
+        return write((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), readSplitter);
     }
     /**
      * Write this buffers content from mark (included) to position (excluded). 
@@ -160,7 +162,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      */
     public int write(RingByteBuffer ring) throws IOException
     {
-        return write((srcs, offset, length)->ring.read(srcs, offset, length), splitter);
+        return write((srcs, offset, length)->ring.read(srcs, offset, length), readSplitter);
     }
 
     @Override

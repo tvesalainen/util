@@ -21,11 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -49,6 +51,36 @@ public class RingByteBufferTest
     {
     }
 
+    @Test
+    public void testBBIO() throws IOException
+    {
+        String exp = "qwerty";
+        ByteBuffer bb1 = ByteBuffer.wrap(exp.getBytes(US_ASCII)).compact();
+        ByteBuffer bb2 = ByteBuffer.allocate(6);
+        RingByteBuffer ring1 = new RingByteBuffer(11, false);
+        RingByteBuffer ring2 = new RingByteBuffer(11, false);
+        for (int ii=0;ii<5;ii++)
+        {
+            ring1.mark();
+            bb1.flip();
+            int rc = ring1.read(bb1);
+            assertEquals(6, rc);
+            assertEquals(0, ring1.marked());
+            assertEquals(6, ring1.remaining());
+            ring1.getAll(false);
+            assertEquals(6, ring1.marked());
+            assertEquals(0, ring1.remaining());
+            ring2.mark();
+            rc = ring1.write(ring2);
+            ring2.getAll(false);
+            assertEquals(6, rc);
+            bb2.clear();
+            rc = ring2.write(bb2);
+            assertEquals(6, rc);
+            assertEquals(6, bb2.position());
+            assertArrayEquals(bb1.array(), bb2.array());
+        }
+    }
     @Test
     public void test1()
     {
@@ -135,7 +167,7 @@ public class RingByteBufferTest
             matcher.add(matcher1, gbc1);
             matcher.add(matcher2, gbc2);
             boolean mark = true;
-            RingByteBuffer rbb = new RingByteBuffer(100, 13, false);
+            RingByteBuffer rbb = new RingByteBuffer(100, false);
             int rc = rbb.read(fc);
             while (rc > 0)
             {

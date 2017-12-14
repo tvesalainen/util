@@ -40,20 +40,6 @@ public class SparseByteBufferSplitter extends Splitter<SparseBufferOperator<Byte
         lock = new ReentrantLock();
     }
     /**
-     * Locks this splitters lock
-     */
-    public void lock()
-    {
-        lock.lock();
-    }
-    /**
-     * Unlocks this splitters lock
-     */
-    public void unlock()
-    {
-        lock.unlock();
-    }
-    /**
      * Calls super class split locked.
      * @param obj
      * @param start
