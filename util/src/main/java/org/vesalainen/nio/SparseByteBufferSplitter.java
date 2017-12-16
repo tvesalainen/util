@@ -18,10 +18,9 @@ package org.vesalainen.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
- *
+ * This class is not thread-safe!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SparseByteBufferSplitter extends Splitter<SparseBufferOperator<ByteBuffer>>
@@ -29,7 +28,6 @@ public class SparseByteBufferSplitter extends Splitter<SparseBufferOperator<Byte
     private final ByteBuffer bb1;
     private final ByteBuffer bb2;
     private final ByteBuffer[] ar2;
-    private final ReentrantLock lock;
 
     public SparseByteBufferSplitter(ByteBuffer buffer)
     {
@@ -37,28 +35,6 @@ public class SparseByteBufferSplitter extends Splitter<SparseBufferOperator<Byte
         bb1 = buffer.duplicate();
         bb2 = buffer.duplicate();
         ar2 = new ByteBuffer[] {bb1, bb2};
-        lock = new ReentrantLock();
-    }
-    /**
-     * Calls super class split locked.
-     * @param obj
-     * @param start
-     * @param length
-     * @return
-     * @throws IOException 
-     */
-    @Override
-    public int split(SparseBufferOperator<ByteBuffer> obj, int start, int length) throws IOException
-    {
-        lock.lock();
-        try
-        {
-            return super.split(obj, start, length);
-        }
-        finally
-        {
-            lock.unlock();
-        }
     }
     
     @Override

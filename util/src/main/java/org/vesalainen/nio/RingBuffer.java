@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
 import java.nio.InvalidMarkException;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A RingBuffer wrapper for Buffer. 
@@ -36,6 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *       mark
  *       |--marked----|-remaining-|
  *       |CharSequence|
+ *   free|                        |free---
  * </pre>
  *  A bytes are available for reading.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -52,8 +51,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     protected final int capacity;
     protected int remaining;
     protected int marked;
-    protected ReentrantLock writeLock = new ReentrantLock();
-    protected ReentrantLock readLock = new ReentrantLock();
     /**
      * Creates a RingBuffer
      * @param buffer 
@@ -102,7 +99,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return marked;
     }
     /**
-     * Returns the count of bytes available for reading
+     * Returns the count of bytes available for filling
      * @return 
      */
     public final int free()
@@ -114,17 +111,9 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public final void mark()
     {
-        readLock.lock();
-        try
-        {
-            mark = position;
-            marked = 0;
-            updated();
-        }
-        finally
-        {
-            readLock.unlock();
-        }
+        mark = position;
+        marked = 0;
+        updated();
     }
     /**
      * Return item as int value at index position from mark. If mark is not set 
@@ -134,23 +123,15 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int getAt(int index)
     {
-        writeLock.lock();
-        try
+        if (mark == -1)
         {
-            if (mark == -1)
-            {
-                throw new InvalidMarkException();
-            }
-            if (index > marked)
-            {
-                throw new IndexOutOfBoundsException();
-            }
-            return implGetAt(index);
+            throw new InvalidMarkException();
         }
-        finally
+        if (index > marked)
         {
-            writeLock.unlock();
+            throw new IndexOutOfBoundsException();
         }
+        return implGetAt(index);
     }
     public abstract int implGetAt(int index);
     /**
@@ -162,35 +143,27 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     protected final int rawGet(boolean markIt)
     {
-        readLock.lock();
-        try
+        int pos;
+        if (hasRemaining())
         {
-            int pos;
-            if (hasRemaining())
+            if (markIt)
             {
-                if (markIt)
-                {
-                    mark = position;
-                    marked = 1;
-                }
-                else
-                {
-                    marked++;
-                }
-                pos = position;
-                position = (position+1) % capacity;
-                remaining--;
-                updated();
-                return pos;
+                mark = position;
+                marked = 1;
             }
             else
             {
-                throw new BufferUnderflowException();
+                marked++;
             }
+            pos = position;
+            position = (position+1) % capacity;
+            remaining--;
+            updated();
+            return pos;
         }
-        finally
+        else
         {
-            readLock.unlock();
+            throw new BufferUnderflowException();
         }
     }
     /**
@@ -200,26 +173,18 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public void getAll(boolean markIt)
     {
-        readLock.lock();
-        try
+        if (markIt)
         {
-            if (markIt)
-            {
-                mark = position;
-                marked = remaining;
-            }
-            else
-            {
-                marked += remaining;
-            }
-            position = (position+remaining) % capacity;
-            remaining = 0;
-            updated();
+            mark = position;
+            marked = remaining;
         }
-        finally
+        else
         {
-            readLock.unlock();
+            marked += remaining;
         }
+        position = (position+remaining) % capacity;
+        remaining = 0;
+        updated();
     }
     /**
      * This method is called after some parameters like marked are updated.
@@ -246,22 +211,14 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     
     protected <T> int read(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        readLock.lock();
-        try
+        int count = splitter.split(op, limit, free());
+        if (count != -1)
         {
-            int count = splitter.split(op, limit, free());
-            if (count != -1)
-            {
-                limit = (limit+count)%capacity;
-                remaining += count;
-            }
-            updated();
-            return count;
+            limit = (limit+count)%capacity;
+            remaining += count;
         }
-        finally
-        {
-            readLock.unlock();
-        }
+        updated();
+        return count;
     }
     /**
      * Write buffers content from mark (included) to position (excluded)
@@ -279,20 +236,12 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     protected int write(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        writeLock.lock();
-        try
+        if (mark == -1)
         {
-            if (mark == -1)
-            {
-                return 0;
-            }
-            int count = splitter.split(op, mark, marked);
-            return count;
+            return 0;
         }
-        finally
-        {
-            writeLock.unlock();
-        }
+        int count = splitter.split(op, mark, marked);
+        return count;
     }
     /**
      * Returns the current position. Only use for this position is in marked write method.

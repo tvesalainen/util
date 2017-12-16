@@ -22,7 +22,8 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
 /**
- * 
+ * RingByteBuffer is a ByteBuffer implementation of RingBuffer
+ * <p>This class is not thread-safe!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,GatheringByteChannel>
@@ -98,37 +99,21 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     }
     public int read(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
-        readLock.lock();
-        try
+        int count = 0;
+        for (int ii=offset;ii<length;ii++)
         {
-            int count = 0;
-            for (int ii=offset;ii<length;ii++)
-            {
-                count += read(bbs[ii]);
-            }
-            return count;
+            count += read(bbs[ii]);
         }
-        finally
-        {
-            readLock.unlock();
-        }  
+        return count;
     }
     public int write(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
-        writeLock.lock();
-        try
+        int count = 0;
+        for (int ii=offset;ii<length;ii++)
         {
-            int count = 0;
-            for (int ii=offset;ii<length;ii++)
-            {
-                count += write(bbs[ii]);
-            }
-            return count;
+            count += write(bbs[ii]);
         }
-        finally
-        {
-            writeLock.unlock();
-        }  
+        return count;
     }
     /**
      * Reads bytes from bb as much as there is room in this buffer starting from 
