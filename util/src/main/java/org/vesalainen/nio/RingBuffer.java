@@ -75,7 +75,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return remaining > 0;
     }
     /**
-     * Returns true if there are not any space in buffer to read in.
+     * Returns true if there are not any space in buffer to fill in.
      * @return 
      */
     public boolean isFull()
@@ -202,14 +202,24 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     }
     /**
      * Reads more items to buffer between limit and mark/position. Read will not
-     * pass mark or position. Return the actual items read.
-     * @param reader Number of items read.
+ pass mark or position. Return the actual items fill.
+     * @param reader Number of items fill.
      * @return 
      * @throws IOException 
      */
-    public abstract int read(R reader) throws IOException;
+    public abstract int fill(R reader) throws IOException;
+    /**
+     * @deprecated Use fill
+     * @param reader
+     * @return
+     * @throws IOException 
+     */
+    public int read(R reader) throws IOException
+    {
+        return RingBuffer.this.fill(reader);
+    }
     
-    protected <T> int read(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
+    protected <T> int fill(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
         int count = splitter.split(op, limit, free());
         if (count != -1)
@@ -221,12 +231,34 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return count;
     }
     /**
+     * @deprecated Use fill
+     * @param <T>
+     * @param op
+     * @param splitter
+     * @return
+     * @throws IOException 
+     */
+    protected <T> int read(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
+    {
+        return fill(op, splitter);
+    }
+    /**
      * Write buffers content from mark (included) to position (excluded)
      * @param writer
      * @return 
      * @throws IOException 
      */
-    public abstract int write(W writer) throws IOException;
+    public abstract int writeTo(W writer) throws IOException;
+    /**
+     * @deprecated Use writeTo
+     * @param writer
+     * @return
+     * @throws IOException 
+     */
+    public int write(W writer) throws IOException
+    {
+        return RingBuffer.this.writeTo(writer);
+    }
     /**
      * Write buffers content from mrk (included) to position (excluded)
      * @param op
@@ -234,7 +266,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      * @return 
      * @throws IOException 
      */
-    protected int write(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
+    protected int writeTo(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
         if (mark == -1)
         {
@@ -244,7 +276,18 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return count;
     }
     /**
-     * Returns the current position. Only use for this position is in marked write method.
+     * @deprecated Use writeTo
+     * @param op
+     * @param splitter
+     * @return
+     * @throws IOException 
+     */
+    protected int write(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
+    {
+        return writeTo(op, splitter);
+    }
+    /**
+     * Returns the current position. Only use for this position is in marked writeTo method.
      * @return 
      * @see org.vesalainen.nio.RingByteBuffer#write(java.lang.Object, int) 
      */
