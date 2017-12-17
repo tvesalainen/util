@@ -46,7 +46,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
 {
     protected final B buffer;
     protected int position;
-    protected int mark=-1;
+    protected int mark;
     protected int limit;
     protected final int capacity;
     protected int remaining;
@@ -60,7 +60,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     {
         this.buffer = buffer;
         this.position = 0;
-        this.mark = -1;
+        this.mark = 0;
         this.limit = 0;
         this.capacity = buffer.capacity();
      
@@ -116,17 +116,12 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         updated();
     }
     /**
-     * Return item as int value at index position from mark. If mark is not set 
-     * throws InvalidMarkException
+     * Return item as int value at index position from mark.
      * @param index
      * @return 
      */
     public int getAt(int index)
     {
-        if (mark == -1)
-        {
-            throw new InvalidMarkException();
-        }
         if (index > marked)
         {
             throw new IndexOutOfBoundsException();
@@ -260,7 +255,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return RingBuffer.this.writeTo(writer);
     }
     /**
-     * Write buffers content from mrk (included) to position (excluded)
+     * Write buffers content from mark (included) to position (excluded)
      * @param op
      * @param splitter
      * @return 
@@ -268,10 +263,6 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     protected int writeTo(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        if (mark == -1)
-        {
-            return 0;
-        }
         int count = splitter.split(op, mark, marked);
         return count;
     }
