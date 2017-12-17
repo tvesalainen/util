@@ -87,31 +87,31 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     }
 
     @Override
-    public int read(ScatteringByteChannel reader) throws IOException
+    public int fill(ScatteringByteChannel reader) throws IOException
     {
-        return read((dsts, offset, length)->reader.read(dsts, offset, length), readSplitter);
+        return fill((dsts, offset, length)->reader.read(dsts, offset, length), readSplitter);
     }
 
     @Override
-    public int write(GatheringByteChannel writer) throws IOException
+    public int writeTo(GatheringByteChannel writer) throws IOException
     {
-        return write((srcs, offset, length)->writer.write(srcs, offset, length), writeSplitter);
+        return writeTo((srcs, offset, length)->writer.write(srcs, offset, length), writeSplitter);
     }
-    public int read(ByteBuffer[] bbs, int offset, int length) throws IOException
+    public int fill(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
         int count = 0;
         for (int ii=offset;ii<length;ii++)
         {
-            count += read(bbs[ii]);
+            count += fill(bbs[ii]);
         }
         return count;
     }
-    public int write(ByteBuffer[] bbs, int offset, int length) throws IOException
+    public int writeTo(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
         int count = 0;
         for (int ii=offset;ii<length;ii++)
         {
-            count += write(bbs[ii]);
+            count += RingByteBuffer.this.writeTo(bbs[ii]);
         }
         return count;
     }
@@ -123,9 +123,9 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      * @return
      * @throws IOException 
      */
-    public int read(ByteBuffer bb) throws IOException
+    public int fill(ByteBuffer bb) throws IOException
     {
-        return read((dsts, offset, length)->ByteBuffers.move(bb, dsts, offset, length), readSplitter);
+        return fill((dsts, offset, length)->ByteBuffers.move(bb, dsts, offset, length), readSplitter);
     }
     /**
      * Writes bytes from mark (included) to position (excluded) to bb as much as
@@ -134,9 +134,9 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      * @return
      * @throws IOException 
      */
-    public int write(ByteBuffer bb) throws IOException
+    public int writeTo(ByteBuffer bb) throws IOException
     {
-        return write((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), readSplitter);
+        return writeTo((srcs, offset, length)->ByteBuffers.move(srcs, offset, length, bb), readSplitter);
     }
     /**
      * Write this buffers content from mark (included) to position (excluded). 
@@ -145,9 +145,9 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
      * @return 
      * @throws java.io.IOException 
      */
-    public int write(RingByteBuffer ring) throws IOException
+    public int writeTo(RingByteBuffer ring) throws IOException
     {
-        return write((srcs, offset, length)->ring.read(srcs, offset, length), readSplitter);
+        return writeTo((srcs, offset, length)->ring.fill(srcs, offset, length), readSplitter);
     }
 
     @Override
