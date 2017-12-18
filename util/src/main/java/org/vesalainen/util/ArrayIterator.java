@@ -38,7 +38,7 @@ public class ArrayIterator<T> implements Iterator<T>
     {
         this.array = array;
         this.index = offset;
-        this.length = array.length;
+        this.length = length;
     }
     public ArrayIterator(Object array)
     {
