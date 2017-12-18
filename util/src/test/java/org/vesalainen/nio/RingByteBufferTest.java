@@ -61,21 +61,21 @@ public class RingByteBufferTest
         RingByteBuffer ring2 = new RingByteBuffer(11, false);
         for (int ii=0;ii<5;ii++)
         {
-            ring1.mark();
+            ring1.discard();
             bb1.flip();
-            int rc = ring1.read(bb1);
+            int rc = ring1.fill(bb1);
             assertEquals(6, rc);
             assertEquals(0, ring1.marked());
             assertEquals(6, ring1.remaining());
             ring1.getAll(false);
             assertEquals(6, ring1.marked());
             assertEquals(0, ring1.remaining());
-            ring2.mark();
-            rc = ring1.write(ring2);
+            ring2.discard();
+            rc = ring1.writeTo(ring2);
             ring2.getAll(false);
             assertEquals(6, rc);
             bb2.clear();
-            rc = ring2.write(bb2);
+            rc = ring2.writeTo(bb2);
             assertEquals(6, rc);
             assertEquals(6, bb2.position());
             assertArrayEquals(bb1.array(), bb2.array());
@@ -104,7 +104,7 @@ public class RingByteBufferTest
             boolean mark = true;
             int writeCount = 0;
             RingByteBuffer rbb = new RingByteBuffer(100);
-            int rc = rbb.read(fc);
+            int rc = rbb.fill(fc);
             assertTrue(rbb.isFull());
             while (rc > 0)
             {
@@ -121,14 +121,14 @@ public class RingByteBufferTest
                             break;
                         case Match:
                             assertTrue(str1.contentEquals(rbb) || str2.contentEquals(rbb));
-                            int cn = rbb.write(gbc);
+                            int cn = rbb.writeTo(gbc);
                             assertEquals(12, cn);
                             mark = true;
                             writeCount++;
                             break;
                     }
                 }
-                rc = rbb.read(fc);
+                rc = rbb.fill(fc);
                 assertTrue(rc <= 100);
             }
             assertEquals(26, writeCount);
@@ -168,7 +168,7 @@ public class RingByteBufferTest
             matcher.add(matcher2, gbc2);
             boolean mark = true;
             RingByteBuffer rbb = new RingByteBuffer(100, false);
-            int rc = rbb.read(fc);
+            int rc = rbb.fill(fc);
             while (rc > 0)
             {
                 while (rbb.hasRemaining())
@@ -187,13 +187,13 @@ public class RingByteBufferTest
                         case Match:
                             for (GatheringByteChannel gbc : matcher.getLastMatched())
                             {
-                                rbb.write(gbc);
+                                rbb.writeTo(gbc);
                             }
                             mark = true;
                             break;
                     }
                 }
-                rc = rbb.read(fc);
+                rc = rbb.fill(fc);
                 assertTrue(rc <= 100);
             }
             String res1 = baos1.toString(StandardCharsets.US_ASCII.name());

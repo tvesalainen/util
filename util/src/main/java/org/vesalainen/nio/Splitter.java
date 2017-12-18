@@ -22,6 +22,7 @@ import java.io.IOException;
  * Splitter is a helper class for RingBuffer, it's simple purpose is to decide
  * if ring-buffer operation is for one or two contiguous sequences.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
 public abstract class Splitter<T>
 {
@@ -65,6 +66,7 @@ public abstract class Splitter<T>
                 }
             }
         }
+        assert count <= length;
         return count;
     }
     /**

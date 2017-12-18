@@ -19,23 +19,22 @@ package org.vesalainen.nio;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
-import java.nio.InvalidMarkException;
 
 /**
  * A RingBuffer wrapper for Buffer. 
- * <p>This class acts also as CharSequence between mark and position.
- * <p>
+ * <p>This class acts also as CharSequence between discard and position.
+ <p>
  * Example:
  * <pre>
- *   AAAAMMMMMMMMMMMMMRRRRRRRRRRRRAAAAAAAA
- *       ^            ^           ^
- *       |            |           limit
- *       |            position
- *       mark
- *       |--marked----|-remaining-|
- *       |CharSequence|
- *   free|                        |free---
- * </pre>
+   AAAAMMMMMMMMMMMMMRRRRRRRRRRRRAAAAAAAA
+       ^            ^           ^
+       |            |           limit
+       |            position
+       discard
+       |--marked----|-remaining-|
+       |CharSequence|
+   free|                        |free---
+ </pre>
  *  A bytes are available for reading.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <B> Buffer type
@@ -45,12 +44,12 @@ import java.nio.InvalidMarkException;
 public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
 {
     protected final B buffer;
-    protected int position;
-    protected int mark;
-    protected int limit;
+    protected volatile int position;
+    protected volatile int mark;
+    protected volatile int limit;
     protected final int capacity;
-    protected int remaining;
-    protected int marked;
+    protected volatile int remaining;
+    protected volatile int marked;
     /**
      * Creates a RingBuffer
      * @param buffer 
@@ -91,7 +90,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return remaining;
     }
     /**
-     * Returns the count of marked items between mark and position
+     * Returns the count of marked items between discard and position
      * @return 
      */
     public final int marked()
@@ -107,16 +106,23 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return capacity-marked-remaining;
     }
     /**
-     * Set mark to position.
+     * Mark is set to position. Bytes before position are discarded. (available to fill)
      */
-    public final void mark()
+    public void discard()
     {
         mark = position;
         marked = 0;
         updated();
     }
     /**
-     * Return item as int value at index position from mark.
+     * @deprecated Use discard
+     */
+    public final void mark()
+    {
+        discard();
+    }
+    /**
+     * Return item as int value at index position from discard.
      * @param index
      * @return 
      */
@@ -130,18 +136,18 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     }
     public abstract int implGetAt(int index);
     /**
-     * Returns the current position and increments it. If markIt == true the 
-     * returned position is marked.
+     * Returns the current position and increments it. If discard == true the 
+     * bytes before position are discarded.
      * <p>This method is a support for concrete subclasses get method.
-     * @param markIt
+     * @param discard
      * @return 
      */
-    protected final int rawGet(boolean markIt)
+    protected final int rawGet(boolean discard)
     {
         int pos;
         if (hasRemaining())
         {
-            if (markIt)
+            if (discard)
             {
                 mark = position;
                 marked = 1;
@@ -164,11 +170,11 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
     /**
      * This method has the same effect as by calling get until <code>hasReminder()</code> returns
      * false;
-     * @param markIt 
+     * @param discard 
      */
-    public void getAll(boolean markIt)
+    public void getAll(boolean discard)
     {
-        if (markIt)
+        if (discard)
         {
             mark = position;
             marked = remaining;
@@ -196,8 +202,8 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         }
     }
     /**
-     * Reads more items to buffer between limit and mark/position. Read will not
- pass mark or position. Return the actual items fill.
+     * Reads more items to buffer between limit and discard/position. Read will not
+ pass discard or position. Return the actual items fill.
      * @param reader Number of items fill.
      * @return 
      * @throws IOException 
@@ -211,7 +217,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int read(R reader) throws IOException
     {
-        return RingBuffer.this.fill(reader);
+        return fill(reader);
     }
     
     protected <T> int fill(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
@@ -252,10 +258,10 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public int write(W writer) throws IOException
     {
-        return RingBuffer.this.writeTo(writer);
+        return writeTo(writer);
     }
     /**
-     * Write buffers content from mark (included) to position (excluded)
+     * Write buffers content from mark (included) 
      * @param op
      * @param splitter
      * @return 
@@ -263,8 +269,20 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     protected int writeTo(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter) throws IOException
     {
-        int count = splitter.split(op, mark, marked);
-        return count;
+        return writeTo(op, splitter, mark, marked);
+    }
+    /**
+     * Write buffers content from start
+     * @param op
+     * @param splitter
+     * @param start
+     * @param length
+     * @return
+     * @throws IOException 
+     */
+    protected int writeTo(SparseBufferOperator<B> op, Splitter<SparseBufferOperator<B>> splitter, int start, int length) throws IOException
+    {
+        return splitter.split(op, start, length);
     }
     /**
      * @deprecated Use writeTo
@@ -287,7 +305,7 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         return position;
     }
     /**
-     * Returns input between mark and position as a string
+     * Returns input between discard and position as a string
      * @return 
      */
     public String getString()
