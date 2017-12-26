@@ -120,7 +120,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
             int rc = writeTo(bbs[ii], start, len);
             assert rc >= 0;
             count += rc;
-            start += rc;
+            start = (start + rc) % capacity;
             len -= rc;
         }
         return count;
