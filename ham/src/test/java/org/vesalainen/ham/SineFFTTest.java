@@ -16,7 +16,7 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.ham.morse.MorseTeacher;
+import org.vesalainen.ham.hffax.SineFFT;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,18 +24,17 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MorseTeacherTest
+public class SineFFTTest
 {
     
-    public MorseTeacherTest()
+    public SineFFTTest()
     {
     }
 
     @Test
-    public void test() throws InterruptedException
+    public void testSomeMethod()
     {
-        MorseTeacher mt = new MorseTeacher();
-        Thread.sleep(1000000000);
+        SineFFT.main();
     }
     
 }

@@ -14,28 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.fft;
 
-import org.vesalainen.ham.morse.MorseTeacher;
+import javax.sound.sampled.LineUnavailableException;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.vesalainen.ham.morse.MorseCode;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MorseTeacherTest
+public class FFTTest
 {
     
-    public MorseTeacherTest()
+    public FFTTest()
     {
     }
 
     @Test
-    public void test() throws InterruptedException
+    public void test() throws LineUnavailableException
     {
-        MorseTeacher mt = new MorseTeacher();
-        Thread.sleep(1000000000);
+        double pitch = 2000;
+        int rate = 44000;
+        byte[] tone = MorseCode.createTone(1000, rate, pitch);
+        FFT fft = new FFT(tone.length);
+        double frequency = fft.frequency(tone, rate);
+        assertEquals(pitch, frequency, 0.1);
     }
     
 }

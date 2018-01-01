@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.hffax;
 
-import org.vesalainen.ham.morse.MorseTeacher;
+import java.net.URL;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,18 +24,18 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MorseTeacherTest
+public class HFFaxTest
 {
     
-    public MorseTeacherTest()
+    public HFFaxTest()
     {
     }
 
     @Test
-    public void test() throws InterruptedException
+    public void test()
     {
-        MorseTeacher mt = new MorseTeacher();
-        Thread.sleep(1000000000);
+        URL url = HFFaxTest.class.getResource("/wefax1.wav");
+        HFFax.main("-u", url.toString());
     }
     
 }

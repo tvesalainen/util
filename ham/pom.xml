@@ -14,9 +14,14 @@
             <artifactId>util</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.wendykierp</groupId>
+            <artifactId>JTransforms</artifactId>
+            <version>3.1</version>
+            <classifier>with-dependencies</classifier>
+        </dependency>        
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham;
 
+import org.vesalainen.ham.morse.Teach;
 import java.io.IOException;
 import javax.sound.sampled.LineUnavailableException;
 import org.junit.Test;

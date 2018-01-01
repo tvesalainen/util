@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.morse;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-import static org.vesalainen.ham.MorseCode.Part.*;
+import static org.vesalainen.ham.morse.MorseCode.Part.*;
 
 /**
  *
@@ -214,8 +214,12 @@ public class MorseCode implements AutoCloseable
     }
     private byte[] createTone()
     {
-        byte[] a = new byte[3*spu];
-        double waveLen = SAMPLE_RATE / pitch;
+        return createTone(3*spu, SAMPLE_RATE, pitch);
+    }
+    public static byte[] createTone(int millis, int rate, double pitch)
+    {
+        byte[] a = new byte[1000*rate/millis];
+        double waveLen = rate / pitch;
         double d = (2* Math.PI) / waveLen;
         double x = 0;
         for (int ii=0;ii<a.length;ii++)
