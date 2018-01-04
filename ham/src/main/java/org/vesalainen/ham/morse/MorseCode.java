@@ -218,7 +218,7 @@ public class MorseCode implements AutoCloseable
     }
     public static byte[] createTone(int millis, int rate, double pitch)
     {
-        byte[] a = new byte[1000*rate/millis];
+        byte[] a = new byte[millis*rate/1000];
         double waveLen = rate / pitch;
         double d = (2* Math.PI) / waveLen;
         double x = 0;

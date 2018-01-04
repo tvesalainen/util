@@ -60,72 +60,8 @@ public class HFFax extends CmdArgs
     public void processURL(URL url) throws UnsupportedAudioFileException, IOException
     {
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        AudioFormat format = ais.getFormat();
-        float sampleRate = format.getSampleRate();
-        int frameSize = format.getFrameSize();
-        boolean bigEndian = format.isBigEndian();
-        float lineTime = (60F/(float)lpm);
-        long sampleNanos = (long) (1000000*lineTime/resolution);
-        int size = (int) (sampleRate*lineTime/resolution);
-        FFT fft = new FFT(size);
-        byte[] buf = new byte[size*frameSize];
-        int rc = ais.read(buf);
-        int count = 0;
-        long time = 0;
-        long tim = 0;
-        boolean black = true;
-        boolean color = false;
-        while (rc != -1)
-        {
-            float frequency = fft.frequency(buf, (int) sampleRate, frameSize, bigEndian, 200F, 2300F);
-            if (frequency >= 1000)
-            {
-                color = frequency < 2000;
-                if (color != black)
-                {
-                    black = color;
-                    long elap = time - tim;
-                    tim = time;
-                    System.err.println(time+": "+black+" "+elap);
-                }
-            }
-            else
-            {
-                System.err.print(time+": ");
-                bar(frequency);
-                System.err.println(frequency);
-            }
-            time += sampleNanos;
-            /*
-            System.err.print(time+": ");
-            bar(frequency);
-            System.err.println(frequency);
-            if ((count % resolution) == 0)
-            {
-                System.err.println();
-            }
-            else
-            {
-                if (frequency < 2000)
-                {
-                    System.err.print("x");
-                }
-                else
-                {
-                    System.err.print(" ");
-                }
-            }
-            */
-            rc = ais.read(buf);
-            count++;
-        }
-    }
-    private void bar(float f)
-    {
-        for (float x=200;x<=f;x+=100)
-        {
-            System.err.print("x");
-        }
+        FaxEngine fax = new FaxEngine(ais);
+        fax.parse();
     }
     public static void main(String... args)
     {
