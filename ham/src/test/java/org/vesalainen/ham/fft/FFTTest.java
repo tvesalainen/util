@@ -33,14 +33,31 @@ public class FFTTest
     }
 
     @Test
-    public void test() throws LineUnavailableException
+    public void test1() throws LineUnavailableException
     {
-        double pitch = 2000;
-        int rate = 44000;
-        byte[] tone = MorseCode.createTone(1000, rate, pitch);
-        FFT fft = new FFT(tone.length);
-        double frequency = fft.frequency(tone, rate);
-        assertEquals(pitch, frequency, 0.1);
+        double pitch1 = 60;
+        int rate = 5120;
+        byte[] tone1 = MorseCode.createTone(300, rate, pitch1);
+        FFT fft = new FFT(256);
+        assertEquals(pitch1, fft.frequency(rate, tone1, 0, 256), 1e-5);
+    }
+    @Test
+    public void test2() throws LineUnavailableException
+    {
+        double pitch1 = 60;
+        int rate = 5120;
+        byte[] tone1 = MorseCode.createTone(300, rate, pitch1);
+        byte[] tone2 = MorseCode.createTone(300, rate, pitch1*2);
+        for (int ii=0;ii<256;ii++)
+        {
+            tone1[ii] = (byte) ((tone1[ii]+tone2[ii])/2);
+        }        
+        FFT fft = new FFT(256);
+        assertEquals(pitch1, fft.frequency(rate, tone1, 0, 256), 1e-5);
+        for (int ii=0;ii<256;ii++)
+        {
+            System.err.printf("%03d: %d\n", ii, tone1[ii]);
+        }
     }
     
 }

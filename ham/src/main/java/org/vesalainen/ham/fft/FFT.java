@@ -16,95 +16,156 @@
  */
 package org.vesalainen.ham.fft;
 
-import java.nio.ByteBuffer;
-import static java.nio.ByteOrder.*;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import org.jtransforms.fft.FloatFFT_1D;
+import java.util.Arrays;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="http://paulbourke.net/miscellaneous/dft/">Fast Fourier
+ * Transform</a>
  */
 public class FFT
 {
-    private int samples;
-    private float[] complex;
-    private final FloatFFT_1D fft;
+    private int n;
+    private int m;
+    private double[] x;
+    private double[] y;
 
-    public FFT(int samples)
+    public FFT(int n)
     {
-        fft = new FloatFFT_1D(samples);
-        this.samples = samples;
-        complex = new float[samples*2];
+        if (Integer.bitCount(n) != 1)
+        {
+            throw new IllegalArgumentException(n+" is not power of 2");
+        }
+        m = 0;
+        int nn = n;
+        while (nn != 1)
+        {
+            nn/=2;
+            m++;
+        }
+        this.n = n;
+        x = new double[n];
+        y = new double[n];
     }
     
-    public float frequency(byte[] sample, int sampleRate)
+    public double frequency(float sampleRate, byte[] sample, int offset, int length)
     {
-        return frequency(sample, sampleRate, 1, false);
-    }
-    public float frequency(byte[] sample, int sampleRate, int frameSize, boolean bigEndian)
-    {
-        return frequency(sample, sampleRate, frameSize, bigEndian, 0F, Float.MAX_VALUE);
-    }
-    public float frequency(byte[] sample, int sampleRate, int frameSize, boolean bigEndian, float min, float max)
-    {
-        int len = sample.length/frameSize;
-        if (len != samples)
-        {
-            throw new IllegalArgumentException("wrong number of samples");
-        }
-        populate(sample, sampleRate, frameSize, bigEndian);
-        fft.complexForward(complex);
-        float maxStrength = -1;
-        float hz = 0;
+        fft(true, sample, offset, length);
+        int len = length/2;
+        double f = 0;
+        double d = sampleRate/length;
+        byte max = Byte.MIN_VALUE;
         for (int ii=0;ii<len;ii++)
         {
-            float strength = (float) Math.hypot(complex[2*ii], complex[2*ii+1]);
-            float freq = ((float)ii/(float)len)*(float)sampleRate;
-            if (strength > maxStrength && freq >= min && freq <= max)
+            if (sample[ii] > max)
             {
-                maxStrength = strength;
-                hz = freq;
+                max = sample[ii];
+                f = d*ii;
             }
         }
-        return hz;
+        return f;
     }
-
-    private void populate(byte[] sample, int sampleRate, int frameSize, boolean bigEndian)
+    public void fft(boolean forward, byte[] sample, int offset, int length)
     {
-        int len = sample.length/frameSize;
-        switch (frameSize)
+        if (length != x.length)
         {
-            case 1:
-                for (int ii=0;ii<len;ii++)
+            throw new IllegalArgumentException("illegal length");
+        }
+        for (int ii=0;ii<n;ii++)
+        {
+            x[ii] = sample[ii+offset];
+        }
+        Arrays.fill(y, 0);
+        fft(forward, m, x, y);
+        for (int ii=0;ii<n;ii++)
+        {
+            sample[ii+offset] = (byte) Math.hypot(x[ii], y[ii]);
+        }
+    }
+    /*
+   This computes an in-place complex-to-complex FFT 
+   x and y are the real and imaginary arrays of 2^m points.
+   dir =  1 gives forward transform
+   dir = -1 gives reverse transform 
+     */
+    public static void fft(boolean forward, long m, double[] x , double[] y)
+    {
+        int n, i, i1, j, k, i2, l, l1, l2;
+        double c1, c2, tx, ty, t1, t2, u1, u2, z;
+
+        /* Calculate the number of points */
+        n = 1;
+        for (i = 0; i < m; i++)
+        {
+            n *= 2;
+        }
+
+        /* Do the bit reversal */
+        i2 = n >> 1;
+        j = 0;
+        for (i = 0; i < n - 1; i++)
+        {
+            if (i < j)
+            {
+                tx = x[i];
+                ty = y[i];
+                x[i] = x[j];
+                y[i] = y[j];
+                x[j] = tx;
+                y[j] = ty;
+            }
+            k = i2;
+            while (k <= j)
+            {
+                j -= k;
+                k >>= 1;
+            }
+            j += k;
+        }
+
+        /* Compute the FFT */
+        c1 = -1.0;
+        c2 = 0.0;
+        l2 = 1;
+        for (l = 0; l < m; l++)
+        {
+            l1 = l2;
+            l2 <<= 1;
+            u1 = 1.0;
+            u2 = 0.0;
+            for (j = 0; j < l1; j++)
+            {
+                for (i = j; i < n; i += l2)
                 {
-                    complex[2*ii] = sample[ii];
-                    complex[2*ii+1] = 0;
+                    i1 = i + l1;
+                    t1 = u1 * x[i1] - u2 * y[i1];
+                    t2 = u1 * y[i1] + u2 * x[i1];
+                    x[i1] = x[i] - t1;
+                    y[i1] = y[i] - t2;
+                    x[i] += t1;
+                    y[i] += t2;
                 }
-                break;
-            case 2:
-                ByteBuffer bb2 = ByteBuffer.wrap(sample);
-                bb2.order(bigEndian ? BIG_ENDIAN : LITTLE_ENDIAN);
-                ShortBuffer sb = bb2.asShortBuffer();
-                for (int ii=0;ii<len;ii++)
-                {
-                    complex[2*ii] = sb.get(ii);
-                    complex[2*ii+1] = 0;
-                }
-                break;
-            case 4:
-                ByteBuffer bb4 = ByteBuffer.wrap(sample);
-                bb4.order(bigEndian ? BIG_ENDIAN : LITTLE_ENDIAN);
-                IntBuffer ib = bb4.asIntBuffer();
-                for (int ii=0;ii<len;ii++)
-                {
-                    complex[2*ii] = ib.get(ii);
-                    complex[2*ii+1] = 0;
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("illegal bytesPerSample "+frameSize);
+                z = u1 * c1 - u2 * c2;
+                u2 = u1 * c2 + u2 * c1;
+                u1 = z;
+            }
+            c2 = Math.sqrt((1.0 - c1) / 2.0);
+            if (forward)
+            {
+                c2 = -c2;
+            }
+            c1 = Math.sqrt((1.0 + c1) / 2.0);
+        }
+
+        /* Scaling for forward transform */
+        if (forward)
+        {
+            for (i = 0; i < n; i++)
+            {
+                x[i] /= n;
+                y[i] /= n;
+            }
         }
     }
 }

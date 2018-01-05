@@ -79,5 +79,15 @@ public class FaxTokenizer
     {
         return reader.getAmplitude();
     }
+
+    public float getSampleRate()
+    {
+        return reader.getSampleRate();
+    }
+
+    public int getFrameSize()
+    {
+        return reader.getFrameSize();
+    }
     
 }

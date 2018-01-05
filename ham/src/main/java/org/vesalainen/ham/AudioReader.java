@@ -66,7 +66,7 @@ public abstract class AudioReader
         if (filter.length > 0)
         {
             fft = new FloatFFT_1D(size);
-            floatBuffer = new float[size];
+            floatBuffer = new float[2*size];
         }
         frequencyCounter = new FrequencyCounter((int) sampleRate);
     }
@@ -149,7 +149,7 @@ public abstract class AudioReader
                 }
                 begin = Math.min((int)filter[ii+1]/d, size);
             }
-            fft.complexInverse(filter, false);
+            fft.complexInverse(floatBuffer, false);
             for (int ii=0;ii<len;ii++)
             {
                 float strength = (float) Math.hypot(floatBuffer[2*ii], floatBuffer[2*ii+1]);
@@ -209,6 +209,16 @@ public abstract class AudioReader
     public float getAmplitude()
     {
         return frequencyCounter.getAmplitude();
+    }
+
+    public float getSampleRate()
+    {
+        return sampleRate;
+    }
+
+    public int getFrameSize()
+    {
+        return frameSize;
     }
     
     public abstract int getSample() throws IOException;
