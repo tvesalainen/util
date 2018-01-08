@@ -23,7 +23,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.hffax.FaxTokenizer.Tone;
 
 /**
  *
@@ -39,17 +38,18 @@ public class FaxTokenizerTest
     @Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
-        URL url = HFFaxTest.class.getResource("/wefax1.wav");
+        URL url = HFFaxTest.class.getResource("/hffax.wav");
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
         FaxTokenizer ft = new FaxTokenizer(ais);
-        long prev = 0;
-        while (true)
-        {
-            Tone tone = ft.nextTone();
-            long micros = ft.getMicros();
-            System.err.printf("%09d: %s\n", micros-prev, tone);
-            prev = micros;
-        }
+        FaxListener fl = new FaxListener() {
+            @Override
+            public void tone(FaxTone tone, long begin, long end, long span, float amplitude)
+            {
+                System.err.printf("%8s % 10d - % 10d % 6d %.1f\n", tone, begin, end, span, amplitude);
+            }
+        };
+        ft.addListener(fl);
+        ft.run();
     }
     
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,11 @@
  */
 package org.vesalainen.ham.hffax;
 
-import java.net.URL;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public interface FaxListener
 {
-    
-    public HFFaxTest()
-    {
-    }
-
-    @Test
-    public void test()
-    {
-        URL url = HFFaxTest.class.getResource("/hffax.wav");
-        HFFax.main("-u", url.toString());
-    }
-    
+    void tone(FaxTone tone, long begin, long end, long span, float amplitude);
 }

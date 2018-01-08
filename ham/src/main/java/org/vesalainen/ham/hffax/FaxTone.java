@@ -16,24 +16,15 @@
  */
 package org.vesalainen.ham.hffax;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxEngineTest
+public enum FaxTone
 {
-    
-    public FaxEngineTest()
-    {
-    }
-
-    @Test
-    public void test()
-    {
-        FaxEngine e = new FaxEngine(null, 44000, 2, true);
-    }
-    
+    UNKNOWN,
+    LOW,
+    BLACK,
+    WHITE,
+    HIGH;
 }

@@ -17,10 +17,13 @@
 package org.vesalainen.ham.hffax;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
 import org.vesalainen.ham.AudioReader;
-import static org.vesalainen.ham.hffax.FaxTokenizer.Tone.*;
+import static org.vesalainen.ham.hffax.FaxTone.*;
 
 /**
  *
@@ -28,9 +31,10 @@ import static org.vesalainen.ham.hffax.FaxTokenizer.Tone.*;
  */
 public class FaxTokenizer
 {
-    public enum Tone {START, STOP, BLACK, WHITE, UNKNOWN}; 
+
     private AudioReader reader;
-    private Tone last = UNKNOWN;
+    private FaxTone last = UNKNOWN;
+    private List<FaxListener> listeners = new ArrayList<>();
     
     public FaxTokenizer(TargetDataLine line)
     {
@@ -41,11 +45,42 @@ public class FaxTokenizer
         reader = AudioReader.getInstance(ais, 4096);
     }
     
-    public Tone nextTone() throws IOException
+    public void addListener(FaxListener listener)
+    {
+        listeners.add(listener);
+    }
+    public void removeListener(FaxListener listener)
+    {
+        listeners.remove(listener);
+    }
+    public void run() throws IOException
+    {
+        long prev = 0;
+        FaxTone prevTone = UNKNOWN;
+        while (true)
+        {
+            FaxTone tone = nextTone();
+            long micros = getMicros();
+            long span = micros - prev;
+            if (span > 400000)
+            {
+                System.err.println();
+            }
+            float amplitude = getAmplitude();
+            for (FaxListener l : listeners)
+            {
+                l.tone(prevTone, prev, micros, span, amplitude);
+            }
+            prev = micros;
+            prevTone = tone;
+        }
+    }
+
+    private FaxTone nextTone() throws IOException
     {
         while (true)
         {
-            Tone tone;
+            FaxTone tone;
             float frequency = reader.getHalfWave();
             if (frequency > 1100)
             {
@@ -55,12 +90,19 @@ public class FaxTokenizer
                 }
                 else
                 {
-                    tone = WHITE;
+                    if (frequency < 2900)
+                    {
+                        tone = WHITE;
+                    }
+                    else
+                    {
+                        tone = HIGH;
+                    }
                 }
             }
             else
             {
-                tone = START;
+                tone = LOW;
             }
             if (tone != last)
             {

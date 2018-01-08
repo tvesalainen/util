@@ -60,18 +60,19 @@ public class FaxEngine
     {
         try
         {
+            int index = 0;
             while (true)
             {
-                long[] lineLens = sync();
-                long lineLen = getLineLen(lineLens);
+                long lineLen = sync();
                 if (lineLen > 0)
                 {
-                    image = new BufferedImage(resolution, resolution, TYPE_BYTE_BINARY);
+                    image = new BufferedImage(resolution, 3000, TYPE_BYTE_BINARY);
                     Graphics2D graphics = image.createGraphics();
                     int lines = render(lineLen, graphics);
                     BufferedImage subimage = image.getSubimage(0, 0, image.getWidth(), lines);
-                    ImageIO.write(subimage, "png", new File("fax.png"));
+                    ImageIO.write(subimage, "png", new File("fax"+index+".png"));
                 }
+                index++;
             }
         }
         catch (EOFException ex)
@@ -94,16 +95,15 @@ public class FaxEngine
         avg = (avg-max-min)/(lineLens.length-2);
         return avg;
     }
-    private long[] sync() throws IOException
+    private long sync() throws IOException
     {
         Tone state = UNKNOWN;
         long prev = 0;
-        long[] lineLen = new long[10];
-        int lineCount = 0;
+        int lineLen = 0;
         while (true)
         {
             Tone tone = tokenizer.nextTone();
-            long span = tokenizer.getMicros() - prev;
+            int span = (int) (tokenizer.getMicros() - prev);
             switch (state)
             {
                 case BLACK:
@@ -112,7 +112,7 @@ public class FaxEngine
                         switch (tone)
                         {
                             case WHITE:
-                                lineLen[lineCount] = span;
+                                lineLen = span;
                                 state = WHITE;
                                 break;
                             default:
@@ -128,15 +128,15 @@ public class FaxEngine
                     switch (tone)
                     {
                         case BLACK:
-                            lineLen[lineCount] += span;
-                            if (lineCount+1 >= lineLen.length)
+                            lineLen += span;
+                            long ll = getLPM(lineLen);
+                            if (ll > 0)
                             {
-                                return lineLen;
+                                return ll;
                             }
                             else
                             {
-                                lineCount++;
-                                state = BLACK;
+                                state = UNKNOWN;
                             }
                             break;
                         default:
@@ -144,13 +144,23 @@ public class FaxEngine
                     }
                     break;
                 default:
-                    lineCount=0;
                     if (tone == BLACK)
                     {
                         state = BLACK;
                     }
             }
             prev = tokenizer.getMicros();
+        }
+    }
+    private long getLPM(long lineLen)
+    {
+        int r = (int) ((lineLen+50)/100);
+        switch (r)
+        {
+            case 5000:
+                return 1000000*60/120;  // 120
+            default:
+                return -1;
         }
     }
     public int render(long lineLen, Graphics2D... graphics) throws IOException
@@ -164,15 +174,22 @@ public class FaxEngine
         }
         long start = tokenizer.getMicros();
         long beg = 0;
-        long time = 0;
-        int line = 0;
+        long time;
+        int lin=0;
+        long prev = 0;
+        long span = 0;
         try
         {
             while (true)
             {
                 Tone tone = tokenizer.nextTone();
                 time = tokenizer.getMicros()-start;
-                line = (int) (time / lineLen);
+                span = time - prev;
+                lin = (int) (time / lineLen);
+                if (lin == 1200)
+                {
+                    System.err.println();
+                }
                 switch (tone)
                 {
                     case BLACK:
@@ -182,11 +199,11 @@ public class FaxEngine
                             int col = (int) (bounds[ii].width*(time % lineLen)/lineLen);
                             if (begin < col)
                             {
-                                graphics[ii].drawLine(begin, line, col, line);
+                                graphics[ii].drawLine(begin, lin, col, lin);
                             }
                             else
                             {
-                                graphics[ii].drawLine(begin, line, resolution, line);
+                                graphics[ii].drawLine(begin, lin, resolution, lin);
                             }
                         }
                         break;
@@ -194,13 +211,20 @@ public class FaxEngine
                         beg = time;
                         break;
                     default:
+                        System.err.printf("line=%d span=%d tone=%s\n", lin, span, tone);
+                        if (span > 1000000)
+                        {
+                            return lin;
+                        }
                         break;
                 }
+                prev = time;
             }
         }
         catch (EOFException ex)
         {
         }
-        return line;
+        return lin;
     }
+
 }

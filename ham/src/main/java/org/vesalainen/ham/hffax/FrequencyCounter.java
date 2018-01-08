@@ -87,8 +87,10 @@ public class FrequencyCounter
             runLength = 1+an/s;
             if (max.count() > 10)
             {
-                amplitude = (float) (max.getMax() + min.getMin());
-                zero = (float) (amplitude/2.0);
+                double ma = max.getMax();
+                double mi = min.getMin();
+                amplitude = (float) (ma - mi);
+                zero = (float) ((ma + mi)/2.0);
             }
         }
         else
