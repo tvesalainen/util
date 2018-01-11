@@ -42,6 +42,10 @@ public abstract class IntArray
     {
         return new InArray(ib);
     }
+    public static IntArray getInstance(int size)
+    {
+        return new InArray(size);
+    }
     public abstract int length();
     public abstract int get(int index);
     public abstract void put(int index, int value);
@@ -69,7 +73,7 @@ public abstract class IntArray
         @Override
         public void put(int index, int value)
         {
-            bb.put((byte) value);
+            bb.put(index, (byte) value);
         }
                 
     }
@@ -96,13 +100,18 @@ public abstract class IntArray
         @Override
         public void put(int index, int value)
         {
-            sb.put((short) value);
+            sb.put(index, (short) value);
         }
                 
     }
     public static class InArray extends IntArray
     {
         private IntBuffer ib;
+
+        public InArray(int size)
+        {
+            this(IntBuffer.allocate(size));
+        }
 
         public InArray(IntBuffer ib)
         {
@@ -123,7 +132,7 @@ public abstract class IntArray
         @Override
         public void put(int index, int value)
         {
-            ib.put(value);
+            ib.put(index, value);
         }
                 
     }
