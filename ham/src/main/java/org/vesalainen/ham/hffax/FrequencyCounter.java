@@ -30,6 +30,7 @@ public class FrequencyCounter
     private float sampleRate;
     private float prev;
     private float runLength;
+    private float halfLength;
     private float frequency;
     private SlidingMin min = new SlidingMin(15);
     private SlidingMax max = new SlidingMax(15);
@@ -83,7 +84,8 @@ public class FrequencyCounter
             float an = Math.abs(now);
             float ap = Math.abs(prev);
             float s = an+ap;
-            frequency = 0.5F/((runLength-an/s)/sampleRate);
+            halfLength = runLength-an/s;
+            frequency = 0.5F/(halfLength/sampleRate);
             runLength = 1+an/s;
             if (max.count() > 10)
             {
@@ -121,7 +123,7 @@ public class FrequencyCounter
     
     public long getMicros()
     {
-        return 1000000L*count/(long)sampleRate;
+        return 1000000L*(count-(long)halfLength)/(long)sampleRate;
     }
 
     public float getZero()

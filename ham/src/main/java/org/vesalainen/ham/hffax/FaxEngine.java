@@ -25,19 +25,21 @@ import static java.awt.image.BufferedImage.TYPE_BYTE_BINARY;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.BitSet;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
-import org.vesalainen.ham.hffax.FaxTokenizer.Tone;
-import static org.vesalainen.ham.hffax.FaxTokenizer.Tone.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxEngine
+public class FaxEngine implements FaxStateListener
 {
     private int lpm;
     private int ioc;
@@ -45,6 +47,9 @@ public class FaxEngine
     private BufferedImage image;
     private int line;
     private FaxTokenizer tokenizer;
+    private FaxSynchronizer synchronizer;
+    private FaxRenderer renderer;
+    private SignalDetector signalDetector;
 
     public FaxEngine(TargetDataLine line)
     {
@@ -55,176 +60,55 @@ public class FaxEngine
     {
         Objects.requireNonNull(ais, "AudioInputStream");
         tokenizer = new FaxTokenizer(ais);
+        synchronizer = new FaxSynchronizer(this);
+        signalDetector = new SignalDetector(this, tokenizer.getSize(), tokenizer.getSampleRate(), 1500, 2300);
     }
     public void parse() throws IOException
     {
         try
         {
-            int index = 0;
-            while (true)
-            {
-                long lineLen = sync();
-                if (lineLen > 0)
-                {
-                    image = new BufferedImage(resolution, 3000, TYPE_BYTE_BINARY);
-                    Graphics2D graphics = image.createGraphics();
-                    int lines = render(lineLen, graphics);
-                    BufferedImage subimage = image.getSubimage(0, 0, image.getWidth(), lines);
-                    ImageIO.write(subimage, "png", new File("fax"+index+".png"));
-                }
-                index++;
-            }
+            tokenizer.addListener(synchronizer);
+            //tokenizer.addDataListener(signalDetector);
+            tokenizer.run();
         }
         catch (EOFException ex)
         {
-            
+            stop();
         }
     }
-    private long getLineLen(long[] lineLens)
+    @Override
+    public void start(long startOfLine, long lineLength)
     {
-        long avg = 0;
-        long min = Long.MAX_VALUE;
-        long max = Long.MIN_VALUE;
-        for (int ii=0;ii<lineLens.length;ii++)
+        System.err.println("START");
+        if (renderer == null)
         {
-            long v = lineLens[ii];
-            avg += v;
-            min = Math.min(min, v);
-            max = Math.max(max, v);
+            ZonedDateTime now = ZonedDateTime.now();
+            String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
+            renderer = new FaxRenderer("fax"+str, 1810, startOfLine, lineLength);
+            tokenizer.addListener(renderer);
         }
-        avg = (avg-max-min)/(lineLens.length-2);
-        return avg;
-    }
-    private long sync() throws IOException
-    {
-        Tone state = UNKNOWN;
-        long prev = 0;
-        int lineLen = 0;
-        while (true)
+        else
         {
-            Tone tone = tokenizer.nextTone();
-            int span = (int) (tokenizer.getMicros() - prev);
-            switch (state)
-            {
-                case BLACK:
-                    if (span > 200000)
-                    {
-                        switch (tone)
-                        {
-                            case WHITE:
-                                lineLen = span;
-                                state = WHITE;
-                                break;
-                            default:
-                                state = UNKNOWN;
-                        }
-                    }
-                    else
-                    {
-                        state = UNKNOWN;
-                    }
-                    break;
-                case WHITE:
-                    switch (tone)
-                    {
-                        case BLACK:
-                            lineLen += span;
-                            long ll = getLPM(lineLen);
-                            if (ll > 0)
-                            {
-                                return ll;
-                            }
-                            else
-                            {
-                                state = UNKNOWN;
-                            }
-                            break;
-                        default:
-                            state = UNKNOWN;
-                    }
-                    break;
-                default:
-                    if (tone == BLACK)
-                    {
-                        state = BLACK;
-                    }
-            }
-            prev = tokenizer.getMicros();
+            stop();
         }
-    }
-    private long getLPM(long lineLen)
-    {
-        int r = (int) ((lineLen+50)/100);
-        switch (r)
-        {
-            case 5000:
-                return 1000000*60/120;  // 120
-            default:
-                return -1;
-        }
-    }
-    public int render(long lineLen, Graphics2D... graphics) throws IOException
-    {
-        Rectangle[] bounds = new Rectangle[graphics.length];
-        for (int ii=0;ii<graphics.length;ii++)
-        {
-            graphics[ii].setBackground(Color.BLACK);
-            graphics[ii].setColor(Color.white);
-            bounds[ii] = graphics[ii].getDeviceConfiguration().getBounds();
-        }
-        long start = tokenizer.getMicros();
-        long beg = 0;
-        long time;
-        int lin=0;
-        long prev = 0;
-        long span = 0;
-        try
-        {
-            while (true)
-            {
-                Tone tone = tokenizer.nextTone();
-                time = tokenizer.getMicros()-start;
-                span = time - prev;
-                lin = (int) (time / lineLen);
-                if (lin == 1200)
-                {
-                    System.err.println();
-                }
-                switch (tone)
-                {
-                    case BLACK:
-                        for (int ii=0;ii<graphics.length;ii++)
-                        {
-                            int begin = (int) (bounds[ii].width*(beg % lineLen)/lineLen);
-                            int col = (int) (bounds[ii].width*(time % lineLen)/lineLen);
-                            if (begin < col)
-                            {
-                                graphics[ii].drawLine(begin, lin, col, lin);
-                            }
-                            else
-                            {
-                                graphics[ii].drawLine(begin, lin, resolution, lin);
-                            }
-                        }
-                        break;
-                    case WHITE:
-                        beg = time;
-                        break;
-                    default:
-                        System.err.printf("line=%d span=%d tone=%s\n", lin, span, tone);
-                        if (span > 1000000)
-                        {
-                            return lin;
-                        }
-                        break;
-                }
-                prev = time;
-            }
-        }
-        catch (EOFException ex)
-        {
-        }
-        return lin;
     }
 
+    @Override
+    public synchronized void stop()
+    {
+        System.err.println("STOP");
+        if (renderer != null)
+        {
+            try
+            {
+                tokenizer.removeListener(renderer);
+                renderer.render();
+                renderer = null;
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
 }

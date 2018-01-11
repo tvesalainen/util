@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,28 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham;
 
-import java.net.URL;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public interface DataListener
 {
-    
-    public HFFaxTest()
-    {
-    }
-
-    @Test
-    public void test()
-    {
-        URL url = HFFaxTest.class.getResource("/wefax2.wav");
-        HFFax.main("-u", url.toString());
-    }
-    
+    void data(IntArray array);
 }

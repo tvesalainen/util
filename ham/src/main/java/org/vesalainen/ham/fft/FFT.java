@@ -17,6 +17,7 @@
 package org.vesalainen.ham.fft;
 
 import java.util.Arrays;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
@@ -49,38 +50,67 @@ public class FFT
         y = new double[n];
     }
     
-    public double frequency(float sampleRate, byte[] sample, int offset, int length)
+    public double frequency(float sampleRate, IntArray sample)
     {
-        fft(true, sample, offset, length);
-        int len = length/2;
+        fft(true, sample);
+        int len = sample.length()/2;
         double f = 0;
-        double d = sampleRate/length;
-        byte max = Byte.MIN_VALUE;
+        double d = sampleRate/sample.length();
+        int max = Short.MIN_VALUE;
         for (int ii=0;ii<len;ii++)
         {
-            if (sample[ii] > max)
+            int v = sample.get(ii);
+            if (v > max)
             {
-                max = sample[ii];
+                max = v;
                 f = d*ii;
             }
         }
         return f;
     }
-    public void fft(boolean forward, byte[] sample, int offset, int length)
+    public void fft(boolean forward, IntArray sample)
     {
-        if (length != x.length)
+        fft(forward, sample, sample);
+    }
+    public void fft(boolean forward, IntArray in, IntArray out)
+    {
+        if (in.length() != x.length)
         {
             throw new IllegalArgumentException("illegal length");
         }
         for (int ii=0;ii<n;ii++)
         {
-            x[ii] = sample[ii+offset];
+            x[ii] = in.get(ii);
         }
         Arrays.fill(y, 0);
         fft(forward, m, x, y);
         for (int ii=0;ii<n;ii++)
         {
-            sample[ii+offset] = (byte) Math.hypot(x[ii], y[ii]);
+            out.put(ii, (int) Math.hypot(x[ii], y[ii]));
+        }
+    }
+    public static double average(float sampleRate, IntArray sample)
+    {
+        int len = sample.length()/2;
+        double ave = 0;
+        for (int ii=0;ii<len;ii++)
+        {
+            ave += sample.get(ii);
+        }
+        return ave/len;
+    }
+    public static double frequencyStrength(float sampleRate, float frequency, IntArray sample)
+    {
+        int len = sample.length()/2;
+        double d = sampleRate/sample.length();
+        int index = (int) (frequency/d);
+        if (index < sample.length())
+        {
+            return sample.get(index);
+        }
+        else
+        {
+            throw new IllegalArgumentException("frequency too high");
         }
     }
     /*

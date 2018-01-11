@@ -18,50 +18,69 @@ package org.vesalainen.ham;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.TargetDataLine;
-import org.jtransforms.fft.FloatFFT_1D;
 import org.vesalainen.ham.hffax.FrequencyCounter;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AudioReader
+public abstract class AudioReader<T extends Buffer>
 {
+    private static final int WAVES_PER_BUFFER = 10;
     protected AudioInputStream ais;
     protected AudioFormat format;
     protected int size;
     protected ByteBuffer byteBuffer;
     protected FrequencyCounter frequencyCounter;
+    protected float maxAmplitude;
+    protected List<DataListener> dataListeners = new ArrayList<>();
+    protected T buffer;
+    protected IntArray intArray;
     
     private AudioReader(AudioInputStream ais, AudioFormat format, int size)
     {
         this.ais = ais;
         this.format = format;
         this.size = size;
+        this.maxAmplitude = (float) Math.pow(2, format.getSampleSizeInBits());
     }
     
-    protected void init()
+    private void init()
     {
         byteBuffer = ByteBuffer.allocate(size*format.getSampleSizeInBits()*format.getChannels()/8);
         byteBuffer.order(format.isBigEndian() ? BIG_ENDIAN : LITTLE_ENDIAN);
         frequencyCounter = new FrequencyCounter((int) format.getSampleRate());
+        buffer = initBuffers();
+        byteBuffer.compact();
     }
-    public static AudioReader getInstance(TargetDataLine line, int size)
+    protected abstract T initBuffers();
+    protected void fireDataListeners()
     {
-        return getInstance(new AudioInputStream(line), size);
+        for (DataListener listener : dataListeners)
+        {
+            listener.data(intArray);
+        }
+    }
+    public static AudioReader getInstance(TargetDataLine line, float frequency)
+    {
+        return getInstance(new AudioInputStream(line), frequency);
     }
 
-    public static AudioReader getInstance(AudioInputStream ais, int size)
+    public static AudioReader getInstance(AudioInputStream ais, float frequency)
     {
-        return getInstance(ais, ais.getFormat(), size);
+        return getInstance(ais, ais.getFormat(), frequency);
     }
 
     /**
@@ -71,7 +90,7 @@ public abstract class AudioReader
      * @param size
      * @return 
      */
-    public static AudioReader getInstance(AudioInputStream ais, AudioFormat format, int size)
+    public static AudioReader getInstance(AudioInputStream ais, AudioFormat format, float frequency)
     {
         if (format.getChannels() != 1)
         {
@@ -79,6 +98,7 @@ public abstract class AudioReader
             ais = AudioSystem.getAudioInputStream(format, ais);
         }
         AudioReader audioReader;
+        int size = calcSize(format.getSampleRate(), frequency);
         switch ((format.getSampleSizeInBits()/8)/format.getChannels())
         {
             case 1:
@@ -96,7 +116,25 @@ public abstract class AudioReader
         audioReader.init();
         return audioReader;
     }
+    public void addDataListener(DataListener dataListener)
+    {
+        dataListeners.add(dataListener);
+    }
+    public void removeDataListener(DataListener dataListener)
+    {
+        dataListeners.remove(dataListener);
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
     
+    private static int calcSize(float sampleRate, float frequency)
+    {
+        int size = (int) (WAVES_PER_BUFFER*sampleRate/frequency);
+        return Integer.highestOneBit(size);
+    }
     protected boolean fill() throws IOException
     {
         int rc = ais.read(byteBuffer.array());
@@ -155,31 +193,35 @@ public abstract class AudioReader
     {
         return frequencyCounter.getMicros();
     }
-
+    /**
+     * Returns amplitude relative to maximum amplitude.
+     * @return 0.0 - 1.0.
+     */
     public float getAmplitude()
     {
-        return frequencyCounter.getAmplitude();
+        return frequencyCounter.getAmplitude()/maxAmplitude;
     }
 
     public float getSampleRate()
     {
         return format.getSampleRate();
     }
-
+    /**
+     * Returns frame size in bytes.
+     * @return 
+     */
     public int getFrameSize()
     {
         return format.getSampleSizeInBits()/8;
     }
-    
+    public float getWaveSizeInSamples(float frequency)
+    {
+        return format.getSampleRate()/frequency;
+    }
     public abstract int getSample() throws IOException;
     
-    protected abstract int limit();
-    protected abstract int get(int index);
-    protected abstract void put(int index, float value);
-    
-    public static class IntAudioReader extends AudioReader
+    public static class IntAudioReader extends AudioReader<IntBuffer>
     {
-        private IntBuffer intBuffer;
         
         public IntAudioReader(AudioInputStream ais, AudioFormat format, int size)
         {
@@ -187,50 +229,32 @@ public abstract class AudioReader
         }
 
         @Override
-        protected void init()
+        protected IntBuffer initBuffers()
         {
-            super.init();
-            intBuffer = byteBuffer.asIntBuffer();
-            intBuffer.compact();
-            byteBuffer.compact();
+            buffer = byteBuffer.asIntBuffer();
+            buffer.compact();
+            intArray = IntArray.getInstance(buffer);
+            return buffer;
         }
 
         @Override
         public int getSample() throws IOException
         {
-            if (!intBuffer.hasRemaining())
+            if (!buffer.hasRemaining())
             {
                 if (!fill())
                 {
                     throw new EOFException();
                 }
-                intBuffer.limit(byteBuffer.limit()/4).position(0);
+                buffer.limit(byteBuffer.limit()/4).position(0);
+                fireDataListeners();
             }
-            return intBuffer.get();
+            return buffer.get();
         }
 
-        @Override
-        protected int limit()
-        {
-            return intBuffer.limit();
-        }
-
-        @Override
-        protected int get(int index)
-        {
-            return intBuffer.get(index);
-        }
-
-        @Override
-        protected void put(int index, float value)
-        {
-            intBuffer.put(index, (int) value);
-        }
-        
     }
-    public static class ShortAudioReader extends AudioReader
+    public static class ShortAudioReader extends AudioReader<ShortBuffer>
     {
-        private ShortBuffer shortBuffer;
         
         public ShortAudioReader(AudioInputStream ais, AudioFormat format, int size)
         {
@@ -238,48 +262,31 @@ public abstract class AudioReader
         }
 
         @Override
-        protected void init()
+        protected ShortBuffer initBuffers()
         {
-            super.init();
-            shortBuffer = byteBuffer.asShortBuffer();
-            shortBuffer.compact();
-            byteBuffer.compact();
+            buffer = byteBuffer.asShortBuffer();
+            buffer.compact();
+            intArray = IntArray.getInstance(buffer);
+            return buffer;
         }
 
         @Override
         public int getSample() throws IOException
         {
-            if (!shortBuffer.hasRemaining())
+            if (!buffer.hasRemaining())
             {
                 if (!fill())
                 {
                     throw new EOFException();
                 }
-                shortBuffer.limit(byteBuffer.limit()/2).position(0);
+                buffer.limit(byteBuffer.limit()/2).position(0);
+                fireDataListeners();
             }
-            return shortBuffer.get();
+            return buffer.get();
         }
-        @Override
-        protected int limit()
-        {
-            return shortBuffer.limit();
-        }
-
-        @Override
-        protected int get(int index)
-        {
-            return shortBuffer.get(index);
-        }
-
-        @Override
-        protected void put(int index, float value)
-        {
-            shortBuffer.put(index, (short) value);
-        }
-        
         
     }
-    public static class ByteAudioReader extends AudioReader
+    public static class ByteAudioReader extends AudioReader<ByteBuffer>
     {
         
         private ByteAudioReader(AudioInputStream ais, AudioFormat format, int size)
@@ -288,10 +295,11 @@ public abstract class AudioReader
         }
 
         @Override
-        protected void init()
+        protected ByteBuffer initBuffers()
         {
-            super.init();
             byteBuffer.compact();
+            intArray = IntArray.getInstance(byteBuffer);
+            return byteBuffer;
         }
 
         @Override
@@ -303,26 +311,9 @@ public abstract class AudioReader
                 {
                     throw new EOFException();
                 }
+                fireDataListeners();
             }
             return byteBuffer.get();
         }
-        @Override
-        protected int limit()
-        {
-            return byteBuffer.limit();
-        }
-
-        @Override
-        protected int get(int index)
-        {
-            return byteBuffer.get(index);
-        }
-
-        @Override
-        protected void put(int index, float value)
-        {
-            byteBuffer.put(index, (byte) value);
-        }
-        
     }
 }

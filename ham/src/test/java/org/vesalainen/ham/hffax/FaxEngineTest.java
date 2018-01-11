@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.hffax;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.URL;
 import javax.sound.sampled.AudioInputStream;
@@ -23,31 +24,32 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.hffax.HFFaxTest;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioReaderTest
+public class FaxEngineTest
 {
     
-    public AudioReaderTest()
+    public FaxEngineTest()
     {
     }
 
-    //@Test
+    @Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
-        URL url = HFFaxTest.class.getResource("/hffax.wav");
-        AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        AudioReader ar = AudioReader.getInstance(ais, 1024);
-        while (true)
+        try
         {
-            float f = ar.getNextFrequency(100F);
-            long micros = ar.getMicros();
-            assertTrue(ar.getAmplitude() <= 1.0);
+            URL url = HFFaxTest.class.getResource("/hffax.wav");
+            AudioInputStream ais = AudioSystem.getAudioInputStream(url);
+            FaxEngine engine = new FaxEngine(ais);
+            engine.parse();
+        }
+        catch(EOFException ex)
+        {
+            
         }
     }
-
+    
 }

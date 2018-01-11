@@ -16,10 +16,12 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.nio.ByteBuffer;
 import javax.sound.sampled.LineUnavailableException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.vesalainen.ham.morse.MorseCode;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
@@ -39,7 +41,8 @@ public class FFTTest
         int rate = 5120;
         byte[] tone1 = MorseCode.createTone(300, rate, pitch1);
         FFT fft = new FFT(256);
-        assertEquals(pitch1, fft.frequency(rate, tone1, 0, 256), 1e-5);
+        IntArray ia = IntArray.getInstance(tone1, 0, 256);
+        assertEquals(pitch1, fft.frequency(rate, ia), 1e-5);
     }
     @Test
     public void test2() throws LineUnavailableException
@@ -53,7 +56,8 @@ public class FFTTest
             tone1[ii] = (byte) ((tone1[ii]+tone2[ii])/2);
         }        
         FFT fft = new FFT(256);
-        assertEquals(pitch1, fft.frequency(rate, tone1, 0, 256), 1e-5);
+        IntArray ia = IntArray.getInstance(tone1, 0, 256);
+        assertEquals(pitch1, fft.frequency(rate, ia), 1e-5);
         for (int ii=0;ii<256;ii++)
         {
             System.err.printf("%03d: %d\n", ii, tone1[ii]);

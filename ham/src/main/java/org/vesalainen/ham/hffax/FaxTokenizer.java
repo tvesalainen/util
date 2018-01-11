@@ -17,12 +17,12 @@
 package org.vesalainen.ham.hffax;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
 import org.vesalainen.ham.AudioReader;
+import org.vesalainen.ham.DataListener;
 import static org.vesalainen.ham.hffax.FaxTone.*;
 
 /**
@@ -34,15 +34,15 @@ public class FaxTokenizer
 
     private AudioReader reader;
     private FaxTone last = UNKNOWN;
-    private List<FaxListener> listeners = new ArrayList<>();
+    private List<FaxListener> listeners = new CopyOnWriteArrayList<>();
     
     public FaxTokenizer(TargetDataLine line)
     {
-        reader = AudioReader.getInstance(line, 4096);
+        reader = AudioReader.getInstance(line, 1500);
     }
     public FaxTokenizer(AudioInputStream ais)
     {
-        reader = AudioReader.getInstance(ais, 4096);
+        reader = AudioReader.getInstance(ais, 1500);
     }
     
     public void addListener(FaxListener listener)
@@ -53,6 +53,22 @@ public class FaxTokenizer
     {
         listeners.remove(listener);
     }
+
+    public void addDataListener(DataListener dataListener)
+    {
+        reader.addDataListener(dataListener);
+    }
+
+    public void removeDataListener(DataListener dataListener)
+    {
+        reader.removeDataListener(dataListener);
+    }
+
+    public int getSize()
+    {
+        return reader.getSize();
+    }
+    
     public void run() throws IOException
     {
         long prev = 0;
@@ -62,10 +78,6 @@ public class FaxTokenizer
             FaxTone tone = nextTone();
             long micros = getMicros();
             long span = micros - prev;
-            if (span > 400000)
-            {
-                System.err.println();
-            }
             float amplitude = getAmplitude();
             for (FaxListener l : listeners)
             {
