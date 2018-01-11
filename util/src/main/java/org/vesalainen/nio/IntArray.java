@@ -49,6 +49,18 @@ public abstract class IntArray
     public abstract int length();
     public abstract int get(int index);
     public abstract void put(int index, int value);
+    public void copy(IntArray to)
+    {
+        if (length() != to.length())
+        {
+            throw new IllegalArgumentException("array not same size");
+        }
+        int len = length();
+        for (int ii=0;ii<len;ii++)
+        {
+            to.put(ii, get(ii));
+        }
+    }
     
     public static class ByteArray extends IntArray
     {
