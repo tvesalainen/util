@@ -81,6 +81,15 @@ public class BestFitLine
         return slope*x+yIntercept;
     }
     /**
+     * Return number of points
+     * @return 
+     */
+    public int getCount()
+    {
+        return n;
+    }
+    
+    /**
      * Returns best-fit-line
      * @return 
      */
