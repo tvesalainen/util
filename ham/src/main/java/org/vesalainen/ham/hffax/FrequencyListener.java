@@ -20,8 +20,7 @@ package org.vesalainen.ham.hffax;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface FaxListener
+public interface FrequencyListener
 {
-    void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error);
+    void frequency(float frequency, long micros);
 }

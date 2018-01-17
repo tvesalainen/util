@@ -33,19 +33,19 @@ import static org.vesalainen.ham.hffax.FaxTone.*;
 public class FaxRenderer implements FaxListener
 {
     private static final String TYPE = "png";
+    private FaxStateListener stateListener;
     private BufferedImage image;
     private String filename;
     private final Graphics2D graphics;
-    private final long startOfLine;
+    private final PageLocator locator;
     private int line;
-    private final long lineLength;
     private Rectangle bounds;
 
-    public FaxRenderer(String filename, int resolution, long startOfLine, long lineLength)
+    public FaxRenderer(FaxStateListener stateListener, String filename, int resolution, PageLocator locator)
     {
+        this.stateListener = stateListener;
         this.filename = filename;
-        this.startOfLine = startOfLine;
-        this.lineLength = lineLength;
+        this.locator = locator;
         image = new BufferedImage(resolution, 2*resolution, TYPE_BYTE_BINARY);
         graphics = image.createGraphics();
         graphics.setBackground(Color.BLACK);
@@ -53,13 +53,13 @@ public class FaxRenderer implements FaxListener
         bounds = graphics.getDeviceConfiguration().getBounds();
     }
 
-    public FaxRenderer(Graphics2D graphics, long startOfLine, long lineLength)
+    public FaxRenderer(Graphics2D graphics, PageLocator locator)
     {
         this.graphics = graphics;
-        this.startOfLine = startOfLine;
-        this.lineLength = lineLength;
+        this.locator = locator;
         graphics.setBackground(Color.BLACK);
         graphics.setColor(Color.white);
+        //graphics.scale(1, 2);
         bounds = graphics.getDeviceConfiguration().getBounds();
     }
     
@@ -67,20 +67,20 @@ public class FaxRenderer implements FaxListener
     {
         if (image != null)
         {
-            BufferedImage subimage = image.getSubimage(0, 0, image.getWidth(), line);
+            BufferedImage subimage = image.getSubimage(0, locator.firstLine(), image.getWidth(), locator.lastLine());
             ImageIO.write(subimage, TYPE, new File(filename+"."+TYPE));
         }
     }
 
     @Override
-    public void tone(FaxTone tone, long begin, long end, long span, float amplitude)
+    public void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error)
     {
-        int lin2 = line(end);
+        int lin2 = locator.line(end);
         if (tone == WHITE)
         {
-            int col1 = column(begin);
-            int lin1 = line(begin);
-            int col2 = column(end);
+            int col1 = locator.column(bounds.width, begin);
+            int lin1 = locator.line(begin);
+            int col2 = locator.column(bounds.width, end);
             if (lin1 == lin2)
             {
                 graphics.drawLine(col1, lin1, col2, lin2);
@@ -95,18 +95,10 @@ public class FaxRenderer implements FaxListener
                 graphics.drawLine(0, lin2, col2, lin2);
             }
         }
-        if (line != lin2)
-        {
-            System.err.println("LINE "+line);
-        }
         line = lin2;
-    }
-    private int column(long begin)
-    {
-        return (int) (bounds.width*((begin-startOfLine) % lineLength)/lineLength);
-    }
-    private int line(long begin)
-    {
-        return (int) ((begin-startOfLine) /lineLength);
+        if (line > 1600)
+        {
+            stateListener.stop();
+        }
     }
 }

@@ -14,14 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 @FunctionalInterface
-public interface FaxListener
+public interface PatternPredicate
 {
-    void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error);
+    boolean test(boolean b, long t1, long t2);
 }

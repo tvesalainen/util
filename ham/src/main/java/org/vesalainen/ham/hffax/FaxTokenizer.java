@@ -35,6 +35,7 @@ public class FaxTokenizer
     private AudioReader reader;
     private FaxTone last = UNKNOWN;
     private List<FaxListener> listeners = new CopyOnWriteArrayList<>();
+    private List<FrequencyListener> frequencyListeners = new CopyOnWriteArrayList<>();
     
     public FaxTokenizer(TargetDataLine line)
     {
@@ -52,6 +53,15 @@ public class FaxTokenizer
     public void removeListener(FaxListener listener)
     {
         listeners.remove(listener);
+    }
+
+    public void addFrequencyListener(FrequencyListener listener)
+    {
+        frequencyListeners.add(listener);
+    }
+    public void removeToneListener(FrequencyListener listener)
+    {
+        frequencyListeners.remove(listener);
     }
 
     public void addDataListener(DataListener dataListener)
@@ -81,7 +91,7 @@ public class FaxTokenizer
             float amplitude = getAmplitude();
             for (FaxListener l : listeners)
             {
-                l.tone(prevTone, prev, micros, span, amplitude);
+                l.tone(prevTone, prev, micros, span, amplitude, 0);
             }
             prev = micros;
             prevTone = tone;
@@ -94,6 +104,10 @@ public class FaxTokenizer
         {
             FaxTone tone;
             float frequency = reader.getHalfWave();
+            for (FrequencyListener l : frequencyListeners)
+            {
+                l.frequency(frequency, reader.getMicros());
+            }
             if (frequency > 1100)
             {
                 if (frequency < 1900)

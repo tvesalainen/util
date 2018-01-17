@@ -20,8 +20,12 @@ package org.vesalainen.ham.hffax;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface FaxListener
+public interface PageLocator
 {
-    void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error);
+    int column(int pageWidth, long time);
+    int line(long time);
+    int firstLine();
+    int lastLine();
+    long getStartOfLine();
+    long getLineLength();
 }

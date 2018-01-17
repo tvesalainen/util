@@ -22,6 +22,6 @@ package org.vesalainen.ham.hffax;
  */
 public interface FaxStateListener
 {
-    void start(long startOfLine, long lineLength);
+    void start(PageLocator locator);
     void stop();
 }

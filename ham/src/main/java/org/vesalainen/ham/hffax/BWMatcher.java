@@ -16,12 +16,36 @@
  */
 package org.vesalainen.ham.hffax;
 
+import org.vesalainen.ham.PatternMatcher;
+import org.vesalainen.ham.PatternPredicate;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface FaxListener
+public class BWMatcher extends PatternMatcher
 {
-    void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error);
+    private long length;
+    private long divider;
+
+    public BWMatcher(long length, long divider, long span, int size)
+    {
+        super(null, span, size);
+        this.predicate = this::test;
+        this.length = length;
+        this.divider = divider;
+    }
+    
+    private boolean test(boolean isBlack, long now, long startTime)
+    {
+        long span = (now-startTime)%length;
+        if (isBlack)
+        {
+            return span <= divider;
+        }
+        else
+        {
+            return span > divider;
+        }
+    }
 }

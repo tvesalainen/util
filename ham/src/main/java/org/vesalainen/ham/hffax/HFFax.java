@@ -19,9 +19,16 @@ package org.vesalainen.ham.hffax;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Line.Info;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.vesalainen.ham.fft.FFT;
 import org.vesalainen.util.CmdArgs;
@@ -39,9 +46,10 @@ public class HFFax extends CmdArgs
     {
         addOption(File.class, "-f", "File", "file", false);
         addOption(URL.class, "-u", "URL", "url", false);
+        addOption(String.class, "-l", "Line", "line", false);
     }
     
-    public void process() throws UnsupportedAudioFileException, IOException
+    public void process() throws UnsupportedAudioFileException, IOException, LineUnavailableException
     {
         switch (getEffectiveGroup())
         {
@@ -51,27 +59,56 @@ public class HFFax extends CmdArgs
             case "url":
                 processURL(getOption("-u"));
                 break;
+            case "line":
+                processLine(getOption("-l"));
+                break;
         }
     }
-    public void processFile(File path) throws UnsupportedAudioFileException, IOException
+    private void processFile(File path) throws UnsupportedAudioFileException, IOException
     {
         AudioSystem.getAudioFileFormat(path);
     }
-    public void processURL(URL url) throws UnsupportedAudioFileException, IOException
+    private void processURL(URL url) throws UnsupportedAudioFileException, IOException
     {
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
         FaxEngine fax = new FaxEngine(ais);
         fax.parse();
     }
+    private void processLine(String mixer) throws LineUnavailableException, IOException
+    {
+        AudioFormat audioFormat = new AudioFormat(44000, 16, 1, true, false);
+        TargetDataLine targetDataLine = AudioSystem.getTargetDataLine(audioFormat);
+        targetDataLine.open(audioFormat);
+        targetDataLine.start();
+        FaxEngine fax = new FaxEngine(targetDataLine);
+        fax.parse();
+    }
+    public static void info()
+    {
+        for (Line.Info targetLineInfo : AudioSystem.getTargetLineInfo(new Info(TargetDataLine.class)))
+        {
+            System.err.println(targetLineInfo);
+        }
+        for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo())
+        {
+            System.err.println(mixerInfo);
+            Mixer mixer = AudioSystem.getMixer(mixerInfo);
+            for (Info targetLineInfo : mixer.getTargetLineInfo())
+            {
+                System.err.println(targetLineInfo);
+            }
+        }
+    }
     public static void main(String... args)
     {
         try
         {
+            info();
             HFFax fax = new HFFax();
             fax.command(args);
             fax.process();
         }
-        catch (UnsupportedAudioFileException | IOException ex)
+        catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex)
         {
             ex.printStackTrace();
         }

@@ -16,22 +16,12 @@
  */
 package org.vesalainen.ham.hffax;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import static java.awt.image.BufferedImage.TYPE_BYTE_BINARY;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.BitSet;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
 
@@ -43,7 +33,7 @@ public class FaxEngine implements FaxStateListener
 {
     private int lpm;
     private int ioc;
-    private int resolution = 1810;
+    private int resolution = 2300;
     private BufferedImage image;
     private int line;
     private FaxTokenizer tokenizer;
@@ -60,13 +50,14 @@ public class FaxEngine implements FaxStateListener
     {
         Objects.requireNonNull(ais, "AudioInputStream");
         tokenizer = new FaxTokenizer(ais);
-        synchronizer = new FaxSynchronizer(this);
+        synchronizer = new BWSynchronizer(this);
         signalDetector = new SignalDetector(this, tokenizer.getSize(), tokenizer.getSampleRate(), 1500, 2300);
     }
     public void parse() throws IOException
     {
         try
         {
+            tokenizer.addFrequencyListener(synchronizer);
             tokenizer.addListener(synchronizer);
             //tokenizer.addDataListener(signalDetector);
             tokenizer.run();
@@ -77,14 +68,14 @@ public class FaxEngine implements FaxStateListener
         }
     }
     @Override
-    public void start(long startOfLine, long lineLength)
+    public void start(PageLocator locator)
     {
         System.err.println("START");
         if (renderer == null)
         {
             ZonedDateTime now = ZonedDateTime.now();
             String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
-            renderer = new FaxRenderer("fax"+str, 1810, startOfLine, lineLength);
+            renderer = new FaxRenderer(this, "fax"+str, resolution, locator);
             tokenizer.addListener(renderer);
         }
         else
