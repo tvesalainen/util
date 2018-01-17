@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham;
 
-import java.net.URL;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,20 +23,38 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public class PatternMatcherTest
 {
     
-    public HFFaxTest()
+    public PatternMatcherTest()
     {
     }
 
     @Test
-    public void test()
+    public void test1()
     {
-        URL url = HFFaxTest.class.getResource("/hffax.wav");
-        HFFax.main("-u", url.toString());
-        //HFFax.main("-l", "");
-
+        int err=0;
+        PatternMatcher matcher = new PatternMatcher(this::startTest, 500000, 1000);
+        for (long t=0;t<500000;t+=1000)
+        {
+            err = matcher.match(t<=BLACK_LEN, t);
+        }
+        err = matcher.match(true, 500100);
+        assertEquals(0, err);
+        assertEquals(0, matcher.getTime());
     }
     
+    private static long BLACK_LEN = 500000*2182/2300;
+    private boolean startTest(boolean isBlack, long now, long startTime)
+    {
+        long span = now-startTime;
+        if (isBlack)
+        {
+            return span <= BLACK_LEN;
+        }
+        else
+        {
+            return span > BLACK_LEN;
+        }
+    }
 }

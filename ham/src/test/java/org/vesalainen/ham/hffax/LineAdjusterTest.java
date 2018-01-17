@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ham.hffax;
 
-import java.net.URL;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,20 +23,33 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public class LineAdjusterTest
 {
     
-    public HFFaxTest()
+    public LineAdjusterTest()
     {
     }
 
     @Test
-    public void test()
+    public void test1()
     {
-        URL url = HFFaxTest.class.getResource("/hffax.wav");
-        HFFax.main("-u", url.toString());
-        //HFFax.main("-l", "");
+        long expll = 500010;
+        LineAdjuster la = new LineAdjuster(500000);
+        
+        la.update(5, 999995);
+        la.update(4, 999996);
+        
+        la.update(1, 999999+expll);
+        assertEquals(999996, la.getStartOfLine());
+        //assertEquals(500013, la.getLineLength());
 
+        for (int ii=1;ii<10;ii++)
+        {
+            la.update(1, 999999+ii*expll);
+            la.update(0, 1000000+ii*expll);
+        }
+        assertEquals(999998, la.getStartOfLine());
+        assertEquals(expll, la.getLineLength());
     }
     
 }
