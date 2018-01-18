@@ -16,6 +16,7 @@
         <module>installer</module>
         <module>rpm</module>
         <module>vfs</module>
+        <module>ham</module>
     </modules>
     <name>Utilities Parent</name>
     <description>
