@@ -46,11 +46,25 @@ public class BestFitLine
      */
     public void add(double x, double y)
     {
-        sx +=x;
-        sy +=y;
-        sxy += x*y;
-        sx2 += x*x;
-        n++;
+        add(x, y, 1);
+    }
+    /**
+     * Adds a point k times. k can be negative.
+     * @param x
+     * @param y
+     * @param k 
+     */
+    public void add(double x, double y, int k)
+    {
+        sx +=x*k;
+        sy +=y*k;
+        sxy += x*y*k;
+        sx2 += x*x*k;
+        n+=k;
+        if (n < 1)
+        {
+            throw new IllegalArgumentException("negative count");
+        }
     }
     /**
      * Returns y-intercept
@@ -77,8 +91,22 @@ public class BestFitLine
     public double getY(double x)
     {
         double slope = getSlope();
-        double yIntercept = getYIntercept(slope);
-        return slope*x+yIntercept;
+        double a = getYIntercept(slope);
+        if (!Double.isInfinite(slope))
+        {
+            return slope*x + a;
+        }
+        else
+        {
+            if (x == a)
+            {
+                return Double.POSITIVE_INFINITY;
+            }
+            else
+            {
+                return Double.NaN;
+            }
+        }
     }
     /**
      * Return number of points
