@@ -37,28 +37,28 @@ public class LineCorrectorTest
         LineCorrector lc = new LineCorrector(this::tone);
         long time = 0;
         long span = 100000;
-        lc.tone(BLACK, time, time+span, span, 0);
+        lc.tone(BLACK, time, time+span, span, 0, 0);
         time += span;
         span = 400;
-        lc.tone(LOW, time, time+span, span, 0);
+        lc.tone(LOW, time, time+span, span, 0, 0);
         time += span;
         span = 500000-time;
-        lc.tone(BLACK, time, time+span, span, 0);
+        lc.tone(BLACK, time, time+span, span, 0, 0);
         time += span;
         span = 50000;
-        lc.tone(WHITE, time, time+span, span, 0);
+        lc.tone(WHITE, time, time+span, span, 0, 0);
         time += span;
         span = 20;
-        lc.tone(HIGH, time, time+span, span, 0);
+        lc.tone(HIGH, time, time+span, span, 0, 0);
         time += span;
         span = 100000-20-50000;
-        lc.tone(WHITE, time, time+span, span, 0);
+        lc.tone(WHITE, time, time+span, span, 0, 0);
         time += span;
         span = 100000;
-        lc.tone(BLACK, time, time+span, span, 0);
+        lc.tone(BLACK, time, time+span, span, 0, 0);
     }
     
-    public void tone(FaxTone tone, long begin, long end, long span, float amplitude)
+    public void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error)
     {
         switch (tone)
         {

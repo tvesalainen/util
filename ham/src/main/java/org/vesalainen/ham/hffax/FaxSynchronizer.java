@@ -24,6 +24,7 @@ import org.vesalainen.ham.PatternMatcher;
  */
 public abstract class FaxSynchronizer implements FaxListener, FrequencyListener, PageLocator
 {
+    protected static long LINE_LEN = 500000;
     protected static long START_BLACK_LEN = 500000*2182/2300;
     protected static long STOP_LEN = 500000/225;
     protected static long STOP_BLACK_LEN = 7*STOP_LEN/20;
@@ -105,6 +106,20 @@ public abstract class FaxSynchronizer implements FaxListener, FrequencyListener,
     public int lastLine()
     {
         return lastLine;
+    }
+    public static long correct(long current, long better)
+    {
+        long delta = (better-current) % LINE_LEN;
+        if (delta < LINE_LEN/2)
+        {
+            System.err.println("corr="+delta);
+            return current+delta;
+        }
+        else
+        {
+            System.err.println("corr="+(delta-LINE_LEN));
+            return current+delta-LINE_LEN;
+        }
     }
     /*
     @Override

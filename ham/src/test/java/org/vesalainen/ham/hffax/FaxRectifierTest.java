@@ -16,11 +16,9 @@
  */
 package org.vesalainen.ham.hffax;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -28,28 +26,19 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxTokenizerTest
+public class FaxRectifierTest
 {
     
-    public FaxTokenizerTest()
+    public FaxRectifierTest()
     {
     }
 
     @Test
-    public void test() throws UnsupportedAudioFileException, IOException
+    public void test1() throws IOException
     {
-        URL url = HFFaxTest.class.getResource("/hffax.wav");
-        AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        FaxTokenizer ft = new FaxTokenizer(ais);
-        FaxListener fl = new FaxListener() {
-            @Override
-            public void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error)
-            {
-                System.err.printf("%8s % 10d - % 10d % 6d %.1f\n", tone, begin, end, span, amplitude);
-            }
-        };
-        ft.addListener(fl);
-        ft.run();
+        File file = new File("fax2018-01-18T202513.533Z.png");
+        FaxRectifier r = new FaxRectifier(file);
+        r.rectify();
     }
     
 }

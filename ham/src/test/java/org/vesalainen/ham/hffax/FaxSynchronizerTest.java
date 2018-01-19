@@ -37,6 +37,13 @@ public class FaxSynchronizerTest
     {
     }
 
+    @Test
+    public void testCorrection()
+    {
+        assertEquals(1000000, FaxSynchronizer.correct(1000000, 1500000));
+        assertEquals(1000001, FaxSynchronizer.correct(1000000, 1500001));
+        assertEquals(999999, FaxSynchronizer.correct(1000000, 1499999));
+    }
     //@Test
     public void testSimple()
     {
@@ -117,4 +124,5 @@ public class FaxSynchronizerTest
         }
         
     }
+
 }

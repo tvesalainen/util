@@ -16,9 +16,6 @@
  */
 package org.vesalainen.ham.hffax;
 
-import org.vesalainen.math.sliding.Average;
-import org.vesalainen.math.sliding.SlidingAverage;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -33,6 +30,7 @@ public class BWSynchronizer extends FaxSynchronizer
     private long lineLength;
     private long sum;
     private int count;
+    private long minError = Long.MAX_VALUE;
     public BWSynchronizer(FaxStateListener stateListener)
     {
         super(stateListener);
@@ -46,6 +44,7 @@ public class BWSynchronizer extends FaxSynchronizer
         lineLength = 0;
         sum = 0;
         count = 0;
+        minError = Long.MAX_VALUE;
     }
 
 
@@ -89,9 +88,18 @@ public class BWSynchronizer extends FaxSynchronizer
         if (startOfLine == 0)
         {
             startOfLine = begin;
+            minError = error;
             if (!started)
             {
                 start();
+            }
+        }
+        else
+        {
+            if (error < minError)
+            {
+                minError = error;
+                startOfLine = correct(startOfLine, begin);
             }
         }
     }

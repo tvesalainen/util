@@ -22,7 +22,7 @@ package org.vesalainen.ham.hffax;
  */
 public class LineCorrector implements FaxListener
 {
-    private static final long MAX_ERROR_PERMIL = 20;
+    private static final long MAX_ERROR_PERMIL = 30;
     private static final long SPOT_LIMIT = 1000;
     private FaxListener listener;
     private FaxTone state;
