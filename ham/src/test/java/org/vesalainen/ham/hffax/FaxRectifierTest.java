@@ -16,9 +16,11 @@
  */
 package org.vesalainen.ham.hffax;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import javax.imageio.ImageIO;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -36,9 +38,11 @@ public class FaxRectifierTest
     @Test
     public void test1() throws IOException
     {
-        File file = new File("fax2018-01-18T202513.533Z.png");
-        FaxRectifier r = new FaxRectifier(file);
+        File file = new File("fax2018-01-20T153100.144Z.png");
+        BufferedImage image = ImageIO.read(file);
+        FaxRectifier r = new FaxRectifier(image);
         r.rectify();
+        ImageIO.write(image, "png", new File("corrected.png"));
     }
     
 }

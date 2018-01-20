@@ -63,13 +63,17 @@ public class FaxRenderer implements FaxListener
         bounds = graphics.getDeviceConfiguration().getBounds();
     }
     
-    public void render() throws IOException
+    public boolean render() throws IOException
     {
         if (image != null)
         {
             BufferedImage subimage = image.getSubimage(0, locator.firstLine(), image.getWidth(), locator.lastLine());
             ImageIO.write(subimage, TYPE, new File(filename+"."+TYPE));
+            FaxRectifier rectifier = new FaxRectifier(subimage);
+            rectifier.rectify();
+            ImageIO.write(subimage, TYPE, new File(filename+"-cor."+TYPE));
         }
+        return true;
     }
 
     @Override

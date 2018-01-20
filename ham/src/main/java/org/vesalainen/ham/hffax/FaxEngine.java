@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
 
@@ -39,7 +41,7 @@ public class FaxEngine implements FaxStateListener
     private FaxTokenizer tokenizer;
     private FaxSynchronizer synchronizer;
     private FaxRenderer renderer;
-    private SignalDetector signalDetector;
+    private ExecutorService executor;
 
     public FaxEngine(TargetDataLine line)
     {
@@ -51,7 +53,7 @@ public class FaxEngine implements FaxStateListener
         Objects.requireNonNull(ais, "AudioInputStream");
         tokenizer = new FaxTokenizer(ais);
         synchronizer = new BWSynchronizer(this);
-        signalDetector = new SignalDetector(this, tokenizer.getSize(), tokenizer.getSampleRate(), 1500, 2300);
+        executor = Executors.newCachedThreadPool();
     }
     public void parse() throws IOException
     {
@@ -93,6 +95,7 @@ public class FaxEngine implements FaxStateListener
             try
             {
                 tokenizer.removeListener(renderer);
+                executor.submit(renderer::render);
                 renderer.render();
                 renderer = null;
             }

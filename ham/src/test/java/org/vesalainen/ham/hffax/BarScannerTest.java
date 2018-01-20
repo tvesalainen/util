@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ham.hffax;
 
-import java.net.URL;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -24,20 +23,31 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public class BarScannerTest
 {
     
-    public HFFaxTest()
+    public BarScannerTest()
     {
     }
 
     @Test
-    public void test()
+    public void test1()
     {
-        URL url = HFFaxTest.class.getResource("/wefax3.wav");
-        HFFax.main("-u", url.toString());
-        //HFFax.main("-l", "");
-
+        int[] buf = new int[32];
+        for (int ii=3;ii<8;ii++)
+        {
+            buf[ii] = 1;
+            buf[ii+16] = 1;
+        }
+        BarScanner bs = new BarScanner(16, 1);
+        
+        bs.maxBar(buf, 1, 2);
+        assertEquals(3, bs.getBegin());
+        assertEquals(5, bs.getLength());
+        
+        bs.maxBar(buf, 0, 2);
+        assertEquals(8, bs.getBegin());
+        assertEquals(11, bs.getLength());
     }
     
 }
