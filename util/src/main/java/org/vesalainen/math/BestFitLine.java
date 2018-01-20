@@ -127,4 +127,12 @@ public class BestFitLine
         double yIntercept = getYIntercept(slope);
         return new AbstractLine(slope, 0, yIntercept);
     }
+
+    @Override
+    public String toString()
+    {
+        double slope = getSlope();
+        double yIntercept = getYIntercept(slope);
+        return "BestFitLine{slope="+slope+", a="+yIntercept+")";
+    }
 }
