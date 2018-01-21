@@ -103,11 +103,6 @@ public class BWSynchronizer extends FaxSynchronizer
             }
         }
     }
-    private boolean isAbout(double expected, double value)
-    {
-        double delta = expected*0.01;
-        return value > expected-delta && value < expected+delta;
-    }
     @Override
     protected void startTest(float frequency, long micros)
     {

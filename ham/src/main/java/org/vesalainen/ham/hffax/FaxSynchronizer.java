@@ -22,13 +22,8 @@ import org.vesalainen.ham.PatternMatcher;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class FaxSynchronizer implements FaxListener, FrequencyListener, PageLocator
+public abstract class FaxSynchronizer extends Fax implements FaxListener, FrequencyListener, PageLocator
 {
-    protected static long LINE_LEN = 500000;
-    protected static long START_BLACK_LEN = 500000*2182/2300;
-    protected static long STOP_LEN = 500000/225;
-    protected static long STOP_BLACK_LEN = 7*STOP_LEN/20;
-    protected static final int STOP_ERROR_LIMIT = 300;
     private int stopMinErrors = Integer.MAX_VALUE;
     protected long initialLineLength = 500000;
     protected boolean started;

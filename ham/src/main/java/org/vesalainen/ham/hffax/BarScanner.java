@@ -28,18 +28,25 @@ public class BarScanner
     private int length;
     private int line;
     private int lineHeight;
+    private BarPredicate predicate;
 
     public BarScanner(int width, int verticalError)
     {
+        this(width, verticalError, (mb, ml, nb, nl)->nl>ml);
+    }
+    public BarScanner(int width, int verticalError, BarPredicate predicate)
+    {
         this.width = width;
         this.verticalError = verticalError;
+        this.predicate = predicate;
     }
 
     public void maxBar(int[] buffer, int color, int height)
     {
-        int maxLen = 0;
         int beg = 0;
         int len = 0;
+        begin = 0;
+        length = 0;
         while (beg+len<width*2)
         {
             int err = 0;
@@ -50,20 +57,19 @@ public class BarScanner
                     err++;
                 }
             }
-            len++;
-            if (err < verticalError)
+            if (err > verticalError)
             {
-                if (len > maxLen)
+                if (len > 0 && predicate.test(begin, length, beg, len))
                 {
-                    maxLen = len;
                     begin = beg;
                     length = len;
                 }
+                beg += len+1;
+                len = 0;
             }
             else
             {
-                beg += len;
-                len = 0;
+                len++;
             }
         }
     }

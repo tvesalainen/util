@@ -21,32 +21,34 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import org.vesalainen.math.BestFitLine;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxRectifier
+public class FaxRectifier extends JavaLogging
 {
     private static final int ERR_LIM = 10;
-    private static final int ERR_SUM_LIM = 1;
-    private static final int BAND_HEIGHT = 4;
-    private static final int BAND_MIN_WIDTH = 30;
-    private static final int BAND_MAX_WIDTH = 100;
+    private static final double ERR_SUM_LIM = 1;
+    private static final int SPLIT_LIM = 10;
+    private static final int BAND = 4;
     private WritableRaster raster;
     private int width;
     private int height;
     private int[] buffer;
     private int[] pattern;
     private int whiteLen;
-    private int len;
+    private int scanLength;
     private int patternLen;
-    private int[] bandLen;
-    private int[] endOfBand;
+    private int[] error;
+    private int[] dif;
     private int[] tmp;
-    private int bandWidth;
+    private int topBlockHeight;
+    private int lineEndLen;
 
     public FaxRectifier(URL url) throws IOException
     {
@@ -65,69 +67,131 @@ public class FaxRectifier
 
     public FaxRectifier(WritableRaster raster)
     {
+        super(FaxRectifier.class);
         this.raster = raster;
         width = raster.getWidth();
         height = raster.getHeight();
-        buffer = new int[width*BAND_HEIGHT];
+        buffer = new int[width*BAND];
         tmp = new int[width];
-        pattern = new int[width*(76+40)/2300];
-        whiteLen = width*40/2300;
-        len = buffer.length+pattern.length;
-        patternLen = pattern.length;
-        bandLen = new int[height];
-        endOfBand = new int[height];
-        for (int ii=0;ii<whiteLen;ii++)
-        {
-            pattern[ii] = 1;
-        }
+        error = new int[height];
+        dif = new int[height];
     }
     public void rectify()
     {
-        BarScanner scanner = new BarScanner(width, 1);
-        int  line=0;
-        while (line<height)
+        findTopBlock();
+        fine("top block height is %s", topBlockHeight);
+        findLineEndBlocksLength();
+        findLineEndBlocks();
+        //findBands();
+        Part part = new Part(0, height);
+        split(part);
+    }
+    private void findLineEndBlocksLength()
+    {
+        BarScannerOptimizer barScannerOptimizer = new BarScannerOptimizer(55, Fax.topBlackInPixels(width));
+        BarScanner scanner = new BarScanner(width, 1, barScannerOptimizer);
+        int maxLen = Fax.topWhiteInPixels(width);
+        int minLen = Fax.inPixels(width, 30);
+        int[] count = new int[maxLen];
+        for (int line = topBlockHeight+1;line < height-BAND;line += BAND)
         {
-            raster.getPixels(0, line, width, BAND_HEIGHT, buffer);
-            scanner.maxBar(buffer, 0, BAND_HEIGHT);
+            raster.getPixels(0, line, width, BAND, buffer);
+            scanner.maxBar(buffer, 0, BAND);
+            barScannerOptimizer.reset();
             int length = scanner.getLength();
-            if (length < BAND_MAX_WIDTH && length > BAND_MIN_WIDTH)
+            int begin = scanner.getBegin();
+            int end = begin+length;
+            if (length < maxLen && length > minLen)
             {
-                int begin = scanner.getBegin();
-                int d = (begin+length)%width;
-                for (int ii=0;ii<BAND_HEIGHT;ii++)
-                {
-                    endOfBand[line+ii] = (begin+length)%width;
-                    bandLen[line+ii] = length;
-                }
+                count[length]++;
             }
-            line += BAND_HEIGHT;
-        }
-        int[] buf = new int[BAND_MAX_WIDTH];
-        for (int ii=0;ii<height;ii++)
-        {
-            buf[bandLen[ii]]++;
         }
         int max = 0;
-        for (int ii=0;ii<BAND_MAX_WIDTH;ii++)
+        for (int ii=minLen;ii<maxLen;ii++)
         {
-            if (buf[ii] > max)
+            if (count[ii] > max)
             {
-                max = buf[ii];
-                bandWidth = ii;
+                max = count[ii];
+                lineEndLen = ii;
             }
         }
-        Part part = new Part(0, height);
-        process(part);
     }
-    public void rectify0()
+    private void findLineEndBlocks()
+    {
+        BarScannerOptimizer barScannerOptimizer = new BarScannerOptimizer(lineEndLen, width-lineEndLen);
+        BarScanner scanner = new BarScanner(width, 0, barScannerOptimizer);
+        Arrays.fill(error, Integer.MAX_VALUE);
+        int maxLen = Fax.topWhiteInPixels(width);
+        int minLen = Fax.inPixels(width, 30);
+        for (int line = topBlockHeight+1;line < height-BAND;line++)
+        {
+            raster.getPixels(0, line, width, 1, buffer);
+            scanner.maxBar(buffer, 0, 1);
+            barScannerOptimizer.reset();
+            int length = scanner.getLength();
+            int begin = scanner.getBegin();
+            int end = begin+length;
+            if (length < maxLen && length > minLen)
+            {
+                int err = Math.abs(lineEndLen-length);
+                error[line] = err;
+                dif[line] = width < end ? end-width : end;
+                if (err == 0)
+                {
+                    barScannerOptimizer.setExpectedBegin(begin);
+                }
+            }
+        }
+    }
+    private void findTopBlock()
+    {
+        BarScanner scanner = new BarScanner(width, 1);
+        int topBlackInPixels = Fax.topBlackInPixels(width);
+        int line = 0;
+        while (line < 100)
+        {
+            raster.getPixels(0, line, width, BAND, buffer);
+            scanner.maxBar(buffer, 0, BAND);
+            int length = scanner.getLength();
+            if (Fax.isAbout(topBlackInPixels, length))
+            {
+                topBlockHeight = line+BAND-1;
+                line += BAND;
+            }
+            else
+            {
+                if (line > BAND)
+                {
+                    for (int ii=0;ii<BAND;ii++)
+                    {
+                        line--;
+                        raster.getPixels(0, line, width, BAND, buffer);
+                        scanner.maxBar(buffer, 0, BAND);
+                        length = scanner.getLength();
+                        if (Fax.isAbout(topBlackInPixels, length))
+                        {
+                            topBlockHeight = line+BAND-1;
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    line++;
+                }
+            }
+        }
+    }
+    private void findBands()
     {
         int minErr;
         int end = -1;
-        for (int  line=0;line<height;line++)
+        Arrays.fill(error, 0, topBlockHeight+1, Integer.MAX_VALUE);
+        for (int  line=topBlockHeight+1;line<height;line++)
         {
             raster.getPixels(0, line, width, 1, buffer);
             minErr = Integer.MAX_VALUE;
-            for (int col=0;col<len;col++)
+            for (int col=0;col<scanLength;col++)
             {
                 int err = 0;
                 for (int pat=0;pat<patternLen&err<minErr;pat++)
@@ -143,13 +207,32 @@ public class FaxRectifier
                     end = (col+patternLen);
                 }
             }
-            bandLen[line] = minErr;
-            endOfBand[line] = width < end ? end-width : end;
+            error[line] = minErr;
+            dif[line] = width < end ? end-width : end;
         }
-        Part part = new Part(0, height);
-        process(part);
     }
-    private void process(Part part)
+    private void split(Part part)
+    {
+        if (part.getLength() > SPLIT_LIM)
+        {
+            Part[] parts = part.split();
+            if ((parts[0].errorSum + parts[1].errorSum) < part.errorSum)
+            {
+                steal(parts);
+                split(parts[0]);
+                split(parts[1]);
+            }
+            else
+            {
+                processParts(part);
+            }
+        }
+        else
+        {
+            processParts(part);
+        }
+    }
+    private void processParts(Part part)
     {
         if (part.isOk())
         {
@@ -157,29 +240,33 @@ public class FaxRectifier
         }
         else
         {
-            if (part.getLength() > 20)
+            if (part.getLength() > SPLIT_LIM)
             {
                 Part[] parts = part.split();
-                if (parts[0].isOk() != parts[1].isOk())
-                {
-                    if (parts[0].isOk())
-                    {
-                        steal(parts[0], parts[1]);
-                    }
-                    else
-                    {
-                        steal(parts[1], parts[0]);
-                    }
-                }
-                process(parts[0]);
-                process(parts[1]);
+                steal(parts);
+                processParts(parts[0]);
+                processParts(parts[1]);
+            }
+        }
+    }
+    private void steal(Part[] parts)
+    {
+        if (parts[0].isOk() != parts[1].isOk())
+        {
+            if (parts[0].isOk())
+            {
+                steal(parts[0], parts[1]);
+            }
+            else
+            {
+                steal(parts[1], parts[0]);
             }
         }
     }
     private void steal(Part to, Part from)
     {
         boolean after = from.isAfter(to);
-        while (to.isOk())
+        while (to.isOk() && !from.isOk())
         {
             if (after)
             {
@@ -192,15 +279,18 @@ public class FaxRectifier
                 to.newHead(-1);
             }
         }
-        if (after)
+        if (!from.isOk())
         {
-            to.newTail(-1);
-            from.newHead(-1);
-        }
-        else
-        {
-            from.newTail(1);
-            to.newHead(1);
+            if (after)
+            {
+                to.newTail(-1);
+                from.newHead(-1);
+            }
+            else
+            {
+                from.newTail(1);
+                to.newHead(1);
+            }
         }
     }
     private class Part
@@ -238,7 +328,7 @@ public class FaxRectifier
         }
         public boolean isOk()
         {
-            return errorSum/length < ERR_SUM_LIM;
+            return (double)errorSum/(double)length < ERR_SUM_LIM;
         }
         public void rectify()
         {
@@ -284,18 +374,20 @@ public class FaxRectifier
         }
         private void addBestFit(int index, int sign)
         {
-            if (bandLen[index] > bandWidth-2 && bandLen[index] < bandWidth+2)
+            if (error[index] < ERR_LIM)
             {
-                bestFitLine.add(index, endOfBand[index]);
-                //System.err.println(index+" "+dif[index]+" "+weight);
+                int weight = sign*(ERR_LIM - error[index]);
+                bestFitLine.add(index, dif[index], weight);
+                System.err.println(index+" "+dif[index]+" "+weight);
             }
         }
         private void addErrSum(int index, int sign)
         {
-            if (bandLen[index] > bandWidth-2 && bandLen[index] < bandWidth+2)
+            if (error[index] < ERR_LIM)
             {
+                int weight = sign*(ERR_LIM - error[index]);
                 double y = bestFitLine.getY(index);
-                errorSum += Math.abs(y-endOfBand[index]);
+                errorSum += Math.abs(y-dif[index])/weight;
             }
         }
         public int getErrorSum()

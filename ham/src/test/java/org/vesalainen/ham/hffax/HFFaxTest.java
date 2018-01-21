@@ -35,8 +35,8 @@ public class HFFaxTest
     public void test()
     {
         URL url = HFFaxTest.class.getResource("/wefax3.wav");
-        HFFax.main("-u", url.toString());
-        //HFFax.main("-l", "");
+        //HFFax.main("-u", url.toString());
+        HFFax.main("-l", "");
 
     }
     

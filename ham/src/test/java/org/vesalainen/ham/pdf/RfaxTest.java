@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham.pdf;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -28,21 +27,24 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxRectifierTest
+public class RfaxTest
 {
-    
-    public FaxRectifierTest()
+
+    public RfaxTest()
     {
     }
 
     @Test
-    public void test1() throws IOException
+    public void test() throws IOException
     {
-        File file = new File("fax2018-01-21T202518.511Z.png");
-        BufferedImage image = ImageIO.read(file);
-        FaxRectifier r = new FaxRectifier(image);
-        r.rectify();
-        ImageIO.write(image, "png", new File("corrected.png"));
+        PDDocument document = PDDocument.load(new File("rfax.pdf"));
+        if (!document.isEncrypted())
+        {
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(document);
+            System.out.println("Text:" + text);
+        }
+        document.close();
     }
-    
+
 }
