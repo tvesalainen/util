@@ -20,9 +20,35 @@ package org.vesalainen.ham.hffax;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface BarPredicate
+public class BarScannerLengthOptimizer implements BarPredicate
 {
-    boolean test(int nowBegin, int nowLength, int newBegin, int newLength);
-    default void reset(){}
+    private int barLength;
+    private int lastValue;
+
+    public BarScannerLengthOptimizer(int barLength)
+    {
+        this.barLength = barLength;
+        reset();
+    }
+
+    @Override
+    public void reset()
+    {
+        lastValue = Integer.MAX_VALUE;
+    }
+    @Override
+    public boolean test(int nowBegin, int nowLength, int newBegin, int newLength)
+    {
+        int newValue = evalue(newBegin, newLength);
+        if (newValue < lastValue)
+        {
+            lastValue = newValue;
+            return true;
+        }
+        return false;
+    }
+    private int evalue(int begin, int length)
+    {
+        return Math.abs(barLength-length);
+    }
 }

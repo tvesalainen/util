@@ -47,6 +47,7 @@ public class BarScanner
         int len = 0;
         begin = 0;
         length = 0;
+        predicate.reset();
         while (beg+len<width*2)
         {
             int err = 0;

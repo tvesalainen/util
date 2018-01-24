@@ -20,13 +20,13 @@ package org.vesalainen.ham.hffax;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BarScannerOptimizer implements BarPredicate
+public class BarScannerBeginLengthOptimizer implements BarPredicate
 {
     private int barLength;
     private int expectedBegin;
     private int lastValue;
 
-    public BarScannerOptimizer(int barLength, int expectedBegin)
+    public BarScannerBeginLengthOptimizer(int barLength, int expectedBegin)
     {
         this.barLength = barLength;
         this.expectedBegin = expectedBegin;
@@ -37,7 +37,13 @@ public class BarScannerOptimizer implements BarPredicate
     {
         this.expectedBegin = expectedBegin;
     }
+
+    public int getExpectedBegin()
+    {
+        return expectedBegin;
+    }
     
+    @Override
     public void reset()
     {
         lastValue = Integer.MAX_VALUE;
