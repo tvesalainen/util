@@ -39,6 +39,11 @@ public final class IntReference extends PrimitiveReference
         this.value = value;
     }
 
+    public void add(int value)
+    {
+        this.value += value;
+    }
+    
     @Override
     public String toString()
     {

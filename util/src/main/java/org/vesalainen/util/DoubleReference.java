@@ -38,6 +38,11 @@ public final class DoubleReference extends PrimitiveReference
         this.value = value;
     }
 
+    public void add(double value)
+    {
+        this.value += value;
+    }
+    
     @Override
     public String toString()
     {

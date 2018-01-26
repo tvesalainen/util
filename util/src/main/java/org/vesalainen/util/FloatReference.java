@@ -38,6 +38,11 @@ public final class FloatReference extends PrimitiveReference
         this.value = value;
     }
     
+    public void add(float value)
+    {
+        this.value += value;
+    }
+    
     @Override
     public String toString()
     {
