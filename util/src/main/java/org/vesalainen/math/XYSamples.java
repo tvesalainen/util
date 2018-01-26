@@ -159,7 +159,7 @@ public class XYSamples
     {
         int newSize = growFunc.applyAsInt(xarr.length);
         xarr = Arrays.copyOf(xarr, newSize);
-        yarr = Arrays.copyOf(xarr, newSize);
+        yarr = Arrays.copyOf(yarr, newSize);
     }
 
     @Override
