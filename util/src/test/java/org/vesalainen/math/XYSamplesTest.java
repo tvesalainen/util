@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,35 @@
  */
 package org.vesalainen.math;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
- * Line y = k*x+a where k = slope
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Line extends XYModel
+public class XYSamplesTest
 {
-    double getSlope();
-    double getA();
+    
+    public XYSamplesTest()
+    {
+    }
+
+    @Test
+    public void test1()
+    {
+        XYSamples s = new XYSamples();
+        s.add(1, 2);
+        s.add(2, 4);
+        s.add(3, 6);
+        s.add(4, 8);
+        s.add(5, 10);
+        assertEquals(5, s.getCount());
+        assertEquals(3, s.getX(2), 1e-10);
+        assertEquals(6, s.getY(2), 1e-10);
+        assertEquals(15, s.xStream().sum(), 1e-10);
+        assertEquals(30, s.yStream().sum(), 1e-10);
+        assertEquals("[(1.0,2.0)(2.0,4.0)(3.0,6.0)(4.0,8.0)(5.0,10.0)]", s.toString());
+    }
+    
 }

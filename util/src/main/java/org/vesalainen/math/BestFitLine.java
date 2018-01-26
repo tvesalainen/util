@@ -21,13 +21,22 @@ package org.vesalainen.math;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="http://math.tutorvista.com/algebra/line-of-best-fit.html">Line of Best Fit</a>
  */
-public class BestFitLine
+public class BestFitLine implements XYModel
 {
     private double sx;
     private double sy;
     private double sxy;
     private double sx2;
     private int n;
+    /**
+     * Creates a BestFitLine using x,y pairs from samples.
+     * @param samples 
+     */
+    public BestFitLine(XYSamples samples)
+    {
+        add(samples);
+    }
+    
     /**
      * Removes all points
      */
@@ -38,6 +47,14 @@ public class BestFitLine
         sxy = 0;
         sx2 = 0;
         n = 0;
+    }
+    /**
+     * Add all x,y pairs from samples
+     * @param samples 
+     */
+    public final void add(XYSamples samples)
+    {
+        samples.forEach(this::add);
     }
     /**
      * Adds a point
@@ -88,6 +105,7 @@ public class BestFitLine
      * @param x
      * @return 
      */
+    @Override
     public double getY(double x)
     {
         double slope = getSlope();
