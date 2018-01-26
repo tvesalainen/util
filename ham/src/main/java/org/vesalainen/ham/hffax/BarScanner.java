@@ -26,13 +26,14 @@ public class BarScanner
     private int verticalError;
     private int begin;
     private int length;
-    private int line;
-    private int lineHeight;
+    private int negativeLength;
     private BarPredicate predicate;
+    private int[] lineBegin;
+    private int[] lineLength;
 
     public BarScanner(int width, int verticalError)
     {
-        this(width, verticalError, (mb, ml, nb, nl)->nl>ml);
+        this(width, verticalError, (mb, ml, nb, nl, ne)->nl>ml);
     }
     public BarScanner(int width, int verticalError, BarPredicate predicate)
     {
@@ -45,6 +46,8 @@ public class BarScanner
     {
         int beg = 0;
         int len = 0;
+        int neg = 0;
+        int negLen = 0;
         begin = 0;
         length = 0;
         predicate.reset();
@@ -60,17 +63,61 @@ public class BarScanner
             }
             if (err > verticalError)
             {
-                if (len > 0 && predicate.test(begin, length, beg, len))
+                if (len > 0 && predicate.test(begin, length, beg, len, negLen))
                 {
                     begin = beg;
                     length = len;
+                    negativeLength = negLen;
+                    neg = 0;
                 }
                 beg += len+1;
                 len = 0;
+                if ((height-err) <= verticalError)
+                {
+                    neg++;
+                }
             }
             else
             {
+                if (len == 0)
+                {
+                    negLen = neg;
+                    neg = 0;
+                }
                 len++;
+            }
+        }
+        // calc per line
+        if (lineBegin == null || lineBegin.length < height)
+        {
+            lineBegin = new int[height];
+            lineLength = new int[height];
+        }
+        for (int y=0;y<height;y++)
+        {
+            for (int x=0;x<begin;x++)
+            {
+                if (buffer[((begin-x)%width)+y*width] != color)
+                {
+                    break;
+                }
+                else
+                {
+                    lineBegin[y] = begin-x;
+                }
+            }
+            int xx = begin+length-1;
+            int ll = width-length;
+            for (int x=0;x<ll;x++)
+            {
+                if (buffer[((xx+x)%width)+y*width] != color)
+                {
+                    break;
+                }
+                else
+                {
+                    lineLength[y] = begin-lineBegin[y]+length+x;
+                }
             }
         }
     }
@@ -84,14 +131,19 @@ public class BarScanner
         return length;
     }
 
-    public int getLine()
+    public int getBegin(int line)
     {
-        return line;
+        return lineBegin[line];
     }
 
-    public int getLineHeight()
+    public int getLength(int line)
     {
-        return lineHeight;
+        return lineLength[line];
+    }
+
+    public int getNegativeLength()
+    {
+        return negativeLength;
     }
 
 }

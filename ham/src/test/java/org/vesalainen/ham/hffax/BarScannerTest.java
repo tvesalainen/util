@@ -49,5 +49,38 @@ public class BarScannerTest
         assertEquals(8, bs.getBegin());
         assertEquals(11, bs.getLength());
     }
+    @Test
+    public void test2()
+    {
+        int[] buf = new int[48];
+        for (int ii=3;ii<8;ii++)
+        {
+            buf[ii] = 1;
+            buf[ii+16] = 1;
+            buf[ii+32] = 1;
+        }
+        buf[1] = 1;
+        buf[2] = 1;
+        buf[2+16] = 1;
+        
+        buf[8+16] = 1;
+        buf[8+32] = 1;
+        buf[9+32] = 1;
+        BarScanner bs = new BarScanner(16, 0);
+        
+        bs.maxBar(buf, 1, 3);
+        assertEquals(3, bs.getBegin());
+        assertEquals(1, bs.getBegin(0));
+        assertEquals(2, bs.getBegin(1));
+        assertEquals(3, bs.getBegin(2));
+        assertEquals(5, bs.getLength());
+        assertEquals(7, bs.getLength(0));
+        assertEquals(7, bs.getLength(1));
+        assertEquals(7, bs.getLength(2));
+        
+        bs.maxBar(buf, 0, 3);
+        assertEquals(10, bs.getBegin());
+        assertEquals(7, bs.getLength());
+    }
     
 }

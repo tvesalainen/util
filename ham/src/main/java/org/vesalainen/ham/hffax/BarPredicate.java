@@ -23,6 +23,10 @@ package org.vesalainen.ham.hffax;
 @FunctionalInterface
 public interface BarPredicate
 {
-    boolean test(int nowBegin, int nowLength, int newBegin, int newLength);
+    boolean test(int nowBegin, int nowLength, int newBegin, int newLength, int negativeLength);
+    default boolean test(int nowBegin, int nowLength, int newBegin, int newLength)
+    {
+        return test(nowBegin, nowLength, newBegin, newLength, -1);
+    }
     default void reset(){}
 }

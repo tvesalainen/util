@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import org.vesalainen.math.BestFitLine;
+import org.vesalainen.math.Statistics;
+import org.vesalainen.math.XYSamples;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -84,6 +86,10 @@ public class FaxRectifier extends JavaLogging
         fine("top block height is %s", topBlockHeight);
         findLineEndBlocksLength();
         scanParts();
+        for (Part part : parts)
+        {
+            part.rectify();
+        }
         //findLineEndBlocks();
         //findBands();
     }
@@ -159,15 +165,15 @@ public class FaxRectifier extends JavaLogging
         BarScannerBeginLengthOptimizer beginLengthOptimizer = new BarScannerBeginLengthOptimizer(lineEndLen, width-lineEndLen);
         BarScanner beginScanner = new BarScanner(width, 0, beginLengthOptimizer);
         int line = topBlockHeight+1;
+        int start = 0;
         while (true)
         {
-            Part part = new Part();
+            Part part = new Part(start);
             int begin = scanStart(part, line, scanner);
             if (begin == -1)
             {
                 return;
             }
-            part.setOffset(begin);
             beginLengthOptimizer.setExpectedBegin(scanner.getBegin());
             int body = scanBody(part, begin+BAND, beginScanner, beginLengthOptimizer);
             if (body == -1)
@@ -180,8 +186,10 @@ public class FaxRectifier extends JavaLogging
                 return;
             }
             part.setLength(end-begin);
+            part.calc();
             parts.add(part);
             line = end+1;
+            start = end+1;
         }
     }
     private static final int ERR_PERCENT = 15;
@@ -193,9 +201,13 @@ public class FaxRectifier extends JavaLogging
             scanner.maxBar(buffer, 0, BAND);
             int length = scanner.getLength();
             int begin = scanner.getBegin();
-            if (Fax.isAbout(lineEndLen, length, ERR_PERCENT))
+            int negativeLength = scanner.getNegativeLength();
+            if (
+                    Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
+                    negativeLength > 30
+                    )
             {
-                part.add(line+BAND/2, begin+length, BAND);
+                part.add(scanner, line, BAND);
                 return line;
             }
             else
@@ -214,9 +226,11 @@ public class FaxRectifier extends JavaLogging
             scanner.maxBar(buffer, 0, BAND);
             int length = scanner.getLength();
             int begin = scanner.getBegin();
+            int negativeLength = scanner.getNegativeLength();
             if (
                     Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
-                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT)
+                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
+                    negativeLength > 30
                     )
             {
                 int err = Math.abs(lineEndLen-length);
@@ -224,7 +238,7 @@ public class FaxRectifier extends JavaLogging
                 {
                     beginLengthOptimizer.setExpectedBegin(begin);
                 }
-                part.add(line+BAND/2, begin+length, BAND);
+                part.add(scanner, line, BAND);
                 line += BAND;
             }
             else
@@ -242,12 +256,14 @@ public class FaxRectifier extends JavaLogging
             scanner.maxBar(buffer, 0, BAND);
             int length = scanner.getLength();
             int begin = scanner.getBegin();
+            int negativeLength = scanner.getNegativeLength();
             if (
                     Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
-                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT)
+                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
+                    negativeLength > 30
                     )
             {
-                part.add(line+(BAND-ii)/2, begin+length, BAND-ii);
+                part.add(scanner, line, BAND);
                 return line;
             }
         }
@@ -351,15 +367,31 @@ public class FaxRectifier extends JavaLogging
     {
         private int offset;
         private int length;
-        private final BestFitLine bestFitLine;
+        private XYSamples samples;
+        private BestFitLine bestFitLine;
+        private double rootMeanSquareError;
 
         public Part()
         {
-            bestFitLine = new BestFitLine();
+            samples = new XYSamples();
         }
-        public void add(int line, int lineEnd, int count)
+
+        public Part(int offset)
         {
-            bestFitLine.add(line, lineEnd, count);
+            this.offset = offset;
+            samples = new XYSamples();
+        }
+        public void calc()
+        {
+            bestFitLine = new BestFitLine(samples);
+            rootMeanSquareError = Statistics.rootMeanSquareError(samples, bestFitLine);
+        }
+        public void add(BarScanner scanner, int line, int lineCount)
+        {
+            for (int ii=0;ii<lineCount;ii++)
+            {
+                samples.add(line+ii, scanner.getBegin(ii)+scanner.getLength(ii));
+            }
         }
         public void rectify()
         {
@@ -367,8 +399,8 @@ public class FaxRectifier extends JavaLogging
             {
                 int line = offset+ii;
                 raster.getPixels(0, line, width, 1, buffer);
-                int dif = (int) bestFitLine.getY(line);
-                if (dif > 0 && dif < width)
+                int dif = (int) bestFitLine.getY(line)%width;
+                if (dif > 0)
                 {
                     try
                     {
@@ -404,11 +436,12 @@ public class FaxRectifier extends JavaLogging
         {
             this.length = length;
         }
+
         @Override
         public String toString()
         {
-            return "Part{" + "offset=" + offset + ", length=" + length + '}';
+            return "Part{" + "o=" + offset + ", l=" + length + ", bfl=" + bestFitLine + ", rmse=" + rootMeanSquareError + '}';
         }
-        
+
     }
 }

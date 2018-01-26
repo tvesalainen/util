@@ -37,9 +37,9 @@ public class BarScannerLengthOptimizer implements BarPredicate
         lastValue = Integer.MAX_VALUE;
     }
     @Override
-    public boolean test(int nowBegin, int nowLength, int newBegin, int newLength)
+    public boolean test(int nowBegin, int nowLength, int newBegin, int newLength, int negativeLength)
     {
-        int newValue = evalue(newBegin, newLength);
+        int newValue = evalue(newBegin, newLength, negativeLength);
         if (newValue < lastValue)
         {
             lastValue = newValue;
@@ -47,8 +47,9 @@ public class BarScannerLengthOptimizer implements BarPredicate
         }
         return false;
     }
-    private int evalue(int begin, int length)
+    private int evalue(int begin, int length, int negativeLength)
     {
-        return Math.abs(barLength-length);
+        int negValue = negativeLength >= 40 ? 0 : 40 - negativeLength;
+        return Math.abs(barLength-length)+negValue;
     }
 }
