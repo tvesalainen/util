@@ -23,6 +23,6 @@ package org.vesalainen.math;
 public interface XYModel
 {
 
-    double getY(double y);
+    double getY(double x);
     
 }

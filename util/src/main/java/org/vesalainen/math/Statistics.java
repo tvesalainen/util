@@ -16,39 +16,28 @@
  */
 package org.vesalainen.math;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.vesalainen.util.DoubleReference;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class XYSamplesTest
+public class Statistics
 {
-    
-    public XYSamplesTest()
+    public static final double meanAbsoluteError(XYSamples samples, final XYModel model)
     {
+        final DoubleReference sum = new DoubleReference(0);
+        samples.forEach((double x,double y)->sum.add(Math.abs(y-model.getY(x))));
+        return Math.sqrt(sum.getValue()/samples.getCount());    
     }
-
-    @Test
-    public void test1()
+    public static final double rootMeanSquareError(XYSamples samples, final XYModel model)
     {
-        XYSamples s = new XYSamples();
-        s.add(1, 2);
-        s.add(2, 4);
-        s.add(3, 6);
-        s.add(4, 8);
-        s.add(5, 10);
-        assertEquals(5, s.getCount());
-        assertEquals(3, s.getX(2), 1e-10);
-        assertEquals(6, s.getY(2), 1e-10);
-        assertEquals(15, s.xStream().sum(), 1e-10);
-        assertEquals(30, s.yStream().sum(), 1e-10);
-        assertEquals("[(1.0,2.0)(2.0,4.0)(3.0,6.0)(4.0,8.0)(5.0,10.0)]", s.toString());
-        assertEquals(1, s.getMinX(), 1e-10);
-        assertEquals(5, s.getMaxX(), 1e-10);
-        assertEquals(2, s.getMinY(), 1e-10);
-        assertEquals(10, s.getMaxY(), 1e-10);
+        final DoubleReference sum = new DoubleReference(0);
+        samples.forEach((double x,double y)->sum.add(square(y-model.getY(x))));
+        return Math.sqrt(sum.getValue()/samples.getCount());    
     }
-    
+    private static double square(double v)
+    {
+        return v*v;
+    }
 }

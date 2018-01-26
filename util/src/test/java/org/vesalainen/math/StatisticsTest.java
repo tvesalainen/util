@@ -23,32 +23,40 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class XYSamplesTest
+public class StatisticsTest
 {
     
-    public XYSamplesTest()
+    public StatisticsTest()
     {
     }
 
     @Test
     public void test1()
     {
-        XYSamples s = new XYSamples();
-        s.add(1, 2);
-        s.add(2, 4);
-        s.add(3, 6);
-        s.add(4, 8);
-        s.add(5, 10);
-        assertEquals(5, s.getCount());
-        assertEquals(3, s.getX(2), 1e-10);
-        assertEquals(6, s.getY(2), 1e-10);
-        assertEquals(15, s.xStream().sum(), 1e-10);
-        assertEquals(30, s.yStream().sum(), 1e-10);
-        assertEquals("[(1.0,2.0)(2.0,4.0)(3.0,6.0)(4.0,8.0)(5.0,10.0)]", s.toString());
-        assertEquals(1, s.getMinX(), 1e-10);
-        assertEquals(5, s.getMaxX(), 1e-10);
-        assertEquals(2, s.getMinY(), 1e-10);
-        assertEquals(10, s.getMaxY(), 1e-10);
-    }
-    
+        XYSamples s1 = new XYSamples();
+        s1.add(1, 2);
+        s1.add(2, 4);
+        s1.add(3, 6);
+        s1.add(4, 8);
+        s1.add(5, 10);
+        
+        BestFitLine bfl = new BestFitLine(s1);
+        AbstractLine line = bfl.getLine();
+        assertEquals(0, line.getA(), 1e-10);
+        assertEquals(2, line.getSlope(), 1e-10);
+        
+        assertEquals(0, Statistics.rootMeanSquareError(s1, line), 1e-10);
+        assertEquals(0, Statistics.meanAbsoluteError(s1, line), 1e-10);
+        
+        XYSamples s2 = new XYSamples();
+        s2.add(1, 2+1);
+        s2.add(2, 4+1);
+        s2.add(3, 6+1);
+        s2.add(4, 8+1);
+        s2.add(5, 10+1);
+        
+        assertEquals(1, Statistics.rootMeanSquareError(s2, line), 1e-10);
+        assertEquals(1, Statistics.meanAbsoluteError(s2, line), 1e-10);
+        
+    }    
 }

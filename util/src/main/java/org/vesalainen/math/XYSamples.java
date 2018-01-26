@@ -30,6 +30,10 @@ public class XYSamples
 {
     private double[] xarr;
     private double[] yarr;
+    private double minX = Double.POSITIVE_INFINITY;
+    private double minY = Double.POSITIVE_INFINITY;
+    private double maxX = Double.NEGATIVE_INFINITY;
+    private double maxY = Double.NEGATIVE_INFINITY;
     private int count;
     private IntUnaryOperator growFunc;
     /**
@@ -64,6 +68,10 @@ public class XYSamples
         }
         xarr[count] = x;
         yarr[count++] = y;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
     }
     /**
      * Returns sample count.
@@ -126,6 +134,27 @@ public class XYSamples
             action.accept(xarr[ii], yarr[ii]);
         }
     }
+
+    public double getMinX()
+    {
+        return minX;
+    }
+
+    public double getMinY()
+    {
+        return minY;
+    }
+
+    public double getMaxX()
+    {
+        return maxX;
+    }
+
+    public double getMaxY()
+    {
+        return maxY;
+    }
+    
     private void grow()
     {
         int newSize = growFunc.applyAsInt(xarr.length);
