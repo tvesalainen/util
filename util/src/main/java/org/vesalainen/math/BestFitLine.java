@@ -28,6 +28,11 @@ public class BestFitLine implements XYModel
     private double sxy;
     private double sx2;
     private int n;
+
+    public BestFitLine()
+    {
+    }
+    
     /**
      * Creates a BestFitLine using x,y pairs from samples.
      * @param samples 
