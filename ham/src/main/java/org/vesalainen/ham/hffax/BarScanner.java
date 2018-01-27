@@ -16,6 +16,8 @@
  */
 package org.vesalainen.ham.hffax;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -93,32 +95,40 @@ public class BarScanner
             lineBegin = new int[height];
             lineLength = new int[height];
         }
-        for (int y=0;y<height;y++)
+        if (length > 0)
         {
-            for (int x=0;x<begin;x++)
+            for (int y=0;y<height;y++)
             {
-                if (buffer[((begin-x)%width)+y*width] != color)
+                for (int x=0;x<3&&x<begin;x++)
                 {
-                    break;
+                    if (buffer[((begin-x)%width)+y*width] != color)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        lineBegin[y] = begin-x;
+                    }
                 }
-                else
+                int xx = begin+length-1;
+                int ll = width-length;
+                for (int x=0;x<3&&x<ll;x++)
                 {
-                    lineBegin[y] = begin-x;
+                    if (buffer[((xx+x)%width)+y*width] != color)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        lineLength[y] = begin-lineBegin[y]+length+x;
+                    }
                 }
             }
-            int xx = begin+length-1;
-            int ll = width-length;
-            for (int x=0;x<ll;x++)
-            {
-                if (buffer[((xx+x)%width)+y*width] != color)
-                {
-                    break;
-                }
-                else
-                {
-                    lineLength[y] = begin-lineBegin[y]+length+x;
-                }
-            }
+        }
+        else
+        {
+            Arrays.fill(lineBegin, begin);
+            Arrays.fill(lineLength, length);
         }
     }
     public int getBegin()

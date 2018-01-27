@@ -38,7 +38,7 @@ public class FaxRectifierTest
     @Test
     public void test1() throws IOException
     {
-        File file = new File("fax2018-01-21T202518.511Z.png");
+        File file = new File("fax2018-01-27T212206.325Z.png");
         BufferedImage image = ImageIO.read(file);
         FaxRectifier r = new FaxRectifier(image);
         r.rectify();

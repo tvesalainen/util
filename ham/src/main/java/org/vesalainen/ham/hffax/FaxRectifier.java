@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
+import static org.vesalainen.ham.hffax.Fax.isAbout;
 import org.vesalainen.math.BestFitLine;
 import org.vesalainen.math.Statistics;
 import org.vesalainen.math.XYSamples;
+import org.vesalainen.util.Lists;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -86,8 +88,10 @@ public class FaxRectifier extends JavaLogging
         fine("top block height is %s", topBlockHeight);
         findLineEndBlocksLength();
         scanParts();
+        noiseOptimizer();
         for (Part part : parts)
         {
+            System.err.println(part);
             part.rectify();
         }
         //findLineEndBlocks();
@@ -136,7 +140,7 @@ public class FaxRectifier extends JavaLogging
             int length = scanner.getLength();
             int begin = scanner.getBegin();
             int end = begin+length;
-            if (Fax.isAbout(lineEndLen, length))
+            if (isAbout(lineEndLen, length))
             {
                 int err = Math.abs(lineEndLen-length);
                 error[line] = err;
@@ -169,30 +173,145 @@ public class FaxRectifier extends JavaLogging
         while (true)
         {
             Part part = new Part(start);
+            parts.add(part);
             int begin = scanStart(part, line, scanner);
             if (begin == -1)
             {
+                part.setLength(height-start);
+                part.calc();
                 return;
             }
             beginLengthOptimizer.setExpectedBegin(scanner.getBegin());
             int body = scanBody(part, begin+BAND, beginScanner, beginLengthOptimizer);
             if (body == -1)
             {
+                part.setLength(height-start);
+                part.calc();
                 return;
             }
             int end = scanEnd(part, body, beginScanner, beginLengthOptimizer);
             if (end == -1)
             {
+                part.setLength(height-start);
+                part.calc();
                 return;
             }
-            part.setLength(end-begin);
+            part.setLength(end-start);
             part.calc();
-            parts.add(part);
-            line = end+1;
-            start = end+1;
+            line = end;
+            start = end;
+        }
+    }
+    private void noiseOptimizer()
+    {
+        checkIntegrity(parts);
+        List<Part> list = new ArrayList<>();
+        List<Part> noisy = null;
+        Part prev = null;
+        for (Part part : parts)
+        {
+            if (part.isNoisy())
+            {
+                if (noisy == null)
+                {
+                    noisy = new ArrayList<>();
+                    if (prev != null)
+                    {
+                        noisy.add(prev);
+                    }
+                }
+                prev = null;
+                noisy.add(part);
+            }
+            else
+            {
+                if (noisy == null)
+                {
+                    if (prev != null)
+                    {
+                        list.add(prev);
+                    }
+                    prev = part;
+                }
+                else
+                {
+                    noisy.add(part);
+                    List<Part> solved = solveNoise(noisy);
+                    list.addAll(solved.subList(0, solved.size()-1));
+                    prev = solved.get(solved.size()-1);
+                    noisy = null;
+                }
+            }
+        }
+        if (noisy != null)
+        {
+            list.addAll(solveNoise(noisy));
+        }
+        else
+        {
+            list.add(prev);
+        }
+        parts = list;
+        checkIntegrity(parts);
+    }
+    private List<Part> solveNoise(List<Part> noise)
+    {
+        if (noise.get(0).isNoisy() || noise.get(noise.size()-1).isNoisy())
+        {
+            return Lists.create(new Part(noise));
+        }
+        Part head = noise.get(0);
+        Part tail = noise.get(noise.size()-1);
+        double minCost = Double.POSITIVE_INFINITY;
+        int minIndex = -1;
+        for (int sp=1;sp<noise.size();sp++)
+        {
+            double headCost = 0;
+            double tailCost = 0;
+            for (int ii=1;ii<sp;ii++)
+            {
+                Part part = noise.get(ii);
+                headCost += Statistics.rootMeanSquareError(part.samples, head.bestFitLine);
+            }
+            for (int ii=sp;ii<noise.size()-1;ii++)
+            {
+                Part part = noise.get(ii);
+                tailCost += Statistics.rootMeanSquareError(part.samples, tail.bestFitLine);
+            }
+            double cost = headCost+tailCost;
+            if (cost < minCost)
+            {
+                minCost = cost;
+                minIndex = sp;
+            }
+        }
+        Part newHead = new Part(noise.subList(0, minIndex));
+        Part newTail = new Part(noise.subList(minIndex, noise.size()));
+        return Lists.create(newHead, newTail);
+    }
+    private void checkIntegrity(List<Part> list)
+    {
+        Part prev = null;
+        for (Part part : list)
+        {
+            if (prev != null)
+            {
+                if (prev.offset+prev.length != part.offset)
+                {
+                    throw new IllegalArgumentException(prev+" clash with "+part);
+                }
+            }
+            prev = part;
         }
     }
     private static final int ERR_PERCENT = 15;
+    /**
+     * 
+     * @param part
+     * @param line
+     * @param scanner
+     * @return Start line of block
+     */
     private int scanStart(Part part, int line, BarScanner scanner)
     {
         while (line < height-BAND)
@@ -203,7 +322,7 @@ public class FaxRectifier extends JavaLogging
             int begin = scanner.getBegin();
             int negativeLength = scanner.getNegativeLength();
             if (
-                    Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
+                    isAbout(lineEndLen, length, ERR_PERCENT) &&
                     negativeLength > 30
                     )
             {
@@ -217,9 +336,16 @@ public class FaxRectifier extends JavaLogging
         }
         return -1;
     }
+    /**
+     * 
+     * @param part
+     * @param line
+     * @param scanner
+     * @param beginLengthOptimizer
+     * @return last first line of failing block
+     */
     private int scanBody(Part part, int line, BarScanner scanner, BarScannerBeginLengthOptimizer beginLengthOptimizer)
     {
-        Arrays.fill(error, Integer.MAX_VALUE);
         while (line < height-BAND)
         {
             raster.getPixels(0, line, width, BAND, buffer);
@@ -228,13 +354,12 @@ public class FaxRectifier extends JavaLogging
             int begin = scanner.getBegin();
             int negativeLength = scanner.getNegativeLength();
             if (
-                    Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
-                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
+                    isAbout(lineEndLen, length, ERR_PERCENT) &&
+                    isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
                     negativeLength > 30
                     )
             {
-                int err = Math.abs(lineEndLen-length);
-                if (err == 0)
+                if (isAbout(lineEndLen, length, 3))
                 {
                     beginLengthOptimizer.setExpectedBegin(begin);
                 }
@@ -258,13 +383,13 @@ public class FaxRectifier extends JavaLogging
             int begin = scanner.getBegin();
             int negativeLength = scanner.getNegativeLength();
             if (
-                    Fax.isAbout(lineEndLen, length, ERR_PERCENT) &&
-                    Fax.isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
+                    isAbout(lineEndLen, length, ERR_PERCENT) &&
+                    isAbout(beginLengthOptimizer.getExpectedBegin(), begin, ERR_PERCENT) &&
                     negativeLength > 30
                     )
             {
-                part.add(scanner, line, BAND);
-                return line;
+                part.add(scanner, line-ii, ii, BAND);
+                return line-ii+BAND;
             }
         }
         return line;
@@ -305,14 +430,14 @@ public class FaxRectifier extends JavaLogging
             raster.getPixels(0, line, width, BAND, buffer);
             scanner.maxBar(buffer, 0, BAND);
             int length = scanner.getLength();
-            if (Fax.isAbout(topBlackInPixels, length))
+            if (isAbout(topBlackInPixels, length))
             {
                 topBlockHeight = line+BAND-1;
                 line += BAND;
             }
             else
             {
-                if (line > BAND)
+                if (topBlockHeight > 0)
                 {
                     for (int ii=0;ii<BAND;ii++)
                     {
@@ -320,12 +445,13 @@ public class FaxRectifier extends JavaLogging
                         raster.getPixels(0, line, width, BAND, buffer);
                         scanner.maxBar(buffer, 0, BAND);
                         length = scanner.getLength();
-                        if (Fax.isAbout(topBlackInPixels, length))
+                        if (isAbout(topBlackInPixels, length))
                         {
                             topBlockHeight = line+BAND-1;
                             return;
                         }
                     }
+                    return;
                 }
                 else
                 {
@@ -376,6 +502,17 @@ public class FaxRectifier extends JavaLogging
             samples = new XYSamples();
         }
 
+        public Part(List<Part> list)
+        {
+            this.offset = list.get(0).offset;
+            samples = new XYSamples();
+            for (Part part : list)
+            {
+                this.length += part.length;
+                this.samples.add(part.samples);
+            }
+            calc();
+        }
         public Part(int offset)
         {
             this.offset = offset;
@@ -388,7 +525,11 @@ public class FaxRectifier extends JavaLogging
         }
         public void add(BarScanner scanner, int line, int lineCount)
         {
-            for (int ii=0;ii<lineCount;ii++)
+            add(scanner, line, 0, lineCount);
+        }
+        public void add(BarScanner scanner, int line, int offset, int lineCount)
+        {
+            for (int ii=offset;ii<lineCount;ii++)
             {
                 samples.add(line+ii, scanner.getBegin(ii)+scanner.getLength(ii));
             }
@@ -416,7 +557,10 @@ public class FaxRectifier extends JavaLogging
                 }
             }
         }
-
+        public boolean isNoisy()
+        {
+            return length > 3*samples.getCount() || samples.getCount() < 10;
+        }
         public int getOffset()
         {
             return offset;

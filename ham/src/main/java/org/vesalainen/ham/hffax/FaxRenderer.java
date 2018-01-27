@@ -48,19 +48,21 @@ public class FaxRenderer implements FaxListener
         this.locator = locator;
         image = new BufferedImage(resolution, 2*resolution, TYPE_BYTE_BINARY);
         graphics = image.createGraphics();
-        graphics.setBackground(Color.BLACK);
-        graphics.setColor(Color.white);
+        graphics.setBackground(Color.WHITE);
+        graphics.setColor(Color.BLACK);
         bounds = graphics.getDeviceConfiguration().getBounds();
+        graphics.clearRect(0, 0, bounds.width, bounds.height);
     }
 
     public FaxRenderer(Graphics2D graphics, PageLocator locator)
     {
         this.graphics = graphics;
         this.locator = locator;
-        graphics.setBackground(Color.BLACK);
-        graphics.setColor(Color.white);
+        graphics.setBackground(Color.WHITE);
+        graphics.setColor(Color.BLACK);
         //graphics.scale(1, 2);
         bounds = graphics.getDeviceConfiguration().getBounds();
+        graphics.clearRect(0, 0, bounds.width, bounds.height);
     }
     
     public boolean render() throws IOException
@@ -80,7 +82,7 @@ public class FaxRenderer implements FaxListener
     public void tone(FaxTone tone, long begin, long end, long span, float amplitude, long error)
     {
         int lin2 = locator.line(end);
-        if (tone == WHITE)
+        if (tone == BLACK)
         {
             int col1 = locator.column(bounds.width, begin);
             int lin1 = locator.line(begin);
