@@ -56,6 +56,14 @@ public class XYSamples
         yarr = new double[initialSize];
     }
     /**
+     * Adds all samples  from given XYSamples to this
+     * @param samples 
+     */
+    public void add(XYSamples samples)
+    {
+        samples.forEach(this::add);
+    }
+    /**
      * Adds sample and grows if necessary.
      * @param x
      * @param y 
