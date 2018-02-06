@@ -14,24 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math.sliding;
+package org.vesalainen.math;
+
+import org.vesalainen.math.sliding.*;
+import java.util.stream.DoubleStream;
 
 /**
- * @deprecated Use from package org.vesalainen.math
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Average
+public interface Min
 {
 
-    /**
-     * Returns average by calculating cell by cell
-     * @return
-     */
-    double average();
 
     /**
-     * Returns average without actually calculating cell by cell
+     * Returns Minimum value
      * @return
      */
-    double fast();
+    double getMin();
+    
 }

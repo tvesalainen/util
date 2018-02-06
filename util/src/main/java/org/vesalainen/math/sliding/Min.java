@@ -16,10 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.stream.DoubleStream;
-
 /**
- *
+ * @deprecated Use from package org.vesalainen.math
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface Min

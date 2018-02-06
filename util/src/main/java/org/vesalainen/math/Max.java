@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math.sliding;
+package org.vesalainen.math;
+
+import org.vesalainen.math.sliding.*;
 
 /**
- * @deprecated Use from package org.vesalainen.math
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface Max
