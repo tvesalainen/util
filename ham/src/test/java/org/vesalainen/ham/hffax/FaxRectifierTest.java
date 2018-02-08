@@ -20,9 +20,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -33,12 +35,13 @@ public class FaxRectifierTest
     
     public FaxRectifierTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
     @Test
     public void test1() throws IOException
     {
-        File file = new File("fax2018-01-27T212206.325Z.png");
+        File file = new File("c:\\temp\\fax2018-02-08T160936.267Z.png");
         BufferedImage image = ImageIO.read(file);
         FaxRectifier r = new FaxRectifier(image);
         r.rectify();

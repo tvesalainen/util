@@ -21,16 +21,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Line.Info;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import org.vesalainen.ham.fft.FFT;
+import org.vesalainen.comm.channel.SerialChannel;
+import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.CmdArgs;
 
 /**
@@ -46,11 +47,20 @@ public class HFFax extends CmdArgs
     {
         addOption(File.class, "-f", "File", "file", false);
         addOption(URL.class, "-u", "URL", "url", false);
-        addOption(String.class, "-l", "Line", "line", false);
+        addOption(String.class, "-l", "Mixer", "line", false);
+        addOption(File.class, "-fd", "Fax Directory", null, true);
+        addOption("-info", "Show Info", null, false);
+        addOption("-id", "Icom Id", "line", 0);
+        addOption("-freq", "Frequency", "line", 0.0);
+        addOption(String.class, "-ip", "Icom Comm Port", "line", false);
     }
     
-    public void process() throws UnsupportedAudioFileException, IOException, LineUnavailableException
+    public void process() throws UnsupportedAudioFileException, IOException, LineUnavailableException, InterruptedException
     {
+        if (getOption("-info"))
+        {
+            info();
+        }
         switch (getEffectiveGroup())
         {
             case "file":
@@ -66,51 +76,93 @@ public class HFFax extends CmdArgs
     }
     private void processFile(File path) throws UnsupportedAudioFileException, IOException
     {
-        AudioSystem.getAudioFileFormat(path);
+        AudioInputStream ais = AudioSystem.getAudioInputStream(path);
+        FaxEngine fax = new FaxEngine(getOption("-fd"), ais);
+        fax.parse();
     }
     private void processURL(URL url) throws UnsupportedAudioFileException, IOException
     {
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        FaxEngine fax = new FaxEngine(ais);
+        FaxEngine fax = new FaxEngine(getOption("-fd"), ais);
         fax.parse();
     }
-    private void processLine(String mixer) throws LineUnavailableException, IOException
+    private void processLine(String mixer) throws LineUnavailableException, IOException, InterruptedException
+    {
+        double frequency = getOption("-freq");
+        if (frequency != 0.0)
+        {
+            try (IcomManager icomManager = createIcomManager())
+            {
+                icomManager.setRemote(true);
+                icomManager.setReceiveFrequency(frequency-1900.0);
+                parseLine(mixer);
+            }
+        }
+        else
+        {
+            parseLine(mixer);
+        }
+    }
+    private void parseLine(String mixer) throws LineUnavailableException, IOException, InterruptedException
     {
         AudioFormat audioFormat = new AudioFormat(44000, 16, 1, true, false);
-        TargetDataLine targetDataLine = AudioSystem.getTargetDataLine(audioFormat);
+        TargetDataLine targetDataLine = AudioSystem.getTargetDataLine(audioFormat);//, mixerInfo(mixer));
+        System.err.println(targetDataLine.getLineInfo());
         targetDataLine.open(audioFormat);
         targetDataLine.start();
-        FaxEngine fax = new FaxEngine(targetDataLine);
+        FaxEngine fax = new FaxEngine(getOption("-fd"), targetDataLine);
         fax.parse();
+    }
+    public Mixer.Info mixerInfo(String mixer)
+    {
+        for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo())
+        {
+            String name = mixerInfo.getName();
+            if (name.startsWith(mixer))
+            {
+                return mixerInfo;
+            }
+        }
+        return null;
     }
     public static void info()
     {
-        for (Line.Info targetLineInfo : AudioSystem.getTargetLineInfo(new Info(TargetDataLine.class)))
-        {
-            System.err.println(targetLineInfo);
-        }
+        System.err.println("Mixers:");
         for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo())
         {
-            System.err.println(mixerInfo);
-            Mixer mixer = AudioSystem.getMixer(mixerInfo);
-            for (Info targetLineInfo : mixer.getTargetLineInfo())
-            {
-                System.err.println(targetLineInfo);
-            }
+            System.err.println(mixerInfo.getName());
+        }
+        System.err.println("Free comm ports:");
+        for (String port : SerialChannel.getFreePorts())
+        {
+            System.err.println(port);
+        }
+    }
+    private IcomManager createIcomManager() throws IOException, InterruptedException
+    {
+        int id = getOption("-id");
+        String port = getOption("-ip");
+        if (port != null && !port.isEmpty())
+        {
+            return new IcomManager(id, port);
+        }
+        else
+        {
+            return IcomManager.getInstance(id);
         }
     }
     public static void main(String... args)
     {
         try
         {
-            info();
             HFFax fax = new HFFax();
             fax.command(args);
             fax.process();
         }
-        catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex)
+        catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException ex)
         {
             ex.printStackTrace();
         }
     }
+
 }

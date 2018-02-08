@@ -31,7 +31,7 @@ public class FrequencyCounterTest
     {
     }
 
-    @Test
+    //@Test
     public void test1()
     {
         byte[] tone = MorseCode.createTone(100, 44000, 400);
@@ -40,7 +40,7 @@ public class FrequencyCounterTest
         assertEquals(100000, fc.getMicros());
     }
     
-    @Test
+    //@Test
     public void test2()
     {
         byte[] tone = MorseCode.createTone(100, 44000, 400);

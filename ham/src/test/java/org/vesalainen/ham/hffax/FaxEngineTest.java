@@ -17,6 +17,7 @@
 package org.vesalainen.ham.hffax;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import javax.sound.sampled.AudioInputStream;
@@ -36,14 +37,14 @@ public class FaxEngineTest
     {
     }
 
-    @Test
+    //@Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
         try
         {
-            URL url = HFFaxTest.class.getResource("/hffax.wav");
+            URL url = HFFaxT.class.getResource("/hffax.wav");
             AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-            FaxEngine engine = new FaxEngine(ais);
+            FaxEngine engine = new FaxEngine(new File("."), ais);
             engine.parse();
         }
         catch(EOFException ex)

@@ -27,6 +27,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import static org.vesalainen.ham.hffax.Fax.isAbout;
 import org.vesalainen.math.BestFitLine;
+import org.vesalainen.math.SimpleAverage;
 import org.vesalainen.math.Statistics;
 import org.vesalainen.math.XYSamples;
 import org.vesalainen.util.Lists;
@@ -55,6 +56,7 @@ public class FaxRectifier extends JavaLogging
     private int topBlockHeight;
     private int lineEndLen;
     private List<Part> parts = new ArrayList<>();
+    private double averageSlope;
 
     public FaxRectifier(URL url) throws IOException
     {
@@ -91,7 +93,7 @@ public class FaxRectifier extends JavaLogging
         noiseOptimizer();
         for (Part part : parts)
         {
-            System.err.println(part);
+            finest("solved: %s", part);
             part.rectify();
         }
         //findLineEndBlocks();
@@ -198,6 +200,7 @@ public class FaxRectifier extends JavaLogging
             }
             part.setLength(end-start);
             part.calc();
+            finest("raw: %s", part);
             line = end;
             start = end;
         }
@@ -205,13 +208,24 @@ public class FaxRectifier extends JavaLogging
     private void noiseOptimizer()
     {
         checkIntegrity(parts);
+        SimpleAverage ave = new SimpleAverage();
+        for (Part part : parts)
+        {
+            double slope = part.bestFitLine.getSlope();
+            if (Double.isFinite(slope))
+            {
+                ave.add(slope, part.length);
+            }
+        }
+        averageSlope = ave.average();
         List<Part> list = new ArrayList<>();
         List<Part> noisy = null;
         Part prev = null;
         for (Part part : parts)
         {
-            if (part.isNoisy())
+            if (part.isNoisy(averageSlope))
             {
+                finest("noicy: %s", part);
                 if (noisy == null)
                 {
                     noisy = new ArrayList<>();
@@ -225,6 +239,7 @@ public class FaxRectifier extends JavaLogging
             }
             else
             {
+                finest("ok: %s", part);
                 if (noisy == null)
                 {
                     if (prev != null)
@@ -256,15 +271,35 @@ public class FaxRectifier extends JavaLogging
     }
     private List<Part> solveNoise(List<Part> noise)
     {
-        if (noise.get(0).isNoisy() || noise.get(noise.size()-1).isNoisy())
+        Part head = null;
+        Part tail = null;
+        int start = 0;
+        int end = 0;
+        if (noise.get(0).isNoisy(averageSlope))
         {
-            return Lists.create(new Part(noise));
+            head = tail = noise.get(noise.size()-1);
+            start = 0;
+            end = noise.size();
         }
-        Part head = noise.get(0);
-        Part tail = noise.get(noise.size()-1);
+        else
+        {
+            if (noise.get(noise.size()-1).isNoisy(averageSlope))
+            {
+                tail = head = noise.get(0);
+                start = 1;
+                end = noise.size()-1;
+            }
+            else
+            {
+                head = noise.get(0);
+                tail = noise.get(noise.size()-1);
+                start = 1;
+                end = noise.size();
+            }
+        }
         double minCost = Double.POSITIVE_INFINITY;
         int minIndex = -1;
-        for (int sp=1;sp<noise.size();sp++)
+        for (int sp=start;sp<end;sp++)
         {
             double headCost = 0;
             double tailCost = 0;
@@ -285,9 +320,28 @@ public class FaxRectifier extends JavaLogging
                 minIndex = sp;
             }
         }
-        Part newHead = new Part(noise.subList(0, minIndex));
-        Part newTail = new Part(noise.subList(minIndex, noise.size()));
-        return Lists.create(newHead, newTail);
+        finest("solved: %s", noise);
+        if (minCost < 2*(noise.size()-2)*Math.max(head.rootMeanSquareError, tail.rootMeanSquareError))
+        {
+            Part newHead = new Part(noise.subList(0, minIndex));
+            finest("head: %s", newHead);
+            Part newTail = new Part(noise.subList(minIndex, noise.size()));
+            finest("tail: %s", newTail);
+            return Lists.create(newHead, newTail);
+        }
+        else
+        {
+            Part hea = noise.get(0);
+            Part tai = noise.get(noise.size()-1);
+            int wholeLen = tai.offset+tail.length-hea.offset;
+            Part he = noise.get(minIndex-1);
+            int len1 = he.offset+he.length-hea.offset;
+            hea.setLength(len1);
+            Part ts = noise.get(minIndex);
+            tai.setOffset(hea.offset+len1);
+            tai.setLength(wholeLen-hea.length);
+            return Lists.create(hea, tai);
+        }
     }
     private void checkIntegrity(List<Part> list)
     {
@@ -557,9 +611,11 @@ public class FaxRectifier extends JavaLogging
                 }
             }
         }
-        public boolean isNoisy()
+        public boolean isNoisy(double averageSlope)
         {
-            return length > 3*samples.getCount() || samples.getCount() < 10;
+            return length > 3*samples.getCount() || 
+                    samples.getCount() < 10 ||
+                    !isAbout(averageSlope, bestFitLine.getSlope(), 40);
         }
         public int getOffset()
         {

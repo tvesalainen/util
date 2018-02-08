@@ -16,9 +16,7 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.ham.morse.Teach;
-import java.io.IOException;
-import javax.sound.sampled.LineUnavailableException;
+import org.vesalainen.ham.morse.MorseTeacher;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -26,17 +24,18 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TeachTest
+public class MorseTeacherT
 {
     
-    public TeachTest()
+    public MorseTeacherT()
     {
     }
 
     @Test
-    public void test1() throws LineUnavailableException, IOException
+    public void test() throws InterruptedException
     {
-        Teach.main();
+        MorseTeacher mt = new MorseTeacher();
+        Thread.sleep(1000000000);
     }
     
 }

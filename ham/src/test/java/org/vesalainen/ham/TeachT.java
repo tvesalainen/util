@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,38 +16,27 @@
  */
 package org.vesalainen.ham;
 
+import org.vesalainen.ham.morse.Teach;
 import java.io.IOException;
-import java.net.URL;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.LineUnavailableException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.hffax.HFFaxT;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioReaderTest
+public class TeachT
 {
     
-    public AudioReaderTest()
+    public TeachT()
     {
     }
 
-    //@Test
-    public void test() throws UnsupportedAudioFileException, IOException
+    @Test
+    public void test1() throws LineUnavailableException, IOException
     {
-        URL url = HFFaxT.class.getResource("/hffax.wav");
-        AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        AudioReader ar = AudioReader.getInstance(ais, 1024);
-        while (true)
-        {
-            float f = ar.getNextFrequency(100F);
-            long micros = ar.getMicros();
-            assertTrue(ar.getAmplitude() <= 1.0);
-        }
+        Teach.main();
     }
-
+    
 }

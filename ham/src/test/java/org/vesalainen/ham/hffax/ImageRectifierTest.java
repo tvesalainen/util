@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +16,36 @@
  */
 package org.vesalainen.ham.hffax;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import javax.imageio.ImageIO;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HFFaxTest
+public class ImageRectifierTest
 {
     
-    public HFFaxTest()
+    public ImageRectifierTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
     @Test
-    public void test()
+    public void test1() throws IOException
     {
-        URL url = HFFaxTest.class.getResource("/wefax3.wav");
-        HFFax.main("-u", url.toString());
-        //HFFax.main("-l", "");
-
+        File file = new File("c:\\temp\\fax2018-02-08T160936.267Z.png");
+        BufferedImage image = ImageIO.read(file);
+        ImageRectifier r = new ImageRectifier(image);
+        r.rectify();
+        ImageIO.write(image, "png", new File("corrected.png"));
     }
     
 }

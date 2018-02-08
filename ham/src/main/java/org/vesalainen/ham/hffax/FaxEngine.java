@@ -18,6 +18,7 @@ package org.vesalainen.ham.hffax;
 
 import java.awt.image.BufferedImage;
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,19 +38,20 @@ public class FaxEngine implements FaxStateListener
     private int ioc;
     private int resolution = 2300;
     private BufferedImage image;
-    private int line;
+    private File faxDir;
     private FaxTokenizer tokenizer;
     private FaxSynchronizer synchronizer;
     private FaxRenderer renderer;
     private ExecutorService executor;
 
-    public FaxEngine(TargetDataLine line)
+    public FaxEngine(File faxDir, TargetDataLine line)
     {
-        this(new AudioInputStream(line));
+        this(faxDir, new AudioInputStream(line));
     }
 
-    public FaxEngine(AudioInputStream ais)
+    public FaxEngine(File faxDir, AudioInputStream ais)
     {
+        this.faxDir = faxDir;
         Objects.requireNonNull(ais, "AudioInputStream");
         tokenizer = new FaxTokenizer(ais);
         synchronizer = new BWSynchronizer(this);
@@ -77,7 +79,7 @@ public class FaxEngine implements FaxStateListener
         {
             ZonedDateTime now = ZonedDateTime.now();
             String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
-            renderer = new FaxRenderer(this, "fax"+str, resolution, locator);
+            renderer = new FaxRenderer(this, faxDir, "fax"+str, resolution, locator);
             tokenizer.addListener(renderer);
         }
         else
