@@ -82,7 +82,7 @@ public abstract class FaxSynchronizer extends Fax implements FaxListener, Freque
     }
     protected void stop()
     {
-        stateListener.stop();
+        stateListener.stop(FaxSynchronizer.class.getSimpleName());
         started = false;
     }
     protected void start()

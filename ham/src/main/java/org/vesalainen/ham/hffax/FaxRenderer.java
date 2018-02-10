@@ -106,7 +106,7 @@ public class FaxRenderer implements FaxListener
         line = lin2;
         if (line > 1600)
         {
-            stateListener.stop();
+            stateListener.stop("lines > 1600");
         }
     }
 }

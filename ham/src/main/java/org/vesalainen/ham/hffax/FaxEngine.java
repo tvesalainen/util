@@ -27,12 +27,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxEngine implements FaxStateListener
+public class FaxEngine extends JavaLogging implements FaxStateListener
 {
     private int lpm;
     private int ioc;
@@ -51,6 +52,7 @@ public class FaxEngine implements FaxStateListener
 
     public FaxEngine(File faxDir, AudioInputStream ais)
     {
+        super(FaxEngine.class);
         this.faxDir = faxDir;
         Objects.requireNonNull(ais, "AudioInputStream");
         tokenizer = new FaxTokenizer(ais);
@@ -68,43 +70,38 @@ public class FaxEngine implements FaxStateListener
         }
         catch (EOFException ex)
         {
-            stop();
+            stop("eof");
         }
     }
     @Override
     public void start(PageLocator locator)
     {
-        System.err.println("START");
+        config("start called");
         if (renderer == null)
         {
             ZonedDateTime now = ZonedDateTime.now();
             String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
-            renderer = new FaxRenderer(this, faxDir, "fax"+str, resolution, locator);
+            String filename = "fax"+str;
+            config("start rendering of %s", filename);
+            renderer = new FaxRenderer(this, faxDir, filename, resolution, locator);
             tokenizer.addListener(renderer);
         }
         else
         {
-            stop();
+            config("stop called from start");
+            stop("start");
         }
     }
 
     @Override
-    public synchronized void stop()
+    public synchronized void stop(String reason)
     {
-        System.err.println("STOP");
+        config("stop from %s", reason);
         if (renderer != null)
         {
-            try
-            {
-                tokenizer.removeListener(renderer);
-                executor.submit(renderer::render);
-                renderer.render();
-                renderer = null;
-            }
-            catch (IOException ex)
-            {
-                throw new RuntimeException(ex);
-            }
+            tokenizer.removeListener(renderer);
+            executor.submit(renderer::render);
+            renderer = null;
         }
     }
 }

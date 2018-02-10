@@ -14,14 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham.itshfbc;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface FaxStateListener
+public enum Command
 {
-    void start(PageLocator locator);
-    void stop(String reason);
+    METHOD,
+    MONTH,
+    SUNSPOT,
+    CIRCUIT,
+    SYSTEM,
+    TIME,
+    FREQUENCY,
+    LABEL,
+    INTEGRATE,
+    EXECUTE,
+    EFVAR,
+    ESVAR,
+    EDP,
+    ANTOUT,
+    COMMENT,
+    QUIT,
+    OUTGRAPH,
+    FPROB,
+    TOPLINES,
+    BOTLINES;
 }

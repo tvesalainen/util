@@ -113,7 +113,7 @@ public class FaxSynchronizerTest
         }
 
         @Override
-        public void stop()
+        public void stop(String reason)
         {
             System.err.println("stop");
         }

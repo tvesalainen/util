@@ -17,8 +17,10 @@
 package org.vesalainen.ham.hffax;
 
 import java.net.URL;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -29,6 +31,7 @@ public class HFFaxT
     
     public HFFaxT()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
     @Test
