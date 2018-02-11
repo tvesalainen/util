@@ -16,29 +16,39 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.vesalainen.util.navi.Location;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GeoFileTest
+public class GeoSearch
 {
-    
-    public GeoFileTest()
+    private String attribute;
+    private String value;
+
+    public GeoSearch(String attribute, String value)
     {
+        this.attribute = attribute;
+        this.value = value;
     }
 
-    //@Test
-    public void test1() throws IOException
+    public static GeoSearch of(String attribute, String value)
     {
-        Path path = Paths.get("C:\\itshfbc\\geocity\\AFRICA.geo");
-        GeoFile gf = new GeoFile(path);
+        return new GeoSearch(attribute, value);
+    }
+    public String getAttribute()
+    {
+        return attribute;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "GeoSearch{" + "attribute=" + attribute + ", value=" + value + '}';
     }
     
 }

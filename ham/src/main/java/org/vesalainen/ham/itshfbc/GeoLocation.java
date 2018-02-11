@@ -16,29 +16,17 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.util.Collection;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GeoFileTest
+public interface GeoLocation
 {
-    
-    public GeoFileTest()
-    {
-    }
-
-    //@Test
-    public void test1() throws IOException
-    {
-        Path path = Paths.get("C:\\itshfbc\\geocity\\AFRICA.geo");
-        GeoFile gf = new GeoFile(path);
-    }
-    
+    Collection<String> getAttributes();
+    String getAttribute(String attribute);
+    Location getLocation();
+    boolean match(GeoSearch... searches);
 }

@@ -22,15 +22,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.vesalainen.util.Lists;
+import org.vesalainen.util.logging.JavaLogging;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GeoDB
+public class GeoDB extends JavaLogging
 {
     private Path itshfbc;
     private List<GeoFile> files = new ArrayList<>();
@@ -42,18 +43,73 @@ public class GeoDB
 
     public GeoDB(Path itshfbc) throws IOException
     {
+        super(GeoDB.class);
         this.itshfbc = itshfbc;
-        try (Stream<Path> paths = Files.find(itshfbc, 3, (p, a)->p.toString().endsWith(".geo")&&a.isRegularFile()))
+        try (Stream<Path> paths = Files.find(itshfbc, 3, (p, a)->p.toString().toLowerCase().endsWith(".geo")&&a.isRegularFile()))
         {
             paths.forEach(this::load);
         }
+    }
+    /**
+     * Returns any GeoLocation which matches all tests and is unique in deltaNM
+     * range.
+     * @param deltaNM
+     * @param searches
+     * @return 
+     */
+    public GeoLocation search(double deltaNM, GeoSearch... searches)
+    {
+        List<GeoLocation> list = search(searches);
+        if (!list.isEmpty() && GeoDB.isUnique(list, deltaNM))
+        {
+            return list.get(0);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /**
+     * Returns a list of GeoLocations which match all the searches
+     * @param searches
+     * @return 
+     */
+    public List<GeoLocation> search(GeoSearch... searches)
+    {
+        List<GeoLocation> list = new ArrayList<>();
+        for (GeoFile gf : files)
+        {
+            gf.search(list, searches);
+        }
+        return list;
+    }
+    /**
+     * Returns true if greatest distance of any location from their center is
+     * less than given delta in nm.
+     * @param list
+     * @param delta
+     * @return 
+     */
+    public static boolean isUnique(List<GeoLocation> list, double delta)
+    {
+        Location[] array = new Location[list.size()];
+        int index = 0;
+        for (GeoLocation gl : list)
+        {
+            array[index++] = gl.getLocation();
+        }
+        return (Location.radius(array) <= delta);
     }
     private void load(Path path)
     {
         try
         {
+            config("loading %s", path);
             GeoFile gf = new GeoFile(path);
-            files.add(gf);
+            if (gf.isValid())
+            {
+                files.add(gf);
+            }
         }
         catch (Exception ex)
         {

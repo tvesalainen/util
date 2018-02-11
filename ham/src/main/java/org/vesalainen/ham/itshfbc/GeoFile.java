@@ -21,70 +21,63 @@ import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Stream;
 import org.vesalainen.ham.LocationParser;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.util.HashMapList;
-import org.vesalainen.util.MapList;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GeoFile
+public class GeoFile extends JavaLogging
 {
+    private Path path;
     private String description;
     private Map<String,Column> columns;
-    private MapList<String,String> map = new HashMapList<>();
+    private List<GeoLocation> locations = new ArrayList<>();
     private Column indexColumn;
     private Column latCol;
     private Column lonCol;
 
     public GeoFile(Path path) throws IOException
     {
+        super(GeoFile.class);
+        this.path = path;
         try (Stream<String> lines = Files.lines(path, ISO_8859_1))
         {
             lines.forEach(this::line);
         }
     }
-    public Location getLocation(String search)
+    public boolean isValid()
     {
-        if (latCol == null || lonCol == null)
-        {
-            throw new IllegalArgumentException("no coordinates available");
-        }
-        List<String> list = search(search.toUpperCase());
-        switch (list.size())
-        {
-            case 1:
-                return location(list.get(0));
-            case 0:
-                return null;
-            default:
-                throw new IllegalArgumentException(search+" resulted several locations");
-        }
+        return columns != null && !locations.isEmpty();
     }
-    private List<String> search(String search)
+    public void search(List<GeoLocation> list, GeoSearch... searches)
     {
-        List<String> list = map.get(search.toUpperCase());
-        if (list.isEmpty())
+        fine("search %s", searches);
+        for (GeoSearch search : searches)
         {
-            list = new ArrayList<>();
-            for (Entry<String, List<String>> entry : map.entrySet())
+            String attribute = search.getAttribute();
+            if (!columns.containsKey(attribute))
             {
-                if (entry.getKey().startsWith(search))
-                {
-                    list.addAll(entry.getValue());
-                }
+                fine("attribute %s not found", attribute);
+                return;
             }
         }
-        return list;
+        for (GeoLocation loc : locations)
+        {
+            if (loc.match(searches))
+            {
+                list.add(loc);
+            }
+        }
     }
     private Location location(String line)
     {
@@ -112,7 +105,11 @@ public class GeoFile
             }
             else
             {
-                map.add(indexColumn.getColumn(line), line);
+                if (line.contains("("))
+                {
+                    System.err.println(line);
+                }
+                locations.add(new GeoLocationImpl(line));
             }
         }
     }
@@ -143,6 +140,66 @@ public class GeoFile
             lonCol = columns.get("LONGITUDE");
         }
     }
+    public class GeoLocationImpl implements GeoLocation
+    {
+        private String line;
+
+        public GeoLocationImpl(String line)
+        {
+            this.line = line.toUpperCase();
+        }
+
+        @Override
+        public boolean match(GeoSearch... searches)
+        {
+            for (GeoSearch search : searches)
+            {
+                String value = getAttribute(search.getAttribute());
+                if (value == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (!value.contains(search.getValue()))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        
+        @Override
+        public Collection<String> getAttributes()
+        {
+            return columns.keySet();
+        }
+
+        @Override
+        public String getAttribute(String attribute)
+        {
+            Column col = columns.get(attribute);
+            if (col == null)
+            {
+                throw new IllegalArgumentException(attribute+" not found");
+            }
+            return col.getColumn(line);
+        }
+
+        @Override
+        public Location getLocation()
+        {
+            return location(line);
+        }
+
+        @Override
+        public String toString()
+        {
+            return path+": "+line;
+        }
+        
+    }
     private class Column
     {
         private String name;
@@ -158,7 +215,15 @@ public class GeoFile
         
         private String getColumn(String line)
         {
-            return line.substring(begin, end);
+            int len = line.length();
+            if (begin < len)
+            {
+                return line.substring(begin, Math.min(end, len));
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private String trim(String name)

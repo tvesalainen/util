@@ -44,6 +44,12 @@ public class CommandLineTest
         assertEquals("TIME          1   24    1    1", cl.toString());
     }
     @Test
+    public void testCircuit()
+    {
+        CommandLine<Integer> cl = new CommandLine<>(TIME, 5, 1, 24, 1, 1);
+        assertEquals("TIME          1   24    1    1", cl.toString());
+    }
+    @Test
     public void testFrequency()
     {
         CommandLine<Double> cl = new CommandLine<>(FREQUENCY, 5, 6.07, 7.20, 9.70, 11.85, 13.70, 15.35, 17.73, 21.65, 25.89, 0.00, 0.00);

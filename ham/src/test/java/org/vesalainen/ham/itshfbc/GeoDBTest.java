@@ -17,8 +17,12 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.ham.itshfbc.GeoSearch.of;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -29,12 +33,15 @@ public class GeoDBTest
     
     public GeoDBTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException
     {
         GeoDB db = new GeoDB();
+        GeoLocation result = db.search(10, of("CITY", "HELSINKI"));
+        assertNotNull(result);
     }
     
 }
