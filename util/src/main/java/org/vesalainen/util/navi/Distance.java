@@ -17,6 +17,8 @@
 package org.vesalainen.util.navi;
 
 import java.util.concurrent.TimeUnit;
+import org.vesalainen.math.Unit;
+import static org.vesalainen.math.UnitType.NM;
 
 /**
  *
@@ -49,6 +51,7 @@ public class Distance extends Scalar
         return value;
     }
 
+    @Unit(NM)
     public double getMiles()
     {
         return value/NMInMeters;

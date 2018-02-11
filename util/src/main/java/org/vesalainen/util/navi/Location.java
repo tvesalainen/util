@@ -19,6 +19,8 @@ package org.vesalainen.util.navi;
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
+import org.vesalainen.math.Unit;
+import static org.vesalainen.math.UnitType.NM;
 
 /**
  *
@@ -268,6 +270,28 @@ public class Location extends Point2D.Double
     {
         double dep = departure(loc1, loc2);
         return new NauticalMile(60*Math.sqrt(Math.pow(loc1.getLatitude()-loc2.getLatitude(),2)+Math.pow(dep*(loc1.getLongitude()-loc2.getLongitude()),2)));
+    }
+    /**
+     * First calculates center point and returns maximum distance from center
+     * in NM.
+     * @param location
+     * @return 
+     */
+    @Unit(NM)
+    public static double radius(Location... location)
+    {
+        Location center = center(location);
+        double max = 0;
+        for (Location loc : location)
+        {
+            Distance distance = distance(loc, center);
+            double miles = distance.getMiles();
+            if (miles > max)
+            {
+                max = miles;
+            }
+        }
+        return max;
     }
     /**
      * Calcúlates the center point of the list of locations.
