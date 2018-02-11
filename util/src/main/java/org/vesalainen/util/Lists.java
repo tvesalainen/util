@@ -302,19 +302,4 @@ public class Lists
         T[] arr = (T[]) Array.newInstance(cls, col.size());
         return col.toArray(arr);
     }
-    /**
-     * Converts nonempty List to array
-     * @param <T>
-     * @param col
-     * @return 
-     */
-    public static <T> T[] toArray(List<T> col)
-    {
-        if (col.isEmpty())
-        {
-            throw new IllegalArgumentException("list is empty");
-        }
-        T[] arr = (T[]) Array.newInstance(col.get(0).getClass(), col.size());
-        return col.toArray(arr);
-    }
 }
