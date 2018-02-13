@@ -50,8 +50,8 @@ public abstract class NetFile extends JavaLogging implements Runnable
     protected int timeout = 60000;
     protected long maxFileSize = 100000;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private ReadLock readLock = rwLock.readLock();
-    protected WriteLock writeLock = rwLock.writeLock();
+    protected ReadLock readLock = rwLock.readLock();
+    private WriteLock writeLock = rwLock.writeLock();
     private Thread thread;
     /**
      * Creates a NetFile
@@ -68,6 +68,12 @@ public abstract class NetFile extends JavaLogging implements Runnable
         this.url = url;
         this.expires = unit.toMillis(expires);
     }
+    /**
+     * All file access should be done during update call. writeLock is locked
+     * during the call.
+     * @param file
+     * @throws IOException 
+     */
     protected abstract void update(Path file) throws IOException;
     /**
      * Call to refresh the file. During the call consumer is called at least once.
@@ -77,10 +83,13 @@ public abstract class NetFile extends JavaLogging implements Runnable
     {
         if (Files.exists(file))
         {
+            fine("%s exist", file);
             writeLock.lock();
             try
             {
+                finer("start update(%s)", file);
                 update(file);
+                finer("end update(%s)", file);
             }
             finally
             {
@@ -92,10 +101,12 @@ public abstract class NetFile extends JavaLogging implements Runnable
                 thread = new Thread(this, url.toString());
                 thread.setDaemon(true);
                 thread.start();
+                fine("started thread for %s", url);
             }
         }
         else
         {
+            fine("%s doesn't exist", file);
             run();
         }
     }
@@ -105,6 +116,7 @@ public abstract class NetFile extends JavaLogging implements Runnable
     {
         try
         {
+            fine("start downloading %s", url);
             URLConnection connection = url.openConnection();
             connection.setConnectTimeout(timeout);
             connection.connect();
@@ -131,11 +143,14 @@ public abstract class NetFile extends JavaLogging implements Runnable
             try (OutputStream os = Files.newOutputStream(file))
             {
                 os.write(buffer, 0, buffer.length-free);
+                fine("wrote %s -> %s", url, file);
             }
             writeLock.lock();
             try
             {
+                finer("start update(%s)", file);
                 update(file);
+                finer("end update(%s)", file);
             }
             finally
             {
