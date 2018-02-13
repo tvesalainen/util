@@ -208,7 +208,7 @@ public class GeoFile extends JavaLogging
 
         public Column(String name, int begin, int end)
         {
-            this.name = trim(name);
+            this.name = trim(name).toUpperCase();
             this.begin = begin;
             this.end = end;
         }

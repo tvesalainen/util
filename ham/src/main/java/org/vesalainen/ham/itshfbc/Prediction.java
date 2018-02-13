@@ -16,11 +16,21 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import java.io.File;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.*;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.vesalainen.ham.itshfbc.Command.*;
+import org.vesalainen.util.OSProcess;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -30,10 +40,37 @@ import org.vesalainen.util.navi.Location;
 public class Prediction
 {
 
-    private File itshfbc = new File("C:\\itshfbc");
+    private Path itshfbc = Paths.get("C:\\itshfbc");
     private String module = "voacapw";
     private List<CommandLine> input = new ArrayList<>();
 
+    public void predict() throws IOException
+    {
+        Path runPath = runPath();
+        Path exePath = exePath();
+        Path dat = Files.createTempFile(runPath, "hffax", ".dat");
+        try (BufferedWriter outw = Files.newBufferedWriter(dat))
+        {
+            for (CommandLine line : input)
+            {
+                outw.append(line.toString()).append("\r\n");
+            }
+        }
+        Path out = Files.createTempFile(runPath, "hffax", ".out");
+        try
+        {
+            int rc = OSProcess.call(exePath.toString(), itshfbc.toString(), dat.getFileName().toString(), out.getFileName().toString());
+        }
+        catch (InterruptedException ex)
+        {
+            Logger.getLogger(Prediction.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+        finally
+        {
+            Files.deleteIfExists(dat);
+            Files.deleteIfExists(out);
+        }
+    }
     /**
      * The METHOD command defines the analysis task to be performed for a
      * particular system configuration.
@@ -119,12 +156,12 @@ public class Prediction
      */
     public Prediction month(int nyear, Month... months)
     {
-        int[] arr = new int[months.length + 1];
+        Object[] arr = new Object[months.length + 1];
         arr[0] = nyear;
         int index = 1;
         for (Month m : months)
         {
-            arr[index++] = m.getValue();
+            arr[index++] = Double.valueOf(m.getValue());
         }
         input.add(new CommandLine<>(MONTH, 5, arr));
         return this;
@@ -140,7 +177,12 @@ public class Prediction
      */
     public Prediction sunspot(double... sunspot)
     {
-        input.add(new CommandLine<>(SUNSPOT, 5, sunspot));
+        CommandLine<Double> line = new CommandLine<>(SUNSPOT, 5);
+        for (double s : sunspot)
+        {
+            line.add(s);
+        }
+        input.add(line);
         return this;
     }
 
@@ -246,17 +288,87 @@ public class Prediction
      */
     public Prediction frequency(double... frel)
     {
-        input.add(new CommandLine<>(SYSTEM, 5, frel));
+        CommandLine<Double> line = new CommandLine<>(FREQUENCY, 5);
+        for (double f : frel)
+        {
+            line.add(f);
+        }
+        input.add(line);
+        return this;
+    }
+    public Prediction antenna(boolean transmitter, int number, int minFreq, int maxFreq, int designFreq, int mainBeam, double txPower, Path antenna)
+    {
+        input.add(new AntennaLine(transmitter, number, minFreq, maxFreq, designFreq, mainBeam, txPower, antenna));
+        return this;
+    }
+    public Prediction comment(String text)
+    {
+        input.add(new CommandLine<>(COMMENT, 65, text));
+        return this;
+    }
+    public Prediction lineMax(int lineMax)
+    {
+        input.add(new CommandLine<>(LINEMAX, 5, lineMax));
+        return this;
+    }
+    public Prediction coeffs(Coeffs coeffs)
+    {
+        input.add(new CommandLine<>(COEFFS, 5, coeffs));
         return this;
     }
 
-    private File exePath()
+    private Path exePath()
     {
-        return new File(itshfbc, "bin_win/" + module);
+        return itshfbc.resolve("bin_win").resolve(module);
     }
 
-    private File runPath()
+    private Path runPath()
     {
-        return new File(itshfbc, "run");
+        return itshfbc.resolve("run");
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (CommandLine cmd : input)
+        {
+            sb.append(cmd.toString()).append("\r\n");
+        }
+        return sb.toString();
+    }
+    
+    public class AntennaLine extends CommandLine<Object>
+    {
+        private double designFreq;
+        private double mainBeam;
+        private double txPower;
+        private Path antenna;
+
+        public AntennaLine(boolean transmitter, int number, int minFreq, int maxFreq, double designFreq, double mainBeam, double txPower, Path antenna)
+        {
+            super(ANTENNA, 5);
+            add(transmitter ? 1 : 2);
+            add(number);
+            add(minFreq);
+            add(maxFreq);
+            this.designFreq = designFreq;
+            this.mainBeam = mainBeam;
+            this.txPower = txPower;
+            this.antenna = antenna;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format(Locale.US, "%s%10.3f[%-21.21s]%5.1f%10.4f", 
+                    super.toString(),
+                    designFreq,
+                    antenna,
+                    mainBeam, 
+                    txPower
+                    );
+        }
+
     }
 }

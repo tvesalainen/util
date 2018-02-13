@@ -22,36 +22,61 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.concurrent.Semaphore;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.vesalainen.math.AbstractPoint;
+import org.vesalainen.math.CubicSplineCurve;
+import org.vesalainen.math.Point;
 import org.vesalainen.net.NetFile;
 
 /**
- * 
+ * Interpolates Sun Spot Numbers using data from WDC-SILSO, Royal Observatory of 
+ * Belgium, Brussels
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see WDC-SILSO, Royal Observatory of Belgium, Brussels
  * @see <a href="http://www.sidc.be/silso/prediml">Forecasts : McNish & Lincoln method</a>
  */
-public class SunSpotNumber
+public class SunSpotNumber extends NetFile
 {
-    private NetFile prediml;
     private FileTime lastModified;
-    private Semaphore semaphore = new Semaphore(0);
-    
-    public SunSpotNumber(Path dir)
+    private CubicSplineCurve curve;
+
+    public SunSpotNumber(Path file) throws MalformedURLException
     {
-        try
-        {
-            this.prediml = new NetFile(dir, new URL("http://www.sidc.be/silso/FORECASTS/prediML.txt"), this::update, 100, TimeUnit.DAYS);
-        }
-        catch (MalformedURLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        
+        super(file, new URL("http://www.sidc.be/silso/FORECASTS/prediML.txt"), 100, TimeUnit.DAYS);
     }
     
-    private void update(Path file)
+    public double getSunSpotNumber() throws IOException
+    {
+        return getSunSpotNumber(ZonedDateTime.now());
+    }
+    public double getSunSpotNumber(ZonedDateTime dateTime) throws IOException
+    {
+        refresh();
+        int year = dateTime.get(ChronoField.YEAR);
+        ZonedDateTime current = ZonedDateTime.of(year, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        ZonedDateTime next = ZonedDateTime.of(year+1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        double millisInYear = current.until(next, ChronoUnit.MILLIS);
+        double fromBeginOfYear = current.until(dateTime, ChronoUnit.MILLIS);
+        double key = year+fromBeginOfYear/millisInYear;
+        readLock.lock();
+        try
+        {
+            return curve.get(key, 0.01);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    @Override
+    protected void update(Path file)
     {
         try
         {
@@ -67,8 +92,15 @@ public class SunSpotNumber
             throw new RuntimeException(ex);
         }
     }
-    private void calculate(Path file)
+    private void calculate(Path file) throws IOException
     {
-        
+        try (Stream<String> lines = Files.lines(file))
+        {
+            List<Point> points = lines
+                    .map((l)->l.split("[ ]+"))
+                    .map((a)->new AbstractPoint(Double.parseDouble(a[2]), Double.parseDouble(a[4])))
+                    .collect(Collectors.toList());
+            curve = new CubicSplineCurve(points);
+        }
     }
 }

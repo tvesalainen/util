@@ -20,30 +20,8 @@ package org.vesalainen.ham.itshfbc;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public enum Command
+public enum Coeffs
 {
-    METHOD,
-    MONTH,
-    SUNSPOT,
-    CIRCUIT,
-    SYSTEM,
-    TIME,
-    FREQUENCY,
-    LABEL,
-    INTEGRATE,
-    EXECUTE,
-    EFVAR,
-    ESVAR,
-    EDP,
-    ANTOUT,
-    COMMENT,
-    QUIT,
-    OUTGRAPH,
-    FPROB,
-    TOPLINES,
-    BOTLINES,
-    ANTENNA,
-    COEFFS,
-    LINEMAX
+    CCIR
     ;
 }

@@ -55,27 +55,24 @@ public class CommandLine<T>
     {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%-10.10s", command));
-        String colFmt = columnFormat();
+        int index = 0;
         for (T col : columns)
         {
+            String colFmt = columnFormat(index++);
             String format = String.format(colFmt, col);
             sb.append(format);
         }
         return sb.toString().trim();
     }
-    private String columnFormat()
+    private String columnFormat(int index)
     {
-        if (columnFormat == null && !columns.isEmpty())
+        if (columns.get(index).getClass().equals(String.class))
         {
-            if (columns.get(0).getClass().equals(String.class))
-            {
-                columnFormat = String.format("%%-%d.%ds", columnLength, columnLength);
-            }
-            else
-            {
-                columnFormat = String.format("%%%d.%ds", columnLength, columnLength);
-            }
+            return String.format("%%-%d.%ds", columnLength, columnLength);
         }
-        return columnFormat;
+        else
+        {
+            return String.format("%%%d.%ds", columnLength, columnLength);
+        }
     }
 }
