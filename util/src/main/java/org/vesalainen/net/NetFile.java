@@ -26,42 +26,64 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
+import org.vesalainen.util.concurrent.Locks;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * NetFile implements the basic processing of loading a file from net and storing
+ * it in file. 
+ * <p>Access file only in consumer method while it is write-locked.
+ * <p>Inherited class can use read-lock to give shared access to some resources
+ * and still protect from file update.
+ * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class NetFile implements Runnable
+public class NetFile extends JavaLogging implements Runnable
 {
-    private Path dir;
-    private Path file;
-    private URL url;
-    private long expires;
-    private Consumer<Path> consumer;
-    private int timeout = 60000;
-    private long maxFileSize = 100000;
-
-    public NetFile(Path dir, URL url, Consumer<Path> consumer, long expires, TimeUnit unit)
+    protected Path file;
+    protected URL url;
+    protected long expires;
+    protected Consumer<Path> consumer;
+    protected int timeout = 60000;
+    protected long maxFileSize = 100000;
+    private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private ReadLock readLock = rwLock.readLock();
+    protected WriteLock writeLock = rwLock.writeLock();
+    private Thread thread;
+    /**
+     * Creates a NetFile
+     * @param file Backup file for data store.
+     * @param url Net resource
+     * @param consumer Function to call with backup file path.
+     * @param expires Expiring time after resource will be re-loaded.
+     * @param unit Expire unit.
+     */
+    public NetFile(Path file, URL url, Consumer<Path> consumer, long expires, TimeUnit unit)
     {
-        this.dir = dir;
-        this.file = Paths.get(dir.toString(), url.getPath());
+        super(NetFile.class);
+        this.file = file;
         this.url = url;
         this.consumer = consumer;
         this.expires = unit.toMillis(expires);
     }
-    
+    /**
+     * Call to refresh the file. During the call consumer is called at least once.
+     * @throws IOException 
+     */
     public void refresh() throws IOException
     {
         if (Files.exists(file))
         {
-            consumer.accept(file);
+            Locks.locked(writeLock, file, consumer);
             FileTime lmt = Files.getLastModifiedTime(file);
-            if (lmt.toMillis()+expires < System.currentTimeMillis())
+            if (thread == null && lmt.toMillis()+expires < System.currentTimeMillis())
             {
-                Thread thread = new Thread(this, url.toString());
+                thread = new Thread(this, url.toString());
                 thread.setDaemon(true);
                 thread.start();
             }
@@ -102,11 +124,15 @@ public class NetFile implements Runnable
             Files.createDirectories(file.getParent());
             OutputStream os = Files.newOutputStream(file);
             os.write(buffer, 0, buffer.length-free);
-            consumer.accept(file);
+            Locks.locked(writeLock, file, consumer);
         }
         catch (IOException ex)
         {
-            Logger.getLogger(NetFile.class.getName()).log(Level.SEVERE, null, ex);
+            log(SEVERE, ex, "%s: %s", url, ex.getMessage());
+        }
+        finally
+        {
+            thread = null;
         }
     }
 

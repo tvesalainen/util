@@ -35,11 +35,11 @@ public class NetFileTest
     {
     }
 
-    //@Test
+    @Test
     public void test1() throws MalformedURLException, IOException
     {
         NetFile nf = new NetFile(
-                Paths.get("c:\\temp"), 
+                Paths.get("c:\\temp\\prediML.txt"), 
                 new URL("http://www.sidc.be/silso/FORECASTS/prediML.txt"), 
                 (p)->System.err.println(p), 
                 10, 
