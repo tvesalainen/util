@@ -23,7 +23,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -43,12 +42,11 @@ import org.vesalainen.util.logging.JavaLogging;
  * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class NetFile extends JavaLogging implements Runnable
+public abstract class NetFile extends JavaLogging implements Runnable
 {
     protected Path file;
     protected URL url;
     protected long expires;
-    protected Consumer<Path> consumer;
     protected int timeout = 60000;
     protected long maxFileSize = 100000;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -63,14 +61,14 @@ public class NetFile extends JavaLogging implements Runnable
      * @param expires Expiring time after resource will be re-loaded.
      * @param unit Expire unit.
      */
-    public NetFile(Path file, URL url, Consumer<Path> consumer, long expires, TimeUnit unit)
+    public NetFile(Path file, URL url, long expires, TimeUnit unit)
     {
         super(NetFile.class);
         this.file = file;
         this.url = url;
-        this.consumer = consumer;
         this.expires = unit.toMillis(expires);
     }
+    protected abstract void update(Path file) throws IOException;
     /**
      * Call to refresh the file. During the call consumer is called at least once.
      * @throws IOException 
@@ -79,7 +77,15 @@ public class NetFile extends JavaLogging implements Runnable
     {
         if (Files.exists(file))
         {
-            Locks.locked(writeLock, file, consumer);
+            writeLock.lock();
+            try
+            {
+                update(file);
+            }
+            finally
+            {
+                writeLock.unlock();
+            }
             FileTime lmt = Files.getLastModifiedTime(file);
             if (thread == null && lmt.toMillis()+expires < System.currentTimeMillis())
             {
@@ -122,9 +128,19 @@ public class NetFile extends JavaLogging implements Runnable
                 free -= rc;
             }
             Files.createDirectories(file.getParent());
-            OutputStream os = Files.newOutputStream(file);
-            os.write(buffer, 0, buffer.length-free);
-            Locks.locked(writeLock, file, consumer);
+            try (OutputStream os = Files.newOutputStream(file))
+            {
+                os.write(buffer, 0, buffer.length-free);
+            }
+            writeLock.lock();
+            try
+            {
+                update(file);
+            }
+            finally
+            {
+                writeLock.unlock();
+            }
         }
         catch (IOException ex)
         {

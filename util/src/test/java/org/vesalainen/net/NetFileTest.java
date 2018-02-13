@@ -19,6 +19,7 @@ package org.vesalainen.net;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -35,17 +36,29 @@ public class NetFileTest
     {
     }
 
-    @Test
+    //@Test
     public void test1() throws MalformedURLException, IOException
     {
-        NetFile nf = new NetFile(
+        NetFile nf = new NF(
                 Paths.get("c:\\temp\\prediML.txt"), 
                 new URL("http://www.sidc.be/silso/FORECASTS/prediML.txt"), 
-                (p)->System.err.println(p), 
                 10, 
                 TimeUnit.MINUTES
         );
         nf.refresh();
     }
-    
+    class NF extends NetFile
+    {
+
+        public NF(Path file, URL url, long expires, TimeUnit unit)
+        {
+            super(file, url, expires, unit);
+        }
+
+        @Override
+        protected void update(Path file) throws IOException
+        {
+        }
+        
+    }
 }
