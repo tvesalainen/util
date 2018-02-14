@@ -18,6 +18,10 @@
             <artifactId>coordinates</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.vesalainen.parsers</groupId>
+            <artifactId>printf-parser</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.vesalainen</groupId>
             <artifactId>comm</artifactId>
         </dependency>

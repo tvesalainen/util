@@ -29,10 +29,10 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PredictionTest
+public class PredictorTest
 {
     
-    public PredictionTest()
+    public PredictorTest()
     {
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
@@ -43,7 +43,7 @@ public class PredictionTest
         GeoDB db = new GeoDB();
         GeoLocation norl = db.search(100, of("CITY", "NEW ORLEANS"));
         GeoLocation colon = db.search(100, of("CITY", "COLON"), of("NATION", "PANAMA"));
-        Prediction p = new Prediction();
+        Predictor p = new Predictor();
         p.comment("Any VOACAP default cards may be placed in the file: VOACAP.DEF")
                 .lineMax(55)
                 .coeffs(Coeffs.CCIR)
@@ -56,7 +56,7 @@ public class PredictionTest
                 .antenna(true, 1, 2, 30, 1, 45, 4, Paths.get("default\\Isotrope"))
                 .antenna(false, 2, 2, 30, 0, 0, 4, Paths.get("default\\SWWhip.VOA"))
                 .frequency(4, 7, 12, 14, 28)
-                .method(30)
+                .method(30, 0)
                 .execute()
                 .quit();
         System.err.println(p);
@@ -65,7 +65,7 @@ public class PredictionTest
     @Test
     public void testAntenna()
     {
-        Prediction p = new Prediction();
+        Predictor p = new Predictor();
         p.antenna(true, 1, 2, 30, 1, 45, 4, Paths.get("default\\Isotrope"));
         String exp = "ANTENNA       1    1    2   30     1.000[default\\Isotrope     ] 45.0    4.0000\r\n";
         System.err.println(exp);
