@@ -18,10 +18,9 @@
 package org.vesalainen.lang;
 
 import java.util.PrimitiveIterator;
-import java.util.PrimitiveIterator.OfInt;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.IntConsumer;
+import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import org.vesalainen.util.CharSequences;
@@ -1500,6 +1499,201 @@ public class Primitives
             }
         }
         return result;
+    }
+    /**
+     * Parses next int.
+     * @param cs
+     * @return 
+     */
+    public static final int findInt(CharSequence cs)
+    {
+        return findInt(cs, 0, cs.length());
+    }
+    /**
+     * Parses next int
+     * @param cs
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final int findInt(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return findInt(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses next int
+     * @param cs
+     * @param radix
+     * @return 
+     */
+    public static final int findInt(CharSequence cs, int radix)
+    {
+        return findInt(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses next int
+     * @param cs
+     * @param radix
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final int findInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        IntPredicate predicate = null;
+        switch (radix)
+        {
+            case 8:
+                predicate = Primitives::isOctalDigit;
+                break;
+            case 10:
+                predicate = Primitives::isDecimalDigit;
+                break;
+            case 16:
+                predicate = Primitives::isHexDigit;
+                break;
+            default:
+                throw new UnsupportedOperationException("radix "+radix+" not supported");
+        }
+        int begin = CharSequences.indexOf(cs, predicate, beginIndex);
+        int end = CharSequences.indexOf(cs, predicate.negate(), begin);
+        return parseInt(cs, radix, begin, endIndex(end, endIndex));
+    }
+    /**
+     * Parses next long
+     * @param cs
+     * @return 
+     */
+    public static final long findLong(CharSequence cs)
+    {
+        return findLong(cs, 0, cs.length());
+    }
+    /**
+     * Parses next long
+     * @param cs
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final long findLong(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return findLong(cs, 10, beginIndex, endIndex);
+    }
+    /**
+     * Parses next long
+     * @param cs
+     * @param radix
+     * @return 
+     */
+    public static final long findLong(CharSequence cs, int radix)
+    {
+        return findLong(cs, radix, 0, cs.length());
+    }
+    /**
+     * Parses next long
+     * @param cs
+     * @param radix
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final long findLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        IntPredicate predicate = null;
+        switch (radix)
+        {
+            case 8:
+                predicate = Primitives::isOctalDigit;
+                break;
+            case 10:
+                predicate = Primitives::isDecimalDigit;
+                break;
+            case 16:
+                predicate = Primitives::isHexDigit;
+                break;
+            default:
+                throw new UnsupportedOperationException("radix "+radix+" not supported");
+        }
+        int begin = CharSequences.indexOf(cs, predicate, beginIndex);
+        int end = CharSequences.indexOf(cs, predicate.negate(), begin);
+        return parseLong(cs, radix, begin, endIndex(end, endIndex));
+    }
+    /**
+     * Parses next float
+     * @param cs
+     * @return 
+     */
+    public static final float findFloat(CharSequence cs)
+    {
+        return findFloat(cs, 0, cs.length());
+    }
+    /**
+     * Parses next float
+     * @param cs
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final float findFloat(CharSequence cs, int beginIndex, int endIndex)
+    {
+        int begin = CharSequences.indexOf(cs, Primitives::isFloatDigit, beginIndex);
+        int end = CharSequences.indexOf(cs, (c)->!Primitives.isFloatDigit(c), begin);
+        return parseFloat(cs, begin, endIndex(end, endIndex));
+    }
+    /**
+     * Parses next double in decimal form
+     * @param cs
+     * @return 
+     */
+    public static final double findDouble(CharSequence cs)
+    {
+        return findDouble(cs, 0, cs.length());
+    }
+    /**
+     * Parses next double in decimal form
+     * @param cs
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final double findDouble(CharSequence cs, int beginIndex, int endIndex)
+    {
+        int begin = CharSequences.indexOf(cs, Primitives::isFloatDigit, beginIndex);
+        int end = CharSequences.indexOf(cs, (c)->!Primitives.isFloatDigit(c), begin);
+        return parseDouble(cs, begin, endIndex(end, endIndex));
+    }
+    /**
+     * Parses next double in scientific form
+     * @param cs
+     * @return 
+     */
+    public static final double findScientific(CharSequence cs)
+    {
+        return findScientific(cs, 0, cs.length());
+    }
+    /**
+     * Parses next double in scientific form
+     * @param cs
+     * @param beginIndex
+     * @param endIndex
+     * @return 
+     */
+    public static final double findScientific(CharSequence cs, int beginIndex, int endIndex)
+    {
+        int begin = CharSequences.indexOf(cs, Primitives::isScientificDigit, beginIndex);
+        int end = CharSequences.indexOf(cs, (c)->!Primitives.isScientificDigit(c), begin);
+        return parseDouble(cs, begin, endIndex(end, endIndex));
+    }
+    private static int endIndex(int end, int limit)
+    {
+        if (end == -1)
+        {
+            return limit;
+        }
+        else
+        {
+            return Math.min(end, limit);
+        }
     }
     /**
      * Returns true if character is 0-9, point (.), plus (+), minus (-), (e) or (E).

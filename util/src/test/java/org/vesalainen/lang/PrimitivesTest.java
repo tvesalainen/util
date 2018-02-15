@@ -940,4 +940,46 @@ public class PrimitivesTest
         assertTrue("0123456789abcdefABCDEF".chars().allMatch(Primitives::isHexDigit));
         assertTrue(".,+-".chars().noneMatch(Primitives::isHexDigit));
     }
+    @Test
+    public void testFindInt()
+    {
+        assertEquals(123456789, Primitives.findInt("  123456789   "));
+        assertEquals(123456789, Primitives.findInt("123456789   "));
+        assertEquals(123456789, Primitives.findInt("  123456789"));
+        assertEquals(123456789, Primitives.findInt("123456789"));
+        assertEquals(4567, Primitives.findInt("  123456789   ", 5, 9));
+        assertEquals(4567, Primitives.findInt("  1234567", 5, 9));
+        assertEquals(0726746425, Primitives.findInt("  726746425   ", 8));
+        assertEquals(0x75bcd15, Primitives.findInt("  75bcd15   ", 16));
+    }
+    @Test
+    public void testFindLong()
+    {
+        assertEquals(123456789L, Primitives.findLong("  123456789   "));
+        assertEquals(4567, Primitives.findInt("  123456789   ", 5, 9));
+        assertEquals(0726746425L, Primitives.findLong("  726746425   ", 8));
+        assertEquals(0x75bcd15L, Primitives.findLong("  75bcd15   ", 16));
+    }
+    @Test
+    public void testFindFloat()
+    {
+        assertEquals(-12345.6789F, Primitives.findFloat("  -12345.6789   "), 1e-10);
+        assertEquals(-12345F, Primitives.findFloat("  -12345.   "), 1e-10);
+        assertEquals(-12345F, Primitives.findFloat("  -12345.6789   ", 2, 9), 1e-10);
+        assertEquals(.6789F, Primitives.findFloat("  .6789   "), 1e-10);
+    }
+    @Test
+    public void testFindDouble()
+    {
+        assertEquals(-12345.6789, Primitives.findDouble("  -12345.6789   "), 1e-10);
+        assertEquals(-12345, Primitives.findDouble("  -12345.   "), 1e-10);
+        assertEquals(.6789, Primitives.findDouble("  .6789   "), 1e-10);
+    }
+    @Test
+    public void testFindScientific()
+    {
+        assertEquals(-12345.6789e10, Primitives.findScientific("  -12345.6789E10   "), 1e-10);
+        assertEquals(-12345e-2, Primitives.findScientific("  -12345.e-2   "), 1e-10);
+        assertEquals(.6789e3, Primitives.findScientific("  .6789e3   "), 1e-10);
+    }
 }
