@@ -1501,6 +1501,108 @@ public class Primitives
         }
         return result;
     }
+    /**
+     * Returns true if character is 0-9, point (.), plus (+), minus (-), (e) or (E).
+     * @param cc
+     * @return 
+     */
+    public static final boolean isScientificDigit(int cc)
+    {
+        return isFloatDigit(cc) || cc == 'e' || cc == 'E';
+    }
+    /**
+     * Returns true if character is 0-9, point (.), plus (+) or minus (-).
+     * @param cc
+     * @return 
+     */
+    public static final boolean isFloatDigit(int cc)
+    {
+        return isDecimalDigit(cc) || cc == '.';
+    }
+    /**
+     * Returns true is character is 0-9
+     * @param cc
+     * @return 
+     */
+    public static final boolean isDecimalDigit(int cc)
+    {
+        switch (cc)
+        {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case '+':
+            case '-':
+                return true;
+            default:
+                return false;
+        }
+    }
+    /**
+     * Returns true is character is 0-9, a-f or A-F
+     * @param cc
+     * @return 
+     */
+    public static final boolean isHexDigit(int cc)
+    {
+        switch (cc)
+        {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case 'a':
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
+                return true;
+            default:
+                return false;
+        }
+    }
+    /**
+     * Returns true is character is 0-7
+     * @param cc
+     * @return 
+     */
+    public static final boolean isOctalDigit(int cc)
+    {
+        switch (cc)
+        {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+                return true;
+            default:
+                return false;
+        }
+    }
     private static void check(CharSequence cs, int radix, CharSequence[][] range, int beginIndex, int endIndex)
     {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)

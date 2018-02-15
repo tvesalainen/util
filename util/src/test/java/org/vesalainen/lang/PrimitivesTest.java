@@ -910,4 +910,34 @@ public class PrimitivesTest
         {
         }
     }
+    @Test
+    public void testIsDecimalDigit()
+    {
+        assertTrue("0123456789-+".chars().allMatch(Primitives::isDecimalDigit));
+        assertTrue("abcdfe".chars().noneMatch(Primitives::isDecimalDigit));
+    }
+    @Test
+    public void testIsFloatDigit()
+    {
+        assertTrue("0123456789.-+".chars().allMatch(Primitives::isFloatDigit));
+        assertTrue("abcdef,".chars().noneMatch(Primitives::isFloatDigit));
+    }
+    @Test
+    public void testIsScientificDigit()
+    {
+        assertTrue("0123456789.-+eE".chars().allMatch(Primitives::isScientificDigit));
+        assertTrue("abcdfABCDF,".chars().noneMatch(Primitives::isScientificDigit));
+    }
+    @Test
+    public void testIsOctalDigit()
+    {
+        assertTrue("01234567".chars().allMatch(Primitives::isOctalDigit));
+        assertTrue("89abcdefABCDEF.,+-".chars().noneMatch(Primitives::isOctalDigit));
+    }
+    @Test
+    public void testIsHexDigit()
+    {
+        assertTrue("0123456789abcdefABCDEF".chars().allMatch(Primitives::isHexDigit));
+        assertTrue(".,+-".chars().noneMatch(Primitives::isHexDigit));
+    }
 }
