@@ -57,17 +57,22 @@ public class Predictor
     {
         formatFactory = new FormatFactory();
         prinfParser = PrintfParser.getInstance();
-        monthLine = prinfParser.parse("  %3.3s    %d          SSN =%f                Minimum Angle=%f degrees", formatFactory);
-        freqLine = prinfParser.parse("   %f %f %f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f FREQ", formatFactory);
-        modeLine = prinfParser.parse("      %s %s %s %s %s %s %s %s %s %s %s %s MODE", formatFactory);
-        dataLine = prinfParser.parse("   %f %f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f %10.10s", formatFactory);
+        monthLine = prinfParser.parse("  %3.3s    %4d          SSN =  %3f                Minimum Angle= %5.3f degrees", formatFactory);
+        freqLine = prinfParser.parse(" %5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f FREQ", formatFactory);
+        modeLine = prinfParser.parse("      %5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s MODE", formatFactory);
+        dataLine = prinfParser.parse("      %5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f %10.10s", formatFactory);
     }
 
     public void predict() throws IOException
     {
         Path runPath = runPath();
         Path exePath = exePath();
-        Path dat = Files.createTempFile(runPath, "hffax", ".dat");
+        Path dat = runPath.resolve("hffax.dat");
+        Path out = runPath.resolve("hffax.out");
+        Files.deleteIfExists(dat);
+        Files.deleteIfExists(out);
+        Files.createFile(dat);
+        Files.createFile(out);
         try (BufferedWriter outw = Files.newBufferedWriter(dat))
         {
             for (CommandLine line : input)
@@ -75,10 +80,9 @@ public class Predictor
                 outw.append(line.toString()).append("\r\n");
             }
         }
-        Path out = Files.createTempFile(runPath, "hffax", ".out");
         try
         {
-            int rc = OSProcess.call(exePath.toString(), itshfbc.toString(), dat.getFileName().toString(), out.getFileName().toString());
+            int rc = OSProcess.call(exePath.toString(), "SILENT", itshfbc.toString(), dat.getFileName().toString(), out.getFileName().toString());
             parseOutput(out);
         }
         catch (InterruptedException ex)
@@ -87,8 +91,6 @@ public class Predictor
         }        
         finally
         {
-            Files.deleteIfExists(dat);
-            Files.deleteIfExists(out);
         }
     }
     private void parseOutput(Path out) throws IOException
@@ -116,7 +118,7 @@ public class Predictor
                         arr = formatFactory.parse(modeLine, line);
                         hp.addAttribute(arr);
                         line = reader.readLine();
-                        while (line.length() > 10 && line.charAt(0) != '\f')
+                        while (line.length() > 10 && line.charAt(0) != '\f' && line.startsWith(" *****END OF RUN*****"))
                         {
                             System.err.println(line);
                             arr = formatFactory.parse(dataLine, line.replace('-', '0'));
