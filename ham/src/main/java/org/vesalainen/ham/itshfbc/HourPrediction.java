@@ -26,13 +26,13 @@ import java.util.Map;
 public class HourPrediction
 {
     private int hour;
-    private Object[] frequences;
+    private Double[] frequences;
     private Map<String, Object[]> attributes = new HashMap<>();
 
     public HourPrediction(Object[] frequences)
     {
         this.hour = ((Double)frequences[0]).intValue();
-        this.frequences = frequences;
+        this.frequences = filter(frequences);
     }
     public void addAttribute(Object[] array)
     {
@@ -42,6 +42,53 @@ public class HourPrediction
     public int getHour()
     {
         return hour;
+    }
+
+    public Double[] getFrequences()
+    {
+        return frequences;
+    }
+
+    public double getValue(String attribute, double frequency)
+    {
+        for (int ii=0;ii<frequences.length;ii++)
+        {
+            if (frequences[ii] == frequency)
+            {
+                return getValue(attribute, ii);
+            }
+        }
+        throw new UnsupportedOperationException(frequency+" not supported");
+    }
+    public double getValue(String attribute, int index)
+    {
+        Object[] attr = attributes.get(attribute);
+        if (attr == null)
+        {
+            throw new UnsupportedOperationException(attribute+" not supported");
+        }
+        return (double) attr[index];
+    }
+    private Double[] filter(Object[] frequences)
+    {
+        int size = 0;
+        for (int ii=1;ii<frequences.length;ii++)
+        {
+            if ((Double)frequences[ii] > 0.0)
+            {
+                size++;
+            }
+        }
+        Double[] arr = new Double[size];
+        int index = 0;
+        for (int ii=1;ii<frequences.length;ii++)
+        {
+            if ((Double)frequences[ii] > 0.0)
+            {
+                arr[index++] = (Double) frequences[ii];
+            }
+        }
+        return arr;
     }
     
 }

@@ -63,7 +63,7 @@ public class Predictor
         dataLine = prinfParser.parse("      %5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f %10.10s", formatFactory);
     }
 
-    public void predict() throws IOException
+    public Prediction predict() throws IOException
     {
         Path runPath = runPath();
         Path exePath = exePath();
@@ -88,10 +88,8 @@ public class Predictor
         catch (InterruptedException ex)
         {
             Logger.getLogger(Predictor.class.getName()).log(Level.SEVERE, null, ex);
-        }        
-        finally
-        {
         }
+        return prediction;
     }
     private void parseOutput(Path out) throws IOException
     {

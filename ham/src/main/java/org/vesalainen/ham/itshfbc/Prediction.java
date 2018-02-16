@@ -43,6 +43,10 @@ public class Prediction
     {
         hours.put(hourly.getHour(), hourly);
     }
+    public HourPrediction getHourPrediction(int hour)
+    {
+        return hours.get(hour);
+    }
     private static Month detect(String mon)
     {
         switch (mon)

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.maidenhead;
 
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.util.navi.Location;
@@ -26,9 +27,15 @@ import org.vesalainen.util.navi.Location;
  */
 public class MaidenheadLocatorTest
 {
-    private static final double EPSILON = 0.3;
+    private static final double EPSILON = 2.0/24.0;
     public MaidenheadLocatorTest()
     {
+        double longitude = -179.5;
+        longitude += 180;
+        longitude /= 2;
+        double d1 = (longitude / 10);
+        double d2 = longitude % 10;
+        double d3 = (longitude % 1) * 24;
     }
 
     @Test
@@ -59,7 +66,7 @@ public class MaidenheadLocatorTest
     public void testGetLongitude()
     {
         MaidenheadLocator mloc = new MaidenheadLocator("JF96HD");
-        assertEquals(18.3, mloc.getLongitude(), EPSILON);
+        assertEquals(18.63, mloc.getLongitude(), EPSILON);
         
         MaidenheadLocator mloc2 = new MaidenheadLocator("FK00CA");
         assertEquals(-79.79, mloc2.getLongitude(), EPSILON);
