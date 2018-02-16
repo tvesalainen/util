@@ -139,7 +139,11 @@ public abstract class NetFile extends JavaLogging implements Runnable
                 off += rc;
                 free -= rc;
             }
-            Files.createDirectories(file.getParent());
+            Path parent = file.getParent();
+            if (parent != null)
+            {
+                Files.createDirectories(parent);
+            }
             try (OutputStream os = Files.newOutputStream(file))
             {
                 os.write(buffer, 0, buffer.length-free);
