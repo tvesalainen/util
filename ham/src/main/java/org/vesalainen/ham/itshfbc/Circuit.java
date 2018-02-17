@@ -89,7 +89,7 @@ public class Circuit
     {
         List<CircuitFrequency> list = new ArrayList<>();
         HourPrediction hourPrediction = prediction.getHourPrediction(hour);
-        for (Double freq : hourPrediction.getFrequences())
+        for (double freq : frequences)
         {
             CircuitFrequency cf = new CircuitFrequency(this, freq, hourPrediction);
             list.add(cf);

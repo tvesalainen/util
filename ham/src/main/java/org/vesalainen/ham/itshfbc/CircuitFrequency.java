@@ -48,12 +48,18 @@ public class CircuitFrequency implements Comparable<CircuitFrequency>
         int cmp = Double.compare(snr90(), o.snr90());
         if (cmp == 0)
         {
-            return Double.compare(snr(), o.snr());
+            return -Double.compare(snr(), o.snr());
         }
         else
         {
-            return cmp;
+            return -cmp;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "CircuitFrequency{" + "frequency=" + frequency + " SNR90=" +snr90()+" SNR=" +snr()+'}';
     }
     
 }

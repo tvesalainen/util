@@ -59,7 +59,7 @@ public class Predictor
         prinfParser = PrintfParser.getInstance();
         monthLine = prinfParser.parse("  %3.3s    %4d          SSN =  %3f                Minimum Angle= %5.3f degrees", formatFactory);
         freqLine = prinfParser.parse(" %5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f FREQ", formatFactory);
-        modeLine = prinfParser.parse("      %5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s MODE", formatFactory);
+        modeLine = prinfParser.parse("      %5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s%5s %10.10s", formatFactory);
         dataLine = prinfParser.parse("      %5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f%5f %10.10s", formatFactory);
     }
 
@@ -100,25 +100,25 @@ public class Predictor
             {
                 if (line.endsWith("degrees"))
                 {
-                    Object[] arr = formatFactory.parse(monthLine, line);
-                    prediction = new Prediction(((Long)arr[1]).intValue(), (String)arr[0]);
+                    if (prediction == null)
+                    {
+                        Object[] arr = formatFactory.parse(monthLine, line);
+                        prediction = new Prediction(((Long)arr[1]).intValue(), (String)arr[0]);
+                    }
                 }
                 else
                 {
                     if (line.endsWith("FREQ"))
                     {
-                        System.err.println(line);
                         Object[] arr = formatFactory.parse(freqLine, line);
                         HourPrediction hp = new HourPrediction(arr);
                         prediction.addHour(hp);
                         line = reader.readLine();
-                        System.err.println(line);
                         arr = formatFactory.parse(modeLine, line);
                         hp.addAttribute(arr);
                         line = reader.readLine();
-                        while (line.length() > 10 && line.charAt(0) != '\f' && line.startsWith(" *****END OF RUN*****"))
+                        while (line.length() > 10 && line.charAt(0) != '\f' && !line.startsWith(" *****END OF RUN*****"))
                         {
-                            System.err.println(line);
                             arr = formatFactory.parse(dataLine, line.replace('-', '0'));
                             hp.addAttribute(arr);
                             line = reader.readLine();

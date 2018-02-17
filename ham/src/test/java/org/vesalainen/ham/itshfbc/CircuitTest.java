@@ -48,8 +48,8 @@ public class CircuitTest
                 .setNoise(Noise.RESIDENTIAL)
                 .setRsn(RSN.SSB);
         circuit.predict();
-        List<CircuitFrequency> frequenciesFor = circuit.frequenciesFor(4);
-                
+        List<CircuitFrequency> frequenciesFor = circuit.frequenciesFor(1);
+        frequenciesFor.sort(null);
     }
     
 }

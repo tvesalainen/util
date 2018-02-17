@@ -18,6 +18,7 @@ package org.vesalainen.ham.itshfbc;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.vesalainen.regex.PrefixMap;
 
 /**
  *
@@ -27,12 +28,21 @@ public class HourPrediction
 {
     private int hour;
     private Double[] frequences;
+    private Double muf;
     private Map<String, Object[]> attributes = new HashMap<>();
+    private PrefixMap<Integer> frequencyIndexMap;
 
     public HourPrediction(Object[] frequences)
     {
         this.hour = ((Double)frequences[0]).intValue();
+        this.muf = ((Double)frequences[1]);
         this.frequences = filter(frequences);
+        Map<String,Integer> m = new HashMap<>();
+        for (int ii=0;ii<frequences.length;ii++)
+        {
+            m.put(frequences[ii].toString(), ii);
+        }
+        frequencyIndexMap = new PrefixMap<>(m);
     }
     public void addAttribute(Object[] array)
     {
@@ -51,12 +61,10 @@ public class HourPrediction
 
     public double getValue(String attribute, double frequency)
     {
-        for (int ii=0;ii<frequences.length;ii++)
+        Integer index = frequencyIndexMap.get(Double.toString(frequency));
+        if (index != null)
         {
-            if (frequences[ii] == frequency)
-            {
-                return getValue(attribute, ii);
-            }
+            return getValue(attribute, index);
         }
         throw new UnsupportedOperationException(frequency+" not supported");
     }
@@ -72,7 +80,7 @@ public class HourPrediction
     private Double[] filter(Object[] frequences)
     {
         int size = 0;
-        for (int ii=1;ii<frequences.length;ii++)
+        for (int ii=2;ii<frequences.length;ii++)
         {
             if ((Double)frequences[ii] > 0.0)
             {
@@ -81,7 +89,7 @@ public class HourPrediction
         }
         Double[] arr = new Double[size];
         int index = 0;
-        for (int ii=1;ii<frequences.length;ii++)
+        for (int ii=2;ii<frequences.length;ii++)
         {
             if ((Double)frequences[ii] > 0.0)
             {
