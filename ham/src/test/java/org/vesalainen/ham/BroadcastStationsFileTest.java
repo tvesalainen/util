@@ -14,43 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.pdf;
+package org.vesalainen.ham;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
+import javax.xml.bind.JAXBException;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RfaxTest
+public class BroadcastStationsFileTest
 {
-
-    public RfaxTest()
+    
+    public BroadcastStationsFileTest()
     {
     }
 
     @Test
-    public void test() throws IOException
+    public void test() throws IOException, JAXBException
     {
-        PDDocument document = PDDocument.load(new File("rfax.pdf"));
-        if (!document.isEncrypted())
-        {
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get("src", "main", "resources", "rfax.txt")))
-            {
-                bw.write(text);
-            }
-        }
-        document.close();
+        BroadcastStationsFile stations = new BroadcastStationsFile(new File("broadcast-stations.xml"));
+        stations.addStation("qth", new Location(60, 25));
+        stations.store();
     }
-
+    
 }

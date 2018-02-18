@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<xsd:schema version="1.0"
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://vesalainen.org/schema/broadcast-stations"
+           xmlns="http://vesalainen.org/schema/broadcast-stations"
+           elementFormDefault="qualified">
+    <xsd:element name="broadcast-stations">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="station" type="stationType" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:complexType name="stationType">
+        <xsd:sequence>
+            <xsd:element name="transmitter" type="transmitterType" maxOccurs="unbounded"/>
+            <xsd:element name="schedule" type="scheduleType" maxOccurs="unbounded"/>
+            <xsd:element name="map" type="mapType" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="location" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="transmitterType">
+        <xsd:attribute name="call-sign" type="xsd:string"/>
+        <xsd:attribute name="frequency" type="xsd:unsignedInt"/>
+        <xsd:attribute name="from" type="xsd:time"/>
+        <xsd:attribute name="to" type="xsd:time"/>
+        <xsd:attribute name="emission" type="xsd:string"/>
+        <xsd:attribute name="power" type="xsd:unsignedInt"/>
+    </xsd:complexType>
+    <xsd:complexType name="scheduleType">
+        <xsd:attribute name="time" type="xsd:time"/>
+        <xsd:attribute name="content" type="xsd:string"/>
+        <xsd:attribute name="rpm" type="xsd:unsignedShort"/>
+        <xsd:attribute name="ioc" type="xsd:unsignedShort"/>
+        <xsd:attribute name="valid" type="xsd:time"/>
+        <xsd:attribute name="map" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="mapType">
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="scale" type="xsd:string"/>
+        <xsd:attribute name="sw" type="xsd:string"/>
+        <xsd:attribute name="se" type="xsd:string"/>
+        <xsd:attribute name="nw" type="xsd:string"/>
+        <xsd:attribute name="ne" type="xsd:string"/>
+    </xsd:complexType>
+</xsd:schema>

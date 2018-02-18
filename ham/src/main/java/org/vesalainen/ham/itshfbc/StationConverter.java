@@ -14,43 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.pdf;
+package org.vesalainen.ham.itshfbc;
 
-import java.io.BufferedWriter;
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.nio.file.Path;
+import org.vesalainen.ham.BroadcastStationsFile;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RfaxTest
+public class StationConverter
 {
+    private Path in;
+    private Path out;
 
-    public RfaxTest()
+    public StationConverter(Path in, Path out)
     {
+        this.in = in;
+        this.out = out;
     }
 
-    @Test
-    public void test() throws IOException
+    public void convert() throws IOException
     {
-        PDDocument document = PDDocument.load(new File("rfax.pdf"));
-        if (!document.isEncrypted())
+        BroadcastStationsFile xml = new BroadcastStationsFile(out.toFile());
+        try (BufferedReader br = Files.newBufferedReader(in))
         {
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
-            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get("src", "main", "resources", "rfax.txt")))
-            {
-                bw.write(text);
-            }
+            
         }
-        document.close();
     }
-
 }
