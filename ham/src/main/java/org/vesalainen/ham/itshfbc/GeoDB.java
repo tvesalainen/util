@@ -59,14 +59,22 @@ public class GeoDB extends JavaLogging
      */
     public GeoLocation search(double deltaNM, GeoSearch... searches)
     {
-        List<GeoLocation> list = search(searches);
+        List<GeoLocation> list = search(false, searches);
         if (!list.isEmpty() && GeoDB.isUnique(list, deltaNM))
         {
             return list.get(0);
         }
         else
         {
-            return null;
+            list.removeIf((gl)->!gl.match(true, searches));
+            if (!list.isEmpty() && GeoDB.isUnique(list, deltaNM))
+            {
+                return list.get(0);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     /**
@@ -74,12 +82,12 @@ public class GeoDB extends JavaLogging
      * @param searches
      * @return 
      */
-    public List<GeoLocation> search(GeoSearch... searches)
+    public List<GeoLocation> search(boolean strict, GeoSearch... searches)
     {
         List<GeoLocation> list = new ArrayList<>();
         for (GeoFile gf : files)
         {
-            gf.search(list, searches);
+            gf.search(strict, list, searches);
         }
         return list;
     }

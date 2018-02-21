@@ -16,17 +16,32 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import java.util.Collection;
-import org.vesalainen.util.navi.Location;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.vesalainen.ham.BroadcastStationsFile;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface GeoLocation
+public class StationConverterTest
 {
-    Collection<String> getAttributes();
-    String getAttribute(String attribute);
-    Location getLocation();
-    boolean match(boolean strict, GeoSearch... searches);
+    
+    public StationConverterTest()
+    {
+    }
+
+    @Test
+    public void test() throws IOException
+    {
+        Path in = Paths.get("src", "main", "resources", "rfax.txt");
+        Path out = Paths.get("broadcast-stations.xml");
+        StationConverter sc = new StationConverter(in, out);
+        sc.convert();
+    }
+    
 }

@@ -59,7 +59,7 @@ public class GeoFile extends JavaLogging
     {
         return columns != null && !locations.isEmpty();
     }
-    public void search(List<GeoLocation> list, GeoSearch... searches)
+    public void search(boolean strict, List<GeoLocation> list, GeoSearch... searches)
     {
         fine("search %s", searches);
         for (GeoSearch search : searches)
@@ -73,7 +73,7 @@ public class GeoFile extends JavaLogging
         }
         for (GeoLocation loc : locations)
         {
-            if (loc.match(searches))
+            if (loc.match(strict, searches))
             {
                 list.add(loc);
             }
@@ -150,7 +150,7 @@ public class GeoFile extends JavaLogging
         }
 
         @Override
-        public boolean match(GeoSearch... searches)
+        public boolean match(boolean strict, GeoSearch... searches)
         {
             for (GeoSearch search : searches)
             {
@@ -161,9 +161,19 @@ public class GeoFile extends JavaLogging
                 }
                 else
                 {
-                    if (!value.contains(search.getValue()))
+                    if (strict)
                     {
-                        return false;
+                        if (!value.trim().equals(search.getValue()))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (!value.contains(search.getValue()))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
