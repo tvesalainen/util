@@ -39,7 +39,7 @@ public class StationConverterTest
     public void test() throws IOException
     {
         Path in = Paths.get("src", "main", "resources", "rfax.txt");
-        Path out = Paths.get("broadcast-stations.xml");
+        Path out = Paths.get("src", "main", "resources", "broadcast-stations.xml");
         StationConverter sc = new StationConverter(in, out);
         sc.convert();
     }
