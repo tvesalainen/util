@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<broadcast-stations xmlns="http://vesalainen.org/schema/broadcast-stations">
+    <station name="qth" location="60.0N 25.0E"/>
+</broadcast-stations>
