@@ -38,7 +38,7 @@ public class ImageRectifierTest
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException
     {
         File file = new File("c:\\temp\\fax2018-02-08T160936.267Z.png");

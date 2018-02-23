@@ -39,9 +39,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </xsd:complexType>
     <xsd:complexType name="transmitterType">
         <xsd:attribute name="call-sign" type="xsd:string"/>
-        <xsd:attribute name="frequency" type="xsd:double" use="required"/>
-        <xsd:attribute name="from" type="xsd:time"/>
-        <xsd:attribute name="to" type="xsd:time"/>
+        <xsd:attribute name="frequency" type="xsd:unsignedInt" use="required"/>
+        <xsd:attribute name="times" type="xsd:string" use="required"/>
         <xsd:attribute name="emission" type="xsd:string" use="required"/>
         <xsd:attribute name="power" type="xsd:unsignedInt" use="required"/>
     </xsd:complexType>

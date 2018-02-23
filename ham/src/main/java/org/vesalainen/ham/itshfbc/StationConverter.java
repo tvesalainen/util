@@ -26,6 +26,8 @@ import org.vesalainen.ham.BroadcastStationsFile;
 import org.vesalainen.ham.LocationParser;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.StationType;
+import org.vesalainen.ham.jaxb.TransmitterType;
+import org.vesalainen.regex.SyntaxErrorException;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -34,7 +36,8 @@ import org.vesalainen.util.navi.Location;
  */
 public class StationConverter
 {
-    private enum State {EXP_TRANSMITTER, TRANSMITTER, SHCEDULE, AREA};
+    private RFaxParser parser = RFaxParser.getInstance();
+    private enum State {NA, CALL, TIME, MAP};
     private Path in;
     private Path out;
     private BroadcastStationsFile xml;
@@ -52,28 +55,78 @@ public class StationConverter
         xml = new BroadcastStationsFile(out.toFile());
         try (BufferedReader br = Files.newBufferedReader(in))
         {
-            State state = State.AREA;
-            StationType station;
+            State state = State.MAP;
+            StationType station = null;
             String line = br.readLine();
             while (line != null)
             {
                 switch (state)
                 {
-                    case
-                    case AREA:
-                        station = station(line);
-                        if (station != null)
+                    case NA:
+                        if (line.startsWith("CALL"))
                         {
-                            state = State.TRANSMITTER;
+                            state = State.CALL;
+                        }
+                        break;
+                    case CALL:
+                        if (line.startsWith("TIME"))
+                        {
+                            state = State.TIME;
                         }
                         else
                         {
-                            
+                            call(station, line.trim());
                         }
+                        break;
+                    case TIME:
+                        if (line.startsWith("MAP"))
+                        {
+                            state = State.MAP;
+                        }
+                        else
+                        {
+                            time(station, line.trim());
+                        }
+                        break;
+                    case MAP:
+                        station = station(line);
+                        if (station != null)
+                        {
+                            state = State.NA;
+                        }
+                        else
+                        {
+                            map(station, line.trim());
+                        }
+                        break;
                 }
                 line = br.readLine();
             }
         }
+    }
+    private void call(StationType station, String line)
+    {
+        if (line.length() > 5)
+        {
+            try
+            {
+                TransmitterType transmitter = parser.parseTransmitter(line);
+                station.getTransmitter().add(transmitter);
+            }
+            catch (SyntaxErrorException ex)
+            {
+                System.err.println(ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void time(StationType station, String line)
+    {
+    }
+
+    private void map(StationType station, String line)
+    {
     }
     private StationType station(String line)
     {
@@ -84,6 +137,7 @@ public class StationConverter
                 return xml.addStation(name, map.get(name));
             }
         }
+        return null;
     }
     private Map<String, Location> createStations() throws IOException
     {
