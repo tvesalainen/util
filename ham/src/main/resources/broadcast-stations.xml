@@ -1,4 +1,110 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <broadcast-stations xmlns="http://vesalainen.org/schema/broadcast-stations">
-    <station name="qth" location="60.0N 25.0E"/>
+    <station name="CAPE NAVAL, SOUTH AFRICA" location="-33.9S 18.4E">
+        <transmitter call-sign="ZSJ" frequency="4014.0" times="0016-0006" power="10.0"/>
+        <transmitter call-sign="ZSJ" frequency="7508.0" power="10.0"/>
+        <transmitter call-sign="ZSJ" frequency="13538.0" power="10.0"/>
+        <transmitter call-sign="ZSJ" frequency="18238.0" times="0006-0016" power="10.0"/>
+    </station>
+    <station name="TOKYO, JAPAN" location="35.7N 139.8E">
+        <transmitter call-sign="JMH" frequency="3622.5" power="5.0"/>
+        <transmitter call-sign="JMH2" frequency="7795.0" power="5.0"/>
+        <transmitter call-sign="JMH4" frequency="13988.5" power="5.0"/>
+    </station>
+    <station name="PEVEK, CHUKOTKA PENINSULA" location="69.7N 170.3E">
+        <transmitter frequency="148.0"/>
+    </station>
+    <station name="SEOUL, REPUBLIC OF KOREA" location="37.6N 127.0E">
+        <transmitter call-sign="HLL2" frequency="3585.0" times="1200-0000" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="5857.5" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="7433.5" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="9165.0" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="13570.0" times="0000-1200" power="3.0"/>
+    </station>
+    <station name="BANGKOK, THAILAND" location="13.8N 100.5E">
+        <transmitter call-sign="HSW64" frequency="7395.0" power="3.0"/>
+    </station>
+    <station name="KYODO NEWS AGENCY, JAPAN/SINGAPORE" location="35.7N 139.8E">
+        <transmitter call-sign="JJC" frequency="4316.0" power="5.0"/>
+        <transmitter call-sign="JJC" frequency="8467.5" power="10.0"/>
+        <transmitter call-sign="JJC" frequency="12745.5" power="15.0"/>
+        <transmitter call-sign="JJC" frequency="16971.0" power="15.0"/>
+        <transmitter call-sign="JJC" frequency="17069.6" power="15.0"/>
+        <transmitter call-sign="JJC" frequency="22542.0" power="15.0"/>
+        <transmitter call-sign="9VF/252" frequency="16035.0" times="0740-1010,1415-1815" power="10.0"/>
+        <transmitter call-sign="9VF/252" frequency="17430.0" times="0740-1010,1415-1815" power="10.0"/>
+    </station>
+    <station name="VALPARAISO PLAYA ANCHA, CHILE" location="-33.1S -71.7W">
+        <transmitter call-sign="CBV" frequency="4228.0" power="1.0"/>
+        <transmitter call-sign="CBV" frequency="8677.0" power="1.0"/>
+        <transmitter call-sign="CBV" frequency="17146.4" power="1.0"/>
+        <transmitter call-sign="CBM" frequency="4322.0" power="1.0"/>
+        <transmitter call-sign="CBM" frequency="8696.0" power="1.0"/>
+    </station>
+    <station name="HALIFAX, NOVA SCOTIA, CANADA" location="44.6N -63.6W">
+        <transmitter call-sign="CFH" frequency="122.5" power="10.0"/>
+        <transmitter frequency="4271.0" power="6.0"/>
+        <transmitter frequency="6496.4" power="6.0"/>
+        <transmitter frequency="10536.0" power="6.0"/>
+        <transmitter frequency="13510.0" power="6.0"/>
+    </station>
+    <station name="IQALUIT, CANADA" location="63.8N -68.5W">
+        <transmitter call-sign="VFF" frequency="3253.0" times="0600-0659,0700-0759,2100-2159,2200-2259" power="5.0"/>
+        <transmitter call-sign="VFF" frequency="7710.0" times="0100-0159,0200-0259,1000-1059,1100-1159" power="5.0"/>
+    </station>
+    <station name="PT. REYES, CALIFORNIA, U.S.A." location="37.8N -122.4W">
+        <transmitter call-sign="NMC" frequency="4346.0" times="0140-1608" power="4.0"/>
+        <transmitter frequency="8682.0" power="4.0"/>
+        <transmitter frequency="12786.0" power="4.0"/>
+        <transmitter frequency="17151.2" power="4.0"/>
+        <transmitter frequency="22527.0" times="1840-2356" power="4.0"/>
+    </station>
+    <station name="NEW ORLEANS, LOUISIANA, U.S.A" location="30.0N -90.1W">
+        <transmitter call-sign="NMG" frequency="4317.9" power="4.0"/>
+        <transmitter frequency="8503.9" power="4.0"/>
+        <transmitter frequency="12789.9" power="4.0"/>
+        <transmitter frequency="17146.4" times="1200-2045" power="4.0"/>
+    </station>
+    <station name="BOSTON, MASSACHUSETTS, U.S.A." location="42.4N -71.1W">
+        <transmitter call-sign="NMF" frequency="4235.0" times="0230-1039" power="4.0"/>
+        <transmitter frequency="6340.5" power="4.0"/>
+        <transmitter frequency="9110.0" power="4.0"/>
+        <transmitter frequency="12750.0" times="1400-2239" power="4.0"/>
+    </station>
+    <station name="CHARLEVILLE, AUSTRALIA" location="-26.3S 146.3E">
+        <transmitter call-sign="VMC" frequency="2628.0" times="0900-1900" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="5100.0" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="11030.0" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="13920.0" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="20469.0" times="1900-0900" power="1.0"/>
+    </station>
+    <station name="WILUNA, AUSTRALIA" location="-26.3S 120.6E">
+        <transmitter call-sign="VMW" frequency="5755.0" times="1100-2100" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="7535.0" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="10555.0" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="15615.0" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="18060.0" times="2100-1100" power="1.0"/>
+    </station>
+    <station name="WELLINGTON, NEW ZEALAND" location="-41.3S 174.8E">
+        <transmitter call-sign="ZKLF" frequency="3247.4" times="0945-1000,1045-1100,1145-1200,1245-1300,1345-1400,1445-1500,1545-1600,1645-1700" power="5.0"/>
+        <transmitter frequency="5807.0" times="0000-0015,0100-0115,0200-0215,0300-0315,0400-0415,0500-0515,0600-0615,0700-0715,0800-0815,0900-0915,1000-1015,1100-1115,1200-1215,1300-1315,1400-1415,1500-1515,1600-1615,1700-1715,1800-1815,1900-1915,2000-2015,2100-2115,2200-2215,2300-2315" power="5.0"/>
+        <transmitter frequency="9459.0" times="0015-0030,0115-0130,0215-0230,0315-0330,0415-0430,0515-0530,0615-0630,0715-0730,0815-0830,0915-0930,1015-1030,1115-1130,1215-1230,1315-1330,1415-1430,1515-1530,1615-1630,1715-1730,1815-1830,1915-1930,2015-2030,2115-2130,2215-2230,2315-2330" power="5.0"/>
+        <transmitter frequency="13550.5" times="0030-0045,0130-0145,0230-0245,0330-0345,0430-0445,0530-0545,0630-0645,0730-0745,0830-0845,0930-0945,1030-1045,1130-1145,1230-1245,1330-1345,1430-1445,1530-1545,1630-1645,1730-1745,1830-1845,1930-1945,2030-2045,2130-2145,2230-2245,2330-2345" power="5.0"/>
+        <transmitter frequency="16340.1" times="2145-2200,2245-2300,2345-0000,0045-0100,0145-0200,0245-0300,0345-0400,0445-0500" power="5.0"/>
+    </station>
+    <station name="HONOLULU, HAWAII, U.S.A." location="21.3N -157.8W">
+        <transmitter call-sign="KVM70" frequency="9982.5" times="0519-1556" power="4.0"/>
+        <transmitter frequency="11090.0" power="4.0"/>
+        <transmitter frequency="16135.0" times="1719-0356" power="4.0"/>
+    </station>
+    <station name="ATHENS, GREECE" location="38.0N 23.7E">
+        <transmitter call-sign="SVJ4" frequency="4481.0" power="8.0"/>
+        <transmitter call-sign="SVJ4" frequency="8105.0" power="8.0"/>
+    </station>
+    <station name="MURMANSK, RUSSIA" location="69.0N 33.1E">
+        <transmitter call-sign="RBW41" frequency="5336.0"/>
+        <transmitter frequency="6445.5"/>
+        <transmitter frequency="7908.8" times="1900-0600"/>
+        <transmitter call-sign="RBW48" frequency="10130.0" times="0600-1900"/>
+    </station>
 </broadcast-stations>

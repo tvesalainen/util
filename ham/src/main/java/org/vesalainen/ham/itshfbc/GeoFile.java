@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 import org.vesalainen.ham.LocationParser;
 import org.vesalainen.util.CharSequences;
@@ -105,10 +104,6 @@ public class GeoFile extends JavaLogging
             }
             else
             {
-                if (line.contains("("))
-                {
-                    System.err.println(line);
-                }
                 locations.add(new GeoLocationImpl(line));
             }
         }

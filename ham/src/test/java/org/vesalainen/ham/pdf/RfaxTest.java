@@ -37,7 +37,7 @@ public class RfaxTest
     {
     }
 
-    @Test
+    //@Test dont run again!!!
     public void test() throws IOException
     {
         PDDocument document = PDDocument.load(new File("rfax.pdf"));

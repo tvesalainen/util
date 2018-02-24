@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.vesalainen.ham.BroadcastStationsFile;
 import org.vesalainen.ham.LocationParser;
@@ -60,6 +61,7 @@ public class StationConverter
             String line = br.readLine();
             while (line != null)
             {
+                line = line.trim();
                 switch (state)
                 {
                     case NA:
@@ -75,7 +77,7 @@ public class StationConverter
                         }
                         else
                         {
-                            call(station, line.trim());
+                            call(station, line);
                         }
                         break;
                     case TIME:
@@ -85,7 +87,7 @@ public class StationConverter
                         }
                         else
                         {
-                            time(station, line.trim());
+                            time(station, line);
                         }
                         break;
                     case MAP:
@@ -96,13 +98,14 @@ public class StationConverter
                         }
                         else
                         {
-                            map(station, line.trim());
+                            map(station, line);
                         }
                         break;
                 }
                 line = br.readLine();
             }
         }
+        xml.store();
     }
     private void call(StationType station, String line)
     {
@@ -130,11 +133,15 @@ public class StationConverter
     }
     private StationType station(String line)
     {
-        for (String name : map.keySet())
+        Iterator<String> iterator = map.keySet().iterator();
+        while (iterator.hasNext())
         {
+            String name = iterator.next();
             if (line.startsWith(name))
             {
-                return xml.addStation(name, map.get(name));
+                Location loc = map.get(name);
+                iterator.remove();
+                return xml.addStation(name, loc);
             }
         }
         return null;
