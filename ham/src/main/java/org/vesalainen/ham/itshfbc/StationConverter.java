@@ -20,15 +20,27 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.BroadcastStationsFile;
+import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
+import org.vesalainen.ham.jaxb.ObjectFactory;
+import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.StationType;
 import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.regex.SyntaxErrorException;
+import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.MapList;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -37,17 +49,24 @@ import org.vesalainen.util.navi.Location;
  */
 public class StationConverter
 {
+    private Duration maxDuration;
     private RFaxParser parser = RFaxParser.getInstance();
+
     private enum State {NA, CALL, TIME, MAP};
     private Path in;
     private Path out;
     private BroadcastStationsFile xml;
     private Map<String, Location> map;
+    private Map<String,MapList<StationType,String>> retrans = new HashMap<>();
+    private ObjectFactory factory = new ObjectFactory();
+    private final DatatypeFactory dataTypeFactory;
 
-    public StationConverter(Path in, Path out)
+    public StationConverter(Path in, Path out) throws DatatypeConfigurationException
     {
         this.in = in;
         this.out = out;
+        this.dataTypeFactory = DatatypeFactory.newInstance();
+        this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
     }
 
     public void convert() throws IOException
@@ -105,6 +124,9 @@ public class StationConverter
                 line = br.readLine();
             }
         }
+        handleCallSigns();
+        handleRetrans();
+        handleDurations();
         xml.store();
     }
     private void call(StationType station, String line)
@@ -126,8 +148,88 @@ public class StationConverter
 
     private void time(StationType station, String line)
     {
+        if (line.contains("RETRANSMISSION OF "))
+        {
+            MapList<StationType, String> m = retrans.get("RETRANSMISSION OF ");
+            if (m == null)
+            {
+                m = new HashMapList<>();
+                retrans.put("RETRANSMISSION OF ", m);
+            }
+            m.add(station, line);
+        }
+        else
+        {
+            if (line.contains("REBROADCAST OF "))
+            {
+                MapList<StationType, String> m = retrans.get("REBROADCAST OF ");
+                if (m == null)
+                {
+                    m = new HashMapList<>();
+                    retrans.put("REBROADCAST OF ", m);
+                }
+                m.add(station, line);
+            }
+            else
+            {
+                if (line.contains("Repetition chart "))
+                {
+                    MapList<StationType, String> m = retrans.get("Repetition chart ");
+                    if (m == null)
+                    {
+                        m = new HashMapList<>();
+                        retrans.put("Repetition chart ", m);
+                    }
+                    m.add(station, line);
+                }
+                else
+                {
+                    if (isSchedule(line))
+                    {
+                        try
+                        {
+                            ScheduleType[] schedules = parser.parseSchedule(line);
+                            for (ScheduleType schedule : schedules)
+                            {
+                                station.getSchedule().add(schedule);
+                            }
+                        }
+                        catch (SyntaxErrorException ex)
+                        {
+                            System.err.println(ex.getMessage());
+                            if (ex.getCause() != null)
+                            {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-
+    private boolean isSchedule(String line)
+    {
+        if (line.length() < 4)
+        {
+            return false;
+        }
+        if (line.contains("RTTY"))
+        {
+            return false;
+        }
+        if (line.startsWith("----"))
+        {
+            return true;
+        }
+        for (int ii=0;ii<4;ii++)
+        {
+            if (!Character.isDigit(line.charAt(ii)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     private void map(StationType station, String line)
     {
     }
@@ -145,6 +247,100 @@ public class StationConverter
             }
         }
         return null;
+    }
+    private void handleDurations()
+    {
+        xml.getStations().forEach(this::handleDurations);
+    }
+    private void handleDurations(StationType station)
+    {
+        List<ScheduleType> schedules = station.getSchedule();
+        schedules.sort(SCHEDULE_COMP);
+        ScheduleType prev = null;
+        for (ScheduleType cur : schedules)
+        {
+            if (prev != null)
+            {
+                GregorianCalendar time1 = prev.getTime().toGregorianCalendar();
+                GregorianCalendar time2 = cur.getTime().toGregorianCalendar();
+                Duration duration = dataTypeFactory.newDuration(time2.getTimeInMillis()-time1.getTimeInMillis());
+                if (duration.isShorterThan(maxDuration) && prev.getDuration() == null)
+                {
+                    prev.setDuration(duration);
+                }
+            }
+            prev = cur;
+        }
+        ScheduleType ls = schedules.get(schedules.size()-1);
+        GregorianCalendar first = schedules.get(0).getTime().toGregorianCalendar();
+        GregorianCalendar last = ls.getTime().toGregorianCalendar();
+        Duration duration = dataTypeFactory.newDuration(24*60*60000-(last.getTimeInMillis()-first.getTimeInMillis()));
+        if (duration.isShorterThan(maxDuration) && ls.getDuration() == null)
+        {
+            ls.setDuration(duration);
+        }
+    }
+    private void handleCallSigns()
+    {
+        xml.getStations().stream().forEach(this::handleCallSigns);
+    }
+    private void handleCallSigns(StationType station)
+    {
+        TransmitterType prev = null;
+        for (TransmitterType tr : station.getTransmitter())
+        {
+            if (prev != null && tr.getCallSign() == null)
+            {
+                tr.setCallSign(prev.getCallSign());
+            }
+            prev = tr;
+        }
+    }
+    private void handleRetrans()
+    {
+        retrans.forEach(this::handleRetrans);
+    }
+    private void handleRetrans(String key, MapList<StationType,String> ml)
+    {
+        ml.forEach((s,l)->handleRetrans(key, s, l));
+    }
+    private void handleRetrans(String key, StationType station, List<String> lines)
+    {
+        Map<XMLGregorianCalendar, ScheduleType> map = station.getSchedule().stream().collect(Collectors.toMap((ScheduleType s)->s.getTime(), (ScheduleType s)->s));
+        for (String line : lines)
+        {
+            String[] start = line.substring(0, line.indexOf(' ')).split("/");
+            int idx = line.indexOf(key)+key.length();
+            String ss = line.substring(idx);
+            String[] ptr = ss.substring(0, Math.min(9,ss.length())).split("/");
+            int si = 0;
+            int pi = 0;
+            for (String str : start)
+            {
+                if (!str.startsWith("--"))
+                {
+                    String p = ptr[pi].substring(0, 4);
+                    int tt = Integer.parseInt(p);
+                    XMLGregorianCalendar cal = dataTypeFactory.newXMLGregorianCalendarTime(tt/100, tt%100, 0, 0);
+                    ScheduleType trg = map.get(cal);
+                    if (trg == null)
+                    {
+                        throw new IllegalArgumentException(p+" not found");
+                    }
+                    ScheduleType ns = factory.createScheduleType();
+                    int t = Integer.parseInt(start[si]);
+                    ns.setTime(dataTypeFactory.newXMLGregorianCalendarTime(t/100, t%100, 0, 0));
+                    ns.setContent(key+trg.getContent());
+                    ns.setRpm(trg.getRpm());
+                    ns.setIoc(trg.getIoc());
+                    ns.setValid(trg.getValid());
+                    ns.setMap(trg.getMap());
+                    station.getSchedule().add(ns);
+                    pi++;
+                }
+                si++;
+            }
+        }
     }
     private Map<String, Location> createStations() throws IOException
     {

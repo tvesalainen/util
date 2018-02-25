@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.xml.datatype.DatatypeConfigurationException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.ham.BroadcastStationsFile;
@@ -36,7 +37,7 @@ public class StationConverterTest
     }
 
     @Test
-    public void test() throws IOException
+    public void test() throws IOException, DatatypeConfigurationException
     {
         Path in = Paths.get("src", "main", "resources", "rfax.txt");
         Path out = Paths.get("src", "main", "resources", "broadcast-stations.xml");

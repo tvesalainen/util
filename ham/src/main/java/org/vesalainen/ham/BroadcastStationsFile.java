@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import javax.xml.bind.JAXBContext;
@@ -43,6 +44,7 @@ import org.vesalainen.util.navi.Location;
  */
 public class BroadcastStationsFile
 {
+    public static final Comparator<ScheduleType> SCHEDULE_COMP = new ScheduleComp();
     private static JAXBContext jaxbCtx;
     private static ObjectFactory objectFactory;
     private static DatatypeFactory dataTypeFactory;
@@ -127,6 +129,15 @@ public class BroadcastStationsFile
             throw new IOException(ex);
         }
     }
+    public static class ScheduleComp implements Comparator<ScheduleType>
+    {
 
+        @Override
+        public int compare(ScheduleType o1, ScheduleType o2)
+        {
+            return o1.getTime().compare(o2.getTime());
+        }
+
+    }
     
 }

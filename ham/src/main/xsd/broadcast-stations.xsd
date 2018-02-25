@@ -46,6 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </xsd:complexType>
     <xsd:complexType name="scheduleType">
         <xsd:attribute name="time" type="xsd:time" use="required"/>
+        <xsd:attribute name="duration" type="xsd:duration"/>
         <xsd:attribute name="content" type="xsd:string"/>
         <xsd:attribute name="rpm" type="xsd:unsignedShort" use="required"/>
         <xsd:attribute name="ioc" type="xsd:unsignedShort" use="required"/>
