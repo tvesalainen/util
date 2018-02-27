@@ -17,6 +17,7 @@
 package org.vesalainen.navi;
 
 import org.vesalainen.math.ConvexPolygon;
+import org.vesalainen.util.navi.Angle;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -94,27 +95,15 @@ public abstract class Area
         public ConvexArea(Location... locations)
         {
             super(locations);
-            boolean[] quads = new boolean[4];
+            Angle[] lons = new Angle[locations.length];
+            int index = 0;
             for (Location loc : locations)
             {
-                quads[(int)(convert(loc.getLongitude())/90)] = true;
+                lons[index++] = new Angle(Math.toRadians(convert(loc.getLongitude())));
             }
-            int cnt = 0;
-            for (boolean b : quads)
-            {
-                if (b)
-                {
-                    cnt++;
-                }
-            }
-            if (cnt > 2)
-            {
-                throw new UnsupportedOperationException("over hemisphere not supported");
-            }
-            if (quads[0] && quads[3])
-            {
-                offset = 180;
-            }
+            Angle average = Angle.average(lons);
+            double degree = average.getDegree();
+            offset = (degree-180+360)%360;
             area = new ConvexPolygon();
             for (Location loc : locations)
             {
