@@ -38,9 +38,12 @@ public class AreaTest
         Location se = new Location(-10, 170);
         Location nw = new Location(10, -170);
         Location ne = new Location(10, 170);
-        Area convex = Area.getConvex(sw, se, nw, ne);
+        Area convex = Area.getArea(sw, se, nw, ne);
         assertTrue(convex.isInside(0, 180));
         assertFalse(convex.isInside(0, 160));
+        Area convex2 = Area.getArea(convex.getLocations());
+        assertTrue(convex2.isInside(0, 180));
+        assertFalse(convex2.isInside(0, 160));
     }
     @Test
     public void testConvexEurope()
@@ -48,6 +51,29 @@ public class AreaTest
         Area convex = Area.getSquare(30, 40, -10, 10);
         assertTrue(convex.isInside(35, 5));
         assertFalse(convex.isInside(35, 12));
+        Area convex2 = Area.getArea(convex.getLocations());
+        assertTrue(convex2.isInside(35, 5));
+        assertFalse(convex2.isInside(35, 12));
+    }
+    @Test
+    public void testPolar()
+    {
+        Area polar = Area.getPolar(30, 40);
+        assertTrue(polar.isInside(35, 0));
+        assertTrue(polar.isInside(35, 180));
+        Area polar2 = Area.getArea(polar.getLocations());
+        assertTrue(polar2.isInside(35, 0));
+        assertTrue(polar2.isInside(35, 180));
+    }
+    @Test
+    public void testPolar2()
+    {
+        Area polar = Area.getPolar(30, 40, 0, 90, 180);
+        assertTrue(polar.isInside(35, 90));
+        assertFalse(polar.isInside(35, 270));
+        Area polar2 = Area.getArea(polar.getLocations());
+        assertTrue(polar2.isInside(35, 90));
+        assertFalse(polar2.isInside(35, 270));
     }
 
 }

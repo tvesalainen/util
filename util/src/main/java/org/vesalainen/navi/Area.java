@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import java.util.Arrays;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.util.navi.Angle;
 import org.vesalainen.util.navi.Location;
@@ -27,18 +28,21 @@ import org.vesalainen.util.navi.Location;
 public abstract class Area
 {
     protected Location[] locations;
+    protected double offset;
 
-    private Area(Location[] locations)
+    private Area(Location... locations)
     {
         this.locations = locations;
     }
-
+    /**
+     * Returns copy of original locations
+     * @return 
+     */
     public Location[] getLocations()
     {
-        return locations;
+        return Arrays.copyOf(locations, locations.length);
     }
     
-    protected double offset;
     /**
      * Returns true if location is inside area.
      * @param location
@@ -56,15 +60,40 @@ public abstract class Area
      */
     public boolean isInside(double latitude, double longitude)
     {
-        return isIn(latitude, longitude+offset);
+        return isIn(latitude, convert(longitude));
     }
     protected final double convert(double longitude)
     {
-        return (Navis.longitudeToGHA(longitude)+offset)%360;
+        return ((longitude > 0 ? 360-longitude : -longitude)+offset+360)%360;
     }
     protected abstract boolean isIn(double latitude, double longitude);
     /**
-     * Returns rectangular area. Area is limited by lat/lon coordinats
+     * Returns area limited by given coordinates. Area must be convex.
+     * If exactly 2 locations are given the longitudes must be 0 defining polar
+     * area limited by latitudes.
+     * @param locations
+     * @return 
+     */
+    public static Area getArea(Location... locations)
+    {
+        if (locations.length == 2)
+        {
+            if (locations[0].getLongitude() == 0.0 && locations[1].getLongitude() == 0.0)
+            {
+                return getPolar(locations[0].getLatitude(), locations[1].getLatitude());
+            }
+            else
+            {
+                throw new IllegalArgumentException();
+            }
+        }
+        else
+        {
+            return new ConvexArea(locations);
+        }
+    }
+    /**
+     * Returns rectangular area. Area is limited by lat/lon coordinates
      * @param latFrom
      * @param latTo
      * @param lonFrom
@@ -81,13 +110,67 @@ public abstract class Area
         return new ConvexArea(locs);
     }
     /**
-     * Returns area limited by given coordinates. Area must be convex.
-     * @param locations
+     * Returns rectangular area. Area is limited by lat/lon coordinates. 
+     * Parameter midLon determines which side of earth area lies.
+     * @param latFrom
+     * @param latTo
+     * @param lonFrom
+     * @param midLon
+     * @param lonTo
      * @return 
      */
-    public static Area getConvex(Location... locations)
+    public static Area getPolar(double latFrom, double latTo, double lonFrom, double midLon, double lonTo)
     {
-        return new ConvexArea(locations);
+        Location[] locs = new Location[5];
+        locs[0] = new Location(latFrom, lonFrom);
+        locs[1] = new Location(latFrom, lonTo);
+        locs[2] = new Location(latTo, lonFrom);
+        locs[3] = new Location(latTo, lonTo);
+        locs[4] = new Location(latFrom, midLon);
+        return new ConvexArea(locs);
+    }
+    /**
+     * Returns rectangular polar area. Area is limited by lat coordinates. 
+     * @param latFrom
+     * @param latTo
+     * @return 
+     */
+    public static Area getPolar(double latFrom, double latTo)
+    {
+        return new PolarArea(latFrom, latTo);
+    }
+    public static class PolarArea extends Area
+    {
+        private double latFrom;
+        private double latTo;
+        
+        public PolarArea(double latFrom, double latTo)
+        {
+            super(new Location(latFrom, 0), new Location(latTo, 0));
+            if (latFrom < latTo)
+            {
+                this.latFrom = latFrom;
+                this.latTo = latTo;
+            }
+            else
+            {
+                this.latFrom = latTo;
+                this.latTo = latFrom;
+            }
+        }
+
+        @Override
+        public boolean isInside(double latitude, double longitude)
+        {
+            return isIn(latitude, longitude);
+        }
+        
+        @Override
+        protected boolean isIn(double latitude, double longitude)
+        {
+            return latitude >= latFrom && latitude <= latTo;
+        }
+        
     }
     public static class ConvexArea extends Area
     {
@@ -99,19 +182,18 @@ public abstract class Area
             int index = 0;
             for (Location loc : locations)
             {
-                lons[index++] = new Angle(Math.toRadians(convert(loc.getLongitude())));
+                lons[index++] = new Angle(Math.toRadians(Navis.longitudeToGHA(loc.getLongitude())));
             }
             Angle average = Angle.average(lons);
-            double degree = average.getDegree();
-            offset = (degree-180+360)%360;
+            offset = 180-average.getDegree();
             area = new ConvexPolygon();
             for (Location loc : locations)
             {
                 boolean added = area.addPoint(convert(loc.getLongitude()), loc.getLatitude());
-                if (!added)
-                {
-                    throw new IllegalArgumentException("not convex");
-                }
+            }
+            if (!area.isConvex())
+            {
+                throw new IllegalArgumentException("not convex");
             }
         }
 
