@@ -30,6 +30,7 @@ import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
 import org.vesalainen.ham.jaxb.BroadcastStations;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
@@ -75,6 +76,7 @@ public class BroadcastStationsFile
         StationType stationType = objectFactory.createStationType();
         stationType.setName(name);
         stationType.setLocation(format(location));
+        stationType.setActive(true);
         stations.getStation().add(stationType);
         return stationType;
     }
@@ -99,10 +101,6 @@ public class BroadcastStationsFile
     public List<StationType> getStations()
     {
         return stations.getStation();
-    }
-    private String format(Location location)
-    {
-        return String.format(Locale.US, "%.1f%s %.1f%s", location.getLatitude(), location.getLatitudeNS(), location.getLongitude(), location.getLongitudeWE());
     }
     public void load() throws IOException, JAXBException
     {

@@ -36,6 +36,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="location" type="xsd:string"/>
+        <xsd:attribute name="info" type="xsd:string"/>
+        <xsd:attribute name="active" type="xsd:boolean" use="required"/>
     </xsd:complexType>
     <xsd:complexType name="transmitterType">
         <xsd:attribute name="call-sign" type="xsd:string"/>
@@ -51,15 +53,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="rpm" type="xsd:unsignedShort" use="required"/>
         <xsd:attribute name="ioc" type="xsd:unsignedShort" use="required"/>
         <xsd:attribute name="valid" type="xsd:time"/>
-        <xsd:attribute name="map" type="xsd:string"/>
+        <xsd:attribute name="map" type="mapRefType"/>
     </xsd:complexType>
     <xsd:complexType name="mapType">
         <xsd:attribute name="name" type="xsd:string" use="required"/>
         <xsd:attribute name="scale" type="xsd:string"/>
         <xsd:attribute name="projection" type="xsd:string"/>
-        <xsd:attribute name="sw" type="xsd:string" use="required"/>
-        <xsd:attribute name="se" type="xsd:string" use="required"/>
-        <xsd:attribute name="nw" type="xsd:string" use="required"/>
-        <xsd:attribute name="ne" type="xsd:string" use="required"/>
+        <xsd:attribute name="corners" type="cornerType" use="required"/>
     </xsd:complexType>
+    <xsd:simpleType name="mapRefType">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="cornerType">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
 </xsd:schema>

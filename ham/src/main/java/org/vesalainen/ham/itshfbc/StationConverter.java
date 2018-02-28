@@ -34,6 +34,7 @@ import org.vesalainen.ham.BroadcastStationsFile;
 import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
+import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.StationType;
@@ -81,45 +82,64 @@ public class StationConverter
             while (line != null)
             {
                 line = line.trim();
-                switch (state)
+                if (line.contains("INFORMATION DATED") && station != null)
                 {
-                    case NA:
-                        if (line.startsWith("CALL"))
+                    station.setInfo(line);
+                }
+                else
+                {
+                    if (line.contains("not currently active") && station != null)
+                    {
+                        station.setActive(false);
+                    }
+                    else
+                    {
+                        switch (state)
                         {
-                            state = State.CALL;
+                            case NA:
+                                if (line.startsWith("CALL"))
+                                {
+                                    state = State.CALL;
+                                }
+                                break;
+                            case CALL:
+                                if (line.startsWith("TIME"))
+                                {
+                                    state = State.TIME;
+                                }
+                                else
+                                {
+                                    call(station, line);
+                                }
+                                break;
+                            case TIME:
+                                if (line.startsWith("MAP"))
+                                {
+                                    state = State.MAP;
+                                    map(station, line);
+                                }
+                                else
+                                {
+                                    time(station, line);
+                                }
+                                break;
+                            case MAP:
+                                StationType stat = station(line);
+                                if (stat != null)
+                                {
+                                    station = stat;
+                                    state = State.NA;
+                                }
+                                else
+                                {
+                                    if (station != null)
+                                    {
+                                        map(station, line);
+                                    }
+                                }
+                                break;
                         }
-                        break;
-                    case CALL:
-                        if (line.startsWith("TIME"))
-                        {
-                            state = State.TIME;
-                        }
-                        else
-                        {
-                            call(station, line);
-                        }
-                        break;
-                    case TIME:
-                        if (line.startsWith("MAP"))
-                        {
-                            state = State.MAP;
-                        }
-                        else
-                        {
-                            time(station, line);
-                        }
-                        break;
-                    case MAP:
-                        station = station(line);
-                        if (station != null)
-                        {
-                            state = State.NA;
-                        }
-                        else
-                        {
-                            map(station, line);
-                        }
-                        break;
+                    }
                 }
                 line = br.readLine();
             }
@@ -127,6 +147,7 @@ public class StationConverter
         handleCallSigns();
         handleRetrans();
         handleDurations();
+        checkMaps();
         xml.store();
     }
     private void call(StationType station, String line)
@@ -141,7 +162,10 @@ public class StationConverter
             catch (SyntaxErrorException ex)
             {
                 System.err.println(ex.getMessage());
-                ex.printStackTrace();
+                if (ex.getCause() != null)
+                {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -232,6 +256,22 @@ public class StationConverter
     }
     private void map(StationType station, String line)
     {
+        if (line.length() > 5)
+        {
+            try
+            {
+                List<MapType> maps = parser.parseMapLine(line);
+                station.getMap().addAll(maps);
+            }
+            catch (SyntaxErrorException ex)
+            {
+                System.err.println(ex.getMessage());
+                if (ex.getCause() != null)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
     private StationType station(String line)
     {
@@ -247,6 +287,27 @@ public class StationConverter
             }
         }
         return null;
+    }
+    private void checkMaps()
+    {
+        xml.getStations().forEach(this::checkMaps);
+    }
+    private void checkMaps(StationType station)
+    {
+        Map<String, MapType> map = station.getMap().stream().collect(Collectors.toMap((m)->m.getName(), (m)->m));
+        for (ScheduleType scedule : station.getSchedule())
+        {
+            for (String m : scedule.getMap())
+            {
+                if (m != null)
+                {
+                    if (!map.containsKey(m))
+                    {
+                        System.err.println(station.getName()+" "+m+" not found");
+                    }
+                }
+            }
+        }
     }
     private void handleDurations()
     {
@@ -334,7 +395,7 @@ public class StationConverter
                     ns.setRpm(trg.getRpm());
                     ns.setIoc(trg.getIoc());
                     ns.setValid(trg.getValid());
-                    ns.setMap(trg.getMap());
+                    ns.getMap().addAll(trg.getMap());
                     station.getSchedule().add(ns);
                     pi++;
                 }
