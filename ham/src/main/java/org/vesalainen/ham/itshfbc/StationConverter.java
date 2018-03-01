@@ -17,7 +17,9 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.GregorianCalendar;
@@ -25,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -40,6 +44,7 @@ import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.StationType;
 import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.regex.SyntaxErrorException;
+import org.vesalainen.text.CamelCase;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.navi.Location;
@@ -70,6 +75,60 @@ public class StationConverter
         this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
     }
 
+    public void createFileList(Path dir) throws IOException
+    {
+        map = createStations();
+        Path file = dir.resolve("stations.cvs");
+        try (BufferedWriter bw = Files.newBufferedWriter(file))
+        {
+            for (Entry<String, Location> e : map.entrySet())
+            {
+                String filename = createFilename(e.getKey());
+                bw.write(String.format("%s, %s", filename, e.getValue()));
+                bw.newLine();
+            }
+        }
+    }
+    public void createFiles(Path dir) throws IOException
+    {
+        BufferedWriter writer = null;
+        map = createStations();
+        try (BufferedReader br = Files.newBufferedReader(in))
+        {
+            String line = br.readLine();
+            while (line != null)
+            {
+                Iterator<String> iterator = map.keySet().iterator();
+                while (iterator.hasNext())
+                {
+                    String name = iterator.next();
+                    if (line.startsWith(name))
+                    {
+                        iterator.remove();
+                        String filename = createFilename(name);
+                        Path file = dir.resolve(filename);
+                        if (writer != null)
+                        {
+                            writer.close();
+                        }
+                        writer = Files.newBufferedWriter(file);
+                    }
+                }
+                if (writer != null)
+                {
+                    writer.write(line);
+                    writer.newLine();
+                }
+                line = br.readLine();
+            }
+        }
+        writer.close();
+    }
+    private String createFilename(String str)
+    {
+        String[] split = str.split("\\,");
+        return CamelCase.camelCase(split[0])+".txt";
+    }
     public void convert() throws IOException
     {
         map = createStations();
