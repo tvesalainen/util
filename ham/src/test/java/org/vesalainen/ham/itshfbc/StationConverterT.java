@@ -29,19 +29,20 @@ import org.vesalainen.ham.BroadcastStationsFile;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class StationConverterTest
+public class StationConverterT
 {
     
-    public StationConverterTest()
+    public StationConverterT()
     {
     }
 
     @Test
     public void test() throws IOException, DatatypeConfigurationException
     {
-        Path in = Paths.get("src", "main", "resources", "rfax.txt");
-        Path out = Paths.get("src", "main", "resources", "broadcast-stations.xml");
-        StationConverter sc = new StationConverter(in, out);
+        Path resources = Paths.get("src", "main", "resources");
+        Path in = resources.resolve("rfax.txt");
+        Path out = resources.resolve("broadcast-stations.xml");
+        StationConverter sc = new StationConverter(resources, out);
         sc.convert();
     }
     

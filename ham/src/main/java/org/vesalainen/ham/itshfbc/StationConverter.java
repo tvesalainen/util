@@ -17,9 +17,7 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.GregorianCalendar;
@@ -27,8 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -44,7 +40,6 @@ import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.StationType;
 import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.regex.SyntaxErrorException;
-import org.vesalainen.text.CamelCase;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.navi.Location;
@@ -58,8 +53,8 @@ public class StationConverter
     private Duration maxDuration;
     private RFaxParser parser = RFaxParser.getInstance();
 
-    private enum State {NA, CALL, TIME, MAP};
-    private Path in;
+    private enum State {CALL, TIME, MAP};
+    private Path dir;
     private Path out;
     private BroadcastStationsFile xml;
     private Map<String, Location> map;
@@ -67,77 +62,45 @@ public class StationConverter
     private ObjectFactory factory = new ObjectFactory();
     private final DatatypeFactory dataTypeFactory;
 
-    public StationConverter(Path in, Path out) throws DatatypeConfigurationException
+    public StationConverter(Path dir, Path out) throws DatatypeConfigurationException
     {
-        this.in = in;
+        this.dir = dir;
         this.out = out;
         this.dataTypeFactory = DatatypeFactory.newInstance();
         this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
+        xml = new BroadcastStationsFile(out.toFile());
     }
 
-    public void createFileList(Path dir) throws IOException
+    public void convert() throws IOException
     {
-        map = createStations();
-        Path file = dir.resolve("stations.cvs");
-        try (BufferedWriter bw = Files.newBufferedWriter(file))
-        {
-            for (Entry<String, Location> e : map.entrySet())
-            {
-                String filename = createFilename(e.getKey());
-                bw.write(String.format("%s, %s", filename, e.getValue()));
-                bw.newLine();
-            }
-        }
-    }
-    public void createFiles(Path dir) throws IOException
-    {
-        BufferedWriter writer = null;
-        map = createStations();
-        try (BufferedReader br = Files.newBufferedReader(in))
+        Path stations = dir.resolve("stations.cvs");
+        try (BufferedReader br = Files.newBufferedReader(stations))
         {
             String line = br.readLine();
             while (line != null)
             {
-                Iterator<String> iterator = map.keySet().iterator();
-                while (iterator.hasNext())
-                {
-                    String name = iterator.next();
-                    if (line.startsWith(name))
-                    {
-                        iterator.remove();
-                        String filename = createFilename(name);
-                        Path file = dir.resolve(filename);
-                        if (writer != null)
-                        {
-                            writer.close();
-                        }
-                        writer = Files.newBufferedWriter(file);
-                    }
-                }
-                if (writer != null)
-                {
-                    writer.write(line);
-                    writer.newLine();
-                }
+                String[] split = line.split("\\,");
+                Path file = dir.resolve(split[0]);
+                Location location = LocationParser.parse(split[1]);
+                StationType station = convert(file, location);
+                xml.getStations().add(station);
                 line = br.readLine();
             }
         }
-        writer.close();
+        handleCallSigns();
+        handleRetrans();
+        handleDurations();
+        checkMaps();
+        xml.store();
     }
-    private String createFilename(String str)
+    public StationType convert(Path in, Location location) throws IOException
     {
-        String[] split = str.split("\\,");
-        return CamelCase.camelCase(split[0])+".txt";
-    }
-    public void convert() throws IOException
-    {
-        map = createStations();
-        xml = new BroadcastStationsFile(out.toFile());
         try (BufferedReader br = Files.newBufferedReader(in))
         {
-            State state = State.MAP;
-            StationType station = null;
+            State state = State.CALL;
             String line = br.readLine();
+            StationType station = xml.addStation(line.trim(), location);
+            line = br.readLine();
             while (line != null)
             {
                 line = line.trim();
@@ -155,12 +118,6 @@ public class StationConverter
                     {
                         switch (state)
                         {
-                            case NA:
-                                if (line.startsWith("CALL"))
-                                {
-                                    state = State.CALL;
-                                }
-                                break;
                             case CALL:
                                 if (line.startsWith("TIME"))
                                 {
@@ -183,31 +140,15 @@ public class StationConverter
                                 }
                                 break;
                             case MAP:
-                                StationType stat = station(line);
-                                if (stat != null)
-                                {
-                                    station = stat;
-                                    state = State.NA;
-                                }
-                                else
-                                {
-                                    if (station != null)
-                                    {
-                                        map(station, line);
-                                    }
-                                }
+                                    map(station, line);
                                 break;
                         }
                     }
                 }
                 line = br.readLine();
             }
+            return station;
         }
-        handleCallSigns();
-        handleRetrans();
-        handleDurations();
-        checkMaps();
-        xml.store();
     }
     private void call(StationType station, String line)
     {

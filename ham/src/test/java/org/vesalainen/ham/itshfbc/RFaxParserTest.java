@@ -35,8 +35,33 @@ public class RFaxParserTest
     }
 
     @Test
-    public void test1()
+    public void testSchedule()
     {
-        parser.parseSchedule("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000");
+        ScheduleType[] schedules = parser.parseSchedule("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000");
+        assertEquals(1, schedules.length);
+        ScheduleType schedule = schedules[0];
+        assertEquals(12, schedule.getTime().getHour());
+        assertEquals(20, schedule.getTime().getMinute());
+        assertEquals("12/24/48/72HR OCEAN WAVE PROG", schedule.getContent());
+        assertEquals(120, schedule.getRpm());
+        assertEquals(576, schedule.getIoc());
+        assertEquals(0, schedule.getValid().getHour());
+        assertEquals(0, schedule.getValid().getMinute());
+    }
+    @Test
+    public void testMap1()
+    {
+        List<MapType> maps = parser.parseMapLine("MAP AREAS:   1.  20N - 70N,   115W - 135E        2.  20N - 70N,   115W - 175W");
+        assertEquals(2, maps.size());
+        assertEquals("1", maps.get(0).getName());
+        assertEquals("2", maps.get(1).getName());
+    }
+    @Test
+    public void testMap2()
+    {
+        List<MapType> maps = parser.parseMapLine("             5.  05N - 55N,  EAST OF 180W        6.  23N - 42N,  EAST OF 150W");
+        assertEquals(2, maps.size());
+        assertEquals("5", maps.get(0).getName());
+        assertEquals("6", maps.get(1).getName());
     }
 }

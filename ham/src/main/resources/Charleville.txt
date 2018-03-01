@@ -1,0 +1,77 @@
+CHARLEVILLE, AUSTRALIA 
+ 
+CALL SIGNS FREQUENCIES TIMES     EMISSION  POWER 
+VMC      2628 kHz  0900-1900         J3C   1  kW 
+VMC      5100 kHz  All Broadcast Times     J3C   1  kW  
+VMC    11030 kHz  All Broadcast Times     J3C   1  kW 
+VMC    13920 kHz  All Broadcast Times     J3C   1  kW 
+VMC    20469 kHz  1900-0900       J3C   1  kW  
+ 
+TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP 
+TIME  AREA 
+------/1200 Australian MSLP Prog (H+36)       120/576  1200  AUST 
+0015/1215 VMC/VMW Schedule Page 1of2       120/576 
+0030/1230 VMC/VMW Schedule Page 2of2       120/576 
+0045/------- VMC/VMW Information Notice       120/576 
+0100/------- IPS Recommended Frequencies for VMC (Charleville))    120/576  
+0130/------- IPS RECOMMENDED FREQUENCIES FOR VMW    120/576 
+------/1245 Indian Ocean MSLP Prog (H+36)       120/576  1200  IO 
+------/1315 South Pacific Ocean Total Waves (H+48)      120/576  0000  SWP 
+------/1330 Indian Ocean Total Waves (H+48)      120/576  0000  IO 
+------/1345 Pacific Ocean Sea Surface Temps (Weekly)     120/576   SWP 
+------/1400 Indian Ocean Sea Surface Temps (Weekly)     120/576   IO 
+0200/------- Australian MSLP Prog (H+36)       120/576  0000  AUST 
+------/1415 Casey Eastern and Western High Seas (H+48)     120/576  0000 
+0245/1430 Australian MSLP Anal (Manual)       120/576  00/12  AUST 
+0345/---- Australian MSLP Anal (Manual)       120/576  00/12  AUST 
+0300/1500 Australian 500hPa Anal        120/576  00/12  AUST 
+0315/------ Voice Broadcast Information for VMW (Wiluna)     120/576 
+------/1515 Australian MSLP Prog (H+36)       120/576  1200  AUST 
+0400/------ Australian 500hPa (H+24) Prog       120/576  0000  AUST 
+0430/1530 Australian MSLP 4-day forecast, Days 1and2     120/576 
+0445/1545 Australian MSLP 4-day forecast, Days 3and4      120/576 
+0500/---- Australian MSLP 4-day forecast, Days 1and2     120/576 
+0515/---- Australian MSLP 4-day forecast, Days 3and4      120/576 
+------/1600 Australian 500hPa (H+24) Prog       120/576  1200  AUST 
+------/1630 IPS Recommended Frequencies for VMC (Charleville)    120/576  
+------/1700 IPS Recommended Frequencies for VMW (Wiluna)    120/576 
+0600/1800 Asian (Part A) Gradient Level Wind Anal (Manual)     120/576  00/12  A 
+0623/1823 Asian (Part B) Gradient Level Wind Anal (Manual)     120/576  00/12  B 
+0645/------- Asian MSLP Anal (Manual)       120/576  0000  C 
+0730/1915 Indian Ocean MSLP Anal (Manual)      120/576  00/12  IO 
+0000/---- Indian Ocean MSLP Anal (Manual)      120/576  00/12  IO 
+0745/1930 Australian Wind Waves Ht(m) Prog      120/576  00/12  AUST 
+0800/1945 Australian Swell Waves Ht(m) Prog (H+24)     120/576  00/12  AUST 
+0830/------- South Pacific Ocean MSLP Anal       120/576  0000  SWP 
+0845/------- Australian MSLP Anal (Manual)       120/576  0600  AUST 
+0900/------- Australian MSLP Prog (H+36) (Repeat)      120/576  0000  AUST 
+0915/------- Australian MSLP 4-day forecast, Days 1and2 (Repeat)   120/576 
+0930/------- Australian MSLP 4-day forecast, Days 3and4  (Repeat)   120/576 
+------/2000 South Pacific Ocean MSLP Anal (Manual)      120/576  1200  SWP 
+------/2015 Casey Eastern and Western High Seas (H+24)     120/576  1200 
+------/2030 Australian MSLP Anal (Manual)       120/576  1800  AUST 
+1015/------ Casey Eastern and Western High Seas (H+24)     120/576  0000 
+------/2215 Casey Eastern and Western High Seas (H+36)     120/576  1200 
+1030/2230 S.H. 500hPa Prog (H+48)       120/576  00/12  SH 
+1045/2245 S.H. MSLP Prog (H+48)        120/576  00/12  SH 
+1100/------ Casey Eastern and Western High Seas (H+36)     120/576  0000 
+1115/2300 S.H. 500hPa Anal         120/576  00/12  SH 
+------/2315 Casey Eastern and Western High Seas (H+48)     120/576  1200 
+1130/------- Asian Sea Surface Temp Anal (Weekly)      120/576   E 
+------/2330 Australian MSLP Prog (H+36)       120/576  0000  AUST 
+------/2345 Indian Ocean MSLP Prog (H+48)       120/576  1200  IO 
+1145/------- VMC/VMW Information Notice       120/576 
+ 
+MAP AREAS: 
+A:    30N - 35S, 120E - 180E 
+AUST:  LAMBERT 10S - 50S, 090E - 170E 
+B:    30N - 35S, 070E - 130E 
+C:    30N - 35S, 070E - 180E 
+E:    40N - 40S, 70E - 180E 
+IO  POLAR 10S - 90S, 0E - 090E - 180E 
+CASEY  MERCATOR 50S - 70S, 080E - 160E 
+SH  POLAR 20S - 90S 
+PSST  MERCATOR 20N - 50S, 140E - 180E - 100W 
+SWP  POLAR 20S - 90S, 150E - 180E - 90W 
+IOSST  MERCATOR 20N - 50S, 30E - 150E 
+

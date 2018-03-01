@@ -1,0 +1,259 @@
+HAMBURG/PINNEBERG, GERMANY 
+ 
+CALL SIGNS FREQUENCIES TIMES     EMISSION  POWER 
+DDH3     3855 kHz  ALL BROADCAST TIMES   J3C    10 kW 
+DDK3     7880 kHz  ALL BROADCAST TIMES   J3C   20 kW 
+DDK6   13882.5 kHz  ALL BROADCAST TIMES   J3C   20 kW 
+ 
+ 
+TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP 
+TIME  AREA 
+------/1520 Ice conditions chart West Baltic Sea or special area    120/576  0900 
+------/1540 Ice conditions chart European Arctic Sea or special area    120/576  0900 
+0430/1600 Surface weather chart        120/576  00/12 
+0512/------- h+30 (GME ) surface pressure       120/576  1800 
+0525/1800 surface pressure analysis, arrows showing the movement of pressure 120/576  00/12 
+  systems, significant weather, ice 
+0546/1821 Information of tropical storms, North Atlantic (during the season )  120/576  03/15 
+-------/1834 H+24 (GME) surface pressure       120/576  1200 
+0559/------- H+12, H+24 (GME) 500hPa H + T, surface P     120/576  0000 
+0612/------- H+12, H+24 (GME) 850hPa H + T, 700hPa U     120/576  0000 
+0625/------- H+36, H+48 (GME) 500hPa H + T, surface P     120/576  0000 
+0638/------- H+36, H+48 (GME) 850hPa H + T, 700hPa U     120/576  0000 
+0651/------- H+60, H+72 (GME) 500hPa H + T, surface P     120/576  0000 
+0704/------ H+60, H+72 (GME) 850hPa H + T, 700hPa U     120/576  0000 
+0717/------- Repetition chart 0512 UTC       120/576  1800 
+0730/1847 H+48 (GME) surface pressure       120/576  00/12 
+0743/------- Repetition chart 0525 UTC        120/576  0000 
+0804/1900 H+84 (GME) surface pressure       120/576  00/12 
+0817/------- H+108 (GME) surface pressure       120/576  0000 
+0830/1913 H+24 (GSM) Sea and swell, wind direction, direction of swell   120/576  00/12      
+0842/1926 H+48 (GSM) Sea and swell, wind direction, direction of swell   120/576  00/12               
+0854/1939 H+72 (GSM) Sea and swell, wind direction, direction of swell   120/576  00/12 
+0906/------ H+96 (GSM) Sea and swell, wind direction, direction of swell   120/576  0000 
+0930/2100 Ice conditions chart Northwest Atlantic      120/576  00/12 
+0945/------- Sea surface temperature North Sea      120/576  0000 
+1007/2115 Ice conditions chart West Baltic Sea      120/576  00/15 
+1029/2136 H+48 wave prediction North Atlantic      120/576  00/12 
+1050/2200 Surface weather chart        120/576  06/18 
+1111/------ Transmission schedule        120/576 
+1132/------ Test chart         120/576 
+1145/------- Repetition chart 1050 UTC       120/576  0600 
+1205/------- Repetition chart 0512 UTC       120/576  1800 
+1220/------- Repetition chart 0730 UTC       120/576  0000 
+ 
+ 
+Notes: Abbreviations have the following meaning: GME Global model (31 layers, 60 km) 
+           H Contour lines (gpdam) MSL Mean sea level T Isotherms (° C) U Relative humidity (%) 
+ 
+ 
+(INFORMATION DATED (032010) http://www.dwd.de/bvbw/generator/DWDWWW/Content/Schifffahrt/Sendeplan/broadcast__fax__032010,templateId=raw,property=publicationFile.pdf/broadcast_fax_032010.pdf 
+ 
+ 
+MAP AREAS
+ 
+NORTHWOOD, UNITED KINGDOM 
+ 
+CALL SIGNS  FREQUENCIES TIMES     EMISSION  POWER  
+GYA    2618.5 kHz        2000-0600 UTC     J3C   10 kW 
+GYA    4610 kHz        ALL BROADCAST TIMES     J3C   10 kW 
+GYA    8040 kHz        ALL BROADCAST TIMES     J3C   10 kW 
+GYA            11086.5 kHz        0600-2000 UTC     J3C   10 kW 
+TIME 
+0000/1200      SURFACE ANALYSIS        120/576  18/06 A
+0012/1212 24HOUR SURFACE PROGNOSIS      120/576  18/06 A
+0024/1224 24HOUR 850hPA WBPT / PPTN      120/576  18/06 A
+0036/1236 24HOUR OAT and TD        120/576  18/06 A
+0048/1248 SHIP ICE ACCRETION        120/576  12/00 A
+0100/1300 SCHEDULE         120/576   A
+0112/------ SYMBOLOGY         120/576 A
+0124/------ QSL REPORT         120/576 A
+0136/1336 OCEAN FRONTS         120/576 A
+0148/1348 300hPA GPH         120/576  18/06 A
+0236/------ SURFACE ANALYSIS        120/576  0000 A
+-------/1400 SEA SURFACE TEMP        120/576  0000 A
+0300/1436 SURFACE ANALYSIS        120/576  00/12 A
+0400/1500 SURFACE ANALYSIS        120/576  00/12 A
+-------/1512 24HOUR ANPS PROGNOSIS       120/576  0000 A
+-------/1524 120HOUR ANPS PROGNOSIS       120/576  0000 A
+-------/1600 SURFACE ANALYSIS        120/576  1200 A
+0412/1612 24HOUR OAT and TD        120/576  00/12 A
+0424/1624 24HOUR 850hPA WBPT / PPTN      120/576  00/12 A
+0436/1636 24HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0448/1648 SCEXA TAFS         120/576  06/18 A
+0500/1700 SURFACE ANALYSIS        120/576  00/12 A
+0512/1712 24HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0524/1724 48HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0536/1736 SCEXA TAFS         120/576  06/18 A
+0600/------ NWEXAS TAF COLLECTIVE       120/576 A
+0612/1800      SURFACE ANALYSIS        120/576  00/12 A
+0624/1812 24HOUR SURFACE PROGNOSIS      120/576  1200 A
+-------/1824 NWEXAS TAF COLLECTIVE       120/576 A
+0648/1848 SCEXA TAFS         120/576  07/19 A
+-------/1900 THICKNESS/GPH ANALYSIS       120/576  1200 A
+0712/1912 24HOUR SIGNIFICANT WINDS       120/576  00/12 A
+0724/1924 48HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0736/1936 72HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0748/1948 96HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0800/2012 120HOUR SURFACE PROGNOSIS      120/576  00/12 A
+0812/------ THICKNESS/GPH ANALYSIS       120/576  0000 A
+0824/2024 48HOUR SIGNIFICANT WINDS       120/576  00/12 A
+0836/2036 72HOUR SIGNIFICANT WINDS       120/576  00/12 A
+0848/2048 96HOUR SIGNIFICANT WINDS       120/576  00/12 A
+0900/2100 SURFACE ANALYSIS        120/576  06/18 A
+0912/2112 THICKNESS/GPH ANALYSIS       120/576  00/12 A
+0924/2124 24HOUR THICKNESS / GPH PROGNOSIS     120/576  00/12 A
+0936/2136 24HOUR 850hPa SPOT WINDS       120/576  00/12 A
+0948/2148 24HOUR 700hPa SPOT WINDS       120/576  00/12 A
+1000/2200 SURFACE ANALYSIS        120/576  06/18 A
+1012/2212 24HOUR SURFACE PROGNOSIS      120/576  06/18 A
+1024/2224 24HOUR REDUCED VISIBILITY       120/576  06/18 A
+1036/2236 24HOUR 850hPA WBPT / PPTN      120/576  06/18 A
+1048/2248 24HOUR OAT and TD        120/576  06/18 A
+1100/------ SURFACE ANALYSIS        120/576  0600 A
+1112/------ 24HOUR SURFACE PROGNOSIS      120/576  0600 A
+1124/2336 24HOUR SEA and SWELL       120/576  06/18 A
+1136/------ 24HOUR THICKNESS / GPH PROGNOSIS     120/576  0000 A
+
+MAP
+A:  35N - 61N, 56W - 0E - 27E  
+GPH   Geopotential Height 
+OAT   Outside Air Temperature 
+PPTN   Precipitation 
+SCEXAS TAFS  South Coast Exercise Areas Terminal Aerodrome Forecasts 
+TD   Dewpoint Temperature 
+WBPT   Wet Bulb Potential Temperature  
+(INFORMATION DATED Nov 09, 2011)  VI-3 
+ 
+Fax: + 46 11 4958001 
+ 
+Greger Bergman, Manager 
+Observation Network 
+Folkborgsvägen 1 
+Norrköping 
+SE-601 76 
+Sweden 
+Tel: + 46 11 4958217 
+Fax: + 46 11 4958001 
+  
+ 
+TANZANIA, UNITED REPUBLIC OF 
+Allen B. Mpeta, Senior Met. Officer 
+P.O. Box 3056 
+Dar es Salaam 
+United Republic of Tanzania 
+Tel: +255 22 2134471 
+  
+THAILAND 
+Wittaya Rakkit, Marine Meteorological Officer 
+Marine and Upper Air Observation Section 
+Meteorological Observation Division 
+Thai Meteorological Department 
+4353 Sukhumvit Road, Bangna 
+Bangkok 10260 
+Thailand 
+Tel: +66-2 399 4561 
+Fax: +66-2 398 9838 
+  
+ 
+UNITED KINGDOM 
+Headquarters 
+Sarah C. North, Marine Networks Manager Met Office 
+Observations Supply - Marine Networks 
+FitzRoy Road 
+Exeter 
+Devon 
+EX1 3PB 
+United Kingdom 
+Tel: +44-1392 855 617  
+Fax: +44-870 900 5050 
+E-mail: sarah.north@metoffice.gov.uk 
+Group E-mail:Obsmar@metoffice.gov.uk 
+ 
+David Knott, Marine Technical Coordinator 
+Met Office 
+Observations - Marine Networks 
+FitzRoy Road 
+Exeter 
+Devon EX1 3PB 
+United Kingdom 
+Tel: +44 1392 88 5714 
+Fax: +44 1392 885681 
+E-mail: david.knott@metoffice.gov.uk or 
+Group E-mail: Obsmar@metoffice.gov.uk  
+Scotland 
+Emma Steventon 
+Port Meteorological Officer, Met Office 
+Saughton House, Broomhouse Drive 
+Edinburgh EH11 3XQ 
+United Kingdom 
+Tel: +44 (0)131 528 7318  
+Fax: +44 (0) 7753880209 
+E-mail: or 
+E-mail:  
+ 
+ 
+ 
+South West England & South Wales 
+Lalinda Namalarachchi 
+Port Meteorological Officer, Met Office 
+c/o Room 342/11 
+National Oceanography Centre, Southampton 
+University of Southampton, Waterfront Campus 
+European Way 
+SOUTHAMPTON SO14 3ZH 
+United Kingdom 
+Tel: +44 2380 638339 
+Fax: +44 1392 885681 
+South East England 
+Joseph Maguire 
+Port Meteorological Officer 
+Met Office 
+127 Clerkenwell Road 
+London EC1R 5LP 
+United Kingdom 
+Tel: +44 2072047453 
+Fax: +44 1392 885681 
+ 
+ 
+North England & North Wales 
+Tony Eastham 
+Port Meteorological Officer 
+Met Office 
+Unit 3, Holland Business Park, 
+Spa Lane, 
+Lathom, L40 6LN 
+United Kingdom 
+Tel: +44 (0)1695 726 467 
+Mobile : +44 (0) 7753 880 484 
+E-mail: tony.eastham@metoffice.gov.uk or 
+E-mail: pmo.liverpool@metoffice.gov.uk 
+  
+ 
+ 
+ 
+NOAA WEATHER RADIO NETWORK 
+ 
+ 
+(1) 162.550 MHz 
+(2) 162.400 MHz 
+(3) 162.475 MHz  
+(4) 162.425 MHz  
+(5) 162.450 MHz  
+(6) 162.500 MHz       
+(7) 162.525 MHz      
+ 
+ 
+Channel numbers, e.g. (WX1, WX2) etc. have no special significance but are often designated this way in 
+consumer equipment. Other channel numbering schemes are also prevalent. 
+ 
+The NOAA Weather Radio network provides voice broadcasts of local and coastal marine forecasts on a 
+continuous cycle. The forecasts are produced by local National Weather Service Forecast Offices. 
+Coastal stations also broadcast predicted tides and real time observations from buoys and coastal 
+meteorological stations operated by NOAA's National Data Buoy Center. Based on user demand, and 
+where feasible, Offshore and Open Lake forecasts are broadcast as well.  
+ 
+The NOAA Weather Radio network provides near continuous coverage of the coastal U.S, Great Lakes, 
+Hawaii, and populated Alaska coastline.  Typical coverage is 25 nautical miles offshore, but may extend 
+much further in certain areas.
+ 

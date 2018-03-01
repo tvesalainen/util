@@ -1,0 +1,114 @@
+HONOLULU, HAWAII, U.S.A.  
+ 
+ 
+CALL SIGN FREQUENCIES     TIMES  (UTC)       EMISSION     POWER 
+KVM70             9982.5  kHz        0519-1556                 J3C           4  kW 
+       11090    kHz        ALL BROADCAST TIMES       J3C           4  kW 
+       16135   kHz        1719-0356                J3C           4  kW 
+ 
+ 
+TIME   CONTENTS OF TRANSMISSION                      RPM/IOC      VALID    MAP 
+                        TIME     AREA 
+0519/1719   TEST PATTERN                                  120/576 
+0524/1724   SIGNIFICANT CLOUD FEATURES                  120/576    03/15       D 
+0535/1735   CYCLONE DANGER AREA                         120/576    03/15       E 
+0555/1755   STREAMLINE ANALYSIS                         120/576    00/12       B 
+0615/1815   SURFACE ANALYSIS        120/570   00/12       C 
+0635/1835   EAST PACIFIC GOES IR SATELLITE IMAGE        120/576   06/18       G 
+0649/1849   SW PACIFIC GOES IR SATELLITE IMAGE          120/576    06/18       H 
+0701/1901   24HR SURFACE FORECAST                        120/576    00/12       A 
+0714/1914   48HR SURFACE FORECAST                        120/576    00/12       A 
+0727/1927   72HR SURFACE FORECAST                        120/576    00/12       A 
+0740/1940   WIND/WAVE ANALYSIS                           120/576    00/12       B 
+0753/1953   24HR WIND/WAVE FORECAST                     120/576    00/12       B 
+0806/2006   24HR WIND/WAVE FORECAST                     120/576    00/12       4 
+0816/2016   48HR SURFACE FORECAST                        120/576    00/12       1 
+0826/2026   48HR WIND/WAVE FORECAST                     120/576    00/12       1 
+0836/2036   48/96HR WAVE PERIOD,SWELL DIRECTION         120/576    00/12       1 
+0846/2046   rebroadcast/ 96HR SURFACE FORECAST          120/576    12/12        1 
+0856/2056  rebroadcast/ 96HR WIND/WAVE FORECAST        120/576    12/12        1 
+0906/2106  PACIFIC GOES IR SATELLITE IMAGE             120/576    06/18       5 
+0917/2117   SURFACE ANALYSIS (PART1 NE PACIFIC)        120/576    06/18       2 
+0930/2130   SURFACE ANALYSIS (PART2 NW PACIFIC)        120/576    06/18       3 
+0943/2143   TROPICAL GOES IR SATELLITE IMAGE            120/576    06/18       Y 
+0954/2154   TROPICAL SURFACE ANALYSIS                   120/576    06/18       Z 
+1008/2208   24HR TROPICAL WIND/WAVE FORECAST            120/576    00/12       Z 
+1042/2242   CYCLONE DANGER AREA                          120/570    09/21       E 
+1102/2302   48HR WIND/WAVE FORECAST                     120/576    00/12       B 
+1115/2315   72HR WIND/WAVE FORECAST                     120/576    00/12       B 
+1128/2328   SEA SURFACE TEMPS                            120/576         F 
+1141/2341   rebroadcast 24HR WIND/WAVE FORECASTS        120/576    00/12       B 
+1154/2354   STREAMLINE ANALYSIS                          120/576    06/18       B 
+1214/0014   SURFACE ANALYSIS                             120/576    06/18       C 
+1234/0034   EAST PACIFIC GOES IR SATELLITE IMAGE        120/576    12/00       G 
+1248/0048   SW PACIFIC GOES IR SATELLITE IMAGE          120/576    12/00       H 
+1300/0100   SCHEDULE PART I                              120/576 
+1320/0120   SCHEDULE PART II                             120/576 
+1340/0140   SYMBOLS OR PRODUCT NOTICE BULLETIN         120/576 
+1400/0200   24HR TROPICAL SURFACE FORECAST              120/576    00/12       Z 
+1410/0210   48HR TROPICAL SURFACE FORECAST             120/576    00/12       Z 
+1420/0220   72HR TROPICAL SURFACE FORECAST              120/576    00/12       Z 
+1430/0230   48/72HR TROPICAL WAVE PERIOD,SWELL DIR     120/576    00/00       Z 
+1440/0240   TROPICAL SEA STATE ANALYSIS                 120/576    12/00       Z 
+1450/0250   rebroadcast 24HR TROPICAL WIND/WAVE FORECASTS      120/576    00/12       Z 
+1500/0300   48HR TROPICAL WIND/WAVE FORECAST            120/576    00/12       Z 
+1510/0310   72HR TROPICAL WIND/WAVE FORECAST            120/576    00/12       Z 
+1520/0320   rebroadcast/SEA STATE ANALYSIS              120/576    00/00        1 
+1530/0330   SURFACE ANALYSIS(PART1 NE PAC)             120/576    12/00       2 
+1543/0343   SURFACE ANALYSIS(PART2 NW PAC)             120/576    12/00       3 
+1556/0356   TROPICAL SURFACE ANALYSIS                   120/576    12/00       Z 
+ 
+ 
+MAP AREAS:    
+A. 30S - 50N, 110W - 130E     
+B. 30S - 30N, 110W - 130E     Honolulu Forecast Office  
+C.  0S - 50N, 110W - 130E     
+D. 30S - 50N, 110W - 160E     Honolulu Forecast Office  
+E.  0S - 40N,  80W - 170E     
+F.  0S - 55N, 110W - 160E      Honolulu Forecast Office 
+G. 05S - 55N, 110W - 155E     
+H. 40S - 05N, 130W - 165E     Honolulu Forecast Office             
+1. 20N - 70N, 115W - 135E     
+2. 20N - 70N, 115W - 175W     Ocean Prediction Center 
+3. 20N - 70N, 175W - 135E     
+4. 18N - 62N, EAST OF 157W    Ocean Prediction Center 
+5. 05N - 55N, EAST OF 180W                                   Ocean Prediction Center    
+Y. 05N - 32N, EAST OF 130W 
+Z. 20S - 30N, EAST OF 145W  National Hurricane Center 
+ 
+ 
+ ATHENS, GREECE 
+ 
+ 
+ 
+CALL SIGN FREQUENCY  TIMES      EMISSION POWER  
+SVJ4     4481 kHz         J3C      8 kW 
+SVJ4     8105 kHz         J3C      8 kW 
+ 
+TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP 
+TIME  AREA 
+ 
+0845  SURFACE ANALYSIS        120/576  0600   A 
+0857  SURFACE PROG (H+24)        120/576  0600   A 
+0909  SURFACE PROG (H+48)        120/576  0600   A 
+0921  WAVE HEIGHT PROG (H+30)       120/576  1800   B 
+0933  WAVE HEIGHT PROG (H+36)       120/576  0000   B 
+0945  WAVE HEIGHT PROG (H+42)       120/576  0600   B 
+0957  WAVE HEIGHT PROG (H+48)       120/576  1200   B 
+1009  WAVE HEIGHT PROG (H+30)       120/576  1800   C 
+1021  WAVE HEIGHT PROG (H+36)       120/576  0000   C 
+1033  WAVE HEIGHT PROG (H+42)       120/576  0600   C 
+1044  WAVE HEIGHT PROG (H+48)       120/576  1200   C 
+ 
+ 
+ 
+MAP AREA: 
+A   29N - 48N, 12W - 0E - 42E SOUTH EUROPE , MEDITERRANEAN SEA, BLACK SEA  
+B   30N - 47N, 6W - 0E - 37E  MEDITERRANEAN 
+C   34N - 41N, 21E - 29E  AEGEAN 
+ 
+(INFORMATION DATED (03/2007)  
+ 
+ 
+ 
+ 

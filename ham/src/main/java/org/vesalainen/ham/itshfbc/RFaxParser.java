@@ -17,7 +17,6 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -34,9 +33,9 @@ import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
 import org.vesalainen.parser.annotation.ParseMethod;
-import org.vesalainen.parser.annotation.ReservedWords;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Terminal;
+import org.vesalainen.parser.util.Tracer;
 import org.vesalainen.regex.Regex;
 import org.vesalainen.util.navi.Location;
 
@@ -46,7 +45,7 @@ import org.vesalainen.util.navi.Location;
  */
 @GenClassname("org.vesalainen.ham.itshfbc.RFaxParserImpl")
 @GrammarDef()
-public abstract class RFaxParser
+public abstract class RFaxParser extends Tracer
 {
     private ObjectFactory factory;
     private DatatypeFactory dataTypeFactory;
@@ -108,6 +107,7 @@ public abstract class RFaxParser
     @Rule("mapString scale? projection? lat lat lon lon")
     protected MapType map(String name, String scale, String projection, double latFrom, double latTo, double lonFrom, double lonTo)
     {
+        lonFrom = eastOf(latFrom, latTo, lonFrom, lonTo);
         Area area = Area.getSquare(latFrom, latTo, lonFrom, lonTo);
         MapType map = factory.createMapType();
         map.setName(name);
@@ -118,6 +118,17 @@ public abstract class RFaxParser
             map.getCorners().add(format(loc));
         }
         return map;
+    }
+    private double eastOf(double latFrom, double latTo, double lonFrom, double lonTo)
+    {
+        if (lonFrom == Double.POSITIVE_INFINITY)
+        {
+            return lonTo + 2.0*Math.abs(latTo-latFrom);
+        }
+        else
+        {
+            return lonFrom;
+        }
     }
     @Rule("mapString scale? projection? coordinate coordinate coordinate coordinate")
     protected MapType map(String name, String scale, String projection, Location sw, Location se, Location nw, Location ne)
@@ -138,11 +149,11 @@ public abstract class RFaxParser
     {
         return new Location(lat, lon);
     }
-    @ParseMethod(start="schedule", whiteSpace ={"whiteSpace"})
+    @ParseMethod(start="schedule")
     public abstract ScheduleType[] parseSchedule(String text);
     
-    @Rule("start content rpm '/' number valid? mapString?")
-    protected ScheduleType[] schedule(XMLGregorianCalendar[] startArr, String content, int rpm, Double ioc, XMLGregorianCalendar[] valid, String map)
+    @Rule("start ws content ws rpm valid? mapRef?")
+    protected ScheduleType[] schedule(XMLGregorianCalendar[] startArr, String ws1, String content, String ws2, int[] rpm, XMLGregorianCalendar[] valid, String map)
     {
         ScheduleType[] arr = new ScheduleType[startArr.length];
         int index = 0;
@@ -151,8 +162,8 @@ public abstract class RFaxParser
             ScheduleType schedule = factory.createScheduleType();
             schedule.setTime(start);
             schedule.setContent(content);
-            schedule.setRpm(rpm);
-            schedule.setIoc(ioc.intValue());
+            schedule.setRpm(rpm[0]);
+            schedule.setIoc(rpm[1]);
             if (valid != null)
             {
                 if (valid.length == startArr.length)
@@ -174,6 +185,11 @@ public abstract class RFaxParser
             arr[index++] = schedule;
         }
         return arr;
+    }
+    @Rule("ws? mapRefString")
+    protected String mapRef(String ws, String map)
+    {
+        return map;
     }
     @Rule("time4")
     @Rule("time4 '/\\-+'")
@@ -203,30 +219,34 @@ public abstract class RFaxParser
             return arr;
         }
     }
-    @Rule("string0 string2+")
-    protected String content(String str, List<String> list)
+    @Rule("contentString")
+    protected String content(String str)
     {
-        list.add(0, str);
-        return list.stream().collect(Collectors.joining(" "));
+        return str;
+    }
+    @Rule("content ws contentString")
+    protected String content(String content, String ws, String str)
+    {
+        return content+ws+str;
     }
     @Rule("rpm60")
     @Rule("rpm90")
     @Rule("rpm120")
-    protected int rpm(int rpm)
+    protected int[] rpm(int[] rpm)
     {
         return rpm;
     }
-    @Rule("time4")
-    protected XMLGregorianCalendar[] valid(Integer time)
+    @Rule("ws? time4")
+    protected XMLGregorianCalendar[] valid(String ws, Integer time)
     {
         return new XMLGregorianCalendar[]{dataTypeFactory.newXMLGregorianCalendarTime(time/100, time%100, 0, 0)};
     }
-    @Rule("time2 '/' time2")
-    protected XMLGregorianCalendar[] valid(Integer time1, Integer time2)
+    @Rule("ws? time2")
+    protected XMLGregorianCalendar[] valid(String ws, Integer[] time)
     {
         return new XMLGregorianCalendar[]{
-            dataTypeFactory.newXMLGregorianCalendarTime(time1, 0, 0, 0),
-            dataTypeFactory.newXMLGregorianCalendarTime(time2, 0, 0, 0)
+            dataTypeFactory.newXMLGregorianCalendarTime(time[0], 0, 0, 0),
+            dataTypeFactory.newXMLGregorianCalendarTime(time[1], 0, 0, 0)
         };
     }
     @ParseMethod(start="transmitter", whiteSpace ={"whiteSpace", "quot"})
@@ -315,33 +335,20 @@ public abstract class RFaxParser
     {
         return offset.intValue();
     }
-    @ReservedWords(value =
+    @Terminal(expression = "60/576", priority=1)
+    protected int[] rpm60()
     {
-        "kHz",
-        "J3C",
-        "kW",
-        "rpm60",
-        "rpm90",
-        "rpm120"
-    },
-    options =
-    {
-        Regex.Option.CASE_INSENSITIVE
-    })
-    @Terminal(expression = "60", options={Regex.Option.ACCEPT_IMMEDIATELY})
-    protected int rpm60()
-    {
-        return 60;
+        return new int[]{60, 576};
     }
-    @Terminal(expression = "90", options={Regex.Option.ACCEPT_IMMEDIATELY})
-    protected int rpm90()
+    @Terminal(expression = "90/576", priority=1)
+    protected int[] rpm90()
     {
-        return 90;
+        return new int[]{90, 576};
     }
-    @Terminal(expression = "120", options={Regex.Option.ACCEPT_IMMEDIATELY})
-    protected int rpm120()
+    @Terminal(expression = "120/576", priority=1)
+    protected int[] rpm120()
     {
-        return 120;
+        return new int[]{120, 576};
     }
 
     @Terminal(expression = "(LAMBERT|Lambert|POLAR|MERCATOR|Lambert_Conformal_Conic)", options={Regex.Option.CASE_INSENSITIVE})
@@ -355,10 +362,10 @@ public abstract class RFaxParser
         return value;
     }
 
-    @Terminal(expression = "[0-9]{2}")
-    protected Integer time2(int value)
+    @Terminal(expression = "[0-9]{2}/[0-9]{2}")
+    protected Integer[] time2(String value)
     {
-        return value;
+        return new Integer[]{Primitives.parseInt(value, 0, 2), Primitives.parseInt(value, 3, 5)};
     }
 
     @Terminal(expression = "\\([^\\)]*\\)")
@@ -382,9 +389,13 @@ public abstract class RFaxParser
         }
     }
 
-    @Terminal(expression = "[0-9]+(\\.[0-9]+)?[EW]")
+    @Terminal(expression = "(EAST OF|[0-9]+(\\.[0-9]+)?[EW])")
     protected double lon(String str)
     {
+        if (str.equals("EAST OF"))
+        {
+            return Double.POSITIVE_INFINITY;
+        }
         switch (str.charAt(str.length()-1))
         {
             case 'E':
@@ -399,8 +410,21 @@ public abstract class RFaxParser
     @Terminal(expression = "1:[0-9\\,]+")
     protected abstract String scale(String scale);
 
-    @Terminal(expression = "([0-9]|[A-Za-z][A-Za-z0-9'’/]*)")
-    protected abstract String mapString(String value);
+    @Terminal(expression = "([0-9]{1,2}|[A-Za-z][A-Za-z0-9'’/]*)")
+    protected abstract String mapRefString(String value);
+
+    @Terminal(expression = "([0-9]{1,2}|[A-Za-z][A-Za-z0-9'’/]*)[\\.:]?")
+    protected String mapString(String value)
+    {
+        if (value.endsWith(".") || value.endsWith(":"))
+        {
+            return value.substring(0, value.length()-1);
+        }
+        else
+        {
+            return value;
+        }
+    }
 
     @Terminal(expression = "(MAP AREAS:|MAP AREA:)")
     protected abstract void mapTitle();
@@ -416,6 +440,9 @@ public abstract class RFaxParser
 
     @Terminal(expression = "[A-Za-z/\\(\\)'\\,\\&\\*\\-_:\\+#\\.]+")
     protected abstract String string2(String value);
+
+    @Terminal(expression = "[A-Za-z0-9/\\(\\)'\\,\\&\\*\\-_:\\+#\\.]+")
+    protected abstract String contentString(String value);
 
     @Terminal(expression = "[\\+\\-]?[0-9]+(\\.[0-9]+)?")
     protected Double number(String value)
@@ -433,5 +460,11 @@ public abstract class RFaxParser
 
     @Terminal(expression = "[ \t]+")
     protected abstract void whiteSpace();
+
+    @Terminal(expression = "[ \t]+")
+    protected String ws(String ws)
+    {
+        return ws;
+    }
 
 }

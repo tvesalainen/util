@@ -1,0 +1,39 @@
+INUVIK, CANADA 
+ 
+CALL SIGN   FREQUENCIES TIMES      EMISSION  POWER 
+VFA     4292.0 kHz  0600&2100 UTC    J3C     1 kW 
+VFA     8456.0 kHz  0200&1630 UTC    J3C     1 kW 
+ 
+ 
+TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP
+              TIME  AREA 
+ 
+ 
+0200/0600 Marine Wind Prognosis        120/576 1200 
+                        (Availability of charts may vary  depending on shipping 
+  Ice Analysis (mid July to October 15)  
+                        Amundsen Gulf, Queen Maud and McClure Strait. 
+  Ice Analysis Beaufort Sea/Alaskan Coast 
+ 
+ 
+1630/2100 Marine Surface Analysis        120/576 1200 
+                        (Availability of charts may vary  depending on shipping 
+  Ice Analysis (mid July to October 15)  
+                        Amundsen Gulf, Queen Maud and McClure Strait. 
+  Ice Analysis Beaufort Sea/Alaskan Coast 
+ 
+ 
+Note: Also available on request 
+ 
+ 
+(INFORMATION DATED 2014) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-PACIFIC-eng.pdf 
+ 
+ 
+ MAP AREAS
+ 
+ 
+ 
+ 
+ 
+ 
+ 

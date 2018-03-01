@@ -1,0 +1,28 @@
+RESOLUTE, CANADA 
+ 
+CALL SIGN   FREQUENCIES TIMES      EMISSION  POWER 
+VFR     7710.0 kHz   0100,0200,1000,1100 UTC  J3C     5  kW 
+VFR     3253.0 kHz   0600,0700,2100,2200 UTC  J3C    5  kW 
+ 
+ 
+TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP
+              TIME  AREA 
+ 
+0100/1000 Marine Surface Analysis (Arctic)        120/576 
+   Marine wind prognosis (Arctic) ( experimental product) 
+  Regional Marine Wind Prognosis (on request) 
+0200/1100      Ice analysis Baffin Bay, Approaches to Resolute, Resolute-Byam,          120/576 
+                       Eureka Sound, McClure Strait, Parry Channel and Queen Maude. 
+0600/2100 Marine Surface Analysis (Arctic)        120/576 
+   Marine wind prognosis (Arctic) (experimental product) 
+  Regional Marine Wind Prognosis (on request) 
+0700/2200      Ice analysis Baffin Bay, Approaches to Resolute, Resolute-Byam,          120/576 
+                       Eureka Sound, McClure Strait, Parry Channel and Queen Maude. 
+ 
+Operating only from approximately mid-June until late-November 
+ 
+ 
+ 
+(INFORMATION DATED 2011) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-ATLANTIC-eng.pdf 
+ 
+ 
