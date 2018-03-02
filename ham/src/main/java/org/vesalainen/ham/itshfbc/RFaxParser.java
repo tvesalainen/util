@@ -23,6 +23,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
+import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
@@ -30,12 +31,13 @@ import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.navi.Area;
 import org.vesalainen.parser.GenClassFactory;
+import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
 import org.vesalainen.parser.annotation.ParseMethod;
+import org.vesalainen.parser.annotation.ParserContext;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Terminal;
-import org.vesalainen.parser.util.Tracer;
 import org.vesalainen.regex.Regex;
 import org.vesalainen.util.navi.Location;
 
@@ -45,7 +47,7 @@ import org.vesalainen.util.navi.Location;
  */
 @GenClassname("org.vesalainen.ham.itshfbc.RFaxParserImpl")
 @GrammarDef()
-public abstract class RFaxParser extends Tracer
+public abstract class RFaxParser implements ParserInfo //extends Tracer
 {
     private ObjectFactory factory;
     private DatatypeFactory dataTypeFactory;
@@ -68,8 +70,8 @@ public abstract class RFaxParser extends Tracer
         }
     }
     
-    @ParseMethod(start="mapLine", whiteSpace ={"mapWS"})
-    public abstract List<MapType> parseMapLine(String text);
+    @ParseMethod(start="mapLine", whiteSpace ={"mapWS", "quot"})
+    public abstract List<MapType> parseMapLine(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
     @Rule("mapTitle? map*")
     protected List<MapType> mapLine(List<MapType> list)
@@ -105,9 +107,8 @@ public abstract class RFaxParser extends Tracer
         return map;
     }
     @Rule("mapString scale? projection? lat lat lon lon")
-    protected MapType map(String name, String scale, String projection, double latFrom, double latTo, double lonFrom, double lonTo)
+    protected MapType map(String name, String scale, String projection, double latFrom, double latTo, double lonFrom, double lonTo, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
-        lonFrom = eastOf(latFrom, latTo, lonFrom, lonTo);
         Area area = Area.getSquare(latFrom, latTo, lonFrom, lonTo);
         MapType map = factory.createMapType();
         map.setName(name);
@@ -119,16 +120,16 @@ public abstract class RFaxParser extends Tracer
         }
         return map;
     }
-    private double eastOf(double latFrom, double latTo, double lonFrom, double lonTo)
+    @Rule("coordinate coordinate coordinate coordinate")
+    protected MapType map(Location sw, Location se, Location nw, Location ne)
     {
-        if (lonFrom == Double.POSITIVE_INFINITY)
+        Area area = Area.getArea(sw, se, nw, ne);
+        MapType map = factory.createMapType();
+        for (Location loc : area.getLocations())
         {
-            return lonTo + 2.0*Math.abs(latTo-latFrom);
+            map.getCorners().add(format(loc));
         }
-        else
-        {
-            return lonFrom;
-        }
+        return map;
     }
     @Rule("mapString scale? projection? coordinate coordinate coordinate coordinate")
     protected MapType map(String name, String scale, String projection, Location sw, Location se, Location nw, Location ne)
@@ -150,10 +151,10 @@ public abstract class RFaxParser extends Tracer
         return new Location(lat, lon);
     }
     @ParseMethod(start="schedule")
-    public abstract ScheduleType[] parseSchedule(String text);
+    public abstract ScheduleType[] parseSchedule(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
     @Rule("start ws content ws rpm valid? mapRef?")
-    protected ScheduleType[] schedule(XMLGregorianCalendar[] startArr, String ws1, String content, String ws2, int[] rpm, XMLGregorianCalendar[] valid, String map)
+    protected ScheduleType[] schedule(XMLGregorianCalendar[] startArr, String ws1, String content, String ws2, int[] rpm, XMLGregorianCalendar[] valid, String[] map)
     {
         ScheduleType[] arr = new ScheduleType[startArr.length];
         int index = 0;
@@ -177,7 +178,7 @@ public abstract class RFaxParser extends Tracer
             }
             if (map != null)
             {
-                for (String m : map.split("/"))
+                for (String m : map)
                 {
                     schedule.getMap().add(m);
                 }
@@ -186,10 +187,15 @@ public abstract class RFaxParser extends Tracer
         }
         return arr;
     }
-    @Rule("ws? mapRefString")
-    protected String mapRef(String ws, String map)
+    @Rule("ws? mapRefString '/' mapRefString")
+    protected String[] mapRef(String ws, String map1, String map2)
     {
-        return map;
+        return new String[]{map1, map2};
+    }
+    @Rule("ws? mapRefString")
+    protected String[] mapRef(String ws, String map)
+    {
+        return new String[]{map};
     }
     @Rule("time4")
     @Rule("time4 '/\\-+'")
@@ -199,25 +205,10 @@ public abstract class RFaxParser extends Tracer
         XMLGregorianCalendar time = dataTypeFactory.newXMLGregorianCalendarTime(start/100, start%100, 0, 0);
         return new XMLGregorianCalendar[]{time};
     }
-    @Rule("time4 '/' time4 aring?")
-    protected XMLGregorianCalendar[] start(Integer start1, Integer start2, Character aring)
+    @Rule("time4 '/' time4")
+    protected XMLGregorianCalendar[] start(Integer start1, Integer start2, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
-        if (aring == null)
-        {
-            XMLGregorianCalendar time1 = dataTypeFactory.newXMLGregorianCalendarTime(start1/100, start1%100, 0, 0);
-            XMLGregorianCalendar time2 = dataTypeFactory.newXMLGregorianCalendarTime(start2/100, start2%100, 0, 0);
-            return new XMLGregorianCalendar[]{time1, time2};
-        }
-        else
-        {
-            XMLGregorianCalendar[] arr = new XMLGregorianCalendar[8];
-            for (int ii=0;ii<4;ii++)
-            {
-                arr[ii] = dataTypeFactory.newXMLGregorianCalendarTime(start1/100, 15*ii, 0, 0);
-                arr[ii+4] = dataTypeFactory.newXMLGregorianCalendarTime(start2/100, 15*ii, 0, 0);
-            }
-            return arr;
-        }
+        return customizer.convertStart(start1, start2);
     }
     @Rule("contentString")
     protected String content(String str)
@@ -250,15 +241,15 @@ public abstract class RFaxParser extends Tracer
         };
     }
     @ParseMethod(start="transmitter", whiteSpace ={"whiteSpace", "quot"})
-    public abstract TransmitterType parseTransmitter(String text);
+    public abstract TransmitterType parseTransmitter(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
     @Rule("string? frequency ranges? 'UTC'? '[FJ]3C' power?")
-    protected TransmitterType transmitter(String call, Double freq, String ranges, Double power)
+    protected TransmitterType transmitter(String call, Double freq, String ranges, Double power, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
         TransmitterType transmitter = factory.createTransmitterType();
         transmitter.setCallSign(call);
         transmitter.setFrequency(freq);
-        transmitter.setTimes(ranges);
+        transmitter.setTimes(customizer.convertRanges(freq, ranges));
         if (power != null)
         {
             transmitter.setPower(power);
@@ -291,49 +282,17 @@ public abstract class RFaxParser extends Tracer
         int t = from.intValue();
         return String.format("%04d-%04d", t, t+59);
     }
-    @Rule("number 'Z'? '\\-' number 'Z'? offset?")
-    protected String range(Double from, Double to, Integer offset)
+    @Rule("number 'Z'? '\\-' number 'Z'?")
+    protected String range(Double from, Double to)
     {
-        if (offset != null)
-        {
-            List<String> list = new ArrayList<>();
-            int lim = ((to.intValue()/100)+24)%24;
-            if (from < to)
-            {
-                lim = to.intValue()/100;
-            }
-            else
-            {
-                lim = to.intValue()/100+24;
-            }
-            for (int ii=from.intValue()/100;ii<lim;ii++)
-            {
-                list.add(String.format("%02d%02d-%02d%02d", ii%24, offset%60, (ii+(offset+15)/60)%24, (offset+15)%60));
-            }
-            return list.stream().collect(Collectors.joining(","));
-        }
         return String.format("%04d-%04d", from.intValue(), to.intValue());
     }
-    @Rule("'ALL BROADCAST TIMES' offset?")
-    @Rule("'All Broadcast Times' offset?")
-    @Rule("'\\*' offset?")
-    protected String ranges(Integer offset)
+    @Rule("'ALL BROADCAST TIMES'")
+    @Rule("'All Broadcast Times'")
+    @Rule("'\\*'")
+    protected String ranges(@ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
-        if (offset != null)
-        {
-            List<String> list = new ArrayList<>();
-            for (int ii=0;ii<24;ii++)
-            {
-                list.add(String.format("%02d%02d-%02d%02d", ii, offset%60, ii+(offset+15)/60, (offset+15)%60));
-            }
-            return list.stream().collect(Collectors.joining(","));
-        }
         return null;
-    }
-    @Rule("number")
-    protected Integer offset(Double offset)
-    {
-        return offset.intValue();
     }
     @Terminal(expression = "60/576", priority=1)
     protected int[] rpm60()
@@ -371,13 +330,9 @@ public abstract class RFaxParser extends Tracer
     @Terminal(expression = "\\([^\\)]*\\)")
     protected abstract void quot();
 
-    @Terminal(expression = "([0-9]+(\\.[0-9]+)?[NS]|EQ)")
+    @Terminal(expression = "[0-9]+(\\.[0-9]+)?[NS]")
     protected double lat(String str)
     {
-        if (str.equals("EQ"))
-        {
-            return 0;
-        }
         switch (str.charAt(str.length()-1))
         {
             case 'N':
@@ -389,13 +344,9 @@ public abstract class RFaxParser extends Tracer
         }
     }
 
-    @Terminal(expression = "(EAST OF|[0-9]+(\\.[0-9]+)?[EW])")
+    @Terminal(expression = "[0-9]+(\\.[0-9]+)?[EW]")
     protected double lon(String str)
     {
-        if (str.equals("EAST OF"))
-        {
-            return Double.POSITIVE_INFINITY;
-        }
         switch (str.charAt(str.length()-1))
         {
             case 'E':
@@ -410,7 +361,7 @@ public abstract class RFaxParser extends Tracer
     @Terminal(expression = "1:[0-9\\,]+")
     protected abstract String scale(String scale);
 
-    @Terminal(expression = "([0-9]{1,2}|[A-Za-z][A-Za-z0-9'’/]*)")
+    @Terminal(expression = "([0-9]{1,2}|[A-Za-z][A-Za-z0-9'’]*)")
     protected abstract String mapRefString(String value);
 
     @Terminal(expression = "([0-9]{1,2}|[A-Za-z][A-Za-z0-9'’/]*)[\\.:]?")
@@ -448,11 +399,6 @@ public abstract class RFaxParser extends Tracer
     protected Double number(String value)
     {
         return Double.valueOf(value);
-    }
-    @Terminal(expression = "ö")
-    protected Character aring()
-    {
-        return 'ö';
     }
 
     @Terminal(expression = "[ \t\\.\\-\\,:]+")

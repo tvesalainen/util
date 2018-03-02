@@ -1,61 +1,51 @@
 HALIFAX, NOVA SCOTIA, CANADA
- – not currently active 
- 
-CALL SIGN FREQUENCIES TIMES     EMISSION  POWER 
-CFH     122.5 kHz  ALL BROADCAST TIMES   J3C  10  kW 
-     4271 kHz  ALL BROADCAST TIMES   J3C    6  kW 
-    6496.4 kHz  ALL BROADCAST TIMES   J3C    6  kW 
-10536 kHz  ALL BROADCAST TIMES   J3C    6  kW 
-13510 kHz  ALL BROADCAST TIMES   J3C    6  kW 
-  
-TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP 
-             TIME AREA 
- 
-0001/------ Ice Chart #1 (see note): )       120/576  
--------/1201 3-DAY PROG         120/576 1200    G 
-0101/------ SATELLITE PHOTO INFRARED       120/576 0000 
--------/1222 4-DAY PROG         120/576 1200    G 
--------/1301 5-DAY PROG         120/576 1200    G 
-0201/1401 12/00Z SIGNIFICANT WEATHER DEPICTION     120/576 12/00    A 
-0301/1501 500 mb ANALYSIS         120/576 00/12    B 
-0322/1522 SURFACE ANALYSIS        120/576 00/12    F 
--------/1601 850 mb ANALYSIS         120/576 1200    B 
-0401/1622 36HR 500mb FORECAST       120/576 12/00    H 
-0422/1701 24HR SURFACE PROG        120/576 00/12    A 
-0501/----- 850 mb FORECAST WINDS       120/576 18/00   C 
-0601/1801 36HR SURFACE PROG        120/576 12/00    A 
-------/1822 850 mb FORECAST WINDS       120/576 06/12   C 
-0701/1901 18/06Z SIIGNIFICANT WEATHER DEPICTION     120/576 18/06    A 
-0801/2001 24/36HR SIGNIFICANT WAVE PROGNOSIS       120/576 00/12  A 
-0901/2101 SURFACE ANALYSIS        120/576 06/18    F 
-1001/------ SST: NOVA SCOTIA - MON  NEWFOUNDLAND - TUE/FRI   120/576    E/D  
-1001/------ OFA: NOVA SCOTIA - WED/SAT  NEWFOUNDLAND - SUN/THU  120/576    E/D 
-------/2201 SST: NOVA SCOTIA - TUE/THU/FRI  NEWFOUNDLAND - WED/SAT 120/576    E/D 
-------/2201 OFA: NOVA SCOTIA - SUN  NEWFOUNDLAND - MON    120/576    E/D 
-1022/------ SATELLITE PHOTO INFRARED       120/576 0900 
--------/2222 NEWFOUNDLAND ICE CHART       120/576  
-1101/------ CFH BROADCAST SCHEDULE       120/576 
--------/2301 GULF OF ST LAWRENCE ICE CHART (SEASONAL)    120/576  
- 
-NOTES:  
-This schedule of chart and text transmission is subject to short notice change according to the requirements of the 
-Canadian Forces. 
-The geographical area of coverage for the ice charts varies according to season. The typical areas are: Gulf of St. 
-Lawrence, East Newfoundland waters, Labrador Coast, Hudson Strait, Davis Strait and Baffin Bay. The Canadian Ice 
-Service prepares all ice charts. 
- 
-MAP AREAS: 
-A.  56N 87W, 56N 24W, 34N  38W,  34N 73W  
-E.  50N  75W, 50N 48W,  34N 48W, 34N 75W  
-B.  76N 16W, 30N 20W, 23N  11W,  08N 69W 
-F.  52N  98W, 58N 24W,  30N 39W, 28N 78W 
-C.  52N 80W, 65N 15W, 30N  60W,  34N 17W 
-G. 52N  98W, 56N 24W,  30N 39W, 28N 78W 
-D.  60N 68W, 60N 33W, 43N  33W,  43N 68W 
-H. 30N 107W, 15N 67W, 34N 24W, 79N 60W 
-I.  54N 100W, 58N 22W, 30N 39W,  28N 78W 
-E/D 34N - 60N, 33W - 75W
- 
-(INFORMATION DATED 2011) http://www.ccg-gcc.gc.ca/folios/00026/docs/RAMN-Atlantic-2011-eng.pdf 
- 
- 
+ – not currently active
+CALL SIGN FREQUENCIES TIMES EMISSION POWER
+CFH 122.5 kHz ALL BROADCAST TIMES J3C 10 kW 
+4271 kHz ALL BROADCAST TIMES J3C 6 kW 
+6496.4 kHz ALL BROADCAST TIMES J3C 6 kW
+10536 kHz ALL BROADCAST TIMES J3C 6 kW
+13510 kHz ALL BROADCAST TIMES J3C 6 kW
+TIME CONTENTS OF TRANSMISSION RPM/IOC VALID MAP
+TIME AREA
+0001/------ Ice Chart #1 (see note): Latest) 120/576 LATEST 
+-------/1201 3-DAY PROG 120/576 1200 G
+0101/------ SATELLITE PHOTO INFRARED 120/576 0000 
+-------/1222 4-DAY PROG 120/576 1200 G 
+-------/1301 5-DAY PROG 120/576 1200 G
+0201/1401 12/00Z SIGNIFICANT WEATHER DEPICTION 120/576 12/00 A
+0301/1501 500 mb ANALYSIS 120/576 00/12 B
+0322/1522 SURFACE ANALYSIS 120/576 00/12 F 
+-------/1601 850 mb ANALYSIS 120/576 1200 B
+0401/1622 36HR 500mb FORECAST 120/576 12/00 H
+0422/1701 24HR SURFACE PROG 120/576 00/12 A
+0501/----- 850 mb FORECAST WINDS 120/576 18&00 C
+0601/1801 36HR SURFACE PROG 120/576 12/00 A 
+------/1822 850 mb FORECAST WINDS 120/576 06&12 C
+0701/1901 18/06Z SIIGNIFICANT WEATHER DEPICTION 120/576 18/06 A
+0801/2001 24/36HR SIGNIFICANT WAVE PROGNOSIS 120/576 0&12/12&0 A
+0901/2101 SURFACE ANALYSIS 120/576 06/18 F
+1001/------ SST: NOVA SCOTIA - MON NEWFOUNDLAND - TUE/FRI 120/576 LATEST E/D
+1001/------ OFA: NOVA SCOTIA - WED/SAT NEWFOUNDLAND - SUN/THU 120/576 LATEST E/D 
+------/2201 SST: NOVA SCOTIA - TUE/THU/FRI NEWFOUNDLAND - WED/SAT 120/576 LATEST E/D 
+------/2201 OFA: NOVA SCOTIA - SUN NEWFOUNDLAND - MON 120/576 LATEST E/D
+1022/------ SATELLITE PHOTO INFRARED 120/576 0900 
+-------/2222 NEWFOUNDLAND ICE CHART 120/576 LATEST
+1101/------ CFH BROADCAST SCHEDULE 120/576 
+-------/2301 GULF OF ST LAWRENCE ICE CHART (SEASONAL) 120/576 LATEST
+NOTES:
+This schedule of chart and text transmission is subject to short notice change according to the requirements of the
+Canadian Forces.
+The geographical area of coverage for the ice charts varies according to season. The typical areas are: Gulf of St.
+Lawrence, East Newfoundland waters, Labrador Coast, Hudson Strait, Davis Strait and Baffin Bay. The Canadian Ice
+Service prepares all ice charts.
+MAP AREAS: A. 56N 87W, 56N 24W, 34N 38W, 34N 73W E. 50N 75W, 50N 48W, 34N 48W, 34N 75W
+B. 76N 16W, 30N 20W, 23N 11W, 08N 69W F. 52N 98W, 58N 24W, 30N 39W, 28N 78W
+C. 52N 80W, 65N 15W, 30N 60W, 34N 17W G. 52N 98W, 56N 24W, 30N 39W, 28N 78W
+D. 60N 68W, 60N 33W, 43N 33W, 43N 68W H. 30N 107W, 15N 67W, 34N 24W, 79N 60W
+I. 54N 100W, 58N 22W, 30N 39W, 28N 78W
+The Canadian Forces Fleet MetOc Broadcast service (radioteletype and radiofacsimile) was placed in abeyance
+effective September 2, 2010. The Canadian Forces Fleet MetOc Broadcast may be reinstated and ceased without
+warning as necessitated by military operational requirements. When notified, MCTS will issue a Notice to Shipping
+concerning reinstatements or cessations of this service.
+(INFORMATION DATED 2011) http://www.ccg-gcc.gc.ca/folios/00026/docs/RAMN-Atlantic-2011-eng.pdf

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham.itshfbc.station;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,9 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import static java.util.logging.Level.SEVERE;
 import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -33,6 +33,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.BroadcastStationsFile;
 import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
+import org.vesalainen.ham.itshfbc.GeoDB;
+import org.vesalainen.ham.itshfbc.GeoLocation;
+import org.vesalainen.ham.itshfbc.RFaxParser;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
@@ -42,16 +45,18 @@ import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.regex.SyntaxErrorException;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class StationConverter
+public class StationConverter extends JavaLogging
 {
     private Duration maxDuration;
     private RFaxParser parser = RFaxParser.getInstance();
+    private final Map<String, Integer[]> testConditions;
 
     private enum State {CALL, TIME, MAP};
     private Path dir;
@@ -64,11 +69,15 @@ public class StationConverter
 
     public StationConverter(Path dir, Path out) throws DatatypeConfigurationException
     {
+        super(StationConverter.class);
         this.dir = dir;
+        config("in dir %s", dir);
         this.out = out;
+        config("out %s", out);
         this.dataTypeFactory = DatatypeFactory.newInstance();
         this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
         xml = new BroadcastStationsFile(out.toFile());
+        testConditions = createTestConditions();
     }
 
     public void convert() throws IOException
@@ -81,9 +90,11 @@ public class StationConverter
             {
                 String[] split = line.split("\\,");
                 Path file = dir.resolve(split[0]);
+                config("input %s", file);
+                DefaultCustomizer customizer = DefaultCustomizer.getInstance(split[0]);
+                config("customizer %s", customizer.getClass().getSimpleName());
                 Location location = LocationParser.parse(split[1]);
-                StationType station = convert(file, location);
-                xml.getStations().add(station);
+                StationType station = convert(file, location, customizer);
                 line = br.readLine();
             }
         }
@@ -93,84 +104,96 @@ public class StationConverter
         checkMaps();
         xml.store();
     }
-    public StationType convert(Path in, Location location) throws IOException
+    public StationType convert(Path in, Location location, DefaultCustomizer customizer)
     {
         try (BufferedReader br = Files.newBufferedReader(in))
         {
             State state = State.CALL;
             String line = br.readLine();
+            finest("in: '%s'", line);
             StationType station = xml.addStation(line.trim(), location);
             line = br.readLine();
             while (line != null)
             {
-                line = line.trim();
-                if (line.contains("INFORMATION DATED") && station != null)
+                finest("in: '%s'", line);
+                if (!line.startsWith("#"))
                 {
-                    station.setInfo(line);
-                }
-                else
-                {
-                    if (line.contains("not currently active") && station != null)
+                    if (line.contains("INFORMATION DATED") && station != null)
                     {
-                        station.setActive(false);
+                        station.setInfo(line);
                     }
                     else
                     {
-                        switch (state)
+                        if (line.contains("not currently active") && station != null)
                         {
-                            case CALL:
-                                if (line.startsWith("TIME"))
-                                {
-                                    state = State.TIME;
-                                }
-                                else
-                                {
-                                    call(station, line);
-                                }
-                                break;
-                            case TIME:
-                                if (line.startsWith("MAP"))
-                                {
-                                    state = State.MAP;
-                                    map(station, line);
-                                }
-                                else
-                                {
-                                    time(station, line);
-                                }
-                                break;
-                            case MAP:
-                                    map(station, line);
-                                break;
+                            station.setActive(false);
+                        }
+                        else
+                        {
+                            switch (state)
+                            {
+                                case CALL:
+                                    if (line.startsWith("TIME"))
+                                    {
+                                        state = State.TIME;
+                                    }
+                                    else
+                                    {
+                                        call(station, line, customizer);
+                                    }
+                                    break;
+                                case TIME:
+                                    if (line.startsWith("MAP"))
+                                    {
+                                        state = State.MAP;
+                                        map(station, line, customizer);
+                                    }
+                                    else
+                                    {
+                                        time(station, line, customizer);
+                                    }
+                                    break;
+                                case MAP:
+                                        map(station, line, customizer);
+                                    break;
+                            }
                         }
                     }
                 }
                 line = br.readLine();
             }
+            customizer.afterProcess(station);
             return station;
         }
+        catch (Exception ex)
+        {
+            log(SEVERE, ex, "%S", ex.getMessage());
+            return null;
+        }
     }
-    private void call(StationType station, String line)
+    private void call(StationType station, String line, DefaultCustomizer customizer)
     {
         if (line.length() > 5)
         {
             try
             {
-                TransmitterType transmitter = parser.parseTransmitter(line);
+                String transmitterLine = customizer.transmitterLine(line);
+                finest("cust: '%s'", transmitterLine);
+                TransmitterType transmitter = parser.parseTransmitter(transmitterLine, customizer);
                 station.getTransmitter().add(transmitter);
             }
             catch (SyntaxErrorException ex)
             {
-                System.err.println(ex.getMessage());
+                warning(ex.getMessage());
                 if (ex.getCause() != null)
                 {
-                    ex.printStackTrace();
+                    throw ex;
                 }
             }
         }
     }
 
-    private void time(StationType station, String line)
+    private void time(StationType station, String line, DefaultCustomizer customizer)
     {
         if (line.contains("RETRANSMISSION OF "))
         {
@@ -212,7 +235,9 @@ public class StationConverter
                     {
                         try
                         {
-                            ScheduleType[] schedules = parser.parseSchedule(line);
+                            String sceduleLine = customizer.scheduleLine(line);
+                            finest("cust: '%s'", sceduleLine);
+                            ScheduleType[] schedules = parser.parseSchedule(sceduleLine, customizer);
                             for (ScheduleType schedule : schedules)
                             {
                                 station.getSchedule().add(schedule);
@@ -220,10 +245,10 @@ public class StationConverter
                         }
                         catch (SyntaxErrorException ex)
                         {
-                            System.err.println(ex.getMessage());
+                            warning(ex.getMessage());
                             if (ex.getCause() != null)
                             {
-                                ex.printStackTrace();
+                                throw ex;
                             }
                         }
                     }
@@ -254,39 +279,26 @@ public class StationConverter
         }
         return true;
     }
-    private void map(StationType station, String line)
+    private void map(StationType station, String line, DefaultCustomizer customizer)
     {
         if (line.length() > 5)
         {
             try
             {
-                List<MapType> maps = parser.parseMapLine(line);
+                String mapLine = customizer.mapLine(line);
+                finest("cust: '%s'", mapLine);
+                List<MapType> maps = parser.parseMapLine(mapLine, customizer);
                 station.getMap().addAll(maps);
             }
             catch (SyntaxErrorException ex)
             {
-                System.err.println(ex.getMessage());
+                warning(ex.getMessage());
                 if (ex.getCause() != null)
                 {
-                    ex.printStackTrace();
+                    throw ex;
                 }
             }
         }
-    }
-    private StationType station(String line)
-    {
-        Iterator<String> iterator = map.keySet().iterator();
-        while (iterator.hasNext())
-        {
-            String name = iterator.next();
-            if (line.startsWith(name))
-            {
-                Location loc = map.get(name);
-                iterator.remove();
-                return xml.addStation(name, loc);
-            }
-        }
-        return null;
     }
     private void checkMaps()
     {
@@ -303,11 +315,12 @@ public class StationConverter
                 {
                     if (!map.containsKey(m))
                     {
-                        System.err.println(station.getName()+" "+m+" not found");
+                        warning("%s %s notfound", station.getName(), m);
                     }
                 }
             }
         }
+        check(station);
     }
     private void handleDurations()
     {
@@ -316,29 +329,32 @@ public class StationConverter
     private void handleDurations(StationType station)
     {
         List<ScheduleType> schedules = station.getSchedule();
-        schedules.sort(SCHEDULE_COMP);
-        ScheduleType prev = null;
-        for (ScheduleType cur : schedules)
+        if (!schedules.isEmpty())
         {
-            if (prev != null)
+            schedules.sort(SCHEDULE_COMP);
+            ScheduleType prev = null;
+            for (ScheduleType cur : schedules)
             {
-                GregorianCalendar time1 = prev.getTime().toGregorianCalendar();
-                GregorianCalendar time2 = cur.getTime().toGregorianCalendar();
-                Duration duration = dataTypeFactory.newDuration(time2.getTimeInMillis()-time1.getTimeInMillis());
-                if (duration.isShorterThan(maxDuration) && prev.getDuration() == null)
+                if (prev != null)
                 {
-                    prev.setDuration(duration);
+                    GregorianCalendar time1 = prev.getTime().toGregorianCalendar();
+                    GregorianCalendar time2 = cur.getTime().toGregorianCalendar();
+                    Duration duration = dataTypeFactory.newDuration(time2.getTimeInMillis()-time1.getTimeInMillis());
+                    if (duration.isShorterThan(maxDuration) && prev.getDuration() == null)
+                    {
+                        prev.setDuration(duration);
+                    }
                 }
+                prev = cur;
             }
-            prev = cur;
-        }
-        ScheduleType ls = schedules.get(schedules.size()-1);
-        GregorianCalendar first = schedules.get(0).getTime().toGregorianCalendar();
-        GregorianCalendar last = ls.getTime().toGregorianCalendar();
-        Duration duration = dataTypeFactory.newDuration(24*60*60000-(last.getTimeInMillis()-first.getTimeInMillis()));
-        if (duration.isShorterThan(maxDuration) && ls.getDuration() == null)
-        {
-            ls.setDuration(duration);
+            ScheduleType ls = schedules.get(schedules.size()-1);
+            GregorianCalendar first = schedules.get(0).getTime().toGregorianCalendar();
+            GregorianCalendar last = ls.getTime().toGregorianCalendar();
+            Duration duration = dataTypeFactory.newDuration(24*60*60000-(last.getTimeInMillis()-first.getTimeInMillis()));
+            if (duration.isShorterThan(maxDuration) && ls.getDuration() == null)
+            {
+                ls.setDuration(duration);
+            }
         }
     }
     private void handleCallSigns()
@@ -462,5 +478,72 @@ public class StationConverter
         loc = db.search(100, of ("CITY", "LONDON") , of ("NATION", "UNITED KINGDOM"));
         map.put("NORTHWOOD, UNITED KINGDOM", loc.getLocation());
         return map;
+    }
+    private Map<String, Integer[]> createTestConditions()
+    {
+        Map<String,Integer[]> map = new HashMap<>();
+        map.put("CAPE NAVAL, SOUTH AFRICA", new Integer[]{4, 9, 4});
+        map.put("TOKYO, JAPAN", new Integer[]{3, 75, 6});
+        map.put("PEVEK, CHUKOTKA PENINSULA", new Integer[]{1, 3, 1});
+        map.put("TAIPEI, REPUBLIC OF CHINA", new Integer[]{4, 38, 1});
+        map.put("SEOUL, REPUBLIC OF KOREA", new Integer[]{5, 2, 3});
+        map.put("BANGKOK, THAILAND", new Integer[]{1, 26, 1});
+        map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 31, 0});
+        map.put("NORTHWOOD, UNITED KINGDOM (PERSIAN GULF)", new Integer[]{3, 69, 1});
+        map.put("RIO DE JANEIRO, BRAZIL", new Integer[]{2, 10, 4});
+        map.put("VALPARAISO PLAYA ANCHA, CHILE  (CBV)", new Integer[]{3, 12, 2});
+        map.put("PUNTA ARENAS MAGALLANES, CHILE (CBM)", new Integer[]{2, 12, 2});
+        map.put("HALIFAX, NOVA SCOTIA, CANADA", new Integer[]{5, 34, 9});
+        map.put("IQALUIT, CANADA", new Integer[]{2, 8, 0});
+        map.put("RESOLUTE, CANADA", new Integer[]{2, 8, 0});
+        map.put("SYDNEY - NOVA SCOTIA, CANADA", new Integer[]{2, 5, 0});
+        map.put("INUVIK, CANADA", new Integer[]{2, 4, 0});
+        map.put("KODIAK, ALASKA, U.S.A.", new Integer[]{4, 50, 7});
+        map.put("PT. REYES, CALIFORNIA, U.S.A.", new Integer[]{5, 83, 10});
+        map.put("NEW ORLEANS, LOUISIANA, U.S.A", new Integer[]{4, 61, 6});
+        map.put("BOSTON, MASSACHUSETTS, U.S.A.", new Integer[]{4, 71, 8});
+        map.put("CHARLEVILLE, AUSTRALIA", new Integer[]{5, 62, 11});
+        map.put("WILUNA, AUSTRALIA", new Integer[]{5, 62, 11});
+        map.put("WELLINGTON, NEW ZEALAND", new Integer[]{5, 64, 2});
+        map.put("HONOLULU, HAWAII, U.S.A.", new Integer[]{3, 96, 15});
+        map.put("ATHENS, GREECE", new Integer[]{2, 11, 3});
+        map.put("MURMANSK, RUSSIA", new Integer[]{4, 7, 3});
+        map.put("HAMBURG/PINNEBERG, GERMANY", new Integer[]{3, 46, 0});
+        map.put("NORTHWOOD, UNITED KINGDOM", new Integer[]{4, 93, 0});
+        return map;
+    }
+    private void check(StationType station)
+    {
+        boolean ok = true;
+        Integer[] tc = testConditions.get(station.getName());
+        if (tc == null)
+        {
+            warning("%s not found", station.getName());
+            warning("%s failed", station.getName());
+            return;
+        }
+        if (tc[0] != station.getTransmitter().size())
+        {
+            warning("Transmitter count %d != %d", station.getTransmitter().size(), tc[0]);
+            ok = false;
+        }
+        if (tc[1] != station.getSchedule().size())
+        {
+            warning("Schedule count %d != %d", station.getSchedule().size(), tc[1]);
+            ok = false;
+        }
+        if (tc[2] != station.getMap().size())
+        {
+            warning("Map count %d != %d", station.getMap().size(), tc[2]);
+            ok = false;
+        }
+        if (ok)
+        {
+            config("%s ok", station.getName());
+        }
+        else
+        {
+            warning("%s failed", station.getName());
+        }
     }
 }

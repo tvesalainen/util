@@ -19,6 +19,7 @@ package org.vesalainen.ham.itshfbc;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.TransmitterType;
@@ -37,7 +38,8 @@ public class RFaxParserTest
     @Test
     public void testSchedule()
     {
-        ScheduleType[] schedules = parser.parseSchedule("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000");
+        DefaultCustomizer customizer = DefaultCustomizer.getInstance("Tokyo.txt");
+        ScheduleType[] schedules = parser.parseSchedule("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000", customizer);
         assertEquals(1, schedules.length);
         ScheduleType schedule = schedules[0];
         assertEquals(12, schedule.getTime().getHour());
@@ -49,9 +51,16 @@ public class RFaxParserTest
         assertEquals(0, schedule.getValid().getMinute());
     }
     @Test
+    public void testSchedule2()
+    {
+        DefaultCustomizer customizer = DefaultCustomizer.getInstance("foo.txt");
+        ScheduleType[] schedules = parser.parseSchedule("0255/1455  SEA STATE ANALYSIS, WIND/WAVE ANALYSIS  120/576      00/12    1/8", customizer);
+    }
+    @Test
     public void testMap1()
     {
-        List<MapType> maps = parser.parseMapLine("MAP AREAS:   1.  20N - 70N,   115W - 135E        2.  20N - 70N,   115W - 175W");
+        DefaultCustomizer customizer = DefaultCustomizer.getInstance("PtReyes.txt");
+        List<MapType> maps = parser.parseMapLine("MAP AREAS:   1.  20N - 70N,   115W - 135E        2.  20N - 70N,   115W - 175W", customizer);
         assertEquals(2, maps.size());
         assertEquals("1", maps.get(0).getName());
         assertEquals("2", maps.get(1).getName());
@@ -59,9 +68,21 @@ public class RFaxParserTest
     @Test
     public void testMap2()
     {
-        List<MapType> maps = parser.parseMapLine("             5.  05N - 55N,  EAST OF 180W        6.  23N - 42N,  EAST OF 150W");
+        DefaultCustomizer customizer = DefaultCustomizer.getInstance("PtReyes.txt");
+        String mapLine = customizer.mapLine("             5.  05N - 55N,  EAST OF 180W        6.  23N - 42N,  EAST OF 150W");
+        List<MapType> maps = parser.parseMapLine(mapLine, customizer);
         assertEquals(2, maps.size());
         assertEquals("5", maps.get(0).getName());
         assertEquals("6", maps.get(1).getName());
+    }
+    @Test
+    public void testMap3()
+    {
+        DefaultCustomizer customizer = DefaultCustomizer.getInstance("PtReyes.txt");
+        String mapLine = customizer.mapLine("             7.  05N - 32N,  EAST OF 130W        8.  18N - 62N,  EAST OF 157W");
+        List<MapType> maps = parser.parseMapLine(mapLine, customizer);
+        assertEquals(2, maps.size());
+        assertEquals("7", maps.get(0).getName());
+        assertEquals("8", maps.get(1).getName());
     }
 }

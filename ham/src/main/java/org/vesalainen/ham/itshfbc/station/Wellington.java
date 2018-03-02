@@ -1,0 +1,121 @@
+/*
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.vesalainen.ham.itshfbc.station;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.xml.datatype.XMLGregorianCalendar;
+import org.vesalainen.lang.Primitives;
+
+/**
+ *
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ */
+public class Wellington extends DefaultCustomizer
+{
+
+    @Override
+    public XMLGregorianCalendar[] convertStart(int start1, int start2)
+    {
+        XMLGregorianCalendar[] arr = new XMLGregorianCalendar[8];
+        for (int ii=0;ii<4;ii++)
+        {
+            arr[ii] = dataTypeFactory.newXMLGregorianCalendarTime(start1/100, 15*ii, 0, 0);
+            arr[ii+4] = dataTypeFactory.newXMLGregorianCalendarTime(start2/100, 15*ii, 0, 0);
+        }
+        return arr;
+    }
+
+    @Override
+    public String convertRanges(double frequency, String range)
+    {
+        int offset = -1;
+        if (Primitives.equals(3247.4, frequency))
+        {
+            offset = 45;
+        }
+        if (Primitives.equals(5807, frequency))
+        {
+            offset = 0;
+        }
+        if (Primitives.equals(9459, frequency))
+        {
+            offset = 15;
+        }
+        if (Primitives.equals(13550.5, frequency))
+        {
+            offset = 30;
+        }
+        if (Primitives.equals(16340.1, frequency))
+        {
+            offset = 45;
+        }
+        if (offset == -1)
+        {
+            throw new UnsupportedOperationException(frequency+ "kHz");
+        }
+        if (range != null)
+        {
+            String[] split = range.split("\\-");
+            int from = Primitives.parseInt(split[0]);
+            int to = Primitives.parseInt(split[1]);
+            return range(from, to, offset);
+        }
+        else
+        {
+            return allBroadcastTimes(offset);
+        }
+    }
+    protected String range(int from, int to, int offset)
+    {
+        List<String> list = new ArrayList<>();
+        int lim = ((to/100)+24)%24;
+        if (from < to)
+        {
+            lim = to/100;
+        }
+        else
+        {
+            lim = to/100+24;
+        }
+        for (int ii=from/100;ii<lim;ii++)
+        {
+            list.add(String.format("%02d%02d-%02d%02d", ii%24, offset%60, (ii+(offset+15)/60)%24, (offset+15)%60));
+        }
+        return list.stream().collect(Collectors.joining(","));
+    }
+    public String allBroadcastTimes(int offset)
+    {
+        List<String> list = new ArrayList<>();
+        for (int ii=0;ii<24;ii++)
+        {
+            list.add(String.format("%02d%02d-%02d%02d", ii, offset%60, ii+(offset+15)/60, (offset+15)%60));
+        }
+        return list.stream().collect(Collectors.joining(","));
+    }
+
+    @Override
+    public String mapLine(String line)
+    {
+        return super.mapLine(line)
+                .replace("TNZ - TASMAN SEA - NEW ZEALAND", "TNZ 31S - 47S, 147E - 180E - 175W")
+                .replace("SWP - SOUTHWEST PACIFIC", "SWP  0S - 55S, 170E - 180E - 128W")
+                ;
+    }
+
+}

@@ -14,36 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.xml.datatype.DatatypeConfigurationException;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.vesalainen.ham.BroadcastStationsFile;
+package org.vesalainen.ham.itshfbc.station;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class StationConverterT
+public class Halifax extends DefaultCustomizer
 {
-    
-    public StationConverterT()
-    {
-    }
 
-    @Test
-    public void test() throws IOException, DatatypeConfigurationException
+    @Override
+    public String scheduleLine(String line)
     {
-        Path resources = Paths.get("src", "main", "resources");
-        Path in = resources.resolve("rfax.txt");
-        Path out = resources.resolve("broadcast-stations.xml");
-        StationConverter sc = new StationConverter(resources, out);
-        sc.convert();
+        return super.scheduleLine(line)
+                .replace("0&12/12&0", "00/12")
+                .replace("18&00", "18/00")
+                .replace("06&12", "06/12")
+                ;
     }
     
 }
