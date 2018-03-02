@@ -982,4 +982,19 @@ public class PrimitivesTest
         assertEquals(-12345e-2, Primitives.findScientific("  -12345.e-2   "), 1e-10);
         assertEquals(.6789e3, Primitives.findScientific("  .6789e3   "), 1e-10);
     }
+    @Test
+    public void testEquals1()
+    {
+        assertTrue(Primitives.equals(0, 0));
+        assertTrue(Primitives.equals(-12345e-2, 3*-12345e-2/3));
+        assertFalse(Primitives.equals(-12345e-2, -12346e-2));
+    }
+    @Test
+    public void testEquals2()
+    {
+        assertTrue(Primitives.equals(0F, 0F));
+        assertTrue(Primitives.equals((float)(-12345e-2F), (float)(3*-12345e-2/3)));
+        assertFalse(Primitives.equals((float)(-12345e-2F), (float)(-12346e-2)));
+    }
+    
 }

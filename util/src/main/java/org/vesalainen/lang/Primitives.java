@@ -48,6 +48,28 @@ public class Primitives
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
     /**
+     * Returns true if values differ less that first parameters ulp.
+     * @param v1
+     * @param v2
+     * @return 
+     * @see java.lang.Math#ulp(double) 
+     */
+    public static final boolean equals(double v1, double v2)
+    {
+        return Math.abs(v1-v2) < Math.ulp(v1);
+    }
+    /**
+     * Returns true if values differ less that first parameters ulp.
+     * @param v1
+     * @param v2
+     * @return 
+     * @see java.lang.Math#ulp(float) 
+     */
+    public static final boolean equals(float v1, float v2)
+    {
+        return Math.abs(v1-v2) < Math.ulp(v1);
+    }
+    /**
      * Returns IntStream where each item is a digit. I.e zero leading digits.
      * @param v
      * @param length
