@@ -33,9 +33,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.BroadcastStationsFile;
 import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
-import org.vesalainen.ham.itshfbc.GeoDB;
-import org.vesalainen.ham.itshfbc.GeoLocation;
-import org.vesalainen.ham.itshfbc.RFaxParser;
 import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.MapType;
@@ -99,6 +96,7 @@ public class StationConverter extends JavaLogging
         }
         handleCallSigns();
         handleRetrans();
+        mergeSchedules();
         handleDurations();
         checkMaps();
         testCases();
@@ -321,6 +319,28 @@ public class StationConverter extends JavaLogging
             }
         }
     }
+    private void mergeSchedules()
+    {
+        xml.getStations().forEach(this::mergeSchedules);
+    }
+    private void mergeSchedules(StationType station)
+    {
+        MapList<XMLGregorianCalendar,ScheduleType> ml = new HashMapList<>();
+        for (ScheduleType schedule : station.getSchedule())
+        {
+            ml.add(schedule.getTime(), schedule);
+        }
+        station.getSchedule().clear();
+        ml.forEach((t,l)->
+        {
+            ScheduleType st = l.get(0);
+            station.getSchedule().add(st);
+            if (l.size() > 1)
+            {
+                st.setContent(l.stream().map((s)->s.getContent()).collect(Collectors.joining(" / ")));
+            }
+        });
+    }
     private void handleDurations()
     {
         xml.getStations().forEach(this::handleDurations);
@@ -406,7 +426,7 @@ public class StationConverter extends JavaLogging
                     ScheduleType ns = factory.createScheduleType();
                     int t = Integer.parseInt(start[si]);
                     ns.setTime(dataTypeFactory.newXMLGregorianCalendarTime(t/100, t%100, 0, 0));
-                    ns.setContent(key+trg.getContent());
+                    ns.setContent("RE: "+trg.getContent());
                     ns.setRpm(trg.getRpm());
                     ns.setIoc(trg.getIoc());
                     ns.setValid(trg.getValid());

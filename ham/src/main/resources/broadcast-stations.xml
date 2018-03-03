@@ -117,8 +117,7 @@
         <transmitter call-sign="RBW48" frequency="10130.0" times="0600-1900"/>
         <schedule time="07:00:00Z" content="36HR SURFACE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="A"/>
         <schedule time="08:00:00Z" content="SEA STATE ANALYSIS" rpm="120" ioc="576" valid="06:00:00Z" map="C"/>
-        <schedule time="14:00:00Z" duration="PT0.000S" content="SURFACE TEMP ANALYSIS/ICEBERG POSITIONS" rpm="120" ioc="576" valid="12:00:00Z" map="B"/>
-        <schedule time="14:00:00Z" duration="PT30M0.000S" content="ANAL OF ICEBERG POSITIONS FOR PAST+24HR" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
+        <schedule time="14:00:00Z" duration="PT30M0.000S" content="SURFACE TEMP ANALYSIS/ICEBERG POSITIONS / ANAL OF ICEBERG POSITIONS FOR PAST+24HR" rpm="120" ioc="576" valid="12:00:00Z" map="B"/>
         <schedule time="14:30:00Z" content="24HR SEA STATE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <schedule time="18:50:00Z" content="BROADCAST SCHEDULE" rpm="90" ioc="576" map=""/>
         <schedule time="20:00:00Z" content="ICEBERG PROGNOSIS" rpm="120" ioc="576" map=""/>
@@ -136,36 +135,26 @@
         <transmitter call-sign="9VF/252" frequency="16035.0" times="0740-1010,1415-1815" power="10.0"/>
         <transmitter call-sign="9VF/252" frequency="17430.0" times="0740-1010,1415-1815" power="10.0"/>
         <schedule time="01:45:00Z" duration="PT15M0.000S" content="Sports Ed 2(R), (Seasonal during Sumo or High School baseball series)" rpm="60" ioc="576" map=""/>
-        <schedule time="02:00:00Z" duration="PT0.000S" content="MON: NX for 1 week" rpm="120" ioc="576" map=""/>
-        <schedule time="02:00:00Z" duration="PT45M0.000S" content="TUE-SUN: NX (R),Epidemic Information(R)(SUN only)," rpm="120" ioc="576" map=""/>
+        <schedule time="02:00:00Z" duration="PT45M0.000S" content="MON: NX for 1 week / TUE-SUN: NX (R),Epidemic Information(R)(SUN only)," rpm="120" ioc="576" map=""/>
         <schedule time="02:45:00Z" content="Morning Ed(R), Sports Ed 1(R), NX(R)" rpm="60" ioc="576" map=""/>
-        <schedule time="04:30:00Z" duration="PT0.000S" content="WX Chart" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="04:30:00Z" content="Ocean Information(n)(4th,14th, and 24th)" rpm="120" ioc="576" map=""/>
-        <schedule time="05:40:00Z" duration="PT0.000S" content="TUE&amp;FRI: Satellite Fishery Information" rpm="60" ioc="576" map=""/>
-        <schedule time="05:40:00Z" duration="PT0.000S" content="SAT&amp;SUN: Ocean Graphic Information" rpm="60" ioc="576" map=""/>
-        <schedule time="05:40:00Z" duration="PT30M0.000S" content="SUN&amp;MON: Sea Surface Current Prog" rpm="60" ioc="576" map=""/>
+        <schedule time="04:30:00Z" content="WX Chart / Ocean Information(n)(4th,14th, and 24th)" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="05:40:00Z" duration="PT30M0.000S" content="TUE&amp;FRI: Satellite Fishery Information / SAT&amp;SUN: Ocean Graphic Information / SUN&amp;MON: Sea Surface Current Prog" rpm="60" ioc="576" map=""/>
         <schedule time="06:10:00Z" duration="PT25M0.000S" content="TUE-SAT: English Ed (R)" rpm="120" ioc="576" map=""/>
         <schedule time="06:35:00Z" duration="PT15M0.000S" content="MON-SAT: FAX DAYORI 4(N), (except 2nd &amp; 4th MON" rpm="60" ioc="576" map=""/>
-        <schedule time="06:50:00Z" duration="PT0.000S" content="SUN:WX Chart, Fishing Information (3 times per month)" rpm="60" ioc="576" valid="03:00:00Z" map=""/>
-        <schedule time="06:50:00Z" duration="PT15M0.000S" content="MON-SAT: WX Chart" rpm="60" ioc="576" valid="03:00:00Z" map=""/>
+        <schedule time="06:50:00Z" duration="PT15M0.000S" content="SUN:WX Chart, Fishing Information (3 times per month) / MON-SAT: WX Chart" rpm="60" ioc="576" valid="03:00:00Z" map=""/>
         <schedule time="07:05:00Z" duration="PT40M0.000S" content="Background Stories(N), Life(N)(except MON)" rpm="60" ioc="576" map=""/>
-        <schedule time="07:45:00Z" duration="PT0.000S" content="SUN:" rpm="120" ioc="576" map=""/>
-        <schedule time="07:45:00Z" duration="PT0.000S" content="MON-SAT:" rpm="120" ioc="576" map=""/>
-        <schedule time="07:45:00Z" content="NATIONAL HOLIDAYS:" rpm="120" ioc="576" map=""/>
+        <schedule time="07:45:00Z" content="SUN: / MON-SAT: / NATIONAL HOLIDAYS:" rpm="120" ioc="576" map=""/>
         <schedule time="11:00:00Z" duration="PT30M0.000S" content="NX (N), Sumo match (Seasonal)(R)" rpm="60" ioc="576" map=""/>
         <schedule time="11:30:00Z" content="MON-FRI: English Ed (N)" rpm="60" ioc="576" map=""/>
         <schedule time="13:35:00Z" duration="PT40M0.000S" content="Background Stories(R), Life(R)(except MON)" rpm="60" ioc="576" map=""/>
         <schedule time="14:15:00Z" duration="PT30M0.000S" content="MON-FRI: Kaiun-Suisan News(R)" rpm="60" ioc="576" map=""/>
         <schedule time="14:45:00Z" duration="PT15M0.000S" content="Sports Ed 2(N), (Seasonal during Sumo or High School baseball series)" rpm="60" ioc="576" map=""/>
         <schedule time="15:00:00Z" content="Morning Ed(N), Sports Ed 1(N), NX(R)" rpm="60" ioc="576" map=""/>
-        <schedule time="16:45:00Z" duration="PT0.000S" content="MON: Sunday  Ed(R)" rpm="60" ioc="576" map=""/>
-        <schedule time="16:45:00Z" content="TUE-SUN: Evening  Ed(R)" rpm="60" ioc="576" map=""/>
+        <schedule time="16:45:00Z" content="MON: Sunday  Ed(R) / TUE-SUN: Evening  Ed(R)" rpm="60" ioc="576" map=""/>
         <schedule time="18:10:00Z" content="TUE-SAT: English Ed (R)" rpm="60" ioc="576" map=""/>
-        <schedule time="19:30:00Z" duration="PT0.000S" content="MON: Evening Ed(R), NX(R), FAX DAYORI 2,1,3 (R)" rpm="60" ioc="576" map=""/>
-        <schedule time="19:30:00Z" content="TUE-SUN: Evening Ed(R), NX(R), FAX DAYORI 2,1,4" rpm="60" ioc="576" map=""/>
+        <schedule time="19:30:00Z" content="MON: Evening Ed(R), NX(R), FAX DAYORI 2,1,3 (R) / TUE-SUN: Evening Ed(R), NX(R), FAX DAYORI 2,1,4" rpm="60" ioc="576" map=""/>
         <schedule time="20:30:00Z" content="DAY AFTER NATIONAL HOLIDAYS: NX(R), FAX DAYORI 2,1,4 (R)" rpm="60" ioc="576" map=""/>
-        <schedule time="22:15:00Z" duration="PT0.000S" content="MON and DAY AFTER NATIONAL HOLIDAYS:" rpm="120" ioc="576" map=""/>
-        <schedule time="22:15:00Z" content="TUE-SUN:" rpm="120" ioc="576" map=""/>
+        <schedule time="22:15:00Z" content="MON and DAY AFTER NATIONAL HOLIDAYS: / TUE-SUN:" rpm="120" ioc="576" map=""/>
     </station>
     <station name="SYDNEY - NOVA SCOTIA, CANADA" location="46.149833N60.183167W" info="(INFORMATION DATED 2014) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-ATLANTIC-eng.pdf " active="true">
         <transmitter call-sign="VCO" frequency="4416.0" times="2200-2331"/>
@@ -190,8 +179,8 @@
         <schedule time="03:25:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="2"/>
         <schedule time="03:38:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="03:51:00Z" duration="PT11M0.000S" content="SATELLITE IMAGE" rpm="120" ioc="576" valid="00:00:00Z" map="5"/>
-        <schedule time="04:02:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="2"/>
-        <schedule time="04:15:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="04:02:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="2"/>
+        <schedule time="04:15:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="04:28:00Z" duration="PT10M0.000S" content="500 mb ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="4"/>
         <schedule time="04:38:00Z" duration="PT14M0.000S" content="ICE CHART (REBROADCAST)" rpm="120" ioc="576" valid="21:00:00Z" map=""/>
         <schedule time="04:52:00Z" content="CYCLONE DANGER AREA* or 48HR HIGH WIND/WAVES" rpm="120" ioc="576" valid="03:00:00Z" map="7"/>
@@ -208,8 +197,8 @@
         <schedule time="09:25:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="2"/>
         <schedule time="09:38:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="3"/>
         <schedule time="09:51:00Z" duration="PT11M0.000S" content="SATELLITE IMAGE" rpm="120" ioc="576" valid="06:00:00Z" map="6"/>
-        <schedule time="10:02:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="2"/>
-        <schedule time="10:15:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="3"/>
+        <schedule time="10:02:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="2"/>
+        <schedule time="10:15:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="06:00:00Z" map="3"/>
         <schedule time="10:28:00Z" duration="PT11M0.000S" content="CYCLONE DANGER AREA* or 48HR HIGH WIND/WAVES" rpm="120" ioc="576" valid="09:00:00Z" map="7"/>
         <schedule time="10:39:00Z" content="REBROADCAST/N American Ice Service Chart" rpm="120" ioc="576" valid="21:00:00Z" map=""/>
         <schedule time="14:00:00Z" duration="PT5M0.000S" content="TEST PATTERN" rpm="120" ioc="576" map=""/>
@@ -224,8 +213,8 @@
         <schedule time="15:38:00Z" duration="PT22M0.000S" content="SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="16:00:00Z" content="ICE CHART (REBROADCAST)" rpm="120" ioc="576" map=""/>
         <schedule time="17:20:00Z" duration="PT3M0.000S" content="TEST PATTERN" rpm="120" ioc="576" map=""/>
-        <schedule time="17:23:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="12:00:00Z" map="2"/>
-        <schedule time="17:36:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="17:23:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="12:00:00Z" map="2"/>
+        <schedule time="17:36:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="17:49:00Z" duration="PT10M0.000S" content="500 mb ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
         <schedule time="17:59:00Z" duration="PT11M0.000S" content="SEA STATE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
         <schedule time="18:10:00Z" duration="PT14M0.000S" content="SPARE OR EXPERIMENTAL" rpm="120" ioc="576" map=""/>
@@ -244,12 +233,12 @@
         <schedule time="20:45:00Z" duration="PT10M0.000S" content="96 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
         <schedule time="20:55:00Z" duration="PT10M0.000S" content="96 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
         <schedule time="21:05:00Z" duration="PT10M0.000S" content="96 HR WAVE PERIOD FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
-        <schedule time="21:15:00Z" duration="PT10M0.000S" content="REBROADCAST OF 96 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
+        <schedule time="21:15:00Z" duration="PT10M0.000S" content="RE: 96 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
         <schedule time="21:25:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="2"/>
         <schedule time="21:38:00Z" duration="PT13M0.000S" content="SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="3"/>
         <schedule time="21:51:00Z" duration="PT11M0.000S" content="SATELLITE IMAGE" rpm="120" ioc="576" valid="18:00:00Z" map="6"/>
-        <schedule time="22:02:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="2"/>
-        <schedule time="22:15:00Z" duration="PT13M0.000S" content="REBROADCAST OF SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="3"/>
+        <schedule time="22:02:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART1 NE ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="2"/>
+        <schedule time="22:15:00Z" duration="PT13M0.000S" content="RE: SURFACE ANALYSIS (PART2 NW ATLANTIC)" rpm="120" ioc="576" valid="18:00:00Z" map="3"/>
         <schedule time="22:28:00Z" duration="PT11M0.000S" content="CYCLONE DANGER AREA* or 48HR HIGH WIND/WAVES" rpm="120" ioc="576" valid="21:00:00Z" map="7"/>
         <schedule time="22:39:00Z" content="REBROADCAST/N American Ice Service Chart" rpm="120" ioc="576" valid="21:00:00Z" map=""/>
         <map name="1" corners="28N45W 28N85W 52N45W 52N85W"/>
@@ -476,8 +465,7 @@
         <schedule time="07:01:00Z" content="18/06Z SIIGNIFICANT WEATHER DEPICTION" rpm="120" ioc="576" valid="18:00:00Z" map="A"/>
         <schedule time="08:01:00Z" content="24/36HR SIGNIFICANT WAVE PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map="A"/>
         <schedule time="09:01:00Z" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="06:00:00Z" map="F"/>
-        <schedule time="10:01:00Z" duration="PT0.000S" content="SST: NOVA SCOTIA - MON NEWFOUNDLAND - TUE/FRI" rpm="120" ioc="576" map="E D"/>
-        <schedule time="10:01:00Z" duration="PT21M0.000S" content="OFA: NOVA SCOTIA - WED/SAT NEWFOUNDLAND - SUN/THU" rpm="120" ioc="576" map="E D"/>
+        <schedule time="10:01:00Z" duration="PT21M0.000S" content="SST: NOVA SCOTIA - MON NEWFOUNDLAND - TUE/FRI / OFA: NOVA SCOTIA - WED/SAT NEWFOUNDLAND - SUN/THU" rpm="120" ioc="576" map="E D"/>
         <schedule time="10:22:00Z" duration="PT39M0.000S" content="SATELLITE PHOTO INFRARED" rpm="120" ioc="576" valid="09:00:00Z" map=""/>
         <schedule time="11:01:00Z" content="CFH BROADCAST SCHEDULE" rpm="120" ioc="576" map=""/>
         <schedule time="12:01:00Z" duration="PT21M0.000S" content="3-DAY PROG" rpm="120" ioc="576" valid="12:00:00Z" map="G"/>
@@ -494,8 +482,7 @@
         <schedule time="19:01:00Z" content="18/06Z SIIGNIFICANT WEATHER DEPICTION" rpm="120" ioc="576" valid="06:00:00Z" map="A"/>
         <schedule time="20:01:00Z" content="24/36HR SIGNIFICANT WAVE PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map="A"/>
         <schedule time="21:01:00Z" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="18:00:00Z" map="F"/>
-        <schedule time="22:01:00Z" duration="PT0.000S" content="SST: NOVA SCOTIA - TUE/THU/FRI NEWFOUNDLAND - WED/SAT" rpm="120" ioc="576" map="E D"/>
-        <schedule time="22:01:00Z" duration="PT21M0.000S" content="OFA: NOVA SCOTIA - SUN NEWFOUNDLAND - MON" rpm="120" ioc="576" map="E D"/>
+        <schedule time="22:01:00Z" duration="PT21M0.000S" content="SST: NOVA SCOTIA - TUE/THU/FRI NEWFOUNDLAND - WED/SAT / OFA: NOVA SCOTIA - SUN NEWFOUNDLAND - MON" rpm="120" ioc="576" map="E D"/>
         <schedule time="22:22:00Z" duration="PT39M0.000S" content="NEWFOUNDLAND ICE CHART" rpm="120" ioc="576" map=""/>
         <schedule time="23:01:00Z" content="GULF OF ST LAWRENCE ICE CHART (SEASONAL)" rpm="120" ioc="576" map=""/>
         <map name="A" corners="56N87W 56N24W 34N38W 34N73W"/>
@@ -677,14 +664,14 @@
         <schedule time="00:00:00Z" duration="PT5M0.000S" content="TEST PATTERN" rpm="120" ioc="576" map=""/>
         <schedule time="00:05:00Z" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)" rpm="120" ioc="576" valid="18:00:00Z" map="1"/>
         <schedule time="00:20:00Z" duration="PT15M0.000S" content="TROPICAL SURFACE ANALYSIS (E HALF)" rpm="120" ioc="576" valid="18:00:00Z" map="2"/>
-        <schedule time="00:35:00Z" duration="PT10M0.000S" content="REBROADCAST OF 24 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="00:45:00Z" duration="PT10M0.000S" content="REBROADCAST OF 48 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="00:55:00Z" duration="PT10M0.000S" content="REBROADCAST OF 72 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="01:05:00Z" duration="PT10M0.000S" content="REBROADCAST OF 24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="01:15:00Z" duration="PT10M0.000S" content="REBROADCAST OF 48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="01:25:00Z" duration="PT10M0.000S" content="REBROADCAST OF 72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="00:35:00Z" duration="PT10M0.000S" content="RE: 24 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="00:45:00Z" duration="PT10M0.000S" content="RE: 48 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="00:55:00Z" duration="PT10M0.000S" content="RE: 72 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="01:05:00Z" duration="PT10M0.000S" content="RE: 24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="01:15:00Z" duration="PT10M0.000S" content="RE: 48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="01:25:00Z" duration="PT10M0.000S" content="RE: 72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="01:35:00Z" duration="PT15M0.000S" content="CYCLONE DANGER AREA* or 48HR HIGH WIND/WAVES" rpm="120" ioc="576" valid="21:00:00Z" map="6"/>
-        <schedule time="01:50:00Z" duration="PT10M0.000S" content="REBROADCAST OF 72 HR WAVE PERIOD/SWELL DIRECTION" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="01:50:00Z" duration="PT10M0.000S" content="RE: 72 HR WAVE PERIOD/SWELL DIRECTION" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="02:00:00Z" duration="PT15M0.000S" content="GOES IR TROPICAL SATELLITE IMAGE" rpm="120" ioc="576" valid="00:00:00Z" map="4"/>
         <schedule time="02:15:00Z" duration="PT10M0.000S" content="SEA STATE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="02:25:00Z" duration="PT20M0.000S" content="REQUEST FOR COMMENTS/PRODUCT NOTICE" rpm="120" ioc="576" map=""/>
@@ -693,7 +680,7 @@
         <schedule time="06:05:00Z" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)" rpm="120" ioc="576" valid="00:00:00Z" map="1"/>
         <schedule time="06:20:00Z" duration="PT15M0.000S" content="TROPICAL SURFACE ANALYSIS (E HALF)" rpm="120" ioc="576" valid="00:00:00Z" map="2"/>
         <schedule time="06:35:00Z" duration="PT10M0.000S" content="48 HR WAVE PERIOD/SWELL DIRECTION" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="06:45:00Z" duration="PT10M0.000S" content="REBROADCAST OF SEA STATE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="06:45:00Z" duration="PT10M0.000S" content="RE: SEA STATE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="06:55:00Z" duration="PT10M0.000S" content="24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="07:05:00Z" duration="PT10M0.000S" content="48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="07:15:00Z" duration="PT10M0.000S" content="72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
@@ -703,17 +690,17 @@
         <schedule time="08:00:00Z" duration="PT15M0.000S" content="GOES IR TROPICAL SATELLITE IMAGE" rpm="120" ioc="576" valid="06:00:00Z" map="4"/>
         <schedule time="08:15:00Z" duration="PT10M0.000S" content="72 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="08:25:00Z" duration="PT10M0.000S" content="72 HR WAVE PERIOD/SWELL DIRECTION" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="08:35:00Z" duration="PT10M0.000S" content="REBROADCAST OF SEA STATE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="08:35:00Z" duration="PT10M0.000S" content="RE: SEA STATE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="08:45:00Z" content="HIGH SEAS FORECAST (IN ENGLISH)" rpm="120" ioc="576" valid="04:00:00Z" map="5"/>
         <schedule time="12:00:00Z" duration="PT5M0.000S" content="TEST PATTERN" rpm="120" ioc="576" map=""/>
         <schedule time="12:05:00Z" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)" rpm="120" ioc="576" valid="06:00:00Z" map="1"/>
         <schedule time="12:20:00Z" duration="PT15M0.000S" content="TROPICAL SURFACE ANALYSIS (E HALF)" rpm="120" ioc="576" valid="06:00:00Z" map="2"/>
-        <schedule time="12:35:00Z" duration="PT10M0.000S" content="REBROADCAST OF 24 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="12:45:00Z" duration="PT10M0.000S" content="REBROADCAST OF 48 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="12:55:00Z" duration="PT10M0.000S" content="REBROADCAST OF 72 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="13:05:00Z" duration="PT10M0.000S" content="REBROADCAST OF 24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="13:15:00Z" duration="PT10M0.000S" content="REBROADCAST OF 48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
-        <schedule time="13:25:00Z" duration="PT10M0.000S" content="REBROADCAST OF 72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="12:35:00Z" duration="PT10M0.000S" content="RE: 24 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="12:45:00Z" duration="PT10M0.000S" content="RE: 48 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="12:55:00Z" duration="PT10M0.000S" content="RE: 72 HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="13:05:00Z" duration="PT10M0.000S" content="RE: 24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="13:15:00Z" duration="PT10M0.000S" content="RE: 48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
+        <schedule time="13:25:00Z" duration="PT10M0.000S" content="RE: 72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="00:00:00Z" map="3"/>
         <schedule time="13:35:00Z" duration="PT15M0.000S" content="CYCLONE DANGER AREA* or 48HR HIGH WIND/WAVES" rpm="120" ioc="576" valid="09:00:00Z" map="6"/>
         <schedule time="13:50:00Z" duration="PT10M0.000S" content="36HR WIND/WAVE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="14:00:00Z" duration="PT15M0.000S" content="GOES IR TROPICAL SATELLITE IMAGE" rpm="120" ioc="576" valid="12:00:00Z" map="4"/>
@@ -724,7 +711,7 @@
         <schedule time="18:05:00Z" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)" rpm="120" ioc="576" valid="12:00:00Z" map="1"/>
         <schedule time="18:20:00Z" duration="PT15M0.000S" content="TROPICAL SURFACE ANALYSIS (E HALF)" rpm="120" ioc="576" valid="12:00:00Z" map="2"/>
         <schedule time="18:35:00Z" duration="PT10M0.000S" content="48 HR WAVE PERIOD/SWELL DIRECTION" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
-        <schedule time="18:45:00Z" duration="PT10M0.000S" content="REBROADCAST OF SEA STATE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
+        <schedule time="18:45:00Z" duration="PT10M0.000S" content="RE: SEA STATE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="18:55:00Z" duration="PT10M0.000S" content="24 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="19:05:00Z" duration="PT10M0.000S" content="48 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
         <schedule time="19:15:00Z" duration="PT10M0.000S" content="72 HR SURFACE FORECAST" rpm="120" ioc="576" valid="12:00:00Z" map="3"/>
@@ -754,66 +741,66 @@
         <transmitter call-sign="JMH" frequency="3622.5" power="5.0"/>
         <transmitter call-sign="JMH2" frequency="7795.0" power="5.0"/>
         <transmitter call-sign="JMH4" frequency="13988.5" power="5.0"/>
-        <schedule time="00:00:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 48/72HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
+        <schedule time="00:00:00Z" duration="PT20M0.000S" content="RE: 48/72HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
         <schedule time="00:20:00Z" duration="PT20M0.000S" content="96HR SURFACE PRESSURE, PRECIP PROGS" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <schedule time="00:40:00Z" duration="PT23M0.000S" content="120HR SURFACE PRESSURE, PRECIP PROGS" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <schedule time="01:03:00Z" duration="PT7M0.000S" content="TEST CHART" rpm="120" ioc="576" map=""/>
         <schedule time="01:10:00Z" duration="PT20M0.000S" content="METEOROLOGICAL SATELLITE PICTURE (MSAT)" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
-        <schedule time="01:30:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SEA ICE CONDITION ANAL(4), 48HR &amp; 168HR PROGS(5)" rpm="120" ioc="576" valid="00:00:00Z" map="L L'"/>
+        <schedule time="01:30:00Z" duration="PT20M0.000S" content="RE: SEA ICE CONDITION ANAL(4), 48HR &amp; 168HR PROGS(5)" rpm="120" ioc="576" valid="00:00:00Z" map="L L'"/>
         <schedule time="01:50:00Z" duration="PT20M0.000S" content="TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="02:10:00Z" duration="PT19M0.000S" content="SEA SURFACE CURRENT, WATER TEMPERATURE AT 100M DEPTH (2)" rpm="120" ioc="576" map=""/>
         <schedule time="02:29:00Z" duration="PT11M0.000S" content="RADIO PREDICTION (3)" rpm="120" ioc="576" map=""/>
         <schedule time="02:40:00Z" duration="PT20M0.000S" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="03:00:00Z" duration="PT20M0.000S" content="SEA SURFACE WATER TEMPERATURE (2)" rpm="120" ioc="576" map=""/>
-        <schedule time="03:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SURFACE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
+        <schedule time="03:20:00Z" duration="PT20M0.000S" content="RE: SURFACE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="03:40:00Z" duration="PT20M0.000S" content="BROADCAST SCHEDULE and MANUAL AMENDMENTS" rpm="120" ioc="576" map=""/>
         <schedule time="04:00:00Z" duration="PT21M0.000S" content="TROPICAL CYCLONE FORECAST (6)" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="04:21:00Z" duration="PT19M0.000S" content="OCEAN WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
         <schedule time="04:40:00Z" duration="PT19M0.000S" content="COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
         <schedule time="04:59:00Z" duration="PT19M0.000S" content="500 hPa HEIGHT, TEMPERATURE" rpm="120" ioc="576" valid="00:00:00Z" map="C"/>
         <schedule time="05:18:00Z" duration="PT19M0.000S" content="850 hPa HEIGHT, TEMPERATURE, DEW POINT DEPRESSION" rpm="120" ioc="576" valid="00:00:00Z" map="C"/>
-        <schedule time="05:37:00Z" duration="PT11M0.000S" content="24HR 500hPa HEIGHT, VORTICITY PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="05:37:00Z" duration="PT11M0.000S" content="24HR 500hPa HEIGHT, VORTICITY PROGNOSIS 24HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="05:48:00Z" duration="PT22M0.000S" content="24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
-        <schedule time="06:10:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
+        <schedule time="06:10:00Z" duration="PT20M0.000S" content="RE: TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="06:30:00Z" duration="PT21M0.000S" content="48/72 HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="06:51:00Z" duration="PT19M0.000S" content="24HR WAVE PROG (NORTH PACIFIC)" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
         <schedule time="07:10:00Z" duration="PT20M0.000S" content="METEOROLOGICAL SATELLITE PICTURE (MSAT)" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
         <schedule time="07:30:00Z" duration="PT20M0.000S" content="24HR COASTAL WAVE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
         <schedule time="07:50:00Z" duration="PT19M0.000S" content="TROPICAL CYCLONE FORECAST (1)" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
-        <schedule time="08:09:00Z" duration="PT11M0.000S" content="36HR 500hPa HEIGHT, VORTICITY PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="08:09:00Z" duration="PT11M0.000S" content="36HR 500hPa HEIGHT, VORTICITY PROGNOSIS 36HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="08:20:00Z" duration="PT20M0.000S" content="48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="08:40:00Z" duration="PT20M0.000S" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
         <schedule time="09:00:00Z" duration="PT20M0.000S" content="TROPICAL CYCLONE FORECAST (6)" rpm="120" ioc="576" valid="06:00:00Z" map=""/>
-        <schedule time="09:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SURFACE ANALYSIS" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
-        <schedule time="09:40:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 48/72 HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="10:00:00Z" duration="PT19M0.000S" content="RETRANSMISSION OF 48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
+        <schedule time="09:20:00Z" duration="PT20M0.000S" content="RE: SURFACE ANALYSIS" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
+        <schedule time="09:40:00Z" duration="PT20M0.000S" content="RE: 48/72 HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="10:00:00Z" duration="PT19M0.000S" content="RE: 48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
         <schedule time="10:19:00Z" duration="PT21M0.000S" content="SEA ICE CONDITION ANAL(4), 48HR &amp; 168HR PROGS(5)" rpm="120" ioc="576" valid="00:00:00Z" map="L L'"/>
-        <schedule time="10:40:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
-        <schedule time="11:00:00Z" duration="PT19M0.000S" content="RETRANSMISSION OF OCEAN WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
-        <schedule time="11:19:00Z" duration="PT21M0.000S" content="RETRANSMISSION OF COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
-        <schedule time="11:40:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 24HR WAVE PROG (NORTH PACIFIC)" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
-        <schedule time="12:00:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF TROPICAL CYCLONE FORECAST (1)" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
+        <schedule time="10:40:00Z" duration="PT20M0.000S" content="RE: 24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="C'"/>
+        <schedule time="11:00:00Z" duration="PT19M0.000S" content="RE: OCEAN WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
+        <schedule time="11:19:00Z" duration="PT21M0.000S" content="RE: COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
+        <schedule time="11:40:00Z" duration="PT20M0.000S" content="RE: 24HR WAVE PROG (NORTH PACIFIC)" rpm="120" ioc="576" valid="00:00:00Z" map="C''"/>
+        <schedule time="12:00:00Z" duration="PT20M0.000S" content="RE: TROPICAL CYCLONE FORECAST (1)" rpm="120" ioc="576" valid="06:00:00Z" map="C'"/>
         <schedule time="12:20:00Z" duration="PT20M0.000S" content="12/24/48/72HR OCEAN WAVE PROG" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="12:40:00Z" duration="PT11M0.000S" content="24 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="12:51:00Z" duration="PT12M0.000S" content="36 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="12:40:00Z" duration="PT11M0.000S" content="24 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT DEPRESSION PROG 24HR 850hPa TEMPERATURE WIND AND 700hPa VERTICAL P-VELOCITY PROG" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="12:51:00Z" duration="PT12M0.000S" content="36 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT DEPRESSION PROG 36HR 850hPa TEMPERATURE WIND AND 700hPa VERTICAL P-VELOCITY PROG" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="13:03:00Z" duration="PT7M0.000S" content="TEST CHART" rpm="120" ioc="576" map=""/>
         <schedule time="13:10:00Z" duration="PT20M0.000S" content="METEOROLOGICAL SATELLITE PICTURE (MSAT)" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
-        <schedule time="13:30:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 24HR COASTAL WAVE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
+        <schedule time="13:30:00Z" duration="PT20M0.000S" content="RE: 24HR COASTAL WAVE PROG" rpm="120" ioc="576" valid="00:00:00Z" map="X"/>
         <schedule time="13:50:00Z" duration="PT30M0.000S" content="TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
-        <schedule time="14:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SEA SURFACE CURRENT, WATER TEMPERATURE AT 100M DEPTH (2)" rpm="120" ioc="576" map=""/>
+        <schedule time="14:20:00Z" duration="PT20M0.000S" content="RE: SEA SURFACE CURRENT, WATER TEMPERATURE AT 100M DEPTH (2)" rpm="120" ioc="576" map=""/>
         <schedule time="14:40:00Z" duration="PT40M0.000S" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
-        <schedule time="15:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SURFACE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
+        <schedule time="15:20:00Z" duration="PT20M0.000S" content="RE: SURFACE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
         <schedule time="15:40:00Z" duration="PT20M0.000S" content="TROPICAL CYCLONE FORECAST (6)" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
         <schedule time="16:00:00Z" duration="PT20M0.000S" content="SEA SURFACE WATER TEMPERATURE (2)" rpm="120" ioc="576" map=""/>
         <schedule time="16:20:00Z" duration="PT20M0.000S" content="OCEAN WAVE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="C''"/>
         <schedule time="16:40:00Z" duration="PT20M0.000S" content="500 hPa HEIGHT, TEMPERATURE" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <schedule time="17:00:00Z" duration="PT19M0.000S" content="850 hPa HEIGHT, TEMPERATURE, DEW POINT DEPRESSION" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <schedule time="17:19:00Z" duration="PT20M0.000S" content="COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="X"/>
-        <schedule time="17:39:00Z" duration="PT11M0.000S" content="24HR 500hPa HEIGHT, VORTICITY PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
-        <schedule time="17:50:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
-        <schedule time="18:10:00Z" duration="PT11M0.000S" content="36HR 500hPa HEIGHT, VORTICITY PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
-        <schedule time="18:21:00Z" duration="PT11M0.000S" content="24 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
-        <schedule time="18:32:00Z" duration="PT18M0.000S" content="36HR 500hPa TEMPERATURE AND 700hPa DEWPOINT" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
+        <schedule time="17:39:00Z" duration="PT11M0.000S" content="24HR 500hPa HEIGHT, VORTICITY PROGNOSIS 24HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
+        <schedule time="17:50:00Z" duration="PT20M0.000S" content="RE: TROPICAL CYCLONE FORECAST(1)" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
+        <schedule time="18:10:00Z" duration="PT11M0.000S" content="36HR 500hPa HEIGHT, VORTICITY PROGNOSIS 36HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
+        <schedule time="18:21:00Z" duration="PT11M0.000S" content="24 HR 500hPa TEMPERATURE AND 700hPa DEWPOINT DEPRESSION PROG 24HR 850hPa TEMPERATURE WIND AND 700hPa VERTICAL P-VELOCITY PROG" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
+        <schedule time="18:32:00Z" duration="PT18M0.000S" content="36HR 500hPa TEMPERATURE AND 700hPa DEWPOINT DEPRESSION PROG 36HR 850hPa TEMPERATURE WIND AND 700hPa VERTICAL P-VELOCITY PROG" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
         <schedule time="18:50:00Z" duration="PT20M0.000S" content="12/24/48/72HR OCEAN WAVE PROG" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
         <schedule time="19:10:00Z" duration="PT20M0.000S" content="METEOROLOGICAL SATELLITE PICTURE (MSAT)" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
         <schedule time="19:30:00Z" duration="PT20M0.000S" content="24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
@@ -821,14 +808,14 @@
         <schedule time="20:10:00Z" duration="PT30M0.000S" content="24HR COASTAL WAVE PROG (1)" rpm="120" ioc="576" valid="12:00:00Z" map="X"/>
         <schedule time="20:40:00Z" duration="PT20M0.000S" content="SURFACE ANALYSIS" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
         <schedule time="21:00:00Z" duration="PT20M0.000S" content="48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
-        <schedule time="21:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF SURFACE ANALYSIS" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
+        <schedule time="21:20:00Z" duration="PT20M0.000S" content="RE: SURFACE ANALYSIS" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
         <schedule time="21:40:00Z" duration="PT20M0.000S" content="TROPICAL CYCLONE FORECAST(6)" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
         <schedule time="22:00:00Z" duration="PT20M0.000S" content="48/72HR SURFACE PRESSURE, PRECIPITATION PROGNOSIS" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
         <schedule time="22:20:00Z" duration="PT20M0.000S" content="24HR OCEAN WAVE PROG" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
-        <schedule time="22:40:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF TROPICAL CYCLONE FORECAST (1)" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
-        <schedule time="23:00:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
-        <schedule time="23:20:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="X"/>
-        <schedule time="23:40:00Z" duration="PT20M0.000S" content="RETRANSMISSION OF 48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
+        <schedule time="22:40:00Z" duration="PT20M0.000S" content="RE: TROPICAL CYCLONE FORECAST (1)" rpm="120" ioc="576" valid="18:00:00Z" map="C'"/>
+        <schedule time="23:00:00Z" duration="PT20M0.000S" content="RE: 24HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C'"/>
+        <schedule time="23:20:00Z" duration="PT20M0.000S" content="RE: COASTAL WAVE ANALYSIS" rpm="120" ioc="576" valid="12:00:00Z" map="X"/>
+        <schedule time="23:40:00Z" duration="PT20M0.000S" content="RE: 48HR SURFACE PRESSURE, WIND, FOG, ICING, SEA ICE PROG" rpm="120" ioc="576" valid="12:00:00Z" map="C"/>
         <map name="C" scale="1:20,000,000" corners="27N62E 51N152W 5S106E 2N160E"/>
         <map name="C'" scale="1:20,000,000" corners="39N66E 39N146W 1S113E 1S167E"/>
         <map name="C''" scale="1:20,000,000" corners="38N67E 39N148W 1S112E 1S167E"/>
@@ -859,9 +846,9 @@
         <schedule time="06:38:00Z" duration="PT13M0.000S" content="H+36, H+48 (GME) 850hPa H + T, 700hPa U" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="06:51:00Z" duration="PT13M0.000S" content="H+60, H+72 (GME) 500hPa H + T, surface P" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="07:04:00Z" duration="PT13M0.000S" content="H+60, H+72 (GME) 850hPa H + T, 700hPa U" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="07:17:00Z" duration="PT13M0.000S" content="Repetition chart h+30 (GME ) surface pressure" rpm="120" ioc="576" valid="18:00:00Z" map=""/>
+        <schedule time="07:17:00Z" duration="PT13M0.000S" content="RE: h+30 (GME ) surface pressure" rpm="120" ioc="576" valid="18:00:00Z" map=""/>
         <schedule time="07:30:00Z" duration="PT13M0.000S" content="H+48 (GME) surface pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
-        <schedule time="07:43:00Z" duration="PT21M0.000S" content="Repetition chart surface pressure analysis, arrows showing the movement of pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="07:43:00Z" duration="PT21M0.000S" content="RE: surface pressure analysis, arrows showing the movement of pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="08:04:00Z" duration="PT13M0.000S" content="H+84 (GME) surface pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="08:17:00Z" duration="PT13M0.000S" content="H+108 (GME) surface pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="08:30:00Z" duration="PT12M0.000S" content="H+24 (GSM) Sea and swell, wind direction, direction of swell" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
@@ -875,9 +862,9 @@
         <schedule time="10:50:00Z" duration="PT21M0.000S" content="Surface weather chart" rpm="120" ioc="576" valid="06:00:00Z" map=""/>
         <schedule time="11:11:00Z" duration="PT21M0.000S" content="Transmission schedule" rpm="120" ioc="576" map=""/>
         <schedule time="11:32:00Z" duration="PT13M0.000S" content="Test chart" rpm="120" ioc="576" map=""/>
-        <schedule time="11:45:00Z" duration="PT20M0.000S" content="Repetition chart Surface weather chart" rpm="120" ioc="576" valid="06:00:00Z" map=""/>
-        <schedule time="12:05:00Z" duration="PT15M0.000S" content="Repetition chart h+30 (GME ) surface pressure" rpm="120" ioc="576" valid="18:00:00Z" map=""/>
-        <schedule time="12:20:00Z" content="Repetition chart H+48 (GME) surface pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
+        <schedule time="11:45:00Z" duration="PT20M0.000S" content="RE: Surface weather chart" rpm="120" ioc="576" valid="06:00:00Z" map=""/>
+        <schedule time="12:05:00Z" duration="PT15M0.000S" content="RE: h+30 (GME ) surface pressure" rpm="120" ioc="576" valid="18:00:00Z" map=""/>
+        <schedule time="12:20:00Z" content="RE: H+48 (GME) surface pressure" rpm="120" ioc="576" valid="00:00:00Z" map=""/>
         <schedule time="15:20:00Z" duration="PT20M0.000S" content="Ice conditions chart West Baltic Sea or special area" rpm="120" ioc="576" valid="09:00:00Z" map=""/>
         <schedule time="15:40:00Z" duration="PT20M0.000S" content="Ice conditions chart European Arctic Sea or special area" rpm="120" ioc="576" valid="09:00:00Z" map=""/>
         <schedule time="16:00:00Z" content="Surface weather chart" rpm="120" ioc="576" valid="12:00:00Z" map=""/>
@@ -999,8 +986,7 @@
         <transmitter call-sign="VMC" frequency="11030.0" power="1.0"/>
         <transmitter call-sign="VMC" frequency="13920.0" power="1.0"/>
         <transmitter call-sign="VMC" frequency="20469.0" times="1900-0900" power="1.0"/>
-        <schedule time="00:00:00Z" duration="PT0.000S" content="Indian Ocean MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="IO"/>
-        <schedule time="00:00:00Z" duration="PT15M0.000S" content="Indian Ocean MSLP Anal (Manual) Valid 1200" rpm="120" ioc="576" map=""/>
+        <schedule time="00:00:00Z" duration="PT15M0.000S" content="Indian Ocean MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="IO"/>
         <schedule time="00:15:00Z" duration="PT15M0.000S" content="VMC/VMW Schedule Page 1of2" rpm="120" ioc="576" map=""/>
         <schedule time="00:30:00Z" duration="PT15M0.000S" content="VMC/VMW Schedule Page 2of2" rpm="120" ioc="576" map=""/>
         <schedule time="00:45:00Z" duration="PT15M0.000S" content="VMC/VMW Information Notice" rpm="120" ioc="576" map=""/>
@@ -1010,15 +996,12 @@
         <schedule time="02:45:00Z" duration="PT15M0.000S" content="Australian MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="AUST"/>
         <schedule time="03:00:00Z" duration="PT15M0.000S" content="Australian 500hPa Anal" rpm="120" ioc="576" valid="00:00:00Z" map="AUST"/>
         <schedule time="03:15:00Z" duration="PT30M0.000S" content="Voice Broadcast Information for VMW (Wiluna)" rpm="120" ioc="576" map=""/>
-        <schedule time="03:45:00Z" duration="PT0.000S" content="Australian MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="AUST"/>
-        <schedule time="03:45:00Z" duration="PT15M0.000S" content="Australian MSLP Anal (Manual) Valid 0000" rpm="120" ioc="576" map=""/>
+        <schedule time="03:45:00Z" duration="PT15M0.000S" content="Australian MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="AUST"/>
         <schedule time="04:00:00Z" duration="PT30M0.000S" content="Australian 500hPa (H+24) Prog" rpm="120" ioc="576" valid="00:00:00Z" map="AUST"/>
         <schedule time="04:30:00Z" duration="PT15M0.000S" content="Australian MSLP 4-day forecast, Days 1and2" rpm="120" ioc="576" map=""/>
         <schedule time="04:45:00Z" duration="PT15M0.000S" content="Australian MSLP 4-day forecast, Days 3and4" rpm="120" ioc="576" map=""/>
-        <schedule time="05:00:00Z" duration="PT0.000S" content="Australian MSLP 4-day forecast, Days 1and2" rpm="120" ioc="576" map=""/>
-        <schedule time="05:00:00Z" duration="PT15M0.000S" content="Australian MSLP 4-day Forecast, Days 1 and 2" rpm="120" ioc="576" map=""/>
-        <schedule time="05:15:00Z" duration="PT0.000S" content="Australian MSLP 4-day forecast, Days 3and4" rpm="120" ioc="576" map=""/>
-        <schedule time="05:15:00Z" duration="PT45M0.000S" content="Australian MSLP 4-day Forecast, Days 3 and 4" rpm="120" ioc="576" map=""/>
+        <schedule time="05:00:00Z" duration="PT15M0.000S" content="Australian MSLP 4-day forecast, Days 1and2" rpm="120" ioc="576" map=""/>
+        <schedule time="05:15:00Z" duration="PT45M0.000S" content="Australian MSLP 4-day forecast, Days 3and4" rpm="120" ioc="576" map=""/>
         <schedule time="06:00:00Z" duration="PT23M0.000S" content="Asian (Part A) Gradient Level Wind Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="A"/>
         <schedule time="06:23:00Z" duration="PT22M0.000S" content="Asian (Part B) Gradient Level Wind Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="B"/>
         <schedule time="06:45:00Z" duration="PT45M0.000S" content="Asian MSLP Anal (Manual)" rpm="120" ioc="576" valid="00:00:00Z" map="C"/>
