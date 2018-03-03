@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import org.vesalainen.ham.itshfbc.station.StationConverter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

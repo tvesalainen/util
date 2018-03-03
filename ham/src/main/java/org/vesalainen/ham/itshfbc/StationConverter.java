@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.itshfbc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +36,7 @@ import org.vesalainen.ham.LocationParser;
 import org.vesalainen.ham.itshfbc.GeoDB;
 import org.vesalainen.ham.itshfbc.GeoLocation;
 import org.vesalainen.ham.itshfbc.RFaxParser;
+import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
@@ -56,7 +57,6 @@ public class StationConverter extends JavaLogging
 {
     private Duration maxDuration;
     private RFaxParser parser = RFaxParser.getInstance();
-    private final Map<String, Integer[]> testConditions;
 
     private enum State {CALL, TIME, MAP};
     private Path dir;
@@ -77,7 +77,6 @@ public class StationConverter extends JavaLogging
         this.dataTypeFactory = DatatypeFactory.newInstance();
         this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
         xml = new BroadcastStationsFile(out.toFile());
-        testConditions = createTestConditions();
     }
 
     public void convert() throws IOException
@@ -102,6 +101,7 @@ public class StationConverter extends JavaLogging
         handleRetrans();
         handleDurations();
         checkMaps();
+        testCases();
         xml.store();
     }
     public StationType convert(Path in, Location location, DefaultCustomizer customizer)
@@ -133,7 +133,7 @@ public class StationConverter extends JavaLogging
                             switch (state)
                             {
                                 case CALL:
-                                    if (line.startsWith("TIME"))
+                                    if (customizer.isScheduleStart(line))
                                     {
                                         state = State.TIME;
                                     }
@@ -143,7 +143,7 @@ public class StationConverter extends JavaLogging
                                     }
                                     break;
                                 case TIME:
-                                    if (line.startsWith("MAP"))
+                                    if (customizer.isMapStart(line))
                                     {
                                         state = State.MAP;
                                         map(station, line, customizer);
@@ -320,7 +320,6 @@ public class StationConverter extends JavaLogging
                 }
             }
         }
-        check(station);
     }
     private void handleDurations()
     {
@@ -484,9 +483,9 @@ public class StationConverter extends JavaLogging
         Map<String,Integer[]> map = new HashMap<>();
         map.put("CAPE NAVAL, SOUTH AFRICA", new Integer[]{4, 9, 4});
         map.put("TOKYO, JAPAN", new Integer[]{3, 75, 6});
-        map.put("PEVEK, CHUKOTKA PENINSULA", new Integer[]{1, 3, 1});
+        map.put("PEVEK, CHUKOTKA PENINSULA", new Integer[]{1, 6, 0});
         map.put("TAIPEI, REPUBLIC OF CHINA", new Integer[]{4, 38, 1});
-        map.put("SEOUL, REPUBLIC OF KOREA", new Integer[]{5, 2, 3});
+        map.put("SEOUL, REPUBLIC OF KOREA", new Integer[]{5, 62, 3});
         map.put("BANGKOK, THAILAND", new Integer[]{1, 26, 1});
         map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 31, 0});
         map.put("NORTHWOOD, UNITED KINGDOM (PERSIAN GULF)", new Integer[]{3, 69, 1});
@@ -502,39 +501,57 @@ public class StationConverter extends JavaLogging
         map.put("PT. REYES, CALIFORNIA, U.S.A.", new Integer[]{5, 83, 10});
         map.put("NEW ORLEANS, LOUISIANA, U.S.A", new Integer[]{4, 61, 6});
         map.put("BOSTON, MASSACHUSETTS, U.S.A.", new Integer[]{4, 71, 8});
-        map.put("CHARLEVILLE, AUSTRALIA", new Integer[]{5, 62, 11});
-        map.put("WILUNA, AUSTRALIA", new Integer[]{5, 62, 11});
+        map.put("CHARLEVILLE, AUSTRALIA", new Integer[]{5, 70, 11});
+        map.put("WILUNA, AUSTRALIA", new Integer[]{5, 66, 11});
         map.put("WELLINGTON, NEW ZEALAND", new Integer[]{5, 64, 2});
         map.put("HONOLULU, HAWAII, U.S.A.", new Integer[]{3, 96, 15});
         map.put("ATHENS, GREECE", new Integer[]{2, 11, 3});
         map.put("MURMANSK, RUSSIA", new Integer[]{4, 7, 3});
-        map.put("HAMBURG/PINNEBERG, GERMANY", new Integer[]{3, 46, 0});
+        map.put("HAMBURG/PINNEBERG, GERMANY", new Integer[]{3, 44, 0});
         map.put("NORTHWOOD, UNITED KINGDOM", new Integer[]{4, 93, 0});
         return map;
     }
-    private void check(StationType station)
+    private void testCases()
+    {
+        Map<String, StationType> stations = new HashMap<>();
+        xml.getStations().forEach((s)->
+        {
+            StationType old = stations.put(s.getName(), s);
+            if (old != null)
+            {
+                warning("%s is duplicate", s.getName());
+            }
+        });
+        Map<String, Integer[]> testConditions = createTestConditions();
+        testConditions.forEach((n,t)->
+        {
+            StationType station = stations.get(n);
+            if (station == null)
+            {
+                warning("%s not found", n);
+            }
+            else
+            {
+                check(station, t);
+            }
+        });
+    }
+    private void check(StationType station, Integer[] testCondition)
     {
         boolean ok = true;
-        Integer[] tc = testConditions.get(station.getName());
-        if (tc == null)
+        if (testCondition[0] != station.getTransmitter().size())
         {
-            warning("%s not found", station.getName());
-            warning("%s failed", station.getName());
-            return;
-        }
-        if (tc[0] != station.getTransmitter().size())
-        {
-            warning("Transmitter count %d != %d", station.getTransmitter().size(), tc[0]);
+            warning("Transmitter count %d != %d", station.getTransmitter().size(), testCondition[0]);
             ok = false;
         }
-        if (tc[1] != station.getSchedule().size())
+        if (testCondition[1] != station.getSchedule().size())
         {
-            warning("Schedule count %d != %d", station.getSchedule().size(), tc[1]);
+            warning("Schedule count %d != %d", station.getSchedule().size(), testCondition[1]);
             ok = false;
         }
-        if (tc[2] != station.getMap().size())
+        if (testCondition[2] != station.getMap().size())
         {
-            warning("Map count %d != %d", station.getMap().size(), tc[2]);
+            warning("Map count %d != %d", station.getMap().size(), testCondition[2]);
             ok = false;
         }
         if (ok)

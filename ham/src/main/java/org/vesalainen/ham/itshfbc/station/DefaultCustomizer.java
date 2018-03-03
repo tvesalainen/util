@@ -16,8 +16,6 @@
  */
 package org.vesalainen.ham.itshfbc.station;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -59,6 +57,14 @@ public class DefaultCustomizer
         {
             throw new RuntimeException(ex);
         }
+    }
+    public boolean isScheduleStart(String line)
+    {
+        return line.startsWith("TIME");
+    }
+    public boolean isMapStart(String line)
+    {
+        return line.startsWith("MAP");
     }
     public XMLGregorianCalendar[] convertStart(int start1, int start2)
     {

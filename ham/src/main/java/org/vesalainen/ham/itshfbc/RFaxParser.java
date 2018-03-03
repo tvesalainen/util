@@ -243,7 +243,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     @ParseMethod(start="transmitter", whiteSpace ={"whiteSpace", "quot"})
     public abstract TransmitterType parseTransmitter(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
-    @Rule("string? frequency ranges? 'UTC'? '[FJ]3C' power?")
+    @Rule("callSign? frequency ranges? 'UTC'? '[FJ]3C' power?")
     protected TransmitterType transmitter(String call, Double freq, String ranges, Double power, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
         TransmitterType transmitter = factory.createTransmitterType();
@@ -388,6 +388,9 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
 
     @Terminal(expression = "[A-Za-z0-9]*[A-Za-z/]+[A-Za-z0-9]*")
     protected abstract String string(String value);
+
+    @Terminal(expression = "[A-Za-z0-9]*[A-Za-z/]+[A-Za-z0-9\\-]*")
+    protected abstract String callSign(String value);
 
     @Terminal(expression = "[A-Za-z/\\(\\)'\\,\\&\\*\\-_:\\+#\\.]+")
     protected abstract String string2(String value);

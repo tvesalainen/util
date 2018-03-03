@@ -1,55 +1,69 @@
 KODIAK, ALASKA, U.S.A. 
+
+CALL SIGN   FREQUENCIES      TIMES               EMISSION      POWER 
+NOJ         2054   kHz       ALL BROADCAST TIMES    F3C         4KW 
+            4298   kHz       ALL BROADCAST TIMES    F3C         4KW 
+            8459   kHz       ALL BROADCAST TIMES    F3C         4KW 
+           12412.5 kHz       ALL BROADCAST TIMES    F3C         4KW
  
-CALL SIGN FREQUENCIES TIMES     EMISSION  POWER 
-NOJ     2054 kHz  ALL BROADCAST TIMES  J3C                  4  kW 
-      4298 kHz  ALL BROADCAST TIMES  J3C                  4  kW 
-  8459 kHz  ALL BROADCAST TIMES  J3C                  4  kW 
-12412.5 kHz  ALL BROADCAST TIMES  J3C                  4  kW 
- 
-CARRIER FREQUENCY IS 1.9 kHz BELOW THE ASSIGNED FREQUENCY 
- 
-TIME  CONTENTS OF TRANSMISSION      RPM/IOC VALID MAP 
-               TIME  AREA 
-0340/1540    TEST PATTERN                                     120/576  
-0343/1543      SEA ICE ANALYSIS/REBROADCAST 5-DAY SEA ICE FORECAST     120/576              6 
-0403/1603    SURFACE ANALYSIS                                 120/576   00/12      2  
-0427/1627    REBROADCAST 24HR SURFACE F'CAST2227/1027      120/576   12/00      3 
-0437/1637    REBROADCAST 48HR SURFACE F'CAST2237/1037      120/576   1200       1   
-0447/1647    REBROADCAST 96HR SURFACE F'CAST2348       120/576     
-0456/1656    SEA STATE ANALYSIS/REBROADCAST                  120/576   00/00      1  
-0506/1706    GOES IR SATELLITE IMAGE                         120/576   00/12      5  
-0517/1717    500mb ANALYSIS                                  120/576   00/12      1  
-0527/1727    SYMBOLS AND CONTRACTIONS/SCHEDULE              120/576  
-0548/1748    REQUEST FOR COMMENTS/PRODUCT NOTICE            120/576  
-0558/1758    24HR 500mb FORECAST                             120/576   00/12      1 
-0950/2150    TEST PATTERN                                     120/576  
-0953/2153    SURFACE ANALYSIS                                 120/576   06/18      2  
-1017/2217    24HR WIND/WAVE FORECAST                         120/576   00/12      3  
-1027/2227    24HR SURFACE FORECAST                           120/576   00/12      3  
-1037/2237    48HR SURFACE FORECAST                           120/576   00/12      1  
-1047/2247    48HR WIND/WAVE FORECAST                         120/576   00/12      1  
-1057/2257      5-DAY SEA ICE FORECAST/REBROADCAST SEA ICE ANALYSIS     120/576      6  
-1117/2317    GOES IR SATELLITE IMAGE                         120/576   06/18      5  
-1128/2328    48HR WAVE PERIOD, SWELL DIRECTION              120/576   00/12      1  
-1138/2338    48HR 500mb FORECAST                             120/576   00/12      1  
-1148/------    SEA SURFACE TEMPERATURE ANALYSIS               120/576       4  
-1159/------    COOK INLET SEA ICE FORECAST                     120/576      7  
-------/2348    96HR SURFACE FORECAST                           120/576   1200       1  
-------/2358    96HR WIND/WAVE FORECAST                         120/576   1200       1  
-------/0008    96HR WAVE PERIOD, SWELL DIRECTION              120/576   1200       1  
-------/0018    96HR 500mb FORECAST                             120/576   1200       1  
-   
-MAP AREAS:    
-1.  20N - 70N,   115W - 135E 
-2.  40N - 70N,   125W - 150E  
-3.  40N - 70N,   115W - 170E 
-4.  40N - 60N,   125W - 160E  
-5.  05N - 60N,   110W - 160W 
-6.  40N - 70N,   115W - 170E ICE COVERED AK WATERS  
-7.  59N-61N 154W-148W  
- 
- 
-(SCHEDULE EFFECTIVE MAR 16, 2011)  
-(INFORMATION DATED Apr 17, 2015) http://weather.noaa.gov/pub/fax/hfak.txt 
- 
- 
+           CARRIER FREQUENCY IS 1.9 kHz BELOW THE ASSIGNED FREQUENCY
+
+Schedule expanded Mar 16, 2011 to include additional ice broadcasts 
+
+TRANS                                                          VALID   MAP 
+TIME (UTC)  CONTENTS OF TRANSMISSION                   RPM/IOC TIME    AREA                                                         
+0340/1540   TEST PATTERN                               120/576 
+0343/1543   SEA ICE ANALYSIS/REBROADCAST 1057          120/576 LATEST    6         
+0403/1603   SURFACE ANALYSIS                           120/576 00/12     2 
+0427/1627   REBROADCAST 24HR SURFACE F'CAST 2227/1027  120/576 12/00     3
+0437/1637   REBROADCAST 48HR SURFACE F'CAST 2237/1037  120/576 12/00     1 
+0447/1647   REBROADCAST 96HR SURFACE F'CAST 2348       120/576 12/12     1
+0456/1656   SEA STATE ANALYSIS/REBROADCAST             120/576 00/00     1 
+0506/1706   GOES IR SATELLITE IMAGE                    120/576 00/12     5 
+0517/1717   500 MB ANALYSIS                            120/576 00/12     1 
+0527/1727   SYMBOLS AND CONTRACTIONS/SCHEDULE          120/576 
+0548/1748   REQUEST FOR COMMENTS/PRODUCT NOTICE        120/576 
+0558/1758   24HR 500 MB FORECAST                       120/576 00/12     1
+0950/2150   TEST PATTERN                               120/576 
+0953/2153   SURFACE ANALYSIS                           120/576 06/18     2 
+1017/2217   24HR WIND/WAVE FORECAST                    120/576 00/12     3
+1027/2227   24HR SURFACE FORECAST                      120/576 00/12     3
+1037/2237   48HR SURFACE FORECAST                      120/576 00/12     1 
+1047/2247   48HR WIND/WAVE FORECAST                    120/576 00/12     1 
+1057/2257   5-DAY SEA ICE FORECAST/REBROADCAST 0343    120/576 LATEST    6 
+1117/2317   GOES IR SATELLITE IMAGE                    120/576 06/18     5 
+1128/2328   48HR WAVE PERIOD, SWELL DIRECTION          120/576 00/12     1 
+1138/2338   48HR 500 MB FORECAST                       120/576 00/12     1 
+1148/----   SEA SURFACE TEMPERATURE ANALYSIS           120/576 LATEST    4 
+1159/----   COOK INLET SEA ICE FORECAST                120/576 LATEST    7 
+----/2348   96HR SURFACE FORECAST                      120/576 1200      1 
+----/2358   96HR WIND/WAVE FORECAST                    120/576 1200      1 
+----/0008   96HR WAVE PERIOD, SWELL DIRECTION          120/576 1200      1 
+----/0018   96HR 500 MB FORECAST                       120/576 1200      1 
+  
+MAP AREAS:   1.  20N - 70N,   115W - 135E        2.  40N - 70N,   125W - 150E 
+             3.  40N - 70N,   115W - 170E        4.  40N - 60N,   125W - 160E 
+             5.  05N - 60N,   110W - 160W        6.  ICE COVERED AK WATERS 
+             7.  COOK INLET 
+
+Send comments regarding the                    Send comments regarding the
+contents of these charts to:                   quality of this broadcast to:
+Marine Services Program Manager                
+National Weather Service Alaska Region         Commanding Officer, USCG CAMSLANT
+222 West 7th Avenue                            4720 Douglas A Munro Rd
+Anchorage, AK  99513-7575                      Chesapeake, VA 23322-2598
+907-271-5088 /FAX: 907-271-3711                (800) 742-8519 (757) 421-6240
+nws.ar.arh.webauthors@noaa.gov                 COM-DG-M-CWOwatchstanders@uscg.mil
+
+
+Many of these charts also broadcast from Pt. Reyes, CA and Honolulu, HI
+
+If you have access to the World Wide Web be certain to check out
+the following webpages.  See these pages for further links.
+
+http://www.nws.noaa.gov                   	   NWS Homepage
+http://www.nws.noaa.gov/om/marine/home.htm	   NWS Marine Page
+http://www.nws.noaa.gov/om/marine/cell/marine.htm  Marine Cell Pages                                
+mobile.weather.gov                                 Mobile Page
+
+(Schedule effective Mar 16, 2011   Information dated Oct 24, 2016)

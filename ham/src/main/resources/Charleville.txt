@@ -62,6 +62,15 @@ TIME  AREA
 ------/2345 Indian Ocean MSLP Prog (H+48)       120/576  1200  IO 
 1145/------- VMC/VMW Information Notice       120/576 
  
+ 
+The following charts are repeat broadcasts on 11030 kHz only via a directional aerial pointing from Charleville (VMC) 
+towards Tasmania. 
+ 
+0345 Australian MSLP Anal (Manual) Valid 0000    
+0500 Australian MSLP 4-day Forecast, Days 1 and 2    
+0515 Australian MSLP 4-day Forecast, Days 3 and 4   
+0000 Indian Ocean MSLP Anal (Manual) Valid 1200 
+ 
 MAP AREAS: 
 A:    30N - 35S, 120E - 180E 
 AUST:  LAMBERT 10S - 50S, 090E - 170E 
