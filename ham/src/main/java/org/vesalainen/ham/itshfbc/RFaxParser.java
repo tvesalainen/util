@@ -243,17 +243,21 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     @ParseMethod(start="transmitter", whiteSpace ={"whiteSpace", "quot"})
     public abstract TransmitterType parseTransmitter(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
-    @Rule("callSign? frequency ranges? 'UTC'? '[FJ]3C' power?")
-    protected TransmitterType transmitter(String call, Double freq, String ranges, Double power, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
+    @Rule("callSign? frequency ranges? emissionClass power?")
+    protected TransmitterType transmitter(String call, Double freq, List<OffsetTimeRange> ranges, String emission, Double power, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
         TransmitterType transmitter = factory.createTransmitterType();
         transmitter.setCallSign(call);
         transmitter.setFrequency(freq);
-        transmitter.setTimes(customizer.convertRanges(freq, ranges));
+        if (ranges != null)
+        {
+            transmitter.getTimes().addAll(customizer.convertRanges(freq, ranges).stream().map((r)->r.toString()).collect(Collectors.toList()));
+        }
         if (power != null)
         {
             transmitter.setPower(power);
         }
+        transmitter.setEmission(emission);
         return transmitter;
     }
     @Rule("number 'kHz'")
@@ -267,30 +271,33 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
         return power;
     }
     @Rule("range")
-    protected String ranges(String range)
+    protected List<OffsetTimeRange> ranges(OffsetTimeRange range)
     {
-        return range;
+        List<OffsetTimeRange> ranges = new ArrayList<>();
+        ranges.add(range);
+        return ranges;
     }
     @Rule("ranges '\\,' range")
-    protected String ranges(String ranges, String range)
+    protected List<OffsetTimeRange> ranges(List<OffsetTimeRange> ranges, OffsetTimeRange range)
     {
-        return ranges+','+range;
+        ranges.add(range);
+        return ranges;
     }
     @Rule("number")
-    protected String range(Double from)
+    protected OffsetTimeRange range(Double from)
     {
         int t = from.intValue();
-        return String.format("%04d-%04d", t, t+59);
+        return new OffsetTimeRange(t, t+59);
     }
     @Rule("number 'Z'? '\\-' number 'Z'?")
-    protected String range(Double from, Double to)
+    protected OffsetTimeRange range(Double from, Double to)
     {
-        return String.format("%04d-%04d", from.intValue(), to.intValue());
+        return new OffsetTimeRange(from.intValue(), to.intValue());
     }
     @Rule("'ALL BROADCAST TIMES'")
     @Rule("'All Broadcast Times'")
     @Rule("'\\*'")
-    protected String ranges(@ParserContext("StationCustomizer") DefaultCustomizer customizer)
+    protected List<OffsetTimeRange> ranges(@ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
         return null;
     }
@@ -414,6 +421,12 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected String ws(String ws)
     {
         return ws;
+    }
+
+    @Terminal(expression = "[NAHRJBCFGDPKLMQVWX][0-37-9X][NABCDEFWX]")
+    protected String emissionClass(String emission)
+    {
+        return emission;
     }
 
 }

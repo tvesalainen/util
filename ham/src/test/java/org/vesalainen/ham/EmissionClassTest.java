@@ -14,39 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Level;
-import javax.xml.datatype.DatatypeConfigurationException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.BroadcastStationsFile;
-import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class StationConverterTest
+public class EmissionClassTest
 {
     
-    public StationConverterTest()
+    public EmissionClassTest()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.CONFIG);
     }
 
     @Test
-    public void test() throws IOException, DatatypeConfigurationException
+    public void test1()
     {
-        Path resources = Paths.get("src", "main", "resources");
-        Path in = resources.resolve("rfax.txt");
-        Path out = resources.resolve("broadcast-stations.xml");
-        StationConverter sc = new StationConverter(resources, out);
-        sc.convert();
-        assertEquals(0, sc.testCases());
+        EmissionClass j3e = new EmissionClass("J3E");
+        assertEquals("J3E", j3e.toString());
     }
+    
 }

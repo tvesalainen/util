@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <xsd:schema version="1.0"
            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://vesalainen.org/schema/broadcast-stations"
-           xmlns="http://vesalainen.org/schema/broadcast-stations"
+           targetNamespace="https://github.com/tvesalainen/util/blob/master/ham/src/main/xsd/broadcast-stations.xsd"
+           xmlns="https://github.com/tvesalainen/util/blob/master/ham/src/main/xsd/broadcast-stations.xsd"
            elementFormDefault="qualified">
     <xsd:element name="broadcast-stations">
         <xsd:complexType>
@@ -42,7 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <xsd:complexType name="transmitterType">
         <xsd:attribute name="call-sign" type="xsd:string"/>
         <xsd:attribute name="frequency" type="xsd:double" use="required"/>
-        <xsd:attribute name="times" type="xsd:string"/>
+        <xsd:attribute name="times" type="timeRangeType"/>
         <xsd:attribute name="emission" type="xsd:string" use="required"/>
         <xsd:attribute name="power" type="xsd:double"/>
     </xsd:complexType>
@@ -65,6 +65,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
     <xsd:simpleType name="cornerType">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="timeRangeType">
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
 </xsd:schema>

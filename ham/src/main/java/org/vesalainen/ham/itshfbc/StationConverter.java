@@ -42,6 +42,7 @@ import org.vesalainen.ham.jaxb.StationType;
 import org.vesalainen.ham.jaxb.TransmitterType;
 import org.vesalainen.regex.SyntaxErrorException;
 import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.IntReference;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
@@ -99,7 +100,6 @@ public class StationConverter extends JavaLogging
         mergeSchedules();
         handleDurations();
         checkMaps();
-        testCases();
         xml.store();
     }
     public StationType convert(Path in, Location location, DefaultCustomizer customizer)
@@ -300,7 +300,7 @@ public class StationConverter extends JavaLogging
     }
     private void checkMaps()
     {
-        xml.getStations().forEach(this::checkMaps);
+        xml.getStationTypes().forEach(this::checkMaps);
     }
     private void checkMaps(StationType station)
     {
@@ -321,7 +321,7 @@ public class StationConverter extends JavaLogging
     }
     private void mergeSchedules()
     {
-        xml.getStations().forEach(this::mergeSchedules);
+        xml.getStationTypes().forEach(this::mergeSchedules);
     }
     private void mergeSchedules(StationType station)
     {
@@ -343,7 +343,7 @@ public class StationConverter extends JavaLogging
     }
     private void handleDurations()
     {
-        xml.getStations().forEach(this::handleDurations);
+        xml.getStationTypes().forEach(this::handleDurations);
     }
     private void handleDurations(StationType station)
     {
@@ -378,7 +378,7 @@ public class StationConverter extends JavaLogging
     }
     private void handleCallSigns()
     {
-        xml.getStations().stream().forEach(this::handleCallSigns);
+        xml.getStationTypes().stream().forEach(this::handleCallSigns);
     }
     private void handleCallSigns(StationType station)
     {
@@ -507,12 +507,12 @@ public class StationConverter extends JavaLogging
         map.put("TAIPEI, REPUBLIC OF CHINA", new Integer[]{4, 38, 1});
         map.put("SEOUL, REPUBLIC OF KOREA", new Integer[]{5, 62, 3});
         map.put("BANGKOK, THAILAND", new Integer[]{1, 26, 1});
-        map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 31, 0});
+        map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 21, 0});
         map.put("NORTHWOOD, UNITED KINGDOM (PERSIAN GULF)", new Integer[]{3, 69, 1});
         map.put("RIO DE JANEIRO, BRAZIL", new Integer[]{2, 10, 4});
         map.put("VALPARAISO PLAYA ANCHA, CHILE  (CBV)", new Integer[]{3, 12, 2});
         map.put("PUNTA ARENAS MAGALLANES, CHILE (CBM)", new Integer[]{2, 12, 2});
-        map.put("HALIFAX, NOVA SCOTIA, CANADA", new Integer[]{5, 34, 9});
+        map.put("HALIFAX, NOVA SCOTIA, CANADA", new Integer[]{5, 32, 9});
         map.put("IQALUIT, CANADA", new Integer[]{2, 8, 0});
         map.put("RESOLUTE, CANADA", new Integer[]{2, 8, 0});
         map.put("SYDNEY - NOVA SCOTIA, CANADA", new Integer[]{2, 5, 0});
@@ -521,24 +521,26 @@ public class StationConverter extends JavaLogging
         map.put("PT. REYES, CALIFORNIA, U.S.A.", new Integer[]{5, 83, 10});
         map.put("NEW ORLEANS, LOUISIANA, U.S.A", new Integer[]{4, 61, 6});
         map.put("BOSTON, MASSACHUSETTS, U.S.A.", new Integer[]{4, 71, 8});
-        map.put("CHARLEVILLE, AUSTRALIA", new Integer[]{5, 70, 11});
+        map.put("CHARLEVILLE, AUSTRALIA", new Integer[]{5, 66, 11});
         map.put("WILUNA, AUSTRALIA", new Integer[]{5, 66, 11});
         map.put("WELLINGTON, NEW ZEALAND", new Integer[]{5, 64, 2});
         map.put("HONOLULU, HAWAII, U.S.A.", new Integer[]{3, 96, 15});
         map.put("ATHENS, GREECE", new Integer[]{2, 11, 3});
-        map.put("MURMANSK, RUSSIA", new Integer[]{4, 7, 3});
+        map.put("MURMANSK, RUSSIA", new Integer[]{4, 6, 3});
         map.put("HAMBURG/PINNEBERG, GERMANY", new Integer[]{3, 44, 0});
         map.put("NORTHWOOD, UNITED KINGDOM", new Integer[]{4, 93, 0});
         return map;
     }
-    private void testCases()
+    int testCases()
     {
+        final IntReference errors = new IntReference(0);
         Map<String, StationType> stations = new HashMap<>();
-        xml.getStations().forEach((s)->
+        xml.getStationTypes().forEach((s)->
         {
             StationType old = stations.put(s.getName(), s);
             if (old != null)
             {
+                errors.add(1);
                 warning("%s is duplicate", s.getName());
             }
         });
@@ -548,29 +550,34 @@ public class StationConverter extends JavaLogging
             StationType station = stations.get(n);
             if (station == null)
             {
+                errors.add(1);
                 warning("%s not found", n);
             }
             else
             {
-                check(station, t);
+                check(errors, station, t);
             }
         });
+        return errors.getValue();
     }
-    private void check(StationType station, Integer[] testCondition)
+    private void check(IntReference errors, StationType station, Integer[] testCondition)
     {
         boolean ok = true;
         if (testCondition[0] != station.getTransmitter().size())
         {
+            errors.add(1);
             warning("Transmitter count %d != %d", station.getTransmitter().size(), testCondition[0]);
             ok = false;
         }
         if (testCondition[1] != station.getSchedule().size())
         {
+            errors.add(1);
             warning("Schedule count %d != %d", station.getSchedule().size(), testCondition[1]);
             ok = false;
         }
         if (testCondition[2] != station.getMap().size())
         {
+            errors.add(1);
             warning("Map count %d != %d", station.getMap().size(), testCondition[2]);
             ok = false;
         }

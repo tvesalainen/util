@@ -22,7 +22,34 @@ import java.time.OffsetTime;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Times
+public abstract class TimeRanges
 {
-    boolean in(OffsetTime time);
+    public static final TimeRanges ALWAYS = new Always();
+    public abstract boolean in(OffsetTime time);
+    
+    public static final TimeRanges getInstance(String text)
+    {
+        if (text == null)
+        {
+            return ALWAYS;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public static class Always extends TimeRanges
+    {
+
+        private Always()
+        {
+        }
+
+        @Override
+        public boolean in(OffsetTime time)
+        {
+            return true;
+        }
+        
+    }
 }

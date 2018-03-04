@@ -16,10 +16,13 @@
  */
 package org.vesalainen.ham.itshfbc.station;
 
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.vesalainen.ham.itshfbc.OffsetTimeRange;
 import org.vesalainen.lang.Primitives;
 
 /**
@@ -42,7 +45,7 @@ public class Wellington extends DefaultCustomizer
     }
 
     @Override
-    public String convertRanges(double frequency, String range)
+    public List<OffsetTimeRange> convertRanges(double frequency, List<OffsetTimeRange> ranges)
     {
         int offset = -1;
         if (Primitives.equals(3247.4, frequency))
@@ -69,44 +72,37 @@ public class Wellington extends DefaultCustomizer
         {
             throw new UnsupportedOperationException(frequency+ "kHz");
         }
-        if (range != null)
+        if (ranges != null)
         {
-            String[] split = range.split("\\-");
-            int from = Primitives.parseInt(split[0]);
-            int to = Primitives.parseInt(split[1]);
-            return range(from, to, offset);
+            List<OffsetTimeRange> list = new ArrayList<>();
+            for (OffsetTimeRange r : ranges)
+            {
+                OffsetTime from = r.getFrom();
+                while (r.isInside(from))
+                {
+                    OffsetTime next = from.plusMinutes(15);
+                    list.add(new OffsetTimeRange(from, next));
+                    from = from.plusHours(1);
+                }
+            }
+            return list;
         }
         else
         {
             return allBroadcastTimes(offset);
         }
     }
-    protected String range(int from, int to, int offset)
+    public List<OffsetTimeRange> allBroadcastTimes(int offset)
     {
-        List<String> list = new ArrayList<>();
-        int lim = ((to/100)+24)%24;
-        if (from < to)
-        {
-            lim = to/100;
-        }
-        else
-        {
-            lim = to/100+24;
-        }
-        for (int ii=from/100;ii<lim;ii++)
-        {
-            list.add(String.format("%02d%02d-%02d%02d", ii%24, offset%60, (ii+(offset+15)/60)%24, (offset+15)%60));
-        }
-        return list.stream().collect(Collectors.joining(","));
-    }
-    public String allBroadcastTimes(int offset)
-    {
-        List<String> list = new ArrayList<>();
+        List<OffsetTimeRange> list = new ArrayList<>();
+        OffsetTime from = OffsetTime.of(0, offset, 0, 0, ZoneOffset.UTC);
         for (int ii=0;ii<24;ii++)
         {
-            list.add(String.format("%02d%02d-%02d%02d", ii, offset%60, ii+(offset+15)/60, (offset+15)%60));
+            OffsetTime next = from.plusMinutes(15);
+            list.add(new OffsetTimeRange(from, next));
+            from = from.plusHours(1);
         }
-        return list.stream().collect(Collectors.joining(","));
+        return list;
     }
 
     @Override

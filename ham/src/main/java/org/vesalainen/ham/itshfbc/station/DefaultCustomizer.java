@@ -16,9 +16,11 @@
  */
 package org.vesalainen.ham.itshfbc.station;
 
+import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.vesalainen.ham.itshfbc.OffsetTimeRange;
 import org.vesalainen.ham.jaxb.StationType;
 
 /**
@@ -72,9 +74,9 @@ public class DefaultCustomizer
         XMLGregorianCalendar time2 = dataTypeFactory.newXMLGregorianCalendarTime(start2/100, start2%100, 0, 0);
         return new XMLGregorianCalendar[]{time1, time2};
     }
-    public String convertRanges(double frequency, String range)
+    public List<OffsetTimeRange> convertRanges(double frequency, List<OffsetTimeRange> ranges)
     {
-        return range;
+        return ranges;
     }
     public void afterProcess(StationType station)
     {
@@ -100,6 +102,8 @@ public class DefaultCustomizer
     
     public String transmitterLine(String line)
     {
-        return line.trim();
+        return line
+                .replace("UTC", "")
+                .trim();
     }
 }
