@@ -35,6 +35,7 @@ import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
 import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
+import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
@@ -44,6 +45,7 @@ import org.vesalainen.regex.SyntaxErrorException;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.IntReference;
 import org.vesalainen.util.MapList;
+import org.vesalainen.util.Pair;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
@@ -160,7 +162,7 @@ public class StationConverter extends JavaLogging
                 }
                 line = br.readLine();
             }
-            customizer.afterProcess(station);
+            customizer.after(station);
             return station;
         }
         catch (Exception ex)
@@ -178,6 +180,7 @@ public class StationConverter extends JavaLogging
                 String transmitterLine = customizer.transmitterLine(line);
                 finest("cust: '%s'", transmitterLine);
                 TransmitterType transmitter = parser.parseTransmitter(transmitterLine, customizer);
+                customizer.after(transmitter, transmitterLine);
                 station.getTransmitter().add(transmitter);
             }
             catch (SyntaxErrorException ex)
@@ -235,10 +238,11 @@ public class StationConverter extends JavaLogging
                         {
                             String sceduleLine = customizer.scheduleLine(line);
                             finest("cust: '%s'", sceduleLine);
-                            ScheduleType[] schedules = parser.parseSchedule(sceduleLine, customizer);
-                            for (ScheduleType schedule : schedules)
+                            HfFaxType[] hfFaxes = parser.parseHfFax(sceduleLine, customizer);
+                            for (HfFaxType hfFax : hfFaxes)
                             {
-                                station.getSchedule().add(schedule);
+                                customizer.after(hfFax, sceduleLine);
+                                station.getHfFax().add(hfFax);
                             }
                         }
                         catch (SyntaxErrorException ex)
@@ -286,7 +290,11 @@ public class StationConverter extends JavaLogging
                 String mapLine = customizer.mapLine(line);
                 finest("cust: '%s'", mapLine);
                 List<MapType> maps = parser.parseMapLine(mapLine, customizer);
-                station.getMap().addAll(maps);
+                for (MapType m : maps)
+                {
+                    customizer.after(m, mapLine);
+                    station.getMap().add(m);
+                }
             }
             catch (SyntaxErrorException ex)
             {
@@ -305,7 +313,7 @@ public class StationConverter extends JavaLogging
     private void checkMaps(StationType station)
     {
         Map<String, MapType> map = station.getMap().stream().collect(Collectors.toMap((m)->m.getName(), (m)->m));
-        for (ScheduleType scedule : station.getSchedule())
+        for (HfFaxType scedule : station.getHfFax())
         {
             for (String m : scedule.getMap())
             {
@@ -325,16 +333,16 @@ public class StationConverter extends JavaLogging
     }
     private void mergeSchedules(StationType station)
     {
-        MapList<XMLGregorianCalendar,ScheduleType> ml = new HashMapList<>();
-        for (ScheduleType schedule : station.getSchedule())
+        MapList<Pair<XMLGregorianCalendar,List<String>>,HfFaxType> ml = new HashMapList<>();
+        for (HfFaxType hfFax : station.getHfFax())
         {
-            ml.add(schedule.getTime(), schedule);
+            ml.add(new Pair(hfFax.getTime(), hfFax.getWeekdays()), hfFax);
         }
-        station.getSchedule().clear();
+        station.getHfFax().clear();
         ml.forEach((t,l)->
         {
-            ScheduleType st = l.get(0);
-            station.getSchedule().add(st);
+            HfFaxType st = l.get(0);
+            station.getHfFax().add(st);
             if (l.size() > 1)
             {
                 st.setContent(l.stream().map((s)->s.getContent()).collect(Collectors.joining(" / ")));
@@ -347,12 +355,12 @@ public class StationConverter extends JavaLogging
     }
     private void handleDurations(StationType station)
     {
-        List<ScheduleType> schedules = station.getSchedule();
-        if (!schedules.isEmpty())
+        List<HfFaxType> hfFaxes = station.getHfFax();
+        if (!hfFaxes.isEmpty())
         {
-            schedules.sort(SCHEDULE_COMP);
+            hfFaxes.sort(SCHEDULE_COMP);
             ScheduleType prev = null;
-            for (ScheduleType cur : schedules)
+            for (ScheduleType cur : hfFaxes)
             {
                 if (prev != null)
                 {
@@ -366,8 +374,8 @@ public class StationConverter extends JavaLogging
                 }
                 prev = cur;
             }
-            ScheduleType ls = schedules.get(schedules.size()-1);
-            GregorianCalendar first = schedules.get(0).getTime().toGregorianCalendar();
+            ScheduleType ls = hfFaxes.get(hfFaxes.size()-1);
+            GregorianCalendar first = hfFaxes.get(0).getTime().toGregorianCalendar();
             GregorianCalendar last = ls.getTime().toGregorianCalendar();
             Duration duration = dataTypeFactory.newDuration(24*60*60000-(last.getTimeInMillis()-first.getTimeInMillis()));
             if (duration.isShorterThan(maxDuration) && ls.getDuration() == null)
@@ -402,7 +410,7 @@ public class StationConverter extends JavaLogging
     }
     private void handleRetrans(String key, StationType station, List<String> lines)
     {
-        Map<XMLGregorianCalendar, ScheduleType> map = station.getSchedule().stream().collect(Collectors.toMap((ScheduleType s)->s.getTime(), (ScheduleType s)->s));
+        Map<XMLGregorianCalendar, HfFaxType> map = station.getHfFax().stream().collect(Collectors.toMap((HfFaxType s)->s.getTime(), (HfFaxType s)->s));
         for (String line : lines)
         {
             String[] start = line.substring(0, line.indexOf(' ')).split("/");
@@ -418,12 +426,12 @@ public class StationConverter extends JavaLogging
                     String p = ptr[pi].substring(0, 4);
                     int tt = Integer.parseInt(p);
                     XMLGregorianCalendar cal = dataTypeFactory.newXMLGregorianCalendarTime(tt/100, tt%100, 0, 0);
-                    ScheduleType trg = map.get(cal);
+                    HfFaxType trg = map.get(cal);
                     if (trg == null)
                     {
                         throw new IllegalArgumentException(p+" not found");
                     }
-                    ScheduleType ns = factory.createScheduleType();
+                    HfFaxType ns = factory.createHfFaxType();
                     int t = Integer.parseInt(start[si]);
                     ns.setTime(dataTypeFactory.newXMLGregorianCalendarTime(t/100, t%100, 0, 0));
                     ns.setContent("RE: "+trg.getContent());
@@ -431,7 +439,7 @@ public class StationConverter extends JavaLogging
                     ns.setIoc(trg.getIoc());
                     ns.setValid(trg.getValid());
                     ns.getMap().addAll(trg.getMap());
-                    station.getSchedule().add(ns);
+                    station.getHfFax().add(ns);
                     pi++;
                 }
                 si++;
@@ -507,12 +515,12 @@ public class StationConverter extends JavaLogging
         map.put("TAIPEI, REPUBLIC OF CHINA", new Integer[]{4, 38, 1});
         map.put("SEOUL, REPUBLIC OF KOREA", new Integer[]{5, 62, 3});
         map.put("BANGKOK, THAILAND", new Integer[]{1, 26, 1});
-        map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 21, 0});
+        map.put("KYODO NEWS AGENCY, JAPAN/SINGAPORE", new Integer[]{8, 30, 0});
         map.put("NORTHWOOD, UNITED KINGDOM (PERSIAN GULF)", new Integer[]{3, 69, 1});
         map.put("RIO DE JANEIRO, BRAZIL", new Integer[]{2, 10, 4});
         map.put("VALPARAISO PLAYA ANCHA, CHILE  (CBV)", new Integer[]{3, 12, 2});
         map.put("PUNTA ARENAS MAGALLANES, CHILE (CBM)", new Integer[]{2, 12, 2});
-        map.put("HALIFAX, NOVA SCOTIA, CANADA", new Integer[]{5, 32, 9});
+        map.put("HALIFAX, NOVA SCOTIA, CANADA", new Integer[]{5, 34, 9});
         map.put("IQALUIT, CANADA", new Integer[]{2, 8, 0});
         map.put("RESOLUTE, CANADA", new Integer[]{2, 8, 0});
         map.put("SYDNEY - NOVA SCOTIA, CANADA", new Integer[]{2, 5, 0});
@@ -569,10 +577,10 @@ public class StationConverter extends JavaLogging
             warning("Transmitter count %d != %d", station.getTransmitter().size(), testCondition[0]);
             ok = false;
         }
-        if (testCondition[1] != station.getSchedule().size())
+        if (testCondition[1] != station.getHfFax().size())
         {
             errors.add(1);
-            warning("Schedule count %d != %d", station.getSchedule().size(), testCondition[1]);
+            warning("Schedule count %d != %d", station.getHfFax().size(), testCondition[1]);
             ok = false;
         }
         if (testCondition[2] != station.getMap().size())

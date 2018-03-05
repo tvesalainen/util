@@ -17,6 +17,7 @@
 package org.vesalainen.ham.itshfbc.station;
 
 import java.time.DayOfWeek;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -29,23 +30,12 @@ import org.vesalainen.math.Sets;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Halifax extends DefaultCustomizer
+public class KyodoNewsAgency extends DefaultCustomizer
 {
 
     @Override
-    public String scheduleLine(String line)
-    {
-        return super.scheduleLine(line)
-                .replace("0&12/12&0", "00/12")
-                .replace("18&00", "18/00")
-                .replace("06&12", "06/12")
-                ;
-    }
-    
-    @Override
     public void after(HfFaxType hfFax, String line)
     {
-        line = line.replace("SATELLITE", "");
         EnumSet<DayOfWeek> set = EnumSet.noneOf(DayOfWeek.class);
         for (DayOfWeek dow : DayOfWeek.values())
         {
@@ -91,4 +81,5 @@ public class Halifax extends DefaultCustomizer
         List<String> list = set.stream().map((d)->d.name().substring(0, 3)).collect(Collectors.toList());
         hfFax.getWeekdays().addAll(list);
     }
+    
 }

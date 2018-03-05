@@ -42,7 +42,9 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
+import org.vesalainen.ham.itshfbc.TimeRanges;
 import org.vesalainen.ham.jaxb.BroadcastStations;
+import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
@@ -181,7 +183,7 @@ public class BroadcastStationsFile
         {
             this.station = station;
             this.transmitters = station.getTransmitter().stream().map((t)->new Transmitter(this, t)).collect(Collectors.toMap((Transmitter t)->t.getCallSign(), (t)->t));
-            this.schedules = station.getSchedule().stream().map((s)->new Schedule(this, s)).collect(Collectors.toMap((Schedule s)->s.getStart(), (s)->s));
+            this.schedules = station.getHfFax().stream().map((s)->new HfFax(this, s)).collect(Collectors.toMap((HfFax s)->s.getStart(), (s)->s));
             this.maps = station.getMap().stream().map((m)->new MapArea(this, m)).collect(Collectors.toMap((MapArea m)->m.getName(), (m)->m));
         }
 
@@ -206,12 +208,19 @@ public class BroadcastStationsFile
         private Station station;
         private TransmitterType transmitter;
         private EmissionClass emissionClass;
+        private TimeRanges timeRanges;
 
         public Transmitter(Station station, TransmitterType transmitter)
         {
             this.station = station;
             this.transmitter = transmitter;
             this.emissionClass = new EmissionClass(transmitter.getEmission());
+            this.timeRanges = TimeRanges.getInstance(transmitter.getTimes());
+        }
+
+        public boolean isInside(OffsetTime time)
+        {
+            return timeRanges.isInside(time);
         }
 
         public EmissionClass getEmissionClass()
@@ -245,14 +254,33 @@ public class BroadcastStationsFile
         }
         
     }
-    public static class Schedule
+    public static class HfFax extends Schedule<HfFaxType>
     {
-        private Station station;
-        private ScheduleType schedule;
-        private OffsetTime start;
-        private OffsetTime end;
+        
+        public HfFax(Station station, HfFaxType hfFax)
+        {
+            super(station, hfFax);
+        }
+        
+        public int getRpm()
+        {
+            return schedule.getRpm();
+        }
 
-        public Schedule(Station station, ScheduleType schedule)
+        public int getIoc()
+        {
+            return schedule.getIoc();
+        }
+        
+    }
+    public static class Schedule<T extends ScheduleType>
+    {
+        protected Station station;
+        protected T schedule;
+        protected OffsetTime start;
+        protected OffsetTime end;
+
+        public Schedule(Station station, T schedule)
         {
             this.station = station;
             this.schedule = schedule;
@@ -289,16 +317,6 @@ public class BroadcastStationsFile
             return schedule.getContent();
         }
 
-        public int getRpm()
-        {
-            return schedule.getRpm();
-        }
-
-        public int getIoc()
-        {
-            return schedule.getIoc();
-        }
-        
     }
     public static class MapArea
     {

@@ -16,6 +16,9 @@
  */
 package org.vesalainen.ham.itshfbc;
 
+import java.time.Duration;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +27,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
 import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
+import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
@@ -150,40 +154,40 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     {
         return new Location(lat, lon);
     }
-    @ParseMethod(start="schedule")
-    public abstract ScheduleType[] parseSchedule(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
+    @ParseMethod(start="hfFax")
+    public abstract HfFaxType[] parseHfFax(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
     @Rule("start ws content ws rpm valid? mapRef?")
-    protected ScheduleType[] schedule(XMLGregorianCalendar[] startArr, String ws1, String content, String ws2, int[] rpm, XMLGregorianCalendar[] valid, String[] map)
+    protected HfFaxType[] hfFax(XMLGregorianCalendar[] startArr, String ws1, String content, String ws2, int[] rpm, XMLGregorianCalendar[] valid, String[] map)
     {
-        ScheduleType[] arr = new ScheduleType[startArr.length];
+        HfFaxType[] arr = new HfFaxType[startArr.length];
         int index = 0;
         for (XMLGregorianCalendar start : startArr)
         {
-            ScheduleType schedule = factory.createScheduleType();
-            schedule.setTime(start);
-            schedule.setContent(content);
-            schedule.setRpm(rpm[0]);
-            schedule.setIoc(rpm[1]);
+            HfFaxType hfFax = factory.createHfFaxType();
+            hfFax.setTime(start);
+            hfFax.setContent(content);
+            hfFax.setRpm(rpm[0]);
+            hfFax.setIoc(rpm[1]);
             if (valid != null)
             {
                 if (valid.length == startArr.length)
                 {
-                    schedule.setValid(valid[index]);
+                    hfFax.setValid(valid[index]);
                 }
                 else
                 {
-                    schedule.setValid(valid[index/4]);
+                    hfFax.setValid(valid[index/4]);
                 }
             }
             if (map != null)
             {
                 for (String m : map)
                 {
-                    schedule.getMap().add(m);
+                    hfFax.getMap().add(m);
                 }
             }
-            arr[index++] = schedule;
+            arr[index++] = hfFax;
         }
         return arr;
     }
@@ -287,7 +291,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected OffsetTimeRange range(Double from)
     {
         int t = from.intValue();
-        return new OffsetTimeRange(t, t+59);
+        return new OffsetTimeRange(OffsetTime.of(t/100, t%100, 0, 0, ZoneOffset.UTC), Duration.ofHours(1));
     }
     @Rule("number 'Z'? '\\-' number 'Z'?")
     protected OffsetTimeRange range(Double from, Double to)

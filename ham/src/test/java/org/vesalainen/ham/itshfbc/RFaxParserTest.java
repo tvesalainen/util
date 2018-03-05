@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
+import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.TransmitterType;
@@ -39,22 +40,22 @@ public class RFaxParserTest
     public void testSchedule()
     {
         DefaultCustomizer customizer = DefaultCustomizer.getInstance("Tokyo.txt");
-        ScheduleType[] schedules = parser.parseSchedule("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000", customizer);
-        assertEquals(1, schedules.length);
-        ScheduleType schedule = schedules[0];
-        assertEquals(12, schedule.getTime().getHour());
-        assertEquals(20, schedule.getTime().getMinute());
-        assertEquals("12/24/48/72HR OCEAN WAVE PROG", schedule.getContent());
-        assertEquals(120, schedule.getRpm());
-        assertEquals(576, schedule.getIoc());
-        assertEquals(0, schedule.getValid().getHour());
-        assertEquals(0, schedule.getValid().getMinute());
+        HfFaxType[] hfFaxes = parser.parseHfFax("-------/1220 12/24/48/72HR OCEAN WAVE PROG      120/576 0000", customizer);
+        assertEquals(1, hfFaxes.length);
+        HfFaxType rfFax = hfFaxes[0];
+        assertEquals(12, rfFax.getTime().getHour());
+        assertEquals(20, rfFax.getTime().getMinute());
+        assertEquals("12/24/48/72HR OCEAN WAVE PROG", rfFax.getContent());
+        assertEquals(120, rfFax.getRpm());
+        assertEquals(576, rfFax.getIoc());
+        assertEquals(0, rfFax.getValid().getHour());
+        assertEquals(0, rfFax.getValid().getMinute());
     }
     @Test
     public void testSchedule2()
     {
         DefaultCustomizer customizer = DefaultCustomizer.getInstance("foo.txt");
-        ScheduleType[] schedules = parser.parseSchedule("0255/1455  SEA STATE ANALYSIS, WIND/WAVE ANALYSIS  120/576      00/12    1/8", customizer);
+        ScheduleType[] schedules = parser.parseHfFax("0255/1455  SEA STATE ANALYSIS, WIND/WAVE ANALYSIS  120/576      00/12    1/8", customizer);
     }
     @Test
     public void testMap1()

@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <xsd:complexType name="stationType">
         <xsd:sequence>
             <xsd:element name="transmitter" type="transmitterType" maxOccurs="unbounded"/>
-            <xsd:element name="schedule" type="scheduleType" maxOccurs="unbounded"/>
+            <xsd:element name="hfFax" type="hfFaxType" maxOccurs="unbounded"/>
             <xsd:element name="map" type="mapType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -46,14 +46,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="emission" type="xsd:string" use="required"/>
         <xsd:attribute name="power" type="xsd:double"/>
     </xsd:complexType>
+    <xsd:complexType name="hfFaxType">
+        <xsd:complexContent>
+            <xsd:extension base="scheduleType">
+            <xsd:attribute name="rpm" type="xsd:unsignedShort" use="required"/>
+            <xsd:attribute name="ioc" type="xsd:unsignedShort" use="required"/>
+            <xsd:attribute name="valid" type="xsd:time"/>
+            <xsd:attribute name="map" type="mapRefType"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
     <xsd:complexType name="scheduleType">
         <xsd:attribute name="time" type="xsd:time" use="required"/>
+        <xsd:attribute name="weekdays" type="weekdaysType"/>
         <xsd:attribute name="duration" type="xsd:duration"/>
         <xsd:attribute name="content" type="xsd:string"/>
-        <xsd:attribute name="rpm" type="xsd:unsignedShort" use="required"/>
-        <xsd:attribute name="ioc" type="xsd:unsignedShort" use="required"/>
-        <xsd:attribute name="valid" type="xsd:time"/>
-        <xsd:attribute name="map" type="mapRefType"/>
     </xsd:complexType>
     <xsd:complexType name="mapType">
         <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -68,6 +75,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
     <xsd:simpleType name="timeRangeType">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="weekdaysType">
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
 </xsd:schema>

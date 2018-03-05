@@ -21,7 +21,10 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.itshfbc.OffsetTimeRange;
+import org.vesalainen.ham.jaxb.HfFaxType;
+import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.StationType;
+import org.vesalainen.ham.jaxb.TransmitterType;
 
 /**
  *
@@ -78,9 +81,17 @@ public class DefaultCustomizer
     {
         return ranges;
     }
-    public void afterProcess(StationType station)
+    public void after(StationType station)
     {
-        
+    }
+    public void after(TransmitterType transmitter, String line)
+    {
+    }
+    public void after(HfFaxType hfFax, String line)
+    {
+    }
+    public void after(MapType map, String line)
+    {
     }
     public String mapLine(String line)
     {

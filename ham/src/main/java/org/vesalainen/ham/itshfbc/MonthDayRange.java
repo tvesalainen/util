@@ -16,21 +16,22 @@
  */
 package org.vesalainen.ham.itshfbc;
 
-import java.time.Duration;
+import java.time.MonthDay;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import static org.vesalainen.ham.itshfbc.OffsetTimeRange.parse;
 import org.vesalainen.lang.Primitives;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class OffsetTimeRange
+public class MonthDayRange
 {
-    private OffsetTime from;
-    private OffsetTime to;
+    private MonthDay from;
+    private MonthDay to;
 
-    public OffsetTimeRange(String text)
+    public MonthDayRange(String text)
     {
         String[] split = text.split("\\-");
         if (split.length != 2)
@@ -41,65 +42,40 @@ public class OffsetTimeRange
         this.to = parse(split[1]);
     }
 
-    public OffsetTimeRange(int from, int to)
-    {
-        this(from/100, from%100, to/100, to%100);
-    }
-
-    public OffsetTimeRange(int hourFrom, int minuteFrom, int hourTo, int minuteTo)
-    {
-        this(OffsetTime.of(hourFrom, minuteFrom, 0, 0, ZoneOffset.UTC), OffsetTime.of(hourTo, minuteTo, 0, 0, ZoneOffset.UTC));
-    }
-
-    public OffsetTimeRange(OffsetTime from, Duration duration)
-    {
-        this(from, from.plus(duration));
-    }
-
-    public OffsetTimeRange(OffsetTime from, OffsetTime to)
+    public MonthDayRange(MonthDay from, MonthDay to)
     {
         this.from = from;
         this.to = to;
     }
-
-    public OffsetTime getFrom()
-    {
-        return from;
-    }
-
-    public OffsetTime getTo()
-    {
-        return to;
-    }
     
-    public boolean isInside(OffsetTime time)
+    public boolean isInside(MonthDay day)
     {
         if (from.isBefore(to))
         {
-            if (from.compareTo(time) <= 0)
+            if (from.compareTo(day) <= 0)
             {
-                return to.compareTo(time) >= 0;
+                return to.compareTo(day) >= 0;
             }
             return false;
         }
         else
         {
-            return from.compareTo(time) <= 0 || to.compareTo(time) >= 0;
+            return from.compareTo(day) <= 0 || to.compareTo(day) >= 0;
         }
     }
-    public static final OffsetTime parse(String text)
+    public static final MonthDay parse(String text)
     {
         if (text.length() != 4)
         {
             throw new IllegalArgumentException(text);
         }
-        return OffsetTime.of(Primitives.parseInt(text, 0, 2), Primitives.parseInt(text, 2, 4), 0, 0, ZoneOffset.UTC);
+        return MonthDay.of(Primitives.parseInt(text, 0, 2), Primitives.parseInt(text, 2, 4));
     }
 
     @Override
     public String toString()
     {
-        return String.format("%02d%02d-%02d%02d", from.getHour(), from.getMinute(), to.getHour(), to.getMinute());
+        return String.format("%02d%02d-%02d%02d", from.getMonthValue(), from.getDayOfMonth(), to.getMonthValue(), to.getDayOfMonth());
     }
     
 }
