@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * bu;t WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -16,26 +16,25 @@
  */
 package org.vesalainen.util;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <A> First type
- * @param <B> Second type
  */
-public class Pair<A,B> implements Serializable
+public class Triple<A,B,C>
 {
     private static final long serialVersionUID = 1L;
     
     protected A first;
     protected B second;
+    protected C third;
 
-    public Pair(A first, B second)
+    public Triple(A first, B second, C third)
     {
         this.first = first;
         this.second = second;
+        this.third = third;
     }
 
     public A getFirst()
@@ -48,12 +47,18 @@ public class Pair<A,B> implements Serializable
         return second;
     }
 
+    public C getThird()
+    {
+        return third;
+    }
+
     @Override
     public int hashCode()
     {
         int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.first);
-        hash = 79 * hash + Objects.hashCode(this.second);
+        hash = 89 * hash + Objects.hashCode(this.first);
+        hash = 89 * hash + Objects.hashCode(this.second);
+        hash = 89 * hash + Objects.hashCode(this.third);
         return hash;
     }
 
@@ -72,7 +77,7 @@ public class Pair<A,B> implements Serializable
         {
             return false;
         }
-        final Pair<?, ?> other = (Pair<?, ?>) obj;
+        final Triple<?, ?, ?> other = (Triple<?, ?, ?>) obj;
         if (!Objects.equals(this.first, other.first))
         {
             return false;
@@ -81,7 +86,11 @@ public class Pair<A,B> implements Serializable
         {
             return false;
         }
+        if (!Objects.equals(this.third, other.third))
+        {
+            return false;
+        }
         return true;
     }
-    
+        
 }

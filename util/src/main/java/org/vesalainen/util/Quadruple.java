@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * bu;t WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -16,26 +16,27 @@
  */
 package org.vesalainen.util;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <A> First type
- * @param <B> Second type
  */
-public class Pair<A,B> implements Serializable
+public class Quadruple<A,B,C,D>
 {
     private static final long serialVersionUID = 1L;
     
     protected A first;
     protected B second;
+    protected C third;
+    protected D fourth;
 
-    public Pair(A first, B second)
+    public Quadruple(A first, B second, C third, D fourth)
     {
         this.first = first;
         this.second = second;
+        this.third = third;
+        this.fourth = fourth;
     }
 
     public A getFirst()
@@ -48,12 +49,24 @@ public class Pair<A,B> implements Serializable
         return second;
     }
 
+    public C getThird()
+    {
+        return third;
+    }
+
+    public D getFourth()
+    {
+        return fourth;
+    }
+
     @Override
     public int hashCode()
     {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.first);
-        hash = 79 * hash + Objects.hashCode(this.second);
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.first);
+        hash = 37 * hash + Objects.hashCode(this.second);
+        hash = 37 * hash + Objects.hashCode(this.third);
+        hash = 37 * hash + Objects.hashCode(this.fourth);
         return hash;
     }
 
@@ -72,7 +85,7 @@ public class Pair<A,B> implements Serializable
         {
             return false;
         }
-        final Pair<?, ?> other = (Pair<?, ?>) obj;
+        final Quadruple<?, ?, ?, ?> other = (Quadruple<?, ?, ?, ?>) obj;
         if (!Objects.equals(this.first, other.first))
         {
             return false;
@@ -81,7 +94,15 @@ public class Pair<A,B> implements Serializable
         {
             return false;
         }
+        if (!Objects.equals(this.third, other.third))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.fourth, other.fourth))
+        {
+            return false;
+        }
         return true;
     }
-    
+
 }
