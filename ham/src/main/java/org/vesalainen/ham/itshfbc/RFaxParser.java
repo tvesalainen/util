@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.itshfbc;
 
+import org.vesalainen.ham.OffsetTimeRange;
 import java.time.Duration;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -25,8 +26,10 @@ import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import static org.vesalainen.ham.BroadcastStationsFile.DATA_TYPE_FACTORY;
+import static org.vesalainen.ham.BroadcastStationsFile.OBJECT_FACTORY;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
-import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
+import org.vesalainen.ham.station.DefaultCustomizer;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
@@ -53,27 +56,12 @@ import org.vesalainen.util.navi.Location;
 @GrammarDef()
 public abstract class RFaxParser implements ParserInfo //extends Tracer
 {
-    private ObjectFactory factory;
-    private DatatypeFactory dataTypeFactory;
     
     public static RFaxParser getInstance()
     {
         return (RFaxParser) GenClassFactory.getGenInstance(RFaxParser.class);
     }
 
-    public RFaxParser()
-    {
-        try
-        {
-            this.factory = new ObjectFactory();
-            this.dataTypeFactory = DatatypeFactory.newInstance();
-        }
-        catch (DatatypeConfigurationException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-    
     @ParseMethod(start="mapLine", whiteSpace ={"mapWS", "quot"})
     public abstract List<MapType> parseMapLine(String text, @ParserContext("StationCustomizer") DefaultCustomizer customizer);
     
@@ -86,7 +74,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected MapType map(String name, String scale, String projection, double latFrom, double latTo)
     {
         Area area = Area.getPolar(latFrom, latTo);
-        MapType map = factory.createMapType();
+        MapType map = OBJECT_FACTORY.createMapType();
         map.setName(name);
         map.setScale(scale);
         map.setProjection(projection);
@@ -100,7 +88,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected MapType map(String name, String scale, String projection, double latFrom, double latTo, double lonFrom, double midLon, double lonTo)
     {
         Area area = Area.getPolar(latFrom, latTo, lonFrom, midLon, lonTo);
-        MapType map = factory.createMapType();
+        MapType map = OBJECT_FACTORY.createMapType();
         map.setName(name);
         map.setScale(scale);
         map.setProjection(projection);
@@ -114,7 +102,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected MapType map(String name, String scale, String projection, double latFrom, double latTo, double lonFrom, double lonTo, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
         Area area = Area.getSquare(latFrom, latTo, lonFrom, lonTo);
-        MapType map = factory.createMapType();
+        MapType map = OBJECT_FACTORY.createMapType();
         map.setName(name);
         map.setScale(scale);
         map.setProjection(projection);
@@ -128,7 +116,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected MapType map(Location sw, Location se, Location nw, Location ne)
     {
         Area area = Area.getArea(sw, se, nw, ne);
-        MapType map = factory.createMapType();
+        MapType map = OBJECT_FACTORY.createMapType();
         for (Location loc : area.getLocations())
         {
             map.getCorners().add(format(loc));
@@ -139,7 +127,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     protected MapType map(String name, String scale, String projection, Location sw, Location se, Location nw, Location ne)
     {
         Area area = Area.getArea(sw, se, nw, ne);
-        MapType map = factory.createMapType();
+        MapType map = OBJECT_FACTORY.createMapType();
         map.setName(name);
         map.setScale(scale);
         map.setProjection(projection);
@@ -164,7 +152,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
         int index = 0;
         for (XMLGregorianCalendar start : startArr)
         {
-            HfFaxType hfFax = factory.createHfFaxType();
+            HfFaxType hfFax = OBJECT_FACTORY.createHfFaxType();
             hfFax.setTime(start);
             hfFax.setContent(content);
             hfFax.setRpm(rpm[0]);
@@ -206,7 +194,7 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     @Rule("'\\-+/' time4")
     protected XMLGregorianCalendar[] start(Integer start)
     {
-        XMLGregorianCalendar time = dataTypeFactory.newXMLGregorianCalendarTime(start/100, start%100, 0, 0);
+        XMLGregorianCalendar time = DATA_TYPE_FACTORY.newXMLGregorianCalendarTime(start/100, start%100, 0, 0);
         return new XMLGregorianCalendar[]{time};
     }
     @Rule("time4 '/' time4")
@@ -234,14 +222,14 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     @Rule("ws? time4")
     protected XMLGregorianCalendar[] valid(String ws, Integer time)
     {
-        return new XMLGregorianCalendar[]{dataTypeFactory.newXMLGregorianCalendarTime(time/100, time%100, 0, 0)};
+        return new XMLGregorianCalendar[]{DATA_TYPE_FACTORY.newXMLGregorianCalendarTime(time/100, time%100, 0, 0)};
     }
     @Rule("ws? time2")
     protected XMLGregorianCalendar[] valid(String ws, Integer[] time)
     {
         return new XMLGregorianCalendar[]{
-            dataTypeFactory.newXMLGregorianCalendarTime(time[0], 0, 0, 0),
-            dataTypeFactory.newXMLGregorianCalendarTime(time[1], 0, 0, 0)
+            DATA_TYPE_FACTORY.newXMLGregorianCalendarTime(time[0], 0, 0, 0),
+            DATA_TYPE_FACTORY.newXMLGregorianCalendarTime(time[1], 0, 0, 0)
         };
     }
     @ParseMethod(start="transmitter", whiteSpace ={"whiteSpace", "quot"})
@@ -250,13 +238,10 @@ public abstract class RFaxParser implements ParserInfo //extends Tracer
     @Rule("callSign? frequency ranges? emissionClass power?")
     protected TransmitterType transmitter(String call, Double freq, List<OffsetTimeRange> ranges, String emission, Double power, @ParserContext("StationCustomizer") DefaultCustomizer customizer)
     {
-        TransmitterType transmitter = factory.createTransmitterType();
+        TransmitterType transmitter = OBJECT_FACTORY.createTransmitterType();
         transmitter.setCallSign(call);
         transmitter.setFrequency(freq);
-        if (ranges != null)
-        {
-            transmitter.getTimes().addAll(customizer.convertRanges(freq, ranges).stream().map((r)->r.toString()).collect(Collectors.toList()));
-        }
+        transmitter.getTime().addAll(customizer.convertRanges(freq, ranges).stream().map((r)->r.toTimeRangeType()).collect(Collectors.toList()));
         if (power != null)
         {
             transmitter.setPower(power);

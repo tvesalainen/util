@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham;
 
+import org.vesalainen.ham.MonthDayRange;
 import static java.time.Month.*;
 import java.time.MonthDay;
 import org.junit.Test;
@@ -35,20 +36,24 @@ public class MonthDayRangeTest
     @Test
     public void test1()
     {
-        MonthDayRange r = new MonthDayRange("0131-0501");
-        assertEquals("0131-0501", r.toString());
-        assertTrue(r.isInside(MonthDay.of(FEBRUARY, 1)));
-        assertTrue(r.isInside(MonthDay.of(MAY, 1)));
-        assertFalse(r.isInside(MonthDay.of(JANUARY, 30)));
+        MonthDayRange r1 = new MonthDayRange(MonthDay.of(1, 31), MonthDay.of(5, 1));
+        assertTrue(r1.isInside(MonthDay.of(FEBRUARY, 1)));
+        assertTrue(r1.isInside(MonthDay.of(MAY, 1)));
+        assertFalse(r1.isInside(MonthDay.of(JANUARY, 30)));
+        
+        MonthDayRange r2 = new MonthDayRange(r1.toDateRangeType());
+        assertEquals(r1, r2);
     }
     @Test
     public void test2()
     {
-        MonthDayRange r = new MonthDayRange("1201-0131");
-        assertEquals("1201-0131", r.toString());
-        assertTrue(r.isInside(MonthDay.of(JANUARY, 30)));
-        assertFalse(r.isInside(MonthDay.of(FEBRUARY, 1)));
-        assertFalse(r.isInside(MonthDay.of(MAY, 1)));
+        MonthDayRange r1 = new MonthDayRange(MonthDay.of(12, 1), MonthDay.of(1, 31));
+        assertTrue(r1.isInside(MonthDay.of(JANUARY, 30)));
+        assertFalse(r1.isInside(MonthDay.of(FEBRUARY, 1)));
+        assertFalse(r1.isInside(MonthDay.of(MAY, 1)));
+
+        MonthDayRange r2 = new MonthDayRange(r1.toDateRangeType());
+        assertEquals(r1, r2);
     }
     
 }

@@ -14,29 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
+
+import java.time.MonthDay;
+import static java.util.Calendar.*;
+import org.vesalainen.ham.MonthDayRange;
+import org.vesalainen.ham.jaxb.StationType;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Northwood extends DefaultCustomizer
+public class Iqaluit extends DefaultCustomizer
 {
 
     @Override
-    public String transmitterLine(String line)
+    public void after(StationType station)
     {
-        return super.transmitterLine(line)
-                .replace('?', ' ')
-                ;
-    }
-
-    @Override
-    public String scheduleLine(String line)
-    {
-        return super.scheduleLine(line)
-                .replace("Abbreviations: All MAPS", "MAP AREAS:")
-                ;
+        station.getDate().add(new MonthDayRange(MonthDay.of(JUNE, 15), MonthDay.of(NOVEMBER, 30)).toDateRangeType());
     }
     
 }

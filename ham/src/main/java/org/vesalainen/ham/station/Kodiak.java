@@ -14,22 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Athens extends DefaultCustomizer
+public class Kodiak extends DefaultCustomizer
 {
 
     @Override
     public String mapLine(String line)
     {
         return super.mapLine(line)
-                .replace("- SOUTH EUROPE , MEDITERRANEAN SEA, BLACK SEA", "29N - 48N, 12W - 0E - 42E")
-                .replace("- MEDITERRANEAN", "30N - 47N, 6W - 0E - 37E")
-                .replace("- AEGEAN", "34N - 41N, 21E - 29E")
+                .replace("ICE COVERED AK WATERS", "40N - 70N,   115W - 170E")
+                .replace("COOK INLET", "59N-61N 154W-148W")
                 ;
     }
     

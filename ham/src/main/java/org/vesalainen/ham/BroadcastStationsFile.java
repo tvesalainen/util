@@ -3,12 +3,12 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 3 of the License, orTimeRanges
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY orTimeRanges FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -29,6 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.time.Duration;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
-import org.vesalainen.ham.itshfbc.TimeRanges;
 import org.vesalainen.ham.jaxb.BroadcastStations;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
@@ -60,11 +60,11 @@ import org.vesalainen.util.navi.Location;
  */
 public class BroadcastStationsFile
 {
+    public static final ObjectFactory OBJECT_FACTORY;
+    public static final DatatypeFactory DATA_TYPE_FACTORY;
     public static final long DEF_DURATION_MINUTES = 15;
     public static final Comparator<ScheduleType> SCHEDULE_COMP = new ScheduleComp();
     private static JAXBContext jaxbCtx;
-    private static ObjectFactory objectFactory;
-    private static DatatypeFactory dataTypeFactory;
     private BroadcastStations stations;
     private URL url;
     
@@ -73,8 +73,8 @@ public class BroadcastStationsFile
         try
         {
             jaxbCtx = JAXBContext.newInstance("org.vesalainen.ham.jaxb");
-            objectFactory = new ObjectFactory();
-            dataTypeFactory = DatatypeFactory.newInstance();
+            OBJECT_FACTORY = new ObjectFactory();
+            DATA_TYPE_FACTORY = DatatypeFactory.newInstance();
         }
         catch (DatatypeConfigurationException | JAXBException ex)
         {
@@ -94,7 +94,7 @@ public class BroadcastStationsFile
     public BroadcastStationsFile(URL url)
     {
         this.url = url;
-        stations = objectFactory.createBroadcastStations();
+        stations = OBJECT_FACTORY.createBroadcastStations();
     }
     private static URL toUrl(File file)
     {
@@ -109,7 +109,7 @@ public class BroadcastStationsFile
     }
     public StationType addStation(String name, Location location)
     {
-        StationType stationType = objectFactory.createStationType();
+        StationType stationType = OBJECT_FACTORY.createStationType();
         stationType.setName(name);
         stationType.setLocation(format(location));
         stationType.setActive(true);
@@ -172,12 +172,13 @@ public class BroadcastStationsFile
         }
 
     }
-    public static class Station
+    public static class Station implements TimeRange
     {
         private StationType station;
         private Map<String,Transmitter> transmitters;
         private Map<OffsetTime,Schedule> schedules;
         private Map<String,MapArea> maps;
+        private TimeRange dateRanges;
 
         public Station(StationType station)
         {
@@ -185,6 +186,13 @@ public class BroadcastStationsFile
             this.transmitters = station.getTransmitter().stream().map((t)->new Transmitter(this, t)).collect(Collectors.toMap((Transmitter t)->t.getCallSign(), (t)->t));
             this.schedules = station.getHfFax().stream().map((s)->new HfFax(this, s)).collect(Collectors.toMap((HfFax s)->s.getStart(), (s)->s));
             this.maps = station.getMap().stream().map((m)->new MapArea(this, m)).collect(Collectors.toMap((MapArea m)->m.getName(), (m)->m));
+            this.dateRanges = TimeRanges.orDateRanges(station.getDate());
+        }
+
+        @Override
+        public boolean isInside(ZonedDateTime dateTime)
+        {
+            return dateRanges.isInside(dateTime);
         }
 
         public String getName()
@@ -203,22 +211,23 @@ public class BroadcastStationsFile
         }
         
     }
-    public static class Transmitter
+    public static class Transmitter implements TimeRange
     {
         private Station station;
         private TransmitterType transmitter;
         private EmissionClass emissionClass;
-        private TimeRanges timeRanges;
+        private TimeRange timeRanges;
 
         public Transmitter(Station station, TransmitterType transmitter)
         {
             this.station = station;
             this.transmitter = transmitter;
             this.emissionClass = new EmissionClass(transmitter.getEmission());
-            this.timeRanges = TimeRanges.getInstance(transmitter.getTimes());
+            this.timeRanges = TimeRanges.orTimeRanges(transmitter.getTime());
         }
 
-        public boolean isInside(OffsetTime time)
+        @Override
+        public boolean isInside(ZonedDateTime time)
         {
             return timeRanges.isInside(time);
         }
@@ -273,12 +282,13 @@ public class BroadcastStationsFile
         }
         
     }
-    public static class Schedule<T extends ScheduleType>
+    public static class Schedule<T extends ScheduleType> implements TimeRange
     {
         protected Station station;
         protected T schedule;
         protected OffsetTime start;
         protected OffsetTime end;
+        protected TimeRange andRanges;
 
         public Schedule(Station station, T schedule)
         {
@@ -295,6 +305,16 @@ public class BroadcastStationsFile
             {
                 this.end = start.plusMinutes(DEF_DURATION_MINUTES);
             }
+            andRanges = TimeRanges.andRanges(
+                    TimeRanges.orWeekday(schedule.getWeekdays()),
+                    TimeRanges.orDateRanges(schedule.getDate())
+                    );
+        }
+
+        @Override
+        public boolean isInside(ZonedDateTime dateTime)
+        {
+            return andRanges.isInside(dateTime);
         }
 
         public OffsetTime getStart()

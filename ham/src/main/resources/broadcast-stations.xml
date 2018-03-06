@@ -20,11 +20,104 @@
         <map name="B" corners="50S90W 50S30W 85S90W 85S30W"/>
     </station>
     <station name="WELLINGTON, NEW ZEALAND" location="41.283167S174.783167E" info="(INFORMATION DATED MAY 2002) http://www.metservice.com/marine/radio/zklf-radiofax-schedule" active="true">
-        <transmitter call-sign="ZKLF" frequency="3247.4" times="0945-1000 1045-1100 1145-1200 1245-1300 1345-1400 1445-1500 1545-1600 1645-1700" emission="J3C" power="5.0"/>
-        <transmitter call-sign="ZKLF" frequency="5807.0" emission="J3C" power="5.0"/>
-        <transmitter call-sign="ZKLF" frequency="9459.0" emission="J3C" power="5.0"/>
-        <transmitter call-sign="ZKLF" frequency="13550.5" emission="J3C" power="5.0"/>
-        <transmitter call-sign="ZKLF" frequency="16340.1" times="2145-2200 2245-2300 2345-0000 0045-0100 0145-0200 0245-0300 0345-0400 0445-0500" emission="J3C" power="5.0"/>
+        <transmitter call-sign="ZKLF" frequency="3247.4" emission="J3C" power="5.0">
+            <time from="09:45:00Z" to="10:00:00Z"/>
+            <time from="10:45:00Z" to="11:00:00Z"/>
+            <time from="11:45:00Z" to="12:00:00Z"/>
+            <time from="12:45:00Z" to="13:00:00Z"/>
+            <time from="13:45:00Z" to="14:00:00Z"/>
+            <time from="14:45:00Z" to="15:00:00Z"/>
+            <time from="15:45:00Z" to="16:00:00Z"/>
+            <time from="16:45:00Z" to="17:00:00Z"/>
+        </transmitter>
+        <transmitter call-sign="ZKLF" frequency="5807.0" emission="J3C" power="5.0">
+            <time from="00:00:00Z" to="00:15:00Z"/>
+            <time from="01:00:00Z" to="01:15:00Z"/>
+            <time from="02:00:00Z" to="02:15:00Z"/>
+            <time from="03:00:00Z" to="03:15:00Z"/>
+            <time from="04:00:00Z" to="04:15:00Z"/>
+            <time from="05:00:00Z" to="05:15:00Z"/>
+            <time from="06:00:00Z" to="06:15:00Z"/>
+            <time from="07:00:00Z" to="07:15:00Z"/>
+            <time from="08:00:00Z" to="08:15:00Z"/>
+            <time from="09:00:00Z" to="09:15:00Z"/>
+            <time from="10:00:00Z" to="10:15:00Z"/>
+            <time from="11:00:00Z" to="11:15:00Z"/>
+            <time from="12:00:00Z" to="12:15:00Z"/>
+            <time from="13:00:00Z" to="13:15:00Z"/>
+            <time from="14:00:00Z" to="14:15:00Z"/>
+            <time from="15:00:00Z" to="15:15:00Z"/>
+            <time from="16:00:00Z" to="16:15:00Z"/>
+            <time from="17:00:00Z" to="17:15:00Z"/>
+            <time from="18:00:00Z" to="18:15:00Z"/>
+            <time from="19:00:00Z" to="19:15:00Z"/>
+            <time from="20:00:00Z" to="20:15:00Z"/>
+            <time from="21:00:00Z" to="21:15:00Z"/>
+            <time from="22:00:00Z" to="22:15:00Z"/>
+            <time from="23:00:00Z" to="23:15:00Z"/>
+        </transmitter>
+        <transmitter call-sign="ZKLF" frequency="9459.0" emission="J3C" power="5.0">
+            <time from="00:15:00Z" to="00:30:00Z"/>
+            <time from="01:15:00Z" to="01:30:00Z"/>
+            <time from="02:15:00Z" to="02:30:00Z"/>
+            <time from="03:15:00Z" to="03:30:00Z"/>
+            <time from="04:15:00Z" to="04:30:00Z"/>
+            <time from="05:15:00Z" to="05:30:00Z"/>
+            <time from="06:15:00Z" to="06:30:00Z"/>
+            <time from="07:15:00Z" to="07:30:00Z"/>
+            <time from="08:15:00Z" to="08:30:00Z"/>
+            <time from="09:15:00Z" to="09:30:00Z"/>
+            <time from="10:15:00Z" to="10:30:00Z"/>
+            <time from="11:15:00Z" to="11:30:00Z"/>
+            <time from="12:15:00Z" to="12:30:00Z"/>
+            <time from="13:15:00Z" to="13:30:00Z"/>
+            <time from="14:15:00Z" to="14:30:00Z"/>
+            <time from="15:15:00Z" to="15:30:00Z"/>
+            <time from="16:15:00Z" to="16:30:00Z"/>
+            <time from="17:15:00Z" to="17:30:00Z"/>
+            <time from="18:15:00Z" to="18:30:00Z"/>
+            <time from="19:15:00Z" to="19:30:00Z"/>
+            <time from="20:15:00Z" to="20:30:00Z"/>
+            <time from="21:15:00Z" to="21:30:00Z"/>
+            <time from="22:15:00Z" to="22:30:00Z"/>
+            <time from="23:15:00Z" to="23:30:00Z"/>
+        </transmitter>
+        <transmitter call-sign="ZKLF" frequency="13550.5" emission="J3C" power="5.0">
+            <time from="00:30:00Z" to="00:45:00Z"/>
+            <time from="01:30:00Z" to="01:45:00Z"/>
+            <time from="02:30:00Z" to="02:45:00Z"/>
+            <time from="03:30:00Z" to="03:45:00Z"/>
+            <time from="04:30:00Z" to="04:45:00Z"/>
+            <time from="05:30:00Z" to="05:45:00Z"/>
+            <time from="06:30:00Z" to="06:45:00Z"/>
+            <time from="07:30:00Z" to="07:45:00Z"/>
+            <time from="08:30:00Z" to="08:45:00Z"/>
+            <time from="09:30:00Z" to="09:45:00Z"/>
+            <time from="10:30:00Z" to="10:45:00Z"/>
+            <time from="11:30:00Z" to="11:45:00Z"/>
+            <time from="12:30:00Z" to="12:45:00Z"/>
+            <time from="13:30:00Z" to="13:45:00Z"/>
+            <time from="14:30:00Z" to="14:45:00Z"/>
+            <time from="15:30:00Z" to="15:45:00Z"/>
+            <time from="16:30:00Z" to="16:45:00Z"/>
+            <time from="17:30:00Z" to="17:45:00Z"/>
+            <time from="18:30:00Z" to="18:45:00Z"/>
+            <time from="19:30:00Z" to="19:45:00Z"/>
+            <time from="20:30:00Z" to="20:45:00Z"/>
+            <time from="21:30:00Z" to="21:45:00Z"/>
+            <time from="22:30:00Z" to="22:45:00Z"/>
+            <time from="23:30:00Z" to="23:45:00Z"/>
+        </transmitter>
+        <transmitter call-sign="ZKLF" frequency="16340.1" emission="J3C" power="5.0">
+            <time from="21:45:00Z" to="22:00:00Z"/>
+            <time from="22:45:00Z" to="23:00:00Z"/>
+            <time from="23:45:00Z" to="00:00:00Z"/>
+            <time from="00:45:00Z" to="01:00:00Z"/>
+            <time from="01:45:00Z" to="02:00:00Z"/>
+            <time from="02:45:00Z" to="03:00:00Z"/>
+            <time from="03:45:00Z" to="04:00:00Z"/>
+            <time from="04:45:00Z" to="05:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="SWP" time="00:00:00Z" weekdays="" duration="PT15M0.000S" content="SOUTHWEST PACIFIC 30HR SURFACE PROG (MSL)"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="SWP" time="00:15:00Z" weekdays="" duration="PT15M0.000S" content="SOUTHWEST PACIFIC 30HR SURFACE PROG (MSL)"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="SWP" time="00:30:00Z" weekdays="" duration="PT15M0.000S" content="SOUTHWEST PACIFIC 30HR SURFACE PROG (MSL)"/>
@@ -113,8 +206,12 @@
     <station name="MURMANSK, RUSSIA" location="68.966667N33.083333E" info="(INFORMATION DATED 11/97)   " active="true">
         <transmitter call-sign="RBW41" frequency="5336.0" emission="J3C"/>
         <transmitter call-sign="RBW41" frequency="6445.5" emission="J3C"/>
-        <transmitter call-sign="RBW41" frequency="7908.8" times="1900-0600" emission="J3C"/>
-        <transmitter call-sign="RBW48" frequency="10130.0" times="0600-1900" emission="J3C"/>
+        <transmitter call-sign="RBW41" frequency="7908.8" emission="J3C">
+            <time from="19:00:00Z" to="06:00:00Z"/>
+        </transmitter>
+        <transmitter call-sign="RBW48" frequency="10130.0" emission="J3C">
+            <time from="06:00:00Z" to="19:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="A" time="07:00:00Z" weekdays="" content="36HR SURFACE PROG"/>
         <hfFax rpm="120" ioc="576" valid="06:00:00Z" map="C" time="08:00:00Z" weekdays="" content="SEA STATE ANALYSIS"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="B" time="14:00:00Z" weekdays="" duration="PT30M0.000S" content="SURFACE TEMP ANALYSIS/ICEBERG POSITIONS / ANAL OF ICEBERG POSITIONS FOR PAST+24HR"/>
@@ -132,8 +229,14 @@
         <transmitter call-sign="JJC" frequency="16971.0" emission="J3C" power="15.0"/>
         <transmitter call-sign="JJC" frequency="17069.6" emission="J3C" power="15.0"/>
         <transmitter call-sign="JJC" frequency="22542.0" emission="J3C" power="15.0"/>
-        <transmitter call-sign="9VF/252" frequency="16035.0" times="0740-1010 1415-1815" emission="J3C" power="10.0"/>
-        <transmitter call-sign="9VF/252" frequency="17430.0" times="0740-1010 1415-1815" emission="J3C" power="10.0"/>
+        <transmitter call-sign="9VF/252" frequency="16035.0" emission="J3C" power="10.0">
+            <time from="07:40:00Z" to="10:10:00Z"/>
+            <time from="14:15:00Z" to="18:15:00Z"/>
+        </transmitter>
+        <transmitter call-sign="9VF/252" frequency="17430.0" emission="J3C" power="10.0">
+            <time from="07:40:00Z" to="10:10:00Z"/>
+            <time from="14:15:00Z" to="18:15:00Z"/>
+        </transmitter>
         <hfFax rpm="60" ioc="576" map="" time="01:45:00Z" weekdays="" duration="PT15M0.000S" content="Sports Ed 2(R), (Seasonal during Sumo or High School baseball series)"/>
         <hfFax rpm="120" ioc="576" map="" time="02:00:00Z" weekdays="MON" duration="PT0.000S" content="MON: NX for 1 week"/>
         <hfFax rpm="120" ioc="576" map="" time="02:00:00Z" weekdays="TUE WED THU FRI SAT SUN" duration="PT45M0.000S" content="TUE-SUN: NX (R),Epidemic Information(R)(SUN only),"/>
@@ -166,8 +269,12 @@
         <hfFax rpm="120" ioc="576" map="" time="22:15:00Z" weekdays="MON" content="MON and DAY AFTER NATIONAL HOLIDAYS:"/>
     </station>
     <station name="SYDNEY - NOVA SCOTIA, CANADA" location="46.149833N60.183167W" info="(INFORMATION DATED 2014) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-ATLANTIC-eng.pdf " active="true">
-        <transmitter call-sign="VCO" frequency="4416.0" times="2200-2331" emission="J3C"/>
-        <transmitter call-sign="VCO" frequency="6915.1" times="1121-1741" emission="J3C"/>
+        <transmitter call-sign="VCO" frequency="4416.0" emission="J3C">
+            <time from="22:00:00Z" to="23:31:00Z"/>
+        </transmitter>
+        <transmitter call-sign="VCO" frequency="6915.1" emission="J3C">
+            <time from="11:21:00Z" to="17:41:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="11:21:00Z" weekdays="" duration="PT21M0.000S" content="ICE ANALYSIS GULF OF ST. LAWRENCE"/>
         <hfFax rpm="120" ioc="576" map="" time="11:42:00Z" weekdays="" content="ICE ANALYSIS EAST OR SOUTHEAST NEWFOUNDLAND WATERS"/>
         <hfFax rpm="120" ioc="576" map="" time="17:41:00Z" weekdays="" content="ICE ANALYSIS ICEBERG LIMIT"/>
@@ -175,10 +282,14 @@
         <hfFax rpm="120" ioc="576" map="" time="23:31:00Z" weekdays="" content="ICE ANALYSIS EAST OR SOUTHEAST NEWFOUNDLAND WATERS"/>
     </station>
     <station name="BOSTON, MASSACHUSETTS, U.S.A." location="42.366667N71.049833W" info="(INFORMATION DATED: Apr 17, 2015)      http://weather.noaa.gov/pub/fax/hfmarsh.txt " active="true">
-        <transmitter call-sign="NMF" frequency="4235.0" times="0230-1039" emission="J3C" power="4.0"/>
+        <transmitter call-sign="NMF" frequency="4235.0" emission="J3C" power="4.0">
+            <time from="02:30:00Z" to="10:39:00Z"/>
+        </transmitter>
         <transmitter call-sign="NMF" frequency="6340.5" emission="J3C" power="4.0"/>
         <transmitter call-sign="NMF" frequency="9110.0" emission="J3C" power="4.0"/>
-        <transmitter call-sign="NMF" frequency="12750.0" times="1400-2239" emission="J3C" power="4.0"/>
+        <transmitter call-sign="NMF" frequency="12750.0" emission="J3C" power="4.0">
+            <time from="14:00:00Z" to="22:39:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="02:30:00Z" weekdays="" duration="PT3M0.000S" content="TEST PATTERN"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="1" time="02:33:00Z" weekdays="" duration="PT10M0.000S" content="PRELIMINARY SURFACE ANALYSIS"/>
         <hfFax rpm="120" ioc="576" map="" time="02:43:00Z" weekdays="" duration="PT11M0.000S" content="BROADCAST SCHEDULE (PART1)"/>
@@ -260,8 +371,19 @@
         <map name="8" corners="22N40W 22N98W 51N40W 51N98W"/>
     </station>
     <station name="IQALUIT, CANADA" location="63.75N68.5W" info="(INFORMATION DATED 2011) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-ATLANTIC-eng.pdf " active="true">
-        <transmitter call-sign="VFF" frequency="3253.0" times="0600-0700 0700-0800 2100-2200 2200-2300" emission="J3C" power="5.0"/>
-        <transmitter call-sign="VFF" frequency="7710.0" times="0100-0200 0200-0300 1000-1100 1100-1200" emission="J3C" power="5.0"/>
+        <date from="--05-15Z" to="--10-30Z"/>
+        <transmitter call-sign="VFF" frequency="3253.0" emission="J3C" power="5.0">
+            <time from="06:00:00Z" to="07:00:00Z"/>
+            <time from="07:00:00Z" to="08:00:00Z"/>
+            <time from="21:00:00Z" to="22:00:00Z"/>
+            <time from="22:00:00Z" to="23:00:00Z"/>
+        </transmitter>
+        <transmitter call-sign="VFF" frequency="7710.0" emission="J3C" power="5.0">
+            <time from="01:00:00Z" to="02:00:00Z"/>
+            <time from="02:00:00Z" to="03:00:00Z"/>
+            <time from="10:00:00Z" to="11:00:00Z"/>
+            <time from="11:00:00Z" to="12:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="01:00:00Z" weekdays="" content="Marine Surface Analysis (Arctic)"/>
         <hfFax rpm="120" ioc="576" map="" time="02:00:00Z" weekdays="" content="Ice analysis Hudson Bay south, Hudson Bay north, Hudson Strait,"/>
         <hfFax rpm="120" ioc="576" map="" time="06:00:00Z" weekdays="" content="Marine Surface Analysis (Arctic)"/>
@@ -272,11 +394,15 @@
         <hfFax rpm="120" ioc="576" map="" time="22:00:00Z" weekdays="" content="Ice Analysis Hudson Bay south, Hudson Bay north, Hudson Strait,"/>
     </station>
     <station name="PT. REYES, CALIFORNIA, U.S.A." location="37.783167N122.416667W" info="(INFORMATION DATED 2018.02.28) http://tgftp.nws.noaa.gov/fax/hfreyes.txt " active="true">
-        <transmitter call-sign="NMC" frequency="4346.0" times="0140-1608" emission="F3C" power="4.0"/>
+        <transmitter call-sign="NMC" frequency="4346.0" emission="F3C" power="4.0">
+            <time from="01:40:00Z" to="16:08:00Z"/>
+        </transmitter>
         <transmitter call-sign="NMC" frequency="8682.0" emission="F3C" power="4.0"/>
         <transmitter call-sign="NMC" frequency="12786.0" emission="F3C" power="4.0"/>
         <transmitter call-sign="NMC" frequency="17151.2" emission="F3C" power="4.0"/>
-        <transmitter call-sign="NMC" frequency="22527.0" times="1840-2356" emission="F3C" power="4.0"/>
+        <transmitter call-sign="NMC" frequency="22527.0" emission="F3C" power="4.0">
+            <time from="18:40:00Z" to="23:56:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="01:40:00Z" weekdays="" duration="PT3M0.000S" content="TEST PATTERN"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="6" time="01:43:00Z" weekdays="" duration="PT11M0.000S" content="NE PACIFIC GOES IR SATELLITE IMAGE"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="5" time="01:54:00Z" weekdays="" duration="PT11M0.000S" content="PACIFIC GOES IR SATELLITE IMAGE"/>
@@ -408,10 +534,14 @@
         <map name="D" scale="1:32,700,000" corners="15N72W 15N18W 50S72W 50S18E"/>
     </station>
     <station name="CAPE NAVAL, SOUTH AFRICA" location="33.9165S18.366667E" info="(INFORMATION DATED 2009)  http://old.weathersa.co.za/Marine/FrequencyShipFCBroadcast.jsp " active="true">
-        <transmitter call-sign="ZSJ" frequency="4014.0" times="0016-0006" emission="J3C" power="10.0"/>
+        <transmitter call-sign="ZSJ" frequency="4014.0" emission="J3C" power="10.0">
+            <time from="00:16:00Z" to="00:06:00Z"/>
+        </transmitter>
         <transmitter call-sign="ZSJ" frequency="7508.0" emission="J3C" power="10.0"/>
         <transmitter call-sign="ZSJ" frequency="13538.0" emission="J3C" power="10.0"/>
-        <transmitter call-sign="ZSJ" frequency="18238.0" times="0006-0016" emission="J3C" power="10.0"/>
+        <transmitter call-sign="ZSJ" frequency="18238.0" emission="J3C" power="10.0">
+            <time from="00:06:00Z" to="00:16:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="04:30:00Z" weekdays="" duration="PT30M0.000S" content="SCHEDULE"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="ASXX" time="05:00:00Z" weekdays="" content="SURFACE ANALYSIS(SHIPPING)"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="FUXX" time="06:30:00Z" weekdays="" content="AIR PROGNOSES (PREVIOUS DAY'S RUN)"/>
@@ -463,7 +593,7 @@
         <transmitter call-sign="CFH" frequency="10536.0" emission="J3C" power="6.0"/>
         <transmitter call-sign="CFH" frequency="13510.0" emission="J3C" power="6.0"/>
         <hfFax rpm="120" ioc="576" map="" time="00:01:00Z" weekdays="" content="Ice Chart #1 (see note): Latest)"/>
-        <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="" time="01:01:00Z" weekdays="SAT" content="SATELLITE PHOTO INFRARED"/>
+        <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="" time="01:01:00Z" weekdays="" content="SATELLITE PHOTO INFRARED"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="A" time="02:01:00Z" weekdays="" content="12/00Z SIGNIFICANT WEATHER DEPICTION"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="B" time="03:01:00Z" weekdays="" duration="PT21M0.000S" content="500 mb ANALYSIS"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="F" time="03:22:00Z" weekdays="" duration="PT39M0.000S" content="SURFACE ANALYSIS"/>
@@ -476,7 +606,7 @@
         <hfFax rpm="120" ioc="576" valid="06:00:00Z" map="F" time="09:01:00Z" weekdays="" content="SURFACE ANALYSIS"/>
         <hfFax rpm="120" ioc="576" map="E D" time="10:01:00Z" weekdays="WED THU SAT SUN" duration="PT0.000S" content="OFA: NOVA SCOTIA - WED/SAT NEWFOUNDLAND - SUN/THU"/>
         <hfFax rpm="120" ioc="576" map="E D" time="10:01:00Z" weekdays="MON TUE FRI" duration="PT21M0.000S" content="SST: NOVA SCOTIA - MON NEWFOUNDLAND - TUE/FRI"/>
-        <hfFax rpm="120" ioc="576" valid="09:00:00Z" map="" time="10:22:00Z" weekdays="SAT" duration="PT39M0.000S" content="SATELLITE PHOTO INFRARED"/>
+        <hfFax rpm="120" ioc="576" valid="09:00:00Z" map="" time="10:22:00Z" weekdays="" duration="PT39M0.000S" content="SATELLITE PHOTO INFRARED"/>
         <hfFax rpm="120" ioc="576" map="" time="11:01:00Z" weekdays="" content="CFH BROADCAST SCHEDULE"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="G" time="12:01:00Z" weekdays="" duration="PT21M0.000S" content="3-DAY PROG"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="G" time="12:22:00Z" weekdays="" duration="PT39M0.000S" content="4-DAY PROG"/>
@@ -507,9 +637,13 @@
         <map name="I" corners="54N100W 58N22W 30N39W 28N78W"/>
     </station>
     <station name="HONOLULU, HAWAII, U.S.A." location="21.3165N157.833333W" active="true">
-        <transmitter call-sign="KVM70" frequency="9982.5" times="0519-1556" emission="F3C" power="4.0"/>
+        <transmitter call-sign="KVM70" frequency="9982.5" emission="F3C" power="4.0">
+            <time from="05:19:00Z" to="15:56:00Z"/>
+        </transmitter>
         <transmitter call-sign="KVM70" frequency="11090.0" emission="F3C" power="4.0"/>
-        <transmitter call-sign="KVM70" frequency="16135.0" times="1719-0356" emission="F3C" power="4.0"/>
+        <transmitter call-sign="KVM70" frequency="16135.0" emission="F3C" power="4.0">
+            <time from="17:19:00Z" to="03:56:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="C" time="00:14:00Z" weekdays="" duration="PT20M0.000S" content="SURFACE ANALYSIS"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="G" time="00:34:00Z" weekdays="" duration="PT14M0.000S" content="EAST PACIFIC GOES IR SATELLITE IMAGE"/>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="H" time="00:48:00Z" weekdays="" duration="PT12M0.000S" content="SW PACIFIC GOES IR SATELLITE IMAGE"/>
@@ -671,7 +805,9 @@
         <transmitter call-sign="NMG" frequency="4317.9" emission="J3C" power="4.0"/>
         <transmitter call-sign="NMG" frequency="8503.9" emission="J3C" power="4.0"/>
         <transmitter call-sign="NMG" frequency="12789.9" emission="J3C" power="4.0"/>
-        <transmitter call-sign="NMG" frequency="17146.4" times="1200-2045" emission="J3C" power="4.0"/>
+        <transmitter call-sign="NMG" frequency="17146.4" emission="J3C" power="4.0">
+            <time from="12:00:00Z" to="20:45:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="00:00:00Z" weekdays="" duration="PT5M0.000S" content="TEST PATTERN"/>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="1" time="00:05:00Z" weekdays="" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)"/>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="2" time="00:20:00Z" weekdays="" duration="PT15M0.000S" content="TROPICAL SURFACE ANALYSIS (E HALF)"/>
@@ -741,8 +877,14 @@
         <map name="6" corners="5N0E 5N100W 60N0E 60N100W"/>
     </station>
     <station name="INUVIK, CANADA" location="68.416667N133.5W" info="(INFORMATION DATED 2014) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-PACIFIC-eng.pdf " active="true">
-        <transmitter call-sign="VFA" frequency="4292.0" times="0600-0700 2100-2200" emission="J3C" power="1.0"/>
-        <transmitter call-sign="VFA" frequency="8456.0" times="0200-0300 1630-1730" emission="J3C" power="1.0"/>
+        <transmitter call-sign="VFA" frequency="4292.0" emission="J3C" power="1.0">
+            <time from="06:00:00Z" to="07:00:00Z"/>
+            <time from="21:00:00Z" to="22:00:00Z"/>
+        </transmitter>
+        <transmitter call-sign="VFA" frequency="8456.0" emission="J3C" power="1.0">
+            <time from="02:00:00Z" to="03:00:00Z"/>
+            <time from="16:30:00Z" to="17:30:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="" time="02:00:00Z" weekdays="" content="Marine Wind Prognosis"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="" time="06:00:00Z" weekdays="" content="Marine Wind Prognosis"/>
         <hfFax rpm="120" ioc="576" valid="12:00:00Z" map="" time="16:30:00Z" weekdays="" content="Marine Surface Analysis"/>
@@ -893,10 +1035,14 @@
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="" time="22:00:00Z" weekdays="" content="Surface weather chart"/>
     </station>
     <station name="NORTHWOOD, UNITED KINGDOM" location="51.5N0.166667W" info="(INFORMATION DATED Nov 09, 2011)" active="true">
-        <transmitter call-sign="GYA" frequency="2618.5" times="2000-0600" emission="J3C" power="10.0"/>
+        <transmitter call-sign="GYA" frequency="2618.5" emission="J3C" power="10.0">
+            <time from="20:00:00Z" to="06:00:00Z"/>
+        </transmitter>
         <transmitter call-sign="GYA" frequency="4610.0" emission="J3C" power="10.0"/>
         <transmitter call-sign="GYA" frequency="8040.0" emission="J3C" power="10.0"/>
-        <transmitter call-sign="GYA" frequency="11086.5" times="0600-2000" emission="J3C" power="10.0"/>
+        <transmitter call-sign="GYA" frequency="11086.5" emission="J3C" power="10.0">
+            <time from="06:00:00Z" to="20:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="" time="00:00:00Z" weekdays="" duration="PT12M0.000S" content="SURFACE ANALYSIS"/>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="" time="00:12:00Z" weekdays="" duration="PT12M0.000S" content="24 HOUR SURFACE PROGNOSIS"/>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="" time="00:24:00Z" weekdays="" duration="PT12M0.000S" content="24 HOUR 850 hPA WBPT / PPTN"/>
@@ -992,11 +1138,15 @@
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="" time="23:36:00Z" weekdays="" duration="PT24M0.000S" content="24 HOUR SEA and SWELL"/>
     </station>
     <station name="CHARLEVILLE, AUSTRALIA" location="26.330167S146.264E" active="true">
-        <transmitter call-sign="VMC" frequency="2628.0" times="0900-1900" emission="J3C" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="2628.0" emission="J3C" power="1.0">
+            <time from="09:00:00Z" to="19:00:00Z"/>
+        </transmitter>
         <transmitter call-sign="VMC" frequency="5100.0" emission="J3C" power="1.0"/>
         <transmitter call-sign="VMC" frequency="11030.0" emission="J3C" power="1.0"/>
         <transmitter call-sign="VMC" frequency="13920.0" emission="J3C" power="1.0"/>
-        <transmitter call-sign="VMC" frequency="20469.0" times="1900-0900" emission="J3C" power="1.0"/>
+        <transmitter call-sign="VMC" frequency="20469.0" emission="J3C" power="1.0">
+            <time from="19:00:00Z" to="09:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="IO" time="00:00:00Z" weekdays="" duration="PT15M0.000S" content="Indian Ocean MSLP Anal (Manual)"/>
         <hfFax rpm="120" ioc="576" map="" time="00:15:00Z" weekdays="" duration="PT15M0.000S" content="VMC/VMW Schedule Page 1of2"/>
         <hfFax rpm="120" ioc="576" map="" time="00:30:00Z" weekdays="" duration="PT15M0.000S" content="VMC/VMW Schedule Page 2of2"/>
@@ -1076,9 +1226,13 @@
         <map name="IOSST" projection="MERCATOR" corners="20N30E 20N150E 50S30E 50S150E"/>
     </station>
     <station name="NORTHWOOD, UNITED KINGDOM (PERSIAN GULF)" location="51.5N0.166667W" info="(INFORMATION DATED OCT 24 2007)    (Reported as being held in abeyance as of late 2010) " active="false">
-        <transmitter call-sign="GYA" frequency="6834.0" times="1800-0800" emission="J3C" power="10.0"/>
+        <transmitter call-sign="GYA" frequency="6834.0" emission="J3C" power="10.0">
+            <time from="18:00:00Z" to="08:00:00Z"/>
+        </transmitter>
         <transmitter call-sign="GYA" frequency="12390.0" emission="J3C" power="10.0"/>
-        <transmitter call-sign="GYA" frequency="18261.0" times="0800-1800" emission="J3C" power="10.0"/>
+        <transmitter call-sign="GYA" frequency="18261.0" emission="J3C" power="10.0">
+            <time from="08:00:00Z" to="18:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="01:06:00Z" weekdays="" duration="PT12M0.000S" content="SCHEDULE"/>
         <hfFax rpm="120" ioc="576" map="" time="01:18:00Z" weekdays="" duration="PT24M0.000S" content="QSL REPORT"/>
         <hfFax rpm="120" ioc="576" map="" time="01:42:00Z" weekdays="" content="SYMBOLOGY"/>
@@ -1151,8 +1305,19 @@
         <map corners="40.5N15.5E 40.5N80E 3N15.5E 3N80E"/>
     </station>
     <station name="RESOLUTE, CANADA" location="74.683333N94.9W" info="(INFORMATION DATED 2011) http://www.ccg-gcc.gc.ca/folios/01133/docs/RAMN-2014-ATLANTIC-eng.pdf " active="true">
-        <transmitter call-sign="VFR" frequency="7710.0" times="0100-0200 0200-0300 1000-1100 1100-1200" emission="J3C" power="5.0"/>
-        <transmitter call-sign="VFR" frequency="3253.0" times="0600-0700 0700-0800 2100-2200 2200-2300" emission="J3C" power="5.0"/>
+        <date from="--05-15Z" to="--10-30Z"/>
+        <transmitter call-sign="VFR" frequency="7710.0" emission="J3C" power="5.0">
+            <time from="01:00:00Z" to="02:00:00Z"/>
+            <time from="02:00:00Z" to="03:00:00Z"/>
+            <time from="10:00:00Z" to="11:00:00Z"/>
+            <time from="11:00:00Z" to="12:00:00Z"/>
+        </transmitter>
+        <transmitter call-sign="VFR" frequency="3253.0" emission="J3C" power="5.0">
+            <time from="06:00:00Z" to="07:00:00Z"/>
+            <time from="07:00:00Z" to="08:00:00Z"/>
+            <time from="21:00:00Z" to="22:00:00Z"/>
+            <time from="22:00:00Z" to="23:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="01:00:00Z" weekdays="" content="Marine Surface Analysis (Arctic)"/>
         <hfFax rpm="120" ioc="576" map="" time="02:00:00Z" weekdays="" content="Ice analysis Baffin Bay, Approaches to Resolute, Resolute-Byam,"/>
         <hfFax rpm="120" ioc="576" map="" time="06:00:00Z" weekdays="" content="Marine Surface Analysis (Arctic)"/>
@@ -1163,11 +1328,15 @@
         <hfFax rpm="120" ioc="576" map="" time="22:00:00Z" weekdays="" content="Ice analysis Baffin Bay, Approaches to Resolute, Resolute-Byam,"/>
     </station>
     <station name="SEOUL, REPUBLIC OF KOREA" location="37.566667N127E" info=" (INFORMATION DATED Jan 01, 2009)  Many of these reports may be in Korean " active="true">
-        <transmitter call-sign="HLL2" frequency="3585.0" times="1200-0000" emission="J3C" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="3585.0" emission="J3C" power="3.0">
+            <time from="12:00:00Z" to="00:00:00Z"/>
+        </transmitter>
         <transmitter call-sign="HLL2" frequency="5857.5" emission="J3C" power="3.0"/>
         <transmitter call-sign="HLL2" frequency="7433.5" emission="J3C" power="3.0"/>
         <transmitter call-sign="HLL2" frequency="9165.0" emission="J3C" power="3.0"/>
-        <transmitter call-sign="HLL2" frequency="13570.0" times="0000-1200" emission="J3C" power="3.0"/>
+        <transmitter call-sign="HLL2" frequency="13570.0" emission="J3C" power="3.0">
+            <time from="00:00:00Z" to="12:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="00:00:00Z" weekdays="" duration="PT33M0.000S" content="SPECIAL WEATHER REPORT"/>
         <hfFax rpm="120" ioc="576" map="" time="00:33:00Z" weekdays="" duration="PT14M0.000S" content="SEA-SHORE WEATHER OBSERVATION REPORT"/>
         <hfFax rpm="120" ioc="576" map="" time="00:47:00Z" weekdays="" duration="PT13M0.000S" content="FISHERY WEATHER OBSERVATION REPORT"/>
@@ -1298,11 +1467,15 @@
         <map name="7" corners="59N154W 59N148W 61N154W 61N148W"/>
     </station>
     <station name="WILUNA, AUSTRALIA" location="26.340667S120.5565E" info="(INFORMATION DATED Nov 03, 2010)  http://www.bom.gov.au/marine/radio-sat/radio-fax-schedule.shtml " active="true">
-        <transmitter call-sign="VMW" frequency="5755.0" times="1100-2100" emission="J3C" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="5755.0" emission="J3C" power="1.0">
+            <time from="11:00:00Z" to="21:00:00Z"/>
+        </transmitter>
         <transmitter call-sign="VMW" frequency="7535.0" emission="J3C" power="1.0"/>
         <transmitter call-sign="VMW" frequency="10555.0" emission="J3C" power="1.0"/>
         <transmitter call-sign="VMW" frequency="15615.0" emission="J3C" power="1.0"/>
-        <transmitter call-sign="VMW" frequency="18060.0" times="2100-1100" emission="J3C" power="1.0"/>
+        <transmitter call-sign="VMW" frequency="18060.0" emission="J3C" power="1.0">
+            <time from="21:00:00Z" to="11:00:00Z"/>
+        </transmitter>
         <hfFax rpm="120" ioc="576" valid="00:00:00Z" map="IO" time="00:00:00Z" weekdays="" duration="PT15M0.000S" content="Indian Ocean MSLP Anal (Manual)"/>
         <hfFax rpm="120" ioc="576" map="" time="00:15:00Z" weekdays="" duration="PT15M0.000S" content="VMC/VMW Schedule Page 1of2"/>
         <hfFax rpm="120" ioc="576" map="" time="00:30:00Z" weekdays="" duration="PT15M0.000S" content="VMC/VMW Schedule Page 2of2"/>

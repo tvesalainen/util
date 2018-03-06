@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham;
 
 import java.util.List;
 import org.junit.Test;
+import org.vesalainen.ham.itshfbc.RFaxParser;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
+import org.vesalainen.ham.station.DefaultCustomizer;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ScheduleType;

@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham.station;
 
+import org.vesalainen.ham.station.StationConverter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

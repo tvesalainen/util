@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </xsd:element>
     <xsd:complexType name="stationType">
         <xsd:sequence>
+            <xsd:element name="date" type="dateRangeType" maxOccurs="unbounded"/>
             <xsd:element name="transmitter" type="transmitterType" maxOccurs="unbounded"/>
             <xsd:element name="hfFax" type="hfFaxType" maxOccurs="unbounded"/>
             <xsd:element name="map" type="mapType" maxOccurs="unbounded"/>
@@ -40,9 +41,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="active" type="xsd:boolean" use="required"/>
     </xsd:complexType>
     <xsd:complexType name="transmitterType">
+        <xsd:sequence>
+            <xsd:element name="time" type="timeRangeType" maxOccurs="unbounded"/>
+        </xsd:sequence>
         <xsd:attribute name="call-sign" type="xsd:string"/>
         <xsd:attribute name="frequency" type="xsd:double" use="required"/>
-        <xsd:attribute name="times" type="timeRangeType"/>
         <xsd:attribute name="emission" type="xsd:string" use="required"/>
         <xsd:attribute name="power" type="xsd:double"/>
     </xsd:complexType>
@@ -57,6 +60,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="scheduleType">
+        <xsd:sequence>
+            <xsd:element name="date" type="dateRangeType" maxOccurs="unbounded"/>
+        </xsd:sequence>
         <xsd:attribute name="time" type="xsd:time" use="required"/>
         <xsd:attribute name="weekdays" type="weekdaysType"/>
         <xsd:attribute name="duration" type="xsd:duration"/>
@@ -68,13 +74,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="projection" type="xsd:string"/>
         <xsd:attribute name="corners" type="cornerType" use="required"/>
     </xsd:complexType>
+    <xsd:complexType name="timeRangeType">
+        <xsd:attribute name="from" type="xsd:time" use="required"/>
+        <xsd:attribute name="to" type="xsd:time" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="dateRangeType">
+        <xsd:attribute name="from" type="xsd:gMonthDay" use="required"/>
+        <xsd:attribute name="to" type="xsd:gMonthDay" use="required"/>
+    </xsd:complexType>
     <xsd:simpleType name="mapRefType">
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
     <xsd:simpleType name="cornerType">
-        <xsd:list itemType="xsd:string"/>
-    </xsd:simpleType>
-    <xsd:simpleType name="timeRangeType">
         <xsd:list itemType="xsd:string"/>
     </xsd:simpleType>
     <xsd:simpleType name="weekdaysType">

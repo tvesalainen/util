@@ -14,20 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Inuvik extends DefaultCustomizer
+public class Northwood extends DefaultCustomizer
 {
 
     @Override
     public String transmitterLine(String line)
     {
         return super.transmitterLine(line)
-                .replace('&', ',')
+                .replace('?', ' ')
+                ;
+    }
+
+    @Override
+    public String scheduleLine(String line)
+    {
+        return super.scheduleLine(line)
+                .replace("Abbreviations: All MAPS", "MAP AREAS:")
                 ;
     }
     

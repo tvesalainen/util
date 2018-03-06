@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc;
+package org.vesalainen.ham.station;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +33,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.BroadcastStationsFile;
 import static org.vesalainen.ham.BroadcastStationsFile.SCHEDULE_COMP;
 import org.vesalainen.ham.LocationParser;
-import org.vesalainen.ham.itshfbc.station.DefaultCustomizer;
+import org.vesalainen.ham.itshfbc.GeoDB;
+import org.vesalainen.ham.itshfbc.GeoLocation;
+import org.vesalainen.ham.itshfbc.RFaxParser;
+import org.vesalainen.ham.station.DefaultCustomizer;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;

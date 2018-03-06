@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
 
+import java.util.Collections;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.vesalainen.ham.itshfbc.OffsetTimeRange;
+import org.vesalainen.ham.OffsetTimeRange;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.StationType;
@@ -48,7 +49,7 @@ public class DefaultCustomizer
     
     public static DefaultCustomizer getInstance(String filename)
     {
-        String classname = "org.vesalainen.ham.itshfbc.station."+filename.substring(0, filename.length()-4);
+        String classname = "org.vesalainen.ham.station."+filename.substring(0, filename.length()-4);
         try
         {
             Class<?> cls = Class.forName(classname);
@@ -79,7 +80,14 @@ public class DefaultCustomizer
     }
     public List<OffsetTimeRange> convertRanges(double frequency, List<OffsetTimeRange> ranges)
     {
-        return ranges;
+        if (ranges != null)
+        {
+            return ranges;
+        }
+        else
+        {
+            return Collections.EMPTY_LIST;
+        }
     }
     public void after(StationType station)
     {

@@ -14,27 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PtReyes extends DefaultCustomizer
+public class Inuvik extends DefaultCustomizer
 {
 
     @Override
-    public String mapLine(String line)
+    public String transmitterLine(String line)
     {
-        return super.mapLine(line)
-                .replace("EAST OF 145W", "145W - 70W")
-                .replace("EAST OF 180W", "180W - 105W")
-                .replace("EAST OF 150W", "150W - 100W")
-                .replace("EAST OF 130W", "125W - 78W")
-                .replace("EAST OF 157W", "157W - 100W")
-                .replace("EAST OF 136W", "136W - 122W")
+        return super.transmitterLine(line)
+                .replace('&', ',')
                 ;
     }
-
     
 }

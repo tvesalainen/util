@@ -14,22 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
+
+import java.time.MonthDay;
+import static java.util.Calendar.*;
+import org.vesalainen.ham.MonthDayRange;
+import org.vesalainen.ham.jaxb.StationType;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Kodiak extends DefaultCustomizer
+public class Resolute extends DefaultCustomizer
 {
 
     @Override
-    public String mapLine(String line)
+    public void after(StationType station)
     {
-        return super.mapLine(line)
-                .replace("ICE COVERED AK WATERS", "40N - 70N,   115W - 170E")
-                .replace("COOK INLET", "59N-61N 154W-148W")
-                ;
+        station.getDate().add(new MonthDayRange(MonthDay.of(JUNE, 15), MonthDay.of(NOVEMBER, 30)).toDateRangeType());
     }
     
 }

@@ -14,27 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.itshfbc.station;
+package org.vesalainen.ham.station;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Honolulu extends DefaultCustomizer
+public class NorthwoodPersianGulf extends DefaultCustomizer
 {
+
+    @Override
+    public boolean isMapStart(String line)
+    {
+        return line.startsWith("ALL MAPS");
+    }
 
     @Override
     public String mapLine(String line)
     {
         return super.mapLine(line)
-                .replace("HFO", "")
-                .replace("OPC", "")
-                .replace("NHC", "")
-                .replace("EAST OF 157W", "100W - 157W")
-                .replace("EAST OF 180W", "105W - 180W")
-                .replace("EAST OF 130W", "78W - 130W")
-                .replace("EAST OF 145W", "70W - 145W")
-                .trim()
+                .replace("ALL MAPS 40°30′N.15°30′E 40°30′N.80°E     03°N.15°30′E 3°N.80°E", "40.5N 15.5E 40.5N 80E     03N 15.5E 3N80E")
                 ;
     }
     
