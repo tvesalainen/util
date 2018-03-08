@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,95 +16,131 @@
  */
 package org.vesalainen.util;
 
+import java.time.temporal.TemporalAccessor;
+import java.util.Objects;
 
 /**
- *
+ * Range implements from to range between.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
-public interface Range extends Comparable<Range>
+public class Range<T extends Comparable<T>>
 {
-
+    protected T from;
+    protected T to;
     /**
-     * Returns true is n is inside this range
-     * @param n
-     * @return
+     * Creates new TemporalAccessorRange
+     * @param from
+     * @param to 
      */
-    default boolean accept(int n)
+    public Range(T from, T to)
     {
-        return (getFrom() <= n) && (getTo() > n);
+        this.from = from;
+        this.to = to;
+    }
+    /**
+     * Returns true if ranges overlap. In another words either range has others
+     * from or to in-range or ranges are equal.
+     * @param other
+     * @return 
+     */
+    public boolean isOverlapping(Range<T> other)
+    {
+        return  equals(other) ||
+                isInRange(other.from, false, false) ||
+                isInRange(other.to, false, false) ||
+                other.isInRange(from, false, false) ||
+                other.isInRange(to, false, false);
+    }
+    /**
+     * Returns true if item is greater or equals to from and less than to.
+     * @param item
+     * @return 
+     */
+    public boolean isInRange(T item)
+    {
+        return isInRange(item, true, false);
+    }
+    /**
+     * Returns true if item is in range.
+     * @param item
+     * @param fromIncluded
+     * @param toIncluded
+     * @return 
+     */
+    public boolean isInRange(T item, boolean fromIncluded, boolean toIncluded)
+    {
+        if (fromIncluded && from.compareTo(item) == 0)
+        {
+            return true;
+        }
+        if (toIncluded && to.compareTo(item) == 0)
+        {
+            return true;
+        }
+        if (from.compareTo(to) <= 0)
+        {
+            if (from.compareTo(item) < 0)
+            {
+                return to.compareTo(item) > 0;
+            }
+            return false;
+        }
+        else
+        {
+            return from.compareTo(item) < 0 || to.compareTo(item) > 0;
+        }
+    }
+
+    public T getFrom()
+    {
+        return from;
+    }
+
+    public T getTo()
+    {
+        return to;
     }
 
     @Override
-    default int compareTo(Range o)
+    public int hashCode()
     {
-        if (getFrom() != o.getFrom())
-        {
-            return getFrom() - o.getFrom();
-        }
-        else
-        {
-            return o.getTo() - getTo();
-        }
+        int hash = 3;
+        hash = 19 * hash + Objects.hashCode(this.from);
+        hash = 19 * hash + Objects.hashCode(this.to);
+        return hash;
     }
 
-    /**
-     * Returns true if argument is inside this range
-     * @param r
-     * @return
-     */
-    default boolean contains(Range r)
+    @Override
+    public boolean equals(Object obj)
     {
-        if (r != null)
+        if (this == obj)
         {
-            return (getFrom() <= r.getFrom()) && (getTo() >= r.getTo());
+            return true;
         }
-        else
+        if (obj == null)
         {
             return false;
         }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final Range<?> other = (Range<?>) obj;
+        if (!Objects.equals(this.from, other.from))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.to, other.to))
+        {
+            return false;
+        }
+        return true;
     }
 
-    /**
-     * Returns true if from - to is inside this range
-     * @param from
-     * @param to
-     * @return
-     */
-    default boolean contains(int from, int to)
+    @Override
+    public String toString()
     {
-        return (getFrom() <= from) && (getTo() >= to);
+        return "TimeRange{" + "from=" + from + ", to=" + to + '}';
     }
-
-    /**
-     * Returns true is n is inside this range
-     * @param n
-     * @return
-     */
-    default boolean contains(int n)
-    {
-        return accept(n);
-    }
-
-    /**
-     * Returns the lowest character value
-     * @return
-     */
-    int getFrom();
-
-    /**
-     * Returns the greatest character value +1
-     * @return
-     */
-    int getTo();
-
-    /**
-     * Returns true if this and other have common characters
-     * @param other
-     * @return
-     */
-    default boolean intersect(Range other)
-    {
-        return other.accept(getFrom()) || other.accept(getTo()-1) || accept(other.getFrom()) || accept(other.getTo()-1);
-    }
-    
 }
