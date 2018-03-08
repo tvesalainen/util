@@ -77,7 +77,7 @@ public class Wellington extends DefaultCustomizer
             for (OffsetTimeRange r : ranges)
             {
                 OffsetTime from = r.getFrom();
-                while (r.isInside(from))
+                while (r.isInRange(from))
                 {
                     OffsetTime next = from.plusMinutes(15);
                     list.add(new OffsetTimeRange(from, next));

@@ -19,6 +19,7 @@ package org.vesalainen.ham;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="https://en.wikipedia.org/wiki/Types_of_radio_emissions">Types of radio emissions</a>
  */
 public class EmissionClass
 {

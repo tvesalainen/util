@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, orTimeRanges
  * (at your option) any later version.
  *
- * This program is distributed isInside the hope that it will be useful,
+ * This program is distributed isInRange the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY orTimeRanges FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -16,9 +16,10 @@
  */
 package org.vesalainen.ham;
 
+import org.vesalainen.util.Range;
 import java.time.DayOfWeek;
+import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZonedDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +35,6 @@ public abstract class TimeRanges
 {
     public static final SynchronizedEnumPrefixFinder<DayOfWeek> WEEKDAY_PARSER = new SynchronizedEnumPrefixFinder(DayOfWeek.class);
     public static final TimeRange ALWAYS = new Always();
-    public abstract boolean isInside(OffsetTime time);
     
     public static final TimeRange andRanges(TimeRange... ranges)
     {
@@ -83,28 +83,28 @@ public abstract class TimeRanges
         }
         
         @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public boolean isInRange(OffsetDateTime instant)
         {
-            return set.contains(dateTime.getDayOfWeek());
+            return set.contains(instant.getDayOfWeek());
         }
         
     }
     public static class OrTimeRange implements TimeRange
     {
-        private List<TimeRange> ranges;
+        private List<Range> ranges;
 
-        public OrTimeRange(List<TimeRange> ranges)
+        public OrTimeRange(List<Range> ranges)
         {
             this.ranges = ranges;
         }
 
         
         @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public boolean isInRange(OffsetDateTime instant)
         {
-            for (TimeRange range : ranges)
+            for (Range range : ranges)
             {
-                if (range.isInside(dateTime))
+                if (range.isInRange(instant))
                 {
                     return true;
                 }
@@ -124,11 +124,11 @@ public abstract class TimeRanges
 
         
         @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public boolean isInRange(OffsetDateTime instant)
         {
             for (TimeRange range : ranges)
             {
-                if (!range.isInside(dateTime))
+                if (!range.isInRange(instant))
                 {
                     return false;
                 }
@@ -145,7 +145,7 @@ public abstract class TimeRanges
         }
 
         @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public boolean isInRange(OffsetDateTime instant)
         {
             return true;
         }

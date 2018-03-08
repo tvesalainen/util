@@ -40,9 +40,9 @@ public class OffsetTimeRangeTest
         OffsetTime in = OffsetTime.of(9, 15, 0, 0, ZoneOffset.UTC);
         OffsetTime out1 = OffsetTime.of(8, 59, 0, 0, ZoneOffset.UTC);
         OffsetTime out2 = OffsetTime.of(10, 16, 0, 0, ZoneOffset.UTC);
-        assertTrue(r1.isInside(in));
-        assertFalse(r1.isInside(out1));
-        assertFalse(r1.isInside(out2));
+        assertTrue(r1.isInRange(in));
+        assertFalse(r1.isInRange(out1));
+        assertFalse(r1.isInRange(out2));
 
         OffsetTimeRange r2 = new OffsetTimeRange(r1.toTimeRangeType());
         assertEquals(r1, r2);
@@ -56,10 +56,10 @@ public class OffsetTimeRangeTest
         OffsetTime out1 = OffsetTime.of(10, 16, 0, 0, ZoneOffset.UTC);
         OffsetTime out2 = OffsetTime.of(11, 59, 0, 0, ZoneOffset.UTC);
 
-        assertTrue(r1.isInside(in1));
-        assertTrue(r1.isInside(in2));
-        assertFalse(r1.isInside(out1));
-        assertFalse(r1.isInside(out2));
+        assertTrue(r1.isInRange(in1));
+        assertTrue(r1.isInRange(in2));
+        assertFalse(r1.isInRange(out1));
+        assertFalse(r1.isInRange(out2));
 
         OffsetTimeRange r2 = new OffsetTimeRange(r1.toTimeRangeType());
         assertEquals(r1, r2);

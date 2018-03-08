@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham;
 
+import org.vesalainen.util.Range;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,13 +27,17 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -87,7 +92,7 @@ public class BroadcastStationsFile
         this(BroadcastStationsFile.class.getResource("/broadscast-stations.xml"));
     }
 
-    public BroadcastStationsFile(File file)
+    public BroadcastStationsFile(Path file)
     {
         this(toUrl(file));
     }
@@ -96,11 +101,11 @@ public class BroadcastStationsFile
         this.url = url;
         stations = OBJECT_FACTORY.createBroadcastStations();
     }
-    private static URL toUrl(File file)
+    private static URL toUrl(Path file)
     {
         try
         {
-            return file.toURI().toURL();
+            return file.toUri().toURL();
         }
         catch (MalformedURLException ex)
         {
@@ -189,10 +194,25 @@ public class BroadcastStationsFile
             this.dateRanges = TimeRanges.orDateRanges(station.getDate());
         }
 
-        @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public Map<String, Transmitter> getTransmitters()
         {
-            return dateRanges.isInside(dateTime);
+            return transmitters;
+        }
+
+        public Map<OffsetTime, Schedule> getSchedules()
+        {
+            return schedules;
+        }
+
+        public Map<String, MapArea> getMaps()
+        {
+            return maps;
+        }
+
+        @Override
+        public boolean isInRange(OffsetDateTime dateTime)
+        {
+            return dateRanges.isInRange(dateTime);
         }
 
         public String getName()
@@ -227,9 +247,9 @@ public class BroadcastStationsFile
         }
 
         @Override
-        public boolean isInside(ZonedDateTime time)
+        public boolean isInRange(OffsetDateTime time)
         {
-            return timeRanges.isInside(time);
+            return timeRanges.isInRange(time);
         }
 
         public EmissionClass getEmissionClass()
@@ -289,6 +309,7 @@ public class BroadcastStationsFile
         protected OffsetTime start;
         protected OffsetTime end;
         protected TimeRange andRanges;
+        protected Range<OffsetTime> range;
 
         public Schedule(Station station, T schedule)
         {
@@ -309,12 +330,17 @@ public class BroadcastStationsFile
                     TimeRanges.orWeekday(schedule.getWeekdays()),
                     TimeRanges.orDateRanges(schedule.getDate())
                     );
+            range = new Range<>(start, end);
         }
 
-        @Override
-        public boolean isInside(ZonedDateTime dateTime)
+        public boolean isOverlapping(Schedule other)
         {
-            return andRanges.isInside(dateTime);
+            return range.isOverlapping(other.range);
+        }
+        @Override
+        public boolean isInRange(OffsetDateTime dateTime)
+        {
+            return andRanges.isInRange(dateTime);
         }
 
         public OffsetTime getStart()

@@ -37,9 +37,9 @@ public class MonthDayRangeTest
     public void test1()
     {
         MonthDayRange r1 = new MonthDayRange(MonthDay.of(1, 31), MonthDay.of(5, 1));
-        assertTrue(r1.isInside(MonthDay.of(FEBRUARY, 1)));
-        assertTrue(r1.isInside(MonthDay.of(MAY, 1)));
-        assertFalse(r1.isInside(MonthDay.of(JANUARY, 30)));
+        assertTrue(r1.isInRange(MonthDay.of(FEBRUARY, 1)));
+        assertTrue(r1.isInRange(MonthDay.of(MAY, 1)));
+        assertFalse(r1.isInRange(MonthDay.of(JANUARY, 30)));
         
         MonthDayRange r2 = new MonthDayRange(r1.toDateRangeType());
         assertEquals(r1, r2);
@@ -48,9 +48,9 @@ public class MonthDayRangeTest
     public void test2()
     {
         MonthDayRange r1 = new MonthDayRange(MonthDay.of(12, 1), MonthDay.of(1, 31));
-        assertTrue(r1.isInside(MonthDay.of(JANUARY, 30)));
-        assertFalse(r1.isInside(MonthDay.of(FEBRUARY, 1)));
-        assertFalse(r1.isInside(MonthDay.of(MAY, 1)));
+        assertTrue(r1.isInRange(MonthDay.of(JANUARY, 30)));
+        assertFalse(r1.isInRange(MonthDay.of(FEBRUARY, 1)));
+        assertFalse(r1.isInRange(MonthDay.of(MAY, 1)));
 
         MonthDayRange r2 = new MonthDayRange(r1.toDateRangeType());
         assertEquals(r1, r2);

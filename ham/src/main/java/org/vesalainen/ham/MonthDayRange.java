@@ -16,9 +16,9 @@
  */
 package org.vesalainen.ham;
 
+import org.vesalainen.util.Range;
 import java.time.MonthDay;
-import java.time.ZonedDateTime;
-import java.util.Objects;
+import java.time.OffsetDateTime;
 import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 import static org.vesalainen.ham.BroadcastStationsFile.DATA_TYPE_FACTORY;
 import static org.vesalainen.ham.BroadcastStationsFile.OBJECT_FACTORY;
@@ -28,11 +28,8 @@ import org.vesalainen.ham.jaxb.DateRangeType;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MonthDayRange implements TimeRange
+public class MonthDayRange extends Range<MonthDay> implements TimeRange
 {
-    private MonthDay from;
-    private MonthDay to;
-
     public MonthDayRange(DateRangeType range)
     {
         this(
@@ -43,29 +40,12 @@ public class MonthDayRange implements TimeRange
 
     public MonthDayRange(MonthDay from, MonthDay to)
     {
-        this.from = from;
-        this.to = to;
+        super(from, to);
     }
-    
-    @Override
-    public boolean isInside(ZonedDateTime dateTime)
+
+    public boolean isInRange(OffsetDateTime instant)
     {
-        return isInside(MonthDay.from(dateTime));
-    }
-    public boolean isInside(MonthDay day)
-    {
-        if (from.isBefore(to))
-        {
-            if (from.compareTo(day) <= 0)
-            {
-                return to.compareTo(day) >= 0;
-            }
-            return false;
-        }
-        else
-        {
-            return from.compareTo(day) <= 0 || to.compareTo(day) >= 0;
-        }
+        return isInRange(MonthDay.from(instant));
     }
     public DateRangeType toDateRangeType()
     {
@@ -73,42 +53,6 @@ public class MonthDayRange implements TimeRange
         range.setFrom(DATA_TYPE_FACTORY.newXMLGregorianCalendarDate(FIELD_UNDEFINED, from.getMonthValue(), from.getDayOfMonth(), 0));
         range.setTo(DATA_TYPE_FACTORY.newXMLGregorianCalendarDate(FIELD_UNDEFINED, to.getMonthValue(), to.getDayOfMonth(), 0));
         return range;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int hash = 5;
-        hash = 61 * hash + Objects.hashCode(this.from);
-        hash = 61 * hash + Objects.hashCode(this.to);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        if (getClass() != obj.getClass())
-        {
-            return false;
-        }
-        final MonthDayRange other = (MonthDayRange) obj;
-        if (!Objects.equals(this.from, other.from))
-        {
-            return false;
-        }
-        if (!Objects.equals(this.to, other.to))
-        {
-            return false;
-        }
-        return true;
     }
 
     @Override

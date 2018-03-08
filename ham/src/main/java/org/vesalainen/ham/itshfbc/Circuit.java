@@ -17,16 +17,13 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.ham.maidenhead.MaidenheadLocator;
-import org.vesalainen.ham.ssn.SunSpotNumber;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -35,7 +32,6 @@ import org.vesalainen.util.navi.Location;
  */
 public class Circuit
 {
-    private static SunSpotNumber SSN;
     private String receiverLabel;
     private Location receiverLocation;
     private String transmitterLabel;
@@ -44,19 +40,11 @@ public class Circuit
     private Noise noise;
     private RSN rsn;
     private double[] frequences;
+    private double[] sunSpotNumbers;
     private ZonedDateTime date = ZonedDateTime.now();
+    private Path transmitterAntennaPath = Paths.get("default\\Isotrope");
+    private Path receiverAntennaPath = Paths.get("default\\SWWhip.VOA");
     
-    static
-    {
-        try
-        {
-            SSN = new SunSpotNumber(Paths.get("prediML.txt"));
-        }
-        catch (MalformedURLException ex)
-        {
-            Logger.getLogger(Circuit.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
     private Prediction prediction;
 
     public Circuit(double... frequences)
@@ -73,12 +61,12 @@ public class Circuit
                 .coeffs(Coeffs.CCIR)
                 .time(1, 24, 1, true)
                 .month(date.getYear(), date.getMonth())
-                .sunspot(SSN.getSunSpotNumber(date))
+                .sunspot(sunSpotNumbers)
                 .label(transmitterLabel, receiverLabel)
                 .circuit(transmitterLocation, receiverLocation, true)
                 .system(4, noise, rsn)
-                .antenna(true, 1, 2, 30, 1, 45, transmitterPower, Paths.get("default\\Isotrope"))
-                .antenna(false, 2, 2, 30, 0, 0, 0, Paths.get("default\\SWWhip.VOA"))
+                .antenna(true, 1, 2, 30, 1, 45, transmitterPower, transmitterAntennaPath)
+                .antenna(false, 2, 2, 30, 0, 0, 0, receiverAntennaPath)
                 .frequency(frequences)
                 .method(30, 0)
                 .execute()
@@ -118,20 +106,10 @@ public class Circuit
             throw new IllegalArgumentException("transmitterPower not set");
         }
     }
-    public String getReceiverLabel()
-    {
-        return receiverLabel;
-    }
-
     public Circuit setReceiverLabel(String receiverLabel)
     {
         this.receiverLabel = receiverLabel;
         return this;
-    }
-
-    public Location getReceiverLocation()
-    {
-        return receiverLocation;
     }
 
     public Circuit setReceiverLocation(Location receiverLocation)
@@ -140,20 +118,10 @@ public class Circuit
         return this;
     }
 
-    public String getTransmitterLabel()
-    {
-        return transmitterLabel;
-    }
-
     public Circuit setTransmitterLabel(String transmitterLabel)
     {
         this.transmitterLabel = transmitterLabel;
         return this;
-    }
-
-    public Location getTransmitterLocation()
-    {
-        return transmitterLocation;
     }
 
     public Circuit setTransmitterLocation(Location transmitterLocation)
@@ -162,31 +130,16 @@ public class Circuit
         return this;
     }
 
-    public double getTransmitterPower()
-    {
-        return transmitterPower;
-    }
-
     public Circuit setTransmitterPower(double transmitterPower)
     {
         this.transmitterPower = transmitterPower;
         return this;
     }
 
-    public Noise getNoise()
-    {
-        return noise;
-    }
-
     public Circuit setNoise(Noise noise)
     {
         this.noise = noise;
         return this;
-    }
-
-    public RSN getRsn()
-    {
-        return rsn;
     }
 
     public Circuit setRsn(RSN rsn)
@@ -204,6 +157,23 @@ public class Circuit
     {
         this.date = date;
         return this;
+    }
+
+    public Circuit setTransmitterAntennaPath(Path transmitterAntennaPath)
+    {
+        this.transmitterAntennaPath = transmitterAntennaPath;
+        return this;
+    }
+
+    public Circuit setReceiverAntennaPath(Path receiverAntennaPath)
+    {
+        this.receiverAntennaPath = receiverAntennaPath;
+        return this;
+    }
+
+    public void setSunSpotNumbers(double... sunSpotNumbers)
+    {
+        this.sunSpotNumbers = sunSpotNumbers;
     }
     
 }

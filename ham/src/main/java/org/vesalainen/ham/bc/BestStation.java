@@ -14,15 +14,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.bc;
 
-import java.time.OffsetDateTime;
+import org.vesalainen.ham.BroadcastStationsFile.Schedule;
+import org.vesalainen.ham.EmissionClass;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface TimeRange
+public class BestStation
 {
-    boolean isInRange(OffsetDateTime instant);
+    private Schedule schedule;
+    private double frequency;
+    private EmissionClass emissionClass;
+
+    public BestStation(Schedule schedule, double frequency, EmissionClass emissionClass)
+    {
+        this.schedule = schedule;
+        this.frequency = frequency;
+        this.emissionClass = emissionClass;
+    }
+
+    public Schedule getSchedule()
+    {
+        return schedule;
+    }
+
+    public double getFrequency()
+    {
+        return frequency;
+    }
+
+    public EmissionClass getEmissionClass()
+    {
+        return emissionClass;
+    }
+    
 }
