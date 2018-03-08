@@ -33,15 +33,15 @@ public class RangeMapBuilderTest
     @Test
     public void testArray()
     {
-        RangeMapBuilder<String> b = new RangeMapBuilder<>();
-        b.put(new SimpleRange('a', 'z'+1), "lower");
-        b.put(new SimpleRange('A', 'Z'+1), "upper");
-        b.put(new SimpleRange('0', '9'+1), "digit");
-        b.put(new SimpleRange('\n'), "nl");
-        b.put(new SimpleRange('\t'), "tab");
-        b.put(new SimpleRange('\r'), "cr");
-        b.put(new SimpleRange(' '), "space");
-        RangeMap<String> map = b.build();
+        IntRangeMapBuilder<String> b = new IntRangeMapBuilder<>();
+        b.put(new SimpleIntRange('a', 'z'+1), "lower");
+        b.put(new SimpleIntRange('A', 'Z'+1), "upper");
+        b.put(new SimpleIntRange('0', '9'+1), "digit");
+        b.put(new SimpleIntRange('\n'), "nl");
+        b.put(new SimpleIntRange('\t'), "tab");
+        b.put(new SimpleIntRange('\r'), "cr");
+        b.put(new SimpleIntRange(' '), "space");
+        IntRangeMap<String> map = b.build();
         assertEquals("digit", map.get('0'));
         assertEquals("digit", map.get('9'));
         assertNull(map.get('9'+1));
@@ -53,11 +53,11 @@ public class RangeMapBuilderTest
     @Test
     public void testBinary()
     {
-        RangeMapBuilder<String> b = new RangeMapBuilder<>();
-        b.put(new SimpleRange(3, 15), "low");
-        b.put(new SimpleRange(300, 1500), "mid");
-        b.put(new SimpleRange(3000, 15000), "high");
-        RangeMap<String> map = b.build();
+        IntRangeMapBuilder<String> b = new IntRangeMapBuilder<>();
+        b.put(new SimpleIntRange(3, 15), "low");
+        b.put(new SimpleIntRange(300, 1500), "mid");
+        b.put(new SimpleIntRange(3000, 15000), "high");
+        IntRangeMap<String> map = b.build();
         assertEquals("low", map.get(10));
         assertEquals("mid", map.get(1000));
         assertEquals("high", map.get(10000));
@@ -66,9 +66,9 @@ public class RangeMapBuilderTest
     @Test
     public void testAll()
     {
-        RangeMapBuilder<String> b = new RangeMapBuilder<>();
-        b.put(new SimpleRange(0, Integer.MAX_VALUE), "all");
-        RangeMap<String> map = b.build();
+        IntRangeMapBuilder<String> b = new IntRangeMapBuilder<>();
+        b.put(new SimpleIntRange(0, Integer.MAX_VALUE), "all");
+        IntRangeMap<String> map = b.build();
         assertEquals("all", map.get(123456));
     }
 }

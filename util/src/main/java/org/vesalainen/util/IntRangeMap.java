@@ -21,7 +21,7 @@ package org.vesalainen.util;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public interface RangeMap<T> extends Iterable<T>
+public interface IntRangeMap<T> extends Iterable<T>
 {
 
     T get(int n);

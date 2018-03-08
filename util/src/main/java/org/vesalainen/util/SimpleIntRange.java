@@ -20,32 +20,32 @@ package org.vesalainen.util;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SimpleRange implements Range
+public class SimpleIntRange implements IntRange
 {
-    private static Range[] SINGLES = new Range[256];
+    private static IntRange[] SINGLES = new IntRange[256];
     static
     {
         for (int ii=0;ii<256;ii++)
         {
-            SINGLES[ii] = new SimpleRange(ii);
+            SINGLES[ii] = new SimpleIntRange(ii);
         }
     }
     private int from;
     private int to;
 
-    public SimpleRange(int cc)
+    public SimpleIntRange(int cc)
     {
         this(cc, cc+1);
     }
 
-    public SimpleRange(int from, int to)
+    public SimpleIntRange(int from, int to)
     {
         assert from < to;
         this.from = from;
         this.to = to;
     }
 
-    public static Range getInstance(int cc)
+    public static IntRange getInstance(int cc)
     {
         if (cc >= 0 && cc <= 255)
         {
@@ -53,7 +53,7 @@ public class SimpleRange implements Range
         }
         else
         {
-            return new SimpleRange(cc);
+            return new SimpleIntRange(cc);
         }
     }
     @Override

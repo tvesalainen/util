@@ -26,23 +26,23 @@ import java.util.SortedMap;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class RangeMapBuilder<T>
+public class IntRangeMapBuilder<T>
 {
     private static final int LIMIT = 256;
     private int min = Integer.MAX_VALUE;
     private int max = Integer.MIN_VALUE;
-    private BinaryMap<Range,T> map = new BinaryMap<>();
+    private BinaryMap<IntRange,T> map = new BinaryMap<>();
 
-    public void putAll(Map<? extends Range,? extends T> map)
+    public void putAll(Map<? extends IntRange,? extends T> map)
     {
-        for (Entry<? extends Range, ? extends T> entry : map.entrySet())
+        for (Entry<? extends IntRange, ? extends T> entry : map.entrySet())
         {
             put(entry.getKey(), entry.getValue());
         }
     }
-    public void put(Range range, T value)
+    public void put(IntRange range, T value)
     {
-        for (Range r : map.keySet())
+        for (IntRange r : map.keySet())
         {
             if (r.intersect(range))
             {
@@ -53,7 +53,7 @@ public class RangeMapBuilder<T>
         min = Math.min(range.getFrom(), min);
         max = Math.max(range.getTo(), max);
     }
-    public RangeMap<T> build()
+    public IntRangeMap<T> build()
     {
         if (min == 0 & max == Integer.MAX_VALUE && map.size() == 1)
         {
@@ -72,11 +72,11 @@ public class RangeMapBuilder<T>
         }
     }
 
-    public static class AllRangeMap<T> extends BinaryMap<Range,T>  implements RangeMap<T>
+    public static class AllRangeMap<T> extends BinaryMap<IntRange,T>  implements IntRangeMap<T>
     {
         T single;
 
-        public AllRangeMap(T single, SortedMap<Range, T> map)
+        public AllRangeMap(T single, SortedMap<IntRange, T> map)
         {
             super(map);
             this.single = single;
@@ -95,16 +95,16 @@ public class RangeMapBuilder<T>
         }
         
     }
-    public static class ArrayRangeMap<T> extends BinaryMap<Range,T>  implements RangeMap<T>
+    public static class ArrayRangeMap<T> extends BinaryMap<IntRange,T>  implements IntRangeMap<T>
     {
         private T[] array;
         private int offset;
-        public ArrayRangeMap(int min, int max, BinaryMap<Range,T> map)
+        public ArrayRangeMap(int min, int max, BinaryMap<IntRange,T> map)
         {
             super(map);
             this.array = (T[]) new Object[max-min];
             this.offset = min;
-            for (Entry<Range,T> entry : map.entrySet())
+            for (Entry<IntRange,T> entry : map.entrySet())
             {
                 int from = entry.getKey().getFrom();
                 int to = entry.getKey().getTo();
@@ -134,10 +134,10 @@ public class RangeMapBuilder<T>
         }
         
     }
-    public static class BinaryRangeMap<T> extends BinaryMap<Range,T>  implements RangeMap<T>
+    public static class BinaryRangeMap<T> extends BinaryMap<IntRange,T>  implements IntRangeMap<T>
     {
 
-        public BinaryRangeMap(BinaryMap<Range, T> map)
+        public BinaryRangeMap(BinaryMap<IntRange, T> map)
         {
             super(map);
         }
@@ -145,8 +145,8 @@ public class RangeMapBuilder<T>
         @Override
         public T get(int n)
         {
-            Range key = SimpleRange.getInstance(n);
-            Map.Entry<Range, T> entry = get(key, (r,t)->r.accept(n));
+            IntRange key = SimpleIntRange.getInstance(n);
+            Map.Entry<IntRange, T> entry = get(key, (r,t)->r.accept(n));
             if (entry != null)
             {
                 return entry.getValue();
