@@ -28,7 +28,17 @@ public class Range<T extends Comparable<T>>
     protected T from;
     protected T to;
     /**
-     * Creates new TemporalAccessorRange
+     * Creates new Range
+     * @param other 
+     */
+    public Range(Range<T> other)
+    {
+        this.from = other.from;
+        this.to = other.to;
+    }
+    
+    /**
+     * Creates new Range
      * @param from
      * @param to 
      */
