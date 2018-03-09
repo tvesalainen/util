@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Stream;
 
 /**
  * NextBestNonOverlapping helps choose best ranges from a series of overlapping
@@ -38,6 +39,15 @@ public class NextBestNonOverlapping<T extends Comparable<T>>
     public NextBestNonOverlapping(Comparator<Range<T>> comp)
     {
         this.comp = comp;
+    }
+    /**
+     * Selects the best range so that no better range is overlapping it.
+     * @param stream
+     * @return 
+     */
+    public Range<T> best(Stream<? extends Range<T>> stream)
+    {
+        return best(stream.iterator());
     }
     /**
      * Selects the best range so that no better range is overlapping it.

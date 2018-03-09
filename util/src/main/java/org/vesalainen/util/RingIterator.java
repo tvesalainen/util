@@ -19,6 +19,10 @@ package org.vesalainen.util;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * RingIterator iterates all NavigableMap entries ascending starting from key and
@@ -29,13 +33,43 @@ public class RingIterator<K,V> implements Iterator<Entry<K,V>>
 {
     private Iterator<Entry<K,V>> head;
     private Iterator<Entry<K,V>> tail;
-
+    /**
+     * Creates a RingIterator
+     * @param key
+     * @param map 
+     */
     public RingIterator(K key, NavigableMap<K,V> map)
     {
         tail = map.tailMap(key, true).entrySet().iterator();
         head = map.headMap(key, false).entrySet().iterator();
     }
-
+    /**
+     * Returns a stream that iterates all NavigableMap entries ascending starting from key and
+     * ending entry before key.
+     * @param <K>
+     * @param <V>
+     * @param key
+     * @param map
+     * @param parallel
+     * @return 
+     */
+    public static final <K,V> Stream<Entry<K,V>> stream(K key, NavigableMap<K,V> map, boolean parallel)
+    {
+        return StreamSupport.stream(spliterator(key, map), parallel);
+    }
+    /**
+     * Returns a spliterator that iterates all NavigableMap entries ascending starting from key and
+     * ending entry before key.
+     * @param <K>
+     * @param <V>
+     * @param key
+     * @param map
+     * @return 
+     */
+    public static final <K,V> Spliterator<Entry<K,V>> spliterator(K key, NavigableMap<K,V> map)
+    {
+        return Spliterators.spliterator(new RingIterator(key, map), map.size(), 0);
+    }
     @Override
     public boolean hasNext()
     {
