@@ -23,7 +23,7 @@ import java.util.Objects;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class Range<T extends Comparable<T>>
+public class Range<T extends Comparable<T>> implements Comparable<Range<T>>
 {
     protected T from;
     protected T to;
@@ -146,10 +146,20 @@ public class Range<T extends Comparable<T>>
         }
         return true;
     }
+    /**
+     * Uses from as key
+     * @param o
+     * @return 
+     */
+    @Override
+    public int compareTo(Range<T> o)
+    {
+        return from.compareTo(o.from);
+    }
 
     @Override
     public String toString()
     {
-        return "TimeRange{" + "from=" + from + ", to=" + to + '}';
+        return "Range{" + "from=" + from + ", to=" + to + '}';
     }
 }
