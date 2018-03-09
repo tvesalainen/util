@@ -16,6 +16,9 @@
  */
 package org.vesalainen.util;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -44,6 +47,21 @@ public class OrderedListTest
         assertEquals(4, (int)ol.get(2));
         assertEquals(5, (int)ol.get(3));
         assertEquals(8, (int)ol.get(4));
+    }
+    @Test
+    public void testReverse()
+    {
+        OrderedList<Integer> ol = new OrderedList<>((x,y)->Integer.compare(y, x));
+        ol.add(5);
+        ol.add(2);
+        ol.add(8);
+        ol.add(1);
+        ol.add(4);
+        assertEquals(1, (int)ol.get(4));
+        assertEquals(2, (int)ol.get(3));
+        assertEquals(4, (int)ol.get(2));
+        assertEquals(5, (int)ol.get(1));
+        assertEquals(8, (int)ol.get(0));
     }
     @Test
     public void test1()
@@ -81,4 +99,33 @@ public class OrderedListTest
         assertEquals(-1, ol.indexOf(9));
         assertEquals(-1, ol.lastIndexOf(-1));
     }    
+    @Test
+    public void testZ()
+    {
+        List<String> list = new ArrayList<>();
+        list.add("1");
+        list.add("2");
+        list.sort(new Reverse());
+        assertEquals("2", list.get(0));
+        assertEquals("1", list.get(1));
+    }
+    @Test
+    public void testX()
+    {
+        OrderedList<String> ol = new OrderedList<>(new Reverse());
+        ol.add("1");
+        ol.add("2");
+        assertEquals("2", ol.get(0));
+        assertEquals("1", ol.get(1));
+    }
+    private static class Reverse implements Comparator<String>
+    {
+
+        @Override
+        public int compare(String o1, String o2)
+        {
+            return o2.compareTo(o1);
+        }
+        
+    }
 }
