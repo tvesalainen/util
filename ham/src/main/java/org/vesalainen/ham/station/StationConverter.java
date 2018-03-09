@@ -79,7 +79,7 @@ public class StationConverter extends JavaLogging
         config("out %s", out);
         this.dataTypeFactory = DatatypeFactory.newInstance();
         this.maxDuration = dataTypeFactory.newDurationDayTime(true, 0, 1, 0, 0);
-        xml = new BroadcastStationsFile(out.toFile());
+        xml = new BroadcastStationsFile(out);
     }
 
     public void convert() throws IOException

@@ -16,39 +16,30 @@
  */
 package org.vesalainen.ham.bc;
 
-import org.vesalainen.ham.BroadcastStationsFile.Schedule;
-import org.vesalainen.ham.EmissionClass;
+import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BestStation
+public class BroadcastOptimizerTest
 {
-    private Schedule schedule;
-    private double frequency;
-    private EmissionClass emissionClass;
-
-    public BestStation(Schedule schedule, double frequency, EmissionClass emissionClass)
+    
+    public BroadcastOptimizerTest()
     {
-        this.schedule = schedule;
-        this.frequency = frequency;
-        this.emissionClass = emissionClass;
     }
 
-    public Schedule getSchedule()
+    @Test
+    public void test1() throws IOException
     {
-        return schedule;
-    }
-
-    public double getFrequency()
-    {
-        return frequency;
-    }
-
-    public EmissionClass getEmissionClass()
-    {
-        return emissionClass;
+        BroadcastOptimizer opt = new BroadcastOptimizer();
+        opt.bestStation(new Location(9, -79), Instant.now());
     }
     
 }

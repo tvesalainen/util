@@ -29,6 +29,7 @@ import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -36,6 +37,7 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -127,7 +129,7 @@ public class BroadcastStationsFile
     }
     public Map<String, Station> getStations()
     {
-        return stations.getStation().stream().map(Station::new).collect(Collectors.toMap((Station s)->s.getName(), (s)->s));
+        return stations.getStation().stream().map(Station::new).collect(Collectors.toMap((Station s)->s.getName(), (org.vesalainen.ham.Station s)->s));
     }
     public void load() throws IOException, JAXBException
     {
@@ -176,226 +178,5 @@ public class BroadcastStationsFile
             return o1.getTime().compare(o2.getTime());
         }
 
-    }
-    public static class Station implements TimeRange
-    {
-        private StationType station;
-        private Map<String,Transmitter> transmitters;
-        private Map<OffsetTime,Schedule> schedules;
-        private Map<String,MapArea> maps;
-        private TimeRange dateRanges;
-
-        public Station(StationType station)
-        {
-            this.station = station;
-            this.transmitters = station.getTransmitter().stream().map((t)->new Transmitter(this, t)).collect(Collectors.toMap((Transmitter t)->t.getCallSign(), (t)->t));
-            this.schedules = station.getHfFax().stream().map((s)->new HfFax(this, s)).collect(Collectors.toMap((HfFax s)->s.getStart(), (s)->s));
-            this.maps = station.getMap().stream().map((m)->new MapArea(this, m)).collect(Collectors.toMap((MapArea m)->m.getName(), (m)->m));
-            this.dateRanges = TimeRanges.orDateRanges(station.getDate());
-        }
-
-        public Map<String, Transmitter> getTransmitters()
-        {
-            return transmitters;
-        }
-
-        public Map<OffsetTime, Schedule> getSchedules()
-        {
-            return schedules;
-        }
-
-        public Map<String, MapArea> getMaps()
-        {
-            return maps;
-        }
-
-        @Override
-        public boolean isInRange(OffsetDateTime dateTime)
-        {
-            return dateRanges.isInRange(dateTime);
-        }
-
-        public String getName()
-        {
-            return station.getName();
-        }
-
-        public String getInfo()
-        {
-            return station.getInfo();
-        }
-
-        public boolean isActive()
-        {
-            return station.isActive();
-        }
-        
-    }
-    public static class Transmitter implements TimeRange
-    {
-        private Station station;
-        private TransmitterType transmitter;
-        private EmissionClass emissionClass;
-        private TimeRange timeRanges;
-
-        public Transmitter(Station station, TransmitterType transmitter)
-        {
-            this.station = station;
-            this.transmitter = transmitter;
-            this.emissionClass = new EmissionClass(transmitter.getEmission());
-            this.timeRanges = TimeRanges.orTimeRanges(transmitter.getTime());
-        }
-
-        @Override
-        public boolean isInRange(OffsetDateTime time)
-        {
-            return timeRanges.isInRange(time);
-        }
-
-        public EmissionClass getEmissionClass()
-        {
-            return emissionClass;
-        }
-
-        public Station getStation()
-        {
-            return station;
-        }
-
-        public String getCallSign()
-        {
-            return transmitter.getCallSign();
-        }
-
-        public double getFrequency()
-        {
-            return transmitter.getFrequency();
-        }
-
-        public String getEmission()
-        {
-            return transmitter.getEmission();
-        }
-
-        public Double getPower()
-        {
-            return transmitter.getPower();
-        }
-        
-    }
-    public static class HfFax extends Schedule<HfFaxType>
-    {
-        
-        public HfFax(Station station, HfFaxType hfFax)
-        {
-            super(station, hfFax);
-        }
-        
-        public int getRpm()
-        {
-            return schedule.getRpm();
-        }
-
-        public int getIoc()
-        {
-            return schedule.getIoc();
-        }
-        
-    }
-    public static class Schedule<T extends ScheduleType> implements TimeRange
-    {
-        protected Station station;
-        protected T schedule;
-        protected OffsetTime start;
-        protected OffsetTime end;
-        protected TimeRange andRanges;
-        protected Range<OffsetTime> range;
-
-        public Schedule(Station station, T schedule)
-        {
-            this.station = station;
-            this.schedule = schedule;
-            XMLGregorianCalendar t = schedule.getTime();
-            this.start = OffsetTime.of(t.getHour(), t.getMinute(), t.getSecond(), 0, ZoneOffset.UTC);
-            if (schedule.getDuration() != null)
-            {
-                Duration duration = Duration.parse(schedule.getDuration().toString());
-                this.end = start.plusNanos(duration.toNanos());
-            }
-            else
-            {
-                this.end = start.plusMinutes(DEF_DURATION_MINUTES);
-            }
-            andRanges = TimeRanges.andRanges(
-                    TimeRanges.orWeekday(schedule.getWeekdays()),
-                    TimeRanges.orDateRanges(schedule.getDate())
-                    );
-            range = new Range<>(start, end);
-        }
-
-        public boolean isOverlapping(Schedule other)
-        {
-            return range.isOverlapping(other.range);
-        }
-        @Override
-        public boolean isInRange(OffsetDateTime dateTime)
-        {
-            return andRanges.isInRange(dateTime);
-        }
-
-        public OffsetTime getStart()
-        {
-            return start;
-        }
-
-        public OffsetTime getEnd()
-        {
-            return end;
-        }
-
-        public Station getStation()
-        {
-            return station;
-        }
-
-        public String getContent()
-        {
-            return schedule.getContent();
-        }
-
-    }
-    public static class MapArea
-    {
-        private Station station;
-        private MapType map;
-        private Area area;
-
-        public MapArea(Station station, MapType map)
-        {
-            this.station = station;
-            this.map = map;
-            List<Location> list = map.getCorners().stream().map(LocationParser::parse).collect(Collectors.toList());
-            this.area = Area.getArea(Lists.toArray(list, Location.class));
-        }
-
-        public boolean isInside(Location location)
-        {
-            return area.isInside(location);
-        }
-        public Station getStation()
-        {
-            return station;
-        }
-
-        public String getName()
-        {
-            return map.getName();
-        }
-
-        public String getProjection()
-        {
-            return map.getProjection();
-        }
-        
     }
 }

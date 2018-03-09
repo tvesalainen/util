@@ -171,9 +171,10 @@ public class Circuit
         return this;
     }
 
-    public void setSunSpotNumbers(double... sunSpotNumbers)
+    public Circuit setSunSpotNumbers(double... sunSpotNumbers)
     {
         this.sunSpotNumbers = sunSpotNumbers;
+        return this;
     }
     
 }

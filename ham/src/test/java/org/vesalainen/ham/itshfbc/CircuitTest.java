@@ -46,7 +46,9 @@ public class CircuitTest
                 .setTransmitterLocation(norl.getLocation())
                 .setTransmitterPower(4)
                 .setNoise(Noise.RESIDENTIAL)
-                .setRsn(RSN.SSB);
+                .setRsn(RSN.SSB)
+                .setSunSpotNumbers(16)
+                ;
         circuit.predict();
         List<CircuitFrequency> frequenciesFor = circuit.frequenciesFor(1);
         frequenciesFor.sort(null);
