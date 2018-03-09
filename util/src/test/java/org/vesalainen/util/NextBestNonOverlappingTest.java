@@ -34,6 +34,18 @@ public class NextBestNonOverlappingTest
     }
 
     @Test
+    public void test0()
+    {
+        List<R> list = new ArrayList<>();
+        list.add(new R(1, 1, 3));
+        list.add(new R(3, 3, 5));
+        list.add(new R(3, 6, 8));
+        list.add(new R(4, 7, 9));
+        NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
+        R best = (R) nbno.best(list.iterator());
+        assertEquals(1, best.num);
+    }
+    @Test
     public void test1()
     {
         List<R> list = new ArrayList<>();
@@ -42,9 +54,22 @@ public class NextBestNonOverlappingTest
         list.add(new R(3, 3, 5));
         list.add(new R(4, 4, 6));
         list.add(new R(3, 6, 8));
+        list.add(new R(4, 7, 9));
         NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
         R best = (R) nbno.best(list.iterator());
         assertEquals(2, best.num);
+    }
+    @Test
+    public void test2()
+    {
+        List<R> list = new ArrayList<>();
+        list.add(new R(3, 3, 5));
+        list.add(new R(4, 4, 6));
+        list.add(new R(3, 6, 8));
+        list.add(new R(4, 7, 9));
+        NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
+        R best = (R) nbno.best(list.iterator());
+        assertEquals(4, best.num);
     }
     class C implements Comparator<R>
     {

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
 /**

@@ -23,18 +23,27 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- *
+ * NextBestNonOverlapping helps choose best ranges from a series of overlapping
+ * ranges. Best in a sense of given comparator.
+ * <p>One solution is to find best radio broadcasts so that they don't overlap.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class NextBestNonOverlapping<T extends Comparable<T>>
 {
     private Comparator<Range<T>> comp;
-
+    /**
+     * Creates a new NextBestNonOverlapping.
+     * @param comp 
+     */
     public NextBestNonOverlapping(Comparator<Range<T>> comp)
     {
         this.comp = comp;
     }
-    
+    /**
+     * Selects the best range so that no better range is overlapping it.
+     * @param iterator
+     * @return 
+     */
     public Range<T> best(Iterator<? extends Range<T>> iterator)
     {
         List<Range<T>> list = new ArrayList<>();
