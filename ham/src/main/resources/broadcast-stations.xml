@@ -1399,7 +1399,7 @@
         <hfFax rpm="120" ioc="576" map="" time="21:47:00Z" weekdays="" duration="PT46M0.000S" content="WEEKLY SEA WEATHER FORECAST"/>
         <hfFax rpm="120" ioc="576" map="" time="22:33:00Z" weekdays="" duration="PT14M0.000S" content="LIGHTHOUSE WEATHER OBSERVATION REPORT"/>
         <hfFax rpm="120" ioc="576" map="B" time="22:47:00Z" weekdays="" content="SURFACE ANALYSIS FAR EAST"/>
-        <map name="A" projection="Lambert Conformal Conic" corners="1.1N84E 39.7N41.9E 6.5N156.8E 55.1N199.4E"/>
+        <map name="A" projection="Lambert Conformal Conic" corners="1.1N84E 39.7N41.9E 6.5N156.8E 55.1N180E"/>
         <map name="B" projection="Lambert Conformal Conic" corners="16.3N100.7E 49.5N82.6E 17.8N145.5E 52.4N160.4E"/>
         <map name="C" projection="Lambert Conformal Conic" corners="20N115E 20N150E 50N115E 50N150E"/>
     </station>

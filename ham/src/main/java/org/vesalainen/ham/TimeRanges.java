@@ -19,13 +19,12 @@ package org.vesalainen.ham;
 import org.vesalainen.util.Range;
 import java.time.DayOfWeek;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import static org.vesalainen.ham.TimeUtils.WEEKDAY_PARSER;
 import org.vesalainen.ham.jaxb.DateRangeType;
 import org.vesalainen.ham.jaxb.TimeRangeType;
-import org.vesalainen.regex.SynchronizedEnumPrefixFinder;
 
 /**
  *
@@ -33,7 +32,6 @@ import org.vesalainen.regex.SynchronizedEnumPrefixFinder;
  */
 public abstract class TimeRanges
 {
-    public static final SynchronizedEnumPrefixFinder<DayOfWeek> WEEKDAY_PARSER = new SynchronizedEnumPrefixFinder(DayOfWeek.class);
     public static final TimeRange ALWAYS = new Always();
     
     public static final TimeRange andRanges(TimeRange... ranges)

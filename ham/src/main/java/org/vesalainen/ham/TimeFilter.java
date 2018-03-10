@@ -17,6 +17,7 @@
 package org.vesalainen.ham;
 
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.function.Predicate;
 import org.vesalainen.ham.jaxb.ScheduleType;
 
@@ -24,7 +25,7 @@ import org.vesalainen.ham.jaxb.ScheduleType;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeFilter implements Predicate<Schedule<?>>
+public class TimeFilter implements Predicate<Schedule>
 {
     
     private OffsetDateTime utc;
@@ -35,9 +36,9 @@ public class TimeFilter implements Predicate<Schedule<?>>
     }
 
     @Override
-    public boolean test(Schedule<?> schedule)
+    public boolean test(Schedule schedule)
     {
-        OffsetDateTime with = utc.with(schedule.getFrom());
+        OffsetDateTime with = TimeUtils.next(utc, (OffsetTime)schedule.getFrom());
         return schedule.isInRange(with) && schedule.getStation().isInRange(with);
     }
     

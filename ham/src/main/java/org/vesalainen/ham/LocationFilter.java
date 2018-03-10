@@ -23,7 +23,7 @@ import org.vesalainen.util.navi.Location;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationFilter implements Predicate<HfFax>
+public class LocationFilter implements Predicate<Schedule>
 {
     
     private Location location;
@@ -34,9 +34,14 @@ public class LocationFilter implements Predicate<HfFax>
     }
 
     @Override
-    public boolean test(HfFax fax)
+    public boolean test(Schedule schedule)
     {
-        return fax.inMap(location) || fax.getStation().inAnyMap(location);
+        if (schedule instanceof HfFax)
+        {
+            HfFax fax = (HfFax) schedule;
+            return fax.inMap(location) || fax.getStation().inAnyMap(location);
+        }
+        return true;
     }
     
 }

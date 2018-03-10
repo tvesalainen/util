@@ -25,23 +25,28 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.bind.JAXBException;
 import org.vesalainen.ham.BroadcastStationsFile;
-import org.vesalainen.ham.ClassFilter;
 import org.vesalainen.ham.EmissionClass;
-import org.vesalainen.ham.HfFax;
 import org.vesalainen.ham.LocationFilter;
 import org.vesalainen.ham.Schedule;
-import org.vesalainen.ham.Schedule;
 import org.vesalainen.ham.Station;
+import org.vesalainen.ham.TimeUtils;
 import org.vesalainen.ham.TimeFilter;
+import org.vesalainen.ham.Transmitter;
+import org.vesalainen.ham.itshfbc.Circuit;
+import org.vesalainen.ham.itshfbc.CircuitFrequency;
+import org.vesalainen.ham.itshfbc.Noise;
+import org.vesalainen.ham.itshfbc.Prediction;
+import org.vesalainen.ham.itshfbc.RSN;
 import org.vesalainen.ham.ssn.SunSpotNumber;
-import org.vesalainen.util.RingIterator;
+import org.vesalainen.util.OrderedList;
+import org.vesalainen.util.Range;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -55,8 +60,10 @@ public class BroadcastOptimizer
     private URL BroadcastStationsPath = BroadcastStationsFile.class.getResource("/broadcast-stations.xml");
     private Path transmitterAntennaPath = Paths.get("default", "Isotrope");
     private Path receiverAntennaPath = Paths.get("default", "SWWhip.VOA");
+    private Noise noise = Noise.RESIDENTIAL;
     private BroadcastStationsFile broadcastStation;
-    private NavigableMap<OffsetTime,Schedule> scheduleMap;
+    private OrderedList<Range<OffsetTime>> scheduleList;
+    private Map<String,Circuit> circuitMap = new HashMap<>();
 
     public BroadcastOptimizer()
     {
@@ -71,12 +78,15 @@ public class BroadcastOptimizer
                 ssn = new SunSpotNumber(sunSpotNumberPath);
                 broadcastStation = new BroadcastStationsFile(BroadcastStationsPath);
                 broadcastStation.load();
-                scheduleMap = new TreeMap<>();
+                scheduleList = new OrderedList<>();
                 for (Station station : broadcastStation.getStations().values())
                 {
                     if (station.isActive())
                     {
-                        scheduleMap.putAll(station.getSchedules());
+                        for (Schedule s : station.getSchedules())
+                        {
+                            scheduleList.add(s);
+                        }
                     }
                 }
             }
@@ -87,19 +97,63 @@ public class BroadcastOptimizer
         }
     }
 
-    public BestStation bestStation(Location myLocation, Instant instant) throws IOException
+    public BestStation bestStation(final Location myLocation, Instant instant) throws IOException
     {
         init();
-        OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
-        OffsetTime key = OffsetTime.from(utc);
-        RingIterator.stream(key, scheduleMap, false)
-                .map((Entry<OffsetTime, Schedule> e)->e.getValue())
-                .filter(new ClassFilter(HfFax.class))
-                .map((s)->(HfFax)s)
+        final OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
+        OffsetTime ot = OffsetTime.from(utc);
+        Range<OffsetTime> key = new Range<>(ot, ot);
+        Stream<Range<OffsetTime>> head = scheduleList.headStream(key, false, false);
+        Stream<Range<OffsetTime>> tail = scheduleList.tailStream(key, true, false);
+        Stream.concat(tail, head)
+                .map((s)->(Schedule)s)
                 .filter(new TimeFilter(utc))
                 .filter(new LocationFilter(myLocation))
+                .map((s)->getInstance(s, utc, myLocation))
                 ;
         return null;
+    }
+    public BestStation getInstance(Schedule schedule, OffsetDateTime utc, Location myLocation)
+    {
+        OffsetDateTime cur = TimeUtils.next(utc, (OffsetTime)schedule.getFrom());
+        List<CircuitFrequency> freqs = schedule
+                .getStation()
+                .getTransmitters()
+                .stream()
+                .filter((t)->t.isInRange(cur))
+                .map((t->getPrediction(schedule, utc, myLocation, t)))
+                .collect(Collectors.toList());
+        return null;
+    }
+    public CircuitFrequency getPrediction(Schedule schedule, OffsetDateTime utc, Location myLocation, Transmitter transmitter)
+    {
+        Station station = schedule.getStation();
+        double frequency = transmitter.getFrequency();
+        String name = station.getName();
+        Circuit circuit = circuitMap.get(name+frequency);
+        if (circuit == null || !circuit.getPrediction().isValid(myLocation, utc))
+        {
+            try {
+                circuit = new Circuit(frequency)
+                        .setDate(utc)
+                        .setNoise(noise)
+                        .setReceiverAntennaPath(receiverAntennaPath)
+                        .setReceiverLocation(myLocation)
+                        .setRsn(RSN.SSB)
+                        .setSunSpotNumbers(ssn.getSunSpotNumber(utc))
+                        .setTransmitterAntennaPath(transmitterAntennaPath)
+                        .setTransmitterLocation(station.getLocation())
+                        .setTransmitterPower(transmitter.getPower())
+                        ;
+                circuit.predict();
+                circuitMap.put(name+frequency, circuit);
+            }
+            catch (IOException ex) 
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        return new CircuitFrequency(circuit, frequency, circuit.getPrediction().getHourPrediction(utc.getHour()));
     }
     public BroadcastOptimizer setSunSpotNumberPath(Path sunSpotNumberPath)
     {
@@ -115,6 +169,12 @@ public class BroadcastOptimizer
     public BroadcastOptimizer setReceiverAntennaPath(Path receiverAntennaPath)
     {
         this.receiverAntennaPath = receiverAntennaPath;
+        return this;
+    }
+
+    public BroadcastOptimizer setNoise(Noise noise)
+    {
+        this.noise = noise;
         return this;
     }
     

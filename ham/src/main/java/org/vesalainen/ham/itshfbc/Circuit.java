@@ -19,8 +19,10 @@ package org.vesalainen.ham.itshfbc;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import org.vesalainen.ham.maidenhead.MaidenheadLocator;
@@ -41,11 +43,21 @@ public class Circuit
     private RSN rsn;
     private double[] frequences;
     private double[] sunSpotNumbers;
-    private ZonedDateTime date = ZonedDateTime.now();
+    private OffsetDateTime date = OffsetDateTime.now();
     private Path transmitterAntennaPath = Paths.get("default\\Isotrope");
     private Path receiverAntennaPath = Paths.get("default\\SWWhip.VOA");
     
     private Prediction prediction;
+
+    public Circuit(Collection<Double> frequences)
+    {
+        this.frequences = new double[frequences.size()];
+        int i = 0;
+        for (double f : frequences)
+        {
+            this.frequences[i++] = f;
+        }
+    }
 
     public Circuit(double... frequences)
     {
@@ -73,6 +85,12 @@ public class Circuit
                 .quit();
         prediction = predictor.predict();
     }
+
+    public HourPrediction getHourPrediction(int hour)
+    {
+        return prediction.getHourPrediction(hour);
+    }
+    
     public List<CircuitFrequency> frequenciesFor(int hour)
     {
         List<CircuitFrequency> list = new ArrayList<>();
@@ -106,6 +124,12 @@ public class Circuit
             throw new IllegalArgumentException("transmitterPower not set");
         }
     }
+
+    public Prediction getPrediction()
+    {
+        return prediction;
+    }
+    
     public Circuit setReceiverLabel(String receiverLabel)
     {
         this.receiverLabel = receiverLabel;
@@ -148,12 +172,12 @@ public class Circuit
         return this;
     }
 
-    public ZonedDateTime getDate()
+    public OffsetDateTime getDate()
     {
         return date;
     }
 
-    public Circuit setDate(ZonedDateTime date)
+    public Circuit setDate(OffsetDateTime date)
     {
         this.date = date;
         return this;

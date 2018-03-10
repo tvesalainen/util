@@ -38,7 +38,7 @@ public class MonthDayRangeTest
     {
         MonthDayRange r1 = new MonthDayRange(MonthDay.of(1, 31), MonthDay.of(5, 1));
         assertTrue(r1.isInRange(MonthDay.of(FEBRUARY, 1)));
-        assertTrue(r1.isInRange(MonthDay.of(MAY, 1)));
+        assertFalse(r1.isInRange(MonthDay.of(MAY, 1)));
         assertFalse(r1.isInRange(MonthDay.of(JANUARY, 30)));
         
         MonthDayRange r2 = new MonthDayRange(r1.toDateRangeType());

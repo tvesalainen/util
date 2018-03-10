@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -54,14 +54,14 @@ public class SunSpotNumber extends NetFile
     
     public double getSunSpotNumber() throws IOException
     {
-        return getSunSpotNumber(ZonedDateTime.now());
+        return getSunSpotNumber(OffsetDateTime.now());
     }
-    public double getSunSpotNumber(ZonedDateTime dateTime) throws IOException
+    public double getSunSpotNumber(OffsetDateTime dateTime) throws IOException
     {
         refresh();
         int year = dateTime.get(ChronoField.YEAR);
-        ZonedDateTime current = ZonedDateTime.of(year, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        ZonedDateTime next = ZonedDateTime.of(year+1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime current = OffsetDateTime.of(year, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime next = OffsetDateTime.of(year+1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         double millisInYear = current.until(next, ChronoUnit.MILLIS);
         double fromBeginOfYear = current.until(dateTime, ChronoUnit.MILLIS);
         double key = year+fromBeginOfYear/millisInYear;

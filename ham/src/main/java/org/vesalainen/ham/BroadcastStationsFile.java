@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.util.Range;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,18 +27,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -48,17 +38,11 @@ import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import static org.vesalainen.ham.itshfbc.LocationFormatter.format;
 import org.vesalainen.ham.jaxb.BroadcastStations;
-import org.vesalainen.ham.jaxb.HfFaxType;
-import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.ham.jaxb.ObjectFactory;
 import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.jaxb.StationType;
-import org.vesalainen.ham.jaxb.TransmitterType;
-import org.vesalainen.navi.Area;
-import org.vesalainen.util.Lists;
 import org.vesalainen.util.navi.Location;
 
 /**

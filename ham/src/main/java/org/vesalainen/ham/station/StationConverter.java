@@ -36,7 +36,6 @@ import org.vesalainen.ham.LocationParser;
 import org.vesalainen.ham.itshfbc.GeoDB;
 import org.vesalainen.ham.itshfbc.GeoLocation;
 import org.vesalainen.ham.itshfbc.RFaxParser;
-import org.vesalainen.ham.station.DefaultCustomizer;
 import static org.vesalainen.ham.itshfbc.GeoSearch.of;
 import org.vesalainen.ham.jaxb.HfFaxType;
 import org.vesalainen.ham.jaxb.MapType;

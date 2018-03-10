@@ -52,6 +52,7 @@ public class Predictor
     private List<FormatPart> modeLine;
     private List<FormatPart> dataLine;
     private Prediction prediction;
+    private Location receiverLocation;
 
     public Predictor()
     {
@@ -103,7 +104,7 @@ public class Predictor
                     if (prediction == null)
                     {
                         Object[] arr = formatFactory.parse(monthLine, line);
-                        prediction = new Prediction(((Long)arr[1]).intValue(), (String)arr[0]);
+                        prediction = new Prediction(receiverLocation, (String)arr[0]);
                     }
                 }
                 else
@@ -273,6 +274,7 @@ public class Predictor
      */
     public Predictor circuit(Location transmitter, Location receiver, boolean shorter)
     {
+        this.receiverLocation = receiver;
         input.add(new CommandLine<>(CIRCUIT, 5,
                 Math.abs(transmitter.getLatitude()),
                 transmitter.getLatitudeNS(),

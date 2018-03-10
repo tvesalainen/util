@@ -18,9 +18,13 @@ package org.vesalainen.ham.itshfbc;
 
 import java.time.Month;
 import static java.time.Month.*;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
+import static org.vesalainen.ham.TimeUtils.MONTH_PARSER;
+import org.vesalainen.util.navi.Location;
+import org.vesalainen.util.navi.NauticalMile;
 
 /**
  *
@@ -28,16 +32,19 @@ import java.util.Map;
  */
 public class Prediction
 {
-    private YearMonth month;
+    private static final NauticalMile DISTANCE_LIMIT = new NauticalMile(100);
+    private Location myLocation;
+    private Month month;
     private Map<Integer,HourPrediction> hours = new HashMap<>();
 
-    public Prediction(int year, String mon)
+    public Prediction(Location myLocation, String mon)
     {
-        this(year, detect(mon));
+        this(myLocation, MONTH_PARSER.find(mon));
     }
-    public Prediction(int year, Month mon)
+    public Prediction(Location myLocation, Month month)
     {
-        month = YearMonth.of(year, mon);
+        this.myLocation = myLocation;
+        this.month = month;
     }
     public void addHour(HourPrediction hourly)
     {
@@ -47,34 +54,8 @@ public class Prediction
     {
         return hours.get(hour);
     }
-    private static Month detect(String mon)
+    public boolean isValid(Location location, OffsetDateTime date)
     {
-        switch (mon)
-        {
-            case "Jan":
-                return JANUARY;
-            case "Feb":
-                return FEBRUARY;
-            case "Mar":
-                return MARCH;
-            case "Apr":
-                return APRIL;
-            case "Jun":
-                return JUNE;
-            case "Jul":
-                return JULY;
-            case "Aug":
-                return AUGUST;
-            case "Sep":
-                return SEPTEMBER;
-            case "Oct":
-                return OCTOBER;
-            case "Nov":
-                return NOVEMBER;
-            case "Dec":
-                return DECEMBER;
-            default:
-                throw new UnsupportedOperationException(mon);
-        }
+        return date.getMonth() == month && myLocation.distance(location).lt(DISTANCE_LIMIT);
     }
 }

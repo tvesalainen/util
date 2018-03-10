@@ -17,7 +17,6 @@
 package org.vesalainen.ham;
 
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,17 +33,19 @@ public class Station implements TimeRange
     
     private StationType station;
     private List<Transmitter> transmitters;
-    private Map<OffsetTime, Schedule> schedules;
+    private List<Schedule> schedules;
     private Map<String, MapArea> maps;
     private TimeRange dateRanges;
+    private Location location;
 
     public Station(StationType station)
     {
         this.station = station;
         this.transmitters = station.getTransmitter().stream().map((org.vesalainen.ham.jaxb.TransmitterType t) -> new Transmitter(this, t)).collect(Collectors.toList());
-        this.schedules = station.getHfFax().stream().map((HfFaxType s) -> new HfFax(this, s)).collect(Collectors.toMap((HfFax s) -> s.getFrom(), (HfFax s) -> s));
+        this.schedules = station.getHfFax().stream().map((HfFaxType s) -> new HfFax(this, s)).collect(Collectors.toList());
         this.maps = station.getMap().stream().map((org.vesalainen.ham.jaxb.MapType m) -> new MapArea(this, m)).collect(Collectors.toMap((MapArea m) -> m.getName(), (org.vesalainen.ham.MapArea m) -> m));
         this.dateRanges = TimeRanges.orDateRanges(station.getDate());
+        this.location = LocationParser.parse(station.getLocation());
     }
 
     /**
@@ -78,7 +79,7 @@ public class Station implements TimeRange
         return transmitters;
     }
 
-    public Map<OffsetTime, Schedule> getSchedules()
+    public List<Schedule> getSchedules()
     {
         return schedules;
     }
@@ -107,6 +108,11 @@ public class Station implements TimeRange
     public boolean isActive()
     {
         return station.isActive();
+    }
+
+    public Location getLocation()
+    {
+        return location;
     }
     
 }
