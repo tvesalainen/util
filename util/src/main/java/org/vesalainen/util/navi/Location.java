@@ -36,96 +36,96 @@ public class Location extends Point2D.Double
     /** Creates a new instance of Location */
     public Location()
     {
-        super(0, 0);
+        this(0, 0);
     }
 
     /** Creates a new instance of Location */
     public Location(double latitude, double longitude)
     {
         super(longitude, latitude);
+        check();
     }
     
     public Location(Point2D point)
     {
         super(point.getX(), point.getY());
+        check();
     }
     
     public Location(String loc)
     {
-        try
+        boolean latitudeOk = false;
+        boolean longitudeOk = false;
+        ParsePosition pos = new ParsePosition(0);
+        Coordinate coordinate = Coordinate.lookingAt(loc, pos);
+        switch (coordinate.getType())
         {
-            boolean latitudeOk = false;
-            boolean longitudeOk = false;
-            ParsePosition pos = new ParsePosition(0);
-            Coordinate coordinate = Coordinate.lookingAt(loc, pos);
-            switch (coordinate.getType())
-            {
-                case LATITUDE:
-                    y = coordinate.getCoordinate();
-                    latitudeOk = true;
-                    break;
-                case LONGITUDE:
-                    x = coordinate.getCoordinate();
-                    longitudeOk = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException(loc+" cardinal direction unknown");
-            }
-            coordinate = Coordinate.lookingAt(loc, pos);
-            switch (coordinate.getType())
-            {
-                case LATITUDE:
-                    y = coordinate.getCoordinate();
-                    latitudeOk = true;
-                    break;
-                case LONGITUDE:
-                    x = coordinate.getCoordinate();
-                    longitudeOk = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException(loc+" cardinal direction unknown");
-            }
-            if (!latitudeOk || !longitudeOk)
-            {
-                throw new IllegalArgumentException(loc+" cardinal direction(s) unknown");
-            }
-        } 
-        catch (IllegalArgumentException ex)
-        {
-            throw new IllegalArgumentException(ex);
+            case LATITUDE:
+                y = coordinate.getCoordinate();
+                latitudeOk = true;
+                break;
+            case LONGITUDE:
+                x = coordinate.getCoordinate();
+                longitudeOk = true;
+                break;
+            default:
+                throw new IllegalArgumentException(loc+" cardinal direction unknown");
         }
+        coordinate = Coordinate.lookingAt(loc, pos);
+        switch (coordinate.getType())
+        {
+            case LATITUDE:
+                y = coordinate.getCoordinate();
+                latitudeOk = true;
+                break;
+            case LONGITUDE:
+                x = coordinate.getCoordinate();
+                longitudeOk = true;
+                break;
+            default:
+                throw new IllegalArgumentException(loc+" cardinal direction unknown");
+        }
+        if (!latitudeOk || !longitudeOk)
+        {
+            throw new IllegalArgumentException(loc+" cardinal direction(s) unknown");
+        }
+        check();
     }
     
     /** Creates a new instance of Location */
     public Location(String latitude, String longitude)
     {
-        try
+        Coordinate coordinate = Coordinate.match(latitude);
+        if (Coordinate.Type.LATITUDE.equals(coordinate.getType()))
         {
-            Coordinate coordinate = Coordinate.match(latitude);
-            if (Coordinate.Type.LATITUDE.equals(coordinate.getType()))
-            {
-                y = coordinate.getCoordinate();
-            }
-            else
-            {
-                throw new IllegalArgumentException(latitude);
-            }
-            coordinate = Coordinate.match(longitude);
-            if (Coordinate.Type.LONGITUDE.equals(coordinate.getType()))
-            {
-                x = coordinate.getCoordinate();
-            }
-            else
-            {
-                throw new IllegalArgumentException(longitude);
-            }
-        } 
-        catch (IllegalArgumentException ex)
+            y = coordinate.getCoordinate();
+        }
+        else
         {
-            throw new IllegalArgumentException(ex);
+            throw new IllegalArgumentException(latitude);
+        }
+        coordinate = Coordinate.match(longitude);
+        if (Coordinate.Type.LONGITUDE.equals(coordinate.getType()))
+        {
+            x = coordinate.getCoordinate();
+        }
+        else
+        {
+            throw new IllegalArgumentException(longitude);
+        }
+        check();
+    }
+    private void check()
+    {
+        if (y < -90 || y > 90)
+        {
+            throw new IllegalArgumentException(y+" latitude illegal");
+        }
+        if (x < -180 || x > 180)
+        {
+            throw new IllegalArgumentException(x+" longitude illegal");
         }
     }
-    
     /** Creates a new instance of Location */
     public static Location getInstance(String latitude, String longitude)
     {
