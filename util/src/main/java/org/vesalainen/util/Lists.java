@@ -21,9 +21,13 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 
 /**
  * Lists class contains methods to construct often used lists
@@ -301,5 +305,117 @@ public class Lists
     {
         T[] arr = (T[]) Array.newInstance(cls, col.size());
         return col.toArray(arr);
+    }
+    /**
+     * Sort list using quick-sort algorithm using ForkJoinPool.
+     * <p>Note! This is experimental and is slower than other sorting methods!
+     * @param <T>
+     * @param list
+     * @param comparator 
+     */
+    public static final <T> void parallelQuickSort(List<T> list, Comparator<T> comparator)
+    {
+        ForkJoinPool pool = new ForkJoinPool();
+        QuickSorter sorter = new QuickSorter(list, 0, list.size()-1, comparator);
+        pool.invoke(sorter);
+    }
+    /**
+     * Sort list using quick-sort algorithm
+     * <p>Needs a big list to have any benefit to ArrayList.sort!
+     * @param <T>
+     * @param list
+     * @param comparator 
+     * @see java.util.ArrayList#sort(java.util.Comparator) 
+     */
+    public static final <T> void quickSort(List<T> list, Comparator<T> comparator)
+    {
+        quickSort(list, 0, list.size()-1, comparator);
+    }
+    private static <T> void quickSort(List<T> list, int lo, int hi, Comparator<T> comparator)
+    {
+        if (lo < hi)
+        {
+            int p = partition(list, lo, hi, comparator);
+            quickSort(list, lo, p, comparator);
+            quickSort(list, p+1, hi, comparator);
+        }
+    }
+    private static <T> int partition(List<T> list, int lo, int hi, Comparator<T> comparator)
+    {
+        T pivot = list.get(lo);
+        int i = lo-1;
+        int j = hi+1;
+        while (true)
+        {
+            do
+            {
+                i++;
+            } while (compare(list.get(i), pivot, comparator) < 0);
+            do
+            {
+                j--;
+            } while (compare(list.get(j), pivot, comparator) > 0);
+            if (i >= j)
+            {
+                return j;
+            }
+            T swap = list.get(i);
+            list.set(i, list.get(j));
+            list.set(j, swap);
+        }
+    }
+    private static <T> int compare(T o1, T o2, Comparator<T> comparator)
+    {
+        if (comparator != null)
+        {
+            return comparator.compare(o1, o2);
+        }
+        else
+        {
+            return ((Comparable)o1).compareTo(o2);
+        }
+    }
+    private static class QuickSorter<T> extends RecursiveAction
+    {
+        private List<T> list;
+        private int lo;
+        private int hi;
+        private Comparator<T> comparator;
+
+        public QuickSorter(List<T> list, int lo, int hi, Comparator<T> comparator)
+        {
+            this.list = list;
+            this.lo = lo;
+            this.hi = hi;
+            this.comparator = comparator;
+        }
+
+        @Override
+        protected void compute()
+        {
+            if (lo < hi)
+            {
+                int p = partition(list, lo, hi, comparator);
+                List<ForkJoinTask> tasks = new ArrayList<>();
+                if (p-lo > 50)
+                {
+                    tasks.add(new QuickSorter(list, lo, p, comparator));
+                }
+                else
+                {
+                    quickSort(list, lo, p, comparator);
+                }
+                if (hi-p+1 > 50)
+                {
+                    tasks.add(new QuickSorter(list, p+1, hi, comparator));
+                }
+                else
+                {
+                    quickSort(list, p+1, hi, comparator);
+                }
+                invokeAll(tasks);
+            }
+        }
+        
     }
 }

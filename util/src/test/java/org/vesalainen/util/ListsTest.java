@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -108,5 +112,35 @@ public class ListsTest
         List<String> list = Lists.create(exp);
         String[] array = Lists.toArray(list, String.class);
         assertArrayEquals(exp, array);
+    }
+    @Test
+    public void testQuickSort()
+    {
+        Random random = new Random(12345678L);
+        List<Integer> list = random.ints(100000).mapToObj(Integer::valueOf).collect(Collectors.toList());
+        List<Integer> exp = new ArrayList<>(list);
+        
+        long s1 = nanos((x)->exp.sort(null));
+        long s2 = nanos((x)->Lists.quickSort(list, null));
+        System.err.println(s1+" sort "+s2+" quick");
+        assertEquals(exp, list);
+    }
+    @Test
+    public void testParallelQuickSort()
+    {
+        Random random = new Random(12345678L);
+        List<Integer> list = random.ints(100000).mapToObj(Integer::valueOf).collect(Collectors.toList());
+        List<Integer> exp = new ArrayList<>(list);
+        
+        long s1 = nanos((x)->exp.sort(null));
+        long s2 = nanos((x)->Lists.parallelQuickSort(list, null));
+        System.err.println("parallel "+s1+" sort "+s2+" quick");
+        assertEquals(exp, list);
+    }
+    private long nanos(Consumer<?> action)
+    {
+        long time = System.nanoTime();
+        action.accept(null);
+        return System.nanoTime()-time;
     }
 }
