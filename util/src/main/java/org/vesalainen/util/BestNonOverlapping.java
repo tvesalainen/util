@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * <p>One solution is to find best radio broadcasts so that they don't overlap.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BestNonOverlapping<T extends Comparable<T>>
+public class BestNonOverlapping<T>
 {
     private Comparator<Range<T>> comp;
     /**
