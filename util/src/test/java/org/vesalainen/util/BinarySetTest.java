@@ -35,7 +35,7 @@ public class BinarySetTest
 
     private BinarySet<Integer> create(Integer... is)
     {
-        return new BinarySet<>(Lists.create(is));
+        return new BinarySet<>(CollectionHelp.create(is));
     }
     @Test
     public void testContains()

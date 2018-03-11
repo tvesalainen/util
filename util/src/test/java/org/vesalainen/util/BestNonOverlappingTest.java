@@ -26,10 +26,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class NextBestNonOverlappingTest
+public class BestNonOverlappingTest
 {
     
-    public NextBestNonOverlappingTest()
+    public BestNonOverlappingTest()
     {
     }
 
@@ -41,7 +41,7 @@ public class NextBestNonOverlappingTest
         list.add(new R(3, 3, 5));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
+        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
         R best = (R) nbno.best(list.iterator());
         assertEquals(1, best.num);
     }
@@ -55,7 +55,7 @@ public class NextBestNonOverlappingTest
         list.add(new R(4, 4, 6));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
+        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
         R best = (R) nbno.best(list.iterator());
         assertEquals(2, best.num);
     }
@@ -67,7 +67,7 @@ public class NextBestNonOverlappingTest
         list.add(new R(4, 4, 6));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        NextBestNonOverlapping<Integer> nbno = new NextBestNonOverlapping(new C());
+        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
         R best = (R) nbno.best(list.iterator());
         assertEquals(4, best.num);
     }

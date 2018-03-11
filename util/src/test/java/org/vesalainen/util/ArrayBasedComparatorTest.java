@@ -55,8 +55,8 @@ public class ArrayBasedComparatorTest
         set.add("aaa");
         set.add("bbb");
         assertEquals(3, set.size());
-        List<String> list = Lists.create("router", "aaa", "bbb");
+        List<String> list = CollectionHelp.create("router", "aaa", "bbb");
         Collections.sort(list, abc);
-        assertEquals(Lists.create("aaa", "bbb", "router"), list);
+        assertEquals(CollectionHelp.create("aaa", "bbb", "router"), list);
     }
 }

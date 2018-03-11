@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.bean.BeanHelperTest.TestClass.En;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -259,7 +259,7 @@ public class BeanHelperTest
         private int cnt;
         private String name;
         public long number;
-        protected List<Integer> list = Lists.create(1, 2, 3, 4);
+        protected List<Integer> list = CollectionHelp.create(1, 2, 3, 4);
         public List<InnerClass> inners;
         private Color color;
         private long[] longArray = new long[] {1, 2, 3, 4};

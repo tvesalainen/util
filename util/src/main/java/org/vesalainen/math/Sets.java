@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.vesalainen.util.HashMapSet;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.MapSet;
 
 /**
@@ -98,7 +98,7 @@ public final class Sets
      */
     public static final <T> Set<T> symmetricDifference(Set<T>... sets)
     {
-        return symmetricDifference(Lists.create(sets));
+        return symmetricDifference(CollectionHelp.create(sets));
     }
     /**
      * Symmetric difference of sets A and B, denoted A △ B or A ⊖ B, 

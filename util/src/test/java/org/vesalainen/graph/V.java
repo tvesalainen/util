@@ -18,7 +18,7 @@ package org.vesalainen.graph;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -43,7 +43,7 @@ class V implements Vertex<V>
 
     void set(V... es)
     {
-        edges = Lists.create(es);
+        edges = CollectionHelp.create(es);
     }
 
     @Override

@@ -21,7 +21,7 @@ import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.util.HashMapSet;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.MapSet;
 
 /**
@@ -40,20 +40,20 @@ public class SymmetricDifferenceMatcherTest
     {
         SymmetricDifferenceMatcher<Integer,String> m = new SymmetricDifferenceMatcher();
         
-        m.map(Lists.create(0, 1, 2, 3, 4), "small");
-        m.map(Lists.create(5, 6, 7, 8, 9, 10), "big");
-        m.map(Lists.create(1, 3, 5, 7, 9), "odd");
-        m.map(Lists.create(2, 4, 6, 8, 10), "even");
+        m.map(CollectionHelp.create(0, 1, 2, 3, 4), "small");
+        m.map(CollectionHelp.create(5, 6, 7, 8, 9, 10), "big");
+        m.map(CollectionHelp.create(1, 3, 5, 7, 9), "odd");
+        m.map(CollectionHelp.create(2, 4, 6, 8, 10), "even");
         
         Set<String> unresolved = new HashSet<>();
-        unresolved.addAll(Lists.create("small", "big", "odd", "even"));
+        unresolved.addAll(CollectionHelp.create("small", "big", "odd", "even"));
         assertEquals(unresolved, m.getUnresolved());
         
         MapSet<String,Integer> samples = new HashMapSet<>();
-        samples.addAll("SMALL", Lists.create(0, 1, 2));
-        samples.addAll("BIG", Lists.create(10, 9, 8));
-        samples.addAll("ODD", Lists.create(3, 7));
-        samples.addAll("EVEN", Lists.create(4, 8));
+        samples.addAll("SMALL", CollectionHelp.create(0, 1, 2));
+        samples.addAll("BIG", CollectionHelp.create(10, 9, 8));
+        samples.addAll("ODD", CollectionHelp.create(3, 7));
+        samples.addAll("EVEN", CollectionHelp.create(4, 8));
         
         m.match(samples, (String s1, String s2)->assertTrue(s1.equalsIgnoreCase(s2)));
         assertTrue(m.getUnresolved().isEmpty());

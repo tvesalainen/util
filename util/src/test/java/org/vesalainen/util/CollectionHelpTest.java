@@ -31,10 +31,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ListsTest
+public class CollectionHelpTest
 {
     
-    public ListsTest()
+    public CollectionHelpTest()
     {
     }
 
@@ -44,7 +44,7 @@ public class ListsTest
         List<String> list = new ArrayList<>();
         Collections.addAll(list, "a1", "a2", "a3");
         String exp = "{`a1´, `a2´, `a3´}";
-        String got = Lists.print("{", ", ", "`", "´", "}", list);
+        String got = CollectionHelp.print("{", ", ", "`", "´", "}", list);
         assertEquals(exp, got);
     }
     
@@ -54,7 +54,7 @@ public class ListsTest
         List<String> list = new ArrayList<>();
         Collections.addAll(list, "a1", "a2", "a3");
         String exp = "a1, a2, a3";
-        String got = Lists.print(", ", list);
+        String got = CollectionHelp.print(", ", list);
         assertEquals(exp, got);
     }
     
@@ -62,7 +62,7 @@ public class ListsTest
     public void test2()
     {
         String exp = "{`a1´, `a2´, `a3´}";
-        String got = Lists.print("{", ", ", "`", "´", "}", "a1", "a2", "a3");
+        String got = CollectionHelp.print("{", ", ", "`", "´", "}", "a1", "a2", "a3");
         assertEquals(exp, got);
     }
     
@@ -70,7 +70,7 @@ public class ListsTest
     public void test2_1()
     {
         String exp = "a1, a2, a3";
-        String got = Lists.print(", ", "a1", "a2", "a3");
+        String got = CollectionHelp.print(", ", "a1", "a2", "a3");
         assertEquals(exp, got);
     }
     
@@ -79,11 +79,11 @@ public class ListsTest
     {
         String exp = "1.00, 2.00, 3.00";
         String exp2 = "1.0, 2.0, 3.0";
-        Lists.setFormat("%.2f", Locale.US);
-        String got = Lists.print(", ", 1.0, 2.0, 3.0);
+        CollectionHelp.setFormat("%.2f", Locale.US);
+        String got = CollectionHelp.print(", ", 1.0, 2.0, 3.0);
         assertEquals(exp, got);
-        Lists.removeFormat();
-        got = Lists.print(", ", 1.0, 2.0, 3.0);
+        CollectionHelp.removeFormat();
+        got = CollectionHelp.print(", ", 1.0, 2.0, 3.0);
         assertEquals(exp2, got);
     }
     
@@ -91,26 +91,26 @@ public class ListsTest
     public void testEquals()
     {
         Integer[] arr = new Integer[] {1, 1, 2, 3, null, 8};
-        List<Integer> list = Lists.create(arr);
-        assertTrue(Lists.equals(list, arr));
+        List<Integer> list = CollectionHelp.create(arr);
+        assertTrue(CollectionHelp.equals(list, arr));
         list.set(4, 5);
-        assertFalse(Lists.equals(list, arr));
+        assertFalse(CollectionHelp.equals(list, arr));
         list.add(9);
-        assertFalse(Lists.equals(list, arr));
+        assertFalse(CollectionHelp.equals(list, arr));
     }
     @Test
     public void testAddAll()
     {
-        List<String> exp = Lists.create("a", "b", "1", "2", "3", "c", "d");
-        List<String> list = Lists.create("a", "b", "c", "d");
-        assertEquals(exp, Lists.addAll(2, list, "1", "2", "3"));
+        List<String> exp = CollectionHelp.create("a", "b", "1", "2", "3", "c", "d");
+        List<String> list = CollectionHelp.create("a", "b", "c", "d");
+        assertEquals(exp, CollectionHelp.addAll(2, list, "1", "2", "3"));
     }
     @Test
     public void testToArray()
     {
         String[] exp = new String[] {"foo", "bar", "goo"};
-        List<String> list = Lists.create(exp);
-        String[] array = Lists.toArray(list, String.class);
+        List<String> list = CollectionHelp.create(exp);
+        String[] array = CollectionHelp.toArray(list, String.class);
         assertArrayEquals(exp, array);
     }
     @Test
@@ -121,7 +121,7 @@ public class ListsTest
         List<Integer> exp = new ArrayList<>(list);
         
         long s1 = nanos((x)->exp.sort(null));
-        long s2 = nanos((x)->Lists.quickSort(list, null));
+        long s2 = nanos((x)->CollectionHelp.quickSort(list, null));
         System.err.println(s1+" sort "+s2+" quick");
         assertEquals(exp, list);
     }
@@ -133,7 +133,7 @@ public class ListsTest
         List<Integer> exp = new ArrayList<>(list);
         
         long s1 = nanos((x)->exp.sort(null));
-        long s2 = nanos((x)->Lists.parallelQuickSort(list, null));
+        long s2 = nanos((x)->CollectionHelp.parallelQuickSort(list, null));
         System.err.println("parallel "+s1+" sort "+s2+" quick");
         assertEquals(exp, list);
     }

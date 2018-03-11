@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *

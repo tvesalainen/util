@@ -30,11 +30,31 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * CollectionHelp class contains methods to construct often used lists
+ * CollectionHelp class contains methods for collections
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class CollectionHelp
 {
+    /**
+     * If comp is not null compares using it. Otherwise assumes o1 is 
+     * Comparable<T>.
+     * @param <T>
+     * @param o1
+     * @param o2
+     * @param comp
+     * @return 
+     */
+    public static final <T> int compare(T o1, T o2, Comparator<T> comp)
+    {
+        if (comp != null)
+        {
+            return comp.compare(o1, o2);
+        }
+        else
+        {
+            return ((Comparable<T>)o1).compareTo(o2);
+        }
+    }
     private static final ThreadLocal<Locale> threadLocale = new ThreadLocal<>();
     private static final ThreadLocal<String> threadFormat = new ThreadLocal<>();
     /**
@@ -362,17 +382,6 @@ public class CollectionHelp
             T swap = list.get(i);
             list.set(i, list.get(j));
             list.set(j, swap);
-        }
-    }
-    private static <T> int compare(T o1, T o2, Comparator<T> comparator)
-    {
-        if (comparator != null)
-        {
-            return comparator.compare(o1, o2);
-        }
-        else
-        {
-            return ((Comparable)o1).compareTo(o2);
         }
     }
     private static class QuickSorter<T> extends RecursiveAction

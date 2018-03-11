@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -36,7 +36,7 @@ public class TryAdvanceSpliteratorTest
     @Test
     public void test1()
     {
-        List<Integer> list = Lists.create(1, 2, 3, 4, 5);
+        List<Integer> list = CollectionHelp.create(1, 2, 3, 4, 5);
         TryAdvanceSpliterator<Integer> tas = new TryAdvanceSpliterator<>(list.spliterator(), 1, TimeUnit.SECONDS);
         Checker checker = new Checker(1);
         while (tas.tryAdvance((i)->checker.check(i)))
@@ -47,7 +47,7 @@ public class TryAdvanceSpliteratorTest
     @Test
     public void test2()
     {
-        List<Integer> list = Lists.create(1, 2, 3, 4, 5);
+        List<Integer> list = CollectionHelp.create(1, 2, 3, 4, 5);
         TryAdvanceSpliterator<Integer> tas = new TryAdvanceSpliterator<>(list.spliterator(), 1, TimeUnit.SECONDS);
         Checker checker = new Checker(1);
         while (checker.ii < 3 && tas.tryAdvance((i)->checker.check(i)))

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.function.Function;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  * A parser class for ${key} expressions. A list of mapper function are used to replace
@@ -59,7 +59,7 @@ public class ExpressionParser
      */
     public ExpressionParser(Function<String, String>... mapper)
     {
-        this.mapperList = Lists.create(mapper);
+        this.mapperList = CollectionHelp.create(mapper);
     }
     /**
      * Add mapper to mapper list.

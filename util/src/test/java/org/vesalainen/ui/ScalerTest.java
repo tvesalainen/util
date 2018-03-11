@@ -23,7 +23,7 @@ import java.util.PrimitiveIterator;
 import java.util.Spliterators;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -127,7 +127,7 @@ public class ScalerTest
     @Test
     public void test4()
     {
-        List<String> exp = Lists.create("0.002", "0.003", "0.004", "0.005", "0.006");
+        List<String> exp = CollectionHelp.create("0.002", "0.003", "0.004", "0.005", "0.006");
         Scaler sc = new Scaler(0.001234, 0.00678);
         assertEquals(exp, sc.getLabels(Locale.US, 0));
     }
@@ -135,7 +135,7 @@ public class ScalerTest
     @Test
     public void test5()
     {
-        List<String> exp = Lists.create("1000", "2000", "3000", "4000", "5000");
+        List<String> exp = CollectionHelp.create("1000", "2000", "3000", "4000", "5000");
         Scaler sc = new Scaler(100, 5200);
         assertEquals(exp, sc.getLabels(Locale.US, 0));
     }
