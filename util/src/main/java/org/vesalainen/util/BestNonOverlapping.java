@@ -33,7 +33,14 @@ public class BestNonOverlapping<T extends Comparable<T>>
 {
     private Comparator<Range<T>> comp;
     /**
-     * Creates a new NextBestNonOverlapping.
+     * Creates a new BestNonOverlapping.
+     */
+    public BestNonOverlapping()
+    {
+    }
+    
+    /**
+     * Creates a new BestNonOverlapping with given comparator.
      * @param comp 
      */
     public BestNonOverlapping(Comparator<Range<T>> comp)
