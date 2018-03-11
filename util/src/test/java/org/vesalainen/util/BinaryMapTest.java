@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -32,6 +33,8 @@ public class BinaryMapTest
         am.put(1, "foo");
         am.put(3, "bar");
         am.put(5, "goo");
+        Collection<String> values = am.values();
+        assertEquals(3, values.size());
     }
 
     @Test

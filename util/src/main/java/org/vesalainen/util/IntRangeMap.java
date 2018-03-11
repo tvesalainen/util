@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.util.Collection;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -25,5 +27,5 @@ public interface IntRangeMap<T> extends Iterable<T>
 {
 
     T get(int n);
-    
+    Collection<T> values();
 }
