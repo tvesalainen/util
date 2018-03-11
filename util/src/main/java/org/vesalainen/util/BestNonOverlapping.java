@@ -29,51 +29,35 @@ import java.util.stream.Stream;
  * <p>One solution is to find best radio broadcasts so that they don't overlap.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BestNonOverlapping<T>
+public class BestNonOverlapping
 {
-    private Comparator<Range<T>> comp;
-    /**
-     * Creates a new BestNonOverlapping.
-     */
-    public BestNonOverlapping()
-    {
-    }
-    
-    /**
-     * Creates a new BestNonOverlapping with given comparator.
-     * @param comp 
-     */
-    public BestNonOverlapping(Comparator<Range<T>> comp)
-    {
-        this.comp = comp;
-    }
     /**
      * Selects the best range so that no better range is overlapping it.
      * @param stream
      * @return 
      */
-    public Range<T> best(Stream<? extends Range<T>> stream)
+    public static final <T,U extends Range<T>> U best(Stream<U> stream, Comparator<U> comp)
     {
-        return best(stream.iterator());
+        return best(stream.iterator(), comp);
     }
     /**
      * Selects the best range so that no better range is overlapping it.
      * @param iterator
      * @return 
      */
-    public Range<T> best(Iterator<? extends Range<T>> iterator)
+    public static final <T,U extends Range<T>> U best(Iterator<U> iterator, Comparator<U> comp)
     {
-        List<Range<T>> list = new ArrayList<>();
-        ListIterator<Range<T>> li = list.listIterator();
+        List<U> list = new ArrayList<>();
+        ListIterator<U> li = list.listIterator();
         if (!iterator.hasNext())
         {
             throw new IllegalArgumentException("empty");
         }
-        Range<T> prev = iterator.next();
+        U prev = iterator.next();
         li.add(prev);
         while (iterator.hasNext())
         {
-            Range<T> next = iterator.next();
+            U next = iterator.next();
             if (!prev.isOverlapping(next) || CollectionHelp.compare(prev, next, comp) >= 0)
             {
                 break;

@@ -41,8 +41,7 @@ public class BestNonOverlappingTest
         list.add(new R(3, 3, 5));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
-        R best = (R) nbno.best(list.iterator());
+        R best = (R) BestNonOverlapping.best(list.iterator(), new C());
         assertEquals(1, best.num);
     }
     @Test
@@ -55,8 +54,7 @@ public class BestNonOverlappingTest
         list.add(new R(4, 4, 6));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
-        R best = (R) nbno.best(list.iterator());
+        R best = (R) BestNonOverlapping.best(list.iterator(), new C());
         assertEquals(2, best.num);
     }
     @Test
@@ -67,8 +65,7 @@ public class BestNonOverlappingTest
         list.add(new R(4, 4, 6));
         list.add(new R(3, 6, 8));
         list.add(new R(4, 7, 9));
-        BestNonOverlapping<Integer> nbno = new BestNonOverlapping(new C());
-        R best = (R) nbno.best(list.iterator());
+        R best = (R) BestNonOverlapping.best(list.iterator(), new C());
         assertEquals(4, best.num);
     }
     class C implements Comparator<R>
