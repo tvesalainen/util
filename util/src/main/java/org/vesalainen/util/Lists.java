@@ -30,7 +30,8 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * Lists class contains methods to construct often used lists
+ * @deprecated Renamed to CollectionHelp
+ * CollectionHelp class contains methods to construct often used lists
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Lists
