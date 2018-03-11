@@ -25,17 +25,17 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RangeTest
+public class SimpleRangeTest
 {
     
-    public RangeTest()
+    public SimpleRangeTest()
     {
     }
 
     @Test
     public void testIsInRange1()
     {
-        Range<Month> r = new Range<>(FEBRUARY, JUNE);
+        SimpleRange<Month> r = new SimpleRange<>(FEBRUARY, JUNE);
         assertTrue(r.isInRange(FEBRUARY, true, true));
         assertTrue(r.isInRange(MAY, true, true));
         assertTrue(r.isInRange(JUNE, true, true));
@@ -45,7 +45,7 @@ public class RangeTest
     @Test
     public void testIsInRange2()
     {
-        Range<Month> r = new Range<>(JUNE, FEBRUARY);
+        SimpleRange<Month> r = new SimpleRange<>(JUNE, FEBRUARY);
         assertTrue(r.isInRange(FEBRUARY, true, true));
         assertFalse(r.isInRange(MAY, true, true));
         assertTrue(r.isInRange(JUNE, true, true));
@@ -55,7 +55,7 @@ public class RangeTest
     @Test
     public void testIsInRange3()
     {
-        Range<Month> r = new Range<>(FEBRUARY, JUNE);
+        SimpleRange<Month> r = new SimpleRange<>(FEBRUARY, JUNE);
         assertFalse(r.isInRange(FEBRUARY, false, false));
         assertTrue(r.isInRange(MAY, false, false));
         assertFalse(r.isInRange(JUNE, false, false));
@@ -65,8 +65,8 @@ public class RangeTest
     @Test
     public void testIsOverlapping1()
     {
-        Range<Month> r1 = new Range<>(FEBRUARY, JUNE);
-        Range<Month> r2 = new Range<>(MARCH, DECEMBER);
+        SimpleRange<Month> r1 = new SimpleRange<>(FEBRUARY, JUNE);
+        SimpleRange<Month> r2 = new SimpleRange<>(MARCH, DECEMBER);
         assertTrue(r1.isOverlapping(r1));
         assertTrue(r1.isOverlapping(r2));
         assertTrue(r2.isOverlapping(r1));
@@ -74,8 +74,8 @@ public class RangeTest
     @Test
     public void testIsOverlapping2()
     {
-        Range<Month> r1 = new Range<>(FEBRUARY, MARCH);
-        Range<Month> r2 = new Range<>(MARCH, DECEMBER);
+        SimpleRange<Month> r1 = new SimpleRange<>(FEBRUARY, MARCH);
+        SimpleRange<Month> r2 = new SimpleRange<>(MARCH, DECEMBER);
         assertTrue(r1.isOverlapping(r1));
         assertFalse(r1.isOverlapping(r2));
         assertFalse(r2.isOverlapping(r1));

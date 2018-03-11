@@ -23,7 +23,7 @@ import java.util.Objects;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class SimpleRange<T extends Comparable<T>> implements Comparable<SimpleRange<T>>
+public class SimpleRange<T> implements Range<T>
 {
     protected T from;
     protected T to;
@@ -47,65 +47,14 @@ public class SimpleRange<T extends Comparable<T>> implements Comparable<SimpleRa
         this.from = from;
         this.to = to;
     }
-    /**
-     * Returns true if ranges overlap. In another words either range has others
-     * from or to in-range or ranges are equal.
-     * @param other
-     * @return 
-     */
-    public boolean isOverlapping(SimpleRange<T> other)
-    {
-        return  equals(other) ||
-                isInRange(other.from, false, false) ||
-                isInRange(other.to, false, false) ||
-                other.isInRange(from, false, false) ||
-                other.isInRange(to, false, false);
-    }
-    /**
-     * Returns true if item is greater or equals to from and less than to.
-     * @param item
-     * @return 
-     */
-    public boolean isInRange(T item)
-    {
-        return isInRange(item, true, false);
-    }
-    /**
-     * Returns true if item is in range.
-     * @param item
-     * @param fromIncluded
-     * @param toIncluded
-     * @return 
-     */
-    public boolean isInRange(T item, boolean fromIncluded, boolean toIncluded)
-    {
-        if (fromIncluded && from.compareTo(item) == 0)
-        {
-            return true;
-        }
-        if (toIncluded && to.compareTo(item) == 0)
-        {
-            return true;
-        }
-        if (from.compareTo(to) <= 0)
-        {
-            if (from.compareTo(item) < 0)
-            {
-                return to.compareTo(item) > 0;
-            }
-            return false;
-        }
-        else
-        {
-            return from.compareTo(item) < 0 || to.compareTo(item) > 0;
-        }
-    }
 
+    @Override
     public T getFrom()
     {
         return from;
     }
 
+    @Override
     public T getTo()
     {
         return to;
@@ -146,17 +95,6 @@ public class SimpleRange<T extends Comparable<T>> implements Comparable<SimpleRa
         }
         return true;
     }
-    /**
-     * Uses from as key
-     * @param o
-     * @return 
-     */
-    @Override
-    public int compareTo(SimpleRange<T> o)
-    {
-        return from.compareTo(o.from);
-    }
-
     @Override
     public String toString()
     {

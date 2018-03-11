@@ -81,7 +81,7 @@ public class BestNonOverlappingTest
         }
         
     }
-    class R extends Range<Integer>
+    class R extends SimpleRange<Integer>
     {
         private int num;
 
