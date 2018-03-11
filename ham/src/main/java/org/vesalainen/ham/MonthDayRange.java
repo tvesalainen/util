@@ -16,7 +16,7 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.util.Range;
+import org.vesalainen.util.SimpleRange;
 import java.time.MonthDay;
 import java.time.OffsetDateTime;
 import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
@@ -28,7 +28,7 @@ import org.vesalainen.ham.jaxb.DateRangeType;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MonthDayRange extends Range<MonthDay> implements TimeRange
+public class MonthDayRange extends SimpleRange<MonthDay> implements TimeRange
 {
     public MonthDayRange(DateRangeType range)
     {

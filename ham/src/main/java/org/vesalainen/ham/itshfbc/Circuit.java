@@ -97,7 +97,7 @@ public class Circuit
         HourPrediction hourPrediction = prediction.getHourPrediction(hour);
         for (double freq : frequences)
         {
-            CircuitFrequency cf = new CircuitFrequency(this, freq, hourPrediction);
+            CircuitFrequency cf = new CircuitFrequency(this, freq, hourPrediction, null);
             list.add(cf);
         }
         return list;

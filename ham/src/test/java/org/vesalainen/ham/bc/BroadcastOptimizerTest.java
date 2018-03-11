@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -39,7 +40,8 @@ public class BroadcastOptimizerTest
     public void test1() throws IOException
     {
         BroadcastOptimizer opt = new BroadcastOptimizer();
-        opt.bestStation(new Location(9, -79), Instant.now());
+        BestStation bestStation = opt.bestStation(new Location(9, -79), Instant.now());
+        System.err.println(bestStation);
     }
     
 }

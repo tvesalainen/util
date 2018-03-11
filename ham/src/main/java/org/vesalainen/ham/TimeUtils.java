@@ -20,6 +20,7 @@ import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import static org.vesalainen.regex.Regex.Option.CASE_INSENSITIVE;
 import org.vesalainen.regex.SynchronizedEnumPrefixFinder;
 
 /**
@@ -28,8 +29,8 @@ import org.vesalainen.regex.SynchronizedEnumPrefixFinder;
  */
 public class TimeUtils
 {
-    public static final SynchronizedEnumPrefixFinder<DayOfWeek> WEEKDAY_PARSER = new SynchronizedEnumPrefixFinder(DayOfWeek.class);
-    public static final SynchronizedEnumPrefixFinder<Month> MONTH_PARSER = new SynchronizedEnumPrefixFinder(Month.class);
+    public static final SynchronizedEnumPrefixFinder<DayOfWeek> WEEKDAY_PARSER = new SynchronizedEnumPrefixFinder(DayOfWeek.class, CASE_INSENSITIVE);
+    public static final SynchronizedEnumPrefixFinder<Month> MONTH_PARSER = new SynchronizedEnumPrefixFinder(Month.class, CASE_INSENSITIVE);
     public static final OffsetDateTime next(OffsetDateTime date, OffsetTime time)
     {
         OffsetDateTime newDate = date.with(time);

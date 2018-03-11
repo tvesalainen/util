@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.vesalainen.ham.jaxb.MapType;
 import org.vesalainen.navi.Area;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -39,7 +39,7 @@ public class MapArea
         this.station = station;
         this.map = map;
         List<Location> list = map.getCorners().stream().map(LocationParser::parse).collect(Collectors.toList());
-        this.area = Area.getArea(Lists.toArray(list, Location.class));
+        this.area = Area.getArea(CollectionHelp.toArray(list, Location.class));
     }
 
     public boolean isInside(Location location)

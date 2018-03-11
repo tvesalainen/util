@@ -16,7 +16,7 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.util.Range;
+import org.vesalainen.util.SimpleRange;
 import java.time.DayOfWeek;
 import java.time.OffsetDateTime;
 import java.util.EnumSet;
@@ -89,9 +89,9 @@ public abstract class TimeRanges
     }
     public static class OrTimeRange implements TimeRange
     {
-        private List<Range> ranges;
+        private List<TimeRange> ranges;
 
-        public OrTimeRange(List<Range> ranges)
+        public OrTimeRange(List<TimeRange> ranges)
         {
             this.ranges = ranges;
         }
@@ -100,7 +100,7 @@ public abstract class TimeRanges
         @Override
         public boolean isInRange(OffsetDateTime instant)
         {
-            for (Range range : ranges)
+            for (TimeRange range : ranges)
             {
                 if (range.isInRange(instant))
                 {

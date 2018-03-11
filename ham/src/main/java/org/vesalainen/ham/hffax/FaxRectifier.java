@@ -30,8 +30,9 @@ import org.vesalainen.math.BestFitLine;
 import org.vesalainen.math.SimpleAverage;
 import org.vesalainen.math.Statistics;
 import org.vesalainen.math.XYSamples;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.logging.JavaLogging;
+import static org.vesalainen.ham.hffax.Fax.isAbout;
 
 /**
  *
@@ -327,7 +328,7 @@ public class FaxRectifier extends JavaLogging
             finest("head: %s", newHead);
             Part newTail = new Part(noise.subList(minIndex, noise.size()));
             finest("tail: %s", newTail);
-            return Lists.create(newHead, newTail);
+            return CollectionHelp.create(newHead, newTail);
         }
         else
         {
@@ -340,7 +341,7 @@ public class FaxRectifier extends JavaLogging
             Part ts = noise.get(minIndex);
             tai.setOffset(hea.offset+len1);
             tai.setLength(wholeLen-hea.length);
-            return Lists.create(hea, tai);
+            return CollectionHelp.create(hea, tai);
         }
     }
     private void checkIntegrity(List<Part> list)

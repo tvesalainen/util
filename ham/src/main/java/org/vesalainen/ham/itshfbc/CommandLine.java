@@ -18,7 +18,7 @@ package org.vesalainen.ham.itshfbc;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -35,7 +35,7 @@ public class CommandLine<T>
     {
         this.command = command;
         this.columnLength = columnLength;
-        this.columns = Lists.create(columns);
+        this.columns = CollectionHelp.create(columns);
     }
 
     public void add(T col)

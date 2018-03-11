@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import javax.xml.bind.JAXBException;
 import org.vesalainen.ham.BroadcastStationsFile;
 import org.vesalainen.ham.EmissionClass;
+import org.vesalainen.ham.HfFax;
 import org.vesalainen.ham.LocationFilter;
 import org.vesalainen.ham.Schedule;
 import org.vesalainen.ham.Station;
@@ -44,9 +45,12 @@ import org.vesalainen.ham.itshfbc.CircuitFrequency;
 import org.vesalainen.ham.itshfbc.Noise;
 import org.vesalainen.ham.itshfbc.Prediction;
 import org.vesalainen.ham.itshfbc.RSN;
+import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.ssn.SunSpotNumber;
+import org.vesalainen.util.BestNonOverlapping;
 import org.vesalainen.util.OrderedList;
 import org.vesalainen.util.Range;
+import org.vesalainen.util.SimpleRange;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -62,7 +66,7 @@ public class BroadcastOptimizer
     private Path receiverAntennaPath = Paths.get("default", "SWWhip.VOA");
     private Noise noise = Noise.RESIDENTIAL;
     private BroadcastStationsFile broadcastStation;
-    private OrderedList<Range<OffsetTime>> scheduleList;
+    private OrderedList<SimpleRange<OffsetTime>> scheduleList;
     private Map<String,Circuit> circuitMap = new HashMap<>();
 
     public BroadcastOptimizer()
@@ -102,16 +106,32 @@ public class BroadcastOptimizer
         init();
         final OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
         OffsetTime ot = OffsetTime.from(utc);
-        Range<OffsetTime> key = new Range<>(ot, ot);
-        Stream<Range<OffsetTime>> head = scheduleList.headStream(key, false, false);
-        Stream<Range<OffsetTime>> tail = scheduleList.tailStream(key, true, false);
-        Stream.concat(tail, head)
+        SimpleRange<OffsetTime> key = new SimpleRange<>(ot, ot);
+        Stream<SimpleRange<OffsetTime>> head = scheduleList.headStream(key, false, false);
+        Stream<SimpleRange<OffsetTime>> tail = scheduleList.tailStream(key, true, false);
+        Stream<BestStation> candidates = Stream.concat(tail, head)
                 .map((s)->(Schedule)s)
                 .filter(new TimeFilter(utc))
                 .filter(new LocationFilter(myLocation))
                 .map((s)->getInstance(s, utc, myLocation))
+                .peek((s)->System.err.println(s))
                 ;
-        return null;
+        return BestNonOverlapping.best(candidates, this::compare);
+    }
+    private int compare(BestStation bs1, BestStation bs2)
+    {
+        if (bs1.isSecondary() != bs2.isSecondary())
+        {
+            if (bs1.isSecondary())
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        return -bs1.getCircuit().compareTo(bs2.getCircuit());
     }
     public BestStation getInstance(Schedule schedule, OffsetDateTime utc, Location myLocation)
     {
@@ -123,12 +143,14 @@ public class BroadcastOptimizer
                 .filter((t)->t.isInRange(cur))
                 .map((t->getPrediction(schedule, utc, myLocation, t)))
                 .collect(Collectors.toList());
-        return null;
+        freqs.sort(null);
+        CircuitFrequency best = freqs.get(0);
+        return new BestStation(schedule, best, myLocation);
     }
     public CircuitFrequency getPrediction(Schedule schedule, OffsetDateTime utc, Location myLocation, Transmitter transmitter)
     {
         Station station = schedule.getStation();
-        double frequency = transmitter.getFrequency();
+        double frequency = transmitter.getFrequency()/1000.0; // MHz
         String name = station.getName();
         Circuit circuit = circuitMap.get(name+frequency);
         if (circuit == null || !circuit.getPrediction().isValid(myLocation, utc))
@@ -142,6 +164,7 @@ public class BroadcastOptimizer
                         .setRsn(RSN.SSB)
                         .setSunSpotNumbers(ssn.getSunSpotNumber(utc))
                         .setTransmitterAntennaPath(transmitterAntennaPath)
+                        .setTransmitterLabel(station.getName())
                         .setTransmitterLocation(station.getLocation())
                         .setTransmitterPower(transmitter.getPower())
                         ;
@@ -153,7 +176,7 @@ public class BroadcastOptimizer
                 throw new RuntimeException(ex);
             }
         }
-        return new CircuitFrequency(circuit, frequency, circuit.getPrediction().getHourPrediction(utc.getHour()));
+        return new CircuitFrequency(circuit, frequency, circuit.getPrediction().getHourPrediction(utc.getHour()), transmitter.getEmissionClass());
     }
     public BroadcastOptimizer setSunSpotNumberPath(Path sunSpotNumberPath)
     {
@@ -178,17 +201,41 @@ public class BroadcastOptimizer
         return this;
     }
     
-    public class BestStation
+    public class BestStation implements Range<OffsetTime>
     {
-        private Schedule schedule;
-        private double frequency;
-        private EmissionClass emissionClass;
+        private Schedule<? extends ScheduleType> schedule;
+        private CircuitFrequency circuit;
+        private Location myLocation;
 
-        public BestStation(Schedule schedule, double frequency, EmissionClass emissionClass)
+        public BestStation(Schedule<? extends ScheduleType> schedule, CircuitFrequency circuit, Location myLocation)
         {
             this.schedule = schedule;
-            this.frequency = frequency;
-            this.emissionClass = emissionClass;
+            this.circuit = circuit;
+            this.myLocation = myLocation;
+        }
+
+        public boolean isSecondary()
+        {
+            if (schedule instanceof HfFax)
+            {
+                HfFax fax = (HfFax) schedule;
+                return fax.inMap(myLocation);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        @Override
+        public OffsetTime getFrom()
+        {
+            return schedule.getFrom();
+        }
+
+        @Override
+        public OffsetTime getTo()
+        {
+            return schedule.getTo();
         }
 
         public Schedule getSchedule()
@@ -196,14 +243,35 @@ public class BroadcastOptimizer
             return schedule;
         }
 
+        public CircuitFrequency getCircuit()
+        {
+            return circuit;
+        }
+
         public double getFrequency()
         {
-            return frequency;
+            return circuit.getFrequency();
         }
 
         public EmissionClass getEmissionClass()
         {
-            return emissionClass;
+            return circuit.getEmissionClass();
+        }
+
+        public Station getStation()
+        {
+            return schedule.getStation();
+        }
+
+        public String getContent()
+        {
+            return schedule.getContent();
+        }
+
+        @Override
+        public String toString()
+        {
+            return schedule+" "+getStation().getName()+" "+getContent()+" "+circuit;
         }
 
     }

@@ -16,6 +16,8 @@
  */
 package org.vesalainen.ham.itshfbc;
 
+import org.vesalainen.ham.EmissionClass;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -23,17 +25,18 @@ package org.vesalainen.ham.itshfbc;
 public class CircuitFrequency implements Comparable<CircuitFrequency>
 {
     private Circuit circuit;
-    private Double frequency;
+    private double frequency;
     private HourPrediction prediction;
+    private EmissionClass emissionClass;
 
-    public CircuitFrequency(Circuit circuit, Double frequency, HourPrediction prediction)
+    public CircuitFrequency(Circuit circuit, double frequency, HourPrediction prediction, EmissionClass emissionClass)
     {
         this.circuit = circuit;
         this.frequency = frequency;
         this.prediction = prediction;
+        this.emissionClass = emissionClass;
     }
-    
-    
+
     public double snr()
     {
         return prediction.getValue("SNR", frequency);
@@ -54,6 +57,21 @@ public class CircuitFrequency implements Comparable<CircuitFrequency>
         {
             return -cmp;
         }
+    }
+
+    public double getFrequency()
+    {
+        return frequency;
+    }
+
+    public HourPrediction getPrediction()
+    {
+        return prediction;
+    }
+
+    public EmissionClass getEmissionClass()
+    {
+        return emissionClass;
     }
 
     @Override

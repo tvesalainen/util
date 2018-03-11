@@ -22,13 +22,13 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.vesalainen.ham.jaxb.ScheduleType;
-import org.vesalainen.util.Range;
+import org.vesalainen.util.SimpleRange;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Schedule<T extends ScheduleType> extends Range<OffsetTime> implements TimeRange
+public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> implements TimeRange
 {
     
     protected Station station;
@@ -43,7 +43,7 @@ public class Schedule<T extends ScheduleType> extends Range<OffsetTime> implemen
         this.andRanges = TimeRanges.andRanges(TimeRanges.orWeekday(schedule.getWeekdays()), TimeRanges.orDateRanges(schedule.getDate()));
     }
 
-    protected static <T extends ScheduleType> Range<OffsetTime> getRange(T schedule)
+    protected static <T extends ScheduleType> SimpleRange<OffsetTime> getRange(T schedule)
     {
         XMLGregorianCalendar t = schedule.getTime();
         OffsetTime start = OffsetTime.of(t.getHour(), t.getMinute(), t.getSecond(), 0, ZoneOffset.UTC);
@@ -57,7 +57,7 @@ public class Schedule<T extends ScheduleType> extends Range<OffsetTime> implemen
         {
             end = start.plusMinutes(BroadcastStationsFile.DEF_DURATION_MINUTES);
         }
-        return new Range(start, end);
+        return new SimpleRange(start, end);
     }
 
     @Override

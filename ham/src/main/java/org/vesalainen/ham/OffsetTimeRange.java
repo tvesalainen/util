@@ -16,7 +16,7 @@
  */
 package org.vesalainen.ham;
 
-import org.vesalainen.util.Range;
+import org.vesalainen.util.SimpleRange;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -29,7 +29,7 @@ import org.vesalainen.ham.jaxb.TimeRangeType;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class OffsetTimeRange extends Range<OffsetTime> implements TimeRange
+public class OffsetTimeRange extends SimpleRange<OffsetTime> implements TimeRange
 {
     public OffsetTimeRange(TimeRangeType range)
     {

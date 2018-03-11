@@ -38,9 +38,9 @@ public class HourPrediction
         this.muf = ((Double)frequences[1]);
         this.frequences = filter(frequences);
         Map<String,Integer> m = new HashMap<>();
-        for (int ii=0;ii<frequences.length;ii++)
+        for (int ii=1;ii<frequences.length;ii++)
         {
-            m.put(frequences[ii].toString(), ii);
+            m.put(frequences[ii].toString(), ii-1);
         }
         frequencyIndexMap = new PrefixMap<>(m);
     }
@@ -66,7 +66,7 @@ public class HourPrediction
         {
             return getValue(attribute, index);
         }
-        throw new UnsupportedOperationException(frequency+" not supported");
+        throw new UnsupportedOperationException(frequency+" KHz not supported");
     }
     public double getValue(String attribute, int index)
     {
