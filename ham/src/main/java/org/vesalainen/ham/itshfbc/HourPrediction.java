@@ -27,22 +27,23 @@ import org.vesalainen.regex.PrefixMap;
 public class HourPrediction
 {
     private int hour;
-    private Double[] frequences;
+    private double[] frequencies;
     private Double muf;
     private Map<String, Object[]> attributes = new HashMap<>();
     private PrefixMap<Integer> frequencyIndexMap;
+    private final Map<String,Integer>  origFreqMap;
 
-    public HourPrediction(Object[] frequences)
+    public HourPrediction(double[] origFrequencies, Object[] frequencyLine)
     {
-        this.hour = ((Double)frequences[0]).intValue();
-        this.muf = ((Double)frequences[1]);
-        this.frequences = filter(frequences);
-        Map<String,Integer> m = new HashMap<>();
-        for (int ii=1;ii<frequences.length;ii++)
+        this.hour = ((Double)frequencyLine[0]).intValue()-1;
+        this.muf = ((Double)frequencyLine[1]);
+        this.frequencies = origFrequencies;
+        origFreqMap = new HashMap<>();
+        for (int ii=0;ii<frequencies.length;ii++)
         {
-            m.put(frequences[ii].toString(), ii-1);
+            origFreqMap.put(Double.toString(frequencies[ii]), ii+1);
         }
-        frequencyIndexMap = new PrefixMap<>(m);
+        frequencyIndexMap = new PrefixMap<>(origFreqMap);
     }
     public void addAttribute(Object[] array)
     {
@@ -54,9 +55,9 @@ public class HourPrediction
         return hour;
     }
 
-    public Double[] getFrequences()
+    public double[] getFrequences()
     {
-        return frequences;
+        return frequencies;
     }
 
     public double getValue(String attribute, double frequency)

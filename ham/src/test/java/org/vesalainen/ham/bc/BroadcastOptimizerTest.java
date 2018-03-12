@@ -20,9 +20,14 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.temporal.ChronoUnit;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.TimeUtils;
 import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -34,14 +39,21 @@ public class BroadcastOptimizerTest
     
     public BroadcastOptimizerTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
     }
 
     @Test
     public void test1() throws IOException
     {
         BroadcastOptimizer opt = new BroadcastOptimizer();
-        BestStation bestStation = opt.bestStation(new Location(9, -79), Instant.now());
-        System.err.println(bestStation);
+        OffsetDateTime start = OffsetDateTime.now();
+        OffsetDateTime end = start.plus(1, ChronoUnit.DAYS);
+        OffsetDateTime now = start;
+        while (now.isBefore(end))
+        {
+            BestStation bestStation = opt.bestStation(new Location(9, -79), now);
+            now = TimeUtils.next(now, bestStation.getTo());
+        }
     }
     
 }

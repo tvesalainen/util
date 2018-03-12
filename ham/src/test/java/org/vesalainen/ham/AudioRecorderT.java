@@ -16,30 +16,35 @@
  */
 package org.vesalainen.ham;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.Month;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.temporal.ChronoUnit;
-import static org.vesalainen.regex.Regex.Option.CASE_INSENSITIVE;
-import org.vesalainen.regex.SynchronizedEnumPrefixFinder;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import javax.sound.sampled.LineUnavailableException;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeUtils
+public class AudioRecorderT
 {
-    public static final SynchronizedEnumPrefixFinder<DayOfWeek> WEEKDAY_PARSER = new SynchronizedEnumPrefixFinder(DayOfWeek.class, CASE_INSENSITIVE);
-    public static final SynchronizedEnumPrefixFinder<Month> MONTH_PARSER = new SynchronizedEnumPrefixFinder(Month.class, CASE_INSENSITIVE);
-    public static final OffsetDateTime next(OffsetDateTime date, OffsetTime time)
+    
+    public AudioRecorderT()
     {
-        OffsetDateTime newDate = date.with(time);
-        if (newDate.isBefore(date))
-        {
-            return newDate.plusDays(1);
-        }
-        return newDate;
     }
+
+    @Test
+    public void test() throws LineUnavailableException, IOException
+    {
+        ScheduledExecutorService exe = Executors.newScheduledThreadPool(1);
+        try (AudioRecorder ar = new AudioRecorder("Microphone (4- USB PnP Sound De, version Unknown Version"))
+        {
+           exe.schedule(ar::stop, 5, TimeUnit.SECONDS);
+           ar.record(new File("test.wav"));
+        }
+    }
+    
 }

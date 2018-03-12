@@ -34,6 +34,7 @@ public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> im
     protected Station station;
     protected T schedule;
     protected TimeRange andRanges;
+    private int priority;
 
     public Schedule(Station station, T schedule)
     {
@@ -41,6 +42,8 @@ public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> im
         this.station = station;
         this.schedule = schedule;
         this.andRanges = TimeRanges.andRanges(TimeRanges.orWeekday(schedule.getWeekdays()), TimeRanges.orDateRanges(schedule.getDate()));
+        Short pri = schedule.getPriority();
+        this.priority = pri != null ? pri : 0;
     }
 
     protected static <T extends ScheduleType> SimpleRange<OffsetTime> getRange(T schedule)
@@ -58,6 +61,11 @@ public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> im
             end = start.plusMinutes(BroadcastStationsFile.DEF_DURATION_MINUTES);
         }
         return new SimpleRange(start, end);
+    }
+
+    public int getPriority()
+    {
+        return priority;
     }
 
     @Override

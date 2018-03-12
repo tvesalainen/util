@@ -67,6 +67,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="weekdays" type="weekdaysType"/>
         <xsd:attribute name="duration" type="xsd:duration"/>
         <xsd:attribute name="content" type="xsd:string"/>
+        <xsd:attribute name="priority" type="xsd:short"/>
     </xsd:complexType>
     <xsd:complexType name="mapType">
         <xsd:attribute name="name" type="xsd:string" use="required"/>

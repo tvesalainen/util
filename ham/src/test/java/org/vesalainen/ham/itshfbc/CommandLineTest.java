@@ -50,10 +50,30 @@ public class CommandLineTest
         assertEquals("TIME          1   24    1    1", cl.toString());
     }
     @Test
-    public void testFrequency()
+    public void testFrequency1()
     {
         CommandLine<Double> cl = new CommandLine<>(FREQUENCY, 5, 6.07, 7.20, 9.70, 11.85, 13.70, 15.35, 17.73, 21.65, 25.89, 0.00, 0.00);
         String exp = "FREQUENCY  6.07  7.2  9.711.85 13.715.3517.7321.6525.89  0.0  0.0";
+        String got = cl.toString();
+        System.err.println(exp);
+        System.err.println(got);
+        assertEquals(exp, got);
+    }
+    @Test
+    public void testFrequency2()
+    {
+        CommandLine<Double> cl = new CommandLine<>(FREQUENCY, 5, 9.9825);
+        String exp = "FREQUENCY 9.982";
+        String got = cl.toString();
+        System.err.println(exp);
+        System.err.println(got);
+        assertEquals(exp, got);
+    }
+    @Test
+    public void testFrequency3()
+    {
+        CommandLine<Double> cl = new CommandLine<>(FREQUENCY, 5, 16.978);
+        String exp = "FREQUENCY 16.97";
         String got = cl.toString();
         System.err.println(exp);
         System.err.println(got);

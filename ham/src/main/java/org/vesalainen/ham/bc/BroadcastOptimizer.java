@@ -21,10 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +41,6 @@ import org.vesalainen.ham.Transmitter;
 import org.vesalainen.ham.itshfbc.Circuit;
 import org.vesalainen.ham.itshfbc.CircuitFrequency;
 import org.vesalainen.ham.itshfbc.Noise;
-import org.vesalainen.ham.itshfbc.Prediction;
 import org.vesalainen.ham.itshfbc.RSN;
 import org.vesalainen.ham.jaxb.ScheduleType;
 import org.vesalainen.ham.ssn.SunSpotNumber;
@@ -51,13 +48,14 @@ import org.vesalainen.util.BestNonOverlapping;
 import org.vesalainen.util.OrderedList;
 import org.vesalainen.util.Range;
 import org.vesalainen.util.SimpleRange;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BroadcastOptimizer
+public class BroadcastOptimizer extends JavaLogging
 {
     private SunSpotNumber ssn;
     private Path sunSpotNumberPath = Paths.get("prediML.txt");
@@ -71,6 +69,7 @@ public class BroadcastOptimizer
 
     public BroadcastOptimizer()
     {
+        super(BroadcastOptimizer.class);
     }
 
     private void init() throws IOException
@@ -80,7 +79,9 @@ public class BroadcastOptimizer
             try
             {
                 ssn = new SunSpotNumber(sunSpotNumberPath);
+                config("ssn from %s", sunSpotNumberPath);
                 broadcastStation = new BroadcastStationsFile(BroadcastStationsPath);
+                config("broadcast-stations from %s", BroadcastStationsPath);
                 broadcastStation.load();
                 scheduleList = new OrderedList<>();
                 for (Station station : broadcastStation.getStations().values())
@@ -101,33 +102,40 @@ public class BroadcastOptimizer
         }
     }
 
-    public BestStation bestStation(final Location myLocation, Instant instant) throws IOException
+    public BestStation bestStation(final Location myLocation, OffsetDateTime instant) throws IOException
     {
         init();
-        final OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
-        OffsetTime ot = OffsetTime.from(utc);
+        fine("requested best station for %s %s", myLocation, instant);
+        OffsetTime ot = OffsetTime.from(instant);
         SimpleRange<OffsetTime> key = new SimpleRange<>(ot, ot);
         Stream<SimpleRange<OffsetTime>> head = scheduleList.headStream(key, false, false);
         Stream<SimpleRange<OffsetTime>> tail = scheduleList.tailStream(key, true, false);
         Stream<BestStation> candidates = Stream.concat(tail, head)
                 .map((s)->(Schedule)s)
-                .filter(new TimeFilter(utc))
+                .filter(new TimeFilter(instant))
                 .filter(new LocationFilter(myLocation))
-                .map((s)->getInstance(s, utc, myLocation))
-                .peek((s)->System.err.println(s))
+                .map((s)->getInstance(s, instant, myLocation))
                 ;
-        return BestNonOverlapping.best(candidates, this::compare);
+        BestStation best = BestNonOverlapping.best(candidates, this::compare);
+        fine("best is %s", best);
+        return best;
     }
     private int compare(BestStation bs1, BestStation bs2)
     {
+        if (bs1.getPriority() != bs2.getPriority())
+        {
+            return bs2.getPriority() - bs1.getPriority();
+        }
         if (bs1.isSecondary() != bs2.isSecondary())
         {
             if (bs1.isSecondary())
             {
+                fine("%s is secondary", bs2);
                 return 1;
             }
             else
             {
+                fine("%s is secondary", bs1);
                 return -1;
             }
         }
@@ -145,7 +153,9 @@ public class BroadcastOptimizer
                 .collect(Collectors.toList());
         freqs.sort(null);
         CircuitFrequency best = freqs.get(0);
-        return new BestStation(schedule, best, myLocation);
+        BestStation candidate = new BestStation(schedule, best, myLocation);
+        fine("candidate %s", candidate);
+        return candidate;
     }
     public CircuitFrequency getPrediction(Schedule schedule, OffsetDateTime utc, Location myLocation, Transmitter transmitter)
     {
@@ -214,6 +224,11 @@ public class BroadcastOptimizer
             this.myLocation = myLocation;
         }
 
+        public int getPriority()
+        {
+            return schedule.getPriority();
+        }
+
         public boolean isSecondary()
         {
             if (schedule instanceof HfFax)
@@ -271,7 +286,7 @@ public class BroadcastOptimizer
         @Override
         public String toString()
         {
-            return schedule+" "+getStation().getName()+" "+getContent()+" "+circuit;
+            return schedule+" "+getStation().getName()+" "/*+getContent()*/+" "+circuit;
         }
 
     }

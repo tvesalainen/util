@@ -35,6 +35,10 @@ public class CircuitFrequency implements Comparable<CircuitFrequency>
         this.frequency = frequency;
         this.prediction = prediction;
         this.emissionClass = emissionClass;
+        if (prediction == null)
+        {
+            System.err.println();
+        }
     }
 
     public double snr()

@@ -53,6 +53,7 @@ public class Predictor
     private List<FormatPart> dataLine;
     private Prediction prediction;
     private Location receiverLocation;
+    private double[] frequencies;
 
     public Predictor()
     {
@@ -112,7 +113,7 @@ public class Predictor
                     if (line.endsWith("FREQ"))
                     {
                         Object[] arr = formatFactory.parse(freqLine, line);
-                        HourPrediction hp = new HourPrediction(arr);
+                        HourPrediction hp = new HourPrediction(frequencies, arr);
                         prediction.addHour(hp);
                         line = reader.readLine();
                         arr = formatFactory.parse(modeLine, line);
@@ -348,6 +349,7 @@ public class Predictor
      */
     public Predictor frequency(double... frel)
     {
+        frequencies = frel;
         CommandLine<Double> line = new CommandLine<>(FREQUENCY, 5);
         for (double f : frel)
         {
