@@ -142,6 +142,10 @@ public class BeanHelper
         for (int ii = 0; ii < len; ii++)
         {
             bean = doIt(bean, parts[ii], null, BeanHelper::getValue, BeanHelper::getValue, BeanHelper::getFieldValue, BeanHelper::getMethodValue);
+            if (bean == null)
+            {
+                return null;
+            }
         }
         int idx = property.lastIndexOf(Lim);
         if (idx != -1)
