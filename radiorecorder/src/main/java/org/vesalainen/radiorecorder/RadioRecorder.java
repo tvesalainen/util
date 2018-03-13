@@ -16,10 +16,25 @@
  */
 package org.vesalainen.radiorecorder;
 
+import java.io.File;
 import java.io.IOException;
-import org.vesalainen.parsers.nmea.NMEAService;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import javax.sound.sampled.LineUnavailableException;
+import org.vesalainen.ham.AudioRecorder;
+import org.vesalainen.ham.LocationParser;
+import org.vesalainen.ham.TimeUtils;
+import org.vesalainen.ham.bc.BroadcastOptimizer;
+import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
+import org.vesalainen.ham.itshfbc.Noise;
+import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.LoggingCommandLine;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
@@ -28,26 +43,215 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 public class RadioRecorder extends LoggingCommandLine
 {
     public static CachedScheduledThreadPool POOL = new CachedScheduledThreadPool();
-    private static final String NMEA_GROUP = "-nmea-group";
-    private static final String NMEA_PORT = "-nmea-port";
+    private Path dataDirectory;
+    private OffsetDateTime lastSchedule = OffsetDateTime.now();
     private LocationService locationService;
-
+    private String nmeaGroup;
+    private int nmeaPort;
+    private Location location;
+    private int radioId;
+    private String radioPort;
+    private IcomManager icomManager;
+    private String mixerName;
+    private float sampleRate;
+    private int sampleSizeInBits;
+    private AudioRecorder audioRecorder;
+    private Path sunSpotNumberPath;
+    private URL broadcastStationsPath;
+    private Path transmitterAntennaPath;
+    private Path receiverAntennaPath;
+    private Noise noise;
+    private BroadcastOptimizer optimizer;
+    
     public RadioRecorder()
     {
-        addOption(NMEA_GROUP, "NMEA Group Address", null, "224.0.0.3");
-        addOption(NMEA_PORT, "NMEA port", null, 10110);
+        addArgument(File.class, "configuration file");
     }
-    public void start() throws IOException
+    public Location getLocation()
     {
-        String group = getOption(NMEA_GROUP);
-        int port = getOption(NMEA_PORT);
-        locationService = new LocationService(group, port, POOL);
-        locationService.start();
+        if (locationService != null)
+        {
+            return locationService.getLocation();
+        }
+        else
+        {
+            return location;
+        }
     }
-    public void stop()
+    public void start() throws IOException, LineUnavailableException
+    {
+        init();
+        scheduleNext();
+    }
+    private void scheduleNext() throws IOException
+    {
+        BestStation bestStation = optimizer.bestStation(getLocation(), lastSchedule);
+        OffsetDateTime start = TimeUtils.next(lastSchedule, bestStation.getFrom());
+        String filename = String.format("%s_%s_%s_%02d_%02d_%02d.wav", 
+                bestStation.getEmissionClass(),
+                bestStation.getStation().getName(),
+                bestStation.getContent(),
+                start.getDayOfMonth(),
+                start.getHour(),
+                start.getMinute()
+        );
+    }
+    private void init() throws IOException, LineUnavailableException
+    {
+        config("using %s as data directory", dataDirectory);
+        if (location == null)
+        {
+            config("starting LocationService(%s, %d)", nmeaGroup, nmeaPort);
+            locationService = new LocationService(nmeaGroup, nmeaPort, POOL);
+            locationService.start();
+        }
+        else
+        {
+            config("using %s as location", location);
+        }
+        if (radioPort != null && !radioPort.isEmpty())
+        {
+            config("starting IcomManager(%d, %s)", radioId, radioPort);
+            icomManager = new IcomManager(radioId, radioPort);
+        }
+        else
+        {
+            try
+            {
+                config("starting IcomManager(%d)", radioId);
+                icomManager = IcomManager.getInstance(radioId);
+            }
+            catch (InterruptedException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
+        audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
+        config("starting BroadcastOptimizer");
+        optimizer = new BroadcastOptimizer();
+        if (sunSpotNumberPath != null)
+        {
+            config("using SunSpotNumberPath(%s)", sunSpotNumberPath);
+            optimizer.setSunSpotNumberPath(sunSpotNumberPath);
+        }
+        if (broadcastStationsPath != null)
+        {
+            config("using BroadcastStationsPath(%s)", broadcastStationsPath);
+            optimizer.setBroadcastStationsPath(broadcastStationsPath);
+        }
+        if (transmitterAntennaPath != null)
+        {
+            config("using transmitterAntennaPath(%s)", transmitterAntennaPath);
+            optimizer.setTransmitterAntennaPath(transmitterAntennaPath);
+        }
+        if (receiverAntennaPath != null)
+        {
+            config("using receiverAntennaPath(%s)", receiverAntennaPath);
+            optimizer.setReceiverAntennaPath(receiverAntennaPath);
+        }
+        if (noise != null)
+        {
+            config("using Noise(%s)", noise);
+            optimizer.setNoise(noise);
+        }
+    }
+    public void stop() throws IOException, InterruptedException
     {
         POOL.shutdownNow();
         locationService.stop();
+        icomManager.close();
+        audioRecorder.close();
+    }
+
+    @Setting("files.directory")
+    public void setDataDirectory(String dataDirectory)
+    {
+        this.dataDirectory = Paths.get(dataDirectory);
+    }
+
+    @Setting("hfPropagationPrediction.sunSpotNumberPath")
+    public void setSunSpotNumberPath(String sunSpotNumberPath)
+    {
+        this.sunSpotNumberPath = Paths.get(sunSpotNumberPath);
+    }
+
+    @Setting("hfPropagationPrediction.broadcastStationsPath")
+    public void setBroadcastStationsPath(String BroadcastStationsPath)
+    {
+        try
+        {
+            this.broadcastStationsPath = new URL(BroadcastStationsPath);
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Setting("hfPropagationPrediction.transmitterAntennaPath")
+    public void setTransmitterAntennaPath(String transmitterAntennaPath)
+    {
+        this.transmitterAntennaPath = Paths.get(transmitterAntennaPath);
+    }
+
+    @Setting("hfPropagationPrediction.receiverAntennaPath")
+    public void setReceiverAntennaPath(String receiverAntennaPath)
+    {
+        this.receiverAntennaPath = Paths.get(receiverAntennaPath);
+    }
+
+    @Setting("hfPropagationPrediction.noise")
+    public void setNoise(String noise)
+    {
+        this.noise = Noise.valueOf(noise);
+    }
+
+    @Setting("audioCapture.mixer")
+    public void setMixerName(String mixerName)
+    {
+        this.mixerName = mixerName;
+    }
+
+    @Setting("audioCapture.sampleRate")
+    public void setSampleRate(float sampleRate)
+    {
+        this.sampleRate = sampleRate;
+    }
+
+    @Setting("audioCapture.sampleSize")
+    public void setSampleSizeInBits(int sampleSizeInBits)
+    {
+        this.sampleSizeInBits = sampleSizeInBits;
+    }
+
+    @Setting("radioControl.icomHfMarine.id")
+    public void setRadioId(int radioId)
+    {
+        this.radioId = radioId;
+    }
+
+    @Setting("radioControl.icomHfMarine.port")
+    public void setRadioPort(String radioPort)
+    {
+        this.radioPort = radioPort;
+    }
+
+    @Setting("receiverLocation.coordinates.coordinates")
+    public void setLocation(String location)
+    {
+        this.location = LocationParser.parse(location);
+    }
+    
+    @Setting("receiverLocation.nmeaMulticast.nmeaGroup")
+    public void setNmeaGroup(String nmeaGroup)
+    {
+        this.nmeaGroup = nmeaGroup;
+    }
+    @Setting("receiverLocation.nmeaMulticast.nmeaPort")
+    public void setNmeaPort(int nmeaPort)
+    {
+        this.nmeaPort = nmeaPort;
     }
 
     public static void main(String... args)
@@ -56,6 +260,10 @@ public class RadioRecorder extends LoggingCommandLine
         {
             RadioRecorder recorder = new RadioRecorder();
             recorder.command(args);
+            File configfile = (File) recorder.getArgument("configuration file");
+            ConfigFile config = new ConfigFile(configfile);
+            config.load();
+            config.attachInstant(recorder);
             recorder.start();
         }
         catch (Exception ex)

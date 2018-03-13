@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+
+<radio-recorder xmlns="https://github.com/tvesalainen/util/blob/master/radiorecorder/src/main/xsd/radio-recorder.xsd">
+    <files directory="c:\\temp"/>
+    <receiver-location>
+        <nmea-multicast nmea-group="224.0.0.3" nmea-port="10110"/>
+    </receiver-location>
+    <radio-control>
+        <icomHfMarine id="0" port="COM5"/>
+    </radio-control>
+    <audio-capture 
+        mixer="Microphone (4- USB PnP Sound De, version Unknown Version" 
+        sample-rate="44000" 
+        sample-size="16"
+    />
+    <hf-propagation-prediction
+        ssn-path="prediML.txt"
+        transmitter-antenna-path="default/Isotrope"
+        receiver-antenna-path="default/SWWhip.VOA"
+        noise="industrial"
+    />
+</radio-recorder>

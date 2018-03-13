@@ -16,27 +16,40 @@
  */
 package org.vesalainen.radiorecorder;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.vesalainen.util.logging.JavaLogging;
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Path;
+import javax.xml.bind.JAXBElement;
+import org.vesalainen.radiorecorder.jaxb.ObjectFactory;
+import org.vesalainen.radiorecorder.jaxb.RadioRecorderType;
+import org.vesalainen.util.AbstractConfigFile;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RadioRecorderTest
+public class ConfigFile extends AbstractConfigFile<RadioRecorderType,ObjectFactory>
 {
-    
-    public RadioRecorderTest()
+
+    public ConfigFile(Path file)
     {
+        super("org.vesalainen.radiorecorder.jaxb", file);
     }
 
-    @Test
-    public void test() throws IOException
+    public ConfigFile(File file)
     {
-        RadioRecorder.main("-pl", "FINE", "-ll", "FINE",  "src\\test\\resources\\radio-recorder.xml");
+        super("org.vesalainen.radiorecorder.jaxb", file);
     }
-    
+
+    public ConfigFile(URL url)
+    {
+        super("org.vesalainen.radiorecorder.jaxb", url);
+    }
+
+    @Override
+    protected JAXBElement<RadioRecorderType> create()
+    {
+        return objectFactory.createRadioRecorder(objectFactory.createRadioRecorderType());
+    }
+
 }

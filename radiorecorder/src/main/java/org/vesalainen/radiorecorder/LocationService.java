@@ -48,36 +48,6 @@ public class LocationService extends NMEAService implements PropertySetter
     }
 
     @Override
-    public void set(String property, boolean arg)
-    {
-    }
-
-    @Override
-    public void set(String property, byte arg)
-    {
-    }
-
-    @Override
-    public void set(String property, char arg)
-    {
-    }
-
-    @Override
-    public void set(String property, short arg)
-    {
-    }
-
-    @Override
-    public void set(String property, int arg)
-    {
-    }
-
-    @Override
-    public void set(String property, long arg)
-    {
-    }
-
-    @Override
     public void set(String property, float arg)
     {
         switch (property)
@@ -91,14 +61,4 @@ public class LocationService extends NMEAService implements PropertySetter
         }
     }
 
-    @Override
-    public void set(String property, double arg)
-    {
-    }
-
-    @Override
-    public void set(String property, Object arg)
-    {
-    }
-    
 }

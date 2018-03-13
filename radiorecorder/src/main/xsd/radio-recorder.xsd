@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<xsd:schema version="1.0"
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="https://github.com/tvesalainen/util/blob/master/radiorecorder/src/main/xsd/radio-recorder.xsd"
+           xmlns="https://github.com/tvesalainen/util/blob/master/radiorecorder/src/main/xsd/radio-recorder.xsd"
+           elementFormDefault="qualified">
+    <xsd:element name="radio-recorder" type="radio-recorder-type"/>
+    <xsd:complexType name="radio-recorder-type">
+        <xsd:all>
+            <xsd:element name="files" type="filesType"/>
+            <xsd:element name="receiver-location" type="locationType"/>
+            <xsd:element name="radio-control" type="radioControlType"/>
+            <xsd:element name="audio-capture" type="audioCaptureType"/>
+            <xsd:element name="hf-propagation-prediction" type="predictionTypeType"/>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:complexType name="filesType">
+        <xsd:attribute name="directory" type="xsd:string" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="predictionTypeType">
+        <xsd:attribute name="sun-spot-number-path" type="xsd:string"/>
+        <xsd:attribute name="broadcast-stations-path" type="xsd:string"/>
+        <xsd:attribute name="transmitter-antenna-path" type="xsd:string"/>
+        <xsd:attribute name="receiver-antenna-path" type="xsd:string"/>
+        <xsd:attribute name="noise" type="noiseType"/>
+    </xsd:complexType>
+    <xsd:simpleType name="noiseType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="industrial"/>
+            <xsd:enumeration value="residential"/>
+            <xsd:enumeration value="remote"/>
+            <xsd:enumeration value="rural"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="audioCaptureType">
+        <xsd:attribute name="mixer" type="xsd:string"/>
+        <xsd:attribute name="sample-rate" type="xsd:float"/>
+        <xsd:attribute name="sample-size" type="xsd:short"/>
+    </xsd:complexType>
+    <xsd:complexType name="radioControlType">
+        <xsd:choice>
+            <xsd:element name="icomHfMarine" type="icomHfMarineType"/>
+        </xsd:choice>
+    </xsd:complexType>
+    <xsd:complexType name="icomHfMarineType">
+        <xsd:attribute name="id" type="xsd:unsignedShort"/>
+        <xsd:attribute name="port" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="locationType">
+        <xsd:choice>
+            <xsd:element name="nmea-multicast" type="multicastType"/>
+            <xsd:element name="coordinates" type="coordinatesType"/>
+        </xsd:choice>
+    </xsd:complexType>
+    <xsd:complexType name="multicastType">
+        <xsd:attribute name="nmea-group" type="xsd:string"/>
+        <xsd:attribute name="nmea-port" type="xsd:unsignedShort"/>
+    </xsd:complexType>
+    <xsd:complexType name="coordinatesType">
+        <xsd:attribute name="coordinates" type="xsd:string"/>
+    </xsd:complexType>
+</xsd:schema>
