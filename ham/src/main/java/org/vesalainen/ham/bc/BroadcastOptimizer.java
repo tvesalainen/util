@@ -210,6 +210,12 @@ public class BroadcastOptimizer extends JavaLogging
         this.noise = noise;
         return this;
     }
+
+    public BroadcastOptimizer setBroadcastStationsPath(URL BroadcastStationsPath)
+    {
+        this.BroadcastStationsPath = BroadcastStationsPath;
+        return this;
+    }
     
     public class BestStation implements Range<OffsetTime>
     {

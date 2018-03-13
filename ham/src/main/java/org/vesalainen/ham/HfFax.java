@@ -31,6 +31,11 @@ public class HfFax extends Schedule<HfFaxType>
         super(station, schedule);
     }
 
+    @Override
+    public TypeOfTransmittedInformation getTypeOfTransmittedInformation()
+    {
+        return TypeOfTransmittedInformation.C;
+    }
     /**
      * Returns true if location is inside map.
      * @param location

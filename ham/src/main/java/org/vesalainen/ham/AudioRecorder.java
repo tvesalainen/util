@@ -18,7 +18,6 @@ package org.vesalainen.ham;
 
 import java.io.File;
 import java.io.IOException;
-import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -38,7 +37,11 @@ public class AudioRecorder implements AutoCloseable
     
     public AudioRecorder(String mixerName) throws LineUnavailableException
     {
-        AudioFormat audioFormat = new AudioFormat(44000, 16, 1, true, false);
+        this(mixerName, 44000, 16);
+    }
+    public AudioRecorder(String mixerName, float sampleRate, int sampleSizeInBits) throws LineUnavailableException
+    {
+        AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSizeInBits, 1, true, false);
         Type[] audioFileTypes = AudioSystem.getAudioFileTypes();
         Mixer.Info mixerInfo = mixer(mixerName, audioFormat);
         if (mixerInfo != null)

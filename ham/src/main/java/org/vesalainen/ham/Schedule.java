@@ -63,6 +63,10 @@ public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> im
         return new SimpleRange(start, end);
     }
 
+    public TypeOfTransmittedInformation getTypeOfTransmittedInformation()
+    {
+        return TypeOfTransmittedInformation.E;
+    }
     public int getPriority()
     {
         return priority;
