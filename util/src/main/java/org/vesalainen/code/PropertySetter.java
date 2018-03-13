@@ -28,13 +28,13 @@ public interface PropertySetter
      * @return 
      */
     String[] getPrefixes();
-    void set(String property, boolean arg);
-    void set(String property, byte arg);
-    void set(String property, char arg);
-    void set(String property, short arg);
-    void set(String property, int arg);
-    void set(String property, long arg);
-    void set(String property, float arg);
-    void set(String property, double arg);
-    void set(String property, Object arg);
+    default void set(String property, boolean arg){}
+    default void set(String property, byte arg){}
+    default void set(String property, char arg){}
+    default void set(String property, short arg){}
+    default void set(String property, int arg){}
+    default void set(String property, long arg){}
+    default void set(String property, float arg){}
+    default void set(String property, double arg){}
+    default void set(String property, Object arg){}
 }
