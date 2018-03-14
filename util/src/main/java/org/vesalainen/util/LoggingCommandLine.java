@@ -39,7 +39,7 @@ public class LoggingCommandLine extends CmdArgs
     private int logLimit = 1048576;
     private int logCount = 16;
     private String hostname = "localhost";
-    private int port;
+    private int radioPort;
     private Level logLevel = INFO;
     private Level pushLevel = SEVERE;
     private String rootLog = "org.vesalainen";
@@ -49,7 +49,7 @@ public class LoggingCommandLine extends CmdArgs
     /**
      * ([ lp &lt;logging config file&gt; ] ) |
      * (([ lp &lt;log pattern&gt; -l &lt;limit&gt; -c &lt;count&gt; ] |
-     * [ -h &lt;host&gt; -p &lt;port&gt; ])
+     * [ -h &lt;host&gt; -p &lt;radioPort&gt; ])
      * [ -ll &lt;log level&gt; ] [ -pl &lt;push level&gt; ]
      * [ -rl &lt;root log&gt; ] [ -ph &lt;use parent handlers&gt; ]
      * [ -bs &lt;buffer size&gt; ])
@@ -63,7 +63,7 @@ public class LoggingCommandLine extends CmdArgs
         addOption("-l", "log limit", "filelog", logLimit);
         addOption("-c", "log count", "filelog", logCount);
         addOption("-h", "host", "netlog", hostname);
-        addOption("-p", "port", "netlog", port);
+        addOption("-p", "port", "netlog", radioPort);
         addOption("-ll", "log level", null, logLevel);
         addOption("-pl", "push level", null, pushLevel);
         addOption("-rl", "root log", null, rootLog);
@@ -190,15 +190,15 @@ public class LoggingCommandLine extends CmdArgs
 
     public final int getPort()
     {
-        return port;
+        return radioPort;
     }
     /**
-     * Set default for log server port
+     * Set default for log server radioPort
      * @param port 
      */
     public final void setPort(int port)
     {
-        this.port = port;
+        this.radioPort = port;
     }
 
     public final Level getLogLevel()
