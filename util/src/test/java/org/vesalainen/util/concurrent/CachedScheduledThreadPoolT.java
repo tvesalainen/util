@@ -88,12 +88,13 @@ public class CachedScheduledThreadPoolT
     public void testSubmitCascading() throws InterruptedException, ExecutionException
     {
         final List<Integer> l = new ArrayList<>();
-        Future<?> future = pool.submitCascading(
+        Runnable runnable = pool.concat(
                 ()->l.add(1),
                 ()->l.add(2),
                 ()->l.add(3),
                 ()->l.add(4)
         );
+        pool.submit(runnable);
         Thread.sleep(500);
         assertEquals(4, l.size());
         assertEquals(1, (int)l.get(0));

@@ -183,12 +183,14 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         }
     }
     /**
-     * Submits tasks one after another. Next task is submitted after previous
+     * Concatenates tasks to one task. After first tasks run is completed,
+     * next start is submitted and so on, until all tasks are run or exception 
+     * is thrown.
      * run is completed.
      * @param runnables
      * @return 
      */
-    public Future<?> submitCascading(Runnable... runnables)
+    public Runnable concat(Runnable... runnables)
     {
         if (runnables.length == 0)
         {
@@ -199,7 +201,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         {
             r = concat(runnables[ii], r);
         }
-        return submit(r);
+        return r;
     }
     private Runnable concat(Runnable r1, Runnable r2)
     {
