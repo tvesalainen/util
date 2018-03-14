@@ -17,13 +17,12 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
-import java.util.Objects;
+import java.time.temporal.ChronoField;
+import java.time.temporal.Temporal;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -35,8 +34,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.util.logging.AttachedLogger;
@@ -96,7 +93,41 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     {
         this.logLevel = level;
     }
-    
+    /**
+     * Schedule command to be run not earlier than time.
+     * @param command
+     * @param time Temporal that supports INSTANT_SECONDS and NANO_OF_SECOND.
+     * @return 
+     */
+    public ScheduledFuture<?> schedule(Runnable command, Temporal time)
+    {
+        ensureWaiterRunning();
+        long instantSeconds = time.getLong(ChronoField.INSTANT_SECONDS);
+        long nanoOfSecond = time.getLong(ChronoField.NANO_OF_SECOND);
+        long expires = instantSeconds*1000+nanoOfSecond/1000000;
+        log(logLevel, "schedule(%s, %s)", command, time);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, expires, 0, false);
+        delayQueue.add(future);
+        return future;
+    }
+    /**
+     * Schedule callable to be run not earlier than time.
+     * @param <V>
+     * @param callable
+     * @param time Temporal that supports INSTANT_SECONDS and NANO_OF_SECOND.
+     * @return 
+     */
+    public <V> ScheduledFuture<V> schedule(Callable<V> callable, Temporal time)
+    {
+        ensureWaiterRunning();
+        long instantSeconds = time.getLong(ChronoField.INSTANT_SECONDS);
+        long nanoOfSecond = time.getLong(ChronoField.NANO_OF_SECOND);
+        long expires = instantSeconds*1000+nanoOfSecond/1000000;
+        log(logLevel, "schedule(%s, %s)", callable, time);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(callable, expires, 0, false);
+        delayQueue.add(future);
+        return future;
+    }
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit)
     {
@@ -313,9 +344,22 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
 
         public RunnableScheduledFutureImpl(Runnable command, long initialDelay, long period, TimeUnit unit, boolean fixedDelay)
         {
-            super(command, null);
-            this.expires = clock.millis()+unit.toMillis(initialDelay);
-            this.period = unit.toMillis(period);
+            this(command, clock.millis()+unit.toMillis(initialDelay), unit.toMillis(period), fixedDelay);
+        }
+
+        public RunnableScheduledFutureImpl(Callable<V> callable, long expires, long period, boolean fixedDelay)
+        {
+            super(callable);
+            this.expires = expires;
+            this.period = period;
+            this.fixedDelay = fixedDelay;
+        }
+
+        public RunnableScheduledFutureImpl(Runnable runnable, long expires, long period, boolean fixedDelay)
+        {
+            super(runnable, null);
+            this.expires = expires;
+            this.period = period;
             this.fixedDelay = fixedDelay;
         }
 

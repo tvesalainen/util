@@ -17,6 +17,7 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -64,7 +65,17 @@ public class CachedScheduledThreadPoolT
         ScheduledFuture<?> future = pool.schedule(this::command, 10, TimeUnit.MILLISECONDS);
         future.get();
         assertEquals(2, times.size());
-        assertTrue(times.get(1)-times.get(0) > 10);
+        assertTrue(times.get(1)-times.get(0) >= 10);
+    }
+    @Test
+    public void testScheduleAtInstant() throws InterruptedException, ExecutionException
+    {
+        times.add(clock.millis());
+        Instant instant = clock.instant();
+        ScheduledFuture<?> future = pool.schedule(this::command, instant.plusMillis(10));
+        future.get();
+        assertEquals(2, times.size());
+        assertTrue(times.get(1)-times.get(0) >= 10);
     }
     @Test
     public void testScheduleAtFixedRate() throws InterruptedException, ExecutionException
