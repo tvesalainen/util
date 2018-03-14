@@ -85,6 +85,23 @@ public class CachedScheduledThreadPoolT
         assertTrue(times.size()>15 && times.size()<20);
     }
     @Test
+    public void testSubmitCascading() throws InterruptedException, ExecutionException
+    {
+        final List<Integer> l = new ArrayList<>();
+        Future<?> future = pool.submitCascading(
+                ()->l.add(1),
+                ()->l.add(2),
+                ()->l.add(3),
+                ()->l.add(4)
+        );
+        Thread.sleep(500);
+        assertEquals(4, l.size());
+        assertEquals(1, (int)l.get(0));
+        assertEquals(2, (int)l.get(1));
+        assertEquals(3, (int)l.get(2));
+        assertEquals(4, (int)l.get(3));
+    }
+    @Test
     public void testSubmitAfter1() throws InterruptedException, ExecutionException
     {
         Future<?> future = pool.submit(this::command);

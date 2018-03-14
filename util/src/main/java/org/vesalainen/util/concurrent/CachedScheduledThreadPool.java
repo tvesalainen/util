@@ -17,6 +17,7 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -35,6 +36,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.util.logging.AttachedLogger;
@@ -179,6 +181,29 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                 return;
             }
         }
+    }
+    /**
+     * Submits tasks one after another. Next task is submitted after previous
+     * run is completed.
+     * @param runnables
+     * @return 
+     */
+    public Future<?> submitCascading(Runnable... runnables)
+    {
+        if (runnables.length == 0)
+        {
+            throw new IllegalArgumentException("empty");
+        }
+        Runnable r = runnables[runnables.length-1];
+        for (int ii=runnables.length-2;ii>=0;ii--)
+        {
+            r = concat(runnables[ii], r);
+        }
+        return submit(r);
+    }
+    private Runnable concat(Runnable r1, Runnable r2)
+    {
+        return ()->{r1.run();submit(r2);};
     }
     /**
      * submits callable after waiting future to complete or timeout to exceed.
