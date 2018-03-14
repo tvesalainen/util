@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_BINARY;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import javax.imageio.ImageIO;
 import static org.vesalainen.ham.hffax.FaxTone.*;
 
@@ -35,18 +36,16 @@ public class FaxRenderer implements FaxListener
     private static final String TYPE = "png";
     private FaxStateListener stateListener;
     private BufferedImage image;
-    private File faxDir;
-    private String filename;
+    private Path out;
     private final Graphics2D graphics;
     private final PageLocator locator;
     private int line;
     private Rectangle bounds;
 
-    public FaxRenderer(FaxStateListener stateListener, File faxDir, String filename, int resolution, PageLocator locator)
+    public FaxRenderer(FaxStateListener stateListener, Path out, int resolution, PageLocator locator)
     {
         this.stateListener = stateListener;
-        this.faxDir = faxDir;
-        this.filename = filename;
+        this.out = out;
         this.locator = locator;
         image = new BufferedImage(resolution, 2*resolution, TYPE_BYTE_BINARY);
         graphics = image.createGraphics();
@@ -72,10 +71,7 @@ public class FaxRenderer implements FaxListener
         if (image != null)
         {
             BufferedImage subimage = image.getSubimage(0, locator.firstLine(), image.getWidth(), locator.lastLine());
-            ImageIO.write(subimage, TYPE, new File(faxDir, filename+"."+TYPE));
-            FaxRectifier rectifier = new FaxRectifier(subimage);
-            rectifier.rectify();
-            ImageIO.write(subimage, TYPE, new File(faxDir, filename+"-cor."+TYPE));
+            ImageIO.write(subimage, TYPE, out.toFile());
         }
         return true;
     }

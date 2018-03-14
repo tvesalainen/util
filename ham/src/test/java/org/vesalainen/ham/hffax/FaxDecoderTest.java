@@ -20,6 +20,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -30,22 +31,21 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxEngineTest
+public class FaxDecoderTest
 {
     
-    public FaxEngineTest()
+    public FaxDecoderTest()
     {
     }
 
-    //@Test
+    @Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
         try
         {
             URL url = HFFaxT.class.getResource("/hffax.wav");
-            AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-            FaxEngine engine = new FaxEngine(new File("."), ais);
-            engine.parse();
+            FaxDecoder decoder = new FaxDecoder(120, 576, url, Paths.get("hffax.png"));
+            decoder.parse();
         }
         catch(EOFException ex)
         {

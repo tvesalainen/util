@@ -73,13 +73,13 @@ public class HFFax extends CmdArgs
     private void processFile(File path) throws UnsupportedAudioFileException, IOException
     {
         AudioInputStream ais = AudioSystem.getAudioInputStream(path);
-        FaxEngine fax = new FaxEngine(getOption("-fd"), ais);
+        FaxDecoder fax = new FaxDecoder(getOption("-fd"), ais);
         fax.parse();
     }
     private void processURL(URL url) throws UnsupportedAudioFileException, IOException
     {
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        FaxEngine fax = new FaxEngine(getOption("-fd"), ais);
+        FaxDecoder fax = new FaxDecoder(getOption("-fd"), ais);
         fax.parse();
     }
     private void processLine(String mixer) throws LineUnavailableException, IOException, InterruptedException
@@ -106,7 +106,7 @@ public class HFFax extends CmdArgs
         System.err.println(targetDataLine.getLineInfo());
         targetDataLine.open(audioFormat);
         targetDataLine.start();
-        FaxEngine fax = new FaxEngine(getOption("-fd"), targetDataLine);
+        FaxDecoder fax = new FaxDecoder(getOption("-fd"), targetDataLine);
         fax.parse();
     }
     public Mixer.Info mixerInfo(String mixer)

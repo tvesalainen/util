@@ -18,46 +18,55 @@ package org.vesalainen.ham.hffax;
 
 import java.awt.image.BufferedImage;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxEngine extends JavaLogging implements FaxStateListener
+public class FaxDecoder extends JavaLogging implements FaxStateListener
 {
     private int lpm;
     private int ioc;
+    private URL in;
+    private Path out;
+    private AudioInputStream ais;
     private int resolution = 2300;
     private BufferedImage image;
-    private File faxDir;
     private FaxTokenizer tokenizer;
     private FaxSynchronizer synchronizer;
     private FaxRenderer renderer;
-    private ExecutorService executor;
 
-    public FaxEngine(File faxDir, TargetDataLine line)
+    public FaxDecoder(int lpm, int ioc, Path in, Path out) throws MalformedURLException
     {
-        this(faxDir, new AudioInputStream(line));
+        this(lpm, ioc, in.toUri().toURL(), out);
     }
-
-    public FaxEngine(File faxDir, AudioInputStream ais)
+    public FaxDecoder(int lpm, int ioc, URL in, Path out)
     {
-        super(FaxEngine.class);
-        this.faxDir = faxDir;
-        Objects.requireNonNull(ais, "AudioInputStream");
-        tokenizer = new FaxTokenizer(ais);
-        synchronizer = new BWSynchronizer(this);
-        executor = Executors.newCachedThreadPool();
+        super(FaxDecoder.class);
+        try
+        {
+            this.lpm = lpm;
+            this.ioc = ioc;
+            this.in = in;
+            this.out = out;
+            this.ais = AudioSystem.getAudioInputStream(in);
+            this.tokenizer = new FaxTokenizer(ais);
+            this.synchronizer = new BWSynchronizer(this);
+        }
+        catch (UnsupportedAudioFileException | IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
     public void parse() throws IOException
     {
@@ -83,7 +92,7 @@ public class FaxEngine extends JavaLogging implements FaxStateListener
             String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
             String filename = "fax"+str;
             config("start rendering of %s", filename);
-            renderer = new FaxRenderer(this, faxDir, filename, resolution, locator);
+            renderer = new FaxRenderer(this, out, resolution, locator);
             tokenizer.addListener(renderer);
         }
         else
@@ -99,9 +108,16 @@ public class FaxEngine extends JavaLogging implements FaxStateListener
         config("stop from %s", reason);
         if (renderer != null)
         {
-            tokenizer.removeListener(renderer);
-            executor.submit(renderer::render);
-            renderer = null;
+            try 
+            {
+                tokenizer.removeListener(renderer);
+                renderer.render();
+                renderer = null;
+            }
+            catch (IOException ex) 
+            {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }

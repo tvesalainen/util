@@ -20,6 +20,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import org.junit.Test;
@@ -41,11 +43,9 @@ public class FaxRectifierTest
     @Test
     public void test1() throws IOException
     {
-        File file = new File("c:\\temp\\fax2018-02-09T150627.983Z.png");
-        BufferedImage image = ImageIO.read(file);
-        FaxRectifier r = new FaxRectifier(image);
+        Path in = Paths.get("c:\\temp\\fax2018-02-09T150627.983Z.png");
+        FaxRectifier r = new FaxRectifier(in, Paths.get("corrected.png"));
         r.rectify();
-        ImageIO.write(image, "png", new File("corrected.png"));
     }
     
 }

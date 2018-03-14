@@ -18,6 +18,7 @@ package org.vesalainen.ham;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -54,17 +55,17 @@ public class AudioRecorder implements AutoCloseable
         }
         targetDataLine.open(audioFormat);
     }
-    public void record(File file) throws IOException
+    public void record(Path file) throws IOException
     {
         record(file, Type.WAVE);
     }
-    public void record(File file, Type type) throws IOException
+    public void record(Path file, Type type) throws IOException
     {
         targetDataLine.stop();
         targetDataLine.start();
         try (AudioInputStream in = new AudioInputStream(targetDataLine))
         {
-            AudioSystem.write(in, type, file);
+            AudioSystem.write(in, type, file.toFile());
         }
     }
     public void stop()

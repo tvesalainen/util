@@ -21,11 +21,11 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
-import static org.vesalainen.ham.hffax.Fax.isAbout;
 import org.vesalainen.math.BestFitLine;
 import org.vesalainen.math.SimpleAverage;
 import org.vesalainen.math.Statistics;
@@ -44,6 +44,8 @@ public class FaxRectifier extends JavaLogging
     private static final double ERR_SUM_LIM = 1;
     private static final int SPLIT_LIM = 10;
     private static final int BAND = 4;
+    private Path out;
+    private BufferedImage image;
     private WritableRaster raster;
     private int width;
     private int height;
@@ -59,25 +61,26 @@ public class FaxRectifier extends JavaLogging
     private List<Part> parts = new ArrayList<>();
     private double averageSlope;
 
-    public FaxRectifier(URL url) throws IOException
+    public FaxRectifier(URL url, Path out) throws IOException
     {
-        this(ImageIO.read(url));
+        this(ImageIO.read(url), out);
     }
 
-    public FaxRectifier(File file) throws IOException
+    public FaxRectifier(Path file, Path out) throws IOException
     {
-        this(ImageIO.read(file));
+        this(file.toFile(), out);
+    }
+    public FaxRectifier(File file, Path out) throws IOException
+    {
+        this(ImageIO.read(file), out);
     }
 
-    public FaxRectifier(BufferedImage image)
-    {
-        this(image.getRaster());
-    }
-
-    public FaxRectifier(WritableRaster raster)
+    public FaxRectifier(BufferedImage image, Path out)
     {
         super(FaxRectifier.class);
-        this.raster = raster;
+        this.image = image;
+        this.out = out;
+        this.raster = image.getRaster();
         width = raster.getWidth();
         height = raster.getHeight();
         buffer = new int[width*BAND];
@@ -85,7 +88,7 @@ public class FaxRectifier extends JavaLogging
         error = new int[height];
         dif = new int[height];
     }
-    public void rectify()
+    public void rectify() throws IOException
     {
         findTopBlock();
         fine("top block height is %s", topBlockHeight);
@@ -99,6 +102,7 @@ public class FaxRectifier extends JavaLogging
         }
         //findLineEndBlocks();
         //findBands();
+        ImageIO.write(image, "png", out.toFile());
     }
     private void findLineEndBlocksLength()
     {
