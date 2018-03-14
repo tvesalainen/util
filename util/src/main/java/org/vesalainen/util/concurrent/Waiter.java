@@ -44,7 +44,7 @@ public interface Waiter
      * ExecutionException. However when TimeoutException it returns false.
      * <p>
      * In other words returns true when task is no longer running. Because 
-     * task interruption is not reliable this method is also always reliably.
+     * task interruption is not reliable this method is also not always reliably.
      * @param future
      * @return 
      */
