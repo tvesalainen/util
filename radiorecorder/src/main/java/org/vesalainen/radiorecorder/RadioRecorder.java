@@ -24,12 +24,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.LineUnavailableException;
 import org.vesalainen.ham.AudioRecorder;
+import org.vesalainen.ham.HfFax;
 import org.vesalainen.ham.LocationParser;
+import org.vesalainen.ham.Schedule;
 import org.vesalainen.ham.TimeUtils;
 import org.vesalainen.ham.bc.BroadcastOptimizer;
 import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
+import org.vesalainen.ham.hffax.FaxDecoder;
+import org.vesalainen.ham.hffax.FaxRectifier;
 import org.vesalainen.ham.itshfbc.Noise;
 import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.LoggingCommandLine;
@@ -42,7 +49,7 @@ import org.vesalainen.util.navi.Location;
  */
 public class RadioRecorder extends LoggingCommandLine
 {
-    public static CachedScheduledThreadPool POOL = new CachedScheduledThreadPool();
+    private CachedScheduledThreadPool pool;
     private Path dataDirectory;
     private OffsetDateTime lastSchedule = OffsetDateTime.now();
     private LocationService locationService;
@@ -78,32 +85,118 @@ public class RadioRecorder extends LoggingCommandLine
             return location;
         }
     }
-    public void start() throws IOException, LineUnavailableException
+    public void start() throws IOException, LineUnavailableException, InterruptedException
     {
         init();
         scheduleNext();
+        pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
-    private void scheduleNext() throws IOException
+    private void scheduleNext()
     {
-        BestStation bestStation = optimizer.bestStation(getLocation(), lastSchedule);
-        OffsetDateTime start = TimeUtils.next(lastSchedule, bestStation.getFrom());
-        String filename = String.format("%s_%s_%s_%02d_%02d_%02d.wav", 
-                bestStation.getEmissionClass(),
-                bestStation.getStation().getName(),
-                bestStation.getContent(),
-                start.getDayOfMonth(),
-                start.getHour(),
-                start.getMinute()
-        );
+        try
+        {
+            BestStation bestStation = optimizer.bestStation(getLocation(), lastSchedule);
+            OffsetDateTime start = TimeUtils.next(lastSchedule, bestStation.getFrom());
+            OffsetDateTime end = TimeUtils.next(lastSchedule, bestStation.getTo());
+            lastSchedule = end;
+            OffsetDateTime nextSchedule = start.plusMinutes(1);
+            String filename = String.format("%s_%s_%s_%02d_%02d_%02d",
+                    bestStation.getEmissionClass(),
+                    bestStation.getStation().getName(),
+                    bestStation.getContent(),
+                    start.getDayOfMonth(),
+                    start.getHour(),
+                    start.getMinute()
+            );
+            Path wav = dataDirectory.resolve(filename+".wav");
+            Path png = dataDirectory.resolve(filename+".png");
+            Path cor = dataDirectory.resolve(filename+"_cor.png");
+            Schedule schedule = bestStation.getSchedule();
+            double frequency = bestStation.getFrequency();
+            Runnable starter = null;
+            if (schedule instanceof HfFax)
+            {
+                HfFax fax = (HfFax) schedule;
+                int rpm = fax.getRpm();
+                int ioc = fax.getIoc();
+                starter = pool.concat(
+                        ()->startRecording(frequency/1000, wav),
+                        ()->startFax(rpm, ioc, wav, png),
+                        ()->rectifyFax(png, cor)
+                );
+            }
+            Runnable ender = pool.concat(
+                    ()->stopRecording()
+            );
+            pool.schedule(starter, start);
+            pool.schedule(ender, end);
+            pool.schedule(this::scheduleNext, nextSchedule);
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private void startFax(int lpm, int ioc, Path in, Path out)
+    {
+        try
+        {
+            FaxDecoder decoder = new FaxDecoder(lpm, ioc, in, out);
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private void rectifyFax(Path in, Path out)
+    {
+        try
+        {
+            FaxRectifier rectifier = new FaxRectifier(in, out);
+            rectifier.rectify();
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private void startRecording(double mHz, Path file)
+    {
+        try
+        {
+            fine("startRecording(%f MHz %s)", mHz, file);
+            icomManager.setRemote(true);
+            icomManager.setReceiveFrequency(mHz);
+            audioRecorder.record(file);
+        }
+        catch (IOException | InterruptedException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    private void stopRecording()
+    {
+        try
+        {
+            fine("stopRecording()");
+            audioRecorder.stop();
+            icomManager.setRemote(false);
+        }
+        catch (IOException | InterruptedException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
     private void init() throws IOException, LineUnavailableException
     {
+        pool = new CachedScheduledThreadPool();
         config("using %s as data directory", dataDirectory);
         if (location == null)
         {
             config("starting LocationService(%s, %d)", nmeaGroup, nmeaPort);
-            locationService = new LocationService(nmeaGroup, nmeaPort, POOL);
+            locationService = new LocationService(nmeaGroup, nmeaPort, pool);
             locationService.start();
+            pool.setClock(LocationService.getClock());
         }
         else
         {
@@ -158,7 +251,7 @@ public class RadioRecorder extends LoggingCommandLine
     }
     public void stop() throws IOException, InterruptedException
     {
-        POOL.shutdownNow();
+        pool.shutdownNow();
         locationService.stop();
         icomManager.close();
         audioRecorder.close();
