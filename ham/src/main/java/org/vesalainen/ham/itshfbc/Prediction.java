@@ -17,9 +17,7 @@
 package org.vesalainen.ham.itshfbc;
 
 import java.time.Month;
-import static java.time.Month.*;
 import java.time.OffsetDateTime;
-import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 import static org.vesalainen.ham.TimeUtils.MONTH_PARSER;

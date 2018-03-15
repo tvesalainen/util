@@ -66,6 +66,7 @@ public class BroadcastOptimizer extends JavaLogging
     private BroadcastStationsFile broadcastStation;
     private OrderedList<SimpleRange<OffsetTime>> scheduleList;
     private Map<String,Circuit> circuitMap = new HashMap<>();
+    private double minSNR;
 
     public BroadcastOptimizer()
     {
@@ -115,10 +116,23 @@ public class BroadcastOptimizer extends JavaLogging
                 .filter(new TimeFilter(instant))
                 .filter(new LocationFilter(myLocation))
                 .map((s)->getInstance(s, instant, myLocation))
+                .filter((b)->snrFilter(b))
                 ;
         BestStation best = BestNonOverlapping.best(candidates, this::compare);
         fine("best is %s", best);
         return best;
+    }
+    private boolean snrFilter(BestStation candidate)
+    {
+        if (candidate.snr90() > minSNR)
+        {
+            return true;
+        }
+        else
+        {
+            fine("%s SNR90 < %f", candidate, minSNR);
+            return false;
+        }
     }
     private int compare(BestStation bs1, BestStation bs2)
     {
@@ -216,6 +230,12 @@ public class BroadcastOptimizer extends JavaLogging
         this.BroadcastStationsPath = BroadcastStationsPath;
         return this;
     }
+
+    public BroadcastOptimizer setMinSNR(double minSNR)
+    {
+        this.minSNR = minSNR;
+        return this;
+    }
     
     public class BestStation implements Range<OffsetTime>
     {
@@ -267,6 +287,16 @@ public class BroadcastOptimizer extends JavaLogging
         public CircuitFrequency getCircuit()
         {
             return circuit;
+        }
+
+        public double snr()
+        {
+            return circuit.snr();
+        }
+
+        public double snr90()
+        {
+            return circuit.snr90();
         }
 
         public double getFrequency()

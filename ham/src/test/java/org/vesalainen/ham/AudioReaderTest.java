@@ -21,9 +21,7 @@ import java.net.URL;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ham.hffax.HFFaxT;
 
 /**
  *
@@ -39,7 +37,7 @@ public class AudioReaderTest
     //@Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
-        URL url = HFFaxT.class.getResource("/hffax.wav");
+        URL url = AudioReaderTest.class.getResource("/hffax.wav");
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
         AudioReader ar = AudioReader.getInstance(ais, 1024);
         while (true)

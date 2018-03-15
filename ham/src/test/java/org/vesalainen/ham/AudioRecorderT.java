@@ -18,6 +18,7 @@ package org.vesalainen.ham;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +44,7 @@ public class AudioRecorderT
         try (AudioRecorder ar = new AudioRecorder("Microphone (4- USB PnP Sound De, version Unknown Version"))
         {
            exe.schedule(ar::stop, 5, TimeUnit.SECONDS);
-           ar.record(new File("test.wav"));
+           ar.record(Paths.get("test.wav"));
         }
     }
     

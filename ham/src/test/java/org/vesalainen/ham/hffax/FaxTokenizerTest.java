@@ -38,7 +38,7 @@ public class FaxTokenizerTest
     //@Test
     public void test() throws UnsupportedAudioFileException, IOException
     {
-        URL url = HFFaxT.class.getResource("/hffax.wav");
+        URL url = FaxTokenizerTest.class.getResource("/hffax.wav");
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
         FaxTokenizer ft = new FaxTokenizer(ais);
         FaxListener fl = new FaxListener() {

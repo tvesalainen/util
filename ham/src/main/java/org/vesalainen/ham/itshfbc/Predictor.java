@@ -121,7 +121,7 @@ public class Predictor
                         line = reader.readLine();
                         while (line.length() > 10 && line.charAt(0) != '\f' && !line.startsWith(" *****END OF RUN*****"))
                         {
-                            arr = formatFactory.parse(dataLine, line.replace('-', '0'));
+                            arr = formatFactory.parse(dataLine, line.replace("- ", "0 "));
                             hp.addAttribute(arr);
                             line = reader.readLine();
                         }

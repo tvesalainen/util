@@ -43,7 +43,7 @@ public class FaxDecoderTest
     {
         try
         {
-            URL url = HFFaxT.class.getResource("/hffax.wav");
+            URL url = FaxDecoderTest.class.getResource("/hffax.wav");
             FaxDecoder decoder = new FaxDecoder(120, 576, url, Paths.get("hffax.png"));
             decoder.parse();
         }
