@@ -40,6 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <xsd:attribute name="transmitter-antenna-path" type="xsd:string"/>
         <xsd:attribute name="receiver-antenna-path" type="xsd:string"/>
         <xsd:attribute name="noise" type="noiseType"/>
+        <xsd:attribute name="min-snr" type="xsd:float"/>
     </xsd:complexType>
     <xsd:simpleType name="noiseType">
         <xsd:restriction base="xsd:string">

@@ -1,7 +1,10 @@
 package org.vesalainen.radiorecorder;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.code.PropertySetter;
 import org.vesalainen.parsers.nmea.NMEAService;
 import org.vesalainen.util.navi.Location;
@@ -31,14 +34,28 @@ public class LocationService extends NMEAService implements PropertySetter
 {
     private double latitude;
     private double longitude;
+    private CountDownLatch latch;
     public LocationService(String address, int port, ExecutorService executor) throws IOException
     {
         super(address, port, executor);
+        latch = new CountDownLatch(2);
         addNMEAObserver(this);
     }
 
     public Location getLocation()
     {
+        if (latch != null)
+        {
+            try
+            {
+                latch.await();
+                latch = null;
+            }
+            catch (InterruptedException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
         return new Location(latitude, longitude);
     }
     @Override
@@ -56,8 +73,12 @@ public class LocationService extends NMEAService implements PropertySetter
                 latitude = arg;
                 break;
             case "longitude":
-                latitude = arg;
+                longitude = arg;
                 break;
+        }
+        if (latch != null)
+        {
+            latch.countDown();
         }
     }
 

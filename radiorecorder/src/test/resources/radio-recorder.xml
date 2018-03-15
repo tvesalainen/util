@@ -35,5 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         transmitter-antenna-path="default/Isotrope"
         receiver-antenna-path="default/SWWhip.VOA"
         noise="industrial"
+        min-snr="10"
     />
 </radio-recorder>

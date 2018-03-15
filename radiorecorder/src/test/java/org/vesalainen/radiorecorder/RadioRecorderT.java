@@ -26,10 +26,10 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RadioRecorderTest
+public class RadioRecorderT
 {
     
-    public RadioRecorderTest()
+    public RadioRecorderT()
     {
     }
 

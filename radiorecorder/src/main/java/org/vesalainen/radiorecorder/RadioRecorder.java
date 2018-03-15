@@ -23,10 +23,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.LineUnavailableException;
 import org.vesalainen.ham.AudioRecorder;
 import org.vesalainen.ham.HfFax;
@@ -67,6 +65,7 @@ public class RadioRecorder extends LoggingCommandLine
     private URL broadcastStationsPath;
     private Path transmitterAntennaPath;
     private Path receiverAntennaPath;
+    private double minSNR;
     private Noise noise;
     private BroadcastOptimizer optimizer;
     
@@ -103,7 +102,7 @@ public class RadioRecorder extends LoggingCommandLine
             String filename = String.format("%s_%s_%s_%02d_%02d_%02d",
                     bestStation.getEmissionClass(),
                     bestStation.getStation().getName(),
-                    bestStation.getContent(),
+                    bestStation.getContent().replace('*', '_').replace('/', '_').replace('?', '_').replace('\\', '_').replace(':', '_'),
                     start.getDayOfMonth(),
                     start.getHour(),
                     start.getMinute()
@@ -120,7 +119,7 @@ public class RadioRecorder extends LoggingCommandLine
                 int rpm = fax.getRpm();
                 int ioc = fax.getIoc();
                 starter = pool.concat(
-                        ()->startRecording(frequency/1000, wav),
+                        ()->startRecording(frequency*1000-1.9, wav),
                         ()->startFax(rpm, ioc, wav, png),
                         ()->rectifyFax(png, cor)
                 );
@@ -160,13 +159,13 @@ public class RadioRecorder extends LoggingCommandLine
             throw new RuntimeException(ex);
         }
     }
-    private void startRecording(double mHz, Path file)
+    private void startRecording(double kHz, Path file)
     {
         try
         {
-            fine("startRecording(%f MHz %s)", mHz, file);
+            fine("startRecording(%f KHz %s)", kHz, file);
             icomManager.setRemote(true);
-            icomManager.setReceiveFrequency(mHz);
+            icomManager.setReceiveFrequency(kHz/1000);
             audioRecorder.record(file);
         }
         catch (IOException | InterruptedException ex)
@@ -190,6 +189,7 @@ public class RadioRecorder extends LoggingCommandLine
     private void init() throws IOException, LineUnavailableException
     {
         pool = new CachedScheduledThreadPool();
+        pool.setLogLevel(Level.FINE);
         config("using %s as data directory", dataDirectory);
         if (location == null)
         {
@@ -248,6 +248,7 @@ public class RadioRecorder extends LoggingCommandLine
             config("using Noise(%s)", noise);
             optimizer.setNoise(noise);
         }
+        optimizer.setMinSNR(minSNR);
     }
     public void stop() throws IOException, InterruptedException
     {
@@ -261,6 +262,12 @@ public class RadioRecorder extends LoggingCommandLine
     public void setDataDirectory(String dataDirectory)
     {
         this.dataDirectory = Paths.get(dataDirectory);
+    }
+
+    @Setting("hfPropagationPrediction.minSnr")
+    public void setMinSNR(double minSNR)
+    {
+        this.minSNR = minSNR;
     }
 
     @Setting("hfPropagationPrediction.sunSpotNumberPath")
