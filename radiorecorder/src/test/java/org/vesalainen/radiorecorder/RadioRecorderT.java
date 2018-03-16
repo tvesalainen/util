@@ -36,7 +36,7 @@ public class RadioRecorderT
     @Test
     public void test() throws IOException
     {
-        RadioRecorder.main("-pl", "FINE", "-ll", "FINE",  "src\\test\\resources\\radio-recorder.xml");
+        RadioRecorder.main("-pl", "FINER", "-ll", "FINER",  "src\\test\\resources\\radio-recorder.xml");
     }
     
 }

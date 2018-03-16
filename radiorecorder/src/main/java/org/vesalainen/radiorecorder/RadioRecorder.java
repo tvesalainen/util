@@ -22,9 +22,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import static java.util.logging.Level.*;
 import javax.sound.sampled.LineUnavailableException;
 import org.vesalainen.ham.AudioRecorder;
 import org.vesalainen.ham.HfFax;
@@ -49,7 +52,7 @@ public class RadioRecorder extends LoggingCommandLine
 {
     private CachedScheduledThreadPool pool;
     private Path dataDirectory;
-    private OffsetDateTime lastSchedule = OffsetDateTime.now();
+    private OffsetDateTime lastSchedule;
     private LocationService locationService;
     private String nmeaGroup;
     private int nmeaPort;
@@ -60,7 +63,6 @@ public class RadioRecorder extends LoggingCommandLine
     private String mixerName;
     private float sampleRate;
     private int sampleSizeInBits;
-    private AudioRecorder audioRecorder;
     private Path sunSpotNumberPath;
     private URL broadcastStationsPath;
     private Path transmitterAntennaPath;
@@ -68,6 +70,7 @@ public class RadioRecorder extends LoggingCommandLine
     private double minSNR;
     private Noise noise;
     private BroadcastOptimizer optimizer;
+    private AudioRecorder audioRecorder;
     
     public RadioRecorder()
     {
@@ -131,19 +134,22 @@ public class RadioRecorder extends LoggingCommandLine
             pool.schedule(ender, end);
             pool.schedule(this::scheduleNext, nextSchedule);
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            throw new RuntimeException(ex);
+            log(SEVERE, ex, "scheduleNext %s", ex.getMessage());
         }
     }
     private void startFax(int lpm, int ioc, Path in, Path out)
     {
         try
         {
+            fine("startFax(%d, %d, %s, %s", lpm, ioc, in, out);
             FaxDecoder decoder = new FaxDecoder(lpm, ioc, in, out);
+            decoder.parse();
         }
-        catch (MalformedURLException ex)
+        catch (Exception ex)
         {
+            log(SEVERE, ex, "startFax %s", ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
@@ -151,11 +157,13 @@ public class RadioRecorder extends LoggingCommandLine
     {
         try
         {
+            fine("rectifyFax(%s, %s", in, out);
             FaxRectifier rectifier = new FaxRectifier(in, out);
             rectifier.rectify();
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
+            log(SEVERE, ex, "rectifyFax %s", ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
@@ -164,12 +172,15 @@ public class RadioRecorder extends LoggingCommandLine
         try
         {
             fine("startRecording(%f KHz %s)", kHz, file);
+            config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
+            audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
             icomManager.setRemote(true);
             icomManager.setReceiveFrequency(kHz/1000);
             audioRecorder.record(file);
         }
-        catch (IOException | InterruptedException ex)
+        catch (Exception ex)
         {
+            log(SEVERE, ex, "startRecording %s", ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
@@ -178,11 +189,12 @@ public class RadioRecorder extends LoggingCommandLine
         try
         {
             fine("stopRecording()");
-            audioRecorder.stop();
+            audioRecorder.close();
             icomManager.setRemote(false);
         }
-        catch (IOException | InterruptedException ex)
+        catch (Exception ex)
         {
+            log(SEVERE, ex, "stopRecording %s", ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
@@ -196,10 +208,14 @@ public class RadioRecorder extends LoggingCommandLine
             config("starting LocationService(%s, %d)", nmeaGroup, nmeaPort);
             locationService = new LocationService(nmeaGroup, nmeaPort, pool);
             locationService.start();
-            pool.setClock(LocationService.getClock());
+            locationService.getLocation();  // to wait until service is running
+            Clock clock = LocationService.getClock();
+            pool.setClock(clock);
+            lastSchedule = OffsetDateTime.now(clock);
         }
         else
         {
+            lastSchedule = OffsetDateTime.now(ZoneOffset.UTC);
             config("using %s as location", location);
         }
         if (radioPort != null && !radioPort.isEmpty())
@@ -219,8 +235,6 @@ public class RadioRecorder extends LoggingCommandLine
                 throw new RuntimeException(ex);
             }
         }
-        config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
-        audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
         config("starting BroadcastOptimizer");
         optimizer = new BroadcastOptimizer();
         if (sunSpotNumberPath != null)
@@ -250,12 +264,19 @@ public class RadioRecorder extends LoggingCommandLine
         }
         optimizer.setMinSNR(minSNR);
     }
-    public void stop() throws IOException, InterruptedException
+    public void stop()
     {
-        pool.shutdownNow();
-        locationService.stop();
-        icomManager.close();
-        audioRecorder.close();
+        try
+        {
+            pool.shutdownNow();
+            locationService.stop();
+            icomManager.close();
+            audioRecorder.close();
+        }
+        catch (IOException | InterruptedException ex)
+        {
+            log(Level.SEVERE, ex, "%s", ex.getMessage());
+        }
     }
 
     @Setting("files.directory")
@@ -364,6 +385,7 @@ public class RadioRecorder extends LoggingCommandLine
             ConfigFile config = new ConfigFile(configfile);
             config.load();
             config.attachInstant(recorder);
+            Runtime.getRuntime().addShutdownHook(new Thread(recorder::stop));
             recorder.start();
         }
         catch (Exception ex)
