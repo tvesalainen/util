@@ -75,7 +75,7 @@ public class BroadcastStationsFile
 
     public BroadcastStationsFile()
     {
-        this(BroadcastStationsFile.class.getResource("/broadscast-stations.xml"));
+        this(BroadcastStationsFile.class.getResource("/broadcast-stations.xml"));
     }
 
     public BroadcastStationsFile(Path file)

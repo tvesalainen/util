@@ -26,6 +26,7 @@ import java.time.OffsetTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static java.util.logging.Level.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.bind.JAXBException;
@@ -40,6 +41,7 @@ import org.vesalainen.ham.TimeFilter;
 import org.vesalainen.ham.Transmitter;
 import org.vesalainen.ham.itshfbc.Circuit;
 import org.vesalainen.ham.itshfbc.CircuitFrequency;
+import org.vesalainen.ham.itshfbc.HourPrediction;
 import org.vesalainen.ham.itshfbc.Noise;
 import org.vesalainen.ham.itshfbc.RSN;
 import org.vesalainen.ham.jaxb.ScheduleType;
@@ -130,7 +132,7 @@ public class BroadcastOptimizer extends JavaLogging
         }
         else
         {
-            fine("%s SNR90 < %f", candidate, minSNR);
+            fine("skipping %s SNR90 < %f", candidate, minSNR);
             return false;
         }
     }
@@ -166,6 +168,13 @@ public class BroadcastOptimizer extends JavaLogging
                 .map((t->getPrediction(schedule, utc, myLocation, t)))
                 .collect(Collectors.toList());
         freqs.sort(null);
+        if (isLoggable(FINER))
+        {
+            for (CircuitFrequency cf : freqs)
+            {
+                finer("%s", cf);
+            }
+        }
         CircuitFrequency best = freqs.get(0);
         BestStation candidate = new BestStation(schedule, best, myLocation);
         fine("candidate %s", candidate);
@@ -200,7 +209,9 @@ public class BroadcastOptimizer extends JavaLogging
                 throw new RuntimeException(ex);
             }
         }
-        return new CircuitFrequency(circuit, frequency, circuit.getPrediction().getHourPrediction(utc.getHour()), transmitter.getEmissionClass());
+        HourPrediction hourPrediction = circuit.getPrediction().getHourPrediction(utc.getHour());
+        finer("hourPrediction %d %s", hourPrediction.getHour(), utc);
+        return new CircuitFrequency(circuit, frequency, hourPrediction, transmitter.getEmissionClass());
     }
     public BroadcastOptimizer setSunSpotNumberPath(Path sunSpotNumberPath)
     {

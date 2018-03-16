@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ham;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import javax.sound.sampled.AudioFileFormat.Type;
@@ -27,12 +26,13 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioRecorder implements AutoCloseable
+public class AudioRecorder extends JavaLogging implements AutoCloseable
 {
     private TargetDataLine targetDataLine;
     
@@ -42,9 +42,11 @@ public class AudioRecorder implements AutoCloseable
     }
     public AudioRecorder(String mixerName, float sampleRate, int sampleSizeInBits) throws LineUnavailableException
     {
+        super(AudioRecorder.class);
         AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSizeInBits, 1, true, false);
-        Type[] audioFileTypes = AudioSystem.getAudioFileTypes();
+        config("AudioRecorder(%s)", audioFormat);
         Mixer.Info mixerInfo = mixer(mixerName, audioFormat);
+        config("using mixer %s", mixerInfo);
         if (mixerInfo != null)
         {
             targetDataLine = AudioSystem.getTargetDataLine(audioFormat, mixerInfo);
@@ -61,16 +63,14 @@ public class AudioRecorder implements AutoCloseable
     }
     public void record(Path file, Type type) throws IOException
     {
+        fine("start record(%s, %s)", file, type);
         targetDataLine.stop();
         targetDataLine.start();
         try (AudioInputStream in = new AudioInputStream(targetDataLine))
         {
             AudioSystem.write(in, type, file.toFile());
         }
-    }
-    public void stop()
-    {
-        targetDataLine.stop();
+        fine("stopped recording");
     }
     private Mixer.Info mixer(String name, AudioFormat audioFormat)
     {

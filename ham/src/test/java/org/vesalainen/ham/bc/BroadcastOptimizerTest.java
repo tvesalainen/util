@@ -22,9 +22,15 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import javax.xml.bind.JAXBException;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.BroadcastStationsFile;
+import org.vesalainen.ham.Schedule;
+import org.vesalainen.ham.Station;
 import org.vesalainen.ham.TimeUtils;
 import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
 import org.vesalainen.util.logging.JavaLogging;
@@ -43,8 +49,9 @@ public class BroadcastOptimizerTest
     }
 
     @Test
-    public void test1() throws IOException
+    public void test1() throws IOException, JAXBException
     {
+        dumpStations();
         BroadcastOptimizer opt = new BroadcastOptimizer();
         OffsetDateTime start = OffsetDateTime.now();
         OffsetDateTime end = start.plus(1, ChronoUnit.DAYS);
@@ -55,5 +62,21 @@ public class BroadcastOptimizerTest
             now = TimeUtils.next(now, bestStation.getTo());
         }
     }
-    
+    private void dumpStations() throws IOException, JAXBException
+    {
+        BroadcastStationsFile bsf = new BroadcastStationsFile();
+        bsf.load();
+        List<Schedule> list = bsf.getStations()
+                .values()
+                .stream()
+                .collect(
+                        ArrayList::new,
+                        (List<Schedule> r,Station s)->r.addAll(s.getSchedules()), 
+                        (List<Schedule> r1,List<Schedule> r2)->r1.addAll(r2));
+        list.sort(null);
+        for (Schedule s : list)
+        {
+            System.err.println(s);
+        }
+    }
 }

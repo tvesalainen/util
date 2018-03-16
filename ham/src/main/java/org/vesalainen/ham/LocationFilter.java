@@ -17,19 +17,21 @@
 package org.vesalainen.ham;
 
 import java.util.function.Predicate;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationFilter implements Predicate<Schedule>
+public class LocationFilter extends JavaLogging implements Predicate<Schedule>
 {
     
     private Location location;
 
     public LocationFilter(Location location)
     {
+        super(LocationFilter.class);
         this.location = location;
     }
 
@@ -39,7 +41,12 @@ public class LocationFilter implements Predicate<Schedule>
         if (schedule instanceof HfFax)
         {
             HfFax fax = (HfFax) schedule;
-            return fax.inMap(location) || fax.getStation().inAnyMap(location);
+            boolean b = fax.inMap(location) || fax.getStation().inAnyMap(location);
+            if (!b)
+            {
+                finer("dropping %s because not in an map", schedule);
+            }
+            return b;
         }
         return true;
     }

@@ -33,13 +33,14 @@ import org.vesalainen.parsers.printf.FormatFactory;
 import org.vesalainen.parsers.printf.FormatFactory.FormatPart;
 import org.vesalainen.parsers.printf.PrintfParser;
 import org.vesalainen.util.OSProcess;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Predictor
+public class Predictor extends JavaLogging
 {
 
     private Path itshfbc = Paths.get("C:\\itshfbc");
@@ -57,6 +58,7 @@ public class Predictor
 
     public Predictor()
     {
+        super(Predictor.class);
         formatFactory = new FormatFactory();
         prinfParser = PrintfParser.getInstance();
         monthLine = prinfParser.parse("  %3.3s    %4d          SSN =  %3f                Minimum Angle= %5.3f degrees", formatFactory);
@@ -79,6 +81,7 @@ public class Predictor
         {
             for (CommandLine line : input)
             {
+                debug("%s", line);
                 outw.append(line.toString()).append("\r\n");
             }
         }
@@ -113,6 +116,7 @@ public class Predictor
                     if (line.endsWith("FREQ"))
                     {
                         Object[] arr = formatFactory.parse(freqLine, line);
+                        debug("%s", line);
                         HourPrediction hp = new HourPrediction(frequencies, arr);
                         prediction.addHour(hp);
                         line = reader.readLine();
@@ -123,6 +127,7 @@ public class Predictor
                         {
                             arr = formatFactory.parse(dataLine, line.replace("- ", "0 "));
                             hp.addAttribute(arr);
+                            debug("%s", line);
                             line = reader.readLine();
                         }
                     }

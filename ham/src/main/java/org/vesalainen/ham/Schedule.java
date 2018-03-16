@@ -87,5 +87,11 @@ public class Schedule<T extends ScheduleType> extends SimpleRange<OffsetTime> im
     {
         return schedule.getContent();
     }
+
+    @Override
+    public String toString()
+    {
+        return super.toString()+" "+station.getName()+" "+getContent();
+    }
     
 }

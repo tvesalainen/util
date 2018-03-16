@@ -19,19 +19,20 @@ package org.vesalainen.ham;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.function.Predicate;
-import org.vesalainen.ham.jaxb.ScheduleType;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeFilter implements Predicate<Schedule>
+public class TimeFilter extends JavaLogging implements Predicate<Schedule>
 {
     
     private OffsetDateTime utc;
 
     public TimeFilter(OffsetDateTime utc)
     {
+        super(TimeFilter.class);
         this.utc = utc;
     }
 
@@ -39,7 +40,12 @@ public class TimeFilter implements Predicate<Schedule>
     public boolean test(Schedule schedule)
     {
         OffsetDateTime with = TimeUtils.next(utc, (OffsetTime)schedule.getFrom());
-        return schedule.isInRange(with) && schedule.getStation().isInRange(with);
+        boolean b = schedule.isInRange(with) && schedule.getStation().isInRange(with);
+        if (!b)
+        {
+            finer("dropping %s because of time-range", schedule);
+        }
+        return b;
     }
     
 }

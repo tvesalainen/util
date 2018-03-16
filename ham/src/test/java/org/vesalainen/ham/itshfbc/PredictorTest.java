@@ -60,7 +60,10 @@ public class PredictorTest
                 .execute()
                 .quit();
         System.err.println(p);
-        p.predict();
+        Prediction prediction = p.predict();
+        HourPrediction hourPrediction = prediction.getHourPrediction(12);
+        assertEquals(56.0, hourPrediction.getValue("SNRxx", 14.0), 1e-8);
+        assertEquals(68.0, hourPrediction.getValue("SNR", 14.0), 1e-8);
     }
     @Test
     public void testAntenna()
