@@ -35,7 +35,7 @@ public class FFTTest
     }
 
     @Test
-    public void test1() throws LineUnavailableException
+    public void test1()
     {
         double pitch1 = 60;
         int rate = 5120;
@@ -45,7 +45,7 @@ public class FFTTest
         assertEquals(pitch1, fft.frequency(rate, ia), 1e-5);
     }
     @Test
-    public void test2() throws LineUnavailableException
+    public void test2()
     {
         double pitch1 = 60;
         int rate = 5120;
