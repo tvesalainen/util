@@ -34,22 +34,26 @@ public class FFT
 
     public FFT(int n)
     {
+        this.n = n;
+        this.m = exponentOf(n);
+        x = new double[n];
+        y = new double[n];
+    }
+    public static final int exponentOf(int n)
+    {
         if (Integer.bitCount(n) != 1)
         {
             throw new IllegalArgumentException(n+" is not power of 2");
         }
-        m = 0;
+        int m = 0;
         int nn = n;
         while (nn != 1)
         {
             nn/=2;
             m++;
         }
-        this.n = n;
-        x = new double[n];
-        y = new double[n];
+        return m;
     }
-    
     public double frequency(float sampleRate, IntArray sample)
     {
         fft(true, sample);

@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
@@ -34,12 +35,43 @@ public class WavesTest
     }
 
     @Test
-    public void testSamples() throws IOException
+    public void testSamplesFM() throws IOException
     {
-        TimeDomain sample = Waves.createSample(5000, 1, TimeUnit.SECONDS, 
-                Waves.of(50, 500, Math.PI)
-        );
-        Waves.plot(sample, Paths.get("sample.png"));
+        TimeDomain td = Waves.createFMSample(4096, 200, 40, 80, TimeUnit.MILLISECONDS, 250, 250, 250, 250);
+        IntArray samples = td.getSamples();
+        Waves.addWhiteNoise(samples, 300);
+        Waves.plot(samples, Paths.get("fm.png"));
+        FrequencyDomain fd = Waves.fft(td);
+        Waves.plot(fd, Paths.get("fftfm.png"));
+        Waves.window(fd, 30, 90);
+        TimeDomain ifft = Waves.ifft(fd);
+        Waves.plot(ifft.getSamples(), Paths.get("ifftfm.png"));
     }
-    
+    @Test
+    public void testSamples0() throws IOException
+    {
+        TimeDomain td = Waves.createSample(4096, 10, 1, TimeUnit.SECONDS, 
+                Waves.of(10, 500, Math.PI/2)
+        );
+        IntArray samples = td.getSamples();
+        Waves.plot(samples, Paths.get("samples.png"));
+        FrequencyDomain fd = Waves.fft(td);
+        Waves.plot(fd, Paths.get("fft.png"));
+        TimeDomain ifft = Waves.ifft(fd);
+        Waves.plot(ifft.getSamples(), Paths.get("ifft.png"));
+    }
+    @Test
+    public void testSamples1() throws IOException
+    {
+        double phase = -Math.PI/4;
+        TimeDomain td = Waves.createSample(4096, 10, 1, TimeUnit.SECONDS, 
+                Waves.of(10, 500, phase)
+        );
+        FrequencyDomain fd = Waves.fft(td);
+        assertEquals(250, fd.getMagnitude(10), 1);
+        System.err.println(Math.toDegrees(phase));
+        System.err.println(Math.toDegrees(fd.getPhase(10)));
+        System.err.println(fd.getRe(10)+", "+fd.getIm(10));
+        assertEquals(phase, fd.getPhase(10), 1e-5);
+    }    
 }

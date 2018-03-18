@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.time.Duration;
 import org.vesalainen.nio.IntArray;
 
 /**
@@ -24,15 +25,15 @@ import org.vesalainen.nio.IntArray;
  */
 public interface TimeDomain
 {
-    default long getTimeInNanos()
+    default Duration getDuration()
     {
-        return 1000000000*getSampleCount()/getSampleRate();
+        return Duration.ofNanos(1000000000*getSampleCount()/(int)getSampleFrequency());
     }
-    default long getSamplingInterval()
+    default Duration getSamplingInterval()
     {
-        return 1000000000/getSampleRate();
+        return Duration.ofNanos(1000000000/(int)getSampleFrequency());
     }
-    int getSampleRate();
+    double getSampleFrequency();
     default int getSampleCount()
     {
         return getSamples().length();

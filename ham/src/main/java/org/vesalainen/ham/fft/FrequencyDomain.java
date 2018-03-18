@@ -16,11 +16,46 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.util.stream.Stream;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface FrequencyDomain
 {
-    
+    Stream<Frequency> stream(double minMagnitude);
+    double getSampleFrequency();
+    default double getNyqvistFrequency()
+    {
+        return getSampleFrequency()/2;
+    }
+    int getSampleCount();
+    default double getFrequencyInterval()
+    {
+        return getSampleFrequency()/getSampleCount();
+    }
+    int getFrequencyIndex(double frequency);
+    default double getMagnitude(double frequency)
+    {
+        return getMagnitude(getFrequencyIndex(frequency));
+    }
+    default double getPhase(double frequency)
+    {
+        return getPhase(getFrequencyIndex(frequency));
+    }
+    default double getRe(double frequency)
+    {
+        return getRe(getFrequencyIndex(frequency));
+    }
+    default double getIm(double frequency)
+    {
+        return getIm(getFrequencyIndex(frequency));
+    }
+    double getMagnitude(int index);
+    double getPhase(int index);
+    double getRe(int index);
+    double getIm(int index);
+    double[] getRe();
+    double[] getIm();
 }
