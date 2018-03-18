@@ -188,23 +188,23 @@ public abstract class IntArray
      */
     public abstract int getBits();
     /**
-     * Returns byte count of undelying buffer.
+     * Returns byte count of underlying buffer.
      * @return 
      */
     public abstract int getBytes();
     /**
-     * Returns the maximum possible value of this IntArray. Not te current max value.
+     * Returns the maximum possible value of this IntArray. Not the current max value.
      * @return 
      */
     public abstract int getMaxPossibleValue();
     /**
-     * Returns the minimum possible value of this IntArray. Not te current min value.
+     * Returns the minimum possible value of this IntArray. Not the current min value.
      * @return 
      */
     public abstract int getMinPossibleValue();
     /**
      * Copies given IntArrays values to this. Throws IllegalArgumentException
-     * is lengths are not same.
+     * if lengths are not same.
      * @param to 
      */
     public void copy(IntArray to)
