@@ -17,6 +17,7 @@
 package org.vesalainen.ham.fft;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +94,8 @@ public class Waves
             duration += d;
         }
         int size = (int) (unit.toNanos(duration)*sampleFrequency/1000000000);
-        IntArray samples = IntArray.getInstance(size);
+        byte[] b = new byte[2*size];
+        IntArray samples = IntArray.getInstance(b, 16, ByteOrder.BIG_ENDIAN);
         double[] d = new double[2];
         double waveLenOn = sampleFrequency / on;
         d[0] = (2* Math.PI) / waveLenOn;

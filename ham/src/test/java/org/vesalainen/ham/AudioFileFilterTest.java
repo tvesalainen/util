@@ -16,13 +16,10 @@
  */
 package org.vesalainen.ham;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,22 +27,28 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioRecorderT
+public class AudioFileFilterTest
 {
     
-    public AudioRecorderT()
+    public AudioFileFilterTest()
     {
     }
 
-    @Test
-    public void test() throws LineUnavailableException, IOException
+    //@Test
+    public void test0() throws IOException, UnsupportedAudioFileException
     {
-        ScheduledExecutorService exe = Executors.newScheduledThreadPool(1);
-        try (AudioRecorder ar = new AudioRecorder("Microphone (4- USB PnP Sound De, version Unknown Version"))
-        {
-           exe.schedule(ar::close, 5, TimeUnit.SECONDS);
-           ar.record(Paths.get("test.wav"));
-        }
+        Path cur = Paths.get(".", "src", "test", "resources");
+        Path in = cur.resolve("wefax1.wav");
+        Path out = cur.resolve("wefax1_fil.wav");
+        AudioFileFilter.filter(in, out);
+    }
+    @Test
+    public void test() throws IOException, UnsupportedAudioFileException
+    {
+        Path temp = Paths.get("c:\\temp");
+        Path in = temp.resolve("F3C_PT. REYES, CALIFORNIA, U.S.A._WIND_WAVE ANALYSIS_16_19_13.wav");
+        Path out = temp.resolve("FILTERED_F3C_PT. REYES, CALIFORNIA, U.S.A._WIND_WAVE ANALYSIS_16_19_13.wav");
+        AudioFileFilter.filter(in, out);
     }
     
 }

@@ -16,36 +16,27 @@
  */
 package org.vesalainen.ham;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import javax.sound.sampled.LineUnavailableException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.nio.file.Path;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import org.vesalainen.ham.fft.FilterAudioInputStream;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioRecorderT
+public class AudioFileFilter
 {
-    
-    public AudioRecorderT()
+    public static final void filter(Path in, Path out) throws IOException, UnsupportedAudioFileException
     {
-    }
-
-    @Test
-    public void test() throws LineUnavailableException, IOException
-    {
-        ScheduledExecutorService exe = Executors.newScheduledThreadPool(1);
-        try (AudioRecorder ar = new AudioRecorder("Microphone (4- USB PnP Sound De, version Unknown Version"))
+        try (   AudioInputStream ais = AudioSystem.getAudioInputStream(in.toFile());
+                FilterAudioInputStream fais = new FilterAudioInputStream(ais, 512, 1000, 3000)
+                )
         {
-           exe.schedule(ar::close, 5, TimeUnit.SECONDS);
-           ar.record(Paths.get("test.wav"));
+            AudioSystem.write(fais, AudioFileFormat.Type.WAVE, out.toFile());
         }
     }
-    
 }

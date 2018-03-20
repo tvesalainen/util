@@ -27,10 +27,10 @@ import org.vesalainen.nio.IntArray;
  */
 public class FFT
 {
-    private int n;
-    private int m;
-    private double[] x;
-    private double[] y;
+    protected int n;
+    protected int m;
+    protected double[] x;
+    protected double[] y;
 
     public FFT(int n)
     {
@@ -54,29 +54,7 @@ public class FFT
         }
         return m;
     }
-    public double frequency(float sampleRate, IntArray sample)
-    {
-        fft(true, sample);
-        int len = sample.length()/2;
-        double f = 0;
-        double d = sampleRate/sample.length();
-        int max = Short.MIN_VALUE;
-        for (int ii=0;ii<len;ii++)
-        {
-            int v = sample.get(ii);
-            if (v > max)
-            {
-                max = v;
-                f = d*ii;
-            }
-        }
-        return f;
-    }
-    public void fft(boolean forward, IntArray sample)
-    {
-        fft(forward, sample, sample);
-    }
-    public void fft(boolean forward, IntArray in, IntArray out)
+    public void forward(IntArray in)
     {
         if (in.length() != x.length)
         {
@@ -87,34 +65,18 @@ public class FFT
             x[ii] = in.get(ii);
         }
         Arrays.fill(y, 0);
-        fft(forward, m, x, y);
+        fft(true, m, x, y);
+    }
+    public void reverse(IntArray out)
+    {
+        if (out.length() != x.length)
+        {
+            throw new IllegalArgumentException("illegal length");
+        }
+        fft(false, m, x, y);
         for (int ii=0;ii<n;ii++)
         {
-            out.put(ii, (int) Math.hypot(x[ii], y[ii]));
-        }
-    }
-    public static double average(float sampleRate, IntArray sample)
-    {
-        int len = sample.length()/2;
-        double ave = 0;
-        for (int ii=0;ii<len;ii++)
-        {
-            ave += sample.get(ii);
-        }
-        return ave/len;
-    }
-    public static double frequencyStrength(float sampleRate, float frequency, IntArray sample)
-    {
-        int len = sample.length()/2;
-        double d = sampleRate/sample.length();
-        int index = (int) (frequency/d);
-        if (index < sample.length())
-        {
-            return sample.get(index);
-        }
-        else
-        {
-            throw new IllegalArgumentException("frequency too high");
+            out.put(ii, (int) x[ii]);
         }
     }
     /*
