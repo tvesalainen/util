@@ -16,6 +16,7 @@
  */
 package org.vesalainen.nio;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -32,8 +33,14 @@ import org.vesalainen.util.function.IntBiConsumer;
  * IntArray creates a view over byte, short and int arrays and buffers.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class IntArray
+public abstract class IntArray<T extends Buffer>
 {
+    protected T buffer;
+    
+    public int length()
+    {
+        return buffer.limit();
+    }
     /**
      * Creates IntArray backed by byte array
      * @param buffer
@@ -166,11 +173,6 @@ public abstract class IntArray
         return new InArray(size);
     }
     /**
-     * Returns length of IntArray
-     * @return 
-     */
-    public abstract int length();
-    /**
      * Returns value at index.
      * @param index
      * @return 
@@ -231,6 +233,18 @@ public abstract class IntArray
             consumer.accept(ii, get(ii));
         }
     }
+    public void fill(double[] array)
+    {
+        if (array.length != length())
+        {
+            throw new IllegalArgumentException("illegal length");
+        }
+        int len = length();
+        for (int ii=0;ii<len;ii++)
+        {
+            array[ii] = get(ii);
+        }
+    }
     /**
      * Returns stream of IntArrays contents.
      * @return 
@@ -255,30 +269,23 @@ public abstract class IntArray
     {
         return new IntIterator();
     }
-    public static class ByteArray extends IntArray
+    public static class ByteArray extends IntArray<ByteBuffer>
     {
-        private ByteBuffer bb;
 
         public ByteArray(ByteBuffer bb)
         {
-            this.bb = bb;
+            this.buffer = bb;
         }
-        @Override
-        public int length()
-        {
-            return bb.limit();
-        }
-
         @Override
         public int get(int index)
         {
-            return bb.get(index);
+            return buffer.get(index);
         }
 
         @Override
         public void put(int index, int value)
         {
-            bb.put(index, (byte) value);
+            buffer.put(index, (byte) value);
         }
 
         @Override
@@ -306,30 +313,23 @@ public abstract class IntArray
         }
                 
     }
-    public static class ShortArray extends IntArray
+    public static class ShortArray extends IntArray<ShortBuffer>
     {
-        private ShortBuffer sb;
 
         public ShortArray(ShortBuffer bb)
         {
-            this.sb = bb;
+            this.buffer = bb;
         }
-        @Override
-        public int length()
-        {
-            return sb.limit();
-        }
-
         @Override
         public int get(int index)
         {
-            return sb.get(index);
+            return buffer.get(index);
         }
 
         @Override
         public void put(int index, int value)
         {
-            sb.put(index, (short) value);
+            buffer.put(index, (short) value);
         }
 
         @Override
@@ -357,9 +357,8 @@ public abstract class IntArray
         }
                 
     }
-    public static class InArray extends IntArray
+    public static class InArray extends IntArray<IntBuffer>
     {
-        private IntBuffer ib;
 
         public InArray(int size)
         {
@@ -368,24 +367,18 @@ public abstract class IntArray
 
         public InArray(IntBuffer ib)
         {
-            this.ib = ib;
+            this.buffer = ib;
         }
-        @Override
-        public int length()
-        {
-            return ib.limit();
-        }
-
         @Override
         public int get(int index)
         {
-            return ib.get(index);
+            return buffer.get(index);
         }
 
         @Override
         public void put(int index, int value)
         {
-            ib.put(index, value);
+            buffer.put(index, value);
         }
 
         @Override
