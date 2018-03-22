@@ -19,6 +19,7 @@ package org.vesalainen.nio;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import static java.nio.ByteOrder.*;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.PrimitiveIterator;
@@ -170,7 +171,28 @@ public abstract class IntArray<T extends Buffer>
      */
     public static IntArray getInstance(int size)
     {
-        return new InArray(size);
+        return getInstance(size, 32, BIG_ENDIAN);
+    }
+    /**
+     * Creates IntArray of given length, bitCount and byte-order
+     * @param size
+     * @param bitCount
+     * @param order
+     * @return 
+     */
+    public static IntArray getInstance(int size, int bitCount, ByteOrder order)
+    {
+        switch (bitCount)
+        {
+            case 8:
+                return getInstance(new byte[size], bitCount, order);
+            case 16:
+                return getInstance(new byte[2*size], bitCount, order);
+            case 32:
+                return new InArray(size);
+            default:
+                throw new UnsupportedOperationException(bitCount+" not supported");
+        }
     }
     /**
      * Returns value at index.
