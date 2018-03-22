@@ -16,14 +16,15 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
-import java.awt.Color;
 import static java.awt.Color.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.util.HashMap;
+import static java.nio.ByteOrder.*;
 import java.util.Hashtable;
-import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,14 +34,15 @@ import javax.swing.event.ChangeListener;
 import org.vesalainen.ham.fft.TimeDomain;
 import org.vesalainen.ham.fft.Waves;
 import org.vesalainen.nio.IntArray;
+import org.vesalainen.ui.AbstractView;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimePanel extends JPanel implements ChangeListener
+public class TimePanel extends JPanel implements ChangeListener, SourceListener
 {
-    private Map<Integer,Double> timeValueMap = new HashMap<>(); 
+    private SortedMap<Integer,Double> timeValueMap = new TreeMap<>(); 
     private Hashtable<Integer,JLabel> labelTable = new Hashtable<>();
     private JSlider timeSlider;
     private double sweepTime;
@@ -48,46 +50,76 @@ public class TimePanel extends JPanel implements ChangeListener
     private int[] x;
     private int[] y;
     private int n;
+    private AbstractView view = new AbstractView(false);
+    private double sampleFrequency;
+    private int bitCount;
+    private IntArray array;
     
     public TimePanel()
     {
         initTime();
     }
 
-    public void update(double sampleFrequency, int bitCount, IntArray array)
+    @Override
+    public void update(double sampleFrequency, int bitCount, IntArray array, String channel)
     {
-        int length = array.length();
-        // raising trigger
-        int start = trigger(array);
-        n = (int) (sweepTime*sampleFrequency);
-        if (x == null || x.length < n)
+        this.sampleFrequency = sampleFrequency;
+        this.bitCount = bitCount;
+        if (this.array == null || this.array.length() != array.length())
         {
-            x = new int[n];
-            y = new int[n];
+            this.array = IntArray.getInstance(array.length(), bitCount, BIG_ENDIAN);
+            x = new int[array.length()];
+            y = new int[array.length()];
         }
-        int maxAmplitude = maxAmplitude(bitCount);
-        Rectangle bounds = getBounds();
-        int halfHeight = bounds.height/2;
-        for (int ii=0;ii<n;ii++)
-        {
-            int s = array.get(start+ii);
-            x[ii] = ii*bounds.height/n;
-            y[ii] = s*halfHeight/maxAmplitude+halfHeight;
-        }
+        this.array.copy(array);
+        updateTimeModel(sampleFrequency, array.length());
+    }
+
+    @Override
+    public void update()
+    {
         repaint();
     }
-    private int maxAmplitude(int bitCount)
+    
+    private void updateTimeModel(double sampleFrequency, double length)
     {
-        switch (bitCount)
+        if (timeSlider != null)
         {
-            case 8:
-                return Byte.MAX_VALUE;
-            case 16:
-                return Short.MAX_VALUE;
-            case 32:
-                return Integer.MAX_VALUE;
-            default:
-                throw new UnsupportedOperationException(bitCount+" not supported");
+            double maxFreq = length/sampleFrequency;
+            double minFreq = 1.0/sampleFrequency;
+            int min = timeValueMap.lastKey();
+            int max = timeValueMap.firstKey();
+            for (Entry<Integer, Double> e : timeValueMap.entrySet())
+            {
+                if (e.getValue() >= minFreq)
+                {
+                    min = Math.min(min, e.getKey());
+                }
+                if (e.getValue() <= maxFreq)
+                {
+                    max = Math.max(max, e.getKey());
+                }
+            }
+            timeSlider.setMaximum(max);
+            timeSlider.setMinimum(min);
+        }
+    }
+    private void updateXY()
+    {
+        if (array != null)
+        {
+            int start = trigger(array);
+            n = (int) (sweepTime*sampleFrequency);
+            int maxAmplitude = Waves.maxAmplitude(bitCount);
+            view.setRect(0, n, -maxAmplitude, maxAmplitude);
+            Rectangle bounds = getBounds();
+            view.setScreen(bounds.width, bounds.height);
+            for (int ii=0;ii<n;ii++)
+            {
+                int s = array.get(start+ii);
+                x[ii] = (int) view.toScreenX(ii);
+                y[ii] = (int) view.toScreenY(s);
+            }
         }
     }
     private int trigger(IntArray array)
@@ -99,12 +131,13 @@ public class TimePanel extends JPanel implements ChangeListener
             int cur = array.get(ii);
             if (prev < trigger && cur >= trigger)
             {
-                return ii;
+                return Math.abs(prev - trigger) < Math.abs(cur - trigger) ? ii : ii-1;
             }
             prev = cur;
         }
-        throw new IllegalArgumentException("trigger failed");
+        return 0;
     }
+    
     @Override
     protected void paintComponent(Graphics graphics)
     {
@@ -112,22 +145,26 @@ public class TimePanel extends JPanel implements ChangeListener
         Rectangle b = getBounds();
         g.setBackground(BLACK);
         g.clearRect(0, 0, b.width, b.height);
-        // coordinates
-        g.setColor(LIGHT_GRAY);
-        int cw = b.height/10;
-        int ch = b.width/10;
-        for (int ii=0;ii<10;ii++)
-        {
-            g.drawLine(0, ii*cw, b.width, ii*cw);
-            g.drawLine(ii*ch, 0, ii*ch, b.height);
-        }
+        painCoordinates(g);
         g.setColor(GREEN);
+        updateXY();
         if (n > 0)
         {
             g.drawPolyline(x, y, n);
         }
     }
-
+    private void painCoordinates(Graphics2D g)
+    {
+        g.setColor(LIGHT_GRAY);
+        Rectangle b = getBounds();
+        view.setScreen(b.width, b.height);
+        view.setRect(0, 10, 0, 10);
+        for (int ii=0;ii<10;ii++)
+        {
+            g.drawLine((int)view.toScreenX(0), (int)view.toScreenY(ii), (int)view.toScreenX(10), (int)view.toScreenY(ii));
+            g.drawLine((int)view.toScreenX(ii), (int)view.toScreenY(0), (int)view.toScreenX(ii), (int)view.toScreenY(10));
+        }
+    }
     
     private void initTime()
     {
@@ -160,7 +197,6 @@ public class TimePanel extends JPanel implements ChangeListener
     {
         JSlider s = new JSlider(orientation, 0, 18, 15);
         s.setLabelTable(labelTable);
-        s.setName("time");
         s.addChangeListener(this);
         timeSlider = s;
         return s;
@@ -172,8 +208,6 @@ public class TimePanel extends JPanel implements ChangeListener
         if (e.getSource() == timeSlider)
         {
             sweepTime = timeValueMap.get(timeSlider.getValue());
-            TimeDomain sample = Waves.createSample(8000, 0, 1, TimeUnit.SECONDS, Waves.of(440, 100000, 0));
-            update(8000, 32, sample.getSamples());
             repaint();
         }
     }

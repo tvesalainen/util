@@ -17,18 +17,16 @@
 package org.vesalainen.ham.oscilloscope;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import javax.swing.GroupLayout;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JSpinner;
 import static javax.swing.SwingConstants.*;
 
 /**
@@ -47,17 +45,20 @@ public class Oscilloscope extends WindowAdapter
     private JSlider triggerSlider;
     private TimePanel timePanel;
     private FrequencyPanel frequencyPanel;
+    private SourceManager sourceManager;
 
     public Oscilloscope()
     {
         initFrame();
     }
-    
+
     private void initFrame()
     {
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new ExceptionHandler());
         frame = new JFrame("Oscilloscope");
         frame.addWindowListener(this);
+        menuBar = new JMenuBar();
+        frame.setJMenuBar(menuBar);
         panel = new JPanel();
         
         timePanel = new TimePanel();
@@ -65,6 +66,10 @@ public class Oscilloscope extends WindowAdapter
         
         frequencyPanel = new FrequencyPanel();
         panel.add(frequencyPanel);
+        
+        sourceManager = new SourceManager(frame::setTitle, timePanel);
+        
+        sourceMenu();
         
         cueSlider = new JSlider(HORIZONTAL);
         panel.add(cueSlider);
@@ -116,6 +121,13 @@ public class Oscilloscope extends WindowAdapter
         frame.setVisible(true);
         frame.setSize(800, 580);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private void sourceMenu()
+    {
+        JMenu menu = new JMenu("Source");
+        menuBar.add(menu);
+        menu.add(sourceManager.getOpenTestSource());
     }
     public class ExceptionHandler extends EventQueue
     {

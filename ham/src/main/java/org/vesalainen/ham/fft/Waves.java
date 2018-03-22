@@ -30,6 +30,20 @@ import org.vesalainen.ui.Plotter;
  */
 public class Waves
 {
+    public static final int maxAmplitude(int bitCount)
+    {
+        switch (bitCount)
+        {
+            case 8:
+                return Byte.MAX_VALUE;
+            case 16:
+                return Short.MAX_VALUE;
+            case 32:
+                return Integer.MAX_VALUE;
+            default:
+                throw new UnsupportedOperationException(bitCount+" not supported");
+        }
+    }
     public static final void addWhiteNoise(IntArray samples, double amplitude)
     {
         Random random = new Random(12345678);
