@@ -240,7 +240,7 @@ public abstract class IntArray<T extends Buffer>
         int len = length();
         for (int ii=0;ii<len;ii++)
         {
-            to.put(ii, get(ii));
+            put(ii, to.get(ii));
         }
     }
     /**

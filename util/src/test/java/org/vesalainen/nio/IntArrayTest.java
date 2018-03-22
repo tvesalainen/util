@@ -36,5 +36,13 @@ public class IntArrayTest
         IntArray ia = IntArray.getInstance(new int[]{1, 2, 3, 4});
         assertEquals(10, ia.stream().sum());
     }
+    @Test
+    public void testCopy()
+    {
+        IntArray ia1 = IntArray.getInstance(new int[]{1, 2, 3, 4});
+        IntArray ia2 = IntArray.getInstance(4);
+        ia2.copy(ia1);
+        assertEquals(10, ia2.stream().sum());
+    }
     
 }
