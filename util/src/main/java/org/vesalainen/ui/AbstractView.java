@@ -35,21 +35,34 @@ public class AbstractView
 {
     protected double width = Double.NaN;
     protected double height = Double.NaN;
-    protected double xMax = Double.NEGATIVE_INFINITY;
-    protected double yMax = Double.NEGATIVE_INFINITY;
-    protected double xMin = Double.POSITIVE_INFINITY;
-    protected double yMin = Double.POSITIVE_INFINITY;
+    protected double xMax;
+    protected double yMax;
+    protected double xMin;
+    protected double yMin;
     protected double xOff;
     protected double yOff;
-    protected double scale;
+    protected double scaleX;
+    protected double scaleY;
     protected boolean calculated;
+    protected boolean keepAspectRatio;
 
     public AbstractView()
     {
+        this(true);
+    }
+
+    public AbstractView(boolean keepAspectRatio)
+    {
+        this(keepAspectRatio, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
     }
 
     public AbstractView(double xMin, double xMax, double yMin, double yMax)
     {
+        this(true, xMin, xMax, yMin, yMax);
+    }
+    public AbstractView(boolean keepAspectRatio, double xMin, double xMax, double yMin, double yMax)
+    {
+        this.keepAspectRatio = keepAspectRatio;
         setRect(xMin, xMax, yMin, yMax);
     }
     /**
@@ -75,18 +88,28 @@ public class AbstractView
         double aspect = width / height;
         double xyWidth = xMax - xMin;
         double xyHeight = yMax - yMin;
-        double xyAspect = xyWidth / xyHeight;
-        if (aspect > xyAspect)
+        if (keepAspectRatio)
         {
-            scale = height / xyHeight;
-            xOff = -scale*xMin + (width - scale*xyWidth) / 2.0;
-            yOff = scale*yMin + height;
+            double xyAspect = xyWidth / xyHeight;
+            if (aspect > xyAspect)
+            {
+                scaleX = scaleY = height / xyHeight;
+                xOff = -scaleY*xMin + (width - scaleY*xyWidth) / 2.0;
+                yOff = scaleY*yMin + height;
+            }
+            else
+            {
+                scaleX = scaleY = width / xyWidth;
+                xOff = -scaleY*xMin;
+                yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
+            }
         }
         else
         {
-            scale = width / xyWidth;
-            xOff = -scale*xMin;
-            yOff = scale*yMin + height / 2.0 + scale*xyHeight / 2.0;
+            scaleX = width / xyWidth;
+            scaleY = height / xyHeight;
+            xOff = -scaleX*xMin;
+            yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
         }
         calculated = true;
     }
@@ -230,12 +253,12 @@ public class AbstractView
      */
     public double toScreenX(double x)
     {
-        assert isReady();
+        check();
         if (!calculated)
         {
             calculate();
         }
-        return scale * x + xOff;
+        return scaleX * x + xOff;
     }
     /**
      * Translates cartesian y-coordinate to screen coordinate.
@@ -244,12 +267,12 @@ public class AbstractView
      */
     public double toScreenY(double y)
     {
-        assert isReady();
+        check();
         if (!calculated)
         {
             calculate();
         }
-        return - scale * y + yOff;
+        return - scaleY * y + yOff;
     }
     /**
      * Translates screen x-coordinate to cartesian coordinate.
@@ -258,12 +281,12 @@ public class AbstractView
      */
     public double fromScreenX(double x)
     {
-        assert isReady();
+        check();
         if (!calculated)
         {
             calculate();
         }
-        return (x - xOff) / scale;
+        return (x - xOff) / scaleX;
     }
     /**
      * Translates screen y-coordinate to cartesian coordinate.
@@ -272,12 +295,12 @@ public class AbstractView
      */
     public double fromScreenY(double y)
     {
-        assert isReady();
+        check();
         if (!calculated)
         {
             calculate();
         }
-        return - (y - yOff) / scale;
+        return - (y - yOff) / scaleY;
     }
     /**
      * Scales the argument to screen scaleToScreen.
@@ -286,22 +309,36 @@ public class AbstractView
      */
     public double scaleToScreen(double d)
     {
-        assert isReady();
+        check();
+        if (!keepAspectRatio)
+        {
+            throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
+        }
         if (!calculated)
         {
             calculate();
         }
-        return d * scale;
+        return d * scaleY;
     }
 
     public double scaleFromScreen(double d)
     {
-        assert isReady();
+        check();
+        if (!keepAspectRatio)
+        {
+            throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
+        }
         if (!calculated)
         {
             calculate();
         }
-        return d / scale;
+        return d / scaleY;
     }
-
+    private void check()
+    {
+        if (!isReady() || width <= 0 || height <= 0)
+        {
+            throw new IllegalStateException("not initialized properly");
+        }
+    }
 }
