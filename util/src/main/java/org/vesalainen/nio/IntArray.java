@@ -237,10 +237,18 @@ public abstract class IntArray<T extends Buffer>
         {
             throw new IllegalArgumentException("array not same size");
         }
-        int len = length();
-        for (int ii=0;ii<len;ii++)
+        if (buffer.hasArray() && to.buffer.hasArray() && 
+                buffer.array().getClass().getComponentType() == to.buffer.array().getClass().getComponentType())
         {
-            put(ii, to.get(ii));
+            System.arraycopy(to.buffer.array(), 0, buffer.array(), 0, length());
+        }
+        else
+        {
+            int len = length();
+            for (int ii=0;ii<len;ii++)
+            {
+                put(ii, to.get(ii));
+            }
         }
     }
     /**
