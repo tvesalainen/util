@@ -67,11 +67,10 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
         this.bitCount = bitCount;
         if (this.array == null || this.array.length() != array.length())
         {
-            this.array = IntArray.getInstance(array.length(), bitCount, BIG_ENDIAN);
             x = new int[array.length()];
             y = new int[array.length()];
         }
-        this.array.copy(array);
+        this.array = array;
         updateTimeModel(sampleFrequency, array.length());
     }
 

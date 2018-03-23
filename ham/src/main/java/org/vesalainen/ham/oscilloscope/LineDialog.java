@@ -16,6 +16,8 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.sound.sampled.AudioFormat;
@@ -23,10 +25,16 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
+import org.vesalainen.ham.oscilloscope.ui.AbstractComboBox;
+import org.vesalainen.ham.oscilloscope.ui.DoubleComboBox;
+import org.vesalainen.ham.oscilloscope.ui.GroupLayoutBuilder;
+import org.vesalainen.ham.oscilloscope.ui.IntegerComboBox;
 
 /**
  *
@@ -37,28 +45,29 @@ public class LineDialog extends JDialog implements ActionListener
     private double sampleFrequency;
     private int bitCount;
     private double refreshInterval;
-    private JComboBox rateCombo;
-    private JComboBox bitsCombo;
-    private JComboBox mixerCombo;
-    private JComboBox refreshCombo;
-    public LineDialog()
+    private DoubleComboBox rateCombo;
+    private IntegerComboBox bitsCombo;
+    private JComboBox<Mixer.Info> mixerCombo;
+    private DoubleComboBox refreshCombo;
+    private boolean accepted;
+    public LineDialog(Frame owner, String title)
     {
+        super(owner, title);
         init();
     }
     private void init()
     {
-        JPanel panel = new JPanel();
-        add(panel);
         // sample frequency
         JLabel rateLabel = new JLabel("Sample Rate");
         add(rateLabel);
-        rateCombo = new JComboBox(new String[]{"44000", "22000"});
+        rateCombo = new DoubleComboBox(44000.0, 22000.0);
+        rateCombo.setEditable(true);
         add(rateCombo);
         rateCombo.addActionListener(this);
         // bits
         JLabel bitsLabel = new JLabel("Bit Count");
         add(bitsLabel);
-        bitsCombo = new JComboBox(new String[]{"8", "16", "32"});
+        bitsCombo = new IntegerComboBox(8, 16, 32);
         add(bitsCombo);
         bitsCombo.addActionListener(this);
         // mixer
@@ -69,45 +78,110 @@ public class LineDialog extends JDialog implements ActionListener
         // refresh
         JLabel refreshLabel = new JLabel("Refresh Interval");
         add(refreshLabel);
-        refreshCombo = new JComboBox(new String[]{"1", "0.5", "0.25"});
+        refreshCombo = new DoubleComboBox(1.0, 0.5, 0.25);
         add(refreshCombo);
         populateMixerCombo();
+        JButton okButton = new JButton(new OkAction());
+        add(okButton);
+        JButton cancelButton = new JButton(new CancelAction());
+        add(cancelButton);
+        //layout
+        GroupLayout layout = GroupLayoutBuilder.builder(getContentPane())
+                .addLine(rateLabel, rateCombo)
+                .addLine(bitsLabel, bitsCombo)
+                .addLine(mixerLabel, mixerCombo)
+                .addLine(refreshLabel, refreshCombo)
+                .addLine(cancelButton, okButton)
+                .build();
+        setLayout(layout);
+        getRootPane().setDefaultButton(okButton);
+        setModalityType(Dialog.ModalityType.TOOLKIT_MODAL);
+        setLocation(100, 100);
+        pack();
     }
+    public boolean edit()
+    {
+        accepted = false;
+        setVisible(true);
+        return accepted;
+    }
+
     private void populateMixerCombo()
     {
         mixerCombo.removeAllItems();
-        AudioFormat audioFormat = new AudioFormat((float) getSampleFrequency(), getBitCount(), 1, true, false);
+        AudioFormat audioFormat = getAudioFormat();
         DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
         for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo())
         {
-            Mixer mixer = AudioSystem.getMixer(mixerInfo);
-            int maxLines = mixer.getMaxLines(info);
-            if (maxLines != 0)
+            try (Mixer mixer = AudioSystem.getMixer(mixerInfo))
             {
-                mixerCombo.addItem(mixer);
+                int maxLines = mixer.getMaxLines(info);
+                if (maxLines != 0)
+                {
+                    mixerCombo.addItem(mixerInfo);
+                }
             }
         }
     }
 
+    public AudioFormat getAudioFormat()
+    {
+        return new AudioFormat((float) getSampleFrequency(), getBitCount(), 1, true, false);
+    }
     public double getSampleFrequency()
     {
-        return Double.parseDouble(rateCombo.getSelectedItem().toString());
+        return rateCombo.getSelectedItem();
     }
 
     public int getBitCount()
     {
-        return Integer.parseInt(bitsCombo.getSelectedItem().toString());
+        return bitsCombo.getSelectedItem();
     }
 
     public double getRefreshInterval()
     {
-        return Double.parseDouble(refreshCombo.getSelectedItem().toString());
+        return refreshCombo.getSelectedItem();
     }
     
+    public Mixer.Info getMixerInfo()
+    {
+        return (Mixer.Info) mixerCombo.getSelectedItem();
+    }
     @Override
     public void actionPerformed(ActionEvent e)
     {
         populateMixerCombo();
     }
-    
+
+    private class OkAction extends AbstractAction
+    {
+
+        public OkAction()
+        {
+            super("Ok");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            accepted = true;
+            setVisible(false);
+        }
+        
+    }
+    private class CancelAction extends AbstractAction
+    {
+
+        public CancelAction()
+        {
+            super("Cancel");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            setVisible(false);
+        }
+        
+    }
 }

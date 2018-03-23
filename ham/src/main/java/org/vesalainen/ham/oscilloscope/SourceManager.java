@@ -16,8 +16,8 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.util.function.Consumer;
 import javax.swing.AbstractAction;
 
 /**
@@ -27,14 +27,20 @@ import javax.swing.AbstractAction;
 public class SourceManager
 {
     private Source source;
-    private Consumer<String> title;
+    private Frame frame;
     private SourceListener[] listeners;
     private OpenTestSource openTestSource = new OpenTestSource();
+    private OpenLineSource openLineSource = new OpenLineSource();
 
-    public SourceManager(Consumer<String> title, SourceListener... listeners)
+    public SourceManager(Frame frame, SourceListener... listeners)
     {
-        this.title = title;
+        this.frame = frame;
         this.listeners = listeners;
+    }
+
+    public OpenLineSource getOpenLineSource()
+    {
+        return openLineSource;
     }
 
     public OpenTestSource getOpenTestSource()
@@ -54,9 +60,27 @@ public class SourceManager
             source.addListener(l);
         }
         source.start();
-        title.accept(source.toString());
+        frame.setTitle(source.toString());
     }
     
+    public class OpenLineSource extends AbstractAction
+    {
+        private LineDialog dia = new LineDialog(frame, "Open Line Source");
+        public OpenLineSource()
+        {
+            super("Open Line Source");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            if (dia.edit())
+            {
+                setSource(new LineSource(dia.getAudioFormat(), dia.getMixerInfo(), dia.getRefreshInterval()));
+            }
+        }
+        
+    }
     public class OpenTestSource extends AbstractAction
     {
 

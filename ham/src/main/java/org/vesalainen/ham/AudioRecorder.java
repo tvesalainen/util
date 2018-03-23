@@ -79,11 +79,13 @@ public class AudioRecorder extends JavaLogging implements AutoCloseable
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
             for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo())
             {
-                Mixer mixer = AudioSystem.getMixer(mixerInfo);
-                int maxLines = mixer.getMaxLines(info);
-                if (maxLines != 0 && mixerInfo.toString().startsWith(name))
+                try (Mixer mixer = AudioSystem.getMixer(mixerInfo))
                 {
-                    return mixerInfo;
+                    int maxLines = mixer.getMaxLines(info);
+                    if (maxLines != 0 && mixerInfo.toString().startsWith(name))
+                    {
+                        return mixerInfo;
+                    }
                 }
             }
         }

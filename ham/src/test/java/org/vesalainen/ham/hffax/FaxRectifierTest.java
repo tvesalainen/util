@@ -40,7 +40,7 @@ public class FaxRectifierTest
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException
     {
         Path in = Paths.get("c:\\temp\\fax2018-02-09T150627.983Z.png");

@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import static javax.swing.SwingConstants.*;
+import org.vesalainen.ham.oscilloscope.ui.GroupLayoutBuilder;
 
 /**
  *
@@ -67,7 +68,7 @@ public class Oscilloscope extends WindowAdapter
         frequencyPanel = new FrequencyPanel();
         panel.add(frequencyPanel);
         
-        sourceManager = new SourceManager(frame::setTitle, timePanel);
+        sourceManager = new SourceManager(frame, timePanel);
         
         sourceMenu();
         
@@ -85,35 +86,12 @@ public class Oscilloscope extends WindowAdapter
         
         triggerSlider = new JSlider(VERTICAL);
         panel.add(triggerSlider);
-        
-        GroupLayout layout = new GroupLayout(panel);
+        GroupLayout layout = GroupLayoutBuilder.builder(panel)
+                .addLine(cueSlider)
+                .addLine(timePanel, timeDivisionSlider, verticalSensitivitySlider, triggerSlider)
+                .addLine(frequencyPanel)
+                .build();
         panel.setLayout(layout);
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup()
-                .addComponent(cueSlider)
-                .addGroup(
-                        layout.createSequentialGroup()
-                        .addComponent(timePanel)
-                        .addComponent(timeDivisionSlider)
-                        .addComponent(verticalSensitivitySlider)
-                        .addComponent(triggerSlider)
-                )
-                .addComponent(frequencyPanel)
-        );
-        layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                .addComponent(cueSlider)
-                .addGroup(
-                        layout.createParallelGroup()
-                        .addComponent(timePanel)
-                        .addComponent(timeDivisionSlider)
-                        .addComponent(verticalSensitivitySlider)
-                        .addComponent(triggerSlider)
-                )
-                .addComponent(frequencyPanel)
-        );
         triggerSlider = new JSlider(VERTICAL);
         frame.add(panel);
         frame.pack();
@@ -128,6 +106,7 @@ public class Oscilloscope extends WindowAdapter
         JMenu menu = new JMenu("Source");
         menuBar.add(menu);
         menu.add(sourceManager.getOpenTestSource());
+        menu.add(sourceManager.getOpenLineSource());
     }
     public class ExceptionHandler extends EventQueue
     {

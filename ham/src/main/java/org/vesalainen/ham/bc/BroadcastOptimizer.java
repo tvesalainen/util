@@ -165,7 +165,7 @@ public class BroadcastOptimizer extends JavaLogging
                 .getTransmitters()
                 .stream()
                 .filter((t)->t.isInRange(cur))
-                .map((t->getPrediction(schedule, utc, myLocation, t)))
+                .map((t->getPrediction(schedule, cur, myLocation, t)))
                 .collect(Collectors.toList());
         freqs.sort(null);
         if (isLoggable(FINER))
