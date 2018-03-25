@@ -16,10 +16,12 @@
  */
 package org.vesalainen.ham.riff;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
@@ -32,11 +34,13 @@ public class Chunk
     protected int size;
     protected ByteBuffer data;
 
-    public Chunk(String id, ByteBuffer data)
+    public Chunk(String id)
     {
+        if (id.length() != 4)
+        {
+            throw new IllegalArgumentException(id);
+        }
         this.id = id;
-        this.size = data.limit();
-        this.data = data;
     }
 
     public Chunk(Chunk other)
@@ -64,12 +68,26 @@ public class Chunk
         bb.position(position + padding);
     }
 
-    public void store(ByteBuffer bb)
+    public void store(BufferedFileBuilder bb) throws IOException
     {
-        bb.put(id.getBytes(US_ASCII));
-        bb.putInt(size);
-        bb.p
+        bb.put(id, US_ASCII);
+        long sizePos = bb.position();
+        bb.skip(4);
+        storeData(bb);
+        long curPos = bb.position();
+        bb.position(sizePos);
+        bb.putInt((int) (curPos-sizePos-4));
+        bb.position(curPos);
+        if (curPos%2 != 0)
+        {
+            bb.put((byte)0);
+        }
     }
+    protected void storeData(BufferedFileBuilder bb) throws IOException
+    {
+        throw new UnsupportedOperationException("not supported yet");
+    }
+    
     public String getId()
     {
         return id;
@@ -85,7 +103,7 @@ public class Chunk
         return data;
     }
 
-    public String getSZ(int index, int length)
+    public final String getSZ(int index, int length)
     {
         StringBuilder sb = new StringBuilder();
         for (int ii=0;ii<length;ii++)

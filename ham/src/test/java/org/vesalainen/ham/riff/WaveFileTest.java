@@ -19,8 +19,9 @@ package org.vesalainen.ham.riff;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.sound.sampled.AudioFileFormat;
+import static java.nio.file.StandardOpenOption.*;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class WaveFileTest
     }
 
     @Test
-    public void test() throws IOException, UnsupportedAudioFileException
+    public void test1() throws IOException, UnsupportedAudioFileException
     {
         Path file = Paths.get("src", "test", "resources", "hffax2.wav");
         WaveFile wave = (WaveFile) RIFFFile.open(file);
@@ -46,5 +47,16 @@ public class WaveFileTest
         AudioFormat exp = AudioSystem.getAudioFileFormat(file.toFile()).getFormat();
         assertEquals(exp.toString(), audioFormat.toString());
     }
-    
+    @Test
+    public void test2() throws UnsupportedAudioFileException, IOException
+    {
+        Path in = Paths.get("src", "test", "resources", "hffax2.wav");
+        Path out = Paths.get("hffax2test.wav");
+        WaveFile wave = new WaveFile();
+        wave.setName("timo");
+        wave.setGenre("fax");
+        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(in.toFile());
+        wave.store(audioInputStream, out, CREATE, WRITE);
+        RIFFFile.open(out);
+    }    
 }

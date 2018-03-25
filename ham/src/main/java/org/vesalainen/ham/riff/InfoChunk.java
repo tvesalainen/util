@@ -16,7 +16,9 @@
  */
 package org.vesalainen.ham.riff;
 
+import java.io.IOException;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
@@ -25,11 +27,28 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 public class InfoChunk extends Chunk
 {
     private Info info;
+    private String text;
+
+    public InfoChunk(Info info, String text)
+    {
+        super(info.name());
+        this.info = info;
+        this.text = text;
+    }
+    
     
     public InfoChunk(Chunk other)
     {
         super(other);
         this.info = Info.valueOf(other.id);
+        this.text = getSZ(0, size);
+    }
+
+    @Override
+    protected void storeData(BufferedFileBuilder bb) throws IOException
+    {
+        bb.put(text, ISO_8859_1);
+        bb.put((byte)0);
     }
 
     public Info getInfo()
@@ -39,7 +58,7 @@ public class InfoChunk extends Chunk
 
     public String getText()
     {
-        return getSZ(0, size);
+        return text;
     }
     
 }

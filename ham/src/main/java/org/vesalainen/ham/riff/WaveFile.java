@@ -16,9 +16,19 @@
  */
 package org.vesalainen.ham.riff;
 
+import java.io.IOException;
+import java.io.InputStream;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import org.vesalainen.ham.riff.FmtChunk.Fmt16Chunk;
+import org.vesalainen.ham.riff.FmtChunk.Fmt18Chunk;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
@@ -26,35 +36,56 @@ import javax.sound.sampled.AudioFormat;
  */
 public class WaveFile extends RIFFFile
 {
-    private Fmt fmt;
-    private Map<Info,String> info = new EnumMap<>(Info.class);
+    private FmtChunk fmt;
+    private DataChunk data;
     
+    public WaveFile()
+    {
+    }
     public WaveFile(Map<String, Chunk> chunkMap)
     {
         super(chunkMap);
-        this.fmt = Fmt.getInstance(chunkMap);
-        if (chunkMap.containsKey("LIST"))
+        this.fmt = FmtChunk.getInstance(chunkMap);
+        if (chunkMap.containsKey("data"))
         {
-            Chunk list = chunkMap.get("LIST");
-            ContainerChunk clist = new ContainerChunk(list);
-            Map<String, Chunk> map = clist.readAll();
-            for (Chunk chunk : map.values())
-            {
-                try
-                {
-                    InfoChunk ic = new InfoChunk(chunk);
-                    info.put(ic.getInfo(), ic.getText());
-                }
-                catch (IllegalArgumentException ex)
-                {
-                    warning("unknown %s", chunk);
-                }
-            }
+            this.data = new DataChunk(chunkMap.get("data"));
+        }
+        else
+        {
+            throw new IllegalArgumentException("no data chunk");
         }
     }
-
+    public void store(AudioInputStream audioInputStream, Path target, OpenOption... options) throws IOException
+    {
+        ContainerChunk riffChunk = new ContainerChunk("RIFF", "WAVE");
+        Fmt18Chunk fmtChunk = new Fmt18Chunk(audioInputStream.getFormat());
+        riffChunk.add(fmtChunk);
+        DataChunk dataChunk = new DataChunk(audioInputStream);
+        riffChunk.add(dataChunk);
+        if (!info.isEmpty())
+        {
+            ContainerChunk listChunk = new ContainerChunk("LIST", "INFO");
+            for (Entry<Info, String> e : info.entrySet())
+            {
+                InfoChunk infoChunk = new InfoChunk(e.getKey(), e.getValue());
+                listChunk.add(infoChunk);
+            }
+            riffChunk.add(listChunk);
+        }
+        try (BufferedFileBuilder bfb = new BufferedFileBuilder(4096, true, target, options))
+        {
+            bfb.order(LITTLE_ENDIAN);
+            riffChunk.store(bfb);
+        }
+    }
     public AudioFormat getAudioFormat()
     {
         return fmt.getAudioFormat();
+    }
+    public AudioInputStream getAudioInputStream() throws IOException
+    {
+        InputStream inputStream = data.getInputStream();
+        AudioFormat audioFormat = fmt.getAudioFormat();
+        return new AudioInputStream(inputStream, audioFormat, inputStream.available()/audioFormat.getFrameSize());
     }
 }

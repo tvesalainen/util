@@ -16,11 +16,16 @@
  */
 package org.vesalainen.ham.riff;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
@@ -30,6 +35,8 @@ public class ContainerChunk extends Chunk
 {
     
     protected String type;
+    protected Map<String, Chunk> subChunks = new HashMap<>();
+    protected List<Chunk> chunkList = new ArrayList<>();
 
     public ContainerChunk(Chunk other)
     {
@@ -38,25 +45,42 @@ public class ContainerChunk extends Chunk
         data.get(b);
         type = new String(b, StandardCharsets.ISO_8859_1);
         data = data.slice().order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    public Map<String, Chunk> readAll()
-    {
-        Map<String, Chunk> map = new HashMap<>();
-        if (!data.hasRemaining())
-        {
-            data.flip();
-        }
         while (data.hasRemaining())
         {
             Chunk chunk = new Chunk(data);
-            map.put(chunk.getId(), chunk);
+            add(chunk);
         }
-        return map;
+    }
+
+    public ContainerChunk(String id, String type)
+    {
+        super(id);
+        this.type = type;
+    }
+
+    @Override
+    protected void storeData(BufferedFileBuilder bb) throws IOException
+    {
+        bb.put(type, ISO_8859_1);
+        for (Chunk chunk : chunkList)
+        {
+            chunk.store(bb);
+        }
+    }
+
+    public void add(Chunk chunk)
+    {
+        subChunks.put(chunk.getId(), chunk);
+        chunkList.add(chunk);
     }
     public String getType()
     {
         return type;
+    }
+
+    public Map<String, Chunk> getSubChunks()
+    {
+        return subChunks;
     }
     
 }

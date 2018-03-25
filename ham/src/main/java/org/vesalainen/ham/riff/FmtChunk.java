@@ -16,19 +16,20 @@
  */
 package org.vesalainen.ham.riff;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
 import static javax.sound.sampled.AudioFormat.Encoding.*;
-import javax.sound.sampled.AudioSystem;
 import static org.vesalainen.ham.riff.FormatCode.*;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Fmt
+public class FmtChunk extends Chunk
 {
     protected FormatCode formatCode;
     protected int channels;
@@ -36,15 +37,52 @@ public class Fmt
     protected int avgBytesPerSec;
     protected int blockAlign;
 
-    private Fmt(ByteBuffer bb)
+    private FmtChunk(Chunk chunk)
     {
-        this.formatCode = FormatCode.of(bb.getShort());
-        this.channels = bb.getShort();
-        this.samplesPerSecond = bb.getInt();
-        this.avgBytesPerSec = bb.getInt();
-        this.blockAlign = bb.getShort();
+        super(chunk);
+        this.formatCode = FormatCode.of(data.getShort());
+        this.channels = data.getShort();
+        this.samplesPerSecond = data.getInt();
+        this.avgBytesPerSec = data.getInt();
+        this.blockAlign = data.getShort();
     }
 
+    public FmtChunk(AudioFormat audioFormat)
+    {
+        super("fmt ");
+        this.formatCode = getFormatCode(audioFormat.getEncoding());
+        this.channels = audioFormat.getChannels();
+        this.samplesPerSecond = (int) audioFormat.getSampleRate();
+        this.avgBytesPerSec = samplesPerSecond*audioFormat.getFrameSize();
+        this.blockAlign = audioFormat.getFrameSize();
+    }
+
+    @Override
+    protected void storeData(BufferedFileBuilder bb) throws IOException
+    {
+        bb.putShort((short) formatCode.getCode());
+        bb.putShort((short) channels);
+        bb.putInt(samplesPerSecond);
+        bb.putInt(avgBytesPerSec);
+        bb.putShort((short) blockAlign);
+    }
+    
+    private FormatCode getFormatCode(Encoding encoding)
+    {
+        if (encoding == Encoding.PCM_SIGNED || encoding == Encoding.PCM_UNSIGNED || encoding == Encoding.PCM_FLOAT)
+        {
+            return FormatCode.WAVE_FORMAT_PCM;
+        }
+        if (encoding == Encoding.ALAW)
+        {
+            return FormatCode.WAVE_FORMAT_ALAW;
+        }
+        if (encoding == Encoding.ULAW)
+        {
+            return FormatCode.WAVE_FORMAT_MULAW;
+        }
+        throw new UnsupportedOperationException(encoding+" not supported");
+    }
     public int getBitsPerSample()
     {
         return 8*blockAlign/channels;
@@ -76,21 +114,23 @@ public class Fmt
     {
         return new AudioFormat(getEncoding(), samplesPerSecond, getBitsPerSample(), channels, blockAlign, samplesPerSecond, false);
     }
-    public static final Fmt getInstance(Map<String,Chunk> chunkMap)
+    public static final FmtChunk getInstance(Map<String,Chunk> chunkMap)
     {
         Chunk fmt = chunkMap.get("fmt ");
         if (fmt == null)
         {
-            throw new IllegalArgumentException("fmt not found");
+            throw new IllegalArgumentException("fmt chunk not found");
         }
         switch (fmt.getSize())
         {
+            case 14:
+                return new FmtChunk(fmt);
             case 16:
-                return new Fmt(fmt.getData());
+                return new Fmt16Chunk(fmt);
             case 18:
-                return new Fmt18(fmt.getData());
+                return new Fmt18Chunk(fmt);
             case 40:
-                return new Fmt40(fmt.getData());
+                return new Fmt40Chunk(fmt);
             default:
                 throw new UnsupportedOperationException(fmt.getSize()+"  not supported fmt size");
         }
@@ -120,39 +160,70 @@ public class Fmt
         return blockAlign;
     }
     
-    public static class Fmt18 extends Fmt
+    public static class Fmt16Chunk extends FmtChunk
     {
         protected int bitsPerSample;
 
-        private Fmt18(ByteBuffer bb)
+        private Fmt16Chunk(Chunk chunk)
         {
-            super(bb);
-            this.bitsPerSample = bb.getShort();
+            super(chunk);
+            this.bitsPerSample = data.getShort();
             assert avgBytesPerSec == channels*samplesPerSecond*bitsPerSample/8;
             assert blockAlign == channels*bitsPerSample/8;
         }
 
+        public Fmt16Chunk(AudioFormat audioFormat)
+        {
+            super(audioFormat);
+            this.bitsPerSample = audioFormat.getSampleSizeInBits();
+        }
+
+        @Override
+        protected void storeData(BufferedFileBuilder bb) throws IOException
+        {
+            super.storeData(bb);
+            bb.putShort((short) bitsPerSample);
+        }
+        @Override
         public int getBitsPerSample()
         {
             return bitsPerSample;
         }
-
         
     }
-    public static class Fmt40 extends Fmt18
+    public static class Fmt18Chunk extends Fmt16Chunk
     {
         protected int extSize;
+
+        private Fmt18Chunk(Chunk chunk)
+        {
+            super(chunk);
+            this.extSize = data.getShort();
+        }
+        public Fmt18Chunk(AudioFormat audioFormat)
+        {
+            super(audioFormat);
+        }
+        
+        @Override
+        protected void storeData(BufferedFileBuilder bb) throws IOException
+        {
+            super.storeData(bb);
+            bb.putShort((short) extSize);
+        }
+    }
+    public static class Fmt40Chunk extends Fmt18Chunk
+    {
         protected int validBitsPerSample;
         protected int channelMask;
         protected byte[] subFormat;
 
-        private Fmt40(ByteBuffer bb)
+        private Fmt40Chunk(Chunk chunk)
         {
-            super(bb);
-            this.extSize = bb.getShort();
-            this.validBitsPerSample = bb.getShort();
-            this.channelMask = bb.getInt();
-            bb.get(subFormat);
+            super(chunk);
+            this.validBitsPerSample = data.getShort();
+            this.channelMask = data.getInt();
+            data.get(subFormat);
         }
 
         public int getExtSize()
