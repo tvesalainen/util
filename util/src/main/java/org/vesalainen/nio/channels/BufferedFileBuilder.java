@@ -65,7 +65,7 @@ public class BufferedFileBuilder implements AutoCloseable
      */
     public long position() throws IOException
     {
-        return channel.position()+buffer.remaining();
+        return channel.position()+buffer.position();
     }
     /**
      * Flushes and set's file-channel position.
