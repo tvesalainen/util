@@ -55,6 +55,10 @@ public class WaveFileTest
         WaveFile wave = new WaveFile();
         wave.setName("timo");
         wave.setGenre("fax");
+        wave.setArtist("artist");
+        wave.setComments("kommentit");
+        wave.setCopyright("copy");
+        wave.setKeywords("sanata");
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(in.toFile());
         wave.store(audioInputStream, out, CREATE, WRITE);
         RIFFFile.open(out);

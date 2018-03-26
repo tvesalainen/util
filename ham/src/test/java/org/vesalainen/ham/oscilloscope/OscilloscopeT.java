@@ -23,10 +23,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class OscilloscopeTest
+public class OscilloscopeT
 {
     
-    public OscilloscopeTest()
+    public OscilloscopeT()
     {
     }
 

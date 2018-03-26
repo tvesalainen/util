@@ -29,6 +29,7 @@ public enum FormatCode
     WAVE_FORMAT_IEEE_FLOAT(0x3),
     WAVE_FORMAT_ALAW(0x6),
     WAVE_FORMAT_MULAW(0x7),
+    WAVE_FORMAT_MPEG(0x0050),
     IBM_FORMAT_MULAW (0x0101),
     IBM_FORMAT_ALAW (0x0102),
     IBM_FORMAT_ADPCM (0x0103),
@@ -58,6 +59,8 @@ public enum FormatCode
                 return WAVE_FORMAT_ALAW;
             case 0x7:
                 return WAVE_FORMAT_MULAW;
+            case 0x0050:
+                return WAVE_FORMAT_MPEG;
             case 0xfffe:
                 return WAVE_FORMAT_EXTENSIBLE;
             case 0x0101:
