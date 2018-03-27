@@ -152,9 +152,9 @@ public abstract class IntArray<T extends Buffer>
         switch (bitCount)
         {
             case 8:
-                return getInstance(bb);
+                return new ByteArray(bb);
             case 16:
-                return getInstance(bb.asShortBuffer());
+                return new ShortArray(bb.asShortBuffer());
             case 32:
                 return new InArray(bb.asIntBuffer());
             default:
