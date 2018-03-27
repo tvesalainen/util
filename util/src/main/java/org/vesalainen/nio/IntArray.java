@@ -144,7 +144,22 @@ public abstract class IntArray<T extends Buffer>
      */
     public static IntArray getInstance(ByteBuffer bb)
     {
-        return new ByteArray(bb);
+        return getInstance(bb, 8, bb.order());
+    }
+    public static IntArray getInstance(ByteBuffer bb, int bitCount, ByteOrder order)
+    {
+        bb.order(order);
+        switch (bitCount)
+        {
+            case 8:
+                return getInstance(bb);
+            case 16:
+                return getInstance(bb.asShortBuffer());
+            case 32:
+                return new InArray(bb.asIntBuffer());
+            default:
+                throw new UnsupportedOperationException(bitCount+" not supported");
+        }
     }
     /**
      * Creates IntArray backed by ShortBuffer
