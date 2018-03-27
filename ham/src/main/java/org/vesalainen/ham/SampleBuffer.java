@@ -14,17 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.oscilloscope;
+package org.vesalainen.ham;
 
-import org.vesalainen.ham.SampleBuffer;
-import org.vesalainen.nio.IntArray;
+import java.time.Duration;
+
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface SourceListener
+public interface SampleBuffer
 {
-    void update(SampleBuffer samples);
-    void update();
+    double getSampleFrequency();
+    int getMaxAmplitude();
+    int getChannels();
+    default void goTo(int minutes, int seconds)
+    {
+        goTo(Duration.ofSeconds(60*minutes+seconds));
+    }
+    /**
+     * Go to duration from sample start
+     * @param duration 
+     */
+    void goTo(Duration duration);
+    Duration getDuration();
+    int getViewLength();
+    int get(int channel, int offset);
+    Duration remaining();
 }

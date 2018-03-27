@@ -16,15 +16,18 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
-import org.vesalainen.nio.IntArray;
+import javax.swing.BoundedRangeModel;
+import javax.swing.event.ChangeListener;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Source
+public interface Source extends BoundedRangeModel, ChangeListener
 {
     void start();
     void stop();
+    void play();
+    void pause();
     void addListener(SourceListener listener);
 }

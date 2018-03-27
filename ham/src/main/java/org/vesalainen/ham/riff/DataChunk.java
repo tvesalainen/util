@@ -19,6 +19,7 @@ package org.vesalainen.ham.riff;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import javax.sound.sampled.AudioInputStream;
 import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
@@ -69,10 +70,20 @@ public class DataChunk extends Chunk
             audioInputStream.close();
         }
     }
-    
+    /**
+     * Returns input-stream for data.
+     * @return 
+     */
     public InputStream getInputStream()
     {
-        return new ByteBufferInputStream(data.duplicate());
+        return new ByteBufferInputStream(getData());
     }
-    
+    /**
+     * Returns duplicate read-only byte-buffer
+     * @return 
+     */
+    public ByteBuffer getData()
+    {
+        return data.duplicate().order(LITTLE_ENDIAN);
+    }
 }

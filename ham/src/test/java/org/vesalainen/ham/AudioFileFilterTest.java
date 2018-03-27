@@ -42,7 +42,7 @@ public class AudioFileFilterTest
         Path out = cur.resolve("wefax1_fil.wav");
         AudioFileFilter.filter(in, out);
     }
-    @Test
+    //@Test
     public void test() throws IOException, UnsupportedAudioFileException
     {
         Path temp = Paths.get("c:\\temp");

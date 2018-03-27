@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.*;
+import java.time.Duration;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.SampleBuffer;
 
 /**
  *
@@ -46,6 +48,13 @@ public class WaveFileTest
         AudioFormat audioFormat = wave.getAudioFormat();
         AudioFormat exp = AudioSystem.getAudioFileFormat(file.toFile()).getFormat();
         assertEquals(exp.toString(), audioFormat.toString());
+        SampleBuffer sampleBuffer = wave.getSampleBuffer(4096);
+        Duration duration = sampleBuffer.getDuration();
+        assertEquals(29*60+37, duration.getSeconds());
+        Duration half = duration.dividedBy(2);
+        sampleBuffer.goTo(half);
+        assertEquals((29*60+37)/2, sampleBuffer.remaining().getSeconds());
+        assertEquals(2, sampleBuffer.getChannels());
     }
     @Test
     public void test2() throws UnsupportedAudioFileException, IOException

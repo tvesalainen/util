@@ -18,6 +18,7 @@ package org.vesalainen.ham.oscilloscope;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.nio.file.Paths;
 import javax.swing.AbstractAction;
 
 /**
@@ -31,11 +32,17 @@ public class SourceManager
     private SourceListener[] listeners;
     private OpenTestSource openTestSource = new OpenTestSource();
     private OpenLineSource openLineSource = new OpenLineSource();
+    private OpenFileSource openFileSource = new OpenFileSource();
 
     public SourceManager(Frame frame, SourceListener... listeners)
     {
         this.frame = frame;
         this.listeners = listeners;
+    }
+
+    public OpenFileSource getOpenFileSource()
+    {
+        return openFileSource;
     }
 
     public OpenLineSource getOpenLineSource()
@@ -63,6 +70,25 @@ public class SourceManager
         frame.setTitle(source.toString());
     }
     
+    public class OpenFileSource extends AbstractAction
+    {
+        private FileDialog dia = new FileDialog(frame, "Open File Source");
+
+        public OpenFileSource()
+        {
+            super("Open File Source");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            if (dia.edit())
+            {
+                setSource(new FileSource(Paths.get(dia.getFilename()), dia.getRefreshInterval()));
+            }
+        }
+        
+    }
     public class OpenLineSource extends AbstractAction
     {
         private LineDialog dia = new LineDialog(frame, "Open Line Source");

@@ -18,13 +18,16 @@ package org.vesalainen.ham.oscilloscope;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.event.ChangeEvent;
+import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractSource implements Source
+public abstract class AbstractSource extends DefaultBoundedRangeModel implements Source
 {
     protected List<SourceListener> listeners = new ArrayList<>();
 
@@ -35,11 +38,11 @@ public abstract class AbstractSource implements Source
             l.update();
         }
     }
-    public void fireUpdate(double sampleFrequency, int bitCount, IntArray array, String channel)
+    public void fireUpdate(SampleBuffer samples)
     {
         for (SourceListener l : listeners)
         {
-            l.update(sampleFrequency, bitCount, array, channel);
+            l.update(samples);
         }
     }
     @Override
@@ -52,6 +55,21 @@ public abstract class AbstractSource implements Source
     public void addListener(SourceListener listener)
     {
         listeners.add(listener);
+    }
+
+    @Override
+    public void play()
+    {
+    }
+
+    @Override
+    public void pause()
+    {
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e)
+    {
     }
     
 }

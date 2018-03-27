@@ -16,68 +16,63 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import static java.nio.ByteOrder.*;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.TargetDataLine;
 import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
-import org.vesalainen.nio.IntArray;
+import org.vesalainen.ham.riff.RIFFFile;
+import org.vesalainen.ham.riff.WaveFile;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LineSource extends AbstractSource implements Runnable
+public class FileSource extends AbstractSource implements Runnable
 {
-    private AudioFormat audioFormat;
-    private Mixer.Info mixerInfo;
+    private Path file;
     private double refreshInterval;
-    private volatile boolean stopped;
+    private boolean stopped;
 
-    public LineSource(AudioFormat audioFormat, Mixer.Info mixerInfo, double refreshInterval)
+    public FileSource(Path file, double refreshInterval)
     {
-        this.audioFormat = audioFormat;
-        this.mixerInfo = mixerInfo;
+        this.file = file;
         this.refreshInterval = refreshInterval;
     }
-
+    
     @Override
     public void start()
     {
-        Thread thread = new Thread(this, mixerInfo.getDescription());
+        Thread thread = new Thread(this, file.toString());
         thread.start();
-    }
-
-    @Override
-    public void stop()
-    {
-        stopped = true;
-        super.stop();
     }
 
     @Override
     public void run()
     {
-        try (TargetDataLine line = AudioSystem.getTargetDataLine(audioFormat, mixerInfo))
+        try
         {
-            int size = (int) (audioFormat.getSampleRate()*refreshInterval);
-            byte[] buffer = new byte[size*audioFormat.getFrameSize()];
-            ByteBuffer bb = ByteBuffer.wrap(buffer);
-            SampleBuffer sampleBuffer = new SampleBufferImpl(audioFormat, bb, size);
-            line.open(audioFormat, size);
-            line.start();
+            long millis = (long) (refreshInterval*1000);
+            Duration intDur = Duration.ofMillis(millis);
+            WaveFile wave = (WaveFile) RIFFFile.open(file);
+            AudioFormat audioFormat = wave.getAudioFormat();
+            int interval = (int) (audioFormat.getSampleRate()*refreshInterval);
+            SampleBuffer sampleBuffer = wave.getSampleBuffer(interval);
+            Duration duration = sampleBuffer.getDuration();
             fireUpdate(sampleBuffer);
-            while (!stopped)
+            while (!stopped && intDur.compareTo(duration) < 0)
             {
-                int rc = line.read(buffer, 0, size);
+                sampleBuffer.goTo(intDur);
                 fireUpdate();
+                Thread.sleep(millis);
+                intDur = intDur.plus(intDur);
             }
         }
-        catch (LineUnavailableException ex)
+        catch (IOException | InterruptedException ex)
         {
             throw new RuntimeException(ex);
         }
@@ -86,7 +81,7 @@ public class LineSource extends AbstractSource implements Runnable
     @Override
     public String toString()
     {
-        return mixerInfo+" "+audioFormat;
+        return file.toString();
     }
     
 }

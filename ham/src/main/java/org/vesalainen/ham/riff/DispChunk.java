@@ -14,17 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.oscilloscope;
+package org.vesalainen.ham.riff;
 
-import org.vesalainen.ham.SampleBuffer;
-import org.vesalainen.nio.IntArray;
+import java.io.IOException;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import org.vesalainen.nio.channels.BufferedFileBuilder;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface SourceListener
+public class DispChunk extends Chunk
 {
-    void update(SampleBuffer samples);
-    void update();
+    private int clipboardFormat;
+    private String text;
+    public DispChunk(String text)
+    {
+        super("DISP");
+        this.text = text;
+    }
+
+    @Override
+    protected void storeData(BufferedFileBuilder bb) throws IOException
+    {
+        bb.putInt(clipboardFormat);
+        bb.put(id, ISO_8859_1);
+    }
+    
 }

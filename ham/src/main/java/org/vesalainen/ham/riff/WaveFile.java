@@ -18,15 +18,16 @@ package org.vesalainen.ham.riff;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
-import org.vesalainen.ham.riff.FmtChunk.Fmt16Chunk;
+import org.vesalainen.ham.SampleBuffer;
+import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.riff.FmtChunk.Fmt18Chunk;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
 
@@ -72,6 +73,7 @@ public class WaveFile extends RIFFFile
             }
             riffChunk.add(listChunk);
         }
+        riffChunk.add(new DispChunk("this chunk is here because otherwise windows explorer doesn't show metadata"));
         try (BufferedFileBuilder bfb = new BufferedFileBuilder(4096, true, target, options))
         {
             bfb.order(LITTLE_ENDIAN);
@@ -87,5 +89,15 @@ public class WaveFile extends RIFFFile
         InputStream inputStream = data.getInputStream();
         AudioFormat audioFormat = fmt.getAudioFormat();
         return new AudioInputStream(inputStream, audioFormat, inputStream.available()/audioFormat.getFrameSize());
+    }
+
+    public ByteBuffer getData()
+    {
+        return data.getData();
+    }
+    
+    public SampleBuffer getSampleBuffer(int viewLength)
+    {
+        return new SampleBufferImpl(getAudioFormat(), getData(), viewLength);
     }
 }

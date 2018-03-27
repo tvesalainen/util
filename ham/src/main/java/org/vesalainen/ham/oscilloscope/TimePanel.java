@@ -20,18 +20,16 @@ import static java.awt.Color.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import static java.nio.ByteOrder.*;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.vesalainen.ham.fft.TimeDomain;
+import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.fft.Waves;
 import org.vesalainen.nio.IntArray;
 import org.vesalainen.ui.AbstractView;
@@ -52,8 +50,8 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
     private int n;
     private AbstractView view = new AbstractView(false);
     private double sampleFrequency;
-    private int bitCount;
-    private IntArray array;
+    private int maxAmplitude;
+    private SampleBuffer samples;
     
     public TimePanel()
     {
@@ -61,17 +59,17 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
     }
 
     @Override
-    public void update(double sampleFrequency, int bitCount, IntArray array, String channel)
+    public void update(SampleBuffer samples)
     {
-        this.sampleFrequency = sampleFrequency;
-        this.bitCount = bitCount;
-        if (this.array == null || this.array.length() != array.length())
+        this.sampleFrequency = samples.getSampleFrequency();
+        this.maxAmplitude = samples.getMaxAmplitude();
+        if (this.samples == null || this.samples.getViewLength() != samples.getViewLength())
         {
-            x = new int[array.length()];
-            y = new int[array.length()];
+            x = new int[samples.getViewLength()];
+            y = new int[samples.getViewLength()];
         }
-        this.array = array;
-        updateTimeModel(sampleFrequency, array.length());
+        this.samples = samples;
+        updateTimeModel(sampleFrequency, samples.getViewLength());
     }
 
     @Override
@@ -105,29 +103,28 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
     }
     private void updateXY()
     {
-        if (array != null)
+        if (samples != null)
         {
-            int start = trigger(array);
+            int start = trigger();
             n = (int) (sweepTime*sampleFrequency);
-            int maxAmplitude = Waves.maxAmplitude(bitCount);
             view.setRect(0, n, -maxAmplitude, maxAmplitude);
             Rectangle bounds = getBounds();
             view.setScreen(bounds.width, bounds.height);
             for (int ii=0;ii<n;ii++)
             {
-                int s = array.get(start+ii);
+                int s = samples.get(start+ii, 0);   // 0 = channel
                 x[ii] = (int) view.toScreenX(ii);
                 y[ii] = (int) view.toScreenY(s);
             }
         }
     }
-    private int trigger(IntArray array)
+    private int trigger()
     {
-        int length = array.length();
-        int prev = array.get(0);
+        int length = samples.getViewLength();
+        int prev = samples.get(0, 0);
         for (int ii=1;ii<length;ii++)
         {
-            int cur = array.get(ii);
+            int cur = samples.get(ii, 0);
             if (prev < trigger && cur >= trigger)
             {
                 return Math.abs(prev - trigger) < Math.abs(cur - trigger) ? ii : ii-1;

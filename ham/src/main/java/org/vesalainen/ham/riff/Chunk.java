@@ -60,7 +60,7 @@ public class Chunk
         {
             throw new UnsupportedOperationException("chunk data size over " + Integer.MAX_VALUE + " not supported");
         }
-        data = bb.slice().order(ByteOrder.LITTLE_ENDIAN);
+        data = bb.slice().asReadOnlyBuffer().order(ByteOrder.LITTLE_ENDIAN);
         data.limit(size);
         int position = bb.position();
         position += size;
@@ -96,11 +96,6 @@ public class Chunk
     public int getSize()
     {
         return size;
-    }
-
-    public ByteBuffer getData()
-    {
-        return data;
     }
 
     public final String getSZ(int index, int length)

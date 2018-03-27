@@ -17,6 +17,8 @@
 package org.vesalainen.ham.oscilloscope;
 
 import java.util.concurrent.TimeUnit;
+import org.vesalainen.ham.SampleBuffer;
+import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.fft.TimeDomain;
 import org.vesalainen.ham.fft.Waves;
 import org.vesalainen.nio.IntArray;
@@ -27,29 +29,25 @@ import org.vesalainen.nio.IntArray;
  */
 public class TestSource extends AbstractSource
 {
-    private double sampleFrequency;
-    private int bitCount;
-    private IntArray array;
+    private SampleBuffer samples;
 
     public TestSource(double sampleFrequency, int bitCount)
     {
-        this.sampleFrequency = sampleFrequency;
-        this.bitCount = bitCount;
         TimeDomain td = Waves.createSample(sampleFrequency, 0, 1, TimeUnit.SECONDS, Waves.of(sampleFrequency/10, Waves.maxAmplitude(bitCount)*0.9, 0));
-        this.array = td.getSamples();
+        this.samples = new SampleBufferImpl((long) sampleFrequency, Waves.maxAmplitude(bitCount), td.getSamples());
     }
     
     @Override
     public void start()
     {
-        fireUpdate(sampleFrequency, bitCount, array, null);
+        fireUpdate(samples);
         fireUpdate();
     }
 
     @Override
     public String toString()
     {
-        return "TestSource{" + "sampleFrequency=" + sampleFrequency + ", bitCount=" + bitCount + '}';
+        return "TestSource{" + "samples=" + samples + '}';
     }
-    
+
 }

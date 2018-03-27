@@ -93,6 +93,7 @@ public class Oscilloscope extends WindowAdapter
                 .build();
         panel.setLayout(layout);
         triggerSlider = new JSlider(VERTICAL);
+        triggerSlider.getAccessibleContext();
         frame.add(panel);
         frame.pack();
         frame.setLocationByPlatform(true);
@@ -107,6 +108,7 @@ public class Oscilloscope extends WindowAdapter
         menuBar.add(menu);
         menu.add(sourceManager.getOpenTestSource());
         menu.add(sourceManager.getOpenLineSource());
+        menu.add(sourceManager.getOpenFileSource());
     }
     public class ExceptionHandler extends EventQueue
     {
