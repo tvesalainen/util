@@ -21,7 +21,6 @@ import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.fft.TimeDomain;
 import org.vesalainen.ham.fft.Waves;
-import org.vesalainen.nio.IntArray;
 
 /**
  *
@@ -33,7 +32,7 @@ public class TestSource extends AbstractSource
 
     public TestSource(double sampleFrequency, int bitCount)
     {
-        TimeDomain td = Waves.createSample(sampleFrequency, 0, 1, TimeUnit.SECONDS, Waves.of(sampleFrequency/10, Waves.maxAmplitude(bitCount)*0.9, 0));
+        TimeDomain td = Waves.createSample(sampleFrequency, 0, 1, TimeUnit.SECONDS, Waves.of(1000, Waves.maxAmplitude(bitCount)*0.9, 0));
         this.samples = new SampleBufferImpl((long) sampleFrequency, Waves.maxAmplitude(bitCount), td.getSamples());
     }
     
@@ -47,7 +46,7 @@ public class TestSource extends AbstractSource
     @Override
     public String toString()
     {
-        return "TestSource{" + "samples=" + samples + '}';
+        return "TestSource{" + " 1000 Hz samples=" + samples + '}';
     }
 
 }

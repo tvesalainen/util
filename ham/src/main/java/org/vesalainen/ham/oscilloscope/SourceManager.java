@@ -20,6 +20,12 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.nio.file.Paths;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import org.vesalainen.ham.oscilloscope.ui.SimpleAction;
 
 /**
  *
@@ -30,16 +36,89 @@ public class SourceManager
     private Source source;
     private Frame frame;
     private SourceListener[] listeners;
+    private BoundedRangeModel boundedRangeModel = new DefaultBoundedRangeModel();
+    private Document document = new PlainDocument();
     private OpenTestSource openTestSource = new OpenTestSource();
     private OpenLineSource openLineSource = new OpenLineSource();
     private OpenFileSource openFileSource = new OpenFileSource();
+    private Action stop;
+    private Action play;
+    private Action pause;
+    private Action back;
+    private Action forward;
 
     public SourceManager(Frame frame, SourceListener... listeners)
     {
         this.frame = frame;
         this.listeners = listeners;
+        this.stop = new SimpleAction("Stop", this::stop);
+        this.play = new SimpleAction("Play", this::play);
+        this.pause = new SimpleAction("Pause", this::pause);
+        this.back = new SimpleAction("Back", this::back);
+        this.forward = new SimpleAction("Forward", this::forward);
     }
 
+    private void stop()
+    {
+        if (source != null)
+        {
+            source.stop();
+        }
+    }
+    private void play()
+    {
+        if (source != null)
+        {
+            source.play();
+        }
+    }
+    private void pause()
+    {
+        if (source != null)
+        {
+            source.pause();
+        }
+    }
+    private void back()
+    {
+        if (source != null)
+        {
+            source.back();
+        }
+    }
+    private void forward()
+    {
+        if (source != null)
+        {
+            source.forward();
+        }
+    }
+
+    public Action getStop()
+    {
+        return stop;
+    }
+
+    public Action getPlay()
+    {
+        return play;
+    }
+
+    public Action getPause()
+    {
+        return pause;
+    }
+
+    public Action getBack()
+    {
+        return back;
+    }
+
+    public Action getForward()
+    {
+        return forward;
+    }
+    
     public OpenFileSource getOpenFileSource()
     {
         return openFileSource;
@@ -66,8 +145,20 @@ public class SourceManager
         {
             source.addListener(l);
         }
+        source.setBoundedRangeModel(boundedRangeModel);
+        source.setDocument(document);
         source.start();
         frame.setTitle(source.toString());
+    }
+
+    public BoundedRangeModel getBoundedRangeModel()
+    {
+        return boundedRangeModel;
+    }
+
+    public Document getDocument()
+    {
+        return document;
     }
     
     public class OpenFileSource extends AbstractAction

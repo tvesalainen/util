@@ -14,25 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.oscilloscope;
+package org.vesalainen.ham.oscilloscope.ui;
 
-import javax.swing.BoundedRangeModel;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Source
+public class SimpleAction extends AbstractAction
 {
-    void start();
-    void stop();
-    void play();
-    void pause();
-    void back();
-    void forward();
-    void addListener(SourceListener listener);
-    void setDocument(Document document);
-    void setBoundedRangeModel(BoundedRangeModel model);
+    private Runnable task;
+    public SimpleAction(String name, Runnable task)
+    {
+        super(name);
+        this.task = task;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        task.run();
+    }
+    
 }

@@ -27,11 +27,10 @@ import java.util.TreeMap;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.vesalainen.ham.SampleBuffer;
-import org.vesalainen.ham.fft.Waves;
-import org.vesalainen.nio.IntArray;
 import org.vesalainen.ui.AbstractView;
 
 /**
@@ -82,17 +81,17 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
     {
         if (timeSlider != null)
         {
-            double maxFreq = length/sampleFrequency;
-            double minFreq = 1.0/sampleFrequency;
+            double maxGrid = length/sampleFrequency/10;
+            double minGrid = 1.0/sampleFrequency/10;
             int min = timeValueMap.lastKey();
             int max = timeValueMap.firstKey();
             for (Entry<Integer, Double> e : timeValueMap.entrySet())
             {
-                if (e.getValue() >= minFreq)
+                if (e.getValue() >= minGrid)
                 {
                     min = Math.min(min, e.getKey());
                 }
-                if (e.getValue() <= maxFreq)
+                if (e.getValue() < maxGrid)
                 {
                     max = Math.max(max, e.getKey());
                 }
@@ -106,7 +105,7 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
         if (samples != null)
         {
             int start = trigger();
-            n = (int) (sweepTime*sampleFrequency);
+            n = (int) (sweepTime*sampleFrequency*10);   // sweepTime for rid square
             view.setRect(0, n, -maxAmplitude, maxAmplitude);
             Rectangle bounds = getBounds();
             view.setScreen(bounds.width, bounds.height);
@@ -120,14 +119,14 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
     }
     private int trigger()
     {
-        int length = samples.getViewLength();
-        int prev = samples.get(0, 0);
-        for (int ii=1;ii<length;ii++)
+        int half = samples.getViewLength()/2;
+        int prev = samples.get(half, 0);
+        for (int ii=1;ii<half;ii++)
         {
-            int cur = samples.get(ii, 0);
+            int cur = samples.get(half+ii, 0);
             if (prev < trigger && cur >= trigger)
             {
-                return Math.abs(prev - trigger) < Math.abs(cur - trigger) ? ii : ii-1;
+                return Math.abs(prev - trigger) > Math.abs(cur - trigger) ? ii : ii-1;
             }
             prev = cur;
         }

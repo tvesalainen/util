@@ -18,18 +18,20 @@ package org.vesalainen.ham.oscilloscope;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.DefaultBoundedRangeModel;
-import javax.swing.event.ChangeEvent;
+import javax.swing.BoundedRangeModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.vesalainen.ham.SampleBuffer;
-import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractSource extends DefaultBoundedRangeModel implements Source
+public abstract class AbstractSource implements Source
 {
     protected List<SourceListener> listeners = new ArrayList<>();
+    protected BoundedRangeModel model;
+    protected Document document;
 
     public void fireUpdate()
     {
@@ -68,8 +70,38 @@ public abstract class AbstractSource extends DefaultBoundedRangeModel implements
     }
 
     @Override
-    public void stateChanged(ChangeEvent e)
+    public void back()
     {
+    }
+
+    @Override
+    public void forward()
+    {
+    }
+
+    protected void setText(String text)
+    {
+        try
+        {
+            int length = document.getLength();
+            document.remove(0, length);
+            document.insertString(0, text, null);
+        }
+        catch (BadLocationException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    @Override
+    public void setDocument(Document document)
+    {
+        this.document = document;
+    }
+
+    @Override
+    public void setBoundedRangeModel(BoundedRangeModel model)
+    {
+        this.model = model;
     }
     
 }

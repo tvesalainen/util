@@ -17,6 +17,7 @@
 package org.vesalainen.ham.oscilloscope;
 
 import java.awt.AWTEvent;
+import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -27,6 +28,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import static javax.swing.SwingConstants.*;
 import org.vesalainen.ham.oscilloscope.ui.GroupLayoutBuilder;
 
@@ -41,12 +44,15 @@ public class Oscilloscope extends WindowAdapter
     private JPanel panel;
     private JMenuBar menuBar;
     private JSlider cueSlider;
+    private JTextField timeField;
     private JSlider timeDivisionSlider;
     private JSlider verticalSensitivitySlider;
     private JSlider triggerSlider;
     private TimePanel timePanel;
     private FrequencyPanel frequencyPanel;
     private SourceManager sourceManager;
+    private JToolBar toolBar;
+    private JPanel toolBarPanel;
 
     public Oscilloscope()
     {
@@ -60,7 +66,14 @@ public class Oscilloscope extends WindowAdapter
         frame.addWindowListener(this);
         menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
+        
+        toolBarPanel = new JPanel(new BorderLayout());
+        frame.add(toolBarPanel);
+        toolBar = new JToolBar();
+        toolBarPanel.add(toolBar, BorderLayout.PAGE_START);
+        
         panel = new JPanel();
+        toolBarPanel.add(panel, BorderLayout.CENTER);
         
         timePanel = new TimePanel();
         panel.add(timePanel);
@@ -70,10 +83,19 @@ public class Oscilloscope extends WindowAdapter
         
         sourceManager = new SourceManager(frame, timePanel);
         
-        sourceMenu();
+        sourceMenu();   
         
-        cueSlider = new JSlider(HORIZONTAL);
+        cueSlider = new JSlider(sourceManager.getBoundedRangeModel());
         panel.add(cueSlider);
+
+        timeField = new JTextField(sourceManager.getDocument(), "", 10);
+        timeField.setEditable(false);
+        toolBar.add(timeField);
+        toolBar.add(sourceManager.getStop());
+        toolBar.add(sourceManager.getBack());
+        toolBar.add(sourceManager.getPlay());
+        toolBar.add(sourceManager.getPause());
+        toolBar.add(sourceManager.getForward());
         
         timeDivisionSlider = timePanel.createTimeSlider(VERTICAL);
         panel.add(timeDivisionSlider);
@@ -94,7 +116,6 @@ public class Oscilloscope extends WindowAdapter
         panel.setLayout(layout);
         triggerSlider = new JSlider(VERTICAL);
         triggerSlider.getAccessibleContext();
-        frame.add(panel);
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);

@@ -17,14 +17,12 @@
 package org.vesalainen.ham.oscilloscope;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import org.vesalainen.ham.SampleBuffer;
-import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.riff.RIFFFile;
 import org.vesalainen.ham.riff.WaveFile;
 
@@ -35,44 +33,109 @@ import org.vesalainen.ham.riff.WaveFile;
 public class FileSource extends AbstractSource implements Runnable
 {
     private Path file;
-    private double refreshInterval;
+    private Duration refreshInterval;
+    private WaveFile wave;
+    private AudioFormat audioFormat;
+    private SampleBuffer sampleBuffer;
+    private Duration duration;
+    private Duration current;
     private boolean stopped;
 
     public FileSource(Path file, double refreshInterval)
     {
-        this.file = file;
-        this.refreshInterval = refreshInterval;
+        try
+        {
+            this.file = file;
+            this.refreshInterval = Duration.ofMillis((long) (refreshInterval*1000));
+            this.wave = (WaveFile) RIFFFile.open(file);
+            this.audioFormat = wave.getAudioFormat();
+            this.sampleBuffer = wave.getSampleBuffer((int) (audioFormat.getSampleRate()*refreshInterval));
+            this.duration = sampleBuffer.getDuration();
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
     
     @Override
     public void start()
     {
-        Thread thread = new Thread(this, file.toString());
-        thread.start();
+        if (!stopped)
+        {
+            current = Duration.ZERO;
+            updatePosition();
+            fireUpdate(sampleBuffer);
+            Thread thread = new Thread(this, file.toString());
+            thread.start();
+        }
     }
 
+    @Override
+    public void forward()
+    {
+        if (stopped && current.compareTo(duration) < 0)
+        {
+            current = current.plus(refreshInterval);
+            sampleBuffer.goTo(current);
+            fireUpdate();
+            updatePosition();
+        }
+    }
+
+    @Override
+    public void back()
+    {
+        if (stopped && current.compareTo(Duration.ZERO) > 0)
+        {
+            current = current.minus(refreshInterval);
+            sampleBuffer.goTo(current);
+            fireUpdate();
+            updatePosition();
+        }
+    }
+
+    @Override
+    public void pause()
+    {
+        stopped = true;
+    }
+
+    @Override
+    public void play()
+    {
+        if (stopped)
+        {
+            stopped = false;
+            start();
+        }
+    }
+
+    @Override
+    public void stop()
+    {
+        stopped = true;
+    }
+
+    private void updatePosition()
+    {
+        setText(current.toString());
+    }
     @Override
     public void run()
     {
         try
         {
-            long millis = (long) (refreshInterval*1000);
-            Duration intDur = Duration.ofMillis(millis);
-            WaveFile wave = (WaveFile) RIFFFile.open(file);
-            AudioFormat audioFormat = wave.getAudioFormat();
-            int interval = (int) (audioFormat.getSampleRate()*refreshInterval);
-            SampleBuffer sampleBuffer = wave.getSampleBuffer(interval);
-            Duration duration = sampleBuffer.getDuration();
-            fireUpdate(sampleBuffer);
-            while (!stopped && intDur.compareTo(duration) < 0)
+            while (!stopped && current.compareTo(duration) < 0)
             {
-                sampleBuffer.goTo(intDur);
+                sampleBuffer.goTo(current);
                 fireUpdate();
-                Thread.sleep(millis);
-                intDur = intDur.plus(intDur);
+                updatePosition();
+                Thread.sleep(refreshInterval.toMillis());
+                current = current.plus(refreshInterval);
             }
         }
-        catch (IOException | InterruptedException ex)
+        catch (InterruptedException ex)
         {
             throw new RuntimeException(ex);
         }
