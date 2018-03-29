@@ -21,6 +21,7 @@ import static java.nio.ByteOrder.*;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
+import org.vesalainen.ham.filter.Filter;
 import org.vesalainen.nio.IntArray;
 
 /**
@@ -29,7 +30,7 @@ import org.vesalainen.nio.IntArray;
  */
 public class FilterAudioInputStream extends AudioInputStream
 {
-    private FFTFilter filter;
+    private Filter filter;
     private byte[] array;
     private IntArray intArray;
     private int offset;

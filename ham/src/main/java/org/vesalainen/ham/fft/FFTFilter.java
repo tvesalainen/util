@@ -16,13 +16,14 @@
  */
 package org.vesalainen.ham.fft;
 
+import org.vesalainen.ham.filter.Filter;
 import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FFTFilter extends FFT
+public class FFTFilter extends FFT implements Filter
 {
     private double sampleFrequency;
     private double low;
@@ -36,6 +37,7 @@ public class FFTFilter extends FFT
         this.high = high;
     }
     
+    @Override
     public void filter(IntArray array)
     {
         forward(array);
