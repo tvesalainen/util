@@ -23,6 +23,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.vesalainen.ham.fft.FilterAudioInputStream;
+import org.vesalainen.ham.filter.FIRFilter;
 
 /**
  *
@@ -33,9 +34,11 @@ public class AudioFileFilter
     public static final void filter(Path in, Path out) throws IOException, UnsupportedAudioFileException
     {
         try (   AudioInputStream ais = AudioSystem.getAudioInputStream(in.toFile());
-                FilterAudioInputStream fais = new FilterAudioInputStream(ais, 512, 1000, 3000)
+                FilterAudioInputStream fais = new FilterAudioInputStream(ais, 4096)
                 )
         {
+            FIRFilter filter = new FIRFilter(256, ais.getFormat().getSampleRate(), 2800);
+            fais.addListener(filter);
             AudioSystem.write(fais, AudioFileFormat.Type.WAVE, out.toFile());
         }
     }

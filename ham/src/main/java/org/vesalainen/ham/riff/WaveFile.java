@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.*;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.sound.sampled.AudioFormat;
@@ -58,6 +59,10 @@ public class WaveFile extends RIFFFile
     }
     public void store(AudioInputStream audioInputStream, Path target, OpenOption... options) throws IOException
     {
+        if (options.length == 0)
+        {
+            options = new OpenOption[]{CREATE, WRITE};
+        }
         ContainerChunk riffChunk = new ContainerChunk("RIFF", "WAVE");
         Fmt18Chunk fmtChunk = new Fmt18Chunk(audioInputStream.getFormat());
         riffChunk.add(fmtChunk);

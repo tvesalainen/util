@@ -18,11 +18,13 @@ package org.vesalainen.ham.fft;
 
 import java.io.IOException;
 import static java.nio.ByteOrder.*;
+import java.util.Collection;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.TargetDataLine;
-import org.vesalainen.ham.filter.Filter;
 import org.vesalainen.nio.IntArray;
+import org.vesalainen.util.Listener;
+import org.vesalainen.util.ListenerSupport;
 
 /**
  *
@@ -30,35 +32,33 @@ import org.vesalainen.nio.IntArray;
  */
 public class FilterAudioInputStream extends AudioInputStream
 {
-    private Filter filter;
-    private byte[] array;
-    private IntArray intArray;
-    private int offset;
-    private int length;
-    private boolean eof;
+    protected byte[] array;
+    protected IntArray intArray;
+    protected int offset;
+    protected int length;
+    protected boolean eof;
+    protected ListenerSupport<IntArray> listeners = new ListenerSupport<>();
     
-    public FilterAudioInputStream(AudioInputStream stream, int size, double low, double high)
+    public FilterAudioInputStream(AudioInputStream stream, int size)
     {
         super(stream, stream.getFormat(), stream.getFrameLength());
-        init(size, low, high);
+        init(size);
     }
 
-    public FilterAudioInputStream(TargetDataLine line, int size, double low, double high)
+    public FilterAudioInputStream(TargetDataLine line, int size)
     {
         super(line);
-        init(size, low, high);
+        init(size);
     }
-    private void init(int size, double low, double high)
+    private void init(int size)
     {
         AudioFormat fmt = getFormat();
         if (fmt.getChannels() != 1)
         {
             throw new UnsupportedOperationException("only mono supported");
         }
-        float sampleFrequency = fmt.getSampleRate();
         array = new byte[size*fmt.getFrameSize()];
         intArray = IntArray.getInstance(array, fmt.getSampleSizeInBits(), fmt.isBigEndian() ? BIG_ENDIAN : LITTLE_ENDIAN);
-        this.filter = new FFTFilter(sampleFrequency, low, high, size);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class FilterAudioInputStream extends AudioInputStream
             while (l > 0)
             {
                 int rc = super.read(array, o, l);
-                if (rc == -1)
+                if (rc <= 0)    // returns 0 when closed ?????
                 {
                     if (o == 0)
                     {
@@ -89,7 +89,7 @@ public class FilterAudioInputStream extends AudioInputStream
             }
             offset = 0;
             length = array.length-l;
-            filter.filter(intArray);
+            fire(intArray);
         }
         int count = Math.min(length, len);
         System.arraycopy(array, offset, buf, off, count);
@@ -97,5 +97,25 @@ public class FilterAudioInputStream extends AudioInputStream
         length -= count;
         return count;
     }
-    
+
+    public void addListener(Listener<IntArray> listener)
+    {
+        this.listeners.addListener(listener);
+    }
+
+    public void addListeners(Collection<Listener<IntArray>> listeners)
+    {
+        this.listeners.addListeners(listeners);
+    }
+
+    public void removeListener(Listener<IntArray> listener)
+    {
+        this.listeners.removeListener(listener);
+    }
+
+    public void fire(IntArray item)
+    {
+        this.listeners.fire(item);
+    }
+
 }

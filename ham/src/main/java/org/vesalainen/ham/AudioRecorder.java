@@ -26,6 +26,11 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
+import org.vesalainen.ham.fft.FilterAudioInputStream;
+import org.vesalainen.ham.riff.WaveFile;
+import org.vesalainen.nio.IntArray;
+import org.vesalainen.util.Listener;
+import org.vesalainen.util.ListenerSupport;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -35,18 +40,25 @@ import org.vesalainen.util.logging.JavaLogging;
 public class AudioRecorder extends JavaLogging implements AutoCloseable
 {
     private TargetDataLine targetDataLine;
+    protected ListenerSupport<IntArray> listeners = new ListenerSupport<>();
+    private final AudioFormat audioFormat;
+    private final Mixer.Info mixerInfo;
     
     public AudioRecorder(String mixerName) throws LineUnavailableException
     {
-        this(mixerName, 44000, 16);
+        this(mixerName, 41000, 16);
     }
     public AudioRecorder(String mixerName, float sampleRate, int sampleSizeInBits) throws LineUnavailableException
     {
         super(AudioRecorder.class);
-        AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSizeInBits, 1, true, false);
+        audioFormat = new AudioFormat(sampleRate, sampleSizeInBits, 1, true, false);
         config("AudioRecorder(%s)", audioFormat);
-        Mixer.Info mixerInfo = mixer(mixerName, audioFormat);
+        mixerInfo = mixer(mixerName, audioFormat);
         config("using mixer %s", mixerInfo);
+    }
+    public void record(Path file) throws IOException, LineUnavailableException
+    {
+        fine("start record(%s)", file);
         if (mixerInfo != null)
         {
             targetDataLine = AudioSystem.getTargetDataLine(audioFormat, mixerInfo);
@@ -56,19 +68,13 @@ public class AudioRecorder extends JavaLogging implements AutoCloseable
             targetDataLine = AudioSystem.getTargetDataLine(audioFormat);
         }
         targetDataLine.open(audioFormat);
-    }
-    public void record(Path file) throws IOException
-    {
-        record(file, Type.WAVE);
-    }
-    public void record(Path file, Type type) throws IOException
-    {
-        fine("start record(%s, %s)", file, type);
-        targetDataLine.stop();
         targetDataLine.start();
-        try (AudioInputStream in = new AudioInputStream(targetDataLine))
+        try (AudioInputStream in = new AudioInputStream(targetDataLine);
+                FilterAudioInputStream fais = new FilterAudioInputStream(in, 4096))
         {
-            AudioSystem.write(in, type, file.toFile());
+            fais.addListeners(listeners.getListeners());
+            WaveFile wave = new WaveFile();
+            wave.store(fais, file);
         }
         fine("stopped recording");
     }
@@ -95,6 +101,16 @@ public class AudioRecorder extends JavaLogging implements AutoCloseable
     public void close()
     {
         targetDataLine.close();
+    }
+
+    public void addListener(Listener<IntArray> listener)
+    {
+        listeners.addListener(listener);
+    }
+
+    public void removeListener(Listener<IntArray> listener)
+    {
+        listeners.removeListener(listener);
     }
     
 }

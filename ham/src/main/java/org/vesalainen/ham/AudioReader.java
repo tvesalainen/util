@@ -70,7 +70,7 @@ public abstract class AudioReader<T extends Buffer>
     {
         for (DataListener listener : dataListeners)
         {
-            listener.data(intArray);
+            listener.update(intArray);
         }
     }
     public static AudioReader getInstance(TargetDataLine line, float frequency)

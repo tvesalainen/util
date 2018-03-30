@@ -27,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import org.vesalainen.ham.riff.RIFFFile;
+import org.vesalainen.ham.riff.WaveFile;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -37,7 +39,7 @@ public class FaxDecoder extends JavaLogging implements FaxStateListener
 {
     private int lpm;
     private int ioc;
-    private URL in;
+    private Path in;
     private Path out;
     private AudioInputStream ais;
     private int resolution = 2300;
@@ -48,10 +50,6 @@ public class FaxDecoder extends JavaLogging implements FaxStateListener
 
     public FaxDecoder(int lpm, int ioc, Path in, Path out) throws MalformedURLException
     {
-        this(lpm, ioc, in.toUri().toURL(), out);
-    }
-    public FaxDecoder(int lpm, int ioc, URL in, Path out)
-    {
         super(FaxDecoder.class);
         try
         {
@@ -59,11 +57,12 @@ public class FaxDecoder extends JavaLogging implements FaxStateListener
             this.ioc = ioc;
             this.in = in;
             this.out = out;
-            this.ais = AudioSystem.getAudioInputStream(in);
+            WaveFile wave = (WaveFile) RIFFFile.open(in);
+            this.ais = wave.getAudioInputStream();
             this.tokenizer = new FaxTokenizer(ais);
             this.synchronizer = new BWSynchronizer(this);
         }
-        catch (UnsupportedAudioFileException | IOException ex)
+        catch (IOException ex)
         {
             throw new RuntimeException(ex);
         }

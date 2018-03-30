@@ -21,6 +21,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.ham.filter.FIRFilter;
+import org.vesalainen.ham.filter.Filter;
 import org.vesalainen.nio.IntArray;
 
 /**
@@ -46,16 +48,6 @@ public class WavesTest
         Waves.window(fd, 100, 600);
         TimeDomain ifft = Waves.ifft(fd);
         Waves.plot(ifft.getSamples(), Paths.get("ifftfm.png"));
-    }
-    @Test
-    public void testSamplesFM2() throws IOException
-    {
-        TimeDomain td = Waves.createFMSample(4096, 200, 40.5, 80.5, TimeUnit.MILLISECONDS, 250, 250, 250, 250);
-        IntArray samples = td.getSamples();
-        Waves.addWhiteNoise(samples, 300);
-        FFTFilter filter = new FFTFilter(4096, 30, 90, 4096);
-        filter.filter(samples);
-        Waves.plot(samples, Paths.get("filteredfm.png"));
     }
     @Test
     public void testSamples0() throws IOException

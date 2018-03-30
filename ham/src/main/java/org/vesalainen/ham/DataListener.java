@@ -17,12 +17,12 @@
 package org.vesalainen.ham;
 
 import org.vesalainen.nio.IntArray;
+import org.vesalainen.util.Listener;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface DataListener
+public interface DataListener extends Listener<IntArray>
 {
-    void data(IntArray array);
 }

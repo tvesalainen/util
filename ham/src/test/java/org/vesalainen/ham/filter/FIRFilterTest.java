@@ -14,47 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham.filter;
 
-import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.logging.JavaLogging;
+import org.vesalainen.ham.fft.TimeDomain;
+import org.vesalainen.ham.fft.Waves;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxDecoderTest
+public class FIRFilterTest
 {
     
-    public FaxDecoderTest()
+    public FIRFilterTest()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
     }
 
     @Test
-    public void test() throws UnsupportedAudioFileException, IOException
+    public void testSamplesFM2() throws IOException
     {
-        try
-        {
-            Path in = Paths.get("src\\test\\resources\\hffax2.wav");
-            //Path in = Paths.get("c:\\tmp\\J3C_BOSTON, MASSACHUSETTS, U.S.A._96 HR WIND_WAVE FORECAST_30_20_55.wav");
-            FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("hffax.png"));
-            decoder.parse();
-        }
-        catch(EOFException ex)
-        {
-        }
+        TimeDomain td = Waves.createFMSample(4096, 200, 40.5, 80.5, TimeUnit.MILLISECONDS, 250, 250, 250, 250);
+        IntArray samples = td.getSamples();
+        Waves.addWhiteNoise(samples, 300);
+        Waves.plot(samples, Paths.get("unfilteredFIR.png"));
+        FIRFilter filter = new FIRFilter(40, 4096, 150);
+        filter.update(samples);
+        Waves.plot(samples, Paths.get("filteredFIR.png"));
     }
     
 }

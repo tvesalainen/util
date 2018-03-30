@@ -16,53 +16,79 @@
  */
 package org.vesalainen.ham.filter;
 
+import static java.lang.Math.*;
+import org.vesalainen.ham.DataListener;
 import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FIRFilter implements Filter
+public class FIRFilter implements DataListener
 {
-
-    public FIRFilter(double sampleFrequency, double low, double high)
+    private double[] coef;
+    private double[] shift;
+    private int m;
+    private int index;
+    
+    public FIRFilter(int order, double sampleRate, double bandwidth)
     {
+        this.m = order+1;
+        this.coef = calcCoefficients(m, sampleRate, bandwidth);
+        double sum = 0;
+        for (int ii=0;ii<m;ii++)
+        {
+            sum += coef[ii];
+        }
+        for (int ii=0;ii<m;ii++)
+        {
+            coef[ii] /= sum;
+        }
+        shift = new double[m];
     }
 
     @Override
-    public void filter(IntArray array)
+    public void update(IntArray array)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int al = array.length();
+        for (int ii=0;ii<al;ii++)
+        {
+            double sum = 0;
+            shift[index] = array.get(ii);
+            for (int jj=0;jj<m;jj++)
+            {
+                int j = (index+jj)%m;
+                sum += coef[jj]*shift[j];
+            }
+            array.put(ii, (int) sum);
+            index++;
+            index %= m;
+        }
     }
 
-    private void calcCoefficients(int firLen, double sampleRate, double bandwidth)
+    public static double[] calcCoefficients(int firLen, double sampleRate, double bandwidth)
     {
 // Calculate FIR filter coefficients
 // using the windowed-sinc method
+        double[] c = new double[firLen]; // Coefficient array
+        int i; // Coefficient index
+        double ph; // Phase in radians
+        double coef; // Filter coefficient
+        int coef_int; // Digitized coefficient
+        double bw_ratio; // Normalized bandwidth
+        bw_ratio = 2 * bandwidth / sampleRate;
+        for (i = 0; i < (firLen / 2); i++)
         {
-            int c[firLen
-            ]; // Coefficient array
-int i; // Coefficient index
-            double ph; // Phase in radians
-            double coef; // Filter coefficient
-            int coef_int; // Digitized coefficient
-            double bw_ratio; // Normalized bandwidth
-            bw_ratio = 2 * bandwidth / sampleRate;
-            for (i = 0; i < (firLen / 2); i++)
-            {
 // Brick-wall filter:
-                ph = PI * (i + 0.5) * bw_ratio;
-                coef = sin(ph) / ph;
+            ph = PI * (i + 0.5) * bw_ratio;
+            coef = sin(ph) / ph;
 // Hann window:
-                ph = PI * (i + 0.5) / (firLen / 2);
-                coef *= (1 + cos(ph)) / 2;
-// Convert from floating point to int:
-                coef *= 1 << (COEF_WIDTH - 1);
-                coef_int = (int) coef;
+            ph = PI * (i + 0.5) / (firLen / 2);
+            coef *= (1 + cos(ph)) / 2;
 // Symmetrical impulse response:
-                c[i + firLen / 2] = coef_int;
-                c[firLen / 2 - 1 - i] = coef_int;
-            }
+            c[i + firLen / 2] = coef;
+            c[firLen / 2 - 1 - i] = coef;
         }
+        return c;
     }
 }

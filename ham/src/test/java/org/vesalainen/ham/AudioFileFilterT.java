@@ -27,10 +27,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioFileFilterTest
+public class AudioFileFilterT
 {
     
-    public AudioFileFilterTest()
+    public AudioFileFilterT()
     {
     }
 
@@ -38,16 +38,16 @@ public class AudioFileFilterTest
     public void test0() throws IOException, UnsupportedAudioFileException
     {
         Path cur = Paths.get(".", "src", "test", "resources");
-        Path in = cur.resolve("wefax1.wav");
-        Path out = cur.resolve("wefax1_fil.wav");
+        Path in = cur.resolve("hffax2.wav");
+        Path out = cur.resolve("hffax2_fil.wav");
         AudioFileFilter.filter(in, out);
     }
-    //@Test
+    @Test
     public void test() throws IOException, UnsupportedAudioFileException
     {
-        Path temp = Paths.get("c:\\temp");
-        Path in = temp.resolve("F3C_PT. REYES, CALIFORNIA, U.S.A._WIND_WAVE ANALYSIS_16_19_13.wav");
-        Path out = temp.resolve("FILTERED_F3C_PT. REYES, CALIFORNIA, U.S.A._WIND_WAVE ANALYSIS_16_19_13.wav");
+        Path temp = Paths.get("c:\\tmp");
+        Path in = temp.resolve("F3C_PT. REYES, CALIFORNIA, U.S.A._TROPICAL SEA STATE ANALYSIS_27_14_25.wav");
+        Path out = temp.resolve("FILTERED_F3C_PT. REYES, CALIFORNIA, U.S.A._TROPICAL SEA STATE ANALYSIS_27_14_25.wav");
         AudioFileFilter.filter(in, out);
     }
     
