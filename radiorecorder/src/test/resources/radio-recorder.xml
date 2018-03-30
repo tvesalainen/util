@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 <radio-recorder xmlns="https://github.com/tvesalainen/util/blob/master/radiorecorder/src/main/xsd/radio-recorder.xsd">
-    <files directory="c:\\temp"/>
+    <files directory="c:\\tmp"/>
     <receiver-location>
         <nmea-multicast nmea-group="224.0.0.3" nmea-port="10110"/>
     </receiver-location>
@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </radio-control>
     <audio-capture 
         mixer="Microphone (4- USB PnP Sound De, version Unknown Version" 
-        sample-rate="44000" 
+        sample-rate="48000" 
         sample-size="16"
     />
     <hf-propagation-prediction

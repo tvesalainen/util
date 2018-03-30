@@ -172,10 +172,8 @@ public class RadioRecorder extends LoggingCommandLine
         try
         {
             fine("startRecording(%f KHz %s)", kHz, file);
-            config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
-            audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
             icomManager.setRemote(true);
-            icomManager.setReceiveFrequency(kHz/1000);
+            icomManager.setReceiverFrequency(kHz/1000);
             audioRecorder.record(file);
         }
         catch (Exception ex)
@@ -190,7 +188,6 @@ public class RadioRecorder extends LoggingCommandLine
         {
             fine("stopRecording()");
             audioRecorder.close();
-            icomManager.setRemote(false);
         }
         catch (Exception ex)
         {
@@ -198,7 +195,7 @@ public class RadioRecorder extends LoggingCommandLine
             throw new RuntimeException(ex);
         }
     }
-    private void init() throws IOException, LineUnavailableException
+    private void init() throws IOException, LineUnavailableException, InterruptedException
     {
         pool = new CachedScheduledThreadPool();
         pool.setLogLevel(Level.FINE);
@@ -221,7 +218,7 @@ public class RadioRecorder extends LoggingCommandLine
         if (radioPort != null && !radioPort.isEmpty())
         {
             config("starting IcomManager(%d, %s)", radioId, radioPort);
-            icomManager = new IcomManager(radioId, radioPort);
+            icomManager = IcomManager.getInstance(radioId, radioPort);
         }
         else
         {
@@ -263,6 +260,10 @@ public class RadioRecorder extends LoggingCommandLine
             optimizer.setNoise(noise);
         }
         optimizer.setMinSNR(minSNR);
+        config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
+        audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
+        AGC agc = new AGC(icomManager, 0.9, 0.5);
+        audioRecorder.addListener(agc);
     }
     public void stop()
     {
