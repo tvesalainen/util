@@ -17,7 +17,9 @@
 package org.vesalainen.util;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -70,7 +72,10 @@ public interface MapCollection<K,C extends Collection<V>,V> extends Map<K,C>
      */
     boolean removeItem(K key, V value);
     /**
+     * @deprecated Use valueSet instead.
      * Returns Stream containing all values.
+     * <p>This differs from valueSet method. Returned stream might contain same
+     * object several times.
      * @return 
      */
     default Stream<V> allValues()
@@ -95,5 +100,19 @@ public interface MapCollection<K,C extends Collection<V>,V> extends Map<K,C>
             return collection.iterator().next();
         }
         throw new IllegalArgumentException(key+" is mapped to more than one");
+    }
+    /**
+     * Returns a set of all values.
+     * <p>This differs from allValues method because all values are here only once.
+     * @return 
+     */
+    default Set<V> valueSet()
+    {
+        Set<V> set = new HashSet<>();
+        for (Collection<V> collection : values())
+        {
+            set.addAll(collection);
+        }
+        return set;
     }
 }
