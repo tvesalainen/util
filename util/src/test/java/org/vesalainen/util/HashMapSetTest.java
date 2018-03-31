@@ -46,6 +46,22 @@ public class HashMapSetTest
         hms.removeItem("a", "1");
         assertEquals(Collections.EMPTY_SET, hms.get("a"));
     }
-    
-    
+
+    @Test
+    public void testGetSingle()
+    {
+        HashMapSet<String,String> hms = new HashMapSet<>();
+        assertNull(hms.getSingle("a"));
+        hms.add("a", "1");
+        assertEquals("1", hms.getSingle("a"));
+        hms.add("a", "2");
+        try
+        {
+            hms.getSingle("a");
+            fail("should throw");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+    }
 }

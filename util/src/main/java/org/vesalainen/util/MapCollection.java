@@ -77,4 +77,23 @@ public interface MapCollection<K,C extends Collection<V>,V> extends Map<K,C>
     {
         return entrySet().stream().flatMap((e)->{return e.getValue().stream();});
     }
+    /**
+     * Returns single value if key is mapped to one value. Returns null if key
+     * is not mapped to any value. Otherwise throws IllegalArgumentException.
+     * @param key
+     * @return 
+     */
+    default V getSingle(K key)
+    {
+        C collection = get(key);
+        if (collection == null || collection.isEmpty())
+        {
+            return null;
+        }
+        if (collection.size() == 1)
+        {
+            return collection.iterator().next();
+        }
+        throw new IllegalArgumentException(key+" is mapped to more than one");
+    }
 }
