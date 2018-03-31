@@ -34,7 +34,7 @@ public class ListenerSupport<T>
     }
     public void addListeners(Collection<Listener<T>> listeners)
     {
-        listeners.addAll(listeners);
+        this.listeners.addAll(listeners);
     }
     public void removeListener(Listener<T> listener)
     {
