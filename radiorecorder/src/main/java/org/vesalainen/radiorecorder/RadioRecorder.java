@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,7 @@ import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
 import org.vesalainen.ham.hffax.FaxDecoder;
 import org.vesalainen.ham.hffax.FaxRectifier;
 import org.vesalainen.ham.itshfbc.Noise;
+import org.vesalainen.ham.riff.ListInfoChunk;
 import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.LoggingCommandLine;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -102,14 +104,16 @@ public class RadioRecorder extends LoggingCommandLine
             OffsetDateTime end = TimeUtils.next(lastSchedule, bestStation.getTo());
             lastSchedule = end;
             OffsetDateTime nextSchedule = start.plusMinutes(1);
-            String filename = String.format("%s_%s_%s_%02d_%02d_%02d",
+            String filename = String.format("%s_%02d_%02d_%02d",
                     bestStation.getEmissionClass(),
-                    bestStation.getStation().getName(),
-                    bestStation.getContent().replace('*', '_').replace('/', '_').replace('?', '_').replace('\\', '_').replace(':', '_'),
                     start.getDayOfMonth(),
                     start.getHour(),
                     start.getMinute()
             );
+            ListInfoChunk metaData = new ListInfoChunk();
+            metaData.setSource(bestStation.getStation().getName());
+            metaData.setName(bestStation.getContent());
+            metaData.setCreation(start.toLocalDate());
             Path wav = dataDirectory.resolve(filename+".wav");
             Path png = dataDirectory.resolve(filename+".png");
             Path cor = dataDirectory.resolve(filename+"_cor.png");
@@ -122,7 +126,7 @@ public class RadioRecorder extends LoggingCommandLine
                 int rpm = fax.getRpm();
                 int ioc = fax.getIoc();
                 starter = pool.concat(
-                        ()->startRecording(frequency*1000-1.9, wav),
+                        ()->startRecording(frequency*1000-1.9, wav, metaData),
                         ()->startFax(rpm, ioc, wav, png),
                         ()->rectifyFax(png, cor)
                 );
@@ -167,14 +171,15 @@ public class RadioRecorder extends LoggingCommandLine
             throw new RuntimeException(ex);
         }
     }
-    private void startRecording(double kHz, Path file)
+    private void startRecording(double kHz, Path file, ListInfoChunk metaData)
     {
         try
         {
             fine("startRecording(%f KHz %s)", kHz, file);
             icomManager.setRemote(true);
             icomManager.setReceiverFrequency(kHz/1000);
-            audioRecorder.record(file);
+            icomManager.setAutomaticGainControl(true);
+            audioRecorder.record(file, metaData);
         }
         catch (Exception ex)
         {
@@ -262,7 +267,7 @@ public class RadioRecorder extends LoggingCommandLine
         optimizer.setMinSNR(minSNR);
         config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
         audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
-        AGC agc = new AGC(icomManager, 0.9, 0.5);
+        AGC agc = new AGC(icomManager, 0.5, 0.1);
         audioRecorder.addListener(agc);
     }
     public void stop()

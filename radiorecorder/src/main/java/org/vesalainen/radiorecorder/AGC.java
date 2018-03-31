@@ -18,6 +18,7 @@ package org.vesalainen.radiorecorder;
 
 import java.io.IOException;
 import org.vesalainen.ham.DataListener;
+import org.vesalainen.math.sliding.TimeoutSlidingAverage;
 import org.vesalainen.nio.IntArray;
 import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.logging.JavaLogging;
@@ -28,10 +29,12 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AGC extends JavaLogging implements DataListener
 {
+    private static final long TIME_LIMIT = 3000;
     private double highLimit;
     private double lowLimit;
     private IcomManager manager;
-    private double amplitude;
+    private long lastAdjust;
+    private TimeoutSlidingAverage average;
 
     public AGC(IcomManager manager, double upLimit, double downLimit)
     {
@@ -39,39 +42,46 @@ public class AGC extends JavaLogging implements DataListener
         this.manager = manager;
         this.highLimit = upLimit;
         this.lowLimit = downLimit;
+        this.average = new TimeoutSlidingAverage(1000, 5000);
     }
     
     @Override
     public void update(IntArray array)
     {
-        double min = array.getMaxPossibleValue();
-        double max = array.getMinPossibleValue();
+        double max = array.getMaxPossibleValue();
         int len = array.length();
         for (int ii=0;ii<len;ii++)
         {
             int v = array.get(ii);
-            min = Math.min(min, v);
-            max = Math.max(max, v);
+            average.accept(Math.abs(v/max));
         }
-        amplitude = (max-min)/(array.getMaxPossibleValue()-array.getMinPossibleValue());
-        try
+        double ave = average.fast();
+        long now = System.currentTimeMillis();
+        if (now > lastAdjust + TIME_LIMIT)
         {
-            if (amplitude > highLimit)
+            try
             {
-                manager.adjustRFGain(-1);
-            }
-            else
-            {
-                if (amplitude < lowLimit)
+                if (ave > highLimit)
                 {
-                    manager.adjustRFGain(1);
+                    manager.adjustRFGain(-1);
+                    lastAdjust = now;
+                    fine("lower %.1f", ave);
+                }
+                else
+                {
+                    if (ave < lowLimit)
+                    {
+                        manager.adjustRFGain(1);
+                        lastAdjust = now;
+                        fine("higher %.1f", ave);
+                    }
                 }
             }
+            catch (IOException | InterruptedException ex)
+            {
+                warning("%s", ex.getMessage());
+            }
         }
-        catch (IOException | InterruptedException ex)
-        {
-            warning("%s", ex.getMessage());
-        }        
     }
     
 }
