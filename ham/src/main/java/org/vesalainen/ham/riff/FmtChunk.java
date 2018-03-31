@@ -24,6 +24,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import static javax.sound.sampled.AudioFormat.Encoding.*;
 import static org.vesalainen.ham.riff.FormatCode.*;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
+import org.vesalainen.util.MapSet;
 
 /**
  *
@@ -114,9 +115,9 @@ public class FmtChunk extends Chunk
     {
         return new AudioFormat(getEncoding(), samplesPerSecond, getBitsPerSample(), channels, blockAlign, samplesPerSecond, false);
     }
-    public static final FmtChunk getInstance(Map<String,Chunk> chunkMap)
+    public static final FmtChunk getInstance(MapSet<String,Chunk> chunkMap)
     {
-        Chunk fmt = chunkMap.get("fmt ");
+        Chunk fmt = chunkMap.getSingle("fmt ");
         if (fmt == null)
         {
             throw new IllegalArgumentException("fmt chunk not found");

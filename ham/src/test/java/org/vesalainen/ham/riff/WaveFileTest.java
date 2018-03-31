@@ -55,6 +55,9 @@ public class WaveFileTest
         sampleBuffer.goTo(half);
         assertEquals((29*60+37)/2, sampleBuffer.remaining().getSeconds());
         assertEquals(2, sampleBuffer.getChannels());
+        ListInfoChunk listInfoChunk = wave.getListInfoChunk();
+        assertNotNull(listInfoChunk);
+        assertEquals("hffax7", listInfoChunk.getName());
     }
     @Test
     public void test2() throws UnsupportedAudioFileException, IOException
@@ -62,14 +65,24 @@ public class WaveFileTest
         Path in = Paths.get("src", "test", "resources", "hffax2.wav");
         Path out = Paths.get("hffax2test.wav");
         WaveFile wave = new WaveFile();
-        wave.setName("timo");
-        wave.setGenre("fax");
-        wave.setArtist("artist");
-        wave.setComments("kommentit");
-        wave.setCopyright("copy");
-        wave.setKeywords("sanata");
+        ListInfoChunk listInfoChunk = wave.getListInfoChunk();
+        assertNotNull(listInfoChunk);
+        listInfoChunk.setName("timo");
+        listInfoChunk.setGenre("fax");
+        listInfoChunk.setArtist("artist");
+        listInfoChunk.setComments("kommentit");
+        listInfoChunk.setCopyright("copy");
+        listInfoChunk.setKeywords("sanata");
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(in.toFile());
         wave.store(audioInputStream, out, CREATE, WRITE);
-        RIFFFile.open(out);
+        RIFFFile w2 = RIFFFile.open(out);
+        ListInfoChunk lic = w2.getListInfoChunk();
+        assertNotNull(lic);
+        assertEquals("timo", lic.getName());
+        assertEquals("fax", lic.getGenre());
+        assertEquals("artist", lic.getArtist());
+        assertEquals("kommentit", lic.getComments());
+        assertEquals("copy", lic.getCopyright());
+        assertEquals("sanata", lic.getKeywords());
     }    
 }

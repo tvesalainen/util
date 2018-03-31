@@ -19,9 +19,9 @@ package org.vesalainen.ham.oscilloscope;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.riff.RIFFFile;
 import org.vesalainen.ham.riff.WaveFile;
@@ -30,7 +30,7 @@ import org.vesalainen.ham.riff.WaveFile;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FileSource extends AbstractSource implements Runnable
+public class FileSource extends AbstractSource implements Runnable, ChangeListener
 {
     private Path file;
     private Duration refreshInterval;
@@ -64,6 +64,8 @@ public class FileSource extends AbstractSource implements Runnable
         if (!stopped)
         {
             current = Duration.ZERO;
+            model.setRangeProperties(0, (int) refreshInterval.getSeconds(), 0, (int) duration.getSeconds(), false);
+            model.addChangeListener(this);
             updatePosition();
             fireUpdate(sampleBuffer);
             Thread thread = new Thread(this, file.toString());
@@ -115,11 +117,13 @@ public class FileSource extends AbstractSource implements Runnable
     public void stop()
     {
         stopped = true;
+        model.removeChangeListener(this);
     }
 
     private void updatePosition()
     {
         setText(current.toString());
+        model.setValue((int) current.getSeconds());
     }
     @Override
     public void run()
@@ -145,6 +149,13 @@ public class FileSource extends AbstractSource implements Runnable
     public String toString()
     {
         return file.toString();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e)
+    {
+        current = Duration.ofSeconds(model.getValue());
+        updatePosition();
     }
     
 }

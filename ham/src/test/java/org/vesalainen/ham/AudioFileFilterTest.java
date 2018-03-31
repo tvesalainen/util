@@ -16,10 +16,6 @@
  */
 package org.vesalainen.ham;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -27,28 +23,16 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioFileFilterT
+public class AudioFileFilterTest
 {
     
-    public AudioFileFilterT()
+    public AudioFileFilterTest()
     {
     }
 
-    //@Test
-    public void test0() throws IOException, UnsupportedAudioFileException
-    {
-        Path cur = Paths.get(".", "src", "test", "resources");
-        Path in = cur.resolve("hffax2.wav");
-        Path out = cur.resolve("hffax2_fil.wav");
-        AudioFileFilter.filter(in, out);
-    }
     @Test
-    public void test() throws IOException, UnsupportedAudioFileException
+    public void testSomeMethod()
     {
-        Path temp = Paths.get("c:\\tmp");
-        Path in = temp.resolve("J3C_31_20_00.wav");
-        Path out = temp.resolve("FILTERED_J3C_31_20_00.wav");
-        AudioFileFilter.filter(in, out);
     }
     
 }

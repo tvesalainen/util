@@ -56,7 +56,7 @@ public class LineDialog extends JDialog implements ActionListener
         // sample frequency
         JLabel rateLabel = new JLabel("Sample Rate");
         add(rateLabel);
-        rateCombo = new DoubleComboBox(44000.0, 32000.0, 22050.0, 11025.0, 8000.0);
+        rateCombo = new DoubleComboBox(48000.0, 41000.0, 32000.0, 22050.0, 11025.0, 8000.0);
         rateCombo.setEditable(true);
         add(rateCombo);
         rateCombo.addActionListener(this);
@@ -64,6 +64,7 @@ public class LineDialog extends JDialog implements ActionListener
         JLabel bitsLabel = new JLabel("Bit Count");
         add(bitsLabel);
         bitsCombo = new IntegerComboBox(8, 16, 32);
+        bitsCombo.setSelectedIndex(1);
         add(bitsCombo);
         bitsCombo.addActionListener(this);
         // mixer

@@ -17,7 +17,6 @@
 package org.vesalainen.ham.riff;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -26,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
+import org.vesalainen.util.HashMapSet;
+import org.vesalainen.util.MapSet;
 
 /**
  *
@@ -35,8 +36,14 @@ public class ContainerChunk extends Chunk
 {
     
     protected String type;
-    protected Map<String, Chunk> subChunks = new HashMap<>();
+    protected MapSet<String, Chunk> subChunks = new HashMapSet<>();
     protected List<Chunk> chunkList = new ArrayList<>();
+
+    public ContainerChunk(ContainerChunk other)
+    {
+        super(other);
+        subChunks.putAll(other.subChunks);
+    }
 
     public ContainerChunk(Chunk other)
     {
@@ -70,7 +77,7 @@ public class ContainerChunk extends Chunk
 
     public void add(Chunk chunk)
     {
-        subChunks.put(chunk.getId(), chunk);
+        subChunks.add(chunk.getId(), chunk);
         chunkList.add(chunk);
     }
     public String getType()
@@ -78,7 +85,7 @@ public class ContainerChunk extends Chunk
         return type;
     }
 
-    public Map<String, Chunk> getSubChunks()
+    public MapSet<String, Chunk> getSubChunks()
     {
         return subChunks;
     }

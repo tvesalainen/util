@@ -22,12 +22,13 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Chunk
+public class Chunk extends JavaLogging
 {
     
     protected String id;
@@ -36,6 +37,7 @@ public class Chunk
 
     public Chunk(String id)
     {
+        super(Chunk.class);
         if (id.length() != 4)
         {
             throw new IllegalArgumentException(id);
@@ -45,6 +47,7 @@ public class Chunk
 
     public Chunk(Chunk other)
     {
+        super(Chunk.class);
         this.id = other.id;
         this.size = other.size;
         this.data = other.data;
@@ -52,6 +55,7 @@ public class Chunk
 
     public Chunk(ByteBuffer bb)
     {
+        super(Chunk.class);
         byte[] b = new byte[4];
         bb.get(b);
         id = new String(b, StandardCharsets.ISO_8859_1);

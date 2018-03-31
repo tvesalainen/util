@@ -27,6 +27,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import org.vesalainen.ham.fft.FilterAudioInputStream;
+import org.vesalainen.ham.riff.ListInfoChunk;
 import org.vesalainen.ham.riff.WaveFile;
 import org.vesalainen.nio.IntArray;
 import org.vesalainen.util.Listener;
@@ -58,6 +59,10 @@ public class AudioRecorder extends JavaLogging implements AutoCloseable
     }
     public void record(Path file) throws IOException, LineUnavailableException
     {
+        record(file, null);
+    }
+    public void record(Path file, ListInfoChunk metaData) throws IOException, LineUnavailableException
+    {
         fine("start record(%s)", file);
         if (mixerInfo != null)
         {
@@ -74,6 +79,10 @@ public class AudioRecorder extends JavaLogging implements AutoCloseable
         {
             fais.addListeners(listeners.getListeners());
             WaveFile wave = new WaveFile();
+            if (metaData != null)
+            {
+                wave.setListInfoChunk(metaData);
+            }
             wave.store(fais, file);
         }
         fine("stopped recording");

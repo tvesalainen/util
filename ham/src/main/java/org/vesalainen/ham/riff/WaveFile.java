@@ -31,6 +31,7 @@ import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.riff.FmtChunk.Fmt18Chunk;
 import org.vesalainen.nio.channels.BufferedFileBuilder;
+import org.vesalainen.util.MapSet;
 
 /**
  *
@@ -44,13 +45,13 @@ public class WaveFile extends RIFFFile
     public WaveFile()
     {
     }
-    public WaveFile(Map<String, Chunk> chunkMap)
+    public WaveFile(MapSet<String, Chunk> chunkMap)
     {
         super(chunkMap);
         this.fmt = FmtChunk.getInstance(chunkMap);
         if (chunkMap.containsKey("data"))
         {
-            this.data = new DataChunk(chunkMap.get("data"));
+            this.data = new DataChunk(chunkMap.getSingle("data"));
         }
         else
         {
@@ -68,15 +69,9 @@ public class WaveFile extends RIFFFile
         riffChunk.add(fmtChunk);
         DataChunk dataChunk = new DataChunk(audioInputStream);
         riffChunk.add(dataChunk);
-        if (!info.isEmpty())
+        if (!listInfoChunk.isEmpty())
         {
-            ContainerChunk listChunk = new ContainerChunk("LIST", "INFO");
-            for (Entry<Info, String> e : info.entrySet())
-            {
-                InfoChunk infoChunk = new InfoChunk(e.getKey(), e.getValue());
-                listChunk.add(infoChunk);
-            }
-            riffChunk.add(listChunk);
+            riffChunk.add(listInfoChunk);
         }
         riffChunk.add(new DispChunk("this chunk is here because otherwise windows explorer doesn't show metadata"));
         try (BufferedFileBuilder bfb = new BufferedFileBuilder(4096, true, target, options))

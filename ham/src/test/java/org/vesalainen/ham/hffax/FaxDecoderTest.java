@@ -47,8 +47,8 @@ public class FaxDecoderTest
     {
         try
         {
-            Path in = Paths.get("src\\test\\resources\\hffax2.wav");
-            //Path in = Paths.get("c:\\tmp\\J3C_BOSTON, MASSACHUSETTS, U.S.A._96 HR WIND_WAVE FORECAST_30_20_55.wav");
+            //Path in = Paths.get("src\\test\\resources\\hffax2.wav");
+            Path in = Paths.get("c:\\tmp\\FILTERED_J3C_31_20_00.wav");
             FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("hffax.png"));
             decoder.parse();
         }
