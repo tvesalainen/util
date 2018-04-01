@@ -16,8 +16,10 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import static java.nio.ByteOrder.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
@@ -25,7 +27,8 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
-import org.vesalainen.nio.IntArray;
+import org.vesalainen.ham.AGC;
+import org.vesalainen.nmea.icommanager.IcomManager;
 
 /**
  *
@@ -37,12 +40,16 @@ public class LineSource extends AbstractSource implements Runnable
     private Mixer.Info mixerInfo;
     private double refreshInterval;
     private volatile boolean stopped;
+    private String agcPort;
+    private AGC agc;
+    private IcomManager manager;
 
-    public LineSource(AudioFormat audioFormat, Mixer.Info mixerInfo, double refreshInterval)
+    public LineSource(AudioFormat audioFormat, Mixer.Info mixerInfo, double refreshInterval, String agcPort)
     {
         this.audioFormat = audioFormat;
         this.mixerInfo = mixerInfo;
         this.refreshInterval = refreshInterval;
+        this.agcPort = agcPort;
     }
 
     @Override
@@ -64,10 +71,11 @@ public class LineSource extends AbstractSource implements Runnable
     {
         try (TargetDataLine line = AudioSystem.getTargetDataLine(audioFormat, mixerInfo))
         {
+            createAGC();
             int size = (int) (audioFormat.getSampleRate()*refreshInterval);
             byte[] buffer = new byte[size*audioFormat.getFrameSize()];
             ByteBuffer bb = ByteBuffer.wrap(buffer);
-            SampleBuffer sampleBuffer = new SampleBufferImpl(audioFormat, bb, size);
+            SampleBufferImpl sampleBuffer = new SampleBufferImpl(audioFormat, bb, size);
             line.open(audioFormat, size);
             line.start();
             fireUpdate(sampleBuffer);
@@ -75,14 +83,49 @@ public class LineSource extends AbstractSource implements Runnable
             {
                 int rc = line.read(buffer, 0, size);
                 fireUpdate();
+                updateAGC(sampleBuffer);
             }
         }
-        catch (LineUnavailableException ex)
+        catch (LineUnavailableException | IOException | InterruptedException ex)
         {
             throw new RuntimeException(ex);
         }
+        finally
+        {
+            closeAGC();
+        }
     }
 
+    private void createAGC() throws IOException, InterruptedException
+    {
+        if (!agcPort.startsWith("--"))
+        {
+            manager = IcomManager.getInstance(0, agcPort);
+            agc = new AGC(manager, 0.1, 0.02);
+        }
+    }
+    private void updateAGC(SampleBufferImpl sampleBuffer) throws IOException, InterruptedException
+    {
+        if (agc != null)
+        {
+            agc.update(sampleBuffer.getArray());
+            setText(agc.toString());
+        }
+    }
+    private void closeAGC()
+    {
+        if (agc != null)
+        {
+            try {
+                manager.close();
+                manager = null;
+                agc = null;
+            }
+            catch (IOException | InterruptedException ex) 
+            {
+            }
+        }
+    }
     @Override
     public String toString()
     {

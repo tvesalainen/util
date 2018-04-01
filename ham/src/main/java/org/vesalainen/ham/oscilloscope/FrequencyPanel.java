@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of3
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -16,13 +16,61 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import org.vesalainen.ham.SampleBuffer;
+import org.vesalainen.ham.fft.FFT;
+import org.vesalainen.ham.fft.FrequencyDomain;
+import org.vesalainen.ham.fft.FrequencyDomainImpl;
+import org.vesalainen.ui.ScreenPlotter;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FrequencyPanel extends JPanel
+public class FrequencyPanel extends JPanel implements SourceListener
 {
+    private FFT fft;
+    private double sampleFrequency;
+    private int maxAmplitude;
+    private SampleBuffer samples;
+    private FrequencyDomain frequencyDomain;
     
+    public FrequencyPanel(int n)
+    {
+        this.fft = new FFT(n);
+    }
+    
+    @Override
+    public void update(SampleBuffer samples)
+    {
+        this.sampleFrequency = samples.getSampleFrequency();
+        this.maxAmplitude = samples.getMaxAmplitude();
+        this.frequencyDomain = new FrequencyDomainImpl(sampleFrequency, fft);
+        this.samples = samples;
+    }
+
+    @Override
+    public void update()
+    {
+        fft.forward(samples, 0);
+        repaint();
+    }
+    
+    @Override
+    protected void paintComponent(Graphics graphics)
+    {
+        Graphics2D g = (Graphics2D) graphics;
+        ScreenPlotter plotter = new ScreenPlotter(this);
+        plotter.setColor(Color.yellow);
+        if (frequencyDomain != null)
+        {
+            frequencyDomain.stream(0.0)
+                    .forEach((f)->plotter.drawLine(f.getFrequency(), 0, f.getFrequency(), f.getMagnitude()));
+        }
+        plotter.plot(g);
+    }
 }

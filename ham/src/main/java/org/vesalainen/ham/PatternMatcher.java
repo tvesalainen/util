@@ -76,7 +76,7 @@ public class PatternMatcher
         }
         else
         {
-            throw new IllegalStateException("size is not enough for span");
+            return Integer.MAX_VALUE;
         }
     }
     public long getTime()

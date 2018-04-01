@@ -17,6 +17,7 @@
 package org.vesalainen.ham;
 
 import java.time.Duration;
+import org.vesalainen.nio.IntArray;
 
 
 /**

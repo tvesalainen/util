@@ -60,6 +60,11 @@ public class SampleBufferImpl implements SampleBuffer
         this.viewLength = viewLength;
     }
 
+    public IntArray getArray()
+    {
+        return array;
+    }
+
     @Override
     public int getChannels()
     {

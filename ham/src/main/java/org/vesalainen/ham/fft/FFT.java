@@ -17,6 +17,7 @@
 package org.vesalainen.ham.fft;
 
 import java.util.Arrays;
+import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.nio.IntArray;
 
 /**
@@ -54,9 +55,22 @@ public class FFT
         }
         return m;
     }
+    public void forward(SampleBuffer in, int channel)
+    {
+        if (in.getViewLength()< n)
+        {
+            throw new IllegalArgumentException("illegal length");
+        }
+        for (int ii=0;ii<n;ii++)
+        {
+            x[ii] = in.get(ii, channel);
+        }
+        Arrays.fill(y, 0);
+        fft(true, m, x, y);
+    }
     public void forward(IntArray in)
     {
-        if (in.length() != x.length)
+        if (in.length() < n)
         {
             throw new IllegalArgumentException("illegal length");
         }
@@ -69,7 +83,7 @@ public class FFT
     }
     public void reverse(IntArray out)
     {
-        if (out.length() != x.length)
+        if (out.length() < n)
         {
             throw new IllegalArgumentException("illegal length");
         }
@@ -79,6 +93,27 @@ public class FFT
             out.put(ii, (int) x[ii]);
         }
     }
+
+    public int getN()
+    {
+        return n;
+    }
+
+    public int getM()
+    {
+        return m;
+    }
+
+    public double[] getX()
+    {
+        return x;
+    }
+
+    public double[] getY()
+    {
+        return y;
+    }
+    
     /*
    This computes an in-place complex-to-complex FFT 
    x and y are the real and imaginary arrays of 2^m points.

@@ -37,6 +37,8 @@ public class FrequencyCounter
     private float zero;
     private long count;
     private float amplitude;
+    private boolean up;
+    private float mark;
 
     public FrequencyCounter(int sampleRate)
     {
@@ -71,7 +73,53 @@ public class FrequencyCounter
         }
         return frequency;
     }
-    public boolean update(int sample)
+    public boolean update(int now)
+    {
+        count++;
+        boolean upd = false;
+        if (up)
+        {
+            if (now > prev)
+            {
+                mark = runLength;
+            }
+            else
+            {
+                if (now < prev)
+                {
+                    upd = true;
+                    float d = (runLength-mark)/2;
+                    halfLength = runLength-d;
+                    frequency = 0.5F/(halfLength/sampleRate);
+                    runLength = d;
+                    up = false;
+                }
+            }
+        }
+        else
+        {
+            if (now < prev)
+            {
+                mark = runLength;
+            }
+            else
+            {
+                if (now > prev)
+                {
+                    upd = true;
+                    float d = (runLength-mark)/2;
+                    halfLength = runLength-d;
+                    frequency = 0.5F/(halfLength/sampleRate);
+                    runLength = d;
+                    up = true;
+                }
+            }
+        }
+        runLength++;
+        prev = now;
+        return upd;
+    }
+    public boolean update0(int sample)
     {
         count++;
         boolean upd = false;
@@ -123,7 +171,7 @@ public class FrequencyCounter
     
     public long getMicros()
     {
-        return 1000000L*(count-(long)halfLength)/(long)sampleRate;
+        return 1000000L*count/(long)sampleRate;
     }
 
     public float getZero()

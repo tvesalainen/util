@@ -17,17 +17,12 @@
 package org.vesalainen.ham.hffax;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -48,8 +43,8 @@ public class FaxDecoderTest
         try
         {
             //Path in = Paths.get("src\\test\\resources\\hffax2.wav");
-            Path in = Paths.get("c:\\tmp\\FILTERED_J3C_31_20_00.wav");
-            FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("hffax.png"));
+            Path in = Paths.get("c:\\tmp\\J3C_01_19_05.wav");
+            FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("c:\\tmp\\decoded.png"));
             decoder.parse();
         }
         catch(EOFException ex)

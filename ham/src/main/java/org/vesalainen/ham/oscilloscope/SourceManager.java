@@ -193,7 +193,7 @@ public class SourceManager
         {
             if (dia.edit())
             {
-                setSource(new LineSource(dia.getAudioFormat(), dia.getMixerInfo(), dia.getRefreshInterval()));
+                setSource(new LineSource(dia.getAudioFormat(), dia.getMixerInfo(), dia.getRefreshInterval(), dia.getAGCPort()));
             }
         }
         

@@ -46,8 +46,8 @@ public class AudioFileFilterT
     public void test() throws IOException, UnsupportedAudioFileException
     {
         Path temp = Paths.get("c:\\tmp");
-        Path in = temp.resolve("J3C_31_20_00.wav");
-        Path out = temp.resolve("FILTERED_J3C_31_20_00.wav");
+        Path in = temp.resolve("c:\\tmp\\J3C_31_19_05.wav");
+        Path out = temp.resolve("FILTERED_J3C_31_19_05.wav");
         AudioFileFilter.filter(in, out);
     }
     

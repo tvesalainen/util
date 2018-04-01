@@ -31,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import org.vesalainen.comm.channel.SerialChannel;
 import org.vesalainen.ham.oscilloscope.ui.DoubleComboBox;
 import org.vesalainen.ham.oscilloscope.ui.GroupLayoutBuilder;
 import org.vesalainen.ham.oscilloscope.ui.IntegerComboBox;
@@ -44,6 +45,7 @@ public class LineDialog extends JDialog implements ActionListener
     private DoubleComboBox rateCombo;
     private IntegerComboBox bitsCombo;
     private JComboBox<Mixer.Info> mixerCombo;
+    private JComboBox<String> agcCombo;
     private DoubleComboBox refreshCombo;
     private boolean accepted;
     public LineDialog(Frame owner, String title)
@@ -78,6 +80,13 @@ public class LineDialog extends JDialog implements ActionListener
         refreshCombo = new DoubleComboBox(1.0, 0.5, 0.25, 0.01, 0.005);
         add(refreshCombo);
         populateMixerCombo();
+        // agc
+        JLabel agcLabel = new JLabel("AGC");
+        add(agcLabel);
+        agcCombo = new JComboBox();
+        add(agcCombo);
+        populateAGCCombo();
+        
         JButton okButton = new JButton(new OkAction());
         add(okButton);
         JButton cancelButton = new JButton(new CancelAction());
@@ -88,6 +97,7 @@ public class LineDialog extends JDialog implements ActionListener
                 .addLine(bitsLabel, bitsCombo)
                 .addLine(mixerLabel, mixerCombo)
                 .addLine(refreshLabel, refreshCombo)
+                .addLine(agcLabel, agcCombo)
                 .addLine(cancelButton, okButton)
                 .build();
         setLayout(layout);
@@ -140,6 +150,10 @@ public class LineDialog extends JDialog implements ActionListener
         return refreshCombo.getSelectedItem();
     }
     
+    public String getAGCPort()
+    {
+        return (String) agcCombo.getSelectedItem();
+    }
     public Mixer.Info getMixerInfo()
     {
         return (Mixer.Info) mixerCombo.getSelectedItem();
@@ -148,6 +162,15 @@ public class LineDialog extends JDialog implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
         populateMixerCombo();
+    }
+
+    private void populateAGCCombo()
+    {
+        agcCombo.addItem("----");
+        for (String port : SerialChannel.getFreePorts())
+        {
+            agcCombo.addItem(port);
+        }
     }
 
     private class OkAction extends AbstractAction

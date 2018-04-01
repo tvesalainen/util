@@ -78,10 +78,10 @@ public class Oscilloscope extends WindowAdapter
         timePanel = new TimePanel();
         panel.add(timePanel);
         
-        frequencyPanel = new FrequencyPanel();
+        frequencyPanel = new FrequencyPanel(256);
         panel.add(frequencyPanel);
         
-        sourceManager = new SourceManager(frame, timePanel);
+        sourceManager = new SourceManager(frame, timePanel, frequencyPanel);
         
         sourceMenu();   
         

@@ -30,6 +30,10 @@ public class FrequencyDomainImpl implements FrequencyDomain
     private double[] y;
     private double frequencyInterval;
 
+    public FrequencyDomainImpl(double sampleFrequency, FFT fft)
+    {
+        this(sampleFrequency, fft.x, fft.y);
+    }
     public FrequencyDomainImpl(double sampleFrequency, double[] x, double[] y)
     {
         this.sampleFrequency = sampleFrequency;
