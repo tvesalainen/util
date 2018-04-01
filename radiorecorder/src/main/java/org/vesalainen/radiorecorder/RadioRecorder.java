@@ -16,6 +16,7 @@
  */
 package org.vesalainen.radiorecorder;
 
+import org.vesalainen.ham.AGC;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -267,7 +268,7 @@ public class RadioRecorder extends LoggingCommandLine
         optimizer.setMinSNR(minSNR);
         config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
         audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
-        AGC agc = new AGC(icomManager, 0.5, 0.1);
+        AGC agc = new AGC(icomManager, 0.1, 0.02);
         audioRecorder.addListener(agc);
     }
     public void stop()
