@@ -18,7 +18,9 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,6 +57,14 @@ public class Plotter extends AbstractView
     {
         super.setScreen(width, height);
         this.background = background;
+        this.keepAspectRatio = true;
+    }
+    public Plotter(Component component, Color background, boolean keepAspectRatio)
+    {
+        Rectangle bounds = component.getBounds();
+        super.setScreen(bounds.width, bounds.height);
+        this.background = background;
+        this.keepAspectRatio = keepAspectRatio;
     }
 
     public void clear()
@@ -115,6 +125,13 @@ public class Plotter extends AbstractView
     {
         updatePolygon(polygon);
         drawables.add(new Poly(color, polygon));
+    }
+    public void drawPoints(double[] arr)
+    {
+        for (int ii=0;ii<arr.length;ii++)
+        {
+            drawPoint(ii, arr[ii]);
+        }
     }
     public void lineTo(double x, double y)
     {
@@ -227,7 +244,7 @@ public class Plotter extends AbstractView
         graphics2D.setBackground(background);
         graphics2D.clearRect(0, 0, (int)width, (int)height);
         Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
-        drawables.stream().forEach((d) ->
+        drawables.forEach((d) ->
         {
             d.draw(g2d);
         });
