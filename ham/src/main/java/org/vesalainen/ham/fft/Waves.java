@@ -98,7 +98,7 @@ public class Waves
         IntArray samples = timeDomain.getSamples();
         samples.fill(x);
         FFT.fft(true, m, x, y);
-        return new FrequencyDomainImpl(n, x, y);
+        return new FrequencyDomainImpl(timeDomain.getSampleFrequency(), x, y);
     }
     public static final TimeDomain createFMSample(double sampleFrequency, double amplitude, double on, double off, TimeUnit unit, long... codec)
     {
@@ -172,9 +172,13 @@ public class Waves
     }
     public static final void plot(FrequencyDomain fd, Path out) throws IOException
     {
+        plot(fd, 1e-8, out);
+    }
+    public static final void plot(FrequencyDomain fd, double minMag, Path out) throws IOException
+    {
         int sampleCount = fd.getSampleCount();
         Plotter plotter = new Plotter(sampleCount, sampleCount/2);
-        fd.stream(1e-8).forEach((f)->plotter.drawLine(f.getFrequency(), 0, f.getFrequency(), f.getMagnitude()));
+        fd.stream(minMag).forEach((f)->plotter.drawLine(f.getFrequency(), 0, f.getFrequency(), f.getMagnitude()));
         plotter.plot(out.toFile(), "png");
     }
     public static class TimeDomainImpl implements TimeDomain

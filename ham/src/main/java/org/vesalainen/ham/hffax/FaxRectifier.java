@@ -290,6 +290,11 @@ public class FaxRectifier extends JavaLogging
         {
             if (noise.get(noise.size()-1).isNoisy(averageSlope))
             {
+                if (noise.size() < 3)
+                {
+                    Part newPart = new Part(noise);
+                    return CollectionHelp.create(newPart);
+                }
                 tail = head = noise.get(0);
                 start = 1;
                 end = noise.size()-1;

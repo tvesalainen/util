@@ -32,18 +32,18 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxRectifierTest
+public class FaxRectifierT
 {
     
-    public FaxRectifierTest()
+    public FaxRectifierT()
     {
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
-    //@Test
+    @Test
     public void test1() throws IOException
     {
-        Path in = Paths.get("c:\\temp\\fax2018-02-09T150627.983Z.png");
+        Path in = Paths.get("c:\\tmp\\J3C_02_19_25.png");
         FaxRectifier r = new FaxRectifier(in, Paths.get("corrected.png"));
         r.rectify();
     }

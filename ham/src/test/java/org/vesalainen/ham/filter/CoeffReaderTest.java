@@ -14,12 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham;
+package org.vesalainen.ham.filter;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -27,28 +24,18 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AudioFileFilterT
+public class CoeffReaderTest
 {
     
-    public AudioFileFilterT()
+    public CoeffReaderTest()
     {
     }
 
-    //@Test
-    public void test0() throws IOException, UnsupportedAudioFileException
-    {
-        Path cur = Paths.get(".", "src", "test", "resources");
-        Path in = cur.resolve("hffax2.wav");
-        Path out = cur.resolve("hffax2_fil.wav");
-        AudioFileFilter.filter(in, out);
-    }
     @Test
-    public void test() throws IOException, UnsupportedAudioFileException
+    public void test() throws IOException
     {
-        Path temp = Paths.get("c:\\tmp");
-        Path in = temp.resolve("J3C_31_19_05.wav");
-        Path out = temp.resolve("FILTERED_J3C_31_19_05.wav");
-        AudioFileFilter.filter(in, out);
+        double[] coef = CoeffReader.read("127 Parks BPF.txt");
+        assertEquals(127, coef.length);
     }
     
 }

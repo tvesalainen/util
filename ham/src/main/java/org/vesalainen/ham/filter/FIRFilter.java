@@ -31,10 +31,10 @@ public class FIRFilter implements DataListener
     private int m;
     private int index;
     
-    public FIRFilter(int order, double sampleRate, double bandwidth)
+    public FIRFilter(double[] coef)
     {
-        this.m = order+1;
-        this.coef = calcCoefficients(m, sampleRate, bandwidth);
+        this.m = coef.length;
+        this.coef = coef;
         double sum = 0;
         for (int ii=0;ii<m;ii++)
         {
