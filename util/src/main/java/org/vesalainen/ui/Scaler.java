@@ -164,6 +164,7 @@ public class Scaler
      * Returns minimum level where number of markers is not less that minMarkers 
      * and less than maxMarkers. If both cannot be met, maxMarkers is stronger.
      * @param minMarkers
+     * @param maxMarkers
      * @return 
      */
     public double level(int minMarkers, int maxMarkers)
