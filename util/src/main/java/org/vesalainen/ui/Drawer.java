@@ -17,6 +17,7 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
+import java.awt.Font;
 
 /**
  *
@@ -24,6 +25,12 @@ import java.awt.Color;
  */
 public interface Drawer
 {
+    void font(String name, int style, int size);
+    default void text(double x, double y, String text)
+    {
+        text(x, y, TextAlignment.START, text);
+    }
+    void text(double x, double y, TextAlignment alignment, String text);
     void color(Color color);
     default void circle(double x, double y, double r)
     {

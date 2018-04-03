@@ -19,6 +19,7 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -43,11 +44,15 @@ import org.vesalainen.math.Rect;
 public class Plotter extends AbstractView
 {
     private Color color = Color.BLACK;
+    private String fontName;
+    private int fontStyle;
+    private double fontSize;
     protected final List<Drawable> drawables = new ArrayList<>();
     private File dir;
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
     protected final Color background;
+    private Font font;
 
     public Plotter(int width, int height)
     {
@@ -82,6 +87,22 @@ public class Plotter extends AbstractView
         this.color = color;
     }
 
+    public void setFont(String fontName, int fontStyle, double fontSize)
+    {
+        this.fontName = fontName;
+        this.fontStyle = fontStyle;
+        this.fontSize = fontSize;
+    }
+
+    public void drawText(double x, double y, String text)
+    {
+        drawText(x, y, TextAlignment.START, text);
+    }
+    public void drawText(double x, double y, TextAlignment alignment, String text)
+    {
+        updatePoint(x, y);
+        drawables.add(new Text(this, color, fontName, fontStyle, fontSize, x, y, text, alignment));
+    }
     public void drawCircle(Circle circle)
     {
         drawCircle(circle.getX(), circle.getY(), circle.getRadius());
@@ -90,7 +111,7 @@ public class Plotter extends AbstractView
     public void drawCircle(double x, double y, double r)
     {
         updateCircle(x, y, r);
-        drawables.add(new Circl(color, x, y, r));
+        drawables.add(new Circl(this, color, x, y, r));
     }
     
     public void drawPoint(DenseMatrix64F point)
@@ -101,7 +122,7 @@ public class Plotter extends AbstractView
         double x = d[0];
         double y = d[1];
         updatePoint(x, y);
-        drawables.add(new Pnt(color, x, y));
+        drawables.add(new Pnt(this, color, x, y));
     }
     
     public void drawPoint(Point p)
@@ -112,19 +133,19 @@ public class Plotter extends AbstractView
     public void drawPoint(double x, double y)
     {
         updatePoint(x, y);
-        drawables.add(new Pnt(color, x, y));
+        drawables.add(new Pnt(this, color, x, y));
     }
     
     public void drawPolygon(Polygon polygon)
     {
         updatePolygon(polygon);
-        drawables.add(new Poly(color, polygon));
+        drawables.add(new Poly(this, color, polygon));
     }
     
     public void drawPolygon(DenseMatrix64F polygon)
     {
         updatePolygon(polygon);
-        drawables.add(new Poly(color, polygon));
+        drawables.add(new Poly(this, color, polygon));
     }
     public void drawPoints(double[] arr)
     {
@@ -158,7 +179,7 @@ public class Plotter extends AbstractView
     {
         updatePoint(x1, y1);
         updatePoint(x2, y2);
-        drawables.add(new Lin(color, x1, y1, x2, y2));
+        drawables.add(new Lin(this, color, x1, y1, x2, y2));
     }
     public void drawPolyline(Polyline polyline)
     {
@@ -169,24 +190,24 @@ public class Plotter extends AbstractView
     {
         updatePoint(x1, y1);
         updatePoint(x2, y2);
-        drawables.add(0, new Lin(color, x1, y1, x2, y2));
+        drawables.add(0, new Lin(this, color, x1, y1, x2, y2));
     }
     public void drawLines(double[] data)
     {
         updatePolygon(data, data.length);
-        drawables.add(new Lines(color, data));
+        drawables.add(new Lines(this, color, data));
     }
     
     public void drawLines(Polygon polygon)
     {
         updatePolygon(polygon);
-        drawables.add(new Lines(color, polygon));
+        drawables.add(new Lines(this, color, polygon));
     }
     
     public void drawLines(DenseMatrix64F polygon)
     {
         updatePolygon(polygon);
-        drawables.add(new Lines(color, polygon));
+        drawables.add(new Lines(this, color, polygon));
     }
     public void drawCoordinates()
     {
@@ -261,25 +282,40 @@ public class Plotter extends AbstractView
 
     public static class Drawable
     {
-        Color color;
+        protected Plotter plotter;
+        protected Color color;
+        protected String fontName;
+        protected int fontStyle;
+        protected double fontSize;
 
-        public Drawable(Color color)
+        public Drawable(Plotter plotter, Color color)
         {
+            this.plotter = plotter;
             this.color = color;
         }
-        
+
+        public Drawable(Plotter plotter, Color color, String fontName, int fontStyle, double fontSize)
+        {
+            this.plotter = plotter;
+            this.color = color;
+            this.fontName = fontName;
+            this.fontStyle = fontStyle;
+            this.fontSize = fontSize;
+        }
+
         public void draw(Drawer drawer)
         {
             drawer.color(color);
+            drawer.font(fontName, fontStyle, (int) plotter.scaleToScreen(fontSize));
         }
     }
-    protected class Pnt extends Drawable
+    protected static class Pnt extends Drawable
     {
         double x;
         double y;
-        public Pnt(Color color, double x, double y)
+        public Pnt(Plotter plotter, Color color, double x, double y)
         {
-            super(color);
+            super(plotter, color);
             this.x = x;
             this.y = y;
         }
@@ -288,18 +324,18 @@ public class Plotter extends AbstractView
         public void draw(Drawer drawer)
         {
             super.draw(drawer);
-            int sx = (int) toScreenX(x);
-            int sy = (int) toScreenY(y);
+            int sx = (int) plotter.toScreenX(x);
+            int sy = (int) plotter.toScreenY(y);
             drawer.ellipse(sx-2, sy-2, 2, 2);
         }
     }
-    protected class Circl extends Pnt
+    protected static class Circl extends Pnt
     {
         double r;
 
-        public Circl(Color color, double x, double y, double r)
+        public Circl(Plotter plotter, Color color, double x, double y, double r)
         {
-            super(color, x, y);
+            super(plotter, color, x, y);
             this.r = r;
         }
         
@@ -307,32 +343,32 @@ public class Plotter extends AbstractView
         public void draw(Drawer drawer)
         {
             super.draw(drawer);
-            int sx = (int) toScreenX(x);
-            int sy = (int) toScreenY(y);
-            int sr = (int) scaleToScreen(r);
+            int sx = (int) plotter.toScreenX(x);
+            int sy = (int) plotter.toScreenY(y);
+            int sr = (int) plotter.scaleToScreen(r);
             drawer.ellipse(sx-sr, sy-sr, sr, sr);
         }
     }
-    protected class Poly extends Drawable
+    protected static class Poly extends Drawable
     {
         double[] data;
 
-        public Poly(Color color, double[] data)
+        public Poly(Plotter plotter, Color color, double[] data)
         {
-            super(color);
+            super(plotter, color);
             this.data = data;
         }
         
-        public Poly(Color color, Polygon polygon)
+        public Poly(Plotter plotter, Color color, Polygon polygon)
         {
-            super(color);
+            super(plotter, color);
             DenseMatrix64F m = polygon.points;
             this.data = Arrays.copyOf(m.data, m.getNumElements());
         }
 
-        private Poly(Color color, DenseMatrix64F m)
+        private Poly(Plotter plotter, Color color, DenseMatrix64F m)
         {
-            super(color);
+            super(plotter, color);
             this.data = Arrays.copyOf(m.data, m.getNumElements());
         }
         
@@ -343,12 +379,12 @@ public class Plotter extends AbstractView
             int len = data.length/2;
             if (len >= 2)
             {
-                double x1 = toScreenX(data[2*(len-1)]);
-                double y1 = toScreenY(data[2*(len-1)+1]);
+                double x1 = plotter.toScreenX(data[2*(len-1)]);
+                double y1 = plotter.toScreenY(data[2*(len-1)+1]);
                 for (int r=0;r<len;r++)
                 {
-                    double x2 = toScreenX(data[2*r]);
-                    double y2 = toScreenY(data[2*r+1]);
+                    double x2 = plotter.toScreenX(data[2*r]);
+                    double y2 = plotter.toScreenY(data[2*r+1]);
                     drawer.line(x1, y1, x2, y2);
                     x1 = x2;
                     y1 = y2;
@@ -356,16 +392,16 @@ public class Plotter extends AbstractView
             }
         }
     }
-    protected class Lin extends Drawable
+    protected static class Lin extends Drawable
     {
         double x1;
         double y1;
         double x2;
         double y2;
 
-        public Lin(Color color, double x1, double y1, double x2, double y2)
+        public Lin(Plotter plotter, Color color, double x1, double y1, double x2, double y2)
         {
-            super(color);
+            super(plotter, color);
             this.x1 = x1;
             this.y1 = y1;
             this.x2 = x2;
@@ -376,33 +412,33 @@ public class Plotter extends AbstractView
         public void draw(Drawer drawer)
         {
             super.draw(drawer);
-            double sx1 = toScreenX(x1);
-            double sy1 = toScreenY(y1); 
-            double sx2 = toScreenX(x2); 
-            double sy2 = toScreenY(y2);
+            double sx1 = plotter.toScreenX(x1);
+            double sy1 = plotter.toScreenY(y1); 
+            double sx2 = plotter.toScreenX(x2); 
+            double sy2 = plotter.toScreenY(y2);
             drawer.line(sx1, sy1, sx2, sy2);
         }
     }
-    protected class Lines extends Drawable
+    protected static class Lines extends Drawable
     {
         double[] data;
 
-        public Lines(Color color, double[] data)
+        public Lines(Plotter plotter, Color color, double[] data)
         {
-            super(color);
+            super(plotter, color);
             this.data = data;
         }
         
-        public Lines(Color color, Polygon polygon)
+        public Lines(Plotter plotter, Color color, Polygon polygon)
         {
-            super(color);
+            super(plotter, color);
             DenseMatrix64F m = polygon.points;
             this.data = Arrays.copyOf(m.data, m.getNumElements());
         }
 
-        private Lines(Color color, DenseMatrix64F m)
+        private Lines(Plotter plotter, Color color, DenseMatrix64F m)
         {
-            super(color);
+            super(plotter, color);
             this.data = Arrays.copyOf(m.data, m.getNumElements());
         }
         
@@ -415,12 +451,12 @@ public class Plotter extends AbstractView
             {
                 double x[] = new double[len];
                 double y[] = new double[len];
-                x[0] = toScreenX(data[0]);
-                y[0] = toScreenY(data[1]);
+                x[0] = plotter.toScreenX(data[0]);
+                y[0] = plotter.toScreenY(data[1]);
                 for (int r=1;r<len;r++)
                 {
-                    x[r] = toScreenX(data[2*r]);
-                    y[r] = toScreenY(data[2*r+1]);
+                    x[r] = plotter.toScreenX(data[2*r]);
+                    y[r] = plotter.toScreenY(data[2*r+1]);
                 }
                 drawer.polyline(x, y);
             }
@@ -428,17 +464,17 @@ public class Plotter extends AbstractView
     }
     public Polyline polyline(Color color)
     {
-        return new Polyline(color);
+        return new Polyline(this, color);
     }
-    public class Polyline extends Drawable
+    public static class Polyline extends Drawable
     {
         private List<Double> xData = new ArrayList<>();
         private List<Double> yData = new ArrayList<>();
         private Rect bounds = new Rect();
         
-        protected Polyline(Color color)
+        protected Polyline(Plotter plotter, Color color)
         {
-            super(color);
+            super(plotter, color);
         }
         
         public void lineTo(Point p)
@@ -471,10 +507,35 @@ public class Plotter extends AbstractView
             int len = xArr.length;
             for (int ii=0;ii<len;ii++)
             {
-                xArr[ii] = toScreenX(xData.get(ii));
-                yArr[ii] = toScreenY(yData.get(ii));
+                xArr[ii] = plotter.toScreenX(xData.get(ii));
+                yArr[ii] = plotter.toScreenY(yData.get(ii));
             }
             drawer.polyline(xArr, yArr);
         }        
+    }
+    public static class Text extends Drawable
+    {
+        private double x;
+        private double y;
+        private String text;
+        private TextAlignment alignment;
+
+        public Text(Plotter plotter, Color color, String fontName, int fontStyle, double fontSize, double x, double y, String text, TextAlignment alignment)
+        {
+            super(plotter, color, fontName, fontStyle, fontSize);
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.alignment = alignment;
+        }
+
+
+        @Override
+        public void draw(Drawer drawer)
+        {
+            super.draw(drawer);
+            drawer.text(plotter.toScreenX(x), plotter.toScreenY(y), alignment, text);
+        }
+        
     }
 }

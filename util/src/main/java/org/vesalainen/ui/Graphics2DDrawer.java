@@ -17,6 +17,7 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 
 /**
@@ -54,6 +55,31 @@ public class Graphics2DDrawer implements Drawer
     public void line(double x1, double y1, double x2, double y2)
     {
         g.drawLine((int)x1, (int)y1, (int)x2, (int)y2);
+    }
+
+    @Override
+    public void font(String name, int style, int size)
+    {
+        g.setFont(new Font(name, style, size));
+    }
+
+    @Override
+    public void text(double x, double y, TextAlignment alignment, String text)
+    {
+        switch (alignment)
+        {
+            case START:
+                g.drawString(text, (float)x, (float)y);
+                break;
+            case MIDDLE:
+                g.drawString(text, (float)x-g.getFontMetrics().stringWidth(text)/2, (float)y);
+                break;
+            case END:
+                g.drawString(text, (float)x-g.getFontMetrics().stringWidth(text), (float)y);
+                break;
+            default:
+                throw new UnsupportedOperationException(alignment+" not supported");
+        }
     }
 
 }
