@@ -22,6 +22,7 @@ import java.nio.ByteOrder;
 import static java.nio.ByteOrder.*;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -314,6 +315,44 @@ public abstract class IntArray<T extends Buffer>
     {
         return new IntIterator();
     }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.buffer);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final IntArray<?> other = (IntArray<?>) obj;
+        if (!Objects.equals(this.buffer, other.buffer))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "IntArray{" + buffer + '}';
+    }
+    
     public static class ByteArray extends IntArray<ByteBuffer>
     {
 
