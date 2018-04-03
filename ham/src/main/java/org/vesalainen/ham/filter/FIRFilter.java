@@ -35,6 +35,12 @@ public class FIRFilter implements DataListener
     {
         this.m = coef.length;
         this.coef = coef;
+        shift = new double[m];
+    }
+
+    public static void normalize(double[] coef)
+    {
+        int m = coef.length;
         double sum = 0;
         for (int ii=0;ii<m;ii++)
         {
@@ -44,28 +50,37 @@ public class FIRFilter implements DataListener
         {
             coef[ii] /= sum;
         }
-        shift = new double[m];
     }
-
     @Override
     public void update(IntArray array)
     {
         int al = array.length();
         for (int ii=0;ii<al;ii++)
         {
-            double sum = 0;
-            shift[index] = array.get(ii);
-            for (int jj=0;jj<m;jj++)
-            {
-                int j = (index+jj)%m;
-                sum += coef[jj]*shift[j];
-            }
-            array.put(ii, (int) sum);
-            index++;
-            index %= m;
+            array.put(ii, (int) filter(array.get(ii)));
         }
     }
-
+    public double filter(double x)
+    {
+        double sum = 0;
+        shift[index] = x;
+        int j = index;
+        for (int jj=0;jj<m;jj++)
+        {
+            sum += coef[jj]*shift[j];
+            j++;
+            if (j == m)
+            {
+                j = 0;
+            }
+        }
+        index--;
+        if (index < 0)
+        {
+            index = m-1;
+        }
+        return sum;
+    }
     public static double[] calcCoefficients(int firLen, double sampleRate, double bandwidth)
     {
 // Calculate FIR filter coefficients
