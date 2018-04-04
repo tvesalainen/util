@@ -114,6 +114,7 @@ public class BroadcastOptimizer extends JavaLogging
         Stream<SimpleRange<OffsetTime>> head = scheduleList.headStream(key, false, false);
         Stream<SimpleRange<OffsetTime>> tail = scheduleList.tailStream(key, true, false);
         Stream<BestStation> candidates = Stream.concat(tail, head)
+                .peek((r)->finer("%s", r))
                 .map((s)->(Schedule)s)
                 .filter(new TimeFilter(instant))
                 .filter(new LocationFilter(myLocation))

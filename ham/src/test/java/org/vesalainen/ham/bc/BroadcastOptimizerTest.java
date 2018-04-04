@@ -21,6 +21,7 @@ import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,21 @@ public class BroadcastOptimizerTest
     }
 
     @Test
+    public void test0() throws IOException, JAXBException
+    {
+        Location location = new Location(9, -79);
+        BroadcastOptimizer opt = new BroadcastOptimizer();
+        OffsetDateTime start = OffsetDateTime.of(2018, 4, 4, 17, 59, 0, 0, ZoneOffset.UTC);
+        for (int ii=0;ii<15;ii++)
+        {
+            BestStation bs = opt.bestStation(location, start);
+            assertEquals("NEW ORLEANS, LOUISIANA, U.S.A", bs.getStation().getName());
+            assertEquals(17.1464, bs.getFrequency(), 1e-8);
+            OffsetTime to = bs.getTo();
+            start = start.with(to);
+        }
+    }
+    //@Test
     public void test1() throws IOException, JAXBException
     {
         dumpStations();

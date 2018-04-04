@@ -28,7 +28,7 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AGC extends JavaLogging implements DataListener
 {
-    private static final long TIME_LIMIT = 3000;
+    private static final long TIME_LIMIT = 10000;
     private double highLimit;
     private double lowLimit;
     private IcomManager manager;

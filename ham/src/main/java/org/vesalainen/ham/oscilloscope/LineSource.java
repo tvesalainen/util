@@ -18,14 +18,13 @@ package org.vesalainen.ham.oscilloscope;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Control;
+import static javax.sound.sampled.FloatControl.Type.MASTER_GAIN;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
-import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.AGC;
 import org.vesalainen.nmea.icommanager.IcomManager;

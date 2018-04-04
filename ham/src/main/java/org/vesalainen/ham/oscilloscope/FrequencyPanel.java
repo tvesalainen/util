@@ -17,10 +17,10 @@
 package org.vesalainen.ham.oscilloscope;
 
 import java.awt.Color;
+import static java.awt.Font.BOLD;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
 import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.fft.FFT;
 import org.vesalainen.ham.fft.FrequencyDomain;
@@ -63,14 +63,17 @@ public class FrequencyPanel extends JPanel implements SourceListener
     @Override
     protected void paintComponent(Graphics graphics)
     {
-        Graphics2D g = (Graphics2D) graphics;
-        ScreenPlotter plotter = new ScreenPlotter(this);
-        plotter.setColor(Color.yellow);
         if (frequencyDomain != null)
         {
+            Graphics2D g = (Graphics2D) graphics;
+            ScreenPlotter plotter = new ScreenPlotter(this);
+            plotter.setColor(Color.yellow);
             frequencyDomain.stream(0.0)
                     .forEach((f)->plotter.drawLine(f.getFrequency(), 0, f.getFrequency(), f.getMagnitude()));
+            plotter.setFont("Arial", BOLD, 5000);
+            plotter.setColor(new Color(255, 255, 255, 50));
+            plotter.drawCoordinateX();
+            plotter.plot(g);
         }
-        plotter.plot(g);
     }
 }
