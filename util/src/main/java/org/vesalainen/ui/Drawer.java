@@ -18,6 +18,7 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.geom.Rectangle2D;
 
 /**
  *
@@ -25,10 +26,11 @@ import java.awt.Font;
  */
 public interface Drawer
 {
+    Rectangle2D bounds(String text);
     void font(String name, int style, int size);
     default void text(double x, double y, String text)
     {
-        text(x, y, TextAlignment.START, text);
+        text(x, y, TextAlignment.START_X, text);
     }
     void text(double x, double y, TextAlignment alignment, String text);
     void color(Color color);

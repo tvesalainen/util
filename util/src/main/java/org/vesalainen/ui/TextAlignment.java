@@ -22,7 +22,10 @@ package org.vesalainen.ui;
  */
 public enum TextAlignment
 {
-    START,
-    MIDDLE,
-    END
+    START_X,
+    MIDDLE_X,
+    END_X,
+    START_Y,
+    MIDDLE_Y,
+    END_Y
 }

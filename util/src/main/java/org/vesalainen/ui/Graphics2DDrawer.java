@@ -18,7 +18,9 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  *
@@ -66,20 +68,34 @@ public class Graphics2DDrawer implements Drawer
     @Override
     public void text(double x, double y, TextAlignment alignment, String text)
     {
+        FontMetrics fm = g.getFontMetrics();
         switch (alignment)
         {
-            case START:
-                g.drawString(text, (float)x, (float)y);
+            case START_X:
+            case START_Y:
+                g.drawString(text, (float)x, (float)y-fm.getMaxDescent());
                 break;
-            case MIDDLE:
-                g.drawString(text, (float)x-g.getFontMetrics().stringWidth(text)/2, (float)y);
+            case MIDDLE_X:
+                g.drawString(text, (float)x-fm.stringWidth(text)/2, (float)y-fm.getMaxDescent());
                 break;
-            case END:
-                g.drawString(text, (float)x-g.getFontMetrics().stringWidth(text), (float)y);
+            case END_X:
+                g.drawString(text, (float)x-fm.stringWidth(text), (float)y-fm.getMaxDescent());
+                break;
+            case MIDDLE_Y:
+                g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight()/2);
+                break;
+            case END_Y:
+                g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight());
                 break;
             default:
                 throw new UnsupportedOperationException(alignment+" not supported");
         }
+    }
+
+    @Override
+    public Rectangle2D bounds(String text)
+    {
+        return g.getFontMetrics().getStringBounds(text, g);
     }
 
 }

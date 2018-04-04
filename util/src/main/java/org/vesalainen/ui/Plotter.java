@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.ejml.data.DenseMatrix64F;
@@ -43,6 +45,7 @@ import org.vesalainen.math.Rect;
  */
 public class Plotter extends AbstractView
 {
+    private Locale locale = Locale.getDefault();
     private Color color = Color.BLACK;
     private String fontName;
     private int fontStyle;
@@ -52,7 +55,6 @@ public class Plotter extends AbstractView
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
     protected final Color background;
-    private Font font;
 
     public Plotter(int width, int height)
     {
@@ -82,6 +84,11 @@ public class Plotter extends AbstractView
         this.dir = dir;
     }
 
+    public void setLocale(Locale locale)
+    {
+        this.locale = locale;
+    }
+
     public void setColor(Color color)
     {
         this.color = color;
@@ -96,7 +103,7 @@ public class Plotter extends AbstractView
 
     public void drawText(double x, double y, String text)
     {
-        drawText(x, y, TextAlignment.START, text);
+        drawText(x, y, TextAlignment.START_X, text);
     }
     public void drawText(double x, double y, TextAlignment alignment, String text)
     {
@@ -211,6 +218,53 @@ public class Plotter extends AbstractView
     }
     public void drawCoordinates()
     {
+        drawCoordinateX();
+        drawCoordinateY();
+    }
+    public void drawCoordinateX()
+    {
+        fontSize = fontSize == 0 ? (yMax-yMin)/10 : fontSize;
+        // horizontal
+        Scaler scaler = new Scaler(xMin, xMax);
+        double sum = 0;
+        double level=0;
+        double w = xMax-xMin;
+        for (;sum < w/2;level += 0.5)
+        {
+            sum = 0;
+            for (String label : scaler.getLabels(locale, level))
+            {
+                sum += label.length()*fontSize*0.6;
+            }
+        }
+        level--;
+        updateY(yMin - fontSize);
+        drawables.add(new CoordinateX(this, color, fontName, fontStyle, fontSize, scaler, level));
+    }
+    public void drawCoordinateY()
+    {
+        fontSize = fontSize == 0 ? (yMax-yMin)/10 : fontSize;
+        // vertical
+        Scaler scaler = new Scaler(yMin, yMax);
+        double sum = 0;
+        double level=0;
+        double h = yMax-yMin;
+        for (;sum < h/4;level += 0.5)
+        {
+            int size = scaler.getLabels(locale, level).size();
+            sum = size*fontSize;
+        }
+        level--;
+        double max = 0;
+        for (String label : scaler.getLabels(locale, level))
+        {
+            max = Math.max(max, label.length()*fontSize);
+        }
+        updateX(xMin - max);
+        drawables.add(new CoordinateY(this, color, fontName, fontStyle, fontSize, scaler, level));
+    }
+    public void drawCoordinates0()
+    {
         Color safe = color;
         int minx = (int) (xMin-1);
         int maxx = (int) (xMax+1);
@@ -306,7 +360,7 @@ public class Plotter extends AbstractView
         public void draw(Drawer drawer)
         {
             drawer.color(color);
-            drawer.font(fontName, fontStyle, (int) plotter.scaleToScreen(fontSize));
+            drawer.font(fontName, fontStyle, (int) plotter.scaleToScreenY(fontSize));
         }
     }
     protected static class Pnt extends Drawable
@@ -537,5 +591,86 @@ public class Plotter extends AbstractView
             drawer.text(plotter.toScreenX(x), plotter.toScreenY(y), alignment, text);
         }
         
+    }
+    public static class CoordinateX extends Drawable
+    {
+        private Scaler scaler;
+        private double level;
+
+        public CoordinateX(Plotter plotter, Color color, String fontName, int fontStyle, double fontSize, Scaler scaler, double level)
+        {
+            super(plotter, color, fontName, fontStyle, fontSize);
+            this.scaler = scaler;
+            this.level = level;
+        }
+        
+        @Override
+        public void draw(Drawer drawer)
+        {
+            super.draw(drawer);
+            if (level >= 0)
+            {
+                String format = scaler.getFormat(level);
+                scaler.stream(level+0.5)
+                        .forEach((double x)->
+                        {
+                            double sx = plotter.toScreenX(x);
+                            drawer.line(sx, 0, sx, plotter.height);
+                        });
+                scaler.stream(level)
+                        .forEach((double x)->
+                        {
+                            String label = String.format(plotter.locale, format, x);
+                            Rectangle2D bounds = drawer.bounds(label);
+                            double width = bounds.getWidth();
+                            double sx = plotter.toScreenX(x);
+                            if (sx-width/2 >= 0 && sx+width/2 <= plotter.width)
+                            {
+                                drawer.line(sx, 0, sx, plotter.height-bounds.getHeight());
+                                drawer.text(sx, plotter.height, TextAlignment.MIDDLE_X, label);
+                            }
+                        });
+            }
+        }
+    }
+    public static class CoordinateY extends Drawable
+    {
+        private Scaler scaler;
+        private double level;
+
+        public CoordinateY(Plotter plotter, Color color, String fontName, int fontStyle, double fontSize, Scaler scaler, double level)
+        {
+            super(plotter, color, fontName, fontStyle, fontSize);
+            this.scaler = scaler;
+            this.level = level;
+        }
+        
+        @Override
+        public void draw(Drawer drawer)
+        {
+            super.draw(drawer);
+            if (level >= 0)
+            {
+                String format = scaler.getFormat(level);
+                scaler.stream(level+0.5)
+                        .forEach((double y)->
+                        {
+                            double sy = plotter.toScreenY(y);
+                            drawer.line(0, sy, plotter.width, sy);
+                        });
+                scaler.stream(level)
+                        .forEach((double y)->
+                        {
+                            String label = String.format(plotter.locale, format, y);
+                            Rectangle2D bounds = drawer.bounds(label);
+                            double height = bounds.getHeight();
+                            double sy = plotter.toScreenY(y);
+                            if (sy-height/4 >= 0 && sy+height/4 <= plotter.height)
+                            {
+                                drawer.text(0, sy, TextAlignment.MIDDLE_Y, label);
+                            }
+                        });
+            }
+        }
     }
 }

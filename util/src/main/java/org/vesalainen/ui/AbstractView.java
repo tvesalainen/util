@@ -85,33 +85,37 @@ public class AbstractView
     }
     private void calculate()
     {
-        double aspect = width / height;
-        double xyWidth = xMax - xMin;
-        double xyHeight = yMax - yMin;
-        if (keepAspectRatio)
+        if (!calculated)
         {
-            double xyAspect = xyWidth / xyHeight;
-            if (aspect > xyAspect)
+            check();
+            double aspect = width / height;
+            double xyWidth = xMax - xMin;
+            double xyHeight = yMax - yMin;
+            if (keepAspectRatio)
             {
-                scaleX = scaleY = height / xyHeight;
-                xOff = -scaleY*xMin + (width - scaleY*xyWidth) / 2.0;
-                yOff = scaleY*yMin + height;
+                double xyAspect = xyWidth / xyHeight;
+                if (aspect > xyAspect)
+                {
+                    scaleX = scaleY = height / xyHeight;
+                    xOff = -scaleY*xMin + (width - scaleY*xyWidth) / 2.0;
+                    yOff = scaleY*yMin + height;
+                }
+                else
+                {
+                    scaleX = scaleY = width / xyWidth;
+                    xOff = -scaleY*xMin;
+                    yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
+                }
             }
             else
             {
-                scaleX = scaleY = width / xyWidth;
-                xOff = -scaleY*xMin;
+                scaleX = width / xyWidth;
+                scaleY = height / xyHeight;
+                xOff = -scaleX*xMin;
                 yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
             }
+            calculated = true;
         }
-        else
-        {
-            scaleX = width / xyWidth;
-            scaleY = height / xyHeight;
-            xOff = -scaleX*xMin;
-            yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
-        }
-        calculated = true;
     }
     /**
      * Returns true if both rect and screen have proper values;
@@ -202,6 +206,11 @@ public class AbstractView
      */
     public void updatePoint(double x, double y)
     {
+        updateX(x);
+        updateY(y);
+    }
+    public void updateX(double x)
+    {
         if (x < xMin)
         {
             xMin = x;
@@ -212,6 +221,9 @@ public class AbstractView
             xMax = x;
             calculated = false;
         }
+    }
+    public void updateY(double y)
+    {
         if (y < yMin)
         {
             yMin = y;
@@ -253,11 +265,7 @@ public class AbstractView
      */
     public double toScreenX(double x)
     {
-        check();
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return scaleX * x + xOff;
     }
     /**
@@ -267,11 +275,7 @@ public class AbstractView
      */
     public double toScreenY(double y)
     {
-        check();
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return - scaleY * y + yOff;
     }
     /**
@@ -281,11 +285,7 @@ public class AbstractView
      */
     public double fromScreenX(double x)
     {
-        check();
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return (x - xOff) / scaleX;
     }
     /**
@@ -295,11 +295,7 @@ public class AbstractView
      */
     public double fromScreenY(double y)
     {
-        check();
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return - (y - yOff) / scaleY;
     }
     /**
@@ -309,29 +305,30 @@ public class AbstractView
      */
     public double scaleToScreen(double d)
     {
-        check();
         if (!keepAspectRatio)
         {
             throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
         }
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return d * scaleY;
     }
-
+    public double scaleToScreenX(double d)
+    {
+        calculate();
+        return d * scaleX;
+    }
+    public double scaleToScreenY(double d)
+    {
+        calculate();
+        return d * scaleY;
+    }
     public double scaleFromScreen(double d)
     {
-        check();
         if (!keepAspectRatio)
         {
             throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
         }
-        if (!calculated)
-        {
-            calculate();
-        }
+        calculate();
         return d / scaleY;
     }
     private void check()
