@@ -28,12 +28,12 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AGC extends JavaLogging implements DataListener
 {
-    private static final long TIME_LIMIT = 10000;
+    private static final long TIME_LIMIT = 3000;
     private double highLimit;
     private double lowLimit;
+    private double max;
     private IcomManager manager;
     private long lastAdjust;
-    private TimeoutSlidingAverage average;
     private int rfg;
 
     public AGC(IcomManager manager, double upLimit, double downLimit)
@@ -42,38 +42,38 @@ public class AGC extends JavaLogging implements DataListener
         this.manager = manager;
         this.highLimit = upLimit;
         this.lowLimit = downLimit;
-        this.average = new TimeoutSlidingAverage(1000, 5000);
+        
     }
     
     @Override
     public void update(IntArray array)
     {
-        double max = array.getMaxPossibleValue();
+        double maxPos = array.getMaxPossibleValue();
+        max = 0;
         int len = array.length();
         for (int ii=0;ii<len;ii++)
         {
             int v = array.get(ii);
-            average.accept(Math.abs(v/max));
+            max = Math.max(max, Math.abs(v/maxPos));
         }
-        double ave = average.fast();
         long now = System.currentTimeMillis();
         if (now > lastAdjust + TIME_LIMIT)
         {
             try
             {
-                if (ave > highLimit)
+                if (max > highLimit)
                 {
                     rfg = manager.adjustRFGain(-1);
                     lastAdjust = now;
-                    fine("lower %.1f", ave);
+                    fine("lower %.1f", max);
                 }
                 else
                 {
-                    if (ave < lowLimit)
+                    if (max < lowLimit)
                     {
                         rfg = manager.adjustRFGain(1);
                         lastAdjust = now;
-                        fine("higher %.1f", ave);
+                        fine("higher %.1f %d", max, rfg);
                     }
                 }
             }
@@ -84,11 +84,6 @@ public class AGC extends JavaLogging implements DataListener
         }
     }
 
-    public double getAverage()
-    {
-        return average.fast();
-    }
-
     public int getRfg()
     {
         return rfg;
@@ -97,7 +92,7 @@ public class AGC extends JavaLogging implements DataListener
     @Override
     public String toString()
     {
-        return "AGC{" + "average=" + average.fast() + ", rfg=" + rfg + '}';
+        return "AGC{" + "max=" + max + ", rfg=" + rfg + '}';
     }
     
 }

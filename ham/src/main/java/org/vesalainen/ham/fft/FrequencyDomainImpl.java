@@ -16,6 +16,8 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.util.function.DoublePredicate;
+import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -68,6 +70,23 @@ public class FrequencyDomainImpl implements FrequencyDomain
         }
         return (int) Math.round(frequency/frequencyInterval);
     }
+
+    @Override
+    public double getMagnitudeMax()
+    {
+        return IntStream.rangeClosed(0, x.length/2+1)
+                .mapToDouble(this::getMagnitude)
+                .max().getAsDouble();
+    }
+
+    @Override
+    public double getMagnitudeSum()
+    {
+        return IntStream.range(0, x.length)
+                .mapToDouble(this::getMagnitude)
+                .sum();
+    }
+    
     @Override
     public double getMagnitude(int index)
     {
@@ -105,10 +124,10 @@ public class FrequencyDomainImpl implements FrequencyDomain
     }
 
     @Override
-    public Stream<Frequency> stream(double minMagnitude)
+    public Stream<Frequency> stream(IntPredicate predicate)
     {
         return IntStream.rangeClosed(0, x.length/2+1)
-                .filter((i)->getMagnitude(i)>=minMagnitude)
+                .filter(predicate)
                 .mapToObj((i)->new Freq(i, this))
                 ;
     }

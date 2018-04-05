@@ -66,11 +66,12 @@ public class FrequencyPanel extends JPanel implements SourceListener
         if (frequencyDomain != null)
         {
             Graphics2D g = (Graphics2D) graphics;
-            ScreenPlotter plotter = new ScreenPlotter(this);
+            ScreenPlotter plotter = new ScreenPlotter(this, Color.BLACK, true);
             plotter.setColor(Color.yellow);
-            frequencyDomain.stream(0.0)
+            double magnitudeMax = frequencyDomain.getMagnitudeMax();
+            frequencyDomain.stream((i)->true)
                     .forEach((f)->plotter.drawLine(f.getFrequency(), 0, f.getFrequency(), f.getMagnitude()));
-            plotter.setFont("Arial", BOLD, 5000);
+            plotter.setFont("Arial", BOLD, 100);
             plotter.setColor(new Color(255, 255, 255, 50));
             plotter.drawCoordinateX();
             plotter.plot(g);

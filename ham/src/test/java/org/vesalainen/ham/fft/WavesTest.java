@@ -53,11 +53,12 @@ public class WavesTest
     public void testSamples0() throws IOException
     {
         TimeDomain td = Waves.createSample(4096, 10, 1, TimeUnit.SECONDS, 
-                Waves.of(10, 500, Math.PI/2)
+                Waves.of(10, 1000, Math.PI/2)
         );
         IntArray samples = td.getSamples();
         Waves.plot(samples, Paths.get("samples.png"));
         FrequencyDomain fd = Waves.fft(td);
+        double magnitudeSum = fd.getMagnitudeSum();
         Waves.plot(fd, Paths.get("fft.png"));
         TimeDomain ifft = Waves.ifft(fd);
         Waves.plot(ifft.getSamples(), Paths.get("ifft.png"));

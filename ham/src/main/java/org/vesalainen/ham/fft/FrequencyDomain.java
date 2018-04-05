@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.util.function.IntPredicate;
 import java.util.stream.Stream;
 
 /**
@@ -24,7 +25,11 @@ import java.util.stream.Stream;
  */
 public interface FrequencyDomain
 {
-    Stream<Frequency> stream(double minMagnitude);
+    default Stream<Frequency> stream(double minMagnitude)
+    {
+        return stream((int i)->getMagnitude(i)>=minMagnitude);
+    }
+    Stream<Frequency> stream(IntPredicate predicate);
     double getSampleFrequency();
     default double getNyqvistFrequency()
     {
@@ -52,6 +57,8 @@ public interface FrequencyDomain
     {
         return getIm(getFrequencyIndex(frequency));
     }
+    double getMagnitudeSum();
+    double getMagnitudeMax();
     double getMagnitude(int index);
     double getPhase(int index);
     double getRe(int index);

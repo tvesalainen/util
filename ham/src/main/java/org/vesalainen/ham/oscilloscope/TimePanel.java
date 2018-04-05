@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.oscilloscope;
 
+import java.awt.Color;
 import static java.awt.Color.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -139,17 +140,17 @@ public class TimePanel extends JPanel implements ChangeListener, SourceListener
         Rectangle b = getBounds();
         g.setBackground(BLACK);
         g.clearRect(0, 0, b.width, b.height);
-        painCoordinates(g);
         g.setColor(GREEN);
         updateXY();
         if (n > 0)
         {
             g.drawPolyline(x, y, n);
         }
+        painCoordinates(g);
     }
     private void painCoordinates(Graphics2D g)
     {
-        g.setColor(LIGHT_GRAY);
+        g.setColor(new Color(255, 255, 255, 50));
         Rectangle b = getBounds();
         view.setScreen(b.width, b.height);
         view.setRect(0, 10, 0, 10);

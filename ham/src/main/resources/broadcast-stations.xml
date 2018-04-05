@@ -806,7 +806,7 @@
         <transmitter call-sign="NMG" frequency="8503.9" emission="J3C" power="4.0"/>
         <transmitter call-sign="NMG" frequency="12789.9" emission="J3C" power="4.0"/>
         <transmitter call-sign="NMG" frequency="17146.4" emission="J3C" power="4.0">
-            <time from="12:00:00Z" to="20:45:00Z"/>
+            <time from="12:00:00Z" to="21:00:00Z"/>
         </transmitter>
         <hfFax rpm="120" ioc="576" map="" time="00:00:00Z" weekdays="" duration="PT5M0.000S" content="TEST PATTERN"/>
         <hfFax rpm="120" ioc="576" valid="18:00:00Z" map="1" time="00:05:00Z" weekdays="" duration="PT15M0.000S" content="U.S./TROPICAL SURFACE ANALYSIS (W HALF)"/>
