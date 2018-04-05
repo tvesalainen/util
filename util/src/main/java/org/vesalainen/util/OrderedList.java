@@ -152,7 +152,7 @@ public class OrderedList<T> extends ArrayList<T> implements Serializable
             int idx = Collections.binarySearch(this, key, comp);
             if (idx >= 0)
             {
-                while (idx < size()-1 && key.equals(get(idx+1)))
+                while (idx < size()-1 && CollectionHelp.compare(key, get(idx+1), comp)==0)
                 {
                     idx++;
                 }
@@ -175,7 +175,7 @@ public class OrderedList<T> extends ArrayList<T> implements Serializable
             int idx = Collections.binarySearch(this, key, comp);
             if (idx >= 0)
             {
-                while (idx > 0 && key.equals(get(idx-1)))
+                while (idx > 0 && CollectionHelp.compare(key, get(idx-1), comp)==0)
                 {
                     idx--;
                 }
@@ -192,14 +192,14 @@ public class OrderedList<T> extends ArrayList<T> implements Serializable
         {
             if (inclusive)
             {
-                while (idx > 0 && key.equals(get(idx-1)))
+                while (idx > 0 && CollectionHelp.compare(key, get(idx-1), comp)==0)
                 {
                     idx--;
                 }
             }
             else
             {
-                while (idx < size() && key.equals(get(idx)))
+                while (idx < size() && CollectionHelp.compare(key, get(idx), comp)==0)
                 {
                     idx++;
                 }
