@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.fft;
 
+import java.util.Comparator;
 import java.util.function.IntPredicate;
 import java.util.stream.Stream;
 
@@ -27,9 +28,25 @@ public interface FrequencyDomain
 {
     default Stream<Frequency> stream(double minMagnitude)
     {
-        return stream((int i)->getMagnitude(i)>=minMagnitude);
+        return stream((int i)->getMagnitude(i)>=minMagnitude, null);
     }
-    Stream<Frequency> stream(IntPredicate predicate);
+    default Stream<Frequency> stream(double minMagnitude, Comparator<Frequency> comparator)
+    {
+        return stream((int i)->getMagnitude(i)>=minMagnitude, comparator);
+    }
+    default Stream<Frequency> stream(IntPredicate predicate)
+    {
+        return stream(predicate, null);
+    }
+    Stream<Frequency> stream(IntPredicate predicate, Comparator<Frequency> comparator);
+    static  Comparator<Frequency> comparatorByFrequency()
+    {
+        return new Comparator<Frequency>() {public int compare(Frequency f1, Frequency f2){return Double.compare(f1.getFrequency(), f2.getFrequency());}};
+    }
+    static  Comparator<Frequency> comparatorByMagnitude()
+    {
+        return new Comparator<Frequency>() {public int compare(Frequency f1, Frequency f2){return Double.compare(f1.getMagnitude(), f2.getMagnitude());}};
+    }
     double getSampleFrequency();
     default double getNyqvistFrequency()
     {

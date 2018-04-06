@@ -16,7 +16,7 @@
  */
 package org.vesalainen.ham.fft;
 
-import java.util.function.DoublePredicate;
+import java.util.Comparator;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -124,12 +124,16 @@ public class FrequencyDomainImpl implements FrequencyDomain
     }
 
     @Override
-    public Stream<Frequency> stream(IntPredicate predicate)
+    public Stream<Frequency> stream(IntPredicate predicate, Comparator<Frequency> comparator)
     {
-        return IntStream.rangeClosed(0, x.length/2+1)
+        Stream<Frequency> stream = IntStream.rangeClosed(0, x.length/2+1)
                 .filter(predicate)
-                .mapToObj((i)->new Freq(i, this))
-                ;
+                .mapToObj((i)->new Freq(i, this));
+        if (comparator != null)
+        {
+            stream = stream.sorted(comparator);
+        }
+        return stream;
     }
     
     private class Freq implements Frequency

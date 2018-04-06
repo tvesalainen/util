@@ -48,7 +48,7 @@ public class Oscilloscope extends WindowAdapter
     private JSlider timeDivisionSlider;
     private JSlider verticalSensitivitySlider;
     private JSlider triggerSlider;
-    private TimePanel timePanel;
+    private TimePanel2 timePanel;
     private FrequencyPanel frequencyPanel;
     private SourceManager sourceManager;
     private JToolBar toolBar;
@@ -75,7 +75,7 @@ public class Oscilloscope extends WindowAdapter
         panel = new JPanel();
         toolBarPanel.add(panel, BorderLayout.CENTER);
         
-        timePanel = new TimePanel();
+        timePanel = new TimePanel2();
         panel.add(timePanel);
         
         frequencyPanel = new FrequencyPanel(256);
