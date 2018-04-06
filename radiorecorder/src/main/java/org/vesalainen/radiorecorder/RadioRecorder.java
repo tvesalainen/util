@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 import javax.sound.sampled.LineUnavailableException;
+import static org.vesalainen.ham.AudioFileFilter.BAND_PASS;
 import org.vesalainen.ham.AudioRecorder;
 import org.vesalainen.ham.HfFax;
 import org.vesalainen.ham.LocationParser;
@@ -38,6 +39,8 @@ import org.vesalainen.ham.Schedule;
 import org.vesalainen.ham.TimeUtils;
 import org.vesalainen.ham.bc.BroadcastOptimizer;
 import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
+import org.vesalainen.ham.filter.CoeffReader;
+import org.vesalainen.ham.filter.FIRFilter;
 import org.vesalainen.ham.hffax.FaxDecoder;
 import org.vesalainen.ham.hffax.FaxRectifier;
 import org.vesalainen.ham.itshfbc.Noise;
@@ -180,6 +183,7 @@ public class RadioRecorder extends LoggingCommandLine
             icomManager.setRemote(true);
             icomManager.setReceiverFrequency(kHz/1000);
             icomManager.setAutomaticGainControl(true);
+            icomManager.adjustRFGain(1);
             audioRecorder.record(file, metaData);
         }
         catch (Exception ex)
@@ -268,7 +272,10 @@ public class RadioRecorder extends LoggingCommandLine
         optimizer.setMinSNR(minSNR);
         config("starting AudioRecorder(%s, %f, %d)", mixerName, sampleRate, sampleSizeInBits);
         audioRecorder = new AudioRecorder(mixerName, sampleRate, sampleSizeInBits);
-        AGC agc = new AGC(icomManager, 0.1, 0.02);
+        double[] coef = CoeffReader.read("256 Tap Inv Cheby BPF.txt");
+        FIRFilter filter = new FIRFilter(coef);
+        audioRecorder.addListener(filter);
+        AGC agc = new AGC(icomManager, 0.98, 0.1);
         audioRecorder.addListener(agc);
     }
     public void stop()

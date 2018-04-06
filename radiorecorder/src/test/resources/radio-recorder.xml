@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <icomHfMarine id="0" port="COM5"/>
     </radio-control>
     <audio-capture 
-        mixer="Microphone (4- USB PnP Sound De, version Unknown Version" 
+        mixer="Microphone (5- USB PnP Sound De, version Unknown Version" 
         sample-rate="48000" 
         sample-size="16"
     />
