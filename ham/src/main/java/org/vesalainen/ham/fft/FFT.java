@@ -94,6 +94,12 @@ public class FFT
         }
     }
 
+    public double getMagnitude(double sampleRate, double frequency)
+    {
+        double frequencyInterval = sampleRate/x.length;
+        int index = (int) Math.round(frequency/frequencyInterval);
+        return Math.hypot(x[index], y[index]);
+    }
     public int getN()
     {
         return n;

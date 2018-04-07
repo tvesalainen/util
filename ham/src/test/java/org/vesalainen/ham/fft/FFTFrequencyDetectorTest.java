@@ -34,7 +34,7 @@ public class FFTFrequencyDetectorTest
     //@Test
     public void test1()
     {
-        byte[] tone = MorseCode.createTone(100, 48000, 1500);
+        byte[] tone = MorseCode.createTone(100, 48000, 2300);
         FFTFrequencyDetector fd = new FFTFrequencyDetector(64, 48000);
         for (byte b : tone)
         {

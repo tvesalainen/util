@@ -78,10 +78,22 @@ public class SampleBufferImpl implements SampleBuffer
     }
 
     @Override
+    public void goTo(int sample)
+    {
+        offset = sample;
+    }
+
+    @Override
     public Duration getDuration()
     {
         long nanos = (long) (1000000000L*array.length()/sampleFrequency/channels);
         return Duration.ofNanos(nanos);
+    }
+
+    @Override
+    public int getSampleCount()
+    {
+        return array.length();
     }
 
     @Override

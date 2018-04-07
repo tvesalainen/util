@@ -38,7 +38,9 @@ public interface SampleBuffer
      * @param duration 
      */
     void goTo(Duration duration);
+    void goTo(int sample);
     Duration getDuration();
+    int getSampleCount();
     int getViewLength();
     int get(int channel, int offset);
     Duration remaining();

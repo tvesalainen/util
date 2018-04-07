@@ -14,43 +14,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Level;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import org.junit.Test;
-import org.vesalainen.util.logging.JavaLogging;
+package org.vesalainen.ham.filter;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxDecoderTest
+public class BooleanConvolution
 {
-    
-    public FaxDecoderTest()
-    {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
-    }
+    private boolean[] coef;
+    private boolean[] shift;
+    private int m;
+    private int index;
 
-    @Test
-    public void test() throws IOException, InterruptedException
+    public BooleanConvolution(boolean[] coef)
     {
-        try
+        this.coef = coef;
+        this.m = coef.length;
+        this.shift = new boolean[m];
+    }
+    
+    public int conv(boolean x)
+    {
+        int sum = 0;
+        shift[index] = x;
+        int j = index;
+        for (int jj=0;jj<m;jj++)
         {
-            //Path in = Paths.get("src\\test\\resources\\wefax1.wav");
-            Path in = Paths.get("c:\\tmp\\J3C_06_21_38.wav");
-            FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("c:\\tmp\\decoded.png"));
-            decoder.parse();
-            Thread.sleep(Long.MAX_VALUE);
+            sum += coef[jj] && shift[j] ? 1: 0;
+            j++;
+            if (j == m)
+            {
+                j = 0;
+            }
         }
-        catch(EOFException ex)
+        index--;
+        if (index < 0)
         {
+            index = m-1;
         }
+        return sum;
     }
     
 }

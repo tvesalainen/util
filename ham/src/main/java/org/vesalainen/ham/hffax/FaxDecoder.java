@@ -16,107 +16,272 @@
  */
 package org.vesalainen.ham.hffax;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.EOFException;
+import static java.awt.image.BufferedImage.TYPE_BYTE_BINARY;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import java.util.Arrays;
+import java.util.BitSet;
+import javax.sound.sampled.AudioFormat;
+import org.vesalainen.ham.SampleBuffer;
+import org.vesalainen.ham.SampleBufferImpl;
+import org.vesalainen.ham.fft.FFT;
+import org.vesalainen.ham.filter.BooleanConvolution;
+import org.vesalainen.ham.hffax.ui.FaxViewer;
 import org.vesalainen.ham.riff.RIFFFile;
 import org.vesalainen.ham.riff.WaveFile;
-import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxDecoder extends JavaLogging implements FaxStateListener
+public class FaxDecoder
 {
-    private int lpm;
-    private int ioc;
-    private Path in;
-    private Path out;
-    private AudioInputStream ais;
-    private int resolution = 2300;
+    private static final double RATIO = 2182.0/2300.0;
+    private final int lpm;
+    private final int ioc;
+    private final Path out;
+    private final int sampleRate;
+    private SampleBuffer buffer;
+    private FFT fft;
+    private int samplesPerLine;
+    private int pixelsPerLine;
+    private final WaveFile wave;
+    private ByteBuffer data;
+    private final AudioFormat audioFormat;
+    private int lineCount;
+    private float[] grid;
     private BufferedImage image;
-    private FaxTokenizer tokenizer;
-    private FaxSynchronizer synchronizer;
-    private FaxRenderer renderer;
+    private Graphics2D graphics;
+    private Rectangle bounds;
+    private FaxViewer faxViewer;
+    private WritableRaster raster;
+    private BitSet visited;
+    private int[] stack;
+    private int stackPtr;
+    private int gridSize;
+    private int n;
 
-    public FaxDecoder(int lpm, int ioc, Path in, Path out) throws MalformedURLException
+    public FaxDecoder(int lpm, int ioc, Path in, Path out) throws IOException
     {
-        super(FaxDecoder.class);
-        try
-        {
-            this.lpm = lpm;
-            this.ioc = ioc;
-            this.in = in;
-            this.out = out;
-            WaveFile wave = (WaveFile) RIFFFile.open(in);
-            this.ais = wave.getAudioInputStream();
-            this.tokenizer = new FaxTokenizer(ais);
-            this.synchronizer = new BWSynchronizer(this);
-        }
-        catch (IOException ex)
-        {
-            throw new RuntimeException(ex);
-        }
+        this.lpm = lpm;
+        this.ioc = ioc;
+        this.out = out;
+        wave = (WaveFile) RIFFFile.open(in);
+        data = wave.getData();
+        audioFormat = wave.getAudioFormat();
+        sampleRate = (int) audioFormat.getSampleRate();
+        init(60*sampleRate/lpm);
     }
-    public void parse() throws IOException
+    private void init(int samplesPerLine)
     {
-        try
+        this.samplesPerLine = samplesPerLine;
+        n = 1;
+        while (sampleRate/n > 800)
         {
-            tokenizer.addFrequencyListener(synchronizer);
-            tokenizer.addListener(synchronizer);
-            //tokenizer.addDataListener(signalDetector);
-            tokenizer.run();
+            n <<=1;
         }
-        catch (EOFException ex)
+        this.pixelsPerLine = samplesPerLine/n;
+        this.fft = new FFT(n);
+        int view = samplesPerLine/pixelsPerLine;
+        this.buffer = new SampleBufferImpl(audioFormat, data, view);
+        this.lineCount = buffer.getSampleCount()/samplesPerLine;
+        gridSize = pixelsPerLine*lineCount;
+        if (grid == null || grid.length < gridSize)
         {
-            stop("eof");
+            this.grid = new float[gridSize];
         }
-    }
-    @Override
-    public void start(PageLocator locator)
-    {
-        config("start called");
-        if (renderer == null)
+        Arrays.fill(grid, Float.NaN);
+        visited = new BitSet();
+        stack = new int[gridSize];
+        image = new BufferedImage(pixelsPerLine, lineCount, TYPE_BYTE_BINARY);
+        graphics = image.createGraphics();
+        graphics.setBackground(Color.WHITE);
+        graphics.setColor(Color.BLACK);
+        bounds = graphics.getDeviceConfiguration().getBounds();
+        graphics.clearRect(0, 0, bounds.width, bounds.height);
+        raster = image.getRaster();
+        if (faxViewer == null)
         {
-            ZonedDateTime now = ZonedDateTime.now();
-            String str = now.format(DateTimeFormatter.ISO_INSTANT).replace(":", "");
-            String filename = "fax"+str;
-            config("start rendering of %s", filename);
-            renderer = new FaxRenderer(this, out, resolution, locator);
-            tokenizer.addListener(renderer);
+            faxViewer = new FaxViewer(image);
         }
         else
         {
-            config("stop called from start");
-            stop("start");
+            faxViewer.setImage(image);
         }
     }
-
-    @Override
-    public synchronized void stop(String reason)
+    void parse()
     {
-        config("stop from %s", reason);
-        if (renderer != null)
+        int offset = startBar();
+        data.position(offset*n*audioFormat.getFrameSize());
+        data = data.slice();
+        init(samplesPerLine);
+        //int count = fill(pixelsPerLine/2, 5, Color.BLACK);
+        render();
+        faxViewer.repaint();
+    }
+    private int startBar()
+    {
+        boolean[] coef = new boolean[pixelsPerLine];
+        int lim = (int) Math.round((1.0-RATIO)*pixelsPerLine);
+        for (int ii=lim;ii<pixelsPerLine;ii++)
         {
-            try 
+            coef[ii] = true;
+        }
+        BooleanConvolution conv = new BooleanConvolution(coef);
+        for (int ii=0;ii<pixelsPerLine;ii++)
+        {
+            int y = line(ii);
+            int x = column(ii);
+            boolean b = isBlack(ii);
+            conv.conv(b);
+        }
+        int minErrors = pixelsPerLine;
+        int pos = 0;
+        for (int ii=pixelsPerLine;ii<100*pixelsPerLine;ii++)
+        {
+            int y = line(ii);
+            int x = column(ii);
+            boolean b = isBlack(ii);
+            int errors = conv.conv(b);
+            if (errors < minErrors)
             {
-                tokenizer.removeListener(renderer);
-                renderer.render();
-                renderer = null;
-            }
-            catch (IOException ex) 
-            {
-                throw new RuntimeException(ex);
+                minErrors = errors;
+                pos = ii;
             }
         }
+        return pos;
+    }
+    private int fill(int initX, int initY, Color color)
+    {
+        push(initX, initY);
+        while (true)
+        {
+            int count = 0;
+            int position = pop();
+            if (position == -1)
+            {
+                return count;
+            }
+            visited.set(position);
+            Color c = color(position);
+            if (c.equals(color))
+            {
+                int x = column(position);
+                int y = line(position);
+                System.err.println(x+", "+y);
+                raster.setSample(x, y, 0, 0);
+                faxViewer.repaint();
+                count++;
+                push(x, y+1);
+                push(x-1, y+1);
+                push(x-1, y);
+                push(x-1, y-1);
+                push(x, y-1);
+                push(x+1, y-1);
+                push(x+1, y);
+                push(x+1, y+1);
+            }
+        }
+    }
+    private void render()
+    {
+        for (int ii=0;ii<100000;ii++)
+        {
+            int y = line(ii);
+            int x = column(ii);
+            if (isBlack(ii))
+            {
+                raster.setSample(x, y, 0, 0);
+            }
+        }
+    }
+    private int line(int position)
+    {
+        return position/pixelsPerLine;
+    }
+    private int column(int position)
+    {
+        return position%pixelsPerLine;
+    }
+    private int position(int x, int y)
+    {
+        return y*pixelsPerLine+x;
+    }
+    private boolean isBlack(int position)
+    {
+        float ratio = ratio(position);
+        if (ratio < 0.5)
+        {
+            return false;
+        }
+        else
+        {
+            int x = column(position);
+            int y = line(position);
+            raster.setSample(x, y, 0, 0);
+            return true;
+        }
+    }
+    private Color color(int x, int y)
+    {
+        return color(position(x, y));
+    }
+    private Color color(int position)
+    {
+        float ratio = ratio(position);
+        if (ratio < 0.5)
+        {
+            return Color.WHITE;
+        }
+        else
+        {
+            return Color.BLACK;
+        }
+    }
+    private float ratio(int x, int y)
+    {
+        return ratio(position(x, y));
+    }
+    private float ratio(int position)
+    {
+        if (Float.isNaN(grid[position]))
+        {
+            buffer.goTo(position*n);
+            fft.forward(buffer, 0);
+            double black = fft.getMagnitude(sampleRate, 1500);
+            double white = fft.getMagnitude(sampleRate, 2300);
+            grid[position] = (float) (black/white);
+        }
+        return grid[position];
+    }
+    private void push(int x, int y)
+    {
+        int position = position(x, y);
+        if (position < 0 || position >= gridSize || visited.get(position))
+        {
+            return;
+        }
+         for (int ii=0;ii<stackPtr;ii++)
+        {
+            if (stack[ii] == position)
+            {
+                return;
+            }
+        }
+        stack[stackPtr++] = position;
+    }
+    private int pop()
+    {
+        if (stackPtr > 0)
+        {
+            return stack[--stackPtr];
+        }
+        return -1;
     }
 }

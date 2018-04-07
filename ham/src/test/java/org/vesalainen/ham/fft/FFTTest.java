@@ -14,43 +14,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ham.hffax;
+package org.vesalainen.ham.fft;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Level;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import org.junit.Test;
-import org.vesalainen.util.logging.JavaLogging;
+import static org.junit.Assert.*;
+import org.vesalainen.ham.morse.MorseCode;
+import org.vesalainen.nio.IntArray;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FaxDecoderTest
+public class FFTTest
 {
     
-    public FaxDecoderTest()
+    public FFTTest()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
     }
 
     @Test
-    public void test() throws IOException, InterruptedException
+    public void test1500()
     {
-        try
-        {
-            //Path in = Paths.get("src\\test\\resources\\wefax1.wav");
-            Path in = Paths.get("c:\\tmp\\J3C_06_21_38.wav");
-            FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("c:\\tmp\\decoded.png"));
-            decoder.parse();
-            Thread.sleep(Long.MAX_VALUE);
-        }
-        catch(EOFException ex)
-        {
-        }
+        byte[] tone = MorseCode.createTone(100, 48000, 1500);
+        FFT fft = new FFT(64);
+        IntArray array = IntArray.getInstance(tone);
+        fft.forward(array);
+        assertTrue(fft.getMagnitude(48000, 1500) > 10);
+    }
+    @Test
+    public void test2300()
+    {
+        byte[] tone = MorseCode.createTone(100, 48000, 2300);
+        FFT fft = new FFT(64);
+        IntArray array = IntArray.getInstance(tone);
+        fft.forward(array);
+        assertTrue(fft.getMagnitude(48000, 2300) > 10);
     }
     
 }
