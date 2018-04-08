@@ -61,9 +61,6 @@ public class FaxDecoder
     private Rectangle bounds;
     private FaxViewer faxViewer;
     private WritableRaster raster;
-    private BitSet visited;
-    private int[] stack;
-    private int stackPtr;
     private int gridSize;
     private int n;
 
@@ -97,8 +94,6 @@ public class FaxDecoder
             this.grid = new float[gridSize];
         }
         Arrays.fill(grid, Float.NaN);
-        visited = new BitSet();
-        stack = new int[gridSize];
         image = new BufferedImage(pixelsPerLine, lineCount, TYPE_BYTE_BINARY);
         graphics = image.createGraphics();
         graphics.setBackground(Color.WHITE);
@@ -156,38 +151,6 @@ public class FaxDecoder
             }
         }
         return pos;
-    }
-    private int fill(int initX, int initY, Color color)
-    {
-        push(initX, initY);
-        while (true)
-        {
-            int count = 0;
-            int position = pop();
-            if (position == -1)
-            {
-                return count;
-            }
-            visited.set(position);
-            Color c = color(position);
-            if (c.equals(color))
-            {
-                int x = column(position);
-                int y = line(position);
-                System.err.println(x+", "+y);
-                raster.setSample(x, y, 0, 0);
-                faxViewer.repaint();
-                count++;
-                push(x, y+1);
-                push(x-1, y+1);
-                push(x-1, y);
-                push(x-1, y-1);
-                push(x, y-1);
-                push(x+1, y-1);
-                push(x+1, y);
-                push(x+1, y+1);
-            }
-        }
     }
     private void render()
     {
@@ -259,29 +222,5 @@ public class FaxDecoder
             grid[position] = (float) (black/white);
         }
         return grid[position];
-    }
-    private void push(int x, int y)
-    {
-        int position = position(x, y);
-        if (position < 0 || position >= gridSize || visited.get(position))
-        {
-            return;
-        }
-         for (int ii=0;ii<stackPtr;ii++)
-        {
-            if (stack[ii] == position)
-            {
-                return;
-            }
-        }
-        stack[stackPtr++] = position;
-    }
-    private int pop()
-    {
-        if (stackPtr > 0)
-        {
-            return stack[--stackPtr];
-        }
-        return -1;
     }
 }
