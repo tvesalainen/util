@@ -40,7 +40,10 @@ public class SimpleIntRange implements IntRange
 
     public SimpleIntRange(int from, int to)
     {
-        assert from < to;
+        if (from >= to)
+        {
+            throw new IllegalArgumentException("from > to");
+        }
         this.from = from;
         this.to = to;
     }
