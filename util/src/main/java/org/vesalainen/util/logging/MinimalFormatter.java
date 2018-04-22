@@ -43,8 +43,8 @@ public class MinimalFormatter extends Formatter
     public MinimalFormatter(Supplier<Clock> clockFactory)
     {
         this.clockFactory = clockFactory;
-        ZoneOffset normalized = (ZoneOffset) Clock.systemDefaultZone().getZone().normalized();
-        systemOffset = normalized.getTotalSeconds()*1000;
+        //ZoneOffset normalized = (ZoneOffset) Clock.systemDefaultZone().getZone().normalized();
+        //systemOffset = normalized.getTotalSeconds()*1000;
     }
     
     @Override
@@ -103,7 +103,7 @@ public class MinimalFormatter extends Formatter
             pw.flush();
             thrown.printStackTrace(pw);
             return String.format("%1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL %2$s %3$d %4$s\r\n%5$s\n\n", 
-                    getMillis(record),
+                    record.getMillis(),
                     levelId,
                     threadID,
                     record.getMessage(),
@@ -119,7 +119,7 @@ public class MinimalFormatter extends Formatter
             Clock newClock = clockFactory.get();
             if (!newClock.equals(clock))
             {
-                ZoneOffset zoneOffset = (ZoneOffset) newClock.getZone().normalized();
+                ZoneOffset zoneOffset = ZoneOffset.from(newClock.instant());
                 long zo = systemOffset - zoneOffset.getTotalSeconds()*1000;
                 long o = clock.millis() - newClock.millis();
                 offset = zo + o;
