@@ -27,27 +27,59 @@ import java.util.Iterator;
 public class Merger
 {
     /**
-     * Merges argument iterator. Iterators should return values in comp order.
+     * Merges argument iteras. Iterators should return values in comp order.
      * @param <T>
      * @param comp
      * @param iterables
      * @return 
      */
-    public static <T> Iterator<T> merge(Comparator<T> comp, Iterator<T>... iterables)
+    public static <T> Iterable<T> merge(Comparator<T> comp, Iterable<T>... iterables)
     {
-        switch (iterables.length)
+        Iterator[] arr = new Iterator[iterables.length];
+        for (int ii=0;ii<arr.length;ii++)
+        {
+            arr[ii] = iterables[ii].iterator();
+        }
+        return new IterableImpl(merge(comp, arr));
+    }
+    /**
+     * Merges argument iterators. Iterators should return values in comp order.
+     * @param <T>
+     * @param comp
+     * @param iterators
+     * @return 
+     */
+    public static <T> Iterator<T> merge(Comparator<T> comp, Iterator<T>... iterators)
+    {
+        switch (iterators.length)
         {
             case 0:
                 throw new IllegalArgumentException("no iterables");
             case 1:
-                return iterables[0];
+                return iterators[0];
             case 2:
-                return new IteratorImpl<>(comp, iterables[0], iterables[1]);
+                return new IteratorImpl<>(comp, iterators[0], iterators[1]);
             default:
-                return new IteratorImpl<>(comp, iterables[0], merge(comp, Arrays.copyOfRange(iterables, 1, iterables.length)));
+                return new IteratorImpl<>(comp, iterators[0], merge(comp, Arrays.copyOfRange(iterators, 1, iterators.length)));
         }
     }
 
+    private static class IterableImpl<T> implements Iterable<T>
+    {
+        private Iterator<T> iterator;
+
+        public IterableImpl(Iterator<T> iterator)
+        {
+            this.iterator = iterator;
+        }
+
+        @Override
+        public Iterator<T> iterator()
+        {
+            return iterator;
+        }
+        
+    }
     private static class IteratorImpl<T> implements Iterator<T>
     {
         private final Comparator<T> comp;
