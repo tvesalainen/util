@@ -39,6 +39,17 @@ public class CollectionHelpTest
     }
 
     @Test
+    public void testSplit()
+    {
+        List<Integer> list = CollectionHelp.create(1, 2, -3, -4, 5, 6, -7);
+        List<List<Integer>> split = CollectionHelp.split(list, (i)->i>=0);
+        assertEquals(4, split.size());
+        assertEquals(2, split.get(0).size());
+        assertEquals(2, split.get(1).size());
+        assertEquals(2, split.get(2).size());
+        assertEquals(1, split.get(3).size());
+    }
+    @Test
     public void test1()
     {
         List<String> list = new ArrayList<>();

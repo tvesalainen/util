@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.function.Predicate;
 
 /**
  * CollectionHelp class contains methods for collections
@@ -35,6 +36,36 @@ import java.util.concurrent.RecursiveAction;
  */
 public class CollectionHelp
 {
+    /**
+     * Splits list into several sub-lists according to predicate.
+     * @param <T>
+     * @param list
+     * @param predicate
+     * @return 
+     */
+    public static final <T> List<List<T>> split(List<T> list, Predicate<T> predicate)
+    {
+        if (list.isEmpty())
+        {
+            return Collections.EMPTY_LIST;
+        }
+        List<List<T>> lists = new ArrayList<>();
+        boolean b = predicate.test(list.get(0));
+        int len = list.size();
+        int start = 0;
+        for (int ii=1;ii<len;ii++)
+        {
+            boolean t = predicate.test(list.get(ii));
+            if (b != t)
+            {
+                lists.add(list.subList(start, ii));
+                start = ii;
+                b = t;
+            }
+        }
+        lists.add(list.subList(start, len));
+        return lists;
+    }
     /**
      * If comp is not null compares using it. Otherwise assumes o1 is 
      * Comparable<T>.
