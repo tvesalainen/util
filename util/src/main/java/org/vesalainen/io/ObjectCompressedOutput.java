@@ -31,7 +31,7 @@ import org.vesalainen.util.BitArray;
  * @param <T> Object to be compressed
  * @see org.vesalainen.io.CompressedInput
  */
-public class CompressedOutput<T> extends CompressedIO<T>
+public class ObjectCompressedOutput<T> extends ObjectCompressedIO<T>
 {
     private final byte[] buf2;
     private DataOutputStream dos;
@@ -44,7 +44,7 @@ public class CompressedOutput<T> extends CompressedIO<T>
      * @param obj
      * @throws IOException 
      */
-    public CompressedOutput(OutputStream out, T obj) throws IOException
+    public ObjectCompressedOutput(OutputStream out, T obj) throws IOException
     {
         super(obj);
         this.out = out;

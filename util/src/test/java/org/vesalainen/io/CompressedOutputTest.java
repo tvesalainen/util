@@ -54,7 +54,7 @@ public class CompressedOutputTest
             TestCls got = new TestCls();
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            CompressedOutput co = new CompressedOutput<TestCls>(baos, exp);
+            ObjectCompressedOutput co = new ObjectCompressedOutput<TestCls>(baos, exp);
             co.write();
             exp.d = 124567.12346;
             float rate = co.write();
@@ -62,7 +62,7 @@ public class CompressedOutputTest
             assertEquals(0, rate, Epsilon);
             
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            CompressedInput ci = new CompressedInput(bais, got);
+            ObjectCompressedInput ci = new ObjectCompressedInput(bais, got);
             assertEquals(co.getUuid(), ci.getUuid());
             ci.read();
             exp.d = 124567.12345;
@@ -100,7 +100,7 @@ public class CompressedOutputTest
             
             Random random = new Random(123456L);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            CompressedOutput co = new CompressedOutput<TestCls1>(baos, exp);
+            ObjectCompressedOutput co = new ObjectCompressedOutput<TestCls1>(baos, exp);
             for (int ii=0;ii<1000;ii++)
             {
                 exp.time = random.nextLong();
@@ -112,7 +112,7 @@ public class CompressedOutputTest
             
             random = new Random(123456L);
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            CompressedInput ci = new CompressedInput(bais, got);
+            ObjectCompressedInput ci = new ObjectCompressedInput(bais, got);
             int cnt = 0;
             try
             {

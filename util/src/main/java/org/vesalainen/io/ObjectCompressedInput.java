@@ -33,13 +33,13 @@ import org.vesalainen.util.BitArray;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class CompressedInput<T> extends CompressedIO<T>
+public class ObjectCompressedInput<T> extends ObjectCompressedIO<T>
 {
     private final InputStream in;
     private final DataInputStream dis;
     private final ArrayInputStream array;
     private final DataInputStream data;
-    public CompressedInput(InputStream in, T obj) throws IOException
+    public ObjectCompressedInput(InputStream in, T obj) throws IOException
     {
         super(obj);
         

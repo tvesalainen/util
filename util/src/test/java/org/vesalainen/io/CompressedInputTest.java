@@ -38,7 +38,7 @@ public class CompressedInputTest
     public void testSomeMethod() throws IOException
     {
         try (InputStream is = Files.newInputStream(Paths.get("src", "test", "resources",  "20180409122422.trc"));
-            CompressedInput ci = new CompressedInput(is)
+            ObjectCompressedInput ci = new ObjectCompressedInput(is)
                 )
         {
             ci.dump(System.err);

@@ -25,7 +25,7 @@ import org.vesalainen.util.BitArray;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public abstract class CompressedIO<T> implements AutoCloseable
+public abstract class ObjectCompressedIO<T> implements AutoCloseable
 {
     protected final T obj;
     protected final Class<? extends Object> cls;
@@ -36,7 +36,7 @@ public abstract class CompressedIO<T> implements AutoCloseable
     protected int bytes;
     protected UUID uuid;
 
-    public CompressedIO(T obj)
+    public ObjectCompressedIO(T obj)
     {
         this.obj = obj;
         
