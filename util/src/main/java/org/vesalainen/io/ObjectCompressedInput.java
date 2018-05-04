@@ -24,6 +24,8 @@ import java.lang.reflect.Field;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.vesalainen.util.BitArray;
@@ -33,162 +35,61 @@ import org.vesalainen.util.BitArray;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class ObjectCompressedInput<T> extends ObjectCompressedIO<T>
+public class ObjectCompressedInput<T> extends CompressedInput
 {
-    private final InputStream in;
-    private final DataInputStream dis;
-    private final ArrayInputStream array;
-    private final DataInputStream data;
+    private T obj;
+    private Class<T> cls;
+    private final Field[] fields;
+    
     public ObjectCompressedInput(InputStream in, T obj) throws IOException
     {
-        super(obj);
-        
-        this.in = in;
-        this.dis = new DataInputStream(in);
-        
-        String classname = dis.readUTF();
-        if (!cls.getName().equals(classname))
+        super(in, obj != null ? obj.getClass().getName() : null);
+        this.obj = obj;
+        if (obj == null)
         {
-            throw new IOException("Data input from "+classname+" not from "+cls);
+            try
+            {
+                cls = (Class<T>) Class.forName(source);
+                obj = cls.newInstance();
+            }
+            catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex)
+            {
+                throw new IOException(ex);
+            }
         }
-        short fieldCount = dis.readShort();
-        Field[] flds = cls.getFields();
-        if (fieldCount != flds.length)
+        else
+        {
+            cls = (Class<T>) obj.getClass();
+        }
+        fields = cls.getFields();
+        int fieldCount = getPropertyCount();
+        if (fieldCount != fields.length)
         {
             throw new IOException("Field count "+fieldCount+" differs from "+fields.length);
         }
-        fields = new Field[fieldCount];
-        for (int ii=0;ii<fieldCount;ii++)
-        {
-            String fieldName = dis.readUTF();
-            String fieldType = dis.readUTF();
-            Field fld = null;
-            for (Field f : flds)
-            {
-                if (f.getName().equals(fieldName))
-                {
-                    fld = f;
-                    break;
-                }
-            }
-            if (fld == null)
-            {
-                throw new IOException("Field "+fieldName+" not found ");
-            }
-            if (!fld.getType().getName().equals(fieldType))
-            {
-                throw new IOException("Field "+fieldName+" type differs "+fieldType+" <> "+fld);
-            }
-            fields[ii] = fld;
-        }
-        long mostSigBits = dis.readLong();
-        long leastSigBits = dis.readLong();
-        uuid = new UUID(mostSigBits, leastSigBits);
-        for (Field field : fields)
-        {
-            Class<?> type = field.getType();
-            bytes += getBytes(type.getName());
-        }
-        buf1 = new byte[bytes];
-        array = new ArrayInputStream(buf1);
-        data = new DataInputStream(array);
-        bitArray = new BitArray(bytes);
-        bits = bitArray.getArray();
-        
     }
-    /**
-     * Update objects fields. Throws EOFException when eof.
-     * @return Compression rate
-     * @throws IOException 
-     */
+
+    @Override
     public float read() throws IOException
     {
-        dis.readFully(bits);
-
-        int cnt = 0;
-        for (int ii=0;ii<bytes;ii++)
+        float ratio = super.read();
+        if (ratio < 0)
         {
-            if (bitArray.isSet(ii))
-            {
-                buf1[ii] = dis.readByte();
-                cnt++;
-            }
+            throw new EOFException();
         }
-        array.reset();
-        for (Field fld : fields)
-        {
-            read(data, fld);
-        }
-        return (float)cnt/(float)bytes;
-    }
-    
-    private void read(DataInputStream ds, Field field) throws IOException
-    {
         try
         {
-            switch (field.getType().getName())
+            for (Field field : fields)
             {
-                case "boolean":
-                    field.setBoolean(obj, ds.readBoolean());
-                    break;
-                case "byte":
-                    field.setByte(obj, ds.readByte());
-                    break;
-                case "char":
-                    field.setChar(obj, ds.readChar());
-                    break;
-                case "short":
-                    field.setShort(obj, ds.readShort());
-                    break;
-                case "int":
-                    field.setInt(obj, ds.readInt());
-                    break;
-                case "float":
-                    field.setFloat(obj, ds.readFloat());
-                    break;
-                case "long":
-                    field.setLong(obj, ds.readLong());
-                    break;
-                case "double":
-                    field.setDouble(obj, ds.readDouble());
-                    break;
-                default:
-                    throw new IllegalArgumentException(field + " not allowed");
+                Object value = get(field.getName());
+                field.set(obj, value);
             }
         }
         catch (IllegalArgumentException | IllegalAccessException ex)
         {
             throw new IOException(ex);
         }
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        in.close();
-    }
-    
-    private class ArrayInputStream extends InputStream
-    {
-        private final byte[] array;
-        private int index;
-
-        public ArrayInputStream(byte[] array)
-        {
-            this.array = array;
-        }
-        
-        @Override
-        public int read() throws IOException
-        {
-            return array[index++] & 0xff;
-        }
-        
-        @Override
-        public void reset()
-        {
-            index = 0;
-        }
+        return ratio;
     }
     /**
      * Return a stream for compressed input.
