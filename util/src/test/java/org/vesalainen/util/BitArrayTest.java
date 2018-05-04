@@ -38,12 +38,38 @@ public class BitArrayTest
         assertFalse(ba.isSet(9));
         assertTrue(ba.isSet(10));
         assertFalse(ba.isSet(11));
+        assertEquals(10, ba.first());
+        assertEquals(10, ba.last());
         ba.set(10, false);
         assertFalse(ba.isSet(10));
         ba.setAll(true);
         assertTrue(ba.isSet(10));
+        assertTrue(ba.any());
         ba.setAll(false);
         assertFalse(ba.isSet(10));
+        assertFalse(ba.any());
     }
-    
+    @Test
+    public void testAny()
+    {
+        BitArray ba = new BitArray(9);
+        ba.set(8, true);
+        assertTrue(ba.any());
+        ba.setAll(true);
+        ba.set(8, false);
+        assertTrue(ba.any());
+        ba.setAll(false);
+        ba.set(7, true);
+        assertTrue(ba.any());
+    }    
+    @Test
+    public void testAnd()
+    {
+        BitArray ba1 = new BitArray(20);
+        ba1.set(3, 4, true);
+        BitArray ba2 = new BitArray(20);
+        assertFalse(ba1.and(ba2));
+        ba2.set(6, 4, true);
+        assertTrue(ba1.and(ba2));
+    }
 }
