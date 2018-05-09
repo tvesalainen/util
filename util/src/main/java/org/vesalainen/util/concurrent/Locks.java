@@ -16,9 +16,14 @@
  */
 package org.vesalainen.util.concurrent;
 
+import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import org.vesalainen.util.function.IOFunction;
+import org.vesalainen.util.function.IORunnable;
+import org.vesalainen.util.function.IOSupplier;
 
 /**
  * Routines run in locked mode.
@@ -44,6 +49,66 @@ public class Locks
         try
         {
             func.accept(t);
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    public static void locked(Lock lock, Runnable func)
+    {
+        lock.lock();
+        try
+        {
+            func.run();
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    public static <T> T locked(Lock lock, Supplier<T> func)
+    {
+        lock.lock();
+        try
+        {
+            return func.get();
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    public static <T,R> R lockedIO(Lock lock, T t, IOFunction<T,R> func) throws IOException
+    {
+        lock.lock();
+        try
+        {
+            return func.apply(t);
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    public static <T> T lockedIO(Lock lock, IOSupplier<T> func) throws IOException
+    {
+        lock.lock();
+        try
+        {
+            return func.get();
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+    public static void lockedIO(Lock lock, IORunnable func) throws IOException
+    {
+        lock.lock();
+        try
+        {
+            func.run();
         }
         finally
         {
