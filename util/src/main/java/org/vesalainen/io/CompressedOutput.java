@@ -80,7 +80,6 @@ public class CompressedOutput extends CompressedIO
             }
             dos.writeLong(uuid.getMostSignificantBits());
             dos.writeLong(uuid.getLeastSignificantBits());
-            dos.flush();
         }
         out.write(bits);
         int cnt = 0;
