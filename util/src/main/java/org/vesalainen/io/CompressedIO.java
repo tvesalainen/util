@@ -17,6 +17,7 @@
 package org.vesalainen.io;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -35,21 +36,40 @@ public abstract class CompressedIO implements AutoCloseable
     protected int bytes;
     protected UUID uuid;
     protected Map<String,Property> properties = new HashMap<>();
-
-    public CompressedIO(String source)
+    protected Map<String,Property> unmodifiableProperties = Collections.unmodifiableMap(properties);
+    /**
+     * Creates CompressedIO with given source
+     * @param source 
+     */
+    protected CompressedIO(String source)
     {
         this.source = source;
     }
-
+    /**
+     * Returns UUID
+     * @return 
+     */
     public UUID getUuid()
     {
         return uuid;
     }
-
+    /**
+     * Returns number of properties
+     * @return 
+     */
     public int getPropertyCount()
     {
-        return properties.size();
+        return unmodifiableProperties.size();
     }
+    /**
+     * Return unmodifiable view of properties
+     * @return 
+     */
+    public Map<String, Property> getProperties()
+    {
+        return unmodifiableProperties;
+    }
+    
     protected int getBytes(String type)
     {
         switch (type)
@@ -154,7 +174,7 @@ public abstract class CompressedIO implements AutoCloseable
         return prop;
     }
     
-    protected class Property implements Comparable<Property>
+    public class Property implements Comparable<Property>
     {
         private String name;
         private String type;
@@ -162,12 +182,12 @@ public abstract class CompressedIO implements AutoCloseable
         private int offset;
         private boolean selfImportant;
 
-        public Property(String name, String type, int offset)
+        protected Property(String name, String type, int offset)
         {
             this(name, type, offset, true);
         }
 
-        public Property(String name, String type, int offset, boolean selfImportant)
+        protected Property(String name, String type, int offset, boolean selfImportant)
         {
             this.name = name;
             this.type = type;
