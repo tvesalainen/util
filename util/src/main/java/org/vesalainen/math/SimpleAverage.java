@@ -64,4 +64,10 @@ public class SimpleAverage implements Average
     {
         return sum/count;
     }
+
+    @Override
+    public String toString()
+    {
+        return "SimpleAverage{" + fast() + '}';
+    }
 }
