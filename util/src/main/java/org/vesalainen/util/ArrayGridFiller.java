@@ -16,62 +16,171 @@
  */
 package org.vesalainen.util;
 
-import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
 
 /**
- *
+ * ArrayGridFiller acts roughly like fill tool in paint application
+ * <p>Strategy function tells how fill is done. There are predefined strategies.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T> Color type. Don't have to be getColor.
  */
-public class ArrayGridFiller<T> extends GridFiller<T>
+public class ArrayGridFiller<T>
 {
-    private T[] array;
+    protected ArrayGrid<T> grid;
+    protected int stackSize;
+    protected Strategy strategy;
+    protected BitSet visited;
+    protected int[] stack;
+    protected int stackPtr;
+    protected List<FillConsumer> consumers = new ArrayList<>();
     
-    public ArrayGridFiller(int width, int heigth, Strategy strategy, Class<T> cls)
+    public ArrayGridFiller(ArrayGrid<T> grid, Strategy strategy)
     {
-        this(width, heigth, true, strategy, cls);
+        this.grid = grid;
+        this.stackSize = 2*(grid.width()+grid.heigth());
+        this.strategy = strategy;
     }
-    public ArrayGridFiller(int width, int heigth, boolean boxed, Strategy strategy, Class<T> cls)
+    public static final <T> void allDirections(int x, int y, T color, ArrayGridFiller<T> filler)
     {
-        this(width, heigth, boxed, strategy, (T[])Array.newInstance(cls, width*heigth));
+        filler.push(x, y+1);     // south
+        filler.push(x-1, y+1);   // south east
+        filler.push(x-1, y);     // east
+        filler.push(x-1, y-1);   // north east
+        filler.push(x, y-1);     // north
+        filler.push(x+1, y-1);   // north west
+        filler.push(x+1, y);     // west
+        filler.push(x+1, y+1);   // south west
     }
-    public ArrayGridFiller(int width, int heigth, Strategy strategy, T[] array)
+    public static final <T> void roundedSquare(int x, int y, T color, ArrayGridFiller<T> filler)
     {
-        this(width, heigth, true, strategy, array);
-    }
-    public ArrayGridFiller(int width, int heigth, boolean boxed, Strategy strategy, T[] array)
-    {
-        super(width, heigth, boxed, strategy);
-        this.array = array;
-        if (array.length < length)
+        boolean se = filler.hit(x+1, y+1, color);   // south east
+        boolean ne = filler.hit(x+1, y-1, color);   // north east
+        boolean nw = filler.hit(x-1, y-1, color);   // north west
+        boolean sw = filler.hit(x-1, y+1, color);   // south west
+        if (se && sw)
         {
-            throw new IllegalArgumentException("array too short");
+            filler.push(x, y+1);     // south
+        }
+        if (se && ne)
+        {
+            filler.push(x+1, y);     // east
+        }
+        if (ne && nw)
+        {
+            filler.push(x, y-1);     // north
+        }
+        if (sw && nw)
+        {
+            filler.push(x-1, y);     // west
+        }
+    }
+    public static final <T> void square(int x, int y, T color, ArrayGridFiller<T> filler)
+    {
+        boolean se = filler.hit(x-1, y+1, color);   // south east
+        boolean ne = filler.hit(x-1, y-1, color);   // north east
+        boolean nw = filler.hit(x+1, y-1, color);   // north west
+        boolean sw = filler.hit(x+1, y+1, color);   // south west
+        if (se || sw)
+        {
+            filler.push(x, y+1);     // south
+        }
+        if (se || ne)
+        {
+            filler.push(x-1, y);     // east
+        }
+        if (ne || nw)
+        {
+            filler.push(x, y-1);     // north
+        }
+        if (sw || nw)
+        {
+            filler.push(x+1, y);     // west
+        }
+    }
+    public void addConsumer(FillConsumer consumer)
+    {
+        consumers.add(consumer);
+    }
+    public void removeConsumer(FillConsumer consumer)
+    {
+        consumers.remove(consumer);
+    }
+    public int fill(int initX, int initY, T color)
+    {
+        visited = new BitSet();
+        stack = new int[stackSize];
+        int count = 0;
+        push(initX, initY);
+        while (true)
+        {
+            int position = pop();
+            if (position == -1)
+            {
+                return count;
+            }
+            visited.set(position);
+            if (grid.hit(position, color))
+            {
+                int x = grid.column(position);
+                int y = grid.line(position);
+                for (FillConsumer consumer : consumers)
+                {
+                    consumer.fill(x, y, color);
+                }
+                strategy.apply(x, y, color, this);
+                count++;
+            }
         }
     }
 
-    public T[] getArray()
+    public boolean hit(int x, int y, T color)
     {
-        return array;
-    }
-
-    @Override
-    public T getColor(int position)
-    {
-        if (position < 0 || position >= length)
-        {
-            throw new IllegalArgumentException(position+" invalid");
-        }
-        return array[position];
-    }
-
-    @Override
-    public void setColor(int position, T color)
-    {
-        if (position < 0 || position >= length)
-        {
-            throw new IllegalArgumentException(position+" invalid");
-        }
-        array[position] = color;
+        return grid.hit(x, y, color);
     }
     
-    
+    private void push(int x, int y)
+    {
+        if (!grid.inBox(x, y))
+        {
+            return;
+        }
+        int position = grid.position(x, y);
+        if (position < 0 || position >= grid.length || visited.get(position))
+        {
+            return;
+        }
+        for (int ii=0;ii<stackPtr;ii++)
+        {
+            if (stack[ii] == position)
+            {
+                return;
+            }
+        }
+        if (stackPtr >= stack.length)
+        {
+            stack = Arrays.copyOf(stack, 2*stack.length);
+        }
+        stack[stackPtr++] = position;
+    }
+    private int pop()
+    {
+        if (stackPtr > 0)
+        {
+            return stack[--stackPtr];
+        }
+        return -1;
+    }
+    @FunctionalInterface
+    public interface FillConsumer<T>
+    {
+        void fill(int x, int y, T color);
+    }
+    @FunctionalInterface
+    public interface Strategy<T>
+    {
+        void apply(int x, int y, T color, ArrayGridFiller<T> filler);
+    }
 }

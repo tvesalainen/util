@@ -16,87 +16,36 @@
  */
 package org.vesalainen.util;
 
-import java.util.Objects;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class Grid<T>
+public interface Grid<T>
 {
-    
-    protected int width;
-    protected int heigth;
-    protected int length;
-    protected boolean boxed;
-
-    public Grid(int width, int heigth, boolean boxed)
-    {
-        this.width = width;
-        this.heigth = heigth;
-        this.length = width*heigth;
-        this.boxed = boxed;
-    }
-
-    public boolean hit(int x, int y, T color)
-    {
-        if (!inBox(x, y))
-        {
-            return false;
-        }
-        return hit(position(x, y), color);
-    }
-
-    public boolean hit(int position, T color)
-    {
-        if (position < 0 || position >= length || !inBox(position))
-        {
-            return false;
-        }
-        T c = getColor(position);
-        return Objects.equals(c, color);
-    }
-
-    protected int line(int position)
-    {
-        return position / width;
-    }
-
-    protected int column(int position)
-    {
-        return position % width;
-    }
-
-    protected int position(int x, int y)
-    {
-        return y * width + x;
-    }
-
-    public void setColor(int x, int y, T color)
-    {
-        setColor(position(x, y), color);
-    }
-    public abstract void setColor(int position, T color);
-
-    public T getColor(int x, int y)
-    {
-        if (!inBox(x, y))
-        {
-            return null;
-        }
-        return getColor(position(x, y));
-    }
-
-    public abstract T getColor(int position);
-
-    protected boolean inBox(int position)
-    {
-        return inBox(column(position), line(position));
-    }
-
-    protected boolean inBox(int x, int y)
-    {
-        return !boxed || (x >= 0 && x < width && y >= 0 && y < heigth);
-    }
+    int width();
+    int heigth();
+    /**
+     * Return color at x,y
+     * @param x
+     * @param y
+     * @return 
+     */
+    T getColor(int x, int y);
+    /**
+     * Returns true if color at x,y is given. Otherwise returns false, also if
+     * point is outside grid.
+     * @param x
+     * @param y
+     * @param color
+     * @return 
+     */
+    boolean hit(int x, int y, T color);
+    /**
+     * Sets color at x,y
+     * @param x
+     * @param y
+     * @param color 
+     */
+    void setColor(int x, int y, T color);
     
 }

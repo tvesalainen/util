@@ -24,24 +24,26 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class GridFillerTest
+public class ArrayGridFillerTest
 {
     
-    public GridFillerTest()
+    public ArrayGridFillerTest()
     {
     }
 
     @Test
     public void testAllDirections1()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::allDirections, Color.class);
-        assertEquals(agf.getArray().length, agf.fill(0, 0, null));
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::allDirections);
+        assertEquals(grid.getArray().length, agf.fill(0, 0, null));
     }
     @Test
     public void testAllDirections2()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::allDirections, Color.class);
-        Color[] array = agf.getArray();
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::allDirections);
+        Color[] array = grid.getArray();
         array[5] = Color.BLACK;
         array[8] = Color.GREEN;
         array[12] = Color.CYAN;
@@ -51,22 +53,25 @@ public class GridFillerTest
     @Test
     public void testRoundedSquare1()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::roundedSquare, Color.class);
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         assertEquals(1, agf.fill(0, 0, null));
     }
     @Test
     public void testRoundedSquare2()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::roundedSquare, Color.class);
-        Color[] array = agf.getArray();
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
+        Color[] array = grid.getArray();
         assertEquals(array.length-4, agf.fill(3, 4, null));
     }
     @Test
     public void testRoundedSquare3()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::roundedSquare, Color.class);
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
-        Color[] array = agf.getArray();
+        Color[] array = grid.getArray();
         array[20] = Color.BLACK;
         array[22] = Color.BLACK;
         array[24] = Color.BLACK;
@@ -75,21 +80,23 @@ public class GridFillerTest
     @Test
     public void testRoundedSquareNotBoxed()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, false, GridFiller::roundedSquare, Color.class);
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, false);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
-        Color[] array = agf.getArray();
-        agf.setColor(2, 0, Color.BLACK);
-        agf.setColor(2, 2, Color.BLACK);
-        agf.setColor(2, 4, Color.BLACK);
-        agf.setColor(2, 6, Color.BLACK);
+        Color[] array = grid.getArray();
+        grid.setColor(2, 0, Color.BLACK);
+        grid.setColor(2, 2, Color.BLACK);
+        grid.setColor(2, 4, Color.BLACK);
+        grid.setColor(2, 6, Color.BLACK);
         assertEquals(28, agf.fill(3, 3, null));
     }
     @Test
     public void testSquare3()
     {
-        ArrayGridFiller<Color> agf = new ArrayGridFiller(5, 8, GridFiller::square, Color.class);
+        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::square);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
-        Color[] array = agf.getArray();
+        Color[] array = grid.getArray();
         array[20] = Color.BLACK;
         array[22] = Color.BLACK;
         array[24] = Color.BLACK;
