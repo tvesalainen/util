@@ -34,53 +34,53 @@ public class ArrayGridFillerTest
     @Test
     public void testAllDirections1()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::allDirections);
-        assertEquals(grid.getArray().length, agf.fill(0, 0, null));
+        assertEquals(grid.getArray().length, agf.fill(0, 0, null).getSetCount());
     }
     @Test
     public void testAllDirections2()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::allDirections);
         Color[] array = grid.getArray();
         array[5] = Color.BLACK;
         array[8] = Color.GREEN;
         array[12] = Color.CYAN;
         array[32] = Color.BLUE;
-        assertEquals(array.length-4, agf.fill(0, 0, null));
+        assertEquals(array.length-4, agf.fill(0, 0, null).getSetCount());
     }
     @Test
     public void testRoundedSquare1()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
-        assertEquals(1, agf.fill(0, 0, null));
+        assertEquals(1, agf.fill(0, 0, null).getSetCount());
     }
     @Test
     public void testRoundedSquare2()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         Color[] array = grid.getArray();
-        assertEquals(array.length-4, agf.fill(3, 4, null));
+        assertEquals(array.length-4, agf.fill(3, 4, null).getSetCount());
     }
     @Test
     public void testRoundedSquare3()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
         Color[] array = grid.getArray();
         array[20] = Color.BLACK;
         array[22] = Color.BLACK;
         array[24] = Color.BLACK;
-        assertEquals(16, agf.fill(2, 2, null));
+        assertEquals(16, agf.fill(2, 2, null).getSetCount());
     }
     @Test
     public void testRoundedSquareNotBoxed()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, false);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, false);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::roundedSquare);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
         Color[] array = grid.getArray();
@@ -88,19 +88,19 @@ public class ArrayGridFillerTest
         grid.setColor(2, 2, Color.BLACK);
         grid.setColor(2, 4, Color.BLACK);
         grid.setColor(2, 6, Color.BLACK);
-        assertEquals(28, agf.fill(3, 3, null));
+        assertEquals(28, agf.fill(3, 3, null).getSetCount());
     }
     @Test
     public void testSquare3()
     {
-        ArrayGrid<Color> grid = new ArrayGrid<>(new Color[5*8], 5, true);
+        SimpleArrayGrid<Color> grid = new SimpleArrayGrid<>(new Color[5*8], 5, true);
         ArrayGridFiller<Color> agf = new ArrayGridFiller(grid, ArrayGridFiller::square);
         //agf.addConsumer((x,y,c)->System.err.println(x+", "+y));
         Color[] array = grid.getArray();
         array[20] = Color.BLACK;
         array[22] = Color.BLACK;
         array[24] = Color.BLACK;
-        assertEquals(20, agf.fill(2, 2, null));
+        assertEquals(20, agf.fill(2, 2, null).getSetCount());
     }
 
 }

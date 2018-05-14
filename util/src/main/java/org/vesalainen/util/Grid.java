@@ -23,7 +23,7 @@ package org.vesalainen.util;
 public interface Grid<T>
 {
     int width();
-    int heigth();
+    int height();
     /**
      * Return color at x,y
      * @param x
@@ -47,5 +47,35 @@ public interface Grid<T>
      * @param color 
      */
     void setColor(int x, int y, T color);
+    /**
+     * Set colors in rectangle upper left corner at x.y
+     * @param x
+     * @param y
+     * @param width
+     * @param heigth
+     * @param color 
+     */
+    default void rect(int x, int y, int width, int heigth, T color)
+    {
+        for (int ii=0;ii<heigth;ii++)
+        {
+            line(x, y+ii, width, color);
+        }
+    }
+    /**
+     * Sets colors to line starting at x,y. If grid is not boxed the line 
+     * continues to next line
+     * @param x
+     * @param y
+     * @param length
+     * @param color 
+     */
+    default void line(int x, int y, int length, T color)
+    {
+        for (int ii=0;ii<length;ii++)
+        {
+            setColor(x+ii, y, color);
+        }
+    }
     
 }

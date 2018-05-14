@@ -16,55 +16,39 @@
  */
 package org.vesalainen.util;
 
-import java.lang.reflect.Array;
 import java.util.Objects;
 
 /**
- * <p> if grid is boxed x and y values must stay within their width and heigth
- boundaries. If grid is not boxed x outside width boundary will flow to next 
- * or previous line as long as resulting coordinates are in grib.
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ArrayGrid<T> implements Grid<T>
+public abstract class AbstractArrayGrid<T> implements Grid<T>
 {
-    protected T[] array;
+    
     protected int width;
-    protected int heigth;
+    protected int height;
+    protected int offset;
     protected int length;
     protected boolean boxed;
 
-    public ArrayGrid(T[] array, int width)
+    public AbstractArrayGrid(int width, int height, int offset, int length, boolean boxed)
     {
-        this(array, width, false);
-    }
-    public ArrayGrid(T[] array, int width, boolean boxed)
-    {
-        this(array, width, array.length/width, array.length, boxed);
-    }
-
-    public ArrayGrid(int width, int heigth)
-    {
-        this(width, heigth, false);
-    }
-    public ArrayGrid(int width, int heigth, boolean boxed)
-    {
-        this(null, width, heigth, width*heigth, boxed);
-    }
-
-    public ArrayGrid(T[] array, int width, int heigth, int length, boolean boxed)
-    {
-        this.array = array;
         this.width = width;
-        this.heigth = heigth;
+        this.height = height;
+        this.offset = offset;
         this.length = length;
         this.boxed = boxed;
     }
 
-    public T[] getArray()
-    {
-        return array;
-    }
-
+    /**
+     * Returns SimpleArrayGrid view to the same data with possibly different offset
+ and/or width
+     * @param offset
+     * @param width
+     * @return
+     */
+    public abstract SimpleArrayGrid view(int offset, int width);
+    
     @Override
     public boolean hit(int x, int y, T color)
     {
@@ -116,7 +100,6 @@ public class ArrayGrid<T> implements Grid<T>
         return getColor(position(x, y));
     }
 
-
     protected boolean inBox(int position)
     {
         return inBox(column(position), line(position));
@@ -124,8 +107,11 @@ public class ArrayGrid<T> implements Grid<T>
 
     protected boolean inBox(int x, int y)
     {
-        return !boxed || (x >= 0 && x < width && y >= 0 && y < heigth);
+        return !boxed || (x >= 0 && x < width && y >= 0 && y < height);
     }
+
+    protected abstract void setColor(int position, T color);
+    protected abstract T getColor(int position);
 
     @Override
     public int width()
@@ -134,39 +120,22 @@ public class ArrayGrid<T> implements Grid<T>
     }
 
     @Override
-    public int heigth()
+    public int height()
     {
-        return heigth;
+        return height;
     }
 
-    private void setColor(int position, T color)
+    public int offset()
     {
-        checkPosition(position);
-        if (array == null)
-        {
-            if (color == null)
-            {
-                return;
-            }
-            array = (T[]) Array.newInstance(color.getClass(), length);
-        }
-        array[position] = color;
+        return offset;
     }
 
-    private T getColor(int position)
-    {
-        checkPosition(position);
-        if (array == null)
-        {
-            return null;
-        }
-        return array[position];
-    }
-    private void checkPosition(int position)
+    protected void checkPosition(int position)
     {
         if (position < 0 || position > length)
         {
-            throw new IllegalArgumentException("illegal position "+position);
+            throw new IllegalArgumentException("illegal position " + position);
         }
     }
+    
 }

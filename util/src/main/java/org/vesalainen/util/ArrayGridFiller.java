@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class ArrayGridFiller<T>
 {
-    protected ArrayGrid<T> grid;
+    protected SimpleArrayGrid<T> grid;
     protected int stackSize;
     protected Strategy strategy;
     protected BitSet visited;
@@ -37,10 +37,10 @@ public class ArrayGridFiller<T>
     protected int stackPtr;
     protected List<FillConsumer> consumers = new ArrayList<>();
     
-    public ArrayGridFiller(ArrayGrid<T> grid, Strategy strategy)
+    public ArrayGridFiller(SimpleArrayGrid<T> grid, Strategy strategy)
     {
         this.grid = grid;
-        this.stackSize = 2*(grid.width()+grid.heigth());
+        this.stackSize = 2*(grid.width()+grid.height());
         this.strategy = strategy;
     }
     public static final <T> void allDirections(int x, int y, T color, ArrayGridFiller<T> filler)
@@ -108,18 +108,19 @@ public class ArrayGridFiller<T>
     {
         consumers.remove(consumer);
     }
-    public int fill(int initX, int initY, T color)
+    public BitGrid fill(int initX, int initY, T color)
     {
         visited = new BitSet();
+        BitGrid result = new BitGrid(grid.width, grid.height, grid.boxed);
+
         stack = new int[stackSize];
-        int count = 0;
         push(initX, initY);
         while (true)
         {
             int position = pop();
             if (position == -1)
             {
-                return count;
+                return result;
             }
             visited.set(position);
             if (grid.hit(position, color))
@@ -131,7 +132,7 @@ public class ArrayGridFiller<T>
                     consumer.fill(x, y, color);
                 }
                 strategy.apply(x, y, color, this);
-                count++;
+                result.setColor(position, true);
             }
         }
     }

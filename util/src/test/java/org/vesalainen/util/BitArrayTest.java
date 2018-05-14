@@ -72,4 +72,11 @@ public class BitArrayTest
         ba2.set(6, 4, true);
         assertTrue(ba1.and(ba2));
     }
+    @Test
+    public void testForEach()
+    {
+        BitArray ba1 = new BitArray(20);
+        ba1.set(3, 4, true);
+        assertEquals(18, ba1.stream().sum());
+    }
 }

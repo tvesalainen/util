@@ -17,6 +17,8 @@
 package org.vesalainen.util;
 
 import java.util.Arrays;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
 
 /**
  *
@@ -132,11 +134,17 @@ public class BitArray
      */
     public int first()
     {
-        for (int ii=0;ii<bits;ii++)
+        for (int ii=0;ii<array.length;ii++)
         {
-            if (isSet(ii))
+            if (array[ii] != 0)
             {
-                return ii;
+                for (int jj=ii*8;jj<bits;jj++)
+                {
+                    if (isSet(jj))
+                    {
+                        return jj;
+                    }
+                }
             }
         }
         return -1;
@@ -147,14 +155,67 @@ public class BitArray
      */
     public int last()
     {
+        for (int ii=array.length-1;ii>=0;ii--)
+        {
+            if (array[ii] != 0)
+            {
+                for (int jj=Math.min(bits,(ii+1)*8)-1;jj>=0;jj--)
+                {
+                    if (isSet(jj))
+                    {
+                        return jj;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+    /**
+     * For each set bet index.
+     * @param consumer 
+     */
+    public void forEach(IntConsumer consumer)
+    {
+        for (int ii=0;ii<array.length;ii++)
+        {
+            if (array[ii] != 0)
+            {
+                int lim = Math.min(bits, (ii+1)*8);
+                for (int jj=ii*8;jj<lim;jj++)
+                {
+                    if (isSet(jj))
+                    {
+                        consumer.accept(jj);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Returns set bit indexes as stream
+     * @return 
+     */
+    public IntStream stream()
+    {
+        IntStream.Builder builder = IntStream.builder();
+        forEach(builder);
+        return builder.build();
+    }
+    /**
+     * Returns number of set bits
+     * @return 
+     */
+    public int count()
+    {
+        int count = 0;
         for (int ii=bits-1;ii>=0;ii--)
         {
             if (isSet(ii))
             {
-                return ii;
+                count++;
             }
         }
-        return -1;
+        return count;
     }
     /**
      * Returns true if bit in this and other is set in any same index.
