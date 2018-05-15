@@ -111,7 +111,7 @@ public class ArrayGridFiller<T>
     public BitGrid fill(int initX, int initY, T color)
     {
         visited = new BitSet();
-        BitGrid result = new BitGrid(grid.width, grid.height, grid.boxed);
+        BitGrid result = new BitGrid(grid.width, grid.height, grid.offset, grid.boxed);
 
         stack = new int[stackSize];
         push(initX, initY);

@@ -29,12 +29,12 @@ public class BitGrid extends SimpleArrayGrid<Boolean>
     
     public BitGrid(int width, int heigth)
     {
-        this(width, heigth, false);
+        this(width, heigth, 0, false);
     }
 
-    public BitGrid(int width, int heigth, boolean boxed)
+    public BitGrid(int width, int heigth, int offset, boolean boxed)
     {
-        super(width, heigth, boxed);
+        super(width, heigth, offset, boxed);
         bits = new BitArray(length);
     }
 
