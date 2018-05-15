@@ -47,7 +47,7 @@ public abstract class AbstractArrayGrid<T> implements Grid<T>
      * @param width
      * @return
      */
-    public abstract SimpleArrayGrid view(int offset, int width);
+    public abstract AbstractArrayGrid view(int offset, int width);
     
     @Override
     public boolean hit(int x, int y, T color)
