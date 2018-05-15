@@ -37,13 +37,13 @@ public class SimpleArrayGrid<T> extends AbstractArrayGrid<T>
         this(array, width, array.length/width, 0, array.length, boxed);
     }
 
-    public SimpleArrayGrid(int width, int heigth)
+    public SimpleArrayGrid(int width, int heigth, int offset)
     {
-        this(width, heigth, false);
+        this(width, heigth, offset, false);
     }
-    public SimpleArrayGrid(int width, int heigth, boolean boxed)
+    public SimpleArrayGrid(int width, int heigth, int offset, boolean boxed)
     {
-        this(null, width, heigth, 0, width*heigth, boxed);
+        this(null, width, heigth, offset, width*heigth, boxed);
     }
 
     public SimpleArrayGrid(T[] array, int width, int height, int offset, int length, boolean boxed)
