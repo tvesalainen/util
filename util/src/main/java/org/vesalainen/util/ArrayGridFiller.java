@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class ArrayGridFiller<T>
 {
-    protected SimpleArrayGrid<T> grid;
+    protected AbstractArrayGrid<T> grid;
     protected int stackSize;
     protected Strategy strategy;
     protected BitSet visited;
@@ -37,7 +37,7 @@ public class ArrayGridFiller<T>
     protected int stackPtr;
     protected List<FillConsumer> consumers = new ArrayList<>();
     
-    public ArrayGridFiller(SimpleArrayGrid<T> grid, Strategy strategy)
+    public ArrayGridFiller(AbstractArrayGrid<T> grid, Strategy strategy)
     {
         this.grid = grid;
         this.stackSize = 2*(grid.width()+grid.height());
