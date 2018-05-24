@@ -25,7 +25,7 @@ import org.vesalainen.util.navi.Location;
  */
 public class LocationParser
 {
-    private static final CoordinatesParser<Location> parser = CoordinatesParser.getInstance((wp, lat, lon)->new Location(lat, lon));
+    private static final CoordinatesParser<Location> parser = CoordinatesParser.getInstance((lat, lon)->new Location(lat, lon));
     
     public static final Location parse(String text)
     {

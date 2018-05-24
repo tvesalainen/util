@@ -17,6 +17,7 @@
 package org.vesalainen.ham.hffax;
 
 import java.awt.Color;
+import static java.awt.Color.*;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -25,16 +26,17 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.BitSet;
 import javax.sound.sampled.AudioFormat;
 import org.vesalainen.ham.SampleBuffer;
 import org.vesalainen.ham.SampleBufferImpl;
 import org.vesalainen.ham.fft.FFT;
 import org.vesalainen.ham.filter.BooleanConvolution;
 import org.vesalainen.ham.hffax.ui.FaxViewer;
+import org.vesalainen.ham.hffax.ui.ImageGrid;
 import org.vesalainen.ham.riff.RIFFFile;
 import org.vesalainen.ham.riff.WaveFile;
+import org.vesalainen.util.ArrayGridFiller;
+import org.vesalainen.util.BitGrid;
 
 /**
  *
@@ -55,14 +57,13 @@ public class FaxDecoder
     private ByteBuffer data;
     private final AudioFormat audioFormat;
     private int lineCount;
-    private float[] grid;
     private BufferedImage image;
     private Graphics2D graphics;
     private Rectangle bounds;
     private FaxViewer faxViewer;
     private WritableRaster raster;
-    private int gridSize;
     private int n;
+    private FFTGrid grid;
 
     public FaxDecoder(int lpm, int ioc, Path in, Path out) throws IOException
     {
@@ -73,9 +74,9 @@ public class FaxDecoder
         data = wave.getData();
         audioFormat = wave.getAudioFormat();
         sampleRate = (int) audioFormat.getSampleRate();
-        init(60*sampleRate/lpm);
+        init(0, 60*sampleRate/lpm);
     }
-    private void init(int samplesPerLine)
+    private void init(int offset, int samplesPerLine)
     {
         this.samplesPerLine = samplesPerLine;
         n = 1;
@@ -88,19 +89,8 @@ public class FaxDecoder
         int view = samplesPerLine/pixelsPerLine;
         this.buffer = new SampleBufferImpl(audioFormat, data, view);
         this.lineCount = buffer.getSampleCount()/samplesPerLine;
-        gridSize = pixelsPerLine*lineCount;
-        if (grid == null || grid.length < gridSize)
-        {
-            this.grid = new float[gridSize];
-        }
-        Arrays.fill(grid, Float.NaN);
-        image = new BufferedImage(pixelsPerLine, lineCount, TYPE_BYTE_BINARY);
-        graphics = image.createGraphics();
-        graphics.setBackground(Color.WHITE);
-        graphics.setColor(Color.BLACK);
-        bounds = graphics.getDeviceConfiguration().getBounds();
-        graphics.clearRect(0, 0, bounds.width, bounds.height);
-        raster = image.getRaster();
+        grid = new FFTGrid(pixelsPerLine, lineCount, offset);
+        image = grid.getImage();
         if (faxViewer == null)
         {
             faxViewer = new FaxViewer(image);
@@ -112,115 +102,52 @@ public class FaxDecoder
     }
     void parse()
     {
-        int offset = startBar();
-        data.position(offset*n*audioFormat.getFrameSize());
+        //int offset = startBar();
+        //data.position(offset*n*audioFormat.getFrameSize());
         data = data.slice();
-        init(samplesPerLine);
-        //int count = fill(pixelsPerLine/2, 5, Color.BLACK);
-        render();
+        init(0, samplesPerLine);
         faxViewer.repaint();
+        findBlackBar();
     }
-    private int startBar()
+    private void findBlackBar()
     {
-        boolean[] coef = new boolean[pixelsPerLine];
-        int lim = (int) Math.round((1.0-RATIO)*pixelsPerLine);
-        for (int ii=lim;ii<pixelsPerLine;ii++)
+        ArrayGridFiller<Boolean> filler = new ArrayGridFiller<>(grid, ArrayGridFiller::roundedSquare);
+        int halfLine = pixelsPerLine/2;
+        BitGrid bg = null;
+        for (int ll=0;ll<100;ll++)
         {
-            coef[ii] = true;
-        }
-        BooleanConvolution conv = new BooleanConvolution(coef);
-        for (int ii=0;ii<pixelsPerLine;ii++)
-        {
-            int y = line(ii);
-            int x = column(ii);
-            boolean b = isBlack(ii);
-            conv.conv(b);
-        }
-        int minErrors = pixelsPerLine;
-        int pos = 0;
-        for (int ii=pixelsPerLine;ii<100*pixelsPerLine;ii++)
-        {
-            int y = line(ii);
-            int x = column(ii);
-            boolean b = isBlack(ii);
-            int errors = conv.conv(b);
-            if (errors < minErrors)
+            bg = filler.fill(0, ll, true);
+            Rectangle bounds = bg.patternBounds();
+            if (bounds.getWidth() > halfLine)
             {
-                minErrors = errors;
-                pos = ii;
+                break;
             }
-        }
-        return pos;
-    }
-    private void render()
-    {
-        for (int ii=0;ii<100000;ii++)
-        {
-            int y = line(ii);
-            int x = column(ii);
-            if (isBlack(ii))
+            bg = filler.fill(halfLine, ll, true);
+            bounds = bg.patternBounds();
+            if (bounds.getWidth() > halfLine)
             {
-                raster.setSample(x, y, 0, 0);
+                break;
             }
         }
     }
-    private int line(int position)
+    private class FFTGrid extends ImageGrid
     {
-        return position/pixelsPerLine;
-    }
-    private int column(int position)
-    {
-        return position%pixelsPerLine;
-    }
-    private int position(int x, int y)
-    {
-        return y*pixelsPerLine+x;
-    }
-    private boolean isBlack(int position)
-    {
-        float ratio = ratio(position);
-        if (ratio < 0.5)
+        private int offset;
+        
+        public FFTGrid(int width, int height, int offset)
         {
-            return false;
+            super(width, height);
+            this.offset = offset;
+            int count = width*height;
+            for (int ii=0;ii<count;ii++)
+            {
+                buffer.goTo(ii*n+offset);
+                fft.forward(buffer, 0);
+                double black = fft.getMagnitude(sampleRate, 1500);
+                double white = fft.getMagnitude(sampleRate, 2300);
+                setColor(ii, black > white);
+            }
         }
-        else
-        {
-            int x = column(position);
-            int y = line(position);
-            raster.setSample(x, y, 0, 0);
-            return true;
-        }
-    }
-    private Color color(int x, int y)
-    {
-        return color(position(x, y));
-    }
-    private Color color(int position)
-    {
-        float ratio = ratio(position);
-        if (ratio < 0.5)
-        {
-            return Color.WHITE;
-        }
-        else
-        {
-            return Color.BLACK;
-        }
-    }
-    private float ratio(int x, int y)
-    {
-        return ratio(position(x, y));
-    }
-    private float ratio(int position)
-    {
-        if (Float.isNaN(grid[position]))
-        {
-            buffer.goTo(position*n);
-            fft.forward(buffer, 0);
-            double black = fft.getMagnitude(sampleRate, 1500);
-            double white = fft.getMagnitude(sampleRate, 2300);
-            grid[position] = (float) (black/white);
-        }
-        return grid[position];
+
     }
 }

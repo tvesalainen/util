@@ -42,8 +42,8 @@ public class FaxDecoderTest
     {
         try
         {
-            //Path in = Paths.get("src\\test\\resources\\wefax1.wav");
-            Path in = Paths.get("c:\\tmp\\J3C_06_21_38.wav");
+            Path in = Paths.get("src\\test\\resources\\wefax2.wav");
+            //Path in = Paths.get("c:\\tmp\\J3C_06_21_38.wav");
             FaxDecoder decoder = new FaxDecoder(120, 576, in, Paths.get("c:\\tmp\\decoded.png"));
             decoder.parse();
             Thread.sleep(Long.MAX_VALUE);
