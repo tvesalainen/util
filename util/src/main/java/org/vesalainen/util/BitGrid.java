@@ -16,7 +16,16 @@
  */
 package org.vesalainen.util;
 
+import java.awt.Color;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import static java.awt.image.DataBuffer.TYPE_BYTE;
+import java.awt.image.IndexColorModel;
+import java.awt.image.PackedColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import org.vesalainen.math.Rect;
 
 /**

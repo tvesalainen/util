@@ -17,6 +17,8 @@
 package org.vesalainen.util;
 
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import static java.awt.image.BufferedImage.TYPE_BYTE_BINARY;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.Point;
@@ -58,5 +60,4 @@ public class BitGridTest
         assertTrue(bg.patternOverflow());
         assertEquals(1.0, bg.patternLineCoverage(), 1e-6);
     }
-
 }

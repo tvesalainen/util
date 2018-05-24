@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.awt.image.WritableRaster;
 import java.lang.reflect.Array;
 
 /**
