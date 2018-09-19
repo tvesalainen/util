@@ -34,7 +34,7 @@ public class SimpleArrayGridTest
     @Test
     public void testLine()
     {
-        SimpleArrayGrid<Color> ag = new SimpleArrayGrid<>(5, 8);
+        SimpleArrayGrid<Color> ag = new SimpleArrayGrid<>(5, 8, 0);
         ag.line(1, 1, 8, Color.yellow);
         assertEquals(Color.yellow, ag.getColor(1, 1));
         assertEquals(Color.yellow, ag.getColor(3, 2));
