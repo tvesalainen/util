@@ -59,7 +59,7 @@ public class SymmetricDifferenceMatcher<I,T>
 
     private SymmetricDifferenceMatcher(MapSet<I, T> mapSet, MapSet<T, I> reverseMap)
     {
-        this.mapSet = new HashMapSet<>();
+        this.mapSet = mapSet;
         this.reverseMap = reverseMap;
         unresolved = Collections.EMPTY_SET;
     }
