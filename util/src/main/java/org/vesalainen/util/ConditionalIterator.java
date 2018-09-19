@@ -43,17 +43,23 @@ public class ConditionalIterator<T> implements Iterator<T>
         {
             return true;
         }
-        while (iterator.hasNext())
+        try
         {
-            next = iterator.next();
-            if (predicate.test(next))
+            while (iterator.hasNext())
             {
-                return true;
+                next = iterator.next();
+                if (predicate.test(next))
+                {
+                    return true;
+                }
+                else
+                {
+                    next = null;
+                }
             }
-            else
-            {
-                next = null;
-            }
+        }
+        catch (NoSuchElementException ex)
+        {
         }
         return false;
     }
