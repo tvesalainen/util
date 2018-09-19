@@ -43,7 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <xsd:element name="socketHandler" type="socketHandlerType" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="level" type="xsd:string" default="INFO"/>
+        <xsd:attribute name="level" type="xsd:string"/>
         <xsd:attribute name="useParentHandlers" type="xsd:string" default="true"/>
         <xsd:attribute name="resourceBundle" type="xsd:string"/>
         <xsd:attribute name="locale" type="xsd:string"/>
@@ -94,7 +94,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="handlerType">
-        <xsd:attribute name="level" type="xsd:string" default="INFO"/>
+        <xsd:attribute name="level" type="xsd:string"/>
         <xsd:attribute name="formatter" type="xsd:string"/>
         <xsd:attribute name="filter" type="xsd:string"/>
         <xsd:attribute name="errorManager" type="xsd:string" default="java.util.logging.ErrorManager"/>
