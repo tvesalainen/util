@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -73,7 +74,14 @@ public class RepeatingIterator<T> implements Iterator<T>
                 }
                 for (int ii=0;ii<idx;ii++)
                 {
-                    iterator.next();
+                    if (iterator.hasNext())
+                    {
+                        iterator.next();
+                    }
+                    else
+                    {
+                        throw new ConcurrentModificationException();
+                    }
                 }
             }
         }
