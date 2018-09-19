@@ -243,10 +243,11 @@ public class JavaLogging extends BaseLogging
                 String name = ep.replace(loggerType.getName());
                 JavaLogging javaLogging = getLogger(name);
                 Logger logger = javaLogging.getLogger();
-                String level = ep.replace(loggerType.getLevel());
+                String lev = ep.replace(loggerType.getLevel());
+                Level level = lev != null ? BaseLogging.parseLevel(lev) : null;
                 if (level != null)
                 {
-                    logger.setLevel(BaseLogging.parseLevel(level));
+                    logger.setLevel(level);
                 }
                 logger.setUseParentHandlers(parseBoolean(ep.replace(loggerType.getUseParentHandlers())));
                 String resourceBundleString = ep.replace(loggerType.getResourceBundle());
@@ -268,19 +269,19 @@ public class JavaLogging extends BaseLogging
                 logger.setFilter(getInstance(ep.replace(loggerType.getFilter())));
                 for (ConsoleHandlerType consoleHandlerType : loggerType.getConsoleHandler())
                 {
-                    logger.addHandler(createConsoleHandler(ep, consoleHandlerType));
+                    logger.addHandler(createConsoleHandler(ep, consoleHandlerType, level));
                 }
                 for (FileHandlerType fileHandlerType : loggerType.getFileHandler())
                 {
-                    logger.addHandler(createFileHandler(ep, fileHandlerType));
+                    logger.addHandler(createFileHandler(ep, fileHandlerType, level));
                 }
                 for (MemoryHandlerType memoryHandlerType : loggerType.getMemoryHandler())
                 {
-                    logger.addHandler(createMemoryHandler(ep, memoryHandlerType));
+                    logger.addHandler(createMemoryHandler(ep, memoryHandlerType, level));
                 }
                 for (SocketHandlerType socketHandlerType : loggerType.getSocketHandler())
                 {
-                    logger.addHandler(createSocketHandler(ep, socketHandlerType));
+                    logger.addHandler(createSocketHandler(ep, socketHandlerType, level));
                 }
             }
         }
@@ -289,7 +290,7 @@ public class JavaLogging extends BaseLogging
             throw new RuntimeException(ex);
         }
     }
-    private static Handler createMemoryHandler(ExpressionParser ep, MemoryHandlerType memoryHandlerType) throws IOException
+    private static Handler createMemoryHandler(ExpressionParser ep, MemoryHandlerType memoryHandlerType, Level defLevel) throws IOException
     {
         Handler handler = null;
         MemoryHandlerType.Target target = memoryHandlerType.getTarget();
@@ -298,28 +299,28 @@ public class JavaLogging extends BaseLogging
             ConsoleHandlerType consoleHandlerType = target.getConsoleHandler();
             if (consoleHandlerType != null)
             {
-                handler = createConsoleHandler(ep, consoleHandlerType);
+                handler = createConsoleHandler(ep, consoleHandlerType, defLevel);
             }
             else
             {
                 FileHandlerType fileHandlerType = target.getFileHandler();
                 if (fileHandlerType != null)
                 {
-                    handler = createFileHandler(ep, fileHandlerType);
+                    handler = createFileHandler(ep, fileHandlerType, defLevel);
                 }
                 else
                 {
                     MemoryHandlerType memHandlerType = target.getMemoryHandler();
                     if (memHandlerType != null)
                     {
-                        handler = createMemoryHandler(ep, memoryHandlerType);
+                        handler = createMemoryHandler(ep, memoryHandlerType, defLevel);
                     }
                     else
                     {
                         SocketHandlerType socketHandlerType = target.getSocketHandler();
                         if (socketHandlerType != null)
                         {
-                            handler = createSocketHandler(ep, socketHandlerType);
+                            handler = createSocketHandler(ep, socketHandlerType, defLevel);
                         }
                     }
                 }
@@ -329,36 +330,36 @@ public class JavaLogging extends BaseLogging
                 handler, 
                 Integer.parseInt(ep.replace(memoryHandlerType.getSize())), 
                 BaseLogging.parseLevel(ep.replace(memoryHandlerType.getPushLevel())));
-        populateHandler(ep, memoryHandlerType, memoryHandler);
+        populateHandler(ep, memoryHandlerType, memoryHandler, defLevel);
         return memoryHandler;
     }
-    private static Handler createSocketHandler(ExpressionParser ep, SocketHandlerType socketHandlerType) throws IOException
+    private static Handler createSocketHandler(ExpressionParser ep, SocketHandlerType socketHandlerType, Level defLevel) throws IOException
     {
         SocketHandler socketHandler = new SocketHandler(
                 ep.replace(socketHandlerType.getHost()), 
                 Integer.parseInt(ep.replace(socketHandlerType.getPort())));
-        populateHandler(ep, socketHandlerType, socketHandler);
+        populateHandler(ep, socketHandlerType, socketHandler, defLevel);
         return socketHandler;
     }
-    private static Handler createFileHandler(ExpressionParser ep, FileHandlerType fileHandlerType) throws IOException
+    private static Handler createFileHandler(ExpressionParser ep, FileHandlerType fileHandlerType, Level defLevel) throws IOException
     {
         FileHandler fileHandler = new FileHandler(
                 ep.replace(fileHandlerType.getPattern()), 
                 Integer.parseInt(ep.replace(fileHandlerType.getLimit())), 
                 Integer.parseInt(ep.replace(fileHandlerType.getCount())), 
                 parseBoolean(ep.replace(fileHandlerType.getAppend())));
-        populateHandler(ep, fileHandlerType, fileHandler);
+        populateHandler(ep, fileHandlerType, fileHandler, defLevel);
         return fileHandler;
     }
 
-    private static Handler createConsoleHandler(ExpressionParser ep, ConsoleHandlerType consoleHandlerType)
+    private static Handler createConsoleHandler(ExpressionParser ep, ConsoleHandlerType consoleHandlerType, Level defLevel)
     {
         ConsoleHandler consoleHandler = new ConsoleHandler();
-        populateHandler(ep, consoleHandlerType, consoleHandler);
+        populateHandler(ep, consoleHandlerType, consoleHandler, defLevel);
         return consoleHandler;
     }
 
-    private static void populateHandler(ExpressionParser ep, HandlerType handlerType, Handler handler)
+    private static void populateHandler(ExpressionParser ep, HandlerType handlerType, Handler handler, Level defLevel)
     {
         try
         {
@@ -370,6 +371,13 @@ public class JavaLogging extends BaseLogging
             if (level != null)
             {
                 handler.setLevel(BaseLogging.parseLevel(level));
+            }
+            else
+            {
+                if (defLevel != null)
+                {
+                    handler.setLevel(defLevel);
+                }
             }
         }
         catch (SecurityException | UnsupportedEncodingException ex)
