@@ -105,10 +105,6 @@ public enum UnitType
      */
     NM(UnitCategory.Length, 1852.0, "NM"),
     /**
-     * Miles/hour
-     */
-    MH(UnitCategory.Speed, 0.44704, "Miles/h"),
-    /**
      * Knot
      */
     Knot(UnitCategory.Speed, 0.514444, "Knots"),
@@ -120,6 +116,10 @@ public enum UnitType
      * Km/h
      */
     KMH(UnitCategory.Speed, 0.277778, "Km/h"),
+    /**
+     * Miles/hour
+     */
+    MH(UnitCategory.Speed, 0.44704, "Miles/h"),
     /**
      * Beaufort
      */
