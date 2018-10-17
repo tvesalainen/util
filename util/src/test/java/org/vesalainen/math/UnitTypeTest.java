@@ -106,4 +106,10 @@ public class UnitTypeTest
         assertEquals(160, UnitType.DegreeNeg.convertTo(160, UnitType.Degree), Epsilon);
         assertEquals(-90, UnitType.Degree.convertTo(270, UnitType.DegreeNeg), Epsilon);
     }
+    @Test
+    public void testSpeed()
+    {
+        assertEquals(1.852, UnitType.Knot.convertTo(1, UnitType.KMH), 1e-3);
+        assertEquals(3.3, UnitType.KMH.convertTo(6.1, UnitType.Knot), 1e-1);
+    }
 }
