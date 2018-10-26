@@ -19,11 +19,13 @@ package org.vesalainen.util;
 import java.time.Clock;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -80,12 +82,12 @@ public class TimeToLiveSet<T> implements Iterable<T>
     /**
      * 
      * @param item
-     * @param defaultTimeout
+     * @param timeout
      * @param unit 
      */
-    public void refresh(T item, long defaultTimeout, TimeUnit unit)
+    public void refresh(T item, long timeout, TimeUnit unit)
     {
-        map.put(item, clock.millis() + unit.toMillis(defaultTimeout));
+        map.put(item, clock.millis() + unit.toMillis(timeout));
     }
     /**
      * Return true if item has not expired
@@ -113,7 +115,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
         return false;
     }
     /**
-     * Return true is there are no refresh items.
+     * Return true is there are no fresh items.
      * <p>Note that this method goes through all items
      * @return 
      */
@@ -122,7 +124,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
         return size() == 0;
     }
     /**
-     * Returns current count of refresh items.
+     * Returns current count of fresh items.
      * <p>Note that this method goes through all items
      * @return 
      */
@@ -131,7 +133,15 @@ public class TimeToLiveSet<T> implements Iterable<T>
         return stream().count();
     }
     /**
-     * Return stream of refresh items
+     * Returns current set of fresh items
+     * @return 
+     */
+    public Set<T> set()
+    {
+        return stream().collect(Collectors.toSet());
+    }
+    /**
+     * Return stream of fresh items
      * <p>Items can become stale while processing.
      * @return 
      */
@@ -140,7 +150,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
         return StreamSupport.stream(new SpliteratorImpl(), false);
     }
     /**
-     * Returns stream of refresh items
+     * Returns stream of fresh items
      * <p>Items can become stale while processing.
      * @return 
      */
@@ -150,7 +160,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
         return new SpliteratorImpl();
     }
     /**
-     * Return iterator of refresh items
+     * Return iterator of fresh items
      * <p>Items can become stale while processing.
      * @return 
      */

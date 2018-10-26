@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -47,6 +48,10 @@ public class TimeToLiveSetTest
         ttls.refresh("zxc", 3, TimeUnit.SECONDS);
         assertEquals(2, ttls.size());
         assertTrue(ttls.isAlive("zxc"));
+        Set<String> set = ttls.set();
+        assertEquals(2, set.size());
+        assertTrue(set.contains("abc"));
+        assertTrue(set.contains("zxc"));
         clock = Clock.offset(clock, Duration.ofSeconds(2));
         ttls.setClock(clock);
         assertFalse(ttls.isAlive("abc"));
