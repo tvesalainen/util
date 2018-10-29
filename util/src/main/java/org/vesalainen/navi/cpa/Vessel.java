@@ -42,6 +42,7 @@ public class Vessel
     protected double centerLatitude = Double.NaN;
     protected double centerLongitude = Double.NaN;
     protected double radius = Double.NaN;
+    protected boolean calculated;
     /**
      * Updates values and calculates speed and bearing. After that calculates other
      * data.
@@ -63,7 +64,7 @@ public class Vessel
             this.speed = speed(prevTime, prevLatitude, prevLongitude, time, latitude, longitude);
             this.bearing = bearing(prevLatitude, prevLongitude, latitude, longitude);
             this.rateOfTurn = rateOfTurn;
-            calc();
+            calculated = false;
         }
         prevTime = time;
         prevLatitude = latitude;
@@ -90,25 +91,33 @@ public class Vessel
         this.speed = speed;
         this.bearing = bearing;
         this.rateOfTurn = rateOfTurn;
-        calc();
+        calculated = false;
     }
 
     private void calc()
     {
-        double arot = Math.abs(rateOfTurn);
-        if (arot > 0)
+        if (Double.isNaN(bearing))
         {
-            double hoursForFullCircle = (360 / arot)/60;
-            radius = speed*hoursForFullCircle/Pi2;
-            double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
-            centerLatitude = latitude+deltaLatitude(radius, b);
-            centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
+            throw new IllegalStateException("not updated");
         }
-        else
+        if (!calculated)
         {
-            radius = Double.NaN;
-            centerLatitude = Double.NaN;
-            centerLongitude = Double.NaN;
+            double arot = Math.abs(rateOfTurn);
+            if (arot > 0)
+            {
+                double hoursForFullCircle = (360 / arot)/60;
+                radius = speed*hoursForFullCircle/Pi2;
+                double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
+                centerLatitude = latitude+deltaLatitude(radius, b);
+                centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
+            }
+            else
+            {
+                radius = Double.NaN;
+                centerLatitude = Double.NaN;
+                centerLongitude = Double.NaN;
+            }
+            calculated = true;
         }
     }
     public static final double estimatedDistance(Vessel v1, Vessel v2, long et)
@@ -127,7 +136,7 @@ public class Vessel
      */
     public final double estimatedLatitude(long et)
     {
-        checkState();
+        calc();
         if (rateOfTurn == 0)
         {
             double dist = calcDist(et);
@@ -146,7 +155,7 @@ public class Vessel
      */
     public final double estimatedLongitude(long et)
     {
-        checkState();
+        calc();
         if (rateOfTurn == 0)
         {
             double dist = calcDist(et);
@@ -176,25 +185,21 @@ public class Vessel
         double dm = (et-time)/60000.0;
         return normalizeAngle(bearing-90*Math.signum(rateOfTurn)+rateOfTurn*dm);
     }
-    private void checkState()
-    {
-        if (Double.isNaN(bearing))
-        {
-            throw new IllegalStateException("not updated");
-        }
-    }
     public double getRadius()
     {
+        calc();
         return radius;
     }
 
     public double getCenterLatitude()
     {
+        calc();
         return centerLatitude;
     }
 
     public double getCenterLongitude()
     {
+        calc();
         return centerLongitude;
     }
     
