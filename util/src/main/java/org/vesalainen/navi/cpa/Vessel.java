@@ -16,7 +16,9 @@
  */
 package org.vesalainen.navi.cpa;
 
+import java.util.concurrent.locks.ReentrantLock;
 import static org.vesalainen.navi.Navis.*;
+import org.vesalainen.util.navi.Location;
 
 /**
  * A base class for calculating collision point of two vessels that are possibly
@@ -43,6 +45,9 @@ public class Vessel
     protected double centerLongitude = Double.NaN;
     protected double radius = Double.NaN;
     protected boolean calculated;
+    protected ReentrantLock lock = new ReentrantLock();
+    protected enum Strategy { NONE, SHORT, LONG };
+    protected Strategy strat = Strategy.NONE;
     /**
      * Updates values and calculates speed and bearing. After that calculates other
      * data.
@@ -56,19 +61,32 @@ public class Vessel
      */
     public void update(long time, double latitude, double longitude, double rateOfTurn)
     {
-        if (prevTime > 0)
+        if (strat == Strategy.LONG)
         {
-            this.time = time;
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.speed = speed(prevTime, prevLatitude, prevLongitude, time, latitude, longitude);
-            this.bearing = bearing(prevLatitude, prevLongitude, latitude, longitude);
-            this.rateOfTurn = rateOfTurn;
-            calculated = false;
+            throw new IllegalStateException("mixing short/long update");
         }
-        prevTime = time;
-        prevLatitude = latitude;
-        prevLongitude = longitude;
+        strat = Strategy.SHORT;
+        lock.lock();
+        try
+        {
+            if (prevTime > 0)
+            {
+                this.time = time;
+                this.latitude = latitude;
+                this.longitude = longitude;
+                this.speed = speed(prevTime, prevLatitude, prevLongitude, time, latitude, longitude);
+                this.bearing = bearing(prevLatitude, prevLongitude, latitude, longitude);
+                this.rateOfTurn = rateOfTurn;
+                calculated = false;
+            }
+            prevTime = time;
+            prevLatitude = latitude;
+            prevLongitude = longitude;
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
     /**
      * Updates values. After that calculates other
@@ -85,49 +103,65 @@ public class Vessel
      */
     public void update(long time, double latitude, double longitude, double speed, double bearing, double rateOfTurn)
     {
-        this.time = time;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.speed = speed;
-        this.bearing = bearing;
-        this.rateOfTurn = rateOfTurn;
-        calculated = false;
+        if (strat == Strategy.SHORT)
+        {
+            throw new IllegalStateException("mixing short/long update");
+        }
+        strat = Strategy.LONG;
+        lock.lock();
+        try
+        {
+            this.time = time;
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.speed = speed;
+            this.bearing = bearing;
+            this.rateOfTurn = rateOfTurn;
+            calculated = false;
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     private void calc()
     {
-        if (Double.isNaN(bearing))
+        lock.lock();
+        try
         {
-            throw new IllegalStateException("not updated");
+            if (Double.isNaN(bearing))
+            {
+                throw new IllegalStateException("not updated");
+            }
+            if (!calculated)
+            {
+                double arot = Math.abs(rateOfTurn);
+                if (arot > 0)
+                {
+                    double hoursForFullCircle = (360 / arot)/60;
+                    radius = speed*hoursForFullCircle/Pi2;
+                    double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
+                    centerLatitude = latitude+deltaLatitude(radius, b);
+                    centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
+                }
+                else
+                {
+                    radius = Double.NaN;
+                    centerLatitude = Double.NaN;
+                    centerLongitude = Double.NaN;
+                }
+                calculated = true;
+            }
         }
-        if (!calculated)
+        finally
         {
-            double arot = Math.abs(rateOfTurn);
-            if (arot > 0)
-            {
-                double hoursForFullCircle = (360 / arot)/60;
-                radius = speed*hoursForFullCircle/Pi2;
-                double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
-                centerLatitude = latitude+deltaLatitude(radius, b);
-                centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
-            }
-            else
-            {
-                radius = Double.NaN;
-                centerLatitude = Double.NaN;
-                centerLongitude = Double.NaN;
-            }
-            calculated = true;
+            lock.unlock();
         }
     }
     public static final double estimatedDistance(Vessel v1, Vessel v2, long et)
     {
-        return distance(
-                v1.estimatedLatitude(et),
-                v1.estimatedLongitude(et),
-                v2.estimatedLatitude(et),
-                v2.estimatedLongitude(et)
-        );
+        return v1.estimatedLocation(et).distance(v2.estimatedLocation(et)).getMiles();
     }
     /**
      * Returns estimated latitude at et
@@ -136,16 +170,24 @@ public class Vessel
      */
     public final double estimatedLatitude(long et)
     {
-        calc();
-        if (rateOfTurn == 0)
+        lock.lock();
+        try
         {
-            double dist = calcDist(et);
-            return latitude+deltaLatitude(dist, bearing);
+            calc();
+            if (rateOfTurn == 0)
+            {
+                double dist = calcDist(et);
+                return latitude+deltaLatitude(dist, bearing);
+            }
+            else
+            {
+                double deg = calcDeg(et);
+                return centerLatitude+deltaLatitude(radius, deg);
+            }
         }
-        else
+        finally
         {
-            double deg = calcDeg(et);
-            return centerLatitude+deltaLatitude(radius, deg);
+            lock.unlock();
         }
     }
     /**
@@ -155,16 +197,41 @@ public class Vessel
      */
     public final double estimatedLongitude(long et)
     {
-        calc();
-        if (rateOfTurn == 0)
+        lock.lock();
+        try
         {
-            double dist = calcDist(et);
-            return addLongitude(longitude, deltaLongitude(latitude, dist, bearing));
+            calc();
+            if (rateOfTurn == 0)
+            {
+                double dist = calcDist(et);
+                return addLongitude(longitude, deltaLongitude(latitude, dist, bearing));
+            }
+            else
+            {
+                double deg = calcDeg(et);
+                return addLongitude(centerLongitude, deltaLongitude(latitude, radius, deg));
+            }
         }
-        else
+        finally
         {
-            double deg = calcDeg(et);
-            return addLongitude(centerLongitude, deltaLongitude(latitude, radius, deg));
+            lock.unlock();
+        }
+    }
+    /**
+     * Using this method protects from parallel updates
+     * @param et Estimated time
+     * @return 
+     */
+    public final Location estimatedLocation(long et)
+    {
+        lock.lock();
+        try
+        {
+            return new Location(estimatedLatitude(et), estimatedLongitude(et));
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
     private double calcDist(long et)
