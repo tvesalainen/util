@@ -51,17 +51,18 @@ public class IntMap<K> extends AbstractPrimitiveMap<K,IntReference> implements S
      * @param key
      * @param value 
      */
-    public void put(K key, int value)
+    public IntReference put(K key, int value)
     {
         IntReference w = map.get(key);
         if (w == null)
         {
             w = new IntReference(value);
-            map.put(key, w);
+            return map.put(key, w);
         }
         else
         {
             w.value = value;
+            return null;
         }
     }
     /**

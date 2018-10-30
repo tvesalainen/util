@@ -50,18 +50,20 @@ public class LongMap<K> extends AbstractPrimitiveMap<K,LongReference> implements
      * Associates value to key
      * @param key
      * @param value 
+     * @return  
      */
-    public void put(K key, long value)
+    public LongReference put(K key, long value)
     {
         LongReference w = map.get(key);
         if (w == null)
         {
             w = new LongReference(value);
-            map.put(key, w);
+            return map.put(key, w);
         }
         else
         {
             w.value = value;
+            return null;
         }
     }
     /**

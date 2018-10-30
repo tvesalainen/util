@@ -51,17 +51,18 @@ public class DoubleMap<K> extends AbstractPrimitiveMap<K,DoubleReference> implem
      * @param key
      * @param value 
      */
-    public void put(K key, double value)
+    public DoubleReference put(K key, double value)
     {
         DoubleReference w = map.get(key);
         if (w == null)
         {
             w = new DoubleReference(value);
-            map.put(key, w);
+            return map.put(key, w);
         }
         else
         {
             w.value = value;
+            return null;
         }
     }
     /**

@@ -39,17 +39,18 @@ public class FloatMap<K> extends AbstractPrimitiveMap<K,FloatReference> implemen
      * @param key
      * @param value 
      */
-    public void put(K key, float value)
+    public FloatReference put(K key, float value)
     {
         FloatReference w = map.get(key);
         if (w == null)
         {
             w = new FloatReference(value);
-            map.put(key, w);
+            return map.put(key, w);
         }
         else
         {
             w.value = value;
+            return null;
         }
     }
     /**

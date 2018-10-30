@@ -17,15 +17,15 @@
 package org.vesalainen.util;
 
 import java.time.Clock;
+import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -36,11 +36,12 @@ import java.util.stream.StreamSupport;
  * @param <T>
  * @see java.util.concurrent.ConcurrentHashMap
  */
-public class TimeToLiveSet<T> implements Iterable<T>
+public class TimeToLiveSet<T> extends AbstractSet<T>
 {
     private LongMap<T> map = new LongMap<>(new ConcurrentHashMap<>());
     private Clock clock;
     private long defaultTimeout;
+    private Consumer<T> onRemove;
     /**
      * Creates a new TimeToLiveSet using UTC clock
      * @param defaultTimeout
@@ -59,8 +60,20 @@ public class TimeToLiveSet<T> implements Iterable<T>
      */
     public TimeToLiveSet(Clock clock, long defaultTimeout, TimeUnit unit)
     {
+        this(clock, defaultTimeout, unit, (k)->{});
+    }
+    /**
+     * Creates a new TimeToLiveSet
+     * @param clock
+     * @param defaultTimeout
+     * @param unit
+     * @param onRemove IS called when item is removed
+     */
+    public TimeToLiveSet(Clock clock, long defaultTimeout, TimeUnit unit, Consumer<T> onRemove)
+    {
         this.clock = clock;
         this.defaultTimeout = unit.toMillis(defaultTimeout);
+        this.onRemove = onRemove;
     }
     /**
      * Just for testing
@@ -70,38 +83,89 @@ public class TimeToLiveSet<T> implements Iterable<T>
     {
         this.clock = clock;
     }
-    
     /**
-     * Refresh item with default timeout
+     * @deprecated Use add
      * @param item 
      */
     public void refresh(T item)
     {
-        refresh(item, defaultTimeout, TimeUnit.MILLISECONDS);
+        add(item);
     }
     /**
-     * 
+     * Refresh item with default timeout
+     * @param item 
+     * @return  
+     */
+    @Override
+    public boolean add(T item)
+    {
+        return add(item, defaultTimeout, TimeUnit.MILLISECONDS);
+    }
+    /**
+     * @deprecated Use add
      * @param item
      * @param timeout
      * @param unit 
      */
     public void refresh(T item, long timeout, TimeUnit unit)
     {
-        map.put(item, clock.millis() + unit.toMillis(timeout));
+        add(item, timeout, unit);
     }
     /**
-     * Return true if item has not expired
+     * 
+     * @param item
+     * @param timeout
+     * @param unit 
+     * @return  
+     */
+    public boolean add(T item, long timeout, TimeUnit unit)
+    {
+        LongReference old = map.put(item, clock.millis() + unit.toMillis(timeout));
+        return old != null;
+    }
+
+    @Override
+    public void clear()
+    {
+        for (T item : map.keySet())
+        {
+            onRemove.accept(item);
+        }
+        map.clear();
+    }
+
+    @Override
+    public boolean remove(Object key)
+    {
+        LongReference old = map.remove((T)key);
+        onRemove.accept((T) key);
+        return old != null;
+    }
+    /**
+     * @deprecated Use contains
      * @param item
      * @return 
      */
     public boolean isAlive(T item)
     {
+        return contains(item);
+    }
+    /**
+     * Return true if item has not expired
+     * @param o
+     * @return 
+     */
+    @Override
+    public boolean contains(Object o)
+    {
+        T item = (T) o;
         try
         {
             long expires = map.getLong(item);
             if (expires < clock.millis())
             {
                 map.remove(item);
+                onRemove.accept(item);
                 return false;
             }
             else
@@ -119,6 +183,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
      * <p>Note that this method goes through all items
      * @return 
      */
+    @Override
     public boolean isEmpty()
     {
         return size() == 0;
@@ -128,26 +193,28 @@ public class TimeToLiveSet<T> implements Iterable<T>
      * <p>Note that this method goes through all items
      * @return 
      */
-    public long size()
+    @Override
+    public int size()
     {
-        return stream().count();
+        int count = 0;
+        Iterator<T> iterator = iterator();
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            count++;
+        }
+        return count;
     }
-    /**
-     * Returns current set of fresh items
-     * @return 
-     */
-    public Set<T> set()
-    {
-        return stream().collect(Collectors.toSet());
-    }
+
     /**
      * Return stream of fresh items
      * <p>Items can become stale while processing.
      * @return 
      */
+    @Override
     public Stream<T> stream()
     {
-        return StreamSupport.stream(new SpliteratorImpl(), false);
+        return StreamSupport.stream(spliterator(), false);
     }
     /**
      * Returns stream of fresh items
@@ -157,7 +224,7 @@ public class TimeToLiveSet<T> implements Iterable<T>
     @Override
     public Spliterator<T> spliterator()
     {
-        return new SpliteratorImpl();
+        return Spliterators.spliterator(iterator(), map.size(), 0);
     }
     /**
      * Return iterator of fresh items
@@ -167,44 +234,46 @@ public class TimeToLiveSet<T> implements Iterable<T>
     @Override
     public Iterator<T> iterator()
     {
-        return Spliterators.iterator(new SpliteratorImpl());
+        return new IteratorImpl();
     }
-    private class SpliteratorImpl implements Spliterator<T>
+    private class IteratorImpl implements Iterator<T>
     {
         private Iterator<Entry<T, LongReference>> iterator = map.entrySet().iterator();
-        
+        private Entry<T, LongReference> entry;
+
         @Override
-        public boolean tryAdvance(Consumer<? super T> action)
+        public boolean hasNext()
         {
             while (iterator.hasNext())
             {
-                Entry<T, LongReference> entry = iterator.next();
+                entry = iterator.next();
                 if (entry.getValue().value >= clock.millis())
                 {
-                    action.accept(entry.getKey());
                     return true;
                 }
                 iterator.remove();
+                onRemove.accept(entry.getKey());
             }
+            entry = null;
             return false;
         }
 
         @Override
-        public Spliterator<T> trySplit()
+        public T next()
         {
-            return null;
+            if (entry != null)
+            {
+                Entry<T, LongReference> e = entry;
+                entry = null;
+                return e.getKey();
+            }
+            throw new NoSuchElementException();
         }
 
         @Override
-        public long estimateSize()
+        public void remove()
         {
-            return map.size();
-        }
-
-        @Override
-        public int characteristics()
-        {
-            return 0;
+            iterator.remove();
         }
         
     }

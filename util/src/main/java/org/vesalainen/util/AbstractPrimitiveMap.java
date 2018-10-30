@@ -22,8 +22,6 @@ import java.util.Set;
 
 /**
  * Base class for primitive maps.
- * <p>Note that PrimitiveReference's are recyclable but since we give access to
- * them we cannot recycle!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K>
  * @param <V>
@@ -64,9 +62,9 @@ public abstract class AbstractPrimitiveMap<K,V extends PrimitiveReference>
 
     public abstract Collection<? extends PrimitiveReference> values();
     
-    public void remove(K key)
+    public V remove(K key)
     {
-        map.remove(key);
+        return map.remove(key);
     }
 
     public int size()

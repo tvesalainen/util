@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -41,25 +42,36 @@ public class TimeToLiveSetTest
     {
         Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
         TimeToLiveSet<String> ttls = new TimeToLiveSet<>(clock, 1, TimeUnit.SECONDS);
-        ttls.refresh("abc");
+        ttls.add("abc");
         assertEquals(1, ttls.size());
-        assertTrue(ttls.isAlive("abc"));
-        assertFalse(ttls.isAlive("zxc"));
-        ttls.refresh("zxc", 3, TimeUnit.SECONDS);
+        assertTrue(ttls.contains("abc"));
+        assertFalse(ttls.contains("zxc"));
+        ttls.add("zxc", 3, TimeUnit.SECONDS);
         assertEquals(2, ttls.size());
-        assertTrue(ttls.isAlive("zxc"));
-        Set<String> set = ttls.set();
-        assertEquals(2, set.size());
-        assertTrue(set.contains("abc"));
-        assertTrue(set.contains("zxc"));
+        assertTrue(ttls.contains("zxc"));
         clock = Clock.offset(clock, Duration.ofSeconds(2));
         ttls.setClock(clock);
-        assertFalse(ttls.isAlive("abc"));
+        assertFalse(ttls.contains("abc"));
         assertEquals(1, ttls.size());
         clock = Clock.offset(clock, Duration.ofSeconds(2));
         ttls.setClock(clock);
-        assertFalse(ttls.isAlive("zxc"));
+        assertFalse(ttls.contains("zxc"));
         assertEquals(0, ttls.size());
     }
-    
+    @Test
+    public void testIterator()
+    {
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
+        TimeToLiveSet<String> ttls = new TimeToLiveSet<>(clock, 1, TimeUnit.SECONDS);
+        ttls.add("foo");
+        ttls.add("bar");
+        ttls.add("goo");
+        Iterator<String> iterator = ttls.iterator();
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            iterator.remove();
+        }
+        assertTrue(ttls.isEmpty());
+    }
 }
