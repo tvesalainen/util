@@ -26,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * TimeToLiveMap is a ConcurrentHashMap backed implementation of Map interface
  * where each mapping has time-to-live. After ttl the mapping doesn't exist.
+ * <p>
+ * It is not possible to access expired mappings. However mappings are not 
+ * actively removed by other than using iterators of this class. Easiest way to
+ * remove expired mappings is to call size() method.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K>
  * @param <V>
@@ -162,6 +166,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     @Override
     public Set<Entry<K, V>> entrySet()
     {
+        size();
         return map.entrySet();
     }
 
