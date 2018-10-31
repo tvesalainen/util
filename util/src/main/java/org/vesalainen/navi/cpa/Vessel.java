@@ -18,6 +18,7 @@ package org.vesalainen.navi.cpa;
 
 import java.util.concurrent.locks.ReentrantLock;
 import static org.vesalainen.navi.Navis.*;
+import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
 
 /**
@@ -26,7 +27,7 @@ import org.vesalainen.util.navi.Location;
  * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Vessel
+public class Vessel extends JavaLogging
 {
     private static final double Pi2 = 2*Math.PI;
     // last updated
@@ -48,9 +49,14 @@ public class Vessel
     protected ReentrantLock lock = new ReentrantLock();
     protected enum Strategy { NONE, SHORT, LONG };
     protected Strategy strat = Strategy.NONE;
+
+    public Vessel()
+    {
+        super(Vessel.class);
+    }
+    
     /**
-     * Updates values and calculates speed and bearing. After that calculates other
-     * data.
+     * Updates values and calculates speed and bearing.
      * 
      * <p>Don't mix short and long update method usage in same instance!
      * 
@@ -58,6 +64,7 @@ public class Vessel
      * @param latitude
      * @param longitude
      * @param rateOfTurn Degrees / minute
+     * @throws IllegalStateException If mixing short and long update method usage in same instance!
      */
     public void update(long time, double latitude, double longitude, double rateOfTurn)
     {
@@ -89,8 +96,7 @@ public class Vessel
         }
     }
     /**
-     * Updates values. After that calculates other
-     * data.
+     * Updates values.
      * 
      * <p>Don't mix short and long update method usage in same instance!
      * 
@@ -100,6 +106,7 @@ public class Vessel
      * @param speed
      * @param bearing Degrees
      * @param rateOfTurn Degrees / minute
+     * @throws IllegalStateException If mixing short and long update method usage in same instance!
      */
     public void update(long time, double latitude, double longitude, double speed, double bearing, double rateOfTurn)
     {
