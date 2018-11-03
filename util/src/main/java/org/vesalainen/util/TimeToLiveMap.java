@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
  * where each mapping has time-to-live. After ttl the mapping doesn't exist.
  * <p>
  * It is not possible to access expired mappings. However mappings are not 
- * actively removed by other than using iterators of this class. Easiest way to
- * remove expired mappings is to call size() method.
+ * actively removed by other than using iterators of this class or put method.
+ * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <K>
  * @param <V>
@@ -37,8 +37,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
 {
+    private static final long INIT_PURGE_LIMIT = 10000;
     private TimeToLiveSet<K> ttlSet;
     private Map<K,V> map = new ConcurrentHashMap<>();
+    private long purgeLimit = INIT_PURGE_LIMIT;
+    private long lastPurge;
     /**
      * Creates TimeToLiveMap with system clock
      * @param defaultTimeout
@@ -107,6 +110,11 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public V put(K key, V value, long timeout, TimeUnit unit)
     {
+        if (lastPurge < System.currentTimeMillis())
+        {
+            size();
+            lastPurge = System.currentTimeMillis() + purgeLimit;
+        }
         V old = null;
         if (ttlSet.contains(key))
         {
@@ -168,6 +176,20 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     {
         size();
         return map.entrySet();
+    }
+
+    public long getPurgeLimit()
+    {
+        return purgeLimit;
+    }
+    /**
+     * Set number of milliseconds after put will attempt to purge stale entries
+     * after previous put.
+     * @param millis 
+     */
+    public void setPurgeLimit(long millis)
+    {
+        this.purgeLimit = millis;
     }
 
     void setClock(Clock clock)
