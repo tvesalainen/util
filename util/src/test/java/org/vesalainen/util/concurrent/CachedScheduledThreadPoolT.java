@@ -155,6 +155,18 @@ public class CachedScheduledThreadPoolT
         assertTrue(elapsed+"<10", elapsed >= 10);
         assertEquals(1, ref.getValue());
     }
+    @Test
+    public void testIterateAtFixedDelay() throws InterruptedException, ExecutionException
+    {
+        final List<Integer> l = new ArrayList<>();
+        pool.iterateAtFixedDelay(1, 100, TimeUnit.NANOSECONDS, ()->l.add(1), ()->l.add(2), ()->l.add(3), ()->l.add(4));
+        Thread.sleep(500);
+        assertEquals(4, l.size());
+        assertEquals(1, (int)l.get(0));
+        assertEquals(2, (int)l.get(1));
+        assertEquals(3, (int)l.get(2));
+        assertEquals(4, (int)l.get(3));
+    }
     private void command()
     {
         times.add(clock.millis());

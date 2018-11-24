@@ -23,6 +23,8 @@ import java.time.temporal.ChronoField;
 import static java.time.temporal.ChronoUnit.NANOS;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
@@ -40,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
+import org.vesalainen.util.ArrayIterator;
 import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
 
@@ -165,6 +168,93 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         delayQueue.add(future);
         return future;
     }
+    /**
+     * After initialDelay executes commands with period delay or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedDelay(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedRate(long initialDelay, long period, TimeUnit unit, Runnable... commands)
+    {
+        return iterateAtFixedRate(initialDelay, period, unit, new ArrayIterator<>(commands));
+    }
+    /**
+     * After initialDelay executes commands with period delay or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedRate(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedDelay(long initialDelay, long period, TimeUnit unit, Runnable... commands)
+    {
+        return iterateAtFixedDelay(initialDelay, period, unit, new ArrayIterator<>(commands));
+    }
+    /**
+     * After initialDelay executes commands using collections iterator until either iterator has no more commands or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedDelay(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedRate(long initialDelay, long period, TimeUnit unit, Collection<Runnable> commands)
+    {
+        return iterateAtFixedRate(initialDelay, period, unit, commands.iterator());
+    }
+    /**
+     * After initialDelay executes commands using collections iterator until either iterator has no more commands or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedRate(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedDelay(long initialDelay, long period, TimeUnit unit, Collection<Runnable> commands)
+    {
+        return iterateAtFixedDelay(initialDelay, period, unit, commands.iterator());
+    }
+    /**
+     * After initialDelay executes commands from iterator until either iterator has no more or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedRate(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedRate(long initialDelay, long period, TimeUnit unit, Iterator<Runnable> commands)
+    {
+        ensureWaiterRunning();
+        log(logLevel, "iterateAtFixedRate(%d, %d, %s)", initialDelay, period, unit);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(new RunnableIterator(commands), initialDelay, period, unit, false);
+        delayQueue.add(future);
+        return future;
+    }
+    /**
+     * After initialDelay executes commands from iterator until either iterator has no more or command throws exception.
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @param commands
+     * @return 
+     * @see java.util.concurrent.ScheduledThreadPoolExecutor#scheduleAtFixedDelay(java.lang.Runnable, long, long, java.util.concurrent.TimeUnit) 
+     */
+    public ScheduledFuture<?> iterateAtFixedDelay(long initialDelay, long period, TimeUnit unit, Iterator<Runnable> commands)
+    {
+        ensureWaiterRunning();
+        log(logLevel, "iterateAtFixedRate(%d, %d, %s)", initialDelay, period, unit);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(new RunnableIterator(commands), initialDelay, period, unit, true);
+        delayQueue.add(future);
+        return future;
+    }
+
     /**
      * submits callable after waiting future to complete
      * @param <V>
@@ -406,7 +496,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                 }
                 else
                 {
-                    if (throwable != null)
+                    if (throwable != null && !(throwable instanceof CancelMeException))
                     {
                         log(SEVERE, throwable, "runAndReset failed %s", throwable.getMessage());
                     }
@@ -435,5 +525,32 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             return "RunnableScheduledFutureImpl{" + "task=" + super.toString() + "fixedDelay=" + fixedDelay + ", period=" + period + ", expires=" + expires + '}';
         }
 
+    }
+    private class CancelMeException extends RuntimeException
+    {
+        
+    }
+    private class RunnableIterator implements Runnable
+    {
+        private Iterator<Runnable> iterator;
+
+        public RunnableIterator(Iterator<Runnable> iterator)
+        {
+            this.iterator = iterator;
+        }
+
+        @Override
+        public void run()
+        {
+            if (iterator.hasNext())
+            {
+                iterator.next().run();
+            }
+            else
+            {
+                throw new CancelMeException();
+            }
+        }
+        
     }
 }
