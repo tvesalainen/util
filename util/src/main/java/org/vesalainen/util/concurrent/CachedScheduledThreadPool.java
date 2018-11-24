@@ -372,7 +372,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         @Override
         public long getDelay(TimeUnit unit)
         {
-            return expires - clock.millis();
+            return unit.convert(expires - clock.millis(), TimeUnit.MILLISECONDS);
         }
 
         @Override

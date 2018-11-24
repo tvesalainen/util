@@ -63,6 +63,7 @@ public class CachedScheduledThreadPoolT
     {
         times.add(clock.millis());
         ScheduledFuture<?> future = pool.schedule(this::command, 10, TimeUnit.MILLISECONDS);
+        assertEquals(10000000, future.getDelay(TimeUnit.NANOSECONDS));
         future.get();
         assertEquals(2, times.size());
         assertTrue(times.get(1)-times.get(0) >= 10);
