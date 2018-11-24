@@ -17,8 +17,12 @@
 package org.vesalainen.util.concurrent;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoField;
+import static java.time.temporal.ChronoUnit.NANOS;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
@@ -99,14 +103,11 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
      * @param time Temporal that supports INSTANT_SECONDS and NANO_OF_SECOND.
      * @return 
      */
-    public ScheduledFuture<?> schedule(Runnable command, Temporal time)
+    public ScheduledFuture<?> schedule(Runnable command, TemporalAccessor time)
     {
         ensureWaiterRunning();
-        long instantSeconds = time.getLong(ChronoField.INSTANT_SECONDS);
-        long nanoOfSecond = time.getLong(ChronoField.NANO_OF_SECOND);
-        long expires = instantSeconds*1000+nanoOfSecond/1000000;
         log(logLevel, "schedule(%s, %s)", command, time);
-        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, expires, 0, false);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, Instant.from(time), null, false);
         delayQueue.add(future);
         return future;
     }
@@ -114,17 +115,14 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
      * Schedule callable to be run not earlier than time.
      * @param <V>
      * @param callable
-     * @param time Temporal that supports INSTANT_SECONDS and NANO_OF_SECOND.
+     * @param time TemporalAccessor that supports INSTANT_SECONDS and NANO_OF_SECOND.
      * @return 
      */
-    public <V> ScheduledFuture<V> schedule(Callable<V> callable, Temporal time)
+    public <V> ScheduledFuture<V> schedule(Callable<V> callable, TemporalAccessor time)
     {
         ensureWaiterRunning();
-        long instantSeconds = time.getLong(ChronoField.INSTANT_SECONDS);
-        long nanoOfSecond = time.getLong(ChronoField.NANO_OF_SECOND);
-        long expires = instantSeconds*1000+nanoOfSecond/1000000;
         log(logLevel, "schedule(%s, %s)", callable, time);
-        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(callable, expires, 0, false);
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(callable, Instant.from(time), null, false);
         delayQueue.add(future);
         return future;
     }
@@ -326,28 +324,32 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     private class RunnableScheduledFutureImpl<V> extends FutureTask<V> implements RunnableScheduledFuture<V>
     {
         private boolean fixedDelay;
-        private long period;
-        private long expires;
+        private Duration period;
+        private Instant expires;
         private Throwable throwable;
 
         public RunnableScheduledFutureImpl(Runnable command, long delay, TimeUnit unit)
         {
             super(command, null);
-            this.expires = clock.millis()+unit.toMillis(delay);
+            this.expires = clock.instant().plus(Duration.ofNanos(unit.toNanos(delay)));
         }
 
         public RunnableScheduledFutureImpl(Callable<V> callable, long delay, TimeUnit unit)
         {
             super(callable);
-            this.expires = clock.millis()+unit.toMillis(delay);
+            this.expires = clock.instant().plus(Duration.ofNanos(unit.toNanos(delay)));
         }
 
         public RunnableScheduledFutureImpl(Runnable command, long initialDelay, long period, TimeUnit unit, boolean fixedDelay)
         {
-            this(command, clock.millis()+unit.toMillis(initialDelay), unit.toMillis(period), fixedDelay);
+            this(
+                    command, 
+                    clock.instant().plus(Duration.ofNanos(unit.toNanos(initialDelay))), 
+                    Duration.ofNanos(unit.toNanos(period)), fixedDelay
+            );
         }
 
-        public RunnableScheduledFutureImpl(Callable<V> callable, long expires, long period, boolean fixedDelay)
+        public RunnableScheduledFutureImpl(Callable<V> callable, Instant expires, Duration period, boolean fixedDelay)
         {
             super(callable);
             this.expires = expires;
@@ -355,7 +357,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             this.fixedDelay = fixedDelay;
         }
 
-        public RunnableScheduledFutureImpl(Runnable runnable, long expires, long period, boolean fixedDelay)
+        public RunnableScheduledFutureImpl(Runnable runnable, Instant expires, Duration period, boolean fixedDelay)
         {
             super(runnable, null);
             this.expires = expires;
@@ -366,13 +368,13 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         @Override
         public boolean isPeriodic()
         {
-            return period > 0;
+            return period != null;
         }
 
         @Override
         public long getDelay(TimeUnit unit)
         {
-            return unit.convert(expires - clock.millis(), TimeUnit.MILLISECONDS);
+            return unit.convert(clock.instant().until(expires, NANOS), TimeUnit.NANOSECONDS);
         }
 
         @Override
@@ -390,11 +392,11 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
                 if (fixedDelay)
                 {
                     ok = super.runAndReset();
-                    expires = clock.millis()+period;
+                    expires = clock.instant().plus(period);
                 }
                 else
                 {
-                    long next = clock.millis()+period;
+                    Instant next = clock.instant().plus(period);
                     ok = super.runAndReset();
                     expires = next;
                 }
