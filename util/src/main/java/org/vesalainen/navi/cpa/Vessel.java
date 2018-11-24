@@ -131,7 +131,14 @@ public class Vessel extends JavaLogging
             lock.unlock();
         }
     }
-
+    /**
+     * Returns true if update method has been called.
+     * @return 
+     */
+    public boolean isValid()
+    {
+        return strat != Strategy.NONE;
+    }
     private void calc()
     {
         lock.lock();
