@@ -252,7 +252,8 @@ public class Vessel extends JavaLogging
     {
         if (et < time)
         {
-            throw new IllegalArgumentException("cannot estimate past");
+            long d = et - time;
+            throw new IllegalArgumentException("cannot estimate past "+d+" millis");
         }
         double dh = (et-time)/3600000.0;
         return speed*dh;
