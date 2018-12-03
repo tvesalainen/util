@@ -32,6 +32,7 @@ public class Vessel extends JavaLogging
     private static final double PI2 = 2*Math.PI;
     // last updated
     protected long time;
+    protected long timeDelta;
     protected double latitude;
     protected double longitude;
     protected double speed;         // knots
@@ -52,7 +53,18 @@ public class Vessel extends JavaLogging
 
     public Vessel()
     {
+        this(0);
+    }
+    /**
+     * 
+     * @param timeDelta Time delta is the maximum milliseconds allowed for 
+     * estimated time being before last update time. This is usefull if used 
+     * clock can be adjusted backwards.
+     */
+    public Vessel(long timeDelta)
+    {
         super(Vessel.class);
+        this.timeDelta = timeDelta;
     }
     
     /**
@@ -184,6 +196,7 @@ public class Vessel extends JavaLogging
      */
     public final double estimatedLatitude(long et)
     {
+        et = correctedTime(et);
         lock.lock();
         try
         {
@@ -211,6 +224,7 @@ public class Vessel extends JavaLogging
      */
     public final double estimatedLongitude(long et)
     {
+        et = correctedTime(et);
         lock.lock();
         try
         {
@@ -284,5 +298,40 @@ public class Vessel extends JavaLogging
         calc();
         return centerLongitude;
     }
-    
+    /**
+     * Time delta is the maximum milliseconds allowed for estimated time being
+     * before last update time. This is usefull if used clock can be adjusted backwards.
+     * @return 
+     */
+    public long getTimeDelta()
+    {
+        return timeDelta;
+    }
+    /**
+     * Time delta is the maximum milliseconds allowed for estimated time being
+     * before last update time. This is usefull if used clock can be adjusted backwards.
+     * @param timeDelta 
+     */
+    public void setTimeDelta(long timeDelta)
+    {
+        this.timeDelta = timeDelta;
+    }
+    private long correctedTime(long et)
+    {
+        if (timeDelta == 0)
+        {
+            return et;
+        }
+        else
+        {
+            if (time - et > timeDelta)
+            {
+                throw new IllegalArgumentException("cannot estimate past");
+            }
+            else
+            {
+                return et >= time ? et : time;
+            }
+        }
+    }
 }
