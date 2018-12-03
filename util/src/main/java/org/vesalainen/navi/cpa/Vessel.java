@@ -17,6 +17,7 @@
 package org.vesalainen.navi.cpa;
 
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.LongSupplier;
 import static org.vesalainen.navi.Navis.*;
 import org.vesalainen.util.logging.JavaLogging;
 import org.vesalainen.util.navi.Location;
@@ -173,6 +174,24 @@ public class Vessel extends JavaLogging
             lock.unlock();
         }
     }
+    /**
+     * Returns distance between vessels at given time
+     * @param v1
+     * @param v2
+     * @param et
+     * @return 
+     */
+    public static final double estimatedDistance(Vessel v1, Vessel v2, LongSupplier et)
+    {
+        return estimatedDistance(v1, v2, et.getAsLong());
+    }
+    /**
+     * Returns distance between vessels at given time
+     * @param v1
+     * @param v2
+     * @param et
+     * @return 
+     */
     public static final double estimatedDistance(Vessel v1, Vessel v2, long et)
     {
         return v1.estimatedLocation(et).distance(v2.estimatedLocation(et)).getMiles();
@@ -230,6 +249,15 @@ public class Vessel extends JavaLogging
         {
             lock.unlock();
         }
+    }
+    /**
+     * Using this method protects from parallel updates
+     * @param et Estimated time
+     * @return 
+     */
+    public final Location estimatedLocation(LongSupplier et)
+    {
+        return estimatedLocation(et.getAsLong());
     }
     /**
      * Using this method protects from parallel updates
