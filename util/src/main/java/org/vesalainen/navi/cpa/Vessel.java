@@ -29,7 +29,7 @@ import org.vesalainen.util.navi.Location;
  */
 public class Vessel extends JavaLogging
 {
-    private static final double Pi2 = 2*Math.PI;
+    private static final double PI2 = 2*Math.PI;
     // last updated
     protected long time;
     protected double latitude;
@@ -154,7 +154,7 @@ public class Vessel extends JavaLogging
                 if (arot > 0)
                 {
                     double hoursForFullCircle = (360 / arot)/60;
-                    radius = speed*hoursForFullCircle/Pi2;
+                    radius = speed*hoursForFullCircle/PI2;
                     double b = normalizeAngle(bearing+90*Math.signum(rateOfTurn));
                     centerLatitude = latitude+deltaLatitude(radius, b);
                     centerLongitude = addLongitude(longitude, deltaLongitude(latitude, radius, b));
