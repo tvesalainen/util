@@ -44,21 +44,29 @@ public class TimeToLiveMapTest
         map.put(2, "bar");
         map.put(3, "goo");
         assertEquals(3, map.size());
+        assertEquals(3, map.values().stream().count());
+        assertEquals(3, map.entrySet().stream().count());
+        assertEquals(3, map.keySet().stream().count());
         assertEquals("bar", map.get(2));
         
         clock = Clock.offset(clock, Duration.ofSeconds(2));
         map.setClock(clock);
         assertEquals(null, map.get(2));
         assertEquals(0, map.size());
+        assertEquals(0, map.entrySet().stream().count());
+        assertEquals(0, map.keySet().stream().count());
+        assertEquals(0, map.values().stream().count());
         
         map.put(2, "bar");
         map.put(3, "goo");
         assertEquals(2, map.size());
+        assertEquals(2, map.values().stream().count());
         assertEquals("bar", map.get(2));
         
         map.remove(2);
         assertEquals(null, map.get(2));
         assertEquals(1, map.size());
+        assertEquals(1, map.values().stream().count());
     }
 
 }

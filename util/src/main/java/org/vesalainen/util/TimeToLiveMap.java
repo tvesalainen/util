@@ -60,7 +60,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public TimeToLiveMap(Clock clock, long defaultTimeout, TimeUnit unit)
     {
-        this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit);
+        this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit, map::remove);
     }
     /**
      * Returns live-set of keys
