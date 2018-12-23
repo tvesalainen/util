@@ -25,10 +25,13 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import static java.time.temporal.ChronoField.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalQueries;
 import java.time.temporal.TemporalQuery;
+import java.time.temporal.TemporalUnit;
 import java.util.EnumMap;
 import java.util.Objects;
 import org.vesalainen.util.LongMap;
@@ -147,9 +150,47 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     @Override
     public SimpleMutableDateTime clone()
     {
-        return new SimpleMutableDateTime(getYear(), getMonth(), getDay(), getHour(), getMinute(), getSecond(), getMilliSecond(), zoneId);
+        return from(this);
     }
 
+    public void plus(long amountToAdd, TemporalUnit unit)
+    {
+        if (unit instanceof ChronoUnit)
+        {
+            ChronoUnit cu = (ChronoUnit) unit;
+            switch (cu)
+            {
+                case YEARS:
+                    plusYears((int) amountToAdd);
+                    return;
+                case MONTHS:
+                    plusMonths((int) amountToAdd);
+                    return;
+                case DAYS:
+                    plusDays(amountToAdd);
+                    return;
+                case HOURS:
+                    plusHours(amountToAdd);
+                    return;
+                case MINUTES:
+                    plusMinutes(amountToAdd);
+                    return;
+                case SECONDS:
+                    plusSeconds(amountToAdd);
+                    return;
+                case MILLIS:
+                    plusMilliSeconds(amountToAdd);
+                    return;
+                case MICROS:
+                    plusMicroSeconds(amountToAdd);
+                    return;
+                case NANOS:
+                    plusNanoSeconds(amountToAdd);
+                    return;
+            }
+        }
+        throw new UnsupportedOperationException(unit+" not supported");
+    }
     /**
      * Adds delta years. Delta can be negative. Affects only year field.
      * @param delta 
@@ -241,16 +282,31 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
     }
     /**
      * Adds delta milliseconds. Delta can be negative. Month, year, day, hour, 
-     * minute, seconds and milliSecond fields are affected.
+     * minute, seconds and nanoSecond fields are affected.
      * @param delta 
      */
     public void plusMilliSeconds(long delta)
     {
+        plusNanoSeconds(Math.floorMod(delta, 1000)*1000000);
+        plusSeconds(Math.floorDiv(delta, 1000));
+    }
+    public void plusMicroSeconds(long delta)
+    {
+        plusNanoSeconds(Math.floorMod(delta, 1000000)*1000);
+        plusSeconds(Math.floorDiv(delta, 1000000));
+    }
+    /**
+     * Adds delta nanoseconds. Delta can be negative. Month, year, day, hour, 
+     * minute, seconds and nanoSecond fields are affected.
+     * @param delta 
+     */
+    public void plusNanoSeconds(long delta)
+    {
         if (delta != 0)
         {
-            long result = getMilliSecond() + delta;
-            setMilliSecond((int) Math.floorMod(result, 1000));
-            plusSeconds(Math.floorDiv(result, 1000));
+            long result = getNanoSecond() + delta;
+            setNanoSecond((int) Math.floorMod(result, 1000000000));
+            plusSeconds(Math.floorDiv(result, 1000000000));
         }
     }
     /**

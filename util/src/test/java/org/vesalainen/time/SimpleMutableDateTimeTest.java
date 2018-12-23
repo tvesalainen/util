@@ -119,24 +119,34 @@ public class SimpleMutableDateTimeTest
         smt.plusYears(-1);
         assertEquals(exp, smt);
     }
-    /*
+
     @Test
     public void testPlus()
     {
         SimpleMutableDateTime smt = new SimpleMutableDateTime(1998, 11, 23, 10, 11, 12, 13);
         SimpleMutableDateTime exp = new SimpleMutableDateTime(1998, 11, 13, 10, 11, 12, 13);
-        Temporal plus = smt.plus(-10, DAYS);
-        assertEquals(exp, plus);
+        smt.plus(-10, DAYS);
+        assertEquals(exp, smt);
     }
     @Test
-    public void testPlusPlus()
+    public void testPlusMillis()
     {
         SimpleMutableDateTime smt = SimpleMutableDateTime.epoch();
         ZonedDateTime zdt = ZonedDateTime.of(1998, 11, 23, 10, 11, 12, 13000000, ZoneOffset.of("Z"));
         SimpleMutableDateTime exp = SimpleMutableDateTime.from(zdt);
-        Temporal plus = smt.plus(zdt.toEpochSecond()*1000+zdt.getNano()/1000000, MILLIS);
-        assertEquals(exp, plus);
+        smt.plus(zdt.toEpochSecond()*1000+zdt.getNano()/1000000, MILLIS);
+        assertEquals(exp, smt);
     }
+    @Test
+    public void testPlusMicros()
+    {
+        SimpleMutableDateTime smt = SimpleMutableDateTime.epoch();
+        ZonedDateTime zdt = ZonedDateTime.of(1998, 11, 23, 10, 11, 12, 13000000, ZoneOffset.of("Z"));
+        SimpleMutableDateTime exp = SimpleMutableDateTime.from(zdt);
+        smt.plus(zdt.toEpochSecond()*1000000+zdt.getNano()/1000, MICROS);
+        assertEquals(exp, smt);
+    }
+    /*
     @Test
     public void testUntil()
     {
@@ -154,6 +164,7 @@ public class SimpleMutableDateTimeTest
         Temporal with = smt.with(ChronoField.DAY_OF_MONTH, 13);
         assertEquals(exp, with);
     }
+    */
     @Test
     public void testFrom()
     {
@@ -162,5 +173,5 @@ public class SimpleMutableDateTimeTest
         ZonedDateTime from = ZonedDateTime.from(smt);
         assertEquals(exp, from);
     }
-*/
+
 }
