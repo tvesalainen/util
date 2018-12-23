@@ -35,7 +35,7 @@ import org.vesalainen.util.LongMap;
 
 /**
  * SimpleMutableDateTime is a mutable Temporal implementation which supports creating
- * date objects from fields. Supported fields are from year to millis.
+ * date objects from fields. Supported fields are from year to nanos.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SimpleMutableDateTime implements MutableDateTime, Cloneable
@@ -92,7 +92,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
                 temporal.isSupported(HOUR_OF_DAY) &&
                 temporal.isSupported(MINUTE_OF_HOUR) &&
                 temporal.isSupported(SECOND_OF_MINUTE) &&
-                temporal.isSupported(MILLI_OF_SECOND)
+                temporal.isSupported(NANO_OF_SECOND)
                 )
         {
             smt.set(YEAR, temporal.get(YEAR));
@@ -101,7 +101,7 @@ public class SimpleMutableDateTime implements MutableDateTime, Cloneable
             smt.set(HOUR_OF_DAY, temporal.get(HOUR_OF_DAY));
             smt.set(MINUTE_OF_HOUR, temporal.get(MINUTE_OF_HOUR));
             smt.set(SECOND_OF_MINUTE, temporal.get(SECOND_OF_MINUTE));
-            smt.set(MILLI_OF_SECOND, temporal.get(MILLI_OF_SECOND));
+            smt.set(NANO_OF_SECOND, temporal.get(NANO_OF_SECOND));
             return smt;
         }
         throw new UnsupportedOperationException(temporal+" not supported");

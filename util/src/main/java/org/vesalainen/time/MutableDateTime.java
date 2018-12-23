@@ -43,7 +43,7 @@ public interface MutableDateTime extends TemporalAccessor
         HOUR_OF_DAY, 
         MINUTE_OF_HOUR, 
         SECOND_OF_MINUTE,
-        MILLI_OF_SECOND,
+        NANO_OF_SECOND,
         DAY_OF_WEEK);
 
     static final long SECOND_IN_MILLIS = 1000;
@@ -171,7 +171,15 @@ public interface MutableDateTime extends TemporalAccessor
      */
     default int getMilliSecond()
     {
-        return get(ChronoField.MILLI_OF_SECOND);
+        return get(ChronoField.NANO_OF_SECOND)/1000000;
+    }
+    /**
+     * 
+     * @return Nano Second of Second (0-999999999)
+     */
+    default int getNanoSecond()
+    {
+        return get(ChronoField.NANO_OF_SECOND);
     }
     /**
      * Returns ZoneId
@@ -239,7 +247,15 @@ public interface MutableDateTime extends TemporalAccessor
      */
     default void setMilliSecond(int milliSecond)
     {
-        set(ChronoField.MILLI_OF_SECOND, milliSecond);
+        set(ChronoField.NANO_OF_SECOND, milliSecond*1000000);
+    }
+    /**
+     * Set nano of second
+     * @param nanoSecond 
+     */
+    default void setNanoSecond(int nanoSecond)
+    {
+        set(ChronoField.NANO_OF_SECOND, nanoSecond);
     }
 
     /**

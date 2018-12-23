@@ -65,6 +65,11 @@ public class SimpleMutableDateTimeTest
         {
             assertEquals(smt.get(cf), zdt.get(cf));
         }
+        SimpleMutableDateTime smt2 = SimpleMutableDateTime.from(zdt);
+        for (TemporalField cf : smt.getFields().keySet())
+        {
+            assertEquals(smt2.get(cf), zdt.get(cf));
+        }
     }
     @Test
     public void testMilliSeconds()
