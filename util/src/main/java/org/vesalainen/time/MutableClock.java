@@ -111,7 +111,7 @@ public class MutableClock extends Clock implements MutableDateTime
         millis += get(ChronoField.HOUR_OF_DAY)*HOUR_IN_MILLIS;
         millis += get(ChronoField.MINUTE_OF_HOUR)*MINUTE_IN_MILLIS;
         millis += get(ChronoField.SECOND_OF_MINUTE)*SECOND_IN_MILLIS;
-        millis += get(ChronoField.MILLI_OF_SECOND);
+        millis += get(ChronoField.NANO_OF_SECOND)/1000000;
         return millis;
     }
 
@@ -133,7 +133,7 @@ public class MutableClock extends Clock implements MutableDateTime
             get(ChronoField.HOUR_OF_DAY), 
             get(ChronoField.MINUTE_OF_HOUR), 
             get(ChronoField.SECOND_OF_MINUTE),
-            get(ChronoField.MILLI_OF_SECOND)*1000000,
+            get(ChronoField.NANO_OF_SECOND),
             clock.getZone());
     }
     /**
