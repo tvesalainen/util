@@ -17,6 +17,7 @@
 package org.vesalainen.math.sliding;
 
 import java.time.Clock;
+import java.util.PrimitiveIterator;
 
 /**
  *
@@ -33,24 +34,40 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
     {
         this(Clock.systemUTC(), size, timeout);
     }
-    public TimeoutSlidingAngleStats(Clock clock, int size, long timeout)
+    public TimeoutSlidingAngleStats(Clock clock, int initialSize, long timeout)
     {
-        super(clock, size, timeout);
+        super(clock, initialSize, timeout);
         angles = new double[size];
     }
 
     @Override
     public double getMax()
     {
-        calc();
-        return max;
+        readLock.lock();
+        try
+        {
+            calc();
+            return max;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     @Override
     public double getMin()
     {
-        calc();
-        return min;
+        readLock.lock();
+        try
+        {
+            calc();
+            return min;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     private void calc()
@@ -62,9 +79,10 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
             double l = 360;
             double r = 0;
             double d = 360-fast;
-            for (int ii=begin;ii<end;ii++)
+            PrimitiveIterator.OfInt it = modIterator();
+            while (it.hasNext())
             {
-                double n = (angles[ii % size] + d) % 360;
+                double n = (angles[it.nextInt()] + d) % 360;
                 if (n <= 180)
                 {
                     r = Math.max(r, n);
@@ -97,21 +115,37 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
     @Override
     public long lastTime()
     {
-        if (count() < 1)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 1");
+            if (count() < 1)
+            {
+                throw new IllegalStateException("count() < 1");
+            }
+            return times[(endMod()+size-1) % size];
         }
-        return times[(end+size-1) % size];
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     @Override
     public long previousTime()
     {
-        if (count() < 1)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 1");
+            if (count() < 1)
+            {
+                throw new IllegalStateException("count() < 1");
+            }
+            return times[(endMod()+size-2) % size];
         }
-        return times[(end+size-2) % size];
+        finally
+        {
+            readLock.unlock();
+        }
     }
     
 }

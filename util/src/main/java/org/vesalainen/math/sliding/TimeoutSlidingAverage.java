@@ -41,12 +41,12 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     /**
      * Creates TimeoutSlidingAverage
      * @param clock
-     * @param size Initial size of ring buffer
+     * @param initialSize Initial size of ring buffer
      * @param timeout Sample timeout
      */
-    public TimeoutSlidingAverage(Clock clock, int size, long timeout)
+    public TimeoutSlidingAverage(Clock clock, int initialSize, long timeout)
     {
-        super(size);
+        super(initialSize);
         this.clock = clock;
         this.timeout = timeout;
         this.times = new long[size];
@@ -80,32 +80,30 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
         times[index] = clock.millis();
     }
     /**
-     * Returns a stream of sample times. Stream is valid 
-     * only the time that takes to fill margin number of slots.
+     * Returns time values as array. Returned array is independent.
+     * @return 
+     */
+    public long[] toTimeArray()
+    {
+        readLock.lock();
+        try
+        {
+            return (long[]) copy(times, size, new long[count()]);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    /**
+     * Returns a stream of sample times
      * @return 
      */
     @Override
     public LongStream timeStream()
     {
-        if (begin == end)
-        {
-            return LongStream.empty();
-        }
-        else
-        {
-            int b = begin % size;
-            int e = end % size;
-            if (b < e)
-            {
-                return Arrays.stream(times, b, e);
-            }
-            else
-            {
-                return LongStream.concat(Arrays.stream(times, e, size), Arrays.stream(times, 0, b));
-            }
-        }
+        return Arrays.stream(toTimeArray());
     }
-
     @Override
     public long[] getTimes()
     {
@@ -131,27 +129,43 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
         {
             throw new IllegalStateException("count() < 1");
         }
-        return times[begin % size];
+        return times[beginMod()];
     }
 
     @Override
     public long lastTime()
     {
-        if (count() < 1)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 1");
+            if (count() < 1)
+            {
+                throw new IllegalStateException("count() < 1");
+            }
+            return times[(endMod()+size-1) % size];
         }
-        return times[(end+size-1) % size];
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     @Override
     public long previousTime()
     {
-        if (count() < 2)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 2");
+            if (count() < 2)
+            {
+                throw new IllegalStateException("count() < 2");
+            }
+            return times[(endMod()+size-2) % size];
         }
-        return times[(end+size-2) % size];
+        finally
+        {
+            readLock.unlock();
+        }
     }
     
     @Override

@@ -19,4 +19,5 @@ package org.vesalainen.math.sliding;
 /**
  * These sliding classes are optimized so that calculated values (average, min, max) can be 
  * efficiently fetched after EVERY accept method call.
+ * <p>These classes are thread safe!
  */

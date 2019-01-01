@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.PrimitiveIterator;
+
 /**
  * Base class for sliding angle average calculation
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -28,9 +30,9 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
     protected double cosSum;
     protected double sinSum;
 
-    protected AbstractSlidingAngleAverage(int size)
+    protected AbstractSlidingAngleAverage(int initialSize)
     {
-        super(size);
+        super(initialSize);
         this.cos = new double[size];
         this.sin = new double[size];
     }
@@ -76,8 +78,16 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
     @Override
     public double fast()
     {
-        int count = end - begin;
-        return toDegrees(sinSum / count, cosSum / count);
+        readLock.lock();
+        try
+        {
+            int count = count();
+            return toDegrees(sinSum / count, cosSum / count);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
     /**
      * Returns sample by sample calculated average.
@@ -86,15 +96,25 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
     @Override
     public double average()
     {
-        int count = end - begin;
-        double s = 0;
-        double c = 0;
-        for (int ii = begin; ii < end; ii++)
+        readLock.lock();
+        try
         {
-            s += sin[ii % size];
-            c += cos[ii % size];
+            int count = count();
+            double s = 0;
+            double c = 0;
+            PrimitiveIterator.OfInt it = modIterator();
+            while (it.hasNext())
+            {
+                int m = it.nextInt();
+                s += sin[m];
+                c += cos[m];
+            };
+            return toDegrees(s / count, c / count);
         }
-        return toDegrees(s / count, c / count);
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     private double toDegrees(double y, double x)

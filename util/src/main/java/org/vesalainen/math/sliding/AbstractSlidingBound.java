@@ -17,6 +17,7 @@
 package org.vesalainen.math.sliding;
 
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
 import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
 
@@ -27,14 +28,16 @@ import java.util.stream.DoubleStream;
 public abstract class AbstractSlidingBound extends AbstractSliding implements DoubleConsumer, ValueArray
 {
     protected double[] ring;
+    protected int windowSize;
     /**
      * 
-     * @param size Initial size of the ringbuffer
+     * @param initialSize Initial size of the ringbuffer
      */
-    public AbstractSlidingBound(int size)
+    public AbstractSlidingBound(int initialSize)
     {
-        super(size);
-        ring = new double[size];
+        super(initialSize);
+        this.windowSize = initialSize;
+        this.ring = new double[size];
     }
     /**
      * Returns the calculated bound
@@ -42,7 +45,15 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      */
     public double getBound()
     {
-        return ring[begin % size];
+        readLock.lock();
+        try
+        {
+            return ring[beginMod()];
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
     /**
      * Add new value
@@ -51,15 +62,31 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
     @Override
     public void accept(double value)
     {
-        eliminate();
-        assign(end % size, value);
-        int e = end;
-        while (e > begin && exceedsBounds(e, value))
+        writeLock.lock();
+        try
         {
-            e--;
-            assign(e % size, value);
+            eliminate();
+            endIncr();
+            PrimitiveIterator.OfInt rev = modReverseIterator();
+            int e = rev.nextInt();
+            assign(e, value);
+            while (rev.hasNext())
+            {
+                e = rev.nextInt();
+                if (exceedsBounds(e, value))
+                {
+                    assign(e, value);
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
-        end++;
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     /**
      * Assign value for inner storage.
@@ -87,7 +114,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
     @Override
     protected boolean isRemovable(int index)
     {
-        return end-begin >= size;
+        return count() >= windowSize;
     }
     /**
      * Grows ring buffer
@@ -107,38 +134,6 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      */
     protected abstract boolean exceedsBounds(int index, double value);
     
-    /**
-     * Returns values as stream in the same order as entered
-     * @return 
-     */
-    @Override
-    public DoubleStream stream()
-    {
-        if (begin == end)
-        {
-            return DoubleStream.empty();
-        }
-        else
-        {
-            int b = begin % size;
-            int e = end % size;
-            if (b < e)
-            {
-                return Arrays.stream(ring, b, e);
-            }
-            else
-            {
-                return DoubleStream.concat(Arrays.stream(ring, e, size), Arrays.stream(ring, 0, b));
-            }
-        }
-    }
-
-    @Override
-    public double count()
-    {
-        return end-begin;
-    }
-
     @Override
     public double last()
     {
@@ -146,7 +141,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
         {
             throw new IllegalStateException("count() < 1");
         }
-        return ring[(end+size-1) % size];
+        return ring[(endMod()+size-1) % size];
     }
 
     @Override
@@ -156,7 +151,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
         {
             throw new IllegalStateException("count() < 2");
         }
-        return ring[(end+size-2) % size];
+        return ring[(endMod()+size-2) % size];
     }
     
 }

@@ -17,6 +17,7 @@
 package org.vesalainen.math.sliding;
 
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
 import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
 
@@ -26,16 +27,16 @@ import java.util.stream.DoubleStream;
  */
 public abstract class AbstractSlidingAverage extends AbstractSliding implements DoubleConsumer, ValueArray, Average
 {
-    protected double[] ring;
+    protected int windowSize;
     protected double sum;
     /**
      * Creates an AbstractSlidingAverage
-     * @param size Initial size of the ring buffer
+     * @param windowSize Size of the sliding window
      */
-    protected AbstractSlidingAverage(int size)
+    protected AbstractSlidingAverage(int windowSize)
     {
-        super(size);
-        ring = new double[size];
+        super(windowSize);
+        this.windowSize = windowSize;
     }
     /**
      * Adds new value to sliding average
@@ -44,14 +45,22 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     @Override
     public void accept(double value)
     {
-        eliminate();
-        int count = end-begin;
-        if (count >= size-margin)
+        writeLock.lock();
+        try
         {
-            grow();
+            eliminate();
+            int count = count();
+            if (count >= size)
+            {
+                grow();
+            }
+            assign(endMod(), value);
+            endIncr();
         }
-        assign(end%size, value);
-        end++;
+        finally
+        {
+            writeLock.unlock();
+        }
     }
             
     @Override
@@ -74,7 +83,15 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     @Override
     public double fast()
     {
-        return sum/(end-begin);
+        readLock.lock();
+        try
+        {
+            return sum/(double)(count());
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -84,64 +101,62 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     @Override
     public double average()
     {
-        double s = 0;
-        for (int ii=begin;ii<end;ii++)
+        readLock.lock();
+        try
         {
-            s += ring[ii%size];
-        }
-        return s/(end-begin);
-    }
-    /**
-     * Returns values as stream in the same order as entered. Stream is valid 
-     * only the time that takes to fill margin number of slots.
-     * @return 
-     */
-    @Override
-    public DoubleStream stream()
-    {
-        if (begin == end)
-        {
-            return DoubleStream.empty();
-        }
-        else
-        {
-            int b = begin % size;
-            int e = end % size;
-            if (b < e)
+            double s = 0;
+            PrimitiveIterator.OfInt it = modIterator();
+            while (it.hasNext())
             {
-                return Arrays.stream(ring, b, e);
+                s += ring[it.nextInt()];
             }
-            else
-            {
-                return DoubleStream.concat(Arrays.stream(ring, e, size), Arrays.stream(ring, 0, b));
-            }
+            return s/(count());
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
-
-    @Override
-    public double count()
-    {
-        return end-begin;
-    }
-
     @Override
     public double last()
     {
-        if (count() < 1)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 1");
+            if (count() < 1)
+            {
+                throw new IllegalStateException("count() < 1");
+            }
+            return ring[(endMod()+size-1) % size];
         }
-        return ring[(end+size-1) % size];
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     @Override
     public double previous()
     {
-        if (count() < 2)
+        readLock.lock();
+        try
         {
-            throw new IllegalStateException("count() < 2");
+            if (count() < 2)
+            {
+                throw new IllegalStateException("count() < 2");
+            }
+            return ring[(endMod()+size-2) % size];
         }
-        return ring[(end+size-2) % size];
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Average{" +fast()+ '}';
     }
     
 }

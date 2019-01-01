@@ -31,9 +31,9 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage implements Timeou
     {
         this(Clock.systemUTC(), size, timeout);
     }
-    public TimeoutSlidingStats(Clock clock, int size, long timeout)
+    public TimeoutSlidingStats(Clock clock, int initialSize, long timeout)
     {
-        super(clock, size, timeout);
+        super(clock, initialSize, timeout);
         min = new TimeoutSlidingMin(this);
         max = new TimeoutSlidingMax(this);
     }
@@ -41,9 +41,17 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage implements Timeou
     @Override
     public void accept(double value)
     {
-        super.accept(value);
-        min.accept(value);
-        max.accept(value);
+        writeLock.lock();
+        try
+        {
+            min.accept(value);
+            max.accept(value);
+            super.accept(value);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
 
     @Override

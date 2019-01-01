@@ -34,7 +34,7 @@ public class SlidingMax extends AbstractSlidingBound implements Max
     @Override
     protected boolean exceedsBounds(int index, double value)
     {
-        return ring[(index-1) % size] < value;
+        return ring[index] < value;
     }
 
     @Override

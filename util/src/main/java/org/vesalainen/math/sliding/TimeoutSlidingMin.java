@@ -46,7 +46,7 @@ public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound implements Mi
     @Override
     protected boolean exceedsBounds(int index, double value)
     {
-        return ring[(index-1) % size] > ring[index % size];
+        return ring[index] >value;
     }
 
     @Override

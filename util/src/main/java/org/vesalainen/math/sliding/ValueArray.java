@@ -25,11 +25,6 @@ import java.util.stream.DoubleStream;
 public interface ValueArray
 {
     /**
-     * Returns the number of samples
-     * @return 
-     */
-    double count();
-    /**
      * Returns last sample
      * @return 
      */

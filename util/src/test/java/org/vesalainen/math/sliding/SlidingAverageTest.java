@@ -33,6 +33,11 @@ public class SlidingAverageTest
     }
 
     @Test
+    public void test0()
+    {
+        assertEquals(1, (Integer.MAX_VALUE+1) - Integer.MAX_VALUE);
+    }
+    @Test
     public void test1()
     {
         SlidingAverage sa = new SlidingAverage(2);
@@ -76,5 +81,33 @@ public class SlidingAverageTest
         assertEquals(sa.fast(), sa.average(), Epsilon);
         assertEquals(5, sa.stream().average().getAsDouble(), Epsilon);
     }
-    
+    //@Test // takes about 2419 s
+    public void testOverflow()
+    {
+        SlidingAverage sa = new SlidingAverage(10);
+        for (int ii=1;ii<=10;ii++)
+        {
+            sa.accept(ii);
+        }
+        assertEquals((double)(sum(10))/10, sa.fast(), 1e-10);
+        for (long l=11L;l<0x100000000L;l++)
+        {
+            sa.accept(l);
+            double exp = (double)(sum(l)-sum(l-10))/10;
+            if (exp < 0)
+            {
+                break;
+            }
+            double ulp = Math.ulp(exp);
+            assertEquals("l="+l+" ulp="+ulp+" delta="+delta(exp, sa.fast()), exp, sa.fast(), ulp);
+        }
+    }
+    private static long sum(long v)
+    {
+        return (v*v+v)/2L;
+    }
+    private static double delta(double a, double b)
+    {
+        return a-b;
+    }
 }

@@ -16,6 +16,13 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.Arrays;
+import java.util.PrimitiveIterator.OfInt;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.stream.DoubleStream;
+
 /**
  * Abstract base class for sliding expression calculations. Sliding calculations means 
  * calculating expression for number of last samples or samples that are not older than given time.
@@ -23,36 +30,84 @@ package org.vesalainen.math.sliding;
  */
 public abstract class AbstractSliding
 {
-    protected int initialSize;
     protected int size;
-    protected int margin;
-    protected int begin;
-    protected int end;
+    protected double[] ring;
+    protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
+    protected ReadLock readLock = rwLock.readLock();
+    protected WriteLock writeLock = rwLock.writeLock();
+    private int begin;
+    private int end;
     /**
      * 
-     * @param size Initial size of ring buffer
+     * @param initialSize Initial size of ring buffer
      */
-    protected AbstractSliding(int size)
+    protected AbstractSliding(int initialSize)
     {
-        this.initialSize = size;
-        this.size = size;
-        this.margin = size/10;
+        if (Integer.bitCount(initialSize) == 1)
+        {
+            this.size = initialSize;
+        }
+        else
+        {
+            this.size = 1<<Integer.highestOneBit(initialSize);
+        }
+        ring = new double[size];
     }
     /**
+     * Returns number of active items. (end-begin)
+     * @return 
+     */
+    public int count()
+    {
+        readLock.lock();
+        try
+        {
+            return end - begin;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    /**
+     * Returns begin % size
+     * @return 
+     */
+    protected int beginMod()
+    {
+        return Math.floorMod(begin, size);
+    }
+    /**
+     * return end % size
+     * @return 
+     */
+    protected int endMod()
+    {
+        return Math.floorMod(end, size);
+    }
+    /**
+     * Increments end by 1
+     */
+    protected void endIncr()
+    {
+        end++;
+    }
+    /**
+     * @deprecated Returns -1
      * Returns number of free slots before grow. Default is initial size/10.
      * @return 
      */
     public int getMargin()
     {
-        return margin;
+        return -1;
     }
     /**
+     * @deprecated Does nothing
      * Sets number of free slots before grow. Default is initial size/10.
      * @param margin 
      */
     public void setMargin(int margin)
     {
-        this.margin = margin;
     }
 
     /**
@@ -72,11 +127,13 @@ public abstract class AbstractSliding
     protected void eliminate()
     {
         int count = end-begin;
-        while (count > 0 && isRemovable(begin%size))
+        int mod = Math.floorMod(begin, size);
+        while (count > 0 && isRemovable(mod))
         {
-            remove(begin%size);
+            remove(mod);
             begin++;
             count--;
+            mod = Math.floorMod(begin, size);
         }
     }
 
@@ -85,14 +142,13 @@ public abstract class AbstractSliding
      */
     protected abstract void grow();
     /**
-     * Returns new size for ringbuffer. This implementations returns 
-     * Math.max(begin % size, initialSize) + size;
-     * <p>Important! newSize cannot be less than in default implementation.
+     * Returns new size for ring buffer. This implementations returns 
+     * 2 * size;
      * @return 
      */
-    protected int newSize()
+    protected final int newSize()
     {
-        return Math.max(begin % size, initialSize) + size;
+        return 2*size;
     }
 
     /**
@@ -104,10 +160,39 @@ public abstract class AbstractSliding
      */
     protected Object newArray(Object old, int oldLen, Object arr)
     {
-        int sb = begin % oldLen;
-        int se = end % oldLen;
-        System.arraycopy(old, se, arr, se, oldLen - se);
-        System.arraycopy(old, 0, arr, oldLen, sb);
+        int sb = Math.floorMod(begin, oldLen);
+        int se = Math.floorMod(end, oldLen);
+        if (sb < se)
+        {
+            System.arraycopy(old, sb, arr, sb, se - sb);
+        }
+        else
+        {
+            System.arraycopy(old, sb, arr, sb, oldLen - sb);
+            System.arraycopy(old, 0, arr, 0, se);
+        }
+        return arr;
+    }
+    /**
+     * Copies old arrays contents to arr
+     * @param old
+     * @param oldLen
+     * @param arr 
+     * @return  
+     */
+    protected Object copy(Object old, int oldLen, Object arr)
+    {
+        int sb = Math.floorMod(begin, oldLen);
+        int se = Math.floorMod(end, oldLen);
+        if (sb < se)
+        {
+            System.arraycopy(old, sb, arr, 0, se - sb);
+        }
+        else
+        {
+            System.arraycopy(old, sb, arr, 0, oldLen - sb);
+            System.arraycopy(old, 0, arr, oldLen - sb, se);
+        }
         return arr;
     }
 
@@ -117,5 +202,91 @@ public abstract class AbstractSliding
      * @return
      */
     protected abstract boolean isRemovable(int index);
+    /**
+     * Returns iterator for each i%size where i is from begin to end-1.
+     * @return 
+     */
+    protected OfInt modIterator()
+    {
+        return new ModIter();
+    }
+    /**
+     * Returns iterator for each i%size where i is from end-1 to begin.
+     * @return 
+     */
+    protected OfInt modReverseIterator()
+    {
+        return new ModRev();
+    }
     
+    /**
+     * Returns values as array. Returned array is independent.
+     * @return 
+     */
+    public double[] toArray()
+    {
+        readLock.lock();
+        try
+        {
+            return (double[]) copy(ring, size, new double[count()]);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    /**
+     * Returns values as stream in the same order as entered. Stream is valid 
+     * only the time that takes to fill margin number of slots.
+     * @return 
+     */
+    public DoubleStream stream()
+    {
+        return Arrays.stream(toArray());
+    }
+
+    private class ModIter implements OfInt
+    {
+        private int index;
+
+        public ModIter()
+        {
+            this.index = begin;
+        }
+        
+        @Override
+        public boolean hasNext()
+        {
+            return index != end;
+        }
+        
+        @Override
+        public int nextInt()
+        {
+            return Math.floorMod(index++, size);
+        }
+
+    }
+    private class ModRev implements OfInt
+    {
+        private int index;
+
+        public ModRev()
+        {
+            this.index = end;
+        }
+        
+        @Override
+        public boolean hasNext()
+        {
+            return index != begin;
+        }
+        
+        @Override
+        public int nextInt()
+        {
+            return Math.floorMod(--index, size);
+        }
+
+    }
 }

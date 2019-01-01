@@ -34,7 +34,7 @@ public class SlidingAverage extends AbstractSlidingAverage
     @Override
     protected boolean isRemovable(int index)
     {
-        return end-begin >= size;
+        return count() >= windowSize;
     }
 
     @Override
