@@ -35,7 +35,16 @@ public class MergerTest
     }
 
     @Test
-    public void test1()
+    public void testComparator()
+    {
+        test(new IComparator());
+    }
+    @Test
+    public void testNatural()
+    {
+        test(null);
+    }
+    private void test(Comparator<Integer> comp)
     {
         List<Integer> l1 = new ArrayList<>();
         l1.add(1);
@@ -48,7 +57,7 @@ public class MergerTest
         l2.add(6);
         l2.add(7);
         l2.add(8);
-        Iterator<Integer> merged = Merger.merge(new IComparator(), l1.iterator(), l2.iterator());
+        Iterator<Integer> merged = Merger.merge(comp, l1.iterator(), l2.iterator());
         assertTrue(merged.hasNext());
         assertEquals(1, merged.next().intValue());
         assertTrue(merged.hasNext());

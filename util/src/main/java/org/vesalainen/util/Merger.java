@@ -19,6 +19,12 @@ package org.vesalainen.util;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  *
@@ -27,7 +33,17 @@ import java.util.Iterator;
 public class Merger
 {
     /**
-     * Merges argument iteras. Iterators should return values in comp order.
+     * Merges argument iterators. Iterators should return values in natural order.
+     * @param <T>
+     * @param iterables
+     * @return 
+     */
+    public static <T> Iterable<T> merge(Iterable<T>... iterables)
+    {
+        return merge(null, iterables);
+    }
+    /**
+     * Merges argument iterators. Iterators should return values in comp order.
      * @param <T>
      * @param comp
      * @param iterables
@@ -40,7 +56,17 @@ public class Merger
         {
             arr[ii] = iterables[ii].iterator();
         }
-        return new IterableImpl(merge(comp, arr));
+        return iterable(merge(comp, arr));
+    }
+    /**
+     * Merges argument iterators. Iterators should return values in natural order.
+     * @param <T>
+     * @param iterators
+     * @return 
+     */
+    public static <T> Iterator<T> merge(Iterator<T>... iterators)
+    {
+        return merge(null, iterators);
     }
     /**
      * Merges argument iterators. Iterators should return values in comp order.
@@ -63,7 +89,10 @@ public class Merger
                 return new IteratorImpl<>(comp, iterators[0], merge(comp, Arrays.copyOfRange(iterators, 1, iterators.length)));
         }
     }
-
+    public static <T> Iterable<T> iterable(Iterator<T> iterator)
+    {
+        return new IterableImpl(iterator);
+    }
     private static class IterableImpl<T> implements Iterable<T>
     {
         private Iterator<T> iterator;
@@ -77,6 +106,72 @@ public class Merger
         public Iterator<T> iterator()
         {
             return iterator;
+        }
+        
+    }
+    /**
+     * Returns Queue as iterator. Calls isEmpty and remove methods
+     * @param <T>
+     * @param queue
+     * @return 
+     */
+    public static <T> Iterator<T> iterator(Queue<T> queue)
+    {
+        return new XIteratorImpl<>(()->!queue.isEmpty(), queue::remove);
+    }
+    /**
+     * Returns Queue as iterator. Calls poll method
+     * @param <T>
+     * @param queue
+     * @return 
+     */
+    public static <T> Iterator<T> iterator(BlockingQueue<T> queue)
+    {
+        return iterator(queue, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+    /**
+     * Returns Queue as iterator. Calls poll method
+     * @param <T>
+     * @param queue
+     * @param time
+     * @param unit
+     * @return 
+     */
+    public static <T> Iterator<T> iterator(BlockingQueue<T> queue, long time, TimeUnit unit)
+    {
+        return new XIteratorImpl<>(()->true, ()->
+        {
+            try
+            {
+                return queue.poll(time, unit);
+            }
+            catch (InterruptedException ex)
+            {
+                throw new NoSuchElementException("interrupted");
+            }
+        });
+    }
+    private static class XIteratorImpl<T> implements Iterator<T>
+    {
+        private BooleanSupplier hasNext;
+        private Supplier<T> next;
+
+        public XIteratorImpl(BooleanSupplier hasNext, Supplier<T> next)
+        {
+            this.hasNext = hasNext;
+            this.next = next;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return hasNext.getAsBoolean();
+        }
+
+        @Override
+        public T next()
+        {
+            return next.get();
         }
         
     }
@@ -114,7 +209,7 @@ public class Merger
             {
                 return next1();
             }
-            if (comp.compare(v1, v2) < 0)
+            if (CollectionHelp.compare(v1, v2, comp) < 0)
             {
                 return next1();
             }
