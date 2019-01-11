@@ -105,7 +105,7 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
             for (Entry<Object, TimeoutSlidingStats> e2 : statsMap.entrySet())
             {
                 TimeoutSlidingStats stats = e2.getValue();
-                sb.append(String.format("%-20.20s %4.1f %8.0f %8.3f %8.3f %8.3f\n", 
+                sb.append(String.format("%-20.20s %4.1f %d %8.3f %8.3f %8.3f\n", 
                         e2.getKey(),
                         100*stats.count()/sum,
                         stats.count(),
