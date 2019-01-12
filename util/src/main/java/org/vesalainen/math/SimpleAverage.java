@@ -65,6 +65,16 @@ public class SimpleAverage implements Average
         return sum/count;
     }
 
+    public double getSum()
+    {
+        return sum;
+    }
+
+    public double getCount()
+    {
+        return count;
+    }
+
     @Override
     public String toString()
     {
