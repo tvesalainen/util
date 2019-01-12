@@ -87,6 +87,7 @@ public class Scaler
     }
     /**
      * Returns labels for level using default locale
+     * @param level
      * @return 
      */
     public List<String> getLabels(double level)
@@ -94,8 +95,9 @@ public class Scaler
         return getLabels(Locale.getDefault(), level);
     }
     /**
-     * Returns labels for 0-level
+     * Returns labels for level
      * @param locale
+     * @param level
      * @return 
      */
     public List<String> getLabels(Locale locale, double level)
@@ -108,6 +110,7 @@ public class Scaler
     }
     /**
      * Return format string for formatting 0-level labels
+     * @param level
      * @return 
      * @see java.lang.String#format(java.lang.String, java.lang.Object...) 
      */
@@ -221,7 +224,7 @@ public class Scaler
      */
     public DoubleStream stream(double level)
     {
-        return StreamSupport.doubleStream(Scaler.this.spliterator(level), false);
+        return StreamSupport.doubleStream(spliterator(level), false);
     }
     /**
      * Returns Spliterator for markers between min and max. 0-level returns less
