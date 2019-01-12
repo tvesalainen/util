@@ -43,4 +43,10 @@ public class SlidingMax extends AbstractSlidingBound implements Max
         return getBound();
     }
     
+    @Override
+    public String toString()
+    {
+        return "SlidingMax{" + getBound() + '}';
+    }
+    
 }

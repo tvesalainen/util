@@ -39,5 +39,11 @@ public class SlidingMin extends AbstractSlidingBound implements Min
     {
         return getBound();
     }
+
+    @Override
+    public String toString()
+    {
+        return "SlidingMin{" + getBound() + '}';
+    }
     
 }

@@ -16,10 +16,8 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.Arrays;
 import java.util.PrimitiveIterator;
 import java.util.function.DoubleConsumer;
-import java.util.stream.DoubleStream;
 
 /**
  * Base class for sliding average calculation

@@ -30,6 +30,7 @@ import java.util.stream.DoubleStream;
  */
 public abstract class AbstractSliding
 {
+    protected int initialSize;
     protected int size;
     protected double[] ring;
     protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
@@ -43,6 +44,7 @@ public abstract class AbstractSliding
      */
     protected AbstractSliding(int initialSize)
     {
+        this.initialSize = initialSize;
         if (Integer.bitCount(initialSize) == 1)
         {
             this.size = initialSize;
@@ -235,6 +237,12 @@ public abstract class AbstractSliding
             readLock.unlock();
         }
     }
+
+    public int getInitialSize()
+    {
+        return initialSize;
+    }
+    
     /**
      * Returns values as stream in the same order as entered. Stream is valid 
      * only the time that takes to fill margin number of slots.
