@@ -24,11 +24,11 @@ public class SlidingAverage extends AbstractSlidingAverage
 {
     /**
      * 
-     * @param size Initial size of ring buffer
+     * @param windowSize Initial size of ring buffer
      */
-    public SlidingAverage(int size)
+    public SlidingAverage(int windowSize)
     {
-        super(size);
+        super(windowSize);
     }
 
     @Override
