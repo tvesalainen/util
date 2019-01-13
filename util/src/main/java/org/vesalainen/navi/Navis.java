@@ -253,7 +253,7 @@ public class Navis
     }
     /**
      * Converts global hour angle to longitude
-     * @param gha
+     * @param gha in degrees
      * @return 
      */
     public static final double ghaToLongitude(double gha)
@@ -269,7 +269,7 @@ public class Navis
     }
     /**
      * Normalizes angle to be in 0 - 360
-     * @param deg
+     * @param deg in degrees
      * @return 
      */
     public static final double normalizeAngle(double deg)
@@ -371,7 +371,7 @@ public class Navis
     }
     /**
      * Convert full angle to signed angle -180 - 180. 340 -&gt; -20
-     * @param angle
+     * @param angle in degrees
      * @return
      */
     public  static final double signed(double angle)
@@ -387,7 +387,7 @@ public class Navis
         }
     }
     /**
-     * @param angle
+     * @param angle in degrees
      * @return angle normalized between 0 - 360 degrees
      */
     public  static final double normalizeToFullAngle(double angle)
@@ -404,8 +404,8 @@ public class Navis
         return angle;
     }
     /**
-     * @param anAngle1
-     * @param anAngle2
+     * @param anAngle1 in degrees
+     * @param anAngle2 in degrees
      * @return Angle difference normalized between 0 - 180 degrees. If anAngle2 is right to anAngle1 returns + signed
      */
     public static final double angleDiff(double anAngle1, double anAngle2)
