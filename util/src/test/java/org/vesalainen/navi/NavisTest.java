@@ -121,8 +121,9 @@ public class NavisTest
     public void testNormalizeToFullAngle()
     {
         assertEquals(45, Navis.normalizeToFullAngle(45), Epsilon);
-        assertEquals(350, Navis.normalizeToFullAngle(-10), Epsilon);
         assertEquals(10, Navis.normalizeToFullAngle(370), Epsilon);
+        assertEquals(350, Navis.normalizeToFullAngle(-10), Epsilon);
+        assertEquals(350, Navis.normalizeToFullAngle(-370), Epsilon);
     }
     @Test
     public void testSigned()

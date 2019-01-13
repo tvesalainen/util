@@ -34,7 +34,10 @@ public class SlidingAngleStats extends SlidingAngleAverage
         super(windowSize);
         angles = new double[size];
     }
-
+    /**
+     * Returns maximum angle in degrees
+     * @return 
+     */
     public double getMax()
     {
         readLock.lock();
@@ -48,7 +51,10 @@ public class SlidingAngleStats extends SlidingAngleAverage
             readLock.unlock();
         }
     }
-
+    /**
+     * Returns minimum angle in degrees
+     * @return 
+     */
     public double getMin()
     {
         readLock.lock();

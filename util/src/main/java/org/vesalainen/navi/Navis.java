@@ -387,6 +387,7 @@ public class Navis
         }
     }
     /**
+     * @deprecated Use normalizeAngle
      * @param angle in degrees
      * @return angle normalized between 0 - 360 degrees
      */

@@ -36,7 +36,14 @@ public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
         this.cos = new double[size];
         this.sin = new double[size];
     }
-
+    /**
+     * Add new value in radians
+     * @param rad 
+     */
+    public void acceptRad(double rad)
+    {
+        accept(Math.toDegrees(rad));
+    }
     /**
      * Adds new angle
      * @param value In Degrees

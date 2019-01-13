@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math;
 
+import org.vesalainen.navi.Navis;
+
 /**
  * Calculates angle average.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -60,15 +62,15 @@ public class AngleAverage implements Average
         cos += Math.cos(rad)*weight;
     }
     /**
-     * Returns average in degrees
+     * Returns average in degrees 0 - 360
      * @return 
      */
     public double averageDeg()
     {
-        return Math.toDegrees(average());
+        return Navis.normalizeToFullAngle(Math.toDegrees(average()));
     }
     /**
-     * Returns average in radians
+     * Returns average in radians -pi - pi
      * @return 
      */
     @Override
