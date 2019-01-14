@@ -17,8 +17,6 @@
 package org.vesalainen.math;
 
 import org.vesalainen.math.sliding.SlidingAngleStats;
-import org.vesalainen.math.sliding.SlidingMax;
-import org.vesalainen.math.sliding.SlidingMin;
 import org.vesalainen.navi.Navis;
 
 /**
@@ -28,23 +26,16 @@ import org.vesalainen.navi.Navis;
  */
 public class AngleAverageSeeker
 {
-    private double delta;
     private AngleAverage average;
     private SlidingAngleStats stats;
     /**
      * Creates AverageSeeker
      * @param windowSize How many last values are checked
-     * @param delta Last window size values must differ less than delta from average
      */
-    public AngleAverageSeeker(int windowSize, double delta)
+    public AngleAverageSeeker(int windowSize)
     {
         this.average = new AngleAverage();
         this.stats = new SlidingAngleStats(windowSize);
-        if (delta < 0)
-        {
-            throw new IllegalArgumentException("negative delta "+delta);
-        }
-        this.delta = delta;
     }
     /**
      * Add new value with 1.0 weight
@@ -67,14 +58,14 @@ public class AngleAverageSeeker
     }
     /**
      * Returns true if average is within given delta.
+     * @param delta
      * @return 
      */
-    public boolean isWithin()
+    public boolean isWithin(double delta)
     {
         if (stats.count() >= stats.getInitialSize())
         {
-            double fast = average.averageDeg();
-            return (Navis.angleDiff(stats.getMin(), fast) < delta && Navis.angleDiff(fast, stats.getMax()) < delta);
+            return (Navis.angleDiff(stats.getMin(), stats.getMax()) < delta);
         }
         else
         {

@@ -35,28 +35,28 @@ public class AngleAverageSeekerTest
     @Test
     public void test1()
     {
-        AngleAverageSeeker as = new AngleAverageSeeker(64, 1e-3);
+        AngleAverageSeeker as = new AngleAverageSeeker(64);
         Random rand = new Random(1234L);
         int count = 0;
-        while (!as.isWithin())
+        while (!as.isWithin(1e-3))
         {
             as.add(Navis.normalizeAngle(rand.nextGaussian()));
             count++;
         }
-        assertEquals(3359, count);
+        assertEquals(5828, count);
     }
     @Test
     public void test2()
     {
-        AngleAverageSeeker as = new AngleAverageSeeker(64, 1e-3);
+        AngleAverageSeeker as = new AngleAverageSeeker(64);
         Random rand = new Random(1234L);
         int count = 0;
-        while (!as.isWithin())
+        while (!as.isWithin(1e-3))
         {
             as.add(Navis.normalizeAngle(rand.nextGaussian())+180);
             count++;
         }
-        assertEquals(3359, count);
+        assertEquals(5828, count);
     }
     
 }

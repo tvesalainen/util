@@ -26,7 +26,6 @@ import org.vesalainen.math.sliding.SlidingMin;
  */
 public class AverageSeeker
 {
-    private double delta;
     private SimpleAverage average;
     private SlidingMin min;
     private SlidingMax max;
@@ -35,16 +34,11 @@ public class AverageSeeker
      * @param windowSize How many last values are checked
      * @param delta Last window size values must differ less than delta from average
      */
-    public AverageSeeker(int windowSize, double delta)
+    public AverageSeeker(int windowSize)
     {
         this.average = new SimpleAverage();
         this.min = new SlidingMin(windowSize);
         this.max = new SlidingMax(windowSize);
-        if (delta < 0)
-        {
-            throw new IllegalArgumentException("negative delta "+delta);
-        }
-        this.delta = delta;
     }
     /**
      * Add new value with 1.0 weight
@@ -70,12 +64,11 @@ public class AverageSeeker
      * Returns true if average is within given delta.
      * @return 
      */
-    public boolean isWithin()
+    public boolean isWithin(double delta)
     {
         if (average.getCount() > min.getInitialSize())
         {
-            double fast = average.fast();
-            return (fast - min.getMin() < delta && max.getMax() - fast < delta);
+            return (max.getMax() - min.getMin() < delta);
         }
         else
         {
