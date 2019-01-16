@@ -16,18 +16,24 @@
  */
 package org.vesalainen.math;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.vesalainen.math.sliding.SlidingAngleStats;
 import org.vesalainen.navi.Navis;
 
 /**
  * AverageSeeker is used to seek average value until values precision is within
  * given range.
+ * 
+ * <p>This class is thread-safe
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class AngleAverageSeeker
 {
     private AngleAverage average;
     private SlidingAngleStats stats;
+    protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
+    protected ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
+    protected ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
     /**
      * Creates AverageSeeker
      * @param windowSize How many last values are checked
@@ -52,9 +58,17 @@ public class AngleAverageSeeker
      */
     public void add(double value, double weight)
     {
-        average.addDeg(value, weight);
-        double fast = average.averageDeg();
-        stats.accept(fast);
+        writeLock.lock();
+        try
+        {
+            average.addDeg(value, weight);
+            double fast = average.averageDeg();
+            stats.accept(fast);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     /**
      * Returns true if average is within given delta.
@@ -63,13 +77,27 @@ public class AngleAverageSeeker
      */
     public boolean isWithin(double delta)
     {
-        if (stats.count() >= stats.getInitialSize())
+        readLock.lock();
+        try
         {
-            return (Navis.angleDiff(stats.getMin(), stats.getMax()) < delta);
+            if (stats.count() >= stats.getInitialSize())
+            {
+                return (Navis.angleDiff(stats.getMin(), stats.getMax()) < delta);
+            }
+            else
+            {
+                return false;
+            }
         }
-        else
+        finally
         {
-            return false;
+            readLock.unlock();
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "AngleAverageSeeker{"  + stats.getMin()+" - " + average.averageDeg()+ " - " + stats.getMax() + '}';
     }
 }

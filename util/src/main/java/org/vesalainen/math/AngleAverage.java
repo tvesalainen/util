@@ -67,7 +67,7 @@ public class AngleAverage implements Average
      */
     public double averageDeg()
     {
-        return Navis.normalizeToFullAngle(Math.toDegrees(average()));
+        return Navis.normalizeAngle(Math.toDegrees(average()));
     }
     /**
      * Returns average in radians -pi - pi

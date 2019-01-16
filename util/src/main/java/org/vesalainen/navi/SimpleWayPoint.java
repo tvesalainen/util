@@ -24,46 +24,47 @@ import org.vesalainen.util.Recyclable;
  */
 public class SimpleWayPoint implements WayPoint, Recyclable
 {
-    private long time;
-    private double latitude;
-    private double longitude;
+    protected long time;
+    protected double latitude;
+    protected double longitude;
+
+    public SimpleWayPoint(long time, double latitude, double longitude)
+    {
+        this.time = time;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
     @Override
     public long getTime()
     {
-        assert !isRecycled();
         return time;
     }
 
     public void setTime(long time)
     {
-        assert !isRecycled();
         this.time = time;
     }
 
     @Override
     public double getLatitude()
     {
-        assert !isRecycled();
         return latitude;
     }
 
     public void setLatitude(double latitude)
     {
-        assert !isRecycled();
         this.latitude = latitude;
     }
 
     @Override
     public double getLongitude()
     {
-        assert !isRecycled();
         return longitude;
     }
 
     public void setLongitude(double longitude)
     {
-        assert !isRecycled();
         this.longitude = longitude;
     }
 
