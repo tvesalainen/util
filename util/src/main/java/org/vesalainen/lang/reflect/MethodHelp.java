@@ -17,6 +17,9 @@
 package org.vesalainen.lang.reflect;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  *
@@ -26,6 +29,7 @@ public final class MethodHelp
 {
     public static Method getAssignableMethod(Class<?> cls, String name, Class<?>... types) throws NoSuchMethodException
     {
+        List<Method> list = new ArrayList<>();
         for (Method method : cls.getMethods())
         {
             if (method.getName().equals(name))
@@ -44,11 +48,45 @@ public final class MethodHelp
                     }
                     if (ok)
                     {
-                        return method;
+                        list.add(method);
                     }
                 }
             }
         }
-        throw new NoSuchMethodException();
+        switch (list.size())
+        {
+            case 0:
+                throw new NoSuchMethodException();
+            default:
+                list.sort(new Comp());
+            case 1:
+                return list.get(0);
+        }
+    }
+    private static class Comp implements Comparator<Method>
+    {
+
+        @Override
+        public int compare(Method o1, Method o2)
+        {
+            Class<?>[] p1 = o1.getParameterTypes();
+            Class<?>[] p2 = o2.getParameterTypes();
+            for (int ii=0;ii<p1.length;ii++)
+            {
+                if (!p1[ii].equals(p2[ii]))
+                {
+                    if (p1[ii].isAssignableFrom(p2[ii]))
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("should not came here!");
+        }
+        
     }
 }
