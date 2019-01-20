@@ -213,4 +213,10 @@ public class CharSequencesTest
         assertEquals('r', seq2.charAt(0));
         assertEquals('y', seq2.charAt(2));
     }
+    @Test
+    public void testToUpper()
+    {
+        CharSequence toUpper = CharSequences.toUpper("qwerty");
+        assertEquals("QWERTY", toUpper.toString());
+    }
 }

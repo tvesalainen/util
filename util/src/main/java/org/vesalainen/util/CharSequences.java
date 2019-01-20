@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.Stream;
@@ -191,8 +192,7 @@ public class CharSequences
      */
     public static String toString(CharSequence seq)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(seq);
+        StringBuilder sb = new StringBuilder(seq);
         return sb.toString();
     }
     /**
@@ -723,6 +723,77 @@ public class CharSequences
         public String toString()
         {
             return new String(buf, offset, length, US_ASCII);
+        }
+        
+    }
+    /**
+     * Returns a new CharSequences with all characters converted to lower-case
+     * <p>Note that new CharSequences is backed with original. Changed to original
+     * will reflect in new.
+     * @param seq
+     * @return 
+     */
+    public static final CharSequence toUpper(CharSequence seq)
+    {
+        return toX(seq, Character::toUpperCase);
+    }
+    /**
+     * Returns a new CharSequences with all characters converted to upper-case
+     * <p>Note that new CharSequences is backed with original. Changed to original
+     * will reflect in new.
+     * @param seq
+     * @return 
+     */
+    public static final CharSequence toLower(CharSequence seq)
+    {
+        return toX(seq, Character::toLowerCase);
+    }
+    /**
+     * Returns a new CharSequences with all characters converted using converter
+     * function.
+     * <p>Note that new CharSequences is backed with original. Changed to original
+     * will reflect in new.
+     * @param seq
+     * @param converter
+     * @return 
+     */
+    public static final CharSequence toX(CharSequence seq, IntUnaryOperator converter)
+    {
+        return new ConvertingCharSequence(seq, converter);
+    }
+    private static class ConvertingCharSequence implements CharSequence
+    {
+        private CharSequence seq;
+        private IntUnaryOperator converter;
+
+        public ConvertingCharSequence(CharSequence seq, IntUnaryOperator converter)
+        {
+            this.seq = seq;
+            this.converter = converter;
+        }
+        
+        @Override
+        public int length()
+        {
+            return seq.length();
+        }
+
+        @Override
+        public char charAt(int index)
+        {
+            return (char) converter.applyAsInt(seq.charAt(index));
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end)
+        {
+            return new ConvertingCharSequence(seq.subSequence(start, end), converter);
+        }
+
+        @Override
+        public String toString()
+        {
+            return CharSequences.toString(this);
         }
         
     }
