@@ -26,8 +26,14 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
 /**
- *
+ * URLStreamHandlerFactoryImpl implements URLStreamHandlerFactory with raw
+ * protocol.
+ * TCP protocol handles tcp socket connection to port. 
+ * <p>TCP connection to host pi2 and port 10111 is tcp://pi2:10111
+ * <p>Use URL.setURLStreamHandlerFactory(new URLStreamHandlerFactoryImpl());
+ * to activate.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see java.net.URL#setURLStreamHandlerFactory(java.net.URLStreamHandlerFactory) 
  */
 public class URLStreamHandlerFactoryImpl implements URLStreamHandlerFactory
 {
@@ -37,16 +43,16 @@ public class URLStreamHandlerFactoryImpl implements URLStreamHandlerFactory
     {
         switch (protocol)
         {
-            case "raw":
-                return new RawURLStreamHandler();
+            case "tcp":
+                return new TCPURLStreamHandler();
             default:
                 return null;
         }
     }
-    public class RawURLStreamHandler extends URLStreamHandler
+    public class TCPURLStreamHandler extends URLStreamHandler
     {
 
-        public RawURLStreamHandler()
+        public TCPURLStreamHandler()
         {
         }
 

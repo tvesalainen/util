@@ -49,7 +49,7 @@ public class URLStreamHandlerFactoryImplTest
     //@Test
     public void test1() throws URISyntaxException, MalformedURLException, IOException
     {
-        URI uri = new URI("raw", null, "pi2", 10111, null, null, null);
+        URI uri = new URI("tcp", null, "pi2", 10111, null, null, null);
         URL u = uri.toURL();
         InputStream is = u.openStream();
         int rc = is.read();
