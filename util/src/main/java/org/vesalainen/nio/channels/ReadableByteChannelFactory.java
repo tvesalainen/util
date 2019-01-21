@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @deprecated Duplicates URLConnection
  * ReadableByteChannelFactory contains some convenient methods to create ReadableByteChannels.
  * 
  * <p>Note that for URL (URI) protocols, only file and http have currently support
