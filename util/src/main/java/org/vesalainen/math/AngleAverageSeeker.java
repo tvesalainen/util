@@ -98,6 +98,7 @@ public class AngleAverageSeeker
     @Override
     public String toString()
     {
-        return "AngleAverageSeeker{"  + stats.getMin()+" - " + average.averageDeg()+ " - " + stats.getMax() + '}';
+        double averageDeg = average.averageDeg();
+        return "AngleAverageSeeker{"  + averageDeg + " ± " + Math.max(Navis.angleDiff(stats.getMax(), averageDeg), Navis.angleDiff(averageDeg, stats.getMin())) + '}';
     }
 }

@@ -38,7 +38,6 @@ public class AverageSeeker
     /**
      * Creates AverageSeeker
      * @param windowSize How many last values are checked
-     * @param delta Last window size values must differ less than delta from average
      */
     public AverageSeeker(int windowSize)
     {
@@ -101,7 +100,8 @@ public class AverageSeeker
     @Override
     public String toString()
     {
-        return "AverageSeeker{" + min.getMin()+" - " + average.fast() + " - " + max.getMax() + '}';
+        double fast = average.fast();
+        return "AverageSeeker{" + fast + " ± " + Math.max(max.getMax()-fast, fast-min.getMin()) + '}';
     }
     
 }
