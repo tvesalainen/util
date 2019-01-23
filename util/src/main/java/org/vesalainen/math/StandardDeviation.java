@@ -59,7 +59,7 @@ public class StandardDeviation implements DoubleConsumer
     
     public double getStandardDeviation()
     {
-        return squareSum/count;
+        return Math.sqrt(squareSum/count);
     }
 
     @Override

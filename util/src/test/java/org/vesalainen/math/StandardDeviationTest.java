@@ -40,7 +40,7 @@ public class StandardDeviationTest
         {
             sd.accept(random.nextGaussian());
         }
-        assertEquals(1.0, sd.getStandardDeviation(), 1e-2);
+        assertEquals(1.0, sd.getStandardDeviation(), 1e-3);
     }
     
 }
