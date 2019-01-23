@@ -412,10 +412,10 @@ public class Navis
     public static final double angleDiff(double anAngle1, double anAngle2)
     {
         double angle;
-        anAngle1 = normalizeToFullAngle(anAngle1);
-        anAngle2 = normalizeToFullAngle(anAngle2);
+        anAngle1 = normalizeAngle(anAngle1);
+        anAngle2 = normalizeAngle(anAngle2);
         angle = anAngle2 - anAngle1;
-        angle = normalizeToFullAngle(angle);
+        angle = normalizeAngle(angle);
         return signed(angle);
     }
 
