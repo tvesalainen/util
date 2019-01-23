@@ -71,6 +71,30 @@ public class AngleAverageSeeker
         }
     }
     /**
+     * Returns average angle in degrees
+     * @return 
+     */
+    public double average()
+    {
+        return average.averageDeg();
+    }
+    /**
+     * Returns maximum angle clockwise from average
+     * @return 
+     */
+    public double min()
+    {
+        return stats.getMin();
+    }
+    /**
+     * Returns minimum angle counter clockwise from average
+     * @return 
+     */
+    public double max()
+    {
+        return stats.getMax();
+    }
+    /**
      * Returns true if average is within given delta.
      * @param delta
      * @return 
@@ -99,6 +123,6 @@ public class AngleAverageSeeker
     public String toString()
     {
         double averageDeg = average.averageDeg();
-        return "AngleAverageSeeker{"  + averageDeg + " ± " + Math.max(Navis.angleDiff(stats.getMax(), averageDeg), Navis.angleDiff(averageDeg, stats.getMin())) + '}';
+        return "AngleAverageSeeker{"  + averageDeg + " ± " + Math.max(Navis.angleDiff(averageDeg, stats.getMax()), Navis.angleDiff(stats.getMin(), averageDeg)) + '}';
     }
 }
