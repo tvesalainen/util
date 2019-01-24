@@ -19,7 +19,6 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -73,32 +72,56 @@ public class Plotter extends AbstractView
         this.background = background;
         this.keepAspectRatio = keepAspectRatio;
     }
-
+    /**
+     * Clears the screen
+     */
     public void clear()
     {
         drawables.clear();
     }
-    
+    /**
+     * Set default directory for plotting. Affects only plot methods with String
+     * filename.
+     * @param dir 
+     */
     public void setDir(File dir)
     {
         this.dir = dir;
     }
-
-    public void setLocale(Locale locale)
+    /**
+     * Set locale
+     * @param locale 
+     * @return  
+     */
+    public Plotter setLocale(Locale locale)
     {
         this.locale = locale;
+        return this;
     }
-
-    public void setColor(Color color)
+    /**
+     * Set color for following drawings
+     * @param color
+     * @return 
+     */
+    public Plotter setColor(Color color)
     {
         this.color = color;
+        return this;
     }
-
-    public void setFont(String fontName, int fontStyle, double fontSize)
+    /**
+     * Set font
+     * @param fontName
+     * @param fontStyle
+     * @param fontSize
+     * @return 
+     * @see java.awt.Font
+     */
+    public Plotter setFont(String fontName, int fontStyle, double fontSize)
     {
         this.fontName = fontName;
         this.fontStyle = fontStyle;
         this.fontSize = fontSize;
+        return this;
     }
 
     public void drawText(double x, double y, String text)
