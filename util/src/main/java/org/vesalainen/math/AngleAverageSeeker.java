@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.vesalainen.math.sliding.SlidingAngleStats;
 import org.vesalainen.navi.Navis;
 
@@ -27,19 +26,17 @@ import org.vesalainen.navi.Navis;
  * <p>This class is thread-safe
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AngleAverageSeeker
+public class AngleAverageSeeker extends AbstractSeeker
 {
     private AngleAverage average;
     private SlidingAngleStats stats;
-    protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
-    protected ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
-    protected ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
     /**
      * Creates AverageSeeker
      * @param windowSize How many last values are checked
      */
-    public AngleAverageSeeker(int windowSize)
+    public AngleAverageSeeker(int windowSize, double tolerance, Runnable action)
     {
+        super(tolerance, action);
         this.average = new AngleAverage();
         this.stats = new SlidingAngleStats(windowSize);
     }
@@ -64,6 +61,7 @@ public class AngleAverageSeeker
             average.addDeg(value, weight);
             double fast = average.averageDeg();
             stats.accept(fast);
+            check();
         }
         finally
         {
@@ -77,6 +75,14 @@ public class AngleAverageSeeker
     public double average()
     {
         return average.averageDeg();
+    }
+    /**
+     * Returns maximum deviation.
+     * @return 
+     */
+    public double deviation()
+    {
+        return deviation(average());
     }
     /**
      * Returns maximum angle clockwise from average
@@ -118,11 +124,14 @@ public class AngleAverageSeeker
             readLock.unlock();
         }
     }
-
+    protected double deviation(double averageDeg)
+    {
+        return Math.max(Navis.angleDiff(averageDeg, stats.getMax()), Navis.angleDiff(stats.getMin(), averageDeg));
+    }
     @Override
     public String toString()
     {
         double averageDeg = average.averageDeg();
-        return "AngleAverageSeeker{"  + averageDeg + " ± " + Math.max(Navis.angleDiff(averageDeg, stats.getMax()), Navis.angleDiff(stats.getMin(), averageDeg)) + '}';
+        return "AngleAverageSeeker{"  + averageDeg + " ± " + deviation(averageDeg) + '}';
     }
 }

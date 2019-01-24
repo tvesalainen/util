@@ -34,7 +34,7 @@ public class AverageSeekerTest
     @Test
     public void test1()
     {
-        AverageSeeker as = new AverageSeeker(64);
+        AverageSeeker as = new AverageSeeker(64, 1e-3, ()->System.err.println("done"));
         Random rand = new Random(1234L);
         int count = 0;
         while (!as.isWithin(1e-3))
@@ -42,7 +42,7 @@ public class AverageSeekerTest
             as.add(rand.nextGaussian());
             count++;
         }
-        assertEquals(5828, count);
+        assertEquals(3359, count);
     }
     
 }

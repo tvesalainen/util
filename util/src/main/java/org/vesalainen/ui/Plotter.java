@@ -539,6 +539,11 @@ public class Plotter extends AbstractView
             }
         }
     }
+    /**
+     * Creates a Polyline. Use drawPolyline to add it to plotter.
+     * @param color
+     * @return 
+     */
     public Polyline polyline(Color color)
     {
         return new Polyline(this, color);

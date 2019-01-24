@@ -27,37 +27,28 @@ import org.vesalainen.math.sliding.SlidingMin;
  * <p>This class is thread-safe
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AverageSeeker
+public class AverageSeeker extends AbstractSeeker
 {
     private SimpleAverage average;
     private SlidingMin min;
     private SlidingMax max;
-    protected ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
-    protected ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
-    protected ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
     /**
      * Creates AverageSeeker
      * @param windowSize How many last values are checked
      */
-    public AverageSeeker(int windowSize)
+    public AverageSeeker(int windowSize, double tolerance, Runnable action)
     {
+        super(tolerance, action);
         this.average = new SimpleAverage();
         this.min = new SlidingMin(windowSize);
         this.max = new SlidingMax(windowSize);
-    }
-    /**
-     * Add new value with 1.0 weight
-     * @param value 
-     */
-    public void add(double value)
-    {
-        add(value, 1.0);
     }
     /**
      * Add new value with weight
      * @param value
      * @param weight 
      */
+    @Override
     public void add(double value, double weight)
     {
         writeLock.lock();
@@ -67,6 +58,7 @@ public class AverageSeeker
             double fast = average.fast();
             min.accept(fast);
             max.accept(fast);
+            check();
         }
         finally
         {
@@ -77,6 +69,7 @@ public class AverageSeeker
      * Returns true if average is within given delta.
      * @return 
      */
+    @Override
     public boolean isWithin(double delta)
     {
         readLock.lock();
@@ -84,7 +77,7 @@ public class AverageSeeker
         {
             if (average.getCount() > min.getInitialSize())
             {
-                return (max.getMax() - min.getMin() < delta);
+                return (deviation() < delta);
             }
             else
             {
@@ -95,6 +88,31 @@ public class AverageSeeker
         {
             readLock.unlock();
         }
+    }
+
+    @Override
+    public double average()
+    {
+        return average.fast();
+    }
+
+    @Override
+    public double deviation()
+    {
+        double fast = average.fast();
+        return Math.max(fast-min.getMin(), max.getMax()-fast);
+    }
+
+    @Override
+    public double max()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public double min()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

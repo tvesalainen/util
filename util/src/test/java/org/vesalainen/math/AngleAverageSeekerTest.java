@@ -35,7 +35,7 @@ public class AngleAverageSeekerTest
     @Test
     public void test1()
     {
-        AngleAverageSeeker as = new AngleAverageSeeker(64);
+        AngleAverageSeeker as = new AngleAverageSeeker(64, 1e-3, ()->System.err.println("done"));
         Random rand = new Random(1234L);
         int count = 0;
         while (!as.isWithin(1e-3))
@@ -48,7 +48,7 @@ public class AngleAverageSeekerTest
     @Test
     public void test2()
     {
-        AngleAverageSeeker as = new AngleAverageSeeker(64);
+        AngleAverageSeeker as = new AngleAverageSeeker(64, 1e-3, ()->System.err.println("done"));
         Random rand = new Random(1234L);
         int count = 0;
         while (!as.isWithin(1e-3))
