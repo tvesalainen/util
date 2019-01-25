@@ -31,7 +31,18 @@ public class AngleAverageSeeker extends AbstractSeeker
     private AngleAverage average;
     private SlidingAngleStats stats;
     /**
-     * Creates AverageSeeker
+     * Creates AngleAverageSeeker
+     * @param windowSize
+     * @param action 
+     */
+    public AngleAverageSeeker(int windowSize)
+    {
+        this(windowSize, -1, null);
+        done = true;
+    }
+    
+    /**
+     * Creates AngleAverageSeeker
      * @param windowSize How many last values are checked
      */
     public AngleAverageSeeker(int windowSize, double tolerance, Runnable action)

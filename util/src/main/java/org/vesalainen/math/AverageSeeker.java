@@ -34,7 +34,18 @@ public class AverageSeeker extends AbstractSeeker
     private SlidingMax max;
     /**
      * Creates AverageSeeker
+     * @param windowSize 
+     */
+    public AverageSeeker(int windowSize)
+    {
+        this(windowSize, -1, null);
+        done = true;
+    }
+    /**
+     * Creates AverageSeeker
      * @param windowSize How many last values are checked
+     * @param tolerance How much min/max cab differ from sliding average
+     * @param action Called once when tolerance is reached
      */
     public AverageSeeker(int windowSize, double tolerance, Runnable action)
     {

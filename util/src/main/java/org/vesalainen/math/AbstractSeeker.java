@@ -36,7 +36,26 @@ public abstract class AbstractSeeker
         this.tolerance = tolerance;
         this.action = action;
     }
-    
+    /**
+     * Reset
+     * @param newTolerance 
+     */
+    public void reset(double newTolerance)
+    {
+        this.tolerance = newTolerance;
+        done = false;
+    }
+    /**
+     * Reset
+     * @param newTolerance
+     * @param newAction 
+     */
+    public void reset(double newTolerance, Runnable newAction)
+    {
+        this.tolerance = newTolerance;
+        this.action = newAction;
+        done = false;
+    }
     protected void check()
     {
         if (!done)
