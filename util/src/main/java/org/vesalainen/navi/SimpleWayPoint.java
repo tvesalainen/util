@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import java.time.Instant;
 import org.vesalainen.util.Recyclable;
 
 /**
@@ -74,6 +75,12 @@ public class SimpleWayPoint implements WayPoint, Recyclable
         time = 0;
         latitude = 0;
         longitude = 0;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SimpleWayPoint{" + "time=" + Instant.ofEpochMilli(time) + '}';
     }
     
 }
