@@ -17,6 +17,11 @@
 
 package org.vesalainen.ui;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Polygon;
@@ -28,7 +33,7 @@ import org.vesalainen.math.Rect;
  * In cartesian coordinates y grows up, while in screen coordinates y grows down.
  * 
  * <p>Use setScreen to set screen size. setRect sets the limits to used 
- * coordinates. Translation maintains aspect ratio.
+ * coordinates. Translation maintains aspect ratio if keepAspectRatio=true.
  * @author Timo Vesalainen
  */
 public class AbstractView
@@ -45,21 +50,43 @@ public class AbstractView
     protected double scaleY;
     protected boolean calculated;
     protected boolean keepAspectRatio;
-
+    protected AffineTransform transform = new AffineTransform();
+    private ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
+    private ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
+    /**
+     * Creates AbstractView which keeps aspect-ratio. Initial size is zero.
+     */
     public AbstractView()
     {
         this(true);
     }
-
+    /**
+     * Creates AbstractView with given aspect-ratio. Initial size is zero.
+     * @param keepAspectRatio 
+     */
     public AbstractView(boolean keepAspectRatio)
     {
         this(keepAspectRatio, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
     }
-
+    /**
+     * Creates AbstractView which keeps aspect-ratio with given initial size.
+     * @param xMin
+     * @param xMax
+     * @param yMin
+     * @param yMax 
+     */
     public AbstractView(double xMin, double xMax, double yMin, double yMax)
     {
         this(true, xMin, xMax, yMin, yMax);
     }
+    /**
+     * Creates AbstractView with given aspect-ratio with given initial size.
+     * @param keepAspectRatio
+     * @param xMin
+     * @param xMax
+     * @param yMin
+     * @param yMax 
+     */
     public AbstractView(boolean keepAspectRatio, double xMin, double xMax, double yMin, double yMax)
     {
         this.keepAspectRatio = keepAspectRatio;
@@ -114,6 +141,7 @@ public class AbstractView
                 xOff = -scaleX*xMin;
                 yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
             }
+            transform.setTransform(scaleX, 0, 0, -scaleY, xOff, yOff);
             calculated = true;
         }
     }
@@ -259,6 +287,17 @@ public class AbstractView
         calculated = false;
     }
     /**
+     * Returns AffineTransform
+     * @return 
+     */
+    public AffineTransform getTransform()
+    {
+        calculate();
+        return transform;
+    }
+    
+    /**
+     * @deprecated Use AffineTransform
      * Translates cartesian x-coordinate to screen coordinate.
      * @param x
      * @return 
@@ -266,9 +305,15 @@ public class AbstractView
     public double toScreenX(double x)
     {
         calculate();
-        return scaleX * x + xOff;
+        Point2D src = srcPnt.get();
+        Point2D dst = dstPnt.get();
+        src.setLocation(x, 0);
+        transform.transform(src, dst);
+        return dst.getX();
+        //return scaleX * x + xOff;
     }
     /**
+     * @deprecated Use AffineTransform
      * Translates cartesian y-coordinate to screen coordinate.
      * @param y
      * @return 
@@ -276,27 +321,58 @@ public class AbstractView
     public double toScreenY(double y)
     {
         calculate();
-        return - scaleY * y + yOff;
+        Point2D src = srcPnt.get();
+        Point2D dst = dstPnt.get();
+        src.setLocation(0, y);
+        transform.transform(src, dst);
+        return dst.getY();
+        //return - scaleY * y + yOff;
     }
     /**
+     * @deprecated Use AffineTransform
      * Translates screen x-coordinate to cartesian coordinate.
      * @param x
      * @return 
      */
     public double fromScreenX(double x)
     {
-        calculate();
-        return (x - xOff) / scaleX;
+        try
+        {
+            calculate();
+            Point2D src = srcPnt.get();
+            Point2D dst = dstPnt.get();
+            src.setLocation(x, 0);
+            transform.inverseTransform(src, dst);
+            return dst.getX();
+            //return (x - xOff) / scaleX;
+        }
+        catch (NoninvertibleTransformException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
     /**
+     * @deprecated Use AffineTransform
      * Translates screen y-coordinate to cartesian coordinate.
      * @param y
      * @return 
      */
     public double fromScreenY(double y)
     {
-        calculate();
-        return - (y - yOff) / scaleY;
+        try
+        {
+            calculate();
+            Point2D src = srcPnt.get();
+            Point2D dst = dstPnt.get();
+            src.setLocation(0, y);
+            transform.inverseTransform(src, dst);
+            return dst.getY();
+            //return - (y - yOff) / scaleY;
+        }
+        catch (NoninvertibleTransformException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
     /**
      * Scales the argument to screen scaleToScreen.
@@ -309,18 +385,17 @@ public class AbstractView
         {
             throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
         }
-        calculate();
-        return d * scaleY;
+        return scaleToScreenX(d);
     }
     public double scaleToScreenX(double d)
     {
         calculate();
-        return d * scaleX;
+        return d * transform.getScaleX();
     }
     public double scaleToScreenY(double d)
     {
         calculate();
-        return d * scaleY;
+        return d * transform.getScaleY();
     }
     public double scaleFromScreen(double d)
     {
