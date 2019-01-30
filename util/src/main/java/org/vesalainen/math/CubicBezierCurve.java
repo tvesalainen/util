@@ -22,7 +22,7 @@ import java.io.Serializable;
 /**
  * This class implements a Cubic Bezier Curve
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @see <a href="http://www.math.ucla.edu/~baker/149.1.02w/handouts/bb_bezier.pdf">bb_bezier.pdf</a>
+ * @see <a href="bb_bezier.pdf">http://www.math.ucla.edu/~baker/149.1.02w/handouts/bb_bezier.pdf</a>
  */
 public class CubicBezierCurve implements Serializable
 {
