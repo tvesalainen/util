@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class LineDrawerTest
         Point start = new Point(-3, 1);
         Point end = new Point(3, 1);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(7, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(6));
@@ -49,7 +50,7 @@ public class LineDrawerTest
         Point start = new Point(3, 1);
         Point end = new Point(-3, 1);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(7, list.size());
         assertEquals(end, list.get(0));
         assertEquals(start, list.get(6));
@@ -60,7 +61,7 @@ public class LineDrawerTest
         Point start = new Point(1, -3);
         Point end = new Point(1, 3);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(7, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(6));
@@ -71,7 +72,7 @@ public class LineDrawerTest
         Point start = new Point(1, 3);
         Point end = new Point(1, -3);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(7, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(6));
@@ -82,7 +83,7 @@ public class LineDrawerTest
         Point start = new Point(-3, -3);
         Point end = new Point(3, 3);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(7, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(6));
@@ -93,7 +94,7 @@ public class LineDrawerTest
         Point start = new Point(-2, -1);
         Point end = new Point(6, 3);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(9, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(8));
@@ -104,7 +105,7 @@ public class LineDrawerTest
         Point start = new Point(-2, -1);
         Point end = new Point(3, 6);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(8, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(7));
@@ -115,7 +116,7 @@ public class LineDrawerTest
         Point start = new Point(-1, -1);
         Point end = new Point(6, -3);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(8, list.size());
         assertEquals(start, list.get(0));
         assertEquals(end, list.get(7));
@@ -126,7 +127,7 @@ public class LineDrawerTest
         Point start = new Point(1, 1);
         Point end = new Point(-3, 6);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(6, list.size());
         assertEquals(end, list.get(0));
         assertEquals(start, list.get(5));
@@ -137,7 +138,7 @@ public class LineDrawerTest
         Point start = new Point(1, 1);
         Point end = new Point(-3, -6);
         List<Point> list = new ArrayList<>();
-        LineDrawer.drawLine(start, end, (int x, int y)->list.add(new Point(x,y)));
+        LineDrawer.drawLine(start, end, (int x, int y, Color c)->list.add(new Point(x,y)), null);
         assertEquals(8, list.size());
         assertEquals(end, list.get(0));
         assertEquals(start, list.get(7));

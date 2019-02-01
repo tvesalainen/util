@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.Color;
 import java.awt.Point;
 
 /**
@@ -30,10 +31,11 @@ public final class LineDrawer
      * @param p1
      * @param p2
      * @param plot 
+     * @param color 
      */
-    public static void drawLine(Point p1, Point p2, PlotOperator plot)
+    public static void drawLine(Point p1, Point p2, PlotOperator plot, Color color)
     {
-        drawLine(p1.x, p1.y, p2.x, p2.y, plot);
+        drawLine(p1.x, p1.y, p2.x, p2.y, plot, color);
     }
     /**
      * Draws line ((x0, y0), (x1, y1)) by plotting points using plot
@@ -42,27 +44,28 @@ public final class LineDrawer
      * @param x1
      * @param y1
      * @param plot 
+     * @param color 
      */
-    public static void drawLine(int x0, int y0, int x1, int y1, PlotOperator plot)
+    public static void drawLine(int x0, int y0, int x1, int y1, PlotOperator plot, Color color)
     {
         if (x0 > x1)
         {
-            drawLine(x1, y1, x0, y0, plot);
+            drawLine(x1, y1, x0, y0, plot, color);
         }
         else
         {
             if (y0 > y1)
             {
-                drawLine(x0, -y0, x1, -y1, (x, y) -> plot.plot(x, -y));
+                drawLine(x0, -y0, x1, -y1, (x, y, c) -> plot.plot(x, -y, c), color);
             }
             else
             {
-                drawLine1(x0, y0, x1, y1, plot);    // ok to go ahead
+                drawLine1(x0, y0, x1, y1, plot, color);    // ok to go ahead
             }
         }
     }
 
-    private static void drawLine1(int x0, int y0, int x1, int y1, PlotOperator plot)
+    private static void drawLine1(int x0, int y0, int x1, int y1, PlotOperator plot, Color color)
     {
         assert x0 <= x1;
         assert y0 <= y1;
@@ -70,21 +73,21 @@ public final class LineDrawer
         double deltay = y1 - y0;
         if (deltay <= deltax)
         {
-            drawLine1(x0, y0, x1, plot, deltay, Math.abs(deltay / deltax));
+            drawLine1(x0, y0, x1, plot, deltay, Math.abs(deltay / deltax), color);
         }
         else
         {
-            drawLine1(y0, x0, y1, (x, y) -> plot.plot(y, x), deltax, Math.abs(deltax / deltay));
+            drawLine1(y0, x0, y1, (x, y, c) -> plot.plot(y, x, c), deltax, Math.abs(deltax / deltay), color);
         }
     }
-    private static void drawLine1(int x0, int y0, int x1, PlotOperator plot, double deltay, double deltaerr)
+    private static void drawLine1(int x0, int y0, int x1, PlotOperator plot, double deltay, double deltaerr, Color color)
     {
         double error = 0.0;
         int y = y0;
         double signum = Math.signum(deltay);
         for (int x = x0;x<=x1;x++)
         {
-            plot.plot(x, y);
+            plot.plot(x, y, color);
             error += deltaerr;
             if (error >= 0.5)
             {

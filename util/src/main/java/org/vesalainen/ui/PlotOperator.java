@@ -16,6 +16,8 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.Color;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -23,5 +25,5 @@ package org.vesalainen.ui;
 @FunctionalInterface
 public interface PlotOperator
 {
-    void plot(int x, int y);
+    void plot(int x, int y, Color color);
 }
