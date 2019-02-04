@@ -30,6 +30,15 @@ public class Rect implements Serializable
     public double yMax = Double.NaN;
     public double xMin = Double.NaN;
     public double yMin = Double.NaN;
+
+    public Rect()
+    {
+    }
+
+    public Rect(double xMin, double xMax, double yMin, double yMax)
+    {
+        setRect(xMin, xMax, yMin, yMax);
+    }
     
     public boolean isInside(double x, double y)
     {
