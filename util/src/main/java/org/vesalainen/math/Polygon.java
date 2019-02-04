@@ -87,14 +87,26 @@ public class Polygon implements Serializable
      */
     public static boolean isRawHit(DenseMatrix64F points, double testx, double testy)
     {
+        return isRawHit(points.data, points.numRows, testx, testy);
+    }
+    /**
+     * Returns true if point is inside a polygon.
+     * <p>Doesn't check the bounding rectangle!
+     * @param data x1, y1, x2, y2, ...
+     * @param points Number of points (xi, yi)
+     * @param testx
+     * @param testy
+     * @return 
+     * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in Polygon Test W. Randolph Franklin (WRF)</a>
+     */
+    public static boolean isRawHit(double[] data, int points, double testx, double testy)
+    {
         boolean c = false;
-        int nvert = points.numRows;
         int i, j;
-        double[] d = points.data;
-        for (i = 0, j = nvert - 1; i < nvert; j = i++)
+        for (i = 0, j = points - 1; i < points; j = i++)
         {
-            if (((d[2*i+1] > testy) != (d[2*j+1] > testy))
-                    && (testx < (d[2*j] - d[2*i]) * (testy - d[2*i+1]) / (d[2*j+1] - d[2*i+1]) + d[2*i]))
+            if (((data[2*i+1] > testy) != (data[2*j+1] > testy))
+                    && (testx < (data[2*j] - data[2*i]) * (testy - data[2*i+1]) / (data[2*j+1] - data[2*i+1]) + data[2*i]))
             {
                 c = !c;
             }
@@ -127,25 +139,36 @@ public class Polygon implements Serializable
     {
         return points.toString();
     }
-
+    /**
+     * Returns true if this polygon is convex.
+     * @return 
+     */
     public boolean isConvex()
     {
-        int rows = points.numRows;
-        if (rows < 3)
+        return Polygon.isConvex(points.data, points.numRows);
+    }
+    /**
+     * Returns true if polygon is convex.
+     * @param data x1, y1, x2, y2, ...
+     * @param points Number of points (xi, yi)
+     * @return 
+     */
+    public static boolean isConvex(double[] data, int points)
+    {
+        if (points < 3)
         {
             return true;
         }
-        double[] d = points.data;
-        for (int i1 = 0; i1 < rows; i1++)
+        for (int i1 = 0; i1 < points; i1++)
         {
-            int i2 = (i1 + 1) % rows;
-            int i3 = (i2 + 1) % rows;
-            double x1 = d[2 * i1];
-            double y1 = d[2 * i1 + 1];
-            double x2 = d[2 * i2];
-            double y2 = d[2 * i2 + 1];
-            double x3 = d[2 * i3];
-            double y3 = d[2 * i3 + 1];
+            int i2 = (i1 + 1) % points;
+            int i3 = (i2 + 1) % points;
+            double x1 = data[2 * i1];
+            double y1 = data[2 * i1 + 1];
+            double x2 = data[2 * i2];
+            double y2 = data[2 * i2 + 1];
+            double x3 = data[2 * i3];
+            double y3 = data[2 * i3 + 1];
             if (Vectors.isClockwise(x1, y1, x2, y2, x3, y3))
             {
                 return false;
