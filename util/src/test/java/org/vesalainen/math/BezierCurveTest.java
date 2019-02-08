@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -41,6 +42,25 @@ public class BezierCurveTest
         BezierCurve bc = new BezierCurve(3);
         assertEquals(p0, bc.calc(0, p0, p1, p2, p3));
         assertEquals(p3, bc.calc(1, p0, p1, p2, p3));
+        assertTrue(bc.pathLength(0.1, p0, p1, p2, p3) < bc.pathLengthEstimate(p0, p1, p2, p3));
+    }
+    @Test
+    public void test2()
+    {
+        Random r = new Random(123456);
+        BezierCurve bc = new BezierCurve(3);
+        for (int ii=0;ii<1000;ii++)
+        {
+            double[] cp = new double[8];
+            for (int jj=0;jj<cp.length;jj++)
+            {
+                cp[jj] = r.nextDouble();
+            }
+            double pathLength = bc.pathLength(0.1, cp);
+            double pathLengthEstimate = bc.pathLengthEstimate(cp);
+            System.err.println(pathLength+" < "+pathLengthEstimate);
+            assertTrue(pathLength < pathLengthEstimate);
+        }
     }
     
 }
