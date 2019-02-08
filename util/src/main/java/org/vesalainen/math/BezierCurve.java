@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * BezierCurve calculates n-degree Bezier curve
@@ -65,15 +66,10 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
-        double[] result = new double[2];
-        double[] cp = new double[controlPoints.length*2];
-        for (int n=0;n<length;n++)
-        {
-            cp[2*n] = controlPoints[n].x;
-            cp[2*n+1] = controlPoints[n].y;
-        }
-        calc(t, result, cp);
-        return new Point2D.Double(result[0], result[1]);
+        double[] cp = convert(controlPoints);
+        Point2D.Double point = new Point2D.Double();
+        calc(t, point::setLocation, cp);
+        return point;
     }
     /**
      * Calculates P(t) 
@@ -83,15 +79,25 @@ public class BezierCurve
      */
     public void calc(double t, double[] result, double... controlPoints)
     {
-        if (t < 0 || t > 1)
-        {
-            throw new IllegalArgumentException("t not in [0..1]");
-        }
         if (result.length < 2)
         {
             throw new IllegalArgumentException("result needs size 2");
         }
-        if (controlPoints.length != 2*length)
+        calc(t, (x,y)->{result[0]=x;result[1]=y;}, controlPoints);
+    }
+    /**
+     * Calculates P(t) 
+     * @param t
+     * @param result
+     * @param controlPoints 
+     */
+    public void calc(double t, DoubleBiConsumer result, double... controlPoints)
+    {
+        if (t < 0 || t > 1)
+        {
+            throw new IllegalArgumentException("t not in [0..1]");
+        }
+        if (controlPoints.length < 2*length)
         {
             throw new IllegalArgumentException("control-points length not "+2*length);
         }
@@ -103,8 +109,90 @@ public class BezierCurve
             x += controlPoints[2*n]*c;
             y += controlPoints[2*n+1]*c;
         }
-        result[0] = x;
-        result[1] = y;
+        result.accept(x, y);
     }
-    
+    /**
+     * Calculates path length
+     * @param delta
+     * @param controlPoints
+     * @return 
+     */
+    public double pathLength(double delta, Point2D.Double... controlPoints)
+    {
+        if (controlPoints.length != length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = convert(controlPoints);
+        return pathLength(delta, cp);
+    }
+    /**
+     * Calculates path length
+     * @param delta
+     * @param controlPoints
+     * @return 
+     */
+    public double pathLength(double delta, double... controlPoints)
+    {
+        if (delta < 0 || delta > 0.5)
+        {
+            throw new IllegalArgumentException("illegal delta");
+        }
+        Point2D.Double prev = new Point2D.Double();
+        Point2D.Double next = new Point2D.Double();
+        double sum = 0;
+        calc(0, prev::setLocation, controlPoints);
+        for (double t=delta;t<=1.0;t+=delta)
+        {
+            calc(t, next::setLocation, controlPoints);
+            sum += prev.distance(next);
+            prev.setLocation(next);;
+        }
+        return sum;
+    }
+    /**
+     * Estimates path length
+     * @param controlPoints
+     * @return 
+     */
+    public double pathLengthEstimate(Point2D.Double... controlPoints)
+    {
+        if (controlPoints.length != length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = convert(controlPoints);
+        return pathLengthEstimate(cp);
+    }
+    /**
+     * Estimates path length
+     * @param controlPoints
+     * @return 
+     */
+    public double pathLengthEstimate(double... controlPoints)
+    {
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        for (int n=0;n<length;n++)
+        {
+            maxX = Math.max(maxX, controlPoints[2*n]);
+            maxY = Math.max(maxY, controlPoints[2*n+1]);
+            minX = Math.min(minX, controlPoints[2*n]);
+            minY = Math.min(minY, controlPoints[2*n+1]);
+        }
+        return (maxX-minX+maxY-minY)*1.35;
+    }
+    private static double[] convert(Point2D.Double... points)
+    {
+        int len = points.length;
+        double[] cp = new double[len*2];
+        for (int n=0;n<len;n++)
+        {
+            cp[2*n] = points[n].x;
+            cp[2*n+1] = points[n].y;
+        }
+        return cp;
+    }
 }
