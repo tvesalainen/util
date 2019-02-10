@@ -17,42 +17,32 @@
 
 package org.vesalainen.ui;
 
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ejml.data.DenseMatrix64F;
-import org.vesalainen.math.Circle;
-import org.vesalainen.math.Polygon;
-import org.vesalainen.math.Rect;
+import java.awt.geom.Rectangle2D;
+import java.util.stream.Stream;
 
 
 /**
- * The AbstractView class translates cartesian coordinates to screen coordinates.
- * In cartesian coordinates y grows up, while in screen coordinates y grows down.
+ * The AbstractView class translates Cartesian coordinates to screen coordinates.
+ * In Cartesian coordinates y grows up, while in screen coordinates y grows down.
  * 
- * <p>Use setScreen to set screen size. setRect sets the limits to used 
- * coordinates. Translation maintains aspect ratio if keepAspectRatio=true.
+ * <p>Use setScreen to createScreenTransform screen size. setRect sets the limits to used 
+ coordinates. Translation maintains aspect ratio if keepAspectRatio=true.
  * @author Timo Vesalainen
  */
 public class AbstractView
 {
-    protected double width = Double.NaN;
-    protected double height = Double.NaN;
-    protected double xMax;
-    protected double yMax;
-    protected double xMin;
-    protected double yMin;
-    protected double xOff;
-    protected double yOff;
-    protected double scaleX;
-    protected double scaleY;
-    protected boolean calculated;
+    private static Rectangle2D.Double INITIAL_RECT = new Rectangle2D.Double(Double.MAX_VALUE/2, Double.MAX_VALUE/2, -Double.MAX_VALUE, -Double.MAX_VALUE);
+    protected Rectangle2D.Double minUserBounds = INITIAL_RECT;
+    protected Rectangle2D.Double screenBounds = new Rectangle2D.Double();
+    protected Rectangle2D.Double userBounds = new Rectangle2D.Double();
     protected boolean keepAspectRatio;
     protected AffineTransform transform = new AffineTransform();
-    private ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
-    private ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
+    private static ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
+    private static ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
     /**
      * Creates AbstractView which keeps aspect-ratio. Initial size is zero.
      */
@@ -66,7 +56,7 @@ public class AbstractView
      */
     public AbstractView(boolean keepAspectRatio)
     {
-        this(keepAspectRatio, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+        this(keepAspectRatio, INITIAL_RECT);
     }
     /**
      * Creates AbstractView which keeps aspect-ratio with given initial size.
@@ -89,8 +79,13 @@ public class AbstractView
      */
     public AbstractView(boolean keepAspectRatio, double xMin, double xMax, double yMin, double yMax)
     {
+        this(keepAspectRatio, new Rectangle2D.Double(xMin, yMin, xMax-xMin, yMax-yMin));
+    }
+    public AbstractView(boolean keepAspectRatio, Rectangle2D.Double rect)
+    {
         this.keepAspectRatio = keepAspectRatio;
-        setRect(xMin, xMax, yMin, yMax);
+        userBounds.setRect(INITIAL_RECT);
+        setRect(rect);
     }
     /**
      * Sets the screen size.
@@ -99,118 +94,31 @@ public class AbstractView
      */
     public void setScreen(double width, double height)
     {
-        if (this.width != width)
-        {
-            this.width = width;
-            calculated = false;
-        }
-        if (this.height != height)
-        {
-            this.height = height;
-            calculated = false;
-        }
+        screenBounds.setRect(0, 0, width, height);
     }
-    private void calculate()
+    protected void update(Stream<Shape> shapes)
     {
-        if (!calculated)
+        if (screenBounds.isEmpty())
         {
-            check();
-            double aspect = width / height;
-            double xyWidth = xMax - xMin;
-            double xyHeight = yMax - yMin;
-            if (keepAspectRatio)
-            {
-                double xyAspect = xyWidth / xyHeight;
-                if (aspect > xyAspect)
-                {
-                    scaleX = scaleY = height / xyHeight;
-                    xOff = -scaleY*xMin + (width - scaleY*xyWidth) / 2.0;
-                    yOff = scaleY*yMin + height;
-                }
-                else
-                {
-                    scaleX = scaleY = width / xyWidth;
-                    xOff = -scaleY*xMin;
-                    yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
-                }
-            }
-            else
-            {
-                scaleX = width / xyWidth;
-                scaleY = height / xyHeight;
-                xOff = -scaleX*xMin;
-                yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
-            }
-            transform.setTransform(scaleX, 0, 0, -scaleY, xOff, yOff);
-            calculated = true;
+            throw new IllegalStateException("not initialized");
         }
+        userBounds.setRect(minUserBounds);
+        shapes.map(Shape::getBounds2D).forEach(this::update);
+        Transforms.createScreenTransform(userBounds, screenBounds, keepAspectRatio, transform);
+    }
+    protected void update(Rectangle2D bounds)
+    {
+        updatePoint(bounds.getMaxX(), bounds.getMaxY());
+        updatePoint(bounds.getMinX(), bounds.getMinY());
     }
     /**
-     * Returns true if both rect and screen have proper values;
-     * @return 
-     */
-    public boolean isReady()
-    {
-        return 
-            !Double.isNaN(width) &&
-            !Double.isNaN(height) &&
-            !Double.isInfinite(xMin) &&
-            !Double.isInfinite(xMax) &&
-            !Double.isInfinite(yMin) &&
-            !Double.isInfinite(yMax)
-                ;
-    }
-    /**
-     * Resets the limits.
-     */
-    public void reset()
-    {
-        xMin = Double.POSITIVE_INFINITY;
-        xMax = Double.NEGATIVE_INFINITY;
-        yMin = Double.POSITIVE_INFINITY;
-        yMax = Double.NEGATIVE_INFINITY;
-        calculated = false;
-    }
-    public void updatePolygon(Polygon polygon)
-    {
-        updateRect(polygon.bounds);
-    }
-    public void updatePolygon(DenseMatrix64F polygon)
-    {
-        updatePolygon(polygon.data, polygon.numRows);
-    }
-    public void updatePolygon(double[] data, int length)
-    {
-        for (int r=0;r<length;r++)
-        {
-            updatePoint(data[2*r], data[2*r+1]);
-        }
-    }
-    public void updateRect(Rect bounds)
-    {
-        updatePoint(bounds.xMax, bounds.yMax);
-        updatePoint(bounds.xMin, bounds.yMax);
-        updatePoint(bounds.xMin, bounds.yMin);
-        updatePoint(bounds.xMax, bounds.yMin);
-    }
-    public void updateCircle(Circle c)
-    {
-        updateCircle(c.getX(), c.getY(), c.getRadius());
-    }
-
-    /**
-     * Updates limits so that circle is visible.
+     * Updates the limits if point is not inside visible screen.
      * @param x
-     * @param y
-     * @param radius 
+     * @param y 
      */
-    public void updateCircle(double x, double y, double radius)
+    void updatePoint(double x, double y)
     {
-        updatePoint(x, y);
-        updatePoint(x-radius, y-radius);
-        updatePoint(x+radius, y-radius);
-        updatePoint(x-radius, y+radius);
-        updatePoint(x+radius, y+radius);
+        userBounds.add(x, y);
     }
     /**
      * Adds margin to visible screen. 
@@ -218,6 +126,10 @@ public class AbstractView
      */
     public void margin(double m)
     {
+        double xMin = userBounds.getMinX();
+        double yMin = userBounds.getMinY();
+        double xMax = userBounds.getMaxX();
+        double yMax = userBounds.getMaxY();
         double w = xMax-xMin;
         double h = yMax-yMin;
         setRect(
@@ -228,42 +140,6 @@ public class AbstractView
         );
     }
     /**
-     * Updates the limits if point is not inside visible screen.
-     * @param x
-     * @param y 
-     */
-    public void updatePoint(double x, double y)
-    {
-        updateX(x);
-        updateY(y);
-    }
-    public void updateX(double x)
-    {
-        if (x < xMin)
-        {
-            xMin = x;
-            calculated = false;
-        }
-        if (x > xMax)
-        {
-            xMax = x;
-            calculated = false;
-        }
-    }
-    public void updateY(double y)
-    {
-        if (y < yMin)
-        {
-            yMin = y;
-            calculated = false;
-        }
-        if (y > yMax)
-        {
-            yMax = y;
-            calculated = false;
-        }
-    }
-    /**
      * Sets the visible rectangle of translated coordinates.
      * @param xMin
      * @param xMax
@@ -272,30 +148,12 @@ public class AbstractView
      */
     public final void setRect(double xMin, double xMax, double yMin, double yMax)
     {
-        this.xMin = xMin;
-        this.xMax = xMax;
-        this.yMin = yMin;
-        this.yMax = yMax;
-        calculated = false;
+        setRect(new Rectangle2D.Double(xMin, yMin, xMax-xMin, yMax-yMin));
     }
-    public final void setRect(double x, double y, double r)
+    public final void setRect(Rectangle2D.Double rect)
     {
-        this.xMin = x - r;
-        this.xMax = x + r;
-        this.yMin = y - r;
-        this.yMax = y + r;
-        calculated = false;
+        minUserBounds.setRect(rect);
     }
-    /**
-     * Returns AffineTransform
-     * @return 
-     */
-    public AffineTransform getTransform()
-    {
-        calculate();
-        return transform;
-    }
-    
     /**
      * @deprecated Use AffineTransform
      * Translates cartesian x-coordinate to screen coordinate.
@@ -304,7 +162,6 @@ public class AbstractView
      */
     public double toScreenX(double x)
     {
-        calculate();
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(x, 0);
@@ -320,7 +177,6 @@ public class AbstractView
      */
     public double toScreenY(double y)
     {
-        calculate();
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(0, y);
@@ -338,7 +194,6 @@ public class AbstractView
     {
         try
         {
-            calculate();
             Point2D src = srcPnt.get();
             Point2D dst = dstPnt.get();
             src.setLocation(x, 0);
@@ -361,7 +216,6 @@ public class AbstractView
     {
         try
         {
-            calculate();
             Point2D src = srcPnt.get();
             Point2D dst = dstPnt.get();
             src.setLocation(0, y);
@@ -379,6 +233,7 @@ public class AbstractView
      * @param d
      * @return 
      */
+    @Deprecated
     public double scaleToScreen(double d)
     {
         if (!keepAspectRatio)
@@ -387,30 +242,34 @@ public class AbstractView
         }
         return scaleToScreenX(d);
     }
+    @Deprecated
     public double scaleToScreenX(double d)
     {
-        calculate();
         return d * transform.getScaleX();
     }
+    @Deprecated
     public double scaleToScreenY(double d)
     {
-        calculate();
         return d * transform.getScaleY();
     }
-    public double scaleFromScreen(double d)
+    double getMinX()
     {
-        if (!keepAspectRatio)
-        {
-            throw new UnsupportedOperationException("not supported with keepAspectRatio=false");
-        }
-        calculate();
-        return d / scaleY;
+        return userBounds.getMinX();
     }
-    private void check()
+
+    double getMinY()
     {
-        if (!isReady() || width <= 0 || height <= 0)
-        {
-            throw new IllegalStateException("not initialized properly");
-        }
+        return userBounds.getMinY();
     }
+
+    double getMaxX()
+    {
+        return userBounds.getMaxX();
+    }
+
+    double getMaxY()
+    {
+        return userBounds.getMaxY();
+    }
+    
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,31 +16,35 @@
  */
 package org.vesalainen.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ScreenPlotter extends AbstractPlotter
+public final class Points
 {
-
-    public ScreenPlotter(Component component)
+    public static double len(Point2D.Double p)
     {
-        this(component, Color.BLACK, false);
+        return Math.hypot(p.x, p.y);
     }
-    public ScreenPlotter(Component component, Color background, boolean keepAspectRatio)
+    public static Point2D.Double mul(double factor, Point2D.Double p)
     {
-        super(component.getWidth(), component.getHeight(), background, keepAspectRatio);
+        return new Point2D.Double(factor*p.x, factor*p.y);
     }
-    
-    public void plot(Graphics2D graphics2D)
+    public static Point2D.Double sub(Point2D.Double p1, Point2D.Double p2)
     {
-        graphics2D.setBackground(background);
-        graphics2D.clearRect(0, 0, (int)width, (int)height);
-        Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
-        plot(g2d);
+        return add(p1, mul(-1, p2));
+    }
+    public static Point2D.Double add(Point2D.Double... pts)
+    {
+        double x = 0;
+        double y = 0;
+        for (Point2D.Double p : pts)
+        {
+            x+=p.x;
+            y+=p.y;
+        }
+        return new Point2D.Double(x, y);
     }
 }

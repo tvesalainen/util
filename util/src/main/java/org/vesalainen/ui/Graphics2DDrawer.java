@@ -20,6 +20,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -34,11 +36,43 @@ public class Graphics2DDrawer implements Drawer
     {
         this.g = g;
     }
+
+    @Override
+    public void setFont(Font font)
+    {
+        g.setFont(font);
+    }
     
     @Override
-    public void color(Color color)
+    public void setColor(Color color)
     {
         g.setColor(color);
+    }
+
+    @Override
+    public Color getColor()
+    {
+        return g.getColor();
+    }
+
+    @Override
+    public void setTransform(AffineTransform transform)
+    {
+        AffineTransform safe = g.getTransform();
+        g.transform(transform);
+        g.setTransform(safe);
+    }
+
+    @Override
+    public AffineTransform getTransform()
+    {
+        return g.getTransform();
+    }
+
+    @Override
+    public void draw(Shape shape)
+    {
+        g.draw(shape);
     }
 
     @Override

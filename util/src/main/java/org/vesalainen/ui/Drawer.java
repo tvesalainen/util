@@ -18,7 +18,14 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
+import static java.awt.geom.PathIterator.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import static org.vesalainen.math.BezierCurve.*;
+import org.vesalainen.math.BezierOperator;
 
 /**
  *
@@ -26,21 +33,55 @@ import java.awt.geom.Rectangle2D;
  */
 public interface Drawer
 {
-    Rectangle2D bounds(String text);
-    void font(String name, int style, int size);
+    void setFont(Font font);
     default void text(double x, double y, String text)
     {
         text(x, y, TextAlignment.START_X, text);
     }
     void text(double x, double y, TextAlignment alignment, String text);
-    void color(Color color);
-    default void circle(double x, double y, double r)
+    void setColor(Color color);
+    Color getColor();
+    void setLineWidth(double width);
+    double getLineWidth();
+    void setTransform(DoubleTransformer transform);
+    DoubleTransformer getTransform();
+    void draw(Shape shape);
+    // ----------------- to be removed --------------------------------
+    @Deprecated default Rectangle2D bounds(String text)
+    {
+        throw new UnsupportedOperationException();
+    }
+    /**
+     * @deprecated Use setColor
+     * @param color 
+     */
+    default void color(Color color)
+    {
+        setColor(color);
+    }
+    /**
+     * @deprecated Use setFont
+     * @param name
+     * @param style
+     * @param size 
+     */
+    default void font(String name, int style, int size)
+    {
+        setFont(new Font(name, style, size));
+    }
+    @Deprecated default void circle(double x, double y, double r)
     {
         ellipse(x, y, r, r);
     }
-    void ellipse(double x, double y, double rx, double ry);
-    void line(double x1, double y1, double x2, double y2);
-    default void polyline(double[] x, double[] y)
+    @Deprecated default void ellipse(double x, double y, double rx, double ry)
+    {
+        throw new UnsupportedOperationException();
+    }
+    @Deprecated default void line(double x1, double y1, double x2, double y2)
+    {
+        throw new UnsupportedOperationException();
+    }
+    @Deprecated default void polyline(double[] x, double[] y)
     {
         if (x.length != y.length)
         {

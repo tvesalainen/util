@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.PrimitiveIterator;
 import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
@@ -33,21 +35,14 @@ import java.util.stream.StreamSupport;
  * 1-level 0, 1, 2, 3, .... 
  * @author Timo Vesalainen
  */
-public class Scaler
+public class LinearScaler extends AbstractScaler
 {
-    private double min;
-    private double max;
     private boolean updated;
     private int exp;
 
-    public Scaler(double min, double max)
+    public LinearScaler(double min, double max)
     {
-        if (min > max)
-        {
-            throw new IllegalArgumentException("min > max");
-        }
-        this.min = min;
-        this.max = max;
+        super(min, max);
         updated = true;
     }
 
@@ -78,28 +73,12 @@ public class Scaler
         }
     }
     /**
-     * Returns labels for default level using default locale.
-     * @return 
-     */
-    public List<String> getLabels()
-    {
-        return getLabels(level());
-    }
-    /**
-     * Returns labels for level using default locale
-     * @param level
-     * @return 
-     */
-    public List<String> getLabels(double level)
-    {
-        return getLabels(Locale.getDefault(), level);
-    }
-    /**
      * Returns labels for level
      * @param locale
      * @param level
      * @return 
      */
+    @Override
     public List<String> getLabels(Locale locale, double level)
     {
         List<String> labels = new ArrayList<>();
@@ -114,6 +93,7 @@ public class Scaler
      * @return 
      * @see java.lang.String#format(java.lang.String, java.lang.Object...) 
      */
+    @Override
     public String getFormat(double level)
     {
         double signum = exp >= 0 ? 1 : -1;
@@ -122,12 +102,13 @@ public class Scaler
     }
     /**
      * Returns distance between two markers using default level.
-     * @return 
+     * @return
      */
     public double step()
     {
         return step(level());
     }
+
     /**
      * Returns distance between two markers.
      * @param level
@@ -146,30 +127,13 @@ public class Scaler
         return step;
     }
     /**
-     * Returns stream for markers between min and max. Step is selected so that
-     * number of markers is greater than 5.
-     * @return 
-     */
-    public DoubleStream stream()
-    {
-        return stream(level());
-    }
-    /**
-     * Returns minimum level where number of markers is not less than 5 and less
-     * than 15.
-     * @return 
-     */
-    public double level()
-    {
-        return level(5, 15);
-    }
-    /**
      * Returns minimum level where number of markers is not less that minMarkers 
      * and less than maxMarkers. If both cannot be met, maxMarkers is stronger.
      * @param minMarkers
      * @param maxMarkers
      * @return 
      */
+    @Override
     public double level(int minMarkers, int maxMarkers)
     {
         double level = 0;
@@ -190,6 +154,7 @@ public class Scaler
      * @param level
      * @return 
      */
+    @Override
     public double count(double level)
     {
         calc();
@@ -217,21 +182,33 @@ public class Scaler
         }
         return (end-begin)/step+1;
     }
-    /**
-     * Returns stream for markers between min and max. 0-level returns less
-     * @param level
-     * @return 
-     */
-    public DoubleStream stream(double level)
+    @Override
+    public void setMin(double min)
     {
-        return StreamSupport.doubleStream(spliterator(level), false);
+        super.setMin(min);
+        updated = true;
     }
+
+    @Override
+    public void setMax(double max)
+    {
+        super.setMax(max);
+        updated = true;
+    }
+
+    @Override
+    public PrimitiveIterator.OfDouble iterator(double level)
+    {
+        return Spliterators.iterator(spliterator(level));
+    }
+    
     /**
      * Returns Spliterator for markers between min and max. 0-level returns less
      * than 10.
      * @param level >= 0 
      * @return 
      */
+    @Override
     public Spliterator.OfDouble spliterator(double level)
     {
         calc();
@@ -267,27 +244,6 @@ public class Scaler
         }
     }
     
-    public double getMin()
-    {
-        return min;
-    }
-
-    public void setMin(double min)
-    {
-        this.min = min;
-        updated = true;
-    }
-
-    public double getMax()
-    {
-        return max;
-    }
-
-    public void setMax(double max)
-    {
-        this.max = max;
-        updated = true;
-    }
 
     private class Iter implements Spliterator.OfDouble
     {
