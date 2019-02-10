@@ -17,6 +17,7 @@
 
 package org.vesalainen.ui;
 
+import java.awt.Font;
 import java.util.List;
 import java.util.Locale;
 import java.util.PrimitiveIterator;
@@ -29,18 +30,20 @@ import org.vesalainen.util.CollectionHelp;
  *
  * @author Timo Vesalainen
  */
-public class ScalerTest
+public class LinearScalerTest
 {
     private static final double Epsilon = 1e-10;
     
-    public ScalerTest()
+    public LinearScalerTest()
     {
     }
 
     @Test
     public void test1()
     {
-        Scaler sc = new Scaler(115, 144);
+        LinearScaler sc = new LinearScaler(115, 144);
+        assertEquals(-0.5, sc.getLevelFor(new Font("ariel", 0, 5), true), Epsilon);
+        assertEquals(-0.5, sc.getLevelFor(new Font("ariel", 0, 5), false), Epsilon);
         assertEquals(0.5, sc.level(), Epsilon);
         assertEquals(10, sc.step(0), Epsilon);
         assertEquals(5, sc.step(0.5), Epsilon);
@@ -90,7 +93,7 @@ public class ScalerTest
     @Test
     public void test2()
     {
-        Scaler sc = new Scaler(0, 30);
+        LinearScaler sc = new LinearScaler(0, 30);
         PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0));
         assertEquals(0, i0.nextDouble(), Epsilon);
         assertEquals(10, i0.nextDouble(), Epsilon);
@@ -113,7 +116,7 @@ public class ScalerTest
     @Test
     public void test3()
     {
-        Scaler sc = new Scaler(0.001234, 0.00678);
+        LinearScaler sc = new LinearScaler(0.001234, 0.00678);
         PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0));
         assertEquals(0.002, i0.nextDouble(), Epsilon);
         assertEquals(0.003, i0.nextDouble(), Epsilon);
@@ -128,7 +131,7 @@ public class ScalerTest
     public void test4()
     {
         List<String> exp = CollectionHelp.create("0.002", "0.003", "0.004", "0.005", "0.006");
-        Scaler sc = new Scaler(0.001234, 0.00678);
+        LinearScaler sc = new LinearScaler(0.001234, 0.00678);
         assertEquals(exp, sc.getLabels(Locale.US, 0));
     }
     
@@ -136,20 +139,22 @@ public class ScalerTest
     public void test5()
     {
         List<String> exp = CollectionHelp.create("1000", "2000", "3000", "4000", "5000");
-        Scaler sc = new Scaler(100, 5200);
+        LinearScaler sc = new LinearScaler(100, 5200);
         assertEquals(exp, sc.getLabels(Locale.US, 0));
+        assertEquals(1.0, sc.getLevelFor(new Font("ariel", 0, 5), true), Epsilon);
+        assertEquals(1.5, sc.getLevelFor(new Font("ariel", 0, 5), false), Epsilon);
     }
     @Test
     public void test6()
     {
-        Scaler sc = new Scaler(0, 4);
+        LinearScaler sc = new LinearScaler(0, 4);
         long count = sc.stream().count();
         assertEquals(5, count);
     }
     @Test
     public void test7()
     {
-        Scaler sc = new Scaler(-1, 19);
+        LinearScaler sc = new LinearScaler(-1, 19);
         assertEquals(4, sc.count(0.5), Epsilon);
         PrimitiveIterator.OfDouble i0 = Spliterators.iterator(sc.spliterator(0.5));
         assertEquals(0, i0.nextDouble(), Epsilon);

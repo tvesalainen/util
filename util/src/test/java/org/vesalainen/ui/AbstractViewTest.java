@@ -17,6 +17,7 @@
 
 package org.vesalainen.ui;
 
+import java.util.stream.Stream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,7 +38,7 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(100, 200);
-        assertTrue(view.isReady());
+        view.update(Stream.empty());
         assertEquals(0, view.toScreenX(-10), Epsilon);
         assertEquals(100, view.toScreenX(10), Epsilon);
         assertEquals(150, view.toScreenY(-10), Epsilon);
@@ -59,7 +60,7 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(200, 100);
-        assertTrue(view.isReady());
+        view.update(Stream.empty());
         assertEquals(50, view.toScreenX(-10), Epsilon);
         assertEquals(150, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);
@@ -74,7 +75,6 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView();
         view.setScreen(200, 100);
-        assertFalse(view.isReady());
         view.updatePoint(0, 0);
         view.updatePoint(-10, 10);
         view.updatePoint(10, -10);
@@ -93,17 +93,16 @@ public class AbstractViewTest
         AbstractView view = new AbstractView();
         view.setScreen(600, 895);
         double d = (895.0-600.0)/2;
-        assertFalse(view.isReady());
         view.updatePoint(-13.60272896379027,28.131008962509526);
-        assertEquals(-13.60272896379027, view.xMin, Epsilon);
-        assertEquals(-13.60272896379027, view.xMax, Epsilon);
-        assertEquals(28.131008962509526, view.yMin, Epsilon);
-        assertEquals(28.131008962509526, view.yMax, Epsilon);
+        assertEquals(-13.60272896379027, view.getMinX(), Epsilon);
+        assertEquals(-13.60272896379027, view.getMaxX(), Epsilon);
+        assertEquals(28.131008962509526, view.getMinY(), Epsilon);
+        assertEquals(28.131008962509526, view.getMaxY(), Epsilon);
         view.updatePoint(-13.602733673016058,28.130998989573197);
-        assertEquals(-13.602733673016058, view.xMin, Epsilon);
-        assertEquals(-13.60272896379027, view.xMax, Epsilon);
-        assertEquals(28.130998989573197, view.yMin, Epsilon);
-        assertEquals(28.131008962509526, view.yMax, Epsilon);
+        assertEquals(-13.602733673016058, view.getMinX(), Epsilon);
+        assertEquals(-13.60272896379027, view.getMaxX(), Epsilon);
+        assertEquals(28.130998989573197, view.getMinY(), Epsilon);
+        assertEquals(28.131008962509526, view.getMaxY(), Epsilon);
     }
     
     @Test
@@ -111,7 +110,7 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView(-1, 2, -2, 10);
         view.setScreen(7, 12);
-        assertTrue(view.isReady());
+        view.update(Stream.empty());
         assertEquals(2, view.toScreenX(-1), Epsilon);
         assertEquals(5, view.toScreenX(2), Epsilon);
         assertEquals(12, view.toScreenY(-2), Epsilon);
@@ -122,27 +121,11 @@ public class AbstractViewTest
     }
 
     @Test
-    public void testView6()
-    {
-        AbstractView view = new AbstractView();
-        view.setScreen(200, 100);
-        assertFalse(view.isReady());
-        view.updateCircle(0, 0, 10);
-        assertEquals(50, view.toScreenX(-10), Epsilon);
-        assertEquals(150, view.toScreenX(10), Epsilon);
-        assertEquals(100, view.toScreenY(-10), Epsilon);
-        assertEquals(0, view.toScreenY(10), Epsilon);
-        assertEquals(100, view.toScreenX(0), Epsilon);
-        assertEquals(50, view.toScreenY(0), Epsilon);
-        assertEquals(5, view.scaleToScreen(1), Epsilon);
-    }
-    
-    @Test
     public void testView7()
     {
         AbstractView view = new AbstractView(false, -10, 10, -10, 10);
         view.setScreen(100, 100);
-        assertTrue(view.isReady());
+        view.update(Stream.empty());
         assertEquals(0, view.toScreenX(-10), Epsilon);
         assertEquals(100, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);

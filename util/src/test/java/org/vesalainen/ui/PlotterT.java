@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.Color;
 import java.awt.Font;
 import static java.awt.Font.BOLD;
 import java.io.IOException;
@@ -41,10 +42,12 @@ public class PlotterT
         try
         {
             Plotter p = new Plotter(1000, 1000);
-            p.setFont("Arial", BOLD, 0.1);
-            p.drawText(1, 2, TextAlignment.START_X, "start");
-            p.drawText(1, 1, TextAlignment.MIDDLE_X, "middle");
-            p.drawText(1, 0, TextAlignment.END_X, "end");
+            p.setColor(Color.RED);
+            p.setLineWidth(10);
+            //p.setFont("Arial", BOLD, 0.1);
+            //p.drawText(1, 2, TextAlignment.START_X, "start");
+            //p.drawText(1, 1, TextAlignment.MIDDLE_X, "middle");
+            //p.drawText(1, 0, TextAlignment.END_X, "end");
             p.drawPoint(0, 0);
             p.drawPoint(1, 1);
             p.drawPoint(2, 0);
