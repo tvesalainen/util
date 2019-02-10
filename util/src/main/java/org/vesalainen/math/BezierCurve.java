@@ -28,6 +28,10 @@ import org.vesalainen.util.function.DoubleBiConsumer;
 public class BezierCurve
 {
     /**
+     * 1-degree
+     */
+    public static final BezierCurve LINE = new BezierCurve(1);
+    /**
      * 2-degree
      */
     public static final BezierCurve QUAD = new BezierCurve(2);
@@ -41,7 +45,7 @@ public class BezierCurve
      * Creates Bezier curve of degree
      * @param degree 
      */
-    public BezierCurve(int degree)
+    protected BezierCurve(int degree)
     {
         if (degree < 1)
         {
@@ -52,6 +56,153 @@ public class BezierCurve
         for (int n=0;n<=degree;n++)
         {
             array[n] = BernsteinPolynomial.b(degree, n);
+        }
+    }
+    public int getDegree()
+    {
+        return length-1;
+    }
+    /**
+     * Creates Bezier function for fixed control points.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator operator(Point2D.Double... controlPoints)
+    {
+        if (controlPoints.length != length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = convert(controlPoints);
+        return BezierCurve.this.operator(cp);
+    }
+    /**
+     * Creates Bezier function for fixed control points. Note that it is not same
+     * if you pass an array or separate parameters. Array is not copied, so if
+     * you modify it it will make change. If you want to have function with
+     * immutable control points, use separate parameters or copy the array.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator operator(double... controlPoints)
+    {
+        if (controlPoints.length != 2*length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        return (t,c)->calc(t, c, controlPoints);
+    }
+    /**
+     * Create first derivate function for fixed control points.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator derivate(Point2D.Double... controlPoints)
+    {
+        if (controlPoints.length != length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = convert(controlPoints);
+        return derivate(cp);
+    }
+    /**
+     * Create first derivate function for fixed control points.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator derivate(double... controlPoints)
+    {
+        if (controlPoints.length != 2*length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = new double[2*length-2];
+        for (int ii=0;ii<length-1;ii++)
+        {
+            cp[2*ii] = controlPoints[2*(ii+1)]-controlPoints[2*ii];
+            cp[2*ii+1] = controlPoints[2*(ii+1)+1]-controlPoints[2*ii+1];
+        }
+        int degree = getDegree();
+        if (degree == 1)
+        {
+            return (t,c)->c.accept(cp[0], cp[1]);
+        }
+        else
+        {
+            BezierCurve bc = getInstance(degree-1);
+            return (t,c)->bc.calc(t, (x,y)->c.accept(degree*x, degree*y), cp);
+        }
+    }
+    /**
+     * Create second derivate function for fixed control points.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator secondDerivate(Point2D.Double... controlPoints)
+    {
+        if (controlPoints.length != length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = convert(controlPoints);
+        return secondDerivate(cp);
+    }
+    /**
+     * Create second derivate function for fixed control points.
+     * @param controlPoints
+     * @return 
+     */
+    public BezierOperator secondDerivate(double... controlPoints)
+    {
+        if (controlPoints.length != 2*length)
+        {
+            throw new IllegalArgumentException("control-points length not "+length);
+        }
+        double[] cp = new double[2*length-2];
+        for (int ii=0;ii<length-1;ii++)
+        {
+            cp[2*ii] = controlPoints[2*(ii+1)]-controlPoints[2*ii];
+            cp[2*ii+1] = controlPoints[2*(ii+1)+1]-controlPoints[2*ii+1];
+        }
+        for (int ii=0;ii<length-2;ii++)
+        {
+            cp[2*ii] = cp[2*(ii+1)]-cp[2*ii];
+            cp[2*ii+1] = cp[2*(ii+1)+1]-cp[2*ii+1];
+        }
+        int degree = getDegree();
+        if (degree == 2)
+        {
+            return (t,c)->c.accept(cp[0], cp[1]);
+        }
+        else
+        {
+            BezierCurve bc = getInstance(degree-2);
+            double n = degree*(degree-1);
+            return (t,c)->bc.calc(t, (x,y)->c.accept(n*x, n*y), cp);
+        }
+    }
+    /**
+     * Creates or gets BezierCurve instance
+     * @param degree
+     * @return 
+     */
+    public static BezierCurve getInstance(int degree)
+    {
+        if (degree < 1)
+        {
+            throw new IllegalArgumentException("illegal degree");
+        }
+        switch (degree)
+        {
+            case 1:
+                return LINE;
+            case 2:
+                return QUAD;
+            case 3:
+                return CUBIC;
+            default:
+                return new BezierCurve(degree);
         }
     }
     /**
@@ -138,20 +289,23 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("illegal delta");
         }
-        Point2D.Double prev = new Point2D.Double();
-        Point2D.Double next = new Point2D.Double();
+        Point2D.Double p1 = new Point2D.Double();
+        Point2D.Double p2 = new Point2D.Double();
         double sum = 0;
-        calc(0, prev::setLocation, controlPoints);
-        for (double t=delta;t<=1.0;t+=delta)
+        calc(0, p1::setLocation, controlPoints);
+        for (double t=delta;t<1.0;t+=delta)
         {
-            calc(t, next::setLocation, controlPoints);
-            sum += prev.distance(next);
-            prev.setLocation(next);;
+            calc(t, p2::setLocation, controlPoints);
+            sum += p1.distance(p2);
+            p1.setLocation(p2);
         }
+        calc(1.0, p2::setLocation, controlPoints);
+        sum += p1.distance(p2);
         return sum;
     }
     /**
-     * Estimates path length
+     * Estimates path length so that most of the time estimated path is longer
+     * that actual.
      * @param controlPoints
      * @return 
      */
@@ -165,7 +319,8 @@ public class BezierCurve
         return pathLengthEstimate(cp);
     }
     /**
-     * Estimates path length
+     * Estimates path length so that most of the time estimated path is longer
+     * that actual.
      * @param controlPoints
      * @return 
      */
@@ -195,4 +350,5 @@ public class BezierCurve
         }
         return cp;
     }
+
 }
