@@ -31,6 +31,13 @@ public class ArrayHelpTest
     }
 
     @Test
+    public void testIndexOf()
+    {
+        String[] arr = new String[] {"foo", "bar", "qwerty"};
+        assertEquals(1, ArrayHelp.indexOf(arr, "bar"));
+        assertEquals(-1, ArrayHelp.indexOf(arr, "kiosk"));
+    }
+    @Test
     public void testContains()
     {
         String[] arr = new String[] {"foo", "bar", "qwerty"};

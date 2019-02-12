@@ -22,6 +22,114 @@ package org.vesalainen.util;
  */
 public final class ArrayHelp
 {
+    public static final int indexOf(boolean[] array, boolean item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(byte[] array, byte item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(short[] array, short item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(char[] array, char item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(int[] array, int item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(long[] array, long item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(float[] array, float item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(double[] array, double item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii] == item)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public static final int indexOf(Object[] array, Object item)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            if (array[ii].equals(item))
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
     /**
      * Returns true if one of arr members is item
      * @param array
