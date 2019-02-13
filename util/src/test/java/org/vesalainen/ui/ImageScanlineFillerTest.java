@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +17,38 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ScreenPlotter extends AbstractPlotter
+public class ImageScanlineFillerTest
 {
-
-    public ScreenPlotter(Component component)
+    
+    public ImageScanlineFillerTest()
     {
-        this(component, Color.BLACK, false);
     }
-    public ScreenPlotter(Component component, Color background, boolean keepAspectRatio)
+
+    @Test
+    public void test0()
     {
-        super(component.getWidth(), component.getHeight(), background, keepAspectRatio);
+        int width = 5;
+        int height = 5;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        ImageScanlineFiller filler = new ImageScanlineFiller(image);
+        int rgb = Color.BLUE.getRGB();
+        filler.floodFill(4, 0, rgb);
+        for (int x=0;x<width;x++)
+        {
+            for (int y=0;y<height;y++)
+            {
+                assertTrue("("+x+", "+y+")", rgb == image.getRGB(x, y));
+            }
+        }
     }
     
-    public void plot(Graphics2D graphics2D)
-    {
-        graphics2D.setBackground(background);
-        graphics2D.clearRect(0, 0, (int)screenBounds.width, (int)screenBounds.height);
-        Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
-        plot(g2d);
-    }
 }

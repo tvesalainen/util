@@ -48,6 +48,7 @@ public class PlotterT
             //p.drawText(1, 2, TextAlignment.START_X, "start");
             //p.drawText(1, 1, TextAlignment.MIDDLE_X, "middle");
             //p.drawText(1, 0, TextAlignment.END_X, "end");
+            p.drawLine(0, 0, 3, 3);
             p.drawPoint(0, 0);
             p.drawPoint(1, 1);
             p.drawPoint(2, 0);

@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.util.concurrent;
+
+import java.awt.geom.Point2D;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface PlotOperator
+public class ThreadTemporal
 {
-    void plot(int x, int y);
+    public static final ThreadLocal<Point2D.Double> tmp1 = ThreadLocal.withInitial(Point2D.Double::new);
+    public static final ThreadLocal<Point2D.Double> tmp2 = ThreadLocal.withInitial(Point2D.Double::new);
 }

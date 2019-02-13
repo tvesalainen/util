@@ -17,6 +17,7 @@
 package org.vesalainen.ui;
 
 import java.awt.geom.Point2D;
+import org.vesalainen.util.concurrent.ThreadTemporal;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -24,7 +25,7 @@ import org.vesalainen.util.function.DoubleBiConsumer;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 @FunctionalInterface
-public interface DoubleTransformer
+public interface DoubleTransform
 {
     /**
      * Transforms x and y to term
@@ -33,6 +34,23 @@ public interface DoubleTransformer
      * @param term 
      */
     void transform(double x, double y, DoubleBiConsumer term);
+    /**
+     * Creates numerical derivate. It is recommended to override this if
+     * derivate is known.
+     * @return 
+     */
+    default DoubleTransform derivate()
+    {
+        return (x,y,c)->
+        {
+            double d = x*0.01;
+            Point2D.Double p1 = ThreadTemporal.tmp1.get();
+            Point2D.Double p2 = ThreadTemporal.tmp2.get();
+            transform(x,y,p1::setLocation);
+            transform(x+d,y+d,p2::setLocation);
+            c.accept((p2.x-p1.x)/d, (p2.y-p1.y)/d);
+        };
+    }
     /**
      * Transforms points from src to dst
      * @param tmp Temporary. If null will be allocated.
@@ -58,29 +76,78 @@ public interface DoubleTransformer
         }
     }
     /**
-     * Creates new DoubleTransformer which first calls this transform and
+     * Creates new DoubleTransform which first calls this transform and
      * then next.
      * @param next
      * @return 
      */
-    default DoubleTransformer andThen(DoubleTransformer next)
+    default DoubleTransform andThen(DoubleTransform next)
     {
         return (x,y,n)->transform(x,y, (xx,yy)->next.transform(xx, yy, n));
+    }
+    /**
+     * Creates new DoubleTransform which first calls this transform
+     * then next multiplies result.
+     * @param next
+     * @return 
+     */
+    default DoubleTransform andThenMultiply(DoubleTransform next)
+    {
+        return (x,y,n)->
+        {
+            Point2D.Double p1 = ThreadTemporal.tmp1.get();
+            Point2D.Double p2 = ThreadTemporal.tmp2.get();
+            transform(x,y,p1::setLocation);
+            next.transform(x,y,p2::setLocation);
+            n.accept(p1.x*p2.x, p1.y*p2.y);
+        };
     }
     /**
      * Returns identity transformer
      * @return 
      */
-    static DoubleTransformer identity()
+    static DoubleTransform identity()
     {
-        return (x,y,n)->n.accept(x, y);
+        return new IdentityTransform();
     }
     /**
      * Returns parameter swap transformer
      * @return 
      */
-    static DoubleTransformer swap()
+    static DoubleTransform swap()
     {
-        return (x,y,n)->n.accept(y, x);
+        return new SwapTransform();
+    }
+    public static class IdentityTransform implements DoubleTransform
+    {
+
+        @Override
+        public void transform(double x, double y, DoubleBiConsumer term)
+        {
+            term.accept(x, y);
+        }
+
+        @Override
+        public DoubleTransform derivate()
+        {
+            return (x,y,c)->c.accept(1, 1);
+        }
+        
+    }
+    public static class SwapTransform implements DoubleTransform
+    {
+
+        @Override
+        public void transform(double x, double y, DoubleBiConsumer term)
+        {
+            term.accept(y, x);
+        }
+
+        @Override
+        public DoubleTransform derivate()
+        {
+            return (x,y,c)->c.accept(1, 1);
+        }
+        
     }
 }

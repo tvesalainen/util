@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -56,17 +57,11 @@ public class Graphics2DDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(AffineTransform transform)
+    public void setTransform(DoubleTransform t, AffineTransform transform)
     {
         AffineTransform safe = g.getTransform();
         g.transform(transform);
         g.setTransform(safe);
-    }
-
-    @Override
-    public AffineTransform getTransform()
-    {
-        return g.getTransform();
     }
 
     @Override
@@ -130,6 +125,18 @@ public class Graphics2DDrawer implements Drawer
     public Rectangle2D bounds(String text)
     {
         return g.getFontMetrics().getStringBounds(text, g);
+    }
+
+    @Override
+    public void setLineWidth(double width)
+    {
+        g.setStroke(new BasicStroke((float) width));
+    }
+
+    @Override
+    public double getLineWidth()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

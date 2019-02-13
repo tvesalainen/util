@@ -94,67 +94,60 @@ public final class Transforms
         return transform;
     }
     /**
-     * Creates DoubleTransformer for AffineTransform
+     * Creates DoubleTransform for AffineTransform.
      * @param transform
      * @return 
      */
-    public static DoubleTransformer affineTransformer(AffineTransform transform)
+    public static DoubleTransform affineTransform(AffineTransform transform)
     {
-        return new AffineTransformer(transform);
+        return new AffineDoubleTransform(transform);
     }
     /**
-     * Creates Inverse DoubleTransformer for AffineTransform
+     * Creates Inverse DoubleTransform for AffineTransform. 
      * @param transform
      * @return 
      */
-    public static DoubleTransformer affineInverseTransformer(AffineTransform transform)
+    public static DoubleTransform affineInverseTransform(AffineTransform transform) throws NoninvertibleTransformException
     {
-        return new AffineInverseTransformer(transform);
+        return new AffineInverseTransform(transform);
     }
-    public static class AffineTransformer implements DoubleTransformer
+    public static class AffineDoubleTransform implements DoubleTransform
     {
-        private AffineTransform transform;
-        private Point2D.Double src = new Point2D.Double();
-        private Point2D.Double dst = new Point2D.Double();
-
-        public AffineTransformer(AffineTransform transform)
+        private final double m00;
+        private final double m01;
+        private final double m02;
+        private final double m10;
+        private final double m11;
+        private final double m12;
+        
+        public AffineDoubleTransform(AffineTransform transform)
         {
-            this.transform = transform;
+            this.m00 = transform.getScaleX();
+            this.m01 = transform.getShearX();
+            this.m02 = transform.getTranslateX();
+            this.m10 = transform.getScaleY();
+            this.m11 = transform.getShearY();
+            this.m12 = transform.getTranslateY();
         }
         
         @Override
         public void transform(double x, double y, DoubleBiConsumer term)
         {
-            src.setLocation(x, y);
-            transform.transform(src, dst);
-            term.accept(dst.x, dst.y);
+            term.accept(m00*x+m01*y+m02, m10*y+m11*x+m12);
+        }
+
+        @Override
+        public DoubleTransform derivate()
+        {
+            return (x,y,c)->c.accept(m00+m01, m10+m11);
         }
         
     }
-    public static class AffineInverseTransformer implements DoubleTransformer
+    public static class AffineInverseTransform extends AffineDoubleTransform
     {
-        private AffineTransform transform;
-        private Point2D.Double src = new Point2D.Double();
-        private Point2D.Double dst = new Point2D.Double();
-
-        public AffineInverseTransformer(AffineTransform transform)
+        public AffineInverseTransform(AffineTransform transform) throws NoninvertibleTransformException
         {
-            this.transform = transform;
-        }
-        
-        @Override
-        public void transform(double x, double y, DoubleBiConsumer term)
-        {
-            src.setLocation(x, y);
-            try
-            {
-                transform.inverseTransform(src, dst);
-            }
-            catch (NoninvertibleTransformException ex)
-            {
-                throw new IllegalArgumentException(ex);
-            }
-            term.accept(dst.x, dst.y);
+            super(transform.createInverse());
         }
         
     }

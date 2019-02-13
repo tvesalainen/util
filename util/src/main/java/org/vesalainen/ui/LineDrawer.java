@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ui;
 
-import java.awt.Color;
 import java.awt.Point;
 
 /**
@@ -27,15 +26,51 @@ import java.awt.Point;
 public final class LineDrawer
 {
     /**
+     * Draws orthogonal to derivate width length line having center at point.
+     * @param point
+     * @param derivate
+     * @param width
+     * @param plot 
+     */
+    public static void fillWidth(Point point, Point derivate, double width, PlotOperator plot)
+    {
+        fillWidth(point.x, point.y, derivate.x, derivate.y, width, plot);
+    }
+    /**
+     * Draws orthogonal to derivate width length line having center at (x0, y0).
+     * @param x0
+     * @param y0
+     * @param derivateX
+     * @param derivateY
+     * @param width
+     * @param plot 
+     */
+    public static void fillWidth(double x0, double y0, double derivateX, double derivateY, double width, PlotOperator plot)
+    {
+        double halfWidth = width/2.0;
+        if (Math.abs(derivateY) <= Double.MIN_VALUE)
+        {
+            drawLine((int)(x0), (int)(y0+halfWidth), (int)(x0), (int)(y0-halfWidth), plot);
+        }
+        else
+        {
+            double s = derivateX/-derivateY;
+            double w2 = halfWidth*halfWidth;
+            double x1 = Math.sqrt(w2/(s*s+1));
+            double y1 = s*x1;
+            drawLine((int)(x0+x1), (int)(y0+y1), (int)(x0-x1), (int)(y0-y1), plot);
+        }
+    }
+    /**
      * Draws line (p1, p2) by plotting points using plot
      * @param p1
      * @param p2
      * @param plot 
      * @param color 
      */
-    public static void drawLine(Point p1, Point p2, PlotOperator plot, Color color)
+    public static void drawLine(Point p1, Point p2, PlotOperator plot)
     {
-        drawLine(p1.x, p1.y, p2.x, p2.y, plot, color);
+        drawLine(p1.x, p1.y, p2.x, p2.y, plot);
     }
     /**
      * Draws line ((x0, y0), (x1, y1)) by plotting points using plot
@@ -46,26 +81,26 @@ public final class LineDrawer
      * @param plot 
      * @param color 
      */
-    public static void drawLine(int x0, int y0, int x1, int y1, PlotOperator plot, Color color)
+    public static void drawLine(int x0, int y0, int x1, int y1, PlotOperator plot)
     {
         if (x0 > x1)
         {
-            drawLine(x1, y1, x0, y0, plot, color);
+            drawLine(x1, y1, x0, y0, plot);
         }
         else
         {
             if (y0 > y1)
             {
-                drawLine(x0, -y0, x1, -y1, (x, y, c) -> plot.plot(x, -y, c), color);
+                drawLine(x0, -y0, x1, -y1, (x, y) -> plot.plot(x, -y));
             }
             else
             {
-                drawLine1(x0, y0, x1, y1, plot, color);    // ok to go ahead
+                drawLine1(x0, y0, x1, y1, plot);    // ok to go ahead
             }
         }
     }
 
-    private static void drawLine1(int x0, int y0, int x1, int y1, PlotOperator plot, Color color)
+    private static void drawLine1(int x0, int y0, int x1, int y1, PlotOperator plot)
     {
         assert x0 <= x1;
         assert y0 <= y1;
@@ -73,21 +108,21 @@ public final class LineDrawer
         double deltay = y1 - y0;
         if (deltay <= deltax)
         {
-            drawLine1(x0, y0, x1, plot, deltay, Math.abs(deltay / deltax), color);
+            drawLine1(x0, y0, x1, plot, deltay, Math.abs(deltay / deltax));
         }
         else
         {
-            drawLine1(y0, x0, y1, (x, y, c) -> plot.plot(y, x, c), deltax, Math.abs(deltax / deltay), color);
+            drawLine1(y0, x0, y1, (x, y) -> plot.plot(y, x), deltax, Math.abs(deltax / deltay));
         }
     }
-    private static void drawLine1(int x0, int y0, int x1, PlotOperator plot, double deltay, double deltaerr, Color color)
+    private static void drawLine1(int x0, int y0, int x1, PlotOperator plot, double deltay, double deltaerr)
     {
         double error = 0.0;
         int y = y0;
         double signum = Math.signum(deltay);
         for (int x = x0;x<=x1;x++)
         {
-            plot.plot(x, y, color);
+            plot.plot(x, y);
             error += deltaerr;
             if (error >= 0.5)
             {

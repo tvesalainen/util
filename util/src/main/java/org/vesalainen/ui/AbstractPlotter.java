@@ -65,7 +65,7 @@ public class AbstractPlotter extends AbstractView
     protected void plot(Drawer drawer)
     {
         update(shapes.stream().map(Drawable::getShape));
-        drawer.setTransform(Transforms.affineTransformer(transform));
+        drawer.setTransform(transform, affineTransform);
         shapes.forEach((d) ->
         {
             d.draw(drawer);

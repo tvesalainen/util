@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -23,11 +24,11 @@ import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import org.vesalainen.math.BezierCurve;
-import static org.vesalainen.math.BezierCurve.LINE;
-import org.vesalainen.util.function.DoubleBiConsumer;
+import static org.vesalainen.math.BezierCurve.*;
 import org.vesalainen.math.BezierOperator;
+import org.vesalainen.util.concurrent.ThreadTemporal;
 
 /**
  *
@@ -37,8 +38,7 @@ public class ImageDrawer extends AbstractDrawer
 {
     private BufferedImage image;
     private Rectangle bounds;
-    private DoubleTransformer transformer;
-    private DoubleBiConsumer pixelDrawer;
+    private BasicStroke stroke;
 
     public ImageDrawer(int width, int height)
     {
@@ -56,67 +56,59 @@ public class ImageDrawer extends AbstractDrawer
         Graphics2D graphics2D = image.createGraphics();
         graphics2D.setBackground(background);
         graphics2D.clearRect(0, 0, image.getWidth(), image.getHeight());
+        stroke = new BasicStroke(scaledLineWidth);
     }
 
     @Override
     public void draw(Shape shape)
     {
-        double[] orig = new double[6];
-        double[] array = new double[6];
-        double fox;
-        double foy;
-        double ftx;
-        double fty;
-        double lox = 0;
-        double loy = 0;
-        double ltx = 0;
-        double lty = 0;
-        double delta = 0;
-        transformer = getTransform();
-        pixelDrawer = (x,y)->transformer.transform(x, y, this::drawPoint);
-        PathIterator pi = shape.getPathIterator(null);
+        double[] arr = new double[6];
+        double fx;
+        double fy;
+        double lx = 0;
+        double ly = 0;
+        Shape strokedShape = stroke.createStrokedShape(shape);
+        PathIterator pi = strokedShape.getPathIterator(null);
         while (!pi.isDone())
         {
-            switch (pi.currentSegment(orig))
+            switch (pi.currentSegment(arr))
             {
                 case SEG_MOVETO:
-                    fox = lox = orig[0];
-                    foy = loy = orig[1];
-                    transformer.transform(tmp, orig, array, 1);
-                    ftx = ltx = array[0];
-                    fty = lty = array[1];
+                    fx = lx = arr[0];
+                    fy = ly = arr[1];
                     break;
                 case SEG_LINETO:
-                    lox = orig[0];
-                    loy = orig[1];
-                    transformer.transform(tmp, orig, array, 1);
-                    delta = delta(LINE, ltx, lty, array[0], array[1]);
-                    draw(LINE, delta, lox, loy, orig[0], orig[1]);
-                    ltx = array[0];
-                    lty = array[1];
+                    BezierOperator op = LINE.operator(lx, ly, arr[0], arr[1]);
+                    BezierOperator der = LINE.derivate(lx, ly, arr[0], arr[1]);
+                    DoubleTransform dd = DoubleTransform.identity().andThenMultiply(derivate);
+                    draw(op.andThen(transform), (t,c)->der.eval(t, (x,y)->dd.transform(x, y, c)));
+                    lx = arr[0];
+                    ly = arr[1];
                     break;
             }
             pi.next();
         }
     }
-    private double delta(BezierCurve bc, double... transformed)
+    private void draw(BezierOperator curve, BezierOperator curveDerivate)
     {
-        double len = bc.pathLengthEstimate(transformed);
-        return 1.0/len;
-    }
-    private void draw(BezierCurve bc, double delta, double... orig)
-    {
-        BezierOperator op = bc.operator(orig);
-        op.eval(0, pixelDrawer);
-        for (double t=delta;t<1.0;t+=delta)
+        Point2D.Double p1 = ThreadTemporal.tmp1.get();
+        double t = 0;
+        curve.eval(0, this::drawPoint);
+        curveDerivate.eval(t, p1::setLocation);
+        t += 1.0/Math.hypot(p1.x, p1.y);
+        while (t < 1)
         {
-            op.eval(t, pixelDrawer);
+            curveDerivate.eval(t, p1::setLocation);
+            curve.eval(t, this::drawPoint);
+            t += 1.0/Math.hypot(p1.x, p1.y);
         }
-        op.eval(1, pixelDrawer);
+        curve.eval(1, this::drawPoint);
     }
     
     public void drawPoint(double x, double y)
     {
+        drawPixel((int)x, (int)y);
+        /*
         int minX = (int) Math.floor(x-lineWidth);
         int maxX = (int) Math.ceil(x+lineWidth);
         int minY = (int) Math.floor(y-lineWidth);
@@ -134,8 +126,20 @@ public class ImageDrawer extends AbstractDrawer
                 }
             }
         }
+        */
     }
 
+    public void drawWidth(double x, double y, double dx, double dy)
+    {
+        LineDrawer.fillWidth(x, y, dx, dy, lineWidth, this::drawPixel);
+    }
+    public void drawPixel(int x, int y)
+    {
+        if (bounds.contains(x, y))
+        {
+            image.setRGB(x, y, color.getRGB());
+        }
+    }
     public BufferedImage getImage()
     {
         return image;

@@ -43,8 +43,7 @@ public interface Drawer
     Color getColor();
     void setLineWidth(double width);
     double getLineWidth();
-    void setTransform(DoubleTransformer transform);
-    DoubleTransformer getTransform();
+    void setTransform(DoubleTransform transform, AffineTransform affineTransform);
     void draw(Shape shape);
     // ----------------- to be removed --------------------------------
     @Deprecated default Rectangle2D bounds(String text)

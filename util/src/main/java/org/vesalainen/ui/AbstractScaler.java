@@ -96,7 +96,7 @@ public abstract class AbstractScaler
      */
     public double getLevelFor(Font font, FontRenderContext frc, boolean horizontal, double xy)
     {
-        return getLevelFor(font, frc, DoubleTransformer.identity(), horizontal, xy);
+        return getLevelFor(font, frc, DoubleTransform.identity(), horizontal, xy);
     }
     /**
      * Returns highest level where drawn labels don't overlap
@@ -106,7 +106,7 @@ public abstract class AbstractScaler
      * @param horizontal
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransformer transformer, boolean horizontal)
+    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal)
     {
         return getLevelFor(font, frc, transformer, horizontal, 0);
     }
@@ -119,11 +119,11 @@ public abstract class AbstractScaler
      * @param xy Lines constant value
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransformer transformer, boolean horizontal, double xy)
+    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy)
     {
-        return getXLevel(font, frc, horizontal ? transformer : DoubleTransformer.swap().andThen(transformer), xy);
+        return getXLevel(font, frc, horizontal ? transformer : DoubleTransform.swap().andThen(transformer), xy);
     }
-    private double getXLevel(Font font, FontRenderContext frc, DoubleTransformer transformer, double xy)
+    private double getXLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy)
     {
         double level = 0;
         while (true)
@@ -151,7 +151,7 @@ public abstract class AbstractScaler
         }
     }
 
-    private double getVerticalLevel(Font font, FontRenderContext frc, DoubleTransformer transformer)
+    private double getVerticalLevel(Font font, FontRenderContext frc, DoubleTransform transformer)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

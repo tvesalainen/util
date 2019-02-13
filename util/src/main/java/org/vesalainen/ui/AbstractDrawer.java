@@ -18,6 +18,7 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -29,8 +30,10 @@ public abstract class AbstractDrawer implements Drawer
     protected Font font;
     protected Color color;
     protected double lineWidth=1.0;
-    protected DoubleTransformer transform;
+    protected float scaledLineWidth;
+    protected DoubleTransform transform;
     protected Point2D.Double tmp = new Point2D.Double();
+    protected DoubleTransform derivate;
     
     @Override
     public void setFont(Font font)
@@ -69,15 +72,16 @@ public abstract class AbstractDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(DoubleTransformer transform)
+    public void setTransform(DoubleTransform t, AffineTransform at)
     {
-        this.transform = transform;
-    }
-
-    @Override
-    public DoubleTransformer getTransform()
-    {
-        return transform;
+        transform = Transforms.affineTransform(at);
+        derivate = transform.derivate();
+        if (t != null)
+        {
+            transform = t.andThen(transform);
+            derivate = t.derivate().andThenMultiply(derivate);
+        }
+        scaledLineWidth = (float) (lineWidth/(at.getScaleX()+at.getScaleY())/2.0);
     }
 
 }

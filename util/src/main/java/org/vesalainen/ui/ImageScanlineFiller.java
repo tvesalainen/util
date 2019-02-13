@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,31 +16,33 @@
  */
 package org.vesalainen.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ScreenPlotter extends AbstractPlotter
+public class ImageScanlineFiller extends ScanlineFiller
 {
+    private BufferedImage image;
 
-    public ScreenPlotter(Component component)
+    public ImageScanlineFiller(BufferedImage image)
     {
-        this(component, Color.BLACK, false);
+        super(image.getWidth(), image.getHeight());
+        this.image = image;
     }
-    public ScreenPlotter(Component component, Color background, boolean keepAspectRatio)
+
+    @Override
+    protected void loadLine(int y, int[] line)
     {
-        super(component.getWidth(), component.getHeight(), background, keepAspectRatio);
+        image.getRGB(0, y, line.length, 1, line, 0, 0);
+        //System.err.println("load  "+y+" "+Arrays.toString(line));
     }
-    
-    public void plot(Graphics2D graphics2D)
+
+    @Override
+    protected void storeLine(int y, int[] line)
     {
-        graphics2D.setBackground(background);
-        graphics2D.clearRect(0, 0, (int)screenBounds.width, (int)screenBounds.height);
-        Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
-        plot(g2d);
+        image.setRGB(0, y, line.length, 1, line, 0, 0);
+        //System.err.println("store  "+y+" "+Arrays.toString(line));
     }
 }

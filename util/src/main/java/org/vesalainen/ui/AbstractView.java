@@ -40,7 +40,8 @@ public class AbstractView
     protected Rectangle2D.Double screenBounds = new Rectangle2D.Double();
     protected Rectangle2D.Double userBounds = new Rectangle2D.Double();
     protected boolean keepAspectRatio;
-    protected AffineTransform transform = new AffineTransform();
+    protected DoubleTransform transform = DoubleTransform.identity();
+    protected AffineTransform affineTransform = new AffineTransform();
     private static ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
     private static ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
     /**
@@ -104,7 +105,7 @@ public class AbstractView
         }
         userBounds.setRect(minUserBounds);
         shapes.map(Shape::getBounds2D).forEach(this::update);
-        Transforms.createScreenTransform(userBounds, screenBounds, keepAspectRatio, transform);
+        Transforms.createScreenTransform(userBounds, screenBounds, keepAspectRatio, affineTransform);
     }
     protected void update(Rectangle2D bounds)
     {
@@ -116,9 +117,9 @@ public class AbstractView
      * @param x
      * @param y 
      */
-    void updatePoint(double x, double y)
+    public void updatePoint(double x, double y)
     {
-        userBounds.add(x, y);
+        transform.transform(x, y, userBounds::add);
     }
     /**
      * Adds margin to visible screen. 
@@ -165,7 +166,7 @@ public class AbstractView
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(x, 0);
-        transform.transform(src, dst);
+        affineTransform.transform(src, dst);
         return dst.getX();
         //return scaleX * x + xOff;
     }
@@ -180,7 +181,7 @@ public class AbstractView
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(0, y);
-        transform.transform(src, dst);
+        affineTransform.transform(src, dst);
         return dst.getY();
         //return - scaleY * y + yOff;
     }
@@ -197,7 +198,7 @@ public class AbstractView
             Point2D src = srcPnt.get();
             Point2D dst = dstPnt.get();
             src.setLocation(x, 0);
-            transform.inverseTransform(src, dst);
+            affineTransform.inverseTransform(src, dst);
             return dst.getX();
             //return (x - xOff) / scaleX;
         }
@@ -219,7 +220,7 @@ public class AbstractView
             Point2D src = srcPnt.get();
             Point2D dst = dstPnt.get();
             src.setLocation(0, y);
-            transform.inverseTransform(src, dst);
+            affineTransform.inverseTransform(src, dst);
             return dst.getY();
             //return - (y - yOff) / scaleY;
         }
@@ -245,12 +246,12 @@ public class AbstractView
     @Deprecated
     public double scaleToScreenX(double d)
     {
-        return d * transform.getScaleX();
+        return d * affineTransform.getScaleX();
     }
     @Deprecated
     public double scaleToScreenY(double d)
     {
-        return d * transform.getScaleY();
+        return d * affineTransform.getScaleY();
     }
     double getMinX()
     {
