@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import org.vesalainen.ui.DoubleTransform;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -26,4 +27,8 @@ import org.vesalainen.util.function.DoubleBiConsumer;
 public interface BezierOperator
 {
     void eval(double t, DoubleBiConsumer consumer);
+    default BezierOperator andThen(DoubleTransform transform)
+    {
+        return (t,c)->eval(t, (x,y)->transform.transform(x, y, c));
+    }
 }
