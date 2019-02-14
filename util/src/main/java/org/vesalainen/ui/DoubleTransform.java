@@ -34,6 +34,10 @@ public interface DoubleTransform
      * @param term 
      */
     void transform(double x, double y, DoubleBiConsumer term);
+    default DoubleTransform inverse()
+    {
+        throw new UnsupportedOperationException("inverse not implemented");
+    }
     /**
      * Creates numerical derivate. It is recommended to override this if
      * derivate is known.
@@ -86,6 +90,7 @@ public interface DoubleTransform
         return (x,y,n)->transform(x,y, (xx,yy)->next.transform(xx, yy, n));
     }
     /**
+     * @deprecated Bad idea
      * Creates new DoubleTransform which first calls this transform
      * then next multiplies result.
      * @param next
@@ -128,6 +133,12 @@ public interface DoubleTransform
         }
 
         @Override
+        public DoubleTransform inverse()
+        {
+            return this;
+        }
+
+        @Override
         public DoubleTransform derivate()
         {
             return (x,y,c)->c.accept(1, 1);
@@ -141,6 +152,12 @@ public interface DoubleTransform
         public void transform(double x, double y, DoubleBiConsumer term)
         {
             term.accept(y, x);
+        }
+
+        @Override
+        public DoubleTransform inverse()
+        {
+            return this;
         }
 
         @Override

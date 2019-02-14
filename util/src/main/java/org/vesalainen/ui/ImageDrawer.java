@@ -21,11 +21,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
-import static java.awt.geom.PathIterator.SEG_LINETO;
-import static java.awt.geom.PathIterator.SEG_MOVETO;
+import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import org.vesalainen.math.BezierCurve;
 import static org.vesalainen.math.BezierCurve.*;
 import org.vesalainen.math.BezierOperator;
 import org.vesalainen.util.concurrent.ThreadTemporal;
@@ -38,7 +39,7 @@ public class ImageDrawer extends AbstractDrawer
 {
     private BufferedImage image;
     private Rectangle bounds;
-    private BasicStroke stroke;
+    private ImageScanlineFiller filler;
 
     public ImageDrawer(int width, int height)
     {
@@ -56,17 +57,25 @@ public class ImageDrawer extends AbstractDrawer
         Graphics2D graphics2D = image.createGraphics();
         graphics2D.setBackground(background);
         graphics2D.clearRect(0, 0, image.getWidth(), image.getHeight());
-        stroke = new BasicStroke(scaledLineWidth);
+        filler = new ImageScanlineFiller(image);
+    }
+
+    @Override
+    public void setTransform(DoubleTransform t, AffineTransform at)
+    {
+        super.setTransform(t, at);
     }
 
     @Override
     public void draw(Shape shape)
     {
         double[] arr = new double[6];
-        double fx;
-        double fy;
+        double fx = 0;
+        double fy = 0;
         double lx = 0;
         double ly = 0;
+        scaledLineWidth = (float) (lineWidth/scale);
+        BasicStroke stroke = new BasicStroke(scaledLineWidth);
         Shape strokedShape = stroke.createStrokedShape(shape);
         PathIterator pi = strokedShape.getPathIterator(null);
         while (!pi.isDone())
@@ -78,29 +87,46 @@ public class ImageDrawer extends AbstractDrawer
                     fy = ly = arr[1];
                     break;
                 case SEG_LINETO:
-                    BezierOperator op = LINE.operator(lx, ly, arr[0], arr[1]);
-                    BezierOperator der = LINE.derivate(lx, ly, arr[0], arr[1]);
-                    DoubleTransform dd = DoubleTransform.identity().andThenMultiply(derivate);
-                    draw(op.andThen(transform), (t,c)->der.eval(t, (x,y)->dd.transform(x, y, c)));
+                    draw(LINE, lx, ly, arr[0], arr[1]);
                     lx = arr[0];
                     ly = arr[1];
+                    break;
+                case SEG_QUADTO:
+                    draw(QUAD, lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    lx = arr[0];
+                    ly = arr[1];
+                    break;
+                case SEG_CUBICTO:
+                    draw(CUBIC, lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    lx = arr[0];
+                    ly = arr[1];
+                    break;
+                case SEG_CLOSE:
+                    draw(LINE, lx, ly, fx, fy);
+                    lx = -1;
+                    ly = -1;
                     break;
             }
             pi.next();
         }
     }
+    private void draw(BezierCurve curve, double... cp)
+    {
+        BezierOperator op = curve.operator(cp);
+        BezierOperator der = curve.derivate(cp);
+        draw(op.andThen(transform), der);
+    }
     private void draw(BezierOperator curve, BezierOperator curveDerivate)
     {
-        Point2D.Double p1 = ThreadTemporal.tmp1.get();
         double t = 0;
         curve.eval(0, this::drawPoint);
-        curveDerivate.eval(t, p1::setLocation);
-        t += 1.0/Math.hypot(p1.x, p1.y);
+        curveDerivate.eval(t, this::updateDelta);
+        t += 1.0/delta;
         while (t < 1)
         {
-            curveDerivate.eval(t, p1::setLocation);
+            curveDerivate.eval(t, this::updateDelta);
             curve.eval(t, this::drawPoint);
-            t += 1.0/Math.hypot(p1.x, p1.y);
+            t += 1.0/delta;
         }
         curve.eval(1, this::drawPoint);
     }

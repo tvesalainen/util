@@ -17,6 +17,7 @@
 package org.vesalainen.ui;
 
 import java.awt.image.BufferedImage;
+import java.util.function.IntPredicate;
 
 /**
  *
@@ -25,6 +26,8 @@ import java.awt.image.BufferedImage;
 public class ImageScanlineFiller extends ScanlineFiller
 {
     private BufferedImage image;
+    private int offset;
+    private int length;
 
     public ImageScanlineFiller(BufferedImage image)
     {
@@ -33,16 +36,24 @@ public class ImageScanlineFiller extends ScanlineFiller
     }
 
     @Override
+    public void floodFill(int xx, int yy, int minX, int minY, int maxX, int maxY, IntPredicate target, int replacement)
+    {
+        this.offset = minX;
+        this.length = maxX-minX;
+        super.floodFill(xx, yy, minX, minY, maxX, maxY, target, replacement);
+    }
+
+    @Override
     protected void loadLine(int y, int[] line)
     {
-        image.getRGB(0, y, line.length, 1, line, 0, 0);
+        image.getRGB(offset, y, length, 1, line, offset, 0);
         //System.err.println("load  "+y+" "+Arrays.toString(line));
     }
 
     @Override
     protected void storeLine(int y, int[] line)
     {
-        image.setRGB(0, y, line.length, 1, line, 0, 0);
+        image.setRGB(offset, y, length, 1, line, offset, 0);
         //System.err.println("store  "+y+" "+Arrays.toString(line));
     }
 }

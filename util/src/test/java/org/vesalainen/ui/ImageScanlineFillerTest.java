@@ -18,6 +18,8 @@ package org.vesalainen.ui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -36,17 +38,18 @@ public class ImageScanlineFillerTest
     @Test
     public void test0()
     {
-        int width = 5;
-        int height = 5;
+        int width = 10;
+        int height = 10;
+        Rectangle clip = new Rectangle(2, 2, 2, 2);
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         ImageScanlineFiller filler = new ImageScanlineFiller(image);
         int rgb = Color.BLUE.getRGB();
-        filler.floodFill(4, 0, rgb);
+        filler.floodFill(3, 3, clip, rgb);
         for (int x=0;x<width;x++)
         {
             for (int y=0;y<height;y++)
             {
-                assertTrue("("+x+", "+y+")", rgb == image.getRGB(x, y));
+                assertEquals("("+x+", "+y+")", clip.contains(x, y), rgb == image.getRGB(x, y));
             }
         }
     }

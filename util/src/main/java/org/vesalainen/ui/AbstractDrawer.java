@@ -32,8 +32,13 @@ public abstract class AbstractDrawer implements Drawer
     protected double lineWidth=1.0;
     protected float scaledLineWidth;
     protected DoubleTransform transform;
+    protected DoubleTransform inverse;
     protected Point2D.Double tmp = new Point2D.Double();
-    protected DoubleTransform derivate;
+    protected DoubleTransform[] derivates;
+    protected double scale;
+    protected double delta;
+    private double deltax;
+    private double deltay;
     
     @Override
     public void setFont(Font font)
@@ -75,13 +80,33 @@ public abstract class AbstractDrawer implements Drawer
     public void setTransform(DoubleTransform t, AffineTransform at)
     {
         transform = Transforms.affineTransform(at);
-        derivate = transform.derivate();
         if (t != null)
         {
             transform = t.andThen(transform);
-            derivate = t.derivate().andThenMultiply(derivate);
+            derivates = new DoubleTransform[]{t.derivate(), transform.derivate()};
+            inverse = transform.inverse().andThen(t.inverse());
         }
-        scaledLineWidth = (float) (lineWidth/(at.getScaleX()+at.getScaleY())/2.0);
+        else
+        {
+            derivates = new DoubleTransform[]{transform.derivate()};
+            inverse = transform.inverse();
+        }
+        scale = (Math.abs(at.getScaleX())+Math.abs(at.getScaleY()))/2.0;
     }
-
+    
+    protected void updateDelta(double dx, double dy)
+    {
+        deltax = dx;
+        deltay = dy;
+        for (DoubleTransform d : derivates)
+        {
+            d.transform(dx, dy, this::multiplyDerivate);
+        }
+        delta = Math.hypot(deltax, deltay);
+    }
+    private void multiplyDerivate(double dx, double dy)
+    {
+        deltax *= dx;
+        deltay *= dy;
+    }
 }

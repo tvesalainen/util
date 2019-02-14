@@ -18,7 +18,6 @@ package org.vesalainen.ui;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
@@ -30,9 +29,9 @@ public final class Transforms
 {
 
     /**
-     * Creates translation that translates userBounds in cartesian coordinates 
+     * Creates translation that translates userBounds in Cartesian coordinates 
      * to screenBound in screen coordinates.
-     * <p>In cartesian y grows up while in screen y grows down
+     * <p>In Cartesian y grows up while in screen y grows down
      * @param userBounds
      * @param screenBounds
      * @param keepAspectRatio 
@@ -134,6 +133,19 @@ public final class Transforms
         public void transform(double x, double y, DoubleBiConsumer term)
         {
             term.accept(m00*x+m01*y+m02, m10*y+m11*x+m12);
+        }
+
+        @Override
+        public DoubleTransform inverse()
+        {
+            try
+            {
+                return new AffineInverseTransform(new AffineTransform(m00, m10, m01, m11, m02, m12));
+            }
+            catch (NoninvertibleTransformException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
         }
 
         @Override

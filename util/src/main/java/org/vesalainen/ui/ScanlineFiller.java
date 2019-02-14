@@ -17,6 +17,7 @@
 package org.vesalainen.ui;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.function.IntPredicate;
 import org.vesalainen.util.ArrayHelp;
@@ -63,6 +64,10 @@ public abstract class ScanlineFiller
     {
         floodFill(xx, yy, (c)->c!=replacement, replacement);
     }
+    public void floodFill(int xx, int yy, Rectangle clip, int replacement)
+    {
+        floodFill(xx, yy, clip, (c)->c!=replacement, replacement);
+    }
     /**
      * Fills area starting at xx,yy. Pixels fullfilling target are replaced with
      * replacement color.
@@ -73,6 +78,18 @@ public abstract class ScanlineFiller
      */
     public void floodFill(int xx, int yy, IntPredicate target, int replacement)
     {
+        floodFill(xx, yy, 0, 0, width, height, target, replacement);
+    }
+    public void floodFill(int xx, int yy, Rectangle clip, IntPredicate target, int replacement)
+    {
+        floodFill(xx, yy, clip.x, clip.y, clip.x+clip.width, clip.y+clip.height, target, replacement);
+    }
+    public void floodFill(int xx, int yy, int minX, int minY, int maxX, int maxY, IntPredicate target, int replacement)
+    {
+        if (xx<minX || yy<minY || xx>minX+width || yy>minY+height)
+        {
+            return;
+        }
         this.x = xx;
         this.y = yy;
         ensure(index, y);
@@ -89,16 +106,16 @@ public abstract class ScanlineFiller
             int[] n = lines[north()];
             int[] l = lines[index];
             int[] s = lines[south()];
-            for (int ii=x;ii<width;ii++)
+            for (int ii=x;ii<maxX;ii++)
             {
                 if (target.test(l[ii]))
                 {
                     l[ii] = replacement;
-                    if (y-1 >= 0 && target.test(n[ii]))
+                    if (y-1 >= minY && target.test(n[ii]))
                     {
                         northQueue.add(ii, y-1);
                     }
-                    if (y+1 < height && target.test(s[ii]))
+                    if (y+1 < maxY && target.test(s[ii]))
                     {
                         southQueue.add(ii, y+1);
                     }
@@ -108,16 +125,16 @@ public abstract class ScanlineFiller
                     break;
                 }
             }
-            for (int ii=x-1;ii>=0;ii--)
+            for (int ii=x-1;ii>=minX;ii--)
             {
                 if (target.test(l[ii]))
                 {
                     l[ii] = replacement;
-                    if (y-1 >= 0 && target.test(n[ii]))
+                    if (y-1 >= minY && target.test(n[ii]))
                     {
                         northQueue.add(ii, y-1);
                     }
-                    if (y+1 < height && target.test(s[ii]))
+                    if (y+1 < maxY && target.test(s[ii]))
                     {
                         southQueue.add(ii, y+1);
                     }
