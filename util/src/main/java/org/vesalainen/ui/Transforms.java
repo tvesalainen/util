@@ -124,15 +124,15 @@ public final class Transforms
             this.m00 = transform.getScaleX();
             this.m01 = transform.getShearX();
             this.m02 = transform.getTranslateX();
-            this.m10 = transform.getScaleY();
-            this.m11 = transform.getShearY();
+            this.m11 = transform.getScaleY();
+            this.m10 = transform.getShearY();
             this.m12 = transform.getTranslateY();
         }
         
         @Override
         public void transform(double x, double y, DoubleBiConsumer term)
         {
-            term.accept(m00*x+m01*y+m02, m10*y+m11*x+m12);
+            term.accept(m00*x+m01*y+m02, m10*x+m11*y+m12);
         }
 
         @Override

@@ -16,17 +16,24 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Stream;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
@@ -48,7 +55,7 @@ public class AbstractPlotter extends AbstractView
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
     protected final Color background;
-    private double lineWidth = 1.0;
+    protected BasicStroke stroke = new BasicStroke();
 
     public AbstractPlotter(int width, int height, Color background)
     {
@@ -116,18 +123,20 @@ public class AbstractPlotter extends AbstractView
     }
     public AbstractPlotter setFont(String fontName, int fontStyle, int fontSize)
     {
-        return setFont(new Font(fontName, fontStyle, fontStyle));
+        return setFont(new Font(fontName, fontStyle, fontSize));
     }
 
     public AbstractPlotter setFont(Font font)
     {
+        Objects.requireNonNull(font);
         this.font = font;
         return this;
     }
 
-    public AbstractPlotter setLineWidth(double width)
+    public AbstractPlotter setStroke(BasicStroke stroke)
     {
-        this.lineWidth = width;
+        Objects.requireNonNull(stroke);
+        this.stroke = stroke;
         return this;
     }
     public void drawText(double x, double y, String text)
@@ -137,13 +146,43 @@ public class AbstractPlotter extends AbstractView
 
     public void drawText(double x, double y, TextAlignment alignment, String text)
     {
-        shapes.add(new Drawable(color, lineWidth, text2Shape(x, y, alignment, text)));
+        shapes.add(new Drawable(color, stroke, text2Shape(x, y, alignment, text)));
     }
 
     public Shape text2Shape(double x, double y, TextAlignment alignment, String text)
     {
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
-        return glyphVector.getOutline((float)x, (float)y);
+        Rectangle2D lb = glyphVector.getLogicalBounds();
+        Shape outline = glyphVector.getOutline();
+        LineMetrics lm = font.getLineMetrics(text, fontRenderContext);
+        AffineTransform at = AffineTransform.getScaleInstance(1, -1);
+        switch (alignment)
+        {
+            case START_X:
+            case START_Y:
+                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent());
+                at.translate(x, y-lm.getDescent());
+                break;
+            case MIDDLE_X:
+                //g.drawString(text, (float)x-fm.stringWidth(text)/2, (float)y-fm.getMaxDescent());
+                at.translate(x-lb.getWidth()/2, y-lm.getDescent());
+                break;
+            case END_X:
+                //g.drawString(text, (float)x-fm.stringWidth(text), (float)y-fm.getMaxDescent());
+                at.translate(x-lb.getWidth(), y-lm.getDescent());
+                break;
+            case MIDDLE_Y:
+                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight()/2);
+                at.translate(x, y-lm.getDescent()+lm.getHeight()/2);
+                break;
+            case END_Y:
+                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight());
+                at.translate(x, y-lm.getDescent()+lm.getHeight());
+                break;
+            default:
+                throw new UnsupportedOperationException(alignment+" not supported");
+        }
+        return new Path2D.Double(outline, at);
     }
     public void drawCircle(Circle circle)
     {
@@ -152,7 +191,7 @@ public class AbstractPlotter extends AbstractView
 
     public void drawCircle(double x, double y, double r)
     {
-        shapes.add(new Drawable(color, lineWidth, new Ellipse2D.Double(x, y, r, r)));
+        shapes.add(new Drawable(color, stroke, new Ellipse2D.Double(x, y, r, r)));
     }
 
     public void drawPoint(DenseMatrix64F point)
@@ -177,12 +216,12 @@ public class AbstractPlotter extends AbstractView
 
     public void drawPolygon(Polygon polygon)
     {
-        shapes.add(new Drawable(color, lineWidth, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
     }
 
     public void drawPolygon(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(color, lineWidth, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
     }
 
     public void drawPoints(double[] arr)
@@ -219,7 +258,7 @@ public class AbstractPlotter extends AbstractView
 
     public void drawLine(double x1, double y1, double x2, double y2)
     {
-        shapes.add(new Drawable(color, lineWidth, new Line2D.Double(x1, y1, x2, y2)));
+        shapes.add(new Drawable(color, stroke, new Line2D.Double(x1, y1, x2, y2)));
     }
 
     public void drawPolyline(Polyline polyline)
@@ -229,12 +268,12 @@ public class AbstractPlotter extends AbstractView
 
     public void drawCoordinateLine(double x1, double y1, double x2, double y2)
     {
-        shapes.add(0, new Drawable(color, lineWidth, new Line2D.Double(x1, y1, x2, y2)));
+        shapes.add(0, new Drawable(color, stroke, new Line2D.Double(x1, y1, x2, y2)));
     }
 
     public void drawLines(double[] data)
     {
-        shapes.add(new Drawable(color, lineWidth, new DoublePolygon(data)));
+        shapes.add(new Drawable(color, stroke, new DoublePolygon(data)));
     }
 
     public void drawLines(Polygon polygon)
@@ -244,7 +283,7 @@ public class AbstractPlotter extends AbstractView
 
     public void drawLines(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(color, lineWidth, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
     }
 
     public void drawCoordinates()
@@ -280,36 +319,42 @@ public class AbstractPlotter extends AbstractView
     {
         return polyline(color, 1.0);
     }
-    public Polyline polyline(Color color, double lineWidth)
+    @Deprecated public Polyline polyline(Color color, double lineWidth)
     {
-        return new Polyline(color, lineWidth);
+        return polyline(color, new BasicStroke((float)lineWidth));
+    }
+    public Polyline polyline(Color color, BasicStroke stroke)
+    {
+        return new Polyline(color, stroke);
     }
  
     private static class DrawContext
     {
         protected Color color;
         protected Font font;
-        protected double lineWidth;
+        protected BasicStroke stroke;
+        protected Paint paint;
 
-        public DrawContext(Color color, Font font, double lineWidth)
+        public DrawContext(Color color, Font font, BasicStroke stroke, Paint paint)
         {
             this.color = color;
             this.font = font;
-            this.lineWidth = lineWidth;
+            this.stroke = stroke;
+            this.paint = paint;
         }
-        
+
     }
     private static class Drawable<S extends Shape> extends DrawContext
     {
         protected S shape;
 
-        public Drawable(Color color, double lineWidth, S shape)
+        public Drawable(Color color, BasicStroke stroke, S shape)
         {
-            this(color, null, lineWidth, shape);
+            this(color, null, stroke, null, shape);
         }
-        public Drawable(Color color, Font font, double lineWidth, S shape)
+        public Drawable(Color color, Font font, BasicStroke stroke, Paint paint, S shape)
         {
-            super(color, font, lineWidth);
+            super(color, font, stroke, paint);
             this.shape = shape;
         }
 
@@ -317,7 +362,8 @@ public class AbstractPlotter extends AbstractView
         {
             drawer.setColor(color);
             drawer.setFont(font);
-            drawer.setLineWidth(lineWidth);
+            drawer.setStroke(stroke);
+            drawer.setPaint(paint);
             drawer.draw(shape);
         }
 
@@ -330,9 +376,9 @@ public class AbstractPlotter extends AbstractView
     public static class Polyline extends Drawable<DoublePolygon>
     {
 
-        public Polyline(Color color, double lineWidth)
+        public Polyline(Color color, BasicStroke stroke)
         {
-            super(color, lineWidth, new DoublePolygon());
+            super(color, stroke, new DoublePolygon());
         }
         public void lineTo(Point p)
         {

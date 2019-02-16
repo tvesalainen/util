@@ -21,9 +21,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.function.IntBinaryOperator;
 
 /**
  *
@@ -68,6 +70,54 @@ public class Graphics2DDrawer implements Drawer
     public void draw(Shape shape)
     {
         g.draw(shape);
+    }
+
+    @Override
+    public void setPaint(Paint paint)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setPattern(IntBinaryOperator pattern)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setStroke(BasicStroke stroke)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void fill(Shape shape)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void drawLine(double... cp)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void drawQuad(double... cp)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void drawCubic(double... cp)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void closePath(double... cp)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -125,18 +175,6 @@ public class Graphics2DDrawer implements Drawer
     public Rectangle2D bounds(String text)
     {
         return g.getFontMetrics().getStringBounds(text, g);
-    }
-
-    @Override
-    public void setLineWidth(double width)
-    {
-        g.setStroke(new BasicStroke((float) width));
-    }
-
-    @Override
-    public double getLineWidth()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

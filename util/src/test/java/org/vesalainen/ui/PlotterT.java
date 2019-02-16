@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import static java.awt.Font.BOLD;
@@ -43,15 +44,17 @@ public class PlotterT
         {
             Plotter p = new Plotter(1000, 1000);
             p.setColor(Color.RED);
-            p.setLineWidth(10);
-            //p.setFont("Arial", BOLD, 0.1);
-            //p.drawText(1, 2, TextAlignment.START_X, "start");
-            //p.drawText(1, 1, TextAlignment.MIDDLE_X, "middle");
-            //p.drawText(1, 0, TextAlignment.END_X, "end");
-            p.drawLine(0, 0, 3, 3);
-            p.drawPoint(0, 0);
-            p.drawPoint(1, 1);
-            p.drawPoint(2, 0);
+            //p.setStroke(new BasicStroke(10));
+            p.setFont("Arial", BOLD, 10);
+            //p.drawText(0, 0, TextAlignment.START_X, "start");
+            //p.drawText(0, 0, TextAlignment.MIDDLE_X, "middle");
+            p.drawText(0, 0, TextAlignment.END_X, "end");
+            p.drawLine(0, -3, 0, 3);
+            p.drawLine(-3, 0, 3, 0);
+            //p.drawCircle(2, 2, 1);
+            //p.drawPoint(0, 0);
+            //p.drawPoint(1, 1);
+            //p.drawPoint(2, 0);
             p.drawCoordinates();
             p.plot("plotterTest", "png");
         }

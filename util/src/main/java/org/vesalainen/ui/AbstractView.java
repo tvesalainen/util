@@ -35,10 +35,9 @@ import java.util.stream.Stream;
  */
 public class AbstractView
 {
-    private static Rectangle2D.Double INITIAL_RECT = new Rectangle2D.Double(Double.MAX_VALUE/2, Double.MAX_VALUE/2, -Double.MAX_VALUE, -Double.MAX_VALUE);
-    protected Rectangle2D.Double minUserBounds = INITIAL_RECT;
-    protected Rectangle2D.Double screenBounds = new Rectangle2D.Double();
-    protected Rectangle2D.Double userBounds = new Rectangle2D.Double();
+    protected DoubleBounds minUserBounds = new DoubleBounds();
+    protected DoubleBounds screenBounds = new DoubleBounds();
+    protected DoubleBounds userBounds = new DoubleBounds();
     protected boolean keepAspectRatio;
     protected DoubleTransform transform = DoubleTransform.identity();
     protected AffineTransform affineTransform = new AffineTransform();
@@ -57,7 +56,7 @@ public class AbstractView
      */
     public AbstractView(boolean keepAspectRatio)
     {
-        this(keepAspectRatio, INITIAL_RECT);
+        this(keepAspectRatio, new DoubleBounds());
     }
     /**
      * Creates AbstractView which keeps aspect-ratio with given initial size.
@@ -85,7 +84,6 @@ public class AbstractView
     public AbstractView(boolean keepAspectRatio, Rectangle2D.Double rect)
     {
         this.keepAspectRatio = keepAspectRatio;
-        userBounds.setRect(INITIAL_RECT);
         setRect(rect);
     }
     /**

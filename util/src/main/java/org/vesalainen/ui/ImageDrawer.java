@@ -19,6 +19,7 @@ package org.vesalainen.ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -29,7 +30,7 @@ import java.awt.image.BufferedImage;
 import org.vesalainen.math.BezierCurve;
 import static org.vesalainen.math.BezierCurve.*;
 import org.vesalainen.math.BezierOperator;
-import org.vesalainen.util.concurrent.ThreadTemporal;
+import org.vesalainen.util.function.IntBiPredicate;
 
 /**
  *
@@ -39,7 +40,10 @@ public class ImageDrawer extends AbstractDrawer
 {
     private BufferedImage image;
     private Rectangle bounds;
-    private ImageScanlineFiller filler;
+    private ImageAreaFiller filler;
+    private Point2D fillPoint = new Point2D.Double();
+    private Shape fillShape;
+    private IntBiPredicate isInside;
 
     public ImageDrawer(int width, int height)
     {
@@ -57,52 +61,80 @@ public class ImageDrawer extends AbstractDrawer
         Graphics2D graphics2D = image.createGraphics();
         graphics2D.setBackground(background);
         graphics2D.clearRect(0, 0, image.getWidth(), image.getHeight());
-        filler = new ImageScanlineFiller(image);
+        filler = new ImageAreaFiller(image);
     }
 
     @Override
     public void setTransform(DoubleTransform t, AffineTransform at)
     {
         super.setTransform(t, at);
+        isInside = (x,y)->
+        {
+            inverse.transform(x, y, (xx,yy)->fillPoint.setLocation(xx, yy));
+            return fillShape.contains(fillPoint);
+        };
     }
 
     @Override
     public void draw(Shape shape)
+    {
+        if (stroke != null && stroke.getLineWidth() > 1)
+        {
+            BasicStroke s = new BasicStroke(
+                    (float) (stroke.getLineWidth()/scale), 
+                    stroke.getEndCap(), 
+                    stroke.getLineJoin(), 
+                    stroke.getMiterLimit(), 
+                    stroke.getDashArray(), 
+                    stroke.getDashPhase()
+            );
+            fillShape = s.createStrokedShape(shape);
+            fill(fillShape);
+        }
+        else
+        {
+            drawIt(shape);
+        }
+    }
+    public void drawIt(Shape shape)
     {
         double[] arr = new double[6];
         double fx = 0;
         double fy = 0;
         double lx = 0;
         double ly = 0;
-        scaledLineWidth = (float) (lineWidth/scale);
-        BasicStroke stroke = new BasicStroke(scaledLineWidth);
-        Shape strokedShape = stroke.createStrokedShape(shape);
-        PathIterator pi = strokedShape.getPathIterator(null);
+        PathIterator pi = shape.getPathIterator(null);
         while (!pi.isDone())
         {
             switch (pi.currentSegment(arr))
             {
                 case SEG_MOVETO:
+                    moveTo(arr[0], arr[1]);
+                    System.err.printf("MOVETO %.1f %.1f\n", arr[0], arr[1]);
                     fx = lx = arr[0];
                     fy = ly = arr[1];
                     break;
                 case SEG_LINETO:
-                    draw(LINE, lx, ly, arr[0], arr[1]);
+                    drawLine(lx, ly, arr[0], arr[1]);
+                    System.err.printf("LINETO %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1]);
                     lx = arr[0];
                     ly = arr[1];
                     break;
                 case SEG_QUADTO:
-                    draw(QUAD, lx, ly, arr[0], arr[1], arr[2], arr[3]);
-                    lx = arr[0];
-                    ly = arr[1];
+                    drawQuad(lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    System.err.printf("QUADTO %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    lx = arr[2];
+                    ly = arr[3];
                     break;
                 case SEG_CUBICTO:
-                    draw(CUBIC, lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                    lx = arr[0];
-                    ly = arr[1];
+                    drawCubic(lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    System.err.printf("CUBICTO %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    lx = arr[4];
+                    ly = arr[5];
                     break;
                 case SEG_CLOSE:
-                    draw(LINE, lx, ly, fx, fy);
+                    System.err.printf("CLOSE\n");
+                    closePath(lx, ly, fx, fy);
                     lx = -1;
                     ly = -1;
                     break;
@@ -110,6 +142,40 @@ public class ImageDrawer extends AbstractDrawer
             pi.next();
         }
     }
+
+    @Override
+    public void fill(Shape shape)
+    {
+        fillShape = shape;
+        fillBounds.clear();
+        drawIt(shape);
+        fill();
+    }
+
+    @Override
+    public void drawLine(double... cp)
+    {
+        draw(LINE, cp);
+    }
+
+    @Override
+    public void drawQuad(double... cp)
+    {
+        draw(QUAD, cp);
+    }
+
+    @Override
+    public void drawCubic(double... cp)
+    {
+        draw(CUBIC, cp);
+    }
+
+    @Override
+    public void closePath(double... cp)
+    {
+        drawLine(cp);
+    }
+
     private void draw(BezierCurve curve, double... cp)
     {
         BezierOperator op = curve.operator(cp);
@@ -130,7 +196,28 @@ public class ImageDrawer extends AbstractDrawer
         }
         curve.eval(1, this::drawPoint);
     }
-    
+    public void fill()
+    {
+        if (!fillBounds.isEmpty())
+        {
+            if (paint != null)
+            {
+                PaintPattern paintPattern = new PaintPattern(image, paint);
+                filler.fill(fillBounds, isInside, paintPattern.getPattern(fillBounds));
+            }
+            else
+            {
+                if (pattern != null)
+                {
+                    filler.fill(fillBounds, isInside, pattern);
+                }
+                else
+                {
+                    filler.fill(fillBounds, isInside, color.getRGB());
+                }
+            }
+        }
+    }
     public void drawPoint(double x, double y)
     {
         drawPixel((int)x, (int)y);
@@ -155,15 +242,12 @@ public class ImageDrawer extends AbstractDrawer
         */
     }
 
-    public void drawWidth(double x, double y, double dx, double dy)
-    {
-        LineDrawer.fillWidth(x, y, dx, dy, lineWidth, this::drawPixel);
-    }
     public void drawPixel(int x, int y)
     {
         if (bounds.contains(x, y))
         {
             image.setRGB(x, y, color.getRGB());
+            fillBounds.add(x, y);
         }
     }
     public BufferedImage getImage()

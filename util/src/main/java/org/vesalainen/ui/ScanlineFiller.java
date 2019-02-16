@@ -26,7 +26,7 @@ import org.vesalainen.util.ArrayHelp;
  * ScanlineFiller minimizes line load/store count
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class ScanlineFiller
+public abstract class ScanlineFiller extends AbstractLineFiller
 {
     protected int width;
     protected int height;
@@ -64,6 +64,14 @@ public abstract class ScanlineFiller
     {
         floodFill(xx, yy, (c)->c!=replacement, replacement);
     }
+    /**
+     * Fills clipped area starting at xx,yy. Area must be surrounded with 
+     * replacement (or clip)
+     * @param xx
+     * @param yy
+     * @param clip
+     * @param replacement 
+     */
     public void floodFill(int xx, int yy, Rectangle clip, int replacement)
     {
         floodFill(xx, yy, clip, (c)->c!=replacement, replacement);
@@ -80,10 +88,31 @@ public abstract class ScanlineFiller
     {
         floodFill(xx, yy, 0, 0, width, height, target, replacement);
     }
+    /**
+     * Fills clipped area starting at xx,yy. Area must be surrounded with 
+     * replacement (or clip)
+     * @param xx
+     * @param yy
+     * @param clip
+     * @param target
+     * @param replacement 
+     */
     public void floodFill(int xx, int yy, Rectangle clip, IntPredicate target, int replacement)
     {
         floodFill(xx, yy, clip.x, clip.y, clip.x+clip.width, clip.y+clip.height, target, replacement);
     }
+    /**
+     * Fills clipped (minX, minY, maxX, maxY) area starting at xx,yy. Area must 
+     * be surrounded with replacement (or clip)
+     * @param xx
+     * @param yy
+     * @param minX
+     * @param minY
+     * @param maxX
+     * @param maxY
+     * @param target
+     * @param replacement 
+     */
     public void floodFill(int xx, int yy, int minX, int minY, int maxX, int maxY, IntPredicate target, int replacement)
     {
         if (xx<minX || yy<minY || xx>minX+width || yy>minY+height)
@@ -226,18 +255,6 @@ public abstract class ScanlineFiller
     {
         return (index+1)%3;
     }
-    /**
-     * Loads line y content to line
-     * @param y
-     * @param line 
-     */
-    protected abstract void loadLine(int y, int[] line);
-    /**
-     * Stores line y content from line
-     * @param y
-     * @param line 
-     */
-    protected abstract void storeLine(int y, int[] line);
 
     static class PointQueue
     {

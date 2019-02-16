@@ -16,10 +16,15 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
+import static java.awt.BasicStroke.CAP_SQUARE;
+import static java.awt.BasicStroke.JOIN_MITER;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.function.IntBinaryOperator;
 
 /**
  * <p>This class is NOT thread-safe!
@@ -29,12 +34,14 @@ public abstract class AbstractDrawer implements Drawer
 {
     protected Font font;
     protected Color color;
-    protected double lineWidth=1.0;
-    protected float scaledLineWidth;
+    protected Paint paint;
+    protected IntBinaryOperator pattern;
+    protected BasicStroke stroke;
     protected DoubleTransform transform;
     protected DoubleTransform inverse;
     protected Point2D.Double tmp = new Point2D.Double();
     protected DoubleTransform[] derivates;
+    protected Bounds fillBounds = new Bounds();
     protected double scale;
     protected double delta;
     private double deltax;
@@ -65,29 +72,36 @@ public abstract class AbstractDrawer implements Drawer
     }
 
     @Override
-    public double getLineWidth()
+    public void setPaint(Paint paint)
     {
-        return lineWidth;
+        this.paint = paint;
     }
 
     @Override
-    public void setLineWidth(double lineWidth)
+    public void setPattern(IntBinaryOperator pattern)
     {
-        this.lineWidth = lineWidth;
+        this.pattern = pattern;
+    }
+
+    @Override
+    public void setStroke(BasicStroke stroke)
+    {
+        this.stroke = stroke;
     }
 
     @Override
     public void setTransform(DoubleTransform t, AffineTransform at)
     {
-        transform = Transforms.affineTransform(at);
+        DoubleTransform att = Transforms.affineTransform(at);
         if (t != null)
         {
-            transform = t.andThen(transform);
-            derivates = new DoubleTransform[]{t.derivate(), transform.derivate()};
-            inverse = transform.inverse().andThen(t.inverse());
+            transform = t.andThen(att);
+            derivates = new DoubleTransform[]{t.derivate(), att.derivate()};
+            inverse = att.inverse().andThen(t.inverse());
         }
         else
         {
+            transform = att;
             derivates = new DoubleTransform[]{transform.derivate()};
             inverse = transform.inverse();
         }

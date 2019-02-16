@@ -46,7 +46,7 @@ public class TransformsTest
         assertEquals(exp.y, got.y, 1e-10);
     }
     @Test
-    public void testInverseAffineTransform()
+    public void testInverseAffineTransform() throws NoninvertibleTransformException
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
         DoubleTransform t = Transforms.affineInverseTransform(at);

@@ -16,16 +16,16 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
+import static java.awt.BasicStroke.CAP_SQUARE;
+import static java.awt.BasicStroke.JOIN_MITER;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
-import static java.awt.geom.PathIterator.*;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import static org.vesalainen.math.BezierCurve.*;
-import org.vesalainen.math.BezierOperator;
+import java.util.function.IntBinaryOperator;
 
 /**
  *
@@ -41,10 +41,27 @@ public interface Drawer
     void text(double x, double y, TextAlignment alignment, String text);
     void setColor(Color color);
     Color getColor();
-    void setLineWidth(double width);
-    double getLineWidth();
+    /**
+     * Set Paint pattern
+     * <p>Note! In screen coordinates!
+     * @param paint 
+     */
+    void setPaint(Paint paint);
+    void setPattern(IntBinaryOperator pattern);
+    /**
+     * Set stroke of line.
+     * <p>Note! In screen coordinates!
+     * @see java.awt.BasicStroke
+     */
+    void setStroke(BasicStroke stroke);
     void setTransform(DoubleTransform transform, AffineTransform affineTransform);
     void draw(Shape shape);
+    void fill(Shape shape);
+    default void moveTo(double... cp){}
+    void drawLine(double... cp);
+    void drawQuad(double... cp);
+    void drawCubic(double... cp);
+    void closePath(double... cp);
     // ----------------- to be removed --------------------------------
     @Deprecated default Rectangle2D bounds(String text)
     {
