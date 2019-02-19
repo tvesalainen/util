@@ -188,8 +188,14 @@ public class Merger
             this.comp = comp;
             this.i1 = i1;
             this.i2 = i2;
-            v1 = i1.next();
-            v2 = i2.next();
+            if (i1.hasNext())
+            {
+                v1 = i1.next();
+            }
+            if (i2.hasNext())
+            {
+                v2 = i2.next();
+            }
         }
 
         @Override
