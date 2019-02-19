@@ -20,7 +20,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -31,15 +30,19 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntBinaryOperator;
 import java.util.stream.Stream;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
 import org.vesalainen.math.Rect;
+import static org.vesalainen.ui.Direction.*;
 
 /**
  *
@@ -51,11 +54,17 @@ public class AbstractPlotter extends AbstractView
     private Color color = Color.BLACK;
     private Font font;
     private FontRenderContext fontRenderContext = new FontRenderContext(null, false, true);
+    private final List<Drawable> backgroundShapes = new ArrayList<>();
+    private final List<Drawable> fixedShapes = new ArrayList<>();
     private final List<Drawable> shapes = new ArrayList<>();
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
     protected final Color background;
     protected BasicStroke stroke = new BasicStroke();
+    protected IntBinaryOperator pattern;
+    protected Paint paint;
+    protected Map<Direction,AbstractScaler> scalerMap = new EnumMap(Direction.class);
+    protected Map<Direction,Double> scalerLevelMap = new EnumMap(Direction.class);
 
     public AbstractPlotter(int width, int height, Color background)
     {
@@ -72,17 +81,88 @@ public class AbstractPlotter extends AbstractView
     protected void plot(Drawer drawer)
     {
         update(shapes.stream().map(Drawable::getShape));
-        drawer.setTransform(transform, affineTransform);
-        shapes.forEach((d) ->
+        calculate();
+        Rectangle2D origUserBounds = new Rectangle2D.Double();
+        origUserBounds.setRect(userBounds);
+        Rectangle2D bounds = new Rectangle2D.Double();
+        if (!scalerMap.isEmpty())
         {
-            d.draw(drawer);
+            scalerMap.forEach((dir, scaler)->
+            {
+                switch (dir)
+                {
+                    case TOP:
+                        scaler.set(userBounds.getMinX(), userBounds.getMaxX());
+                        scalerLevelMap.put(dir, scaler.getLevelFor(font, fontRenderContext, combinedTransform, true, userBounds.getMaxY(), bounds));
+                        setMargin(bounds, dir);
+                        break;
+                    case BOTTOM:
+                        scaler.set(userBounds.getMinX(), userBounds.getMaxX());
+                        scalerLevelMap.put(dir, scaler.getLevelFor(font, fontRenderContext, combinedTransform, true, userBounds.getMinY(), bounds));
+                        setMargin(bounds, dir);
+                        break;
+                    case LEFT:
+                        scaler.set(userBounds.getMinY(), userBounds.getMaxY());
+                        scalerLevelMap.put(dir, scaler.getLevelFor(font, fontRenderContext, combinedTransform, false, userBounds.getMinX(), bounds));
+                        setMargin(bounds, dir);
+                        break;
+                    case RIGHT:
+                        scaler.set(userBounds.getMinY(), userBounds.getMaxY());
+                        scalerLevelMap.put(dir, scaler.getLevelFor(font, fontRenderContext, combinedTransform, false, userBounds.getMaxX(), bounds));
+                        setMargin(bounds, dir);
+                        break;
+                }
+            });
+            calculate();
+        }
+        drawer.setTransform(combinedTransform, inverse, derivates, scale);
+        scalerMap.forEach((dir, scaler)->
+        {
+            switch (dir)
+            {
+                case TOP:
+                    scaler.forEach(locale, scalerLevelMap.get(dir), (value,label)->
+                    {
+                        backgroundShapes.add(new Drawable(new Line2D.Double(value, origUserBounds.getMinY(), value, origUserBounds.getMaxY())));
+                        drawScreenText(value, userBounds.getMaxY(), label, TextAlignment.MIDDLE_X, TextAlignment.END_Y);
+                    });
+                    break;
+                case BOTTOM:
+                    scaler.forEach(locale, scalerLevelMap.get(dir), (value,label)->
+                    {
+                        backgroundShapes.add(new Drawable(new Line2D.Double(value, origUserBounds.getMinY(), value, origUserBounds.getMaxY())));
+                        drawScreenText(value, userBounds.getMinY(), label, TextAlignment.MIDDLE_X);
+                    });
+                    break;
+                case LEFT:
+                    scaler.forEach(locale, scalerLevelMap.get(dir), (value,label)->
+                    {
+                        backgroundShapes.add(new Drawable(new Line2D.Double(origUserBounds.getMinX(), value, origUserBounds.getMaxX(), value)));
+                        drawScreenText(userBounds.getMinX(), value, label, TextAlignment.START_X, TextAlignment.MIDDLE_Y);
+                    });
+                    break;
+                case RIGHT:
+                    scaler.forEach(locale, scalerLevelMap.get(dir), (value,label)->
+                    {
+                        backgroundShapes.add(new Drawable(new Line2D.Double(origUserBounds.getMinX(), value, origUserBounds.getMaxX(), value)));
+                        drawScreenText(userBounds.getMaxX(), value, label, TextAlignment.END_X, TextAlignment.MIDDLE_Y);
+                    });
+                    break;
+            }
         });
+        backgroundShapes.forEach((d) ->d.draw(drawer));
+        drawer.setTransform(DoubleTransform.identity(), DoubleTransform.identity(), new DoubleTransform[]{}, 1.0);
+        fixedShapes.forEach((d) ->d.draw(drawer));
+        drawer.setTransform(combinedTransform, inverse, derivates, scale);
+        shapes.forEach((d) ->d.draw(drawer));
     }
     /**
      * Clears the screen
      */
     public void clear()
     {
+        backgroundShapes.clear();
+        fixedShapes.clear();
         shapes.clear();
     }
 
@@ -94,6 +174,18 @@ public class AbstractPlotter extends AbstractView
     public AbstractPlotter setLocale(Locale locale)
     {
         this.locale = locale;
+        return this;
+    }
+
+    public AbstractPlotter setHorizontalScaler(AbstractScaler horizontalScaler)
+    {
+        this.scalerMap.put(BOTTOM, horizontalScaler);
+        return this;
+    }
+
+    public AbstractPlotter setVerticalScaler(AbstractScaler verticalScaler)
+    {
+        this.scalerMap.put(LEFT, verticalScaler);
         return this;
     }
 
@@ -133,55 +225,97 @@ public class AbstractPlotter extends AbstractView
         return this;
     }
 
+    public AbstractPlotter setPaint(Paint paint)
+    {
+        this.paint = paint;
+        return this;
+    }
+
     public AbstractPlotter setStroke(BasicStroke stroke)
     {
         Objects.requireNonNull(stroke);
         this.stroke = stroke;
         return this;
     }
+
+    public AbstractPlotter setPattern(IntBinaryOperator pattern)
+    {
+        this.pattern = pattern;
+        return this;
+    }
+    
     public void drawText(double x, double y, String text)
     {
-        drawText(x, y, TextAlignment.START_X, text);
+        drawText(x, y, text, TextAlignment.START_X);
     }
-
+    /**
+     * @deprecated Only one x/y alignment possible
+     * @param x
+     * @param y
+     * @param alignment
+     * @param text 
+     */
     public void drawText(double x, double y, TextAlignment alignment, String text)
     {
-        shapes.add(new Drawable(color, stroke, text2Shape(x, y, alignment, text)));
+        drawText(x, y, alignment, text);
+    }
+    public void drawText(double x, double y, String text, TextAlignment... alignments)
+    {
+        shapes.add(new Drawable(true, text2Shape(x, y, text, alignments)));
     }
 
-    public Shape text2Shape(double x, double y, TextAlignment alignment, String text)
+    public void drawScreenText(double x, double y, String text)
+    {
+        drawScreenText(x, y, text, TextAlignment.START_X);
+    }
+    /**
+     * @deprecated Only x/y alignment is possible
+     * @param x
+     * @param y
+     * @param alignment
+     * @param text 
+     */
+    public void drawScreenText(double x, double y, TextAlignment alignment, String text)
+    {
+        drawScreenText(x, y, text, alignment);
+    }
+    public void drawScreenText(double x, double y, String text, TextAlignment... alignments)
+    {
+        fixedShapes.add(new Fixed(x, y, true, text2Shape(0, 0, text, alignments)));
+    }
+
+    public Shape text2Shape(double x, double y, String text, TextAlignment... alignments)
     {
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
         Rectangle2D lb = glyphVector.getLogicalBounds();
         Shape outline = glyphVector.getOutline();
         LineMetrics lm = font.getLineMetrics(text, fontRenderContext);
         AffineTransform at = AffineTransform.getScaleInstance(1, -1);
-        switch (alignment)
+        y -= lm.getDescent();
+        for (TextAlignment alignment : alignments)
         {
-            case START_X:
-            case START_Y:
-                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent());
-                at.translate(x, y-lm.getDescent());
-                break;
-            case MIDDLE_X:
-                //g.drawString(text, (float)x-fm.stringWidth(text)/2, (float)y-fm.getMaxDescent());
-                at.translate(x-lb.getWidth()/2, y-lm.getDescent());
-                break;
-            case END_X:
-                //g.drawString(text, (float)x-fm.stringWidth(text), (float)y-fm.getMaxDescent());
-                at.translate(x-lb.getWidth(), y-lm.getDescent());
-                break;
-            case MIDDLE_Y:
-                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight()/2);
-                at.translate(x, y-lm.getDescent()+lm.getHeight()/2);
-                break;
-            case END_Y:
-                //g.drawString(text, (float)x, (float)y-fm.getMaxDescent()+fm.getHeight());
-                at.translate(x, y-lm.getDescent()+lm.getHeight());
-                break;
-            default:
-                throw new UnsupportedOperationException(alignment+" not supported");
+            switch (alignment)
+            {
+                case START_X:
+                case START_Y:
+                    break;
+                case MIDDLE_X:
+                    x -= lb.getWidth()/2;
+                    break;
+                case END_X:
+                    x -= lb.getWidth();
+                    break;
+                case MIDDLE_Y:
+                    y += lm.getHeight()/2;
+                    break;
+                case END_Y:
+                    y += lm.getHeight();
+                    break;
+                default:
+                    throw new UnsupportedOperationException(alignments+" not supported");
+            }
         }
+        at.translate(x, y);
         return new Path2D.Double(outline, at);
     }
     public void drawCircle(Circle circle)
@@ -191,7 +325,7 @@ public class AbstractPlotter extends AbstractView
 
     public void drawCircle(double x, double y, double r)
     {
-        shapes.add(new Drawable(color, stroke, new Ellipse2D.Double(x, y, r, r)));
+        shapes.add(new Drawable(new Ellipse2D.Double(x+r, y+r, r/2, r/2)));
     }
 
     public void drawPoint(DenseMatrix64F point)
@@ -216,12 +350,12 @@ public class AbstractPlotter extends AbstractView
 
     public void drawPolygon(Polygon polygon)
     {
-        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
 
     public void drawPolygon(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
 
     public void drawPoints(double[] arr)
@@ -258,7 +392,7 @@ public class AbstractPlotter extends AbstractView
 
     public void drawLine(double x1, double y1, double x2, double y2)
     {
-        shapes.add(new Drawable(color, stroke, new Line2D.Double(x1, y1, x2, y2)));
+        shapes.add(new Drawable(new Line2D.Double(x1, y1, x2, y2)));
     }
 
     public void drawPolyline(Polyline polyline)
@@ -268,12 +402,12 @@ public class AbstractPlotter extends AbstractView
 
     public void drawCoordinateLine(double x1, double y1, double x2, double y2)
     {
-        shapes.add(0, new Drawable(color, stroke, new Line2D.Double(x1, y1, x2, y2)));
+        shapes.add(0, new Drawable(new Line2D.Double(x1, y1, x2, y2)));
     }
 
     public void drawLines(double[] data)
     {
-        shapes.add(new Drawable(color, stroke, new DoublePolygon(data)));
+        shapes.add(new Drawable(new DoublePolygon(data)));
     }
 
     public void drawLines(Polygon polygon)
@@ -283,27 +417,70 @@ public class AbstractPlotter extends AbstractView
 
     public void drawLines(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(color, stroke, new DoublePolygon(polygon)));
+        shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
-
+    /**
+     * Draws coordinates using given LinearScaler
+     * @param directions 
+     */
+    public void drawCoordinates(Direction... directions)
+    {
+        drawCoordinates(new LinearScaler(), directions);
+    }
+    /**
+     * Draws coordinates using given scaler
+     * @param directions
+     * @param scaler 
+     */
+    public void drawCoordinates(AbstractScaler scaler, Direction... directions)
+    {
+        for (Direction direction : directions)
+        {
+            scalerMap.put(direction, scaler);
+        }
+    }
+    /**
+     * Draws coordinates using LinearScaler to LEFT and BOTTOM
+     */
     public void drawCoordinates()
     {
         drawCoordinateX();
         drawCoordinateY();
     }
-
+    /**
+     * Draws coordinates using LinearScaler to BOTTOM
+     */
     public void drawCoordinateX()
     {
+        drawCoordinates(BOTTOM);
     }
-
+    /**
+     * Draws coordinates using LinearScaler to LEFT
+     */
     public void drawCoordinateY()
     {
+        drawCoordinates(LEFT);
     }
 
     public void drawCoordinates0()
     {
     }
-
+    public void drawScreen(double x, double y, Shape shape)
+    {
+        drawScreen(x, y, false, shape);
+    }
+    public void drawScreen(double x, double y, boolean fill, Shape shape)
+    {
+        fixedShapes.add(new Fixed(x, y, fill, shape));
+    }
+    public void drawHorizontalLine(double x)
+    {
+        backgroundShapes.add(new HorizontalLine(x));
+    }
+    public void drawVerticalLine(double x)
+    {
+        backgroundShapes.add(new VerticalLine(x));
+    }
     @Override
     public void setScreen(double width, double height)
     {
@@ -328,34 +505,38 @@ public class AbstractPlotter extends AbstractView
         return new Polyline(color, stroke);
     }
  
-    private static class DrawContext
+    private class DrawContext
     {
         protected Color color;
         protected Font font;
         protected BasicStroke stroke;
         protected Paint paint;
+        protected IntBinaryOperator pattern;
 
-        public DrawContext(Color color, Font font, BasicStroke stroke, Paint paint)
+        public DrawContext()
         {
-            this.color = color;
-            this.font = font;
-            this.stroke = stroke;
-            this.paint = paint;
+            this.color = AbstractPlotter.this.color;
+            this.font = AbstractPlotter.this.font;
+            this.stroke = AbstractPlotter.this.stroke;
+            this.paint = AbstractPlotter.this.paint;
+            this.pattern = AbstractPlotter.this.pattern;
         }
 
     }
-    private static class Drawable<S extends Shape> extends DrawContext
+    private class Drawable<S extends Shape> extends DrawContext
     {
+        protected boolean fill;
         protected S shape;
 
-        public Drawable(Color color, BasicStroke stroke, S shape)
+        public Drawable(S shape)
         {
-            this(color, null, stroke, null, shape);
-        }
-        public Drawable(Color color, Font font, BasicStroke stroke, Paint paint, S shape)
-        {
-            super(color, font, stroke, paint);
             this.shape = shape;
+        }
+
+        public Drawable(boolean fill, S shape)
+        {
+            this.shape = shape;
+            this.fill = fill;
         }
 
         public void draw(Drawer drawer)
@@ -363,8 +544,16 @@ public class AbstractPlotter extends AbstractView
             drawer.setColor(color);
             drawer.setFont(font);
             drawer.setStroke(stroke);
+            drawer.setPattern(pattern);
             drawer.setPaint(paint);
-            drawer.draw(shape);
+            if (fill)
+            {
+                drawer.fill(shape);
+            }
+            else
+            {
+                drawer.draw(shape);
+            }
         }
 
         public S getShape()
@@ -373,12 +562,82 @@ public class AbstractPlotter extends AbstractView
         }
         
     }
+    public class Fixed extends Drawable
+    {
+        private double x;
+        private double y;
+
+        public Fixed(double x, double y, Shape shape)
+        {
+            super(shape);
+            this.x = x;
+            this.y = y;
+        }
+
+        public Fixed(double x, double y, boolean fill, Shape shape)
+        {
+            super(fill, shape);
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public void draw(Drawer drawer)
+        {
+            AffineTransform at = AffineTransform.getScaleInstance(1, -1);
+            combinedTransform.transform(x, y, (xx,yy)->
+            {
+                at.translate(xx-x, -(yy-y));
+            });
+            Shape safe = shape;
+            shape = new Path2D.Double(safe, at);
+            super.draw(drawer);
+            shape = safe;
+        }
+        
+    }
+    public class HorizontalLine extends Drawable<Line2D>
+    {
+        private double y;
+        
+        public HorizontalLine(double y)
+        {
+            super(new Line2D.Double());
+            this.y = y;
+        }
+
+        @Override
+        public void draw(Drawer drawer)
+        {
+            shape.setLine(transformedUserBounds.getMinX(), y, transformedUserBounds.getMaxX(), y);
+            super.draw(drawer);
+        }
+        
+    }
+    public class VerticalLine extends Drawable<Line2D>
+    {
+        private double x;
+        
+        public VerticalLine(double x)
+        {
+            super(new Line2D.Double());
+            this.x = x;
+        }
+
+        @Override
+        public void draw(Drawer drawer)
+        {
+            shape.setLine(x, transformedUserBounds.getMinY(), x, transformedUserBounds.getMaxY());
+            super.draw(drawer);
+        }
+        
+    }
     public static class Polyline extends Drawable<DoublePolygon>
     {
 
         public Polyline(Color color, BasicStroke stroke)
         {
-            super(color, stroke, new DoublePolygon());
+            super(new DoublePolygon());
         }
         public void lineTo(Point p)
         {

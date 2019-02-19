@@ -163,5 +163,12 @@ public class LinearScalerTest
         assertEquals(15, i0.nextDouble(), Epsilon);
         assertFalse(i0.hasNext());
     }
-
+    @Test
+    public void test8()
+    {
+        LinearScaler sc = new LinearScaler(3, 3.5);
+        sc.calc();
+        assertEquals("%.1f", sc.getFormat(0));
+        assertEquals("%.1f", sc.getFormat(0.5));
+    }
 }

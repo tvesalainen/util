@@ -26,6 +26,7 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -51,10 +52,13 @@ public interface Drawer
     /**
      * Set stroke of line.
      * <p>Note! In screen coordinates!
+     * @param stroke
      * @see java.awt.BasicStroke
      */
     void setStroke(BasicStroke stroke);
-    void setTransform(DoubleTransform transform, AffineTransform affineTransform);
+    void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale);
+    void userToScreen(double x, double y, DoubleBiConsumer screen);
+    void screenToUser(double x, double y, DoubleBiConsumer user);
     void draw(Shape shape);
     void fill(Shape shape);
     default void moveTo(double... cp){}

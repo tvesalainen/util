@@ -26,8 +26,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
-import java.util.stream.DoubleStream;
-import java.util.stream.StreamSupport;
 
 /**
  * Utility for creating scales. For example if samples are between 0 - 30 the 
@@ -37,13 +35,16 @@ import java.util.stream.StreamSupport;
  */
 public class LinearScaler extends AbstractScaler
 {
-    private boolean updated;
+    private boolean updated = true;
     private int exp;
+
+    public LinearScaler()
+    {
+    }
 
     public LinearScaler(double min, double max)
     {
         super(min, max);
-        updated = true;
     }
 
     void calc()
@@ -117,9 +118,9 @@ public class LinearScaler extends AbstractScaler
     public double step(double level)
     {
         calc();
-        int l = (int) Math.floor(level);
+        double l = Math.floor(level);
         double step = Math.pow(10, exp-l);
-        double rem = level - (double)l;
+        double rem = level - l;
         if (rem > 0)
         {
             step *= rem;

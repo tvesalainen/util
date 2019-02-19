@@ -39,7 +39,28 @@ public abstract class AbstractScaler
     protected double min;
     protected double max;
 
+    public AbstractScaler()
+    {
+    }
+
     public AbstractScaler(double min, double max)
+    {
+        set(min, max);
+    }
+    public void forEach(double level, ScalerOperator op)
+    {
+        forEach(Locale.getDefault(), level, op);
+    }
+    public void forEach(Locale locale, double level, ScalerOperator op)
+    {
+        Iterator<String> li = getLabels(locale, level).iterator();
+        OfDouble vi = iterator(level);
+        while (li.hasNext() && vi.hasNext())
+        {
+            op.apply(vi.nextDouble(), li.next());
+        }
+    }
+    public final void set(double min, double max)
     {
         if (min > max)
         {
@@ -121,9 +142,23 @@ public abstract class AbstractScaler
      */
     public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy)
     {
-        return getXLevel(font, frc, horizontal ? transformer : DoubleTransform.swap().andThen(transformer), xy);
+        return getLevelFor(font, frc, transformer, horizontal, xy, null);
     }
-    private double getXLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy)
+    /**
+     * Returns highest level where drawn labels don't overlap
+     * @param font
+     * @param frc
+     * @param transformer
+     * @param horizontal
+     * @param xy Lines x/y constant value
+     * @param bounds Accumulates label bounds here if not null.
+     * @return 
+     */
+    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy, Rectangle2D bounds)
+    {
+        return getXYLevel(font, frc, horizontal ? transformer : DoubleTransform.swap().andThen(transformer), xy, bounds);
+    }
+    private double getXYLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy, Rectangle2D bounds)
     {
         double level = 0;
         while (true)
@@ -133,6 +168,10 @@ public abstract class AbstractScaler
             Iterator<String> li = getLabels(level).iterator();
             String label = li.next();
             Rectangle2D first = font.getStringBounds(label, frc);
+            if (bounds != null)
+            {
+                bounds.setRect(first);
+            }
             Rectangle2D prev = first;
             transformer.transform(value, xy, (x,y)->first.setRect(x, y, first.getWidth(), first.getHeight()));
             while (vi.hasNext())
@@ -140,6 +179,10 @@ public abstract class AbstractScaler
                 value = vi.nextDouble();
                 label = li.next();
                 Rectangle2D cur = font.getStringBounds(label, frc);
+                if (bounds != null)
+                {
+                    bounds.add(cur);
+                }
                 transformer.transform(value, xy, (x,y)->cur.setRect(x, y, cur.getWidth(), cur.getHeight()));
                 if (cur.intersects(prev))
                 {
@@ -151,10 +194,6 @@ public abstract class AbstractScaler
         }
     }
 
-    private double getVerticalLevel(Font font, FontRenderContext frc, DoubleTransform transformer)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     /**
      * Returns labels for default level using default locale.
@@ -270,5 +309,4 @@ public abstract class AbstractScaler
     {
         this.max = max;
     }
-
 }

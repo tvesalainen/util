@@ -22,6 +22,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import static java.awt.geom.Rectangle2D.*;
 import java.util.stream.Stream;
 
 
@@ -38,9 +39,15 @@ public class AbstractView
     protected DoubleBounds minUserBounds = new DoubleBounds();
     protected DoubleBounds screenBounds = new DoubleBounds();
     protected DoubleBounds userBounds = new DoubleBounds();
+    protected DoubleBounds transformedUserBounds = new DoubleBounds();
     protected boolean keepAspectRatio;
     protected DoubleTransform transform = DoubleTransform.identity();
+    protected DoubleTransform combinedTransform;
     protected AffineTransform affineTransform = new AffineTransform();
+    protected double scale;
+    protected DoubleTransform[] derivates;
+    protected DoubleTransform inverse;
+    protected DoubleTransform affineDoubleTransform;
     private static ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
     private static ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
     /**
@@ -101,14 +108,27 @@ public class AbstractView
         {
             throw new IllegalStateException("not initialized");
         }
-        userBounds.setRect(minUserBounds);
+        userBounds.clear();
+        transformedUserBounds.clear();
+        update(minUserBounds);
         shapes.map(Shape::getBounds2D).forEach(this::update);
-        Transforms.createScreenTransform(userBounds, screenBounds, keepAspectRatio, affineTransform);
+    }
+    protected void calculate()
+    {
+        Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
+        affineDoubleTransform = Transforms.affineTransform(affineTransform);
+        combinedTransform = transform.andThen(affineDoubleTransform);
+        derivates = new DoubleTransform[]{transform.derivate(), affineDoubleTransform.derivate()};
+        inverse = affineDoubleTransform.inverse().andThen(transform.inverse());
+        scale = (Math.abs(affineTransform.getScaleX())+Math.abs(affineTransform.getScaleY()))/2.0;
     }
     protected void update(Rectangle2D bounds)
     {
-        updatePoint(bounds.getMaxX(), bounds.getMaxY());
-        updatePoint(bounds.getMinX(), bounds.getMinY());
+        if (!bounds.isEmpty())
+        {
+            updatePoint(bounds.getMaxX(), bounds.getMaxY());
+            updatePoint(bounds.getMinX(), bounds.getMinY());
+        }
     }
     /**
      * Updates the limits if point is not inside visible screen.
@@ -117,18 +137,46 @@ public class AbstractView
      */
     public void updatePoint(double x, double y)
     {
-        transform.transform(x, y, userBounds::add);
+        userBounds.add(x, y);
+        transform.transform(x, y, transformedUserBounds::add);
     }
     /**
+     * Enlarges margin in screen coordinates to given directions
+     * @param bounds
+     * @param dirs 
+     */
+    public void setMargin(Rectangle2D bounds, Direction... dirs)
+    {
+        for (Direction dir : dirs)
+        {
+            switch (dir)
+            {
+                case BOTTOM:
+                    inverse.transform(0, screenBounds.height+bounds.getHeight(), this::updatePoint);
+                    break;
+                case LEFT:
+                    inverse.transform(screenBounds.x-bounds.getWidth(), 0 , this::updatePoint);
+                    break;
+                case RIGHT:
+                    inverse.transform(screenBounds.width+bounds.getWidth(), 0 , this::updatePoint);
+                    break;
+                case TOP:
+                    inverse.transform(0, screenBounds.y-bounds.getHeight(), this::updatePoint);
+                    break;
+            }
+        }
+    }
+    /**
+     * @deprecated 
      * Adds margin to visible screen. 
      * @param m Margin m*width/height
      */
     public void margin(double m)
     {
-        double xMin = userBounds.getMinX();
-        double yMin = userBounds.getMinY();
-        double xMax = userBounds.getMaxX();
-        double yMax = userBounds.getMaxY();
+        double xMin = transformedUserBounds.getMinX();
+        double yMin = transformedUserBounds.getMinY();
+        double xMax = transformedUserBounds.getMaxX();
+        double yMax = transformedUserBounds.getMaxY();
         double w = xMax-xMin;
         double h = yMax-yMin;
         setRect(
@@ -253,22 +301,22 @@ public class AbstractView
     }
     double getMinX()
     {
-        return userBounds.getMinX();
+        return transformedUserBounds.getMinX();
     }
 
     double getMinY()
     {
-        return userBounds.getMinY();
+        return transformedUserBounds.getMinY();
     }
 
     double getMaxX()
     {
-        return userBounds.getMaxX();
+        return transformedUserBounds.getMaxX();
     }
 
     double getMaxY()
     {
-        return userBounds.getMaxY();
+        return transformedUserBounds.getMaxY();
     }
     
 }

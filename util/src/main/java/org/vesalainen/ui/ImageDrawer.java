@@ -65,9 +65,9 @@ public class ImageDrawer extends AbstractDrawer
     }
 
     @Override
-    public void setTransform(DoubleTransform t, AffineTransform at)
+    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
     {
-        super.setTransform(t, at);
+        super.setTransform(transform, inverse, derivates, scale);
         isInside = (x,y)->
         {
             inverse.transform(x, y, (xx,yy)->fillPoint.setLocation(xx, yy));

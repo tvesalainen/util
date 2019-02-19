@@ -25,6 +25,7 @@ import java.awt.Paint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * <p>This class is NOT thread-safe!
@@ -90,22 +91,24 @@ public abstract class AbstractDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(DoubleTransform t, AffineTransform at)
+    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
     {
-        DoubleTransform att = Transforms.affineTransform(at);
-        if (t != null)
-        {
-            transform = t.andThen(att);
-            derivates = new DoubleTransform[]{t.derivate(), att.derivate()};
-            inverse = att.inverse().andThen(t.inverse());
-        }
-        else
-        {
-            transform = att;
-            derivates = new DoubleTransform[]{transform.derivate()};
-            inverse = transform.inverse();
-        }
-        scale = (Math.abs(at.getScaleX())+Math.abs(at.getScaleY()))/2.0;
+        this.transform = transform;
+        this.derivates = derivates;
+        this.inverse = inverse;
+        this.scale = scale;
+    }
+
+    @Override
+    public void userToScreen(double x, double y, DoubleBiConsumer screen)
+    {
+        transform.transform(x, y, screen);
+    }
+
+    @Override
+    public void screenToUser(double x, double y, DoubleBiConsumer user)
+    {
+        inverse.transform(x, y, user);
     }
     
     protected void updateDelta(double dx, double dy)

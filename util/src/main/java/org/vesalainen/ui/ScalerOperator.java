@@ -16,30 +16,12 @@
  */
 package org.vesalainen.ui;
 
-import java.awt.geom.Rectangle2D;
-
 /**
- * DoubleBounds is a Rectangle2D.Double which initializes to java.lang.Double.MAX_VALUE/2, 
- * java.lang.Double.MAX_VALUE/2, -java.lang.Double.MAX_VALUE, -java.lang.Double.MAX_VALUE.
- * Bound accumulating is practically always automatic.
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DoubleBounds extends Rectangle2D.Double
+@FunctionalInterface
+public interface ScalerOperator
 {
-    private boolean initialized;
-    
-    public DoubleBounds()
-    {
-        clear();
-    }
-
-    public DoubleBounds(double x, double y, double w, double h)
-    {
-        super(x, y, w, h);
-    }
-    
-    public final void clear()
-    {
-        setRect(java.lang.Double.MAX_VALUE/2, java.lang.Double.MAX_VALUE/2, -java.lang.Double.MAX_VALUE, -java.lang.Double.MAX_VALUE);
-    }
+    void apply(double value, String label);
 }

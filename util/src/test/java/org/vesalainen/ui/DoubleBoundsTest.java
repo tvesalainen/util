@@ -16,30 +16,38 @@
  */
 package org.vesalainen.ui;
 
-import java.awt.geom.Rectangle2D;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * DoubleBounds is a Rectangle2D.Double which initializes to java.lang.Double.MAX_VALUE/2, 
- * java.lang.Double.MAX_VALUE/2, -java.lang.Double.MAX_VALUE, -java.lang.Double.MAX_VALUE.
- * Bound accumulating is practically always automatic.
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DoubleBounds extends Rectangle2D.Double
+public class DoubleBoundsTest
 {
-    private boolean initialized;
     
-    public DoubleBounds()
+    public DoubleBoundsTest()
     {
-        clear();
     }
 
-    public DoubleBounds(double x, double y, double w, double h)
+    @Test
+    public void test0()
     {
-        super(x, y, w, h);
+        DoubleBounds db = new DoubleBounds();
+        assertEquals(-Double.MAX_VALUE/2, db.getMaxX(), 1e-10);
+        assertEquals(-Double.MAX_VALUE/2, db.getMaxY(), 1e-10);
+        assertEquals(-Double.MAX_VALUE, db.width, 1e-10);
+        assertEquals(-Double.MAX_VALUE, db.height, 1e-10);
+        assertTrue(db.isEmpty());
     }
-    
-    public final void clear()
+    @Test
+    public void test1()
     {
-        setRect(java.lang.Double.MAX_VALUE/2, java.lang.Double.MAX_VALUE/2, -java.lang.Double.MAX_VALUE, -java.lang.Double.MAX_VALUE);
-    }
+        DoubleBounds db = new DoubleBounds();
+        db.add(2, 2);
+        assertEquals(0, db.height, 1e-10);
+        assertEquals(0, db.width, 1e-10);
+        assertEquals(2, db.x, 1e-10);
+        assertEquals(2, db.y, 1e-10);
+    }    
 }

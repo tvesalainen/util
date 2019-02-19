@@ -26,6 +26,7 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -70,6 +71,18 @@ public class Graphics2DDrawer implements Drawer
     public void draw(Shape shape)
     {
         g.draw(shape);
+    }
+
+    @Override
+    public void userToScreen(double x, double y, DoubleBiConsumer screen)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void screenToUser(double x, double y, DoubleBiConsumer user)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
