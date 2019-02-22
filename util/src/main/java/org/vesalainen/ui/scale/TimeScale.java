@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.ui.scale;
 
 import static java.util.concurrent.TimeUnit.*;
 

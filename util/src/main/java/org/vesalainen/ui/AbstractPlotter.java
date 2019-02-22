@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.ui.scale.AbstractScaler;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;

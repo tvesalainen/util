@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.ui.scale;
 
+import org.vesalainen.ui.scale.TimeScale;
+import org.vesalainen.ui.scale.ScaleLevel;
 import java.util.Iterator;
 import java.util.Locale;
 import static java.util.concurrent.TimeUnit.*;

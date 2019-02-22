@@ -17,6 +17,7 @@
 
 package org.vesalainen.ui;
 
+import org.vesalainen.ui.scale.AbstractScaler;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

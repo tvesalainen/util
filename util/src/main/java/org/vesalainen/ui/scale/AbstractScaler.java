@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.ui.scale;
 
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
@@ -28,6 +28,8 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.DoubleStream;
 import java.util.stream.StreamSupport;
+import org.vesalainen.ui.DoubleTransform;
+import org.vesalainen.ui.ScalerOperator;
 
 /**
  *
