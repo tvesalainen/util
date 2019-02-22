@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -25,109 +26,100 @@ import java.util.Locale;
  */
 public class BasicScale implements Scale
 {
+    public static final Scale SCALE10 = new BasicScale();
+    public static final Scale SCALE03 = new BasicScale(3);
+    public static final Scale SCALE05 = new BasicScale(5);
     private double multiplier;
-    private double minDelta;
-    private double maxDelta;
+    private String unit = "";
+    private double minDelta = Double.MIN_VALUE;
+    private double maxDelta = Double.MAX_VALUE;
+    private int lowestExponent;
 
     public BasicScale()
     {
-        this(1.0, Double.MIN_VALUE, Double.MAX_VALUE);
+        this(1.0, "");
     }
 
     public BasicScale(double multiplier)
     {
-        this(multiplier, Double.MIN_VALUE, Double.MAX_VALUE);
+        this(multiplier, "");
     }
 
-    public BasicScale(double multiplier, double minDelta, double maxDelta)
+    public BasicScale(double multiplier, String unit)
     {
         this.multiplier = multiplier;
+        this.unit = unit;
+        this.lowestExponent = exponent(minDelta);
+    }
+
+    @Override
+    public Iterator<ScaleLevel> iterator(double delta)
+    {
+        if (delta > maxDelta)
+        {
+            return new Iter(exponent(maxDelta/multiplier));
+        }
+        else
+        {
+            if (delta < minDelta)
+            {
+                return Collections.emptyIterator();
+            }
+            else
+            {
+                return new Iter(exponent(delta/multiplier));
+            }
+        }
+    }
+    public static Iterator<ScaleLevel> iterator15(double delta)
+    {
+        return Scale.merge(delta, SCALE10, SCALE05);
+    }
+
+    public BasicScale setMinDelta(double minDelta)
+    {
         this.minDelta = minDelta;
+        return this;
+    }
+
+    public BasicScale setMaxDelta(double maxDelta)
+    {
         this.maxDelta = maxDelta;
-    }
-
-    @Override
-    public ScaleLevel closest(double delta)
-    {
-        double log10 = Math.log10(delta/multiplier);
-        return new BasicScaleLevel(Math.floor(log10));
-    }
-
-    @Override
-    public boolean inRange(double delta)
-    {
-        return delta >= minDelta && delta <= maxDelta;
+        return this;
     }
     
-    public class BasicScaleLevel implements ScaleLevel
+    private static int exponent(double delta)
     {
-        private final double exponent;
-        private final String format;
+        return (int) Math.floor(Math.log10(delta));
+    }
+    public class BasicScaleLevel extends AbstractScaleLevel
+    {
 
-        public BasicScaleLevel(double exponent)
+        private BasicScaleLevel(int exponent)
         {
-            this.exponent = exponent;
-            this.format = String.format("%%.%df", exponent < 0 ? (int)-exponent : 0);
-        }
-        
-        @Override
-        public double step()
-        {
-            return multiplier*Math.pow(10, exponent);
+            super(multiplier*Math.pow(10, exponent), String.format("%%.%df%s", exponent < 0 ? (int)-exponent : 0, unit));
         }
 
-        @Override
-        public String label(Locale locale, double value)
-        {
-            return String.format(locale, format, value);
-        }
-
-        @Override
-        public ScaleLevel next()
-        {
-            return new BasicScaleLevel(Math.rint(exponent-1));
-        }
-
-        @Override
-        public ScaleLevel prev()
-        {
-            return new BasicScaleLevel(Math.rint(exponent+1));
-        }
-
-        @Override
-        public String toString()
-        {
-            return "BasicScaleLevel{" + "step=" + step() + '}';
-        }
-
-        @Override
-        public Iterator<ScaleLevel> iterator()
-        {
-            return new Iter(this);
-        }
-        
     }
     public class Iter implements Iterator<ScaleLevel>
     {
-        private ScaleLevel level;
+        private int exponent;
 
-        public Iter(ScaleLevel level)
+        public Iter(int exponent)
         {
-            this.level = level;
+            this.exponent = exponent;
         }
-        
+
         @Override
         public boolean hasNext()
         {
-            return level.step() > minDelta;
+            return exponent >= lowestExponent;
         }
 
         @Override
         public ScaleLevel next()
         {
-            ScaleLevel next = level;
-            level = level.next();
-            return next;
+            return new BasicScaleLevel(exponent--);
         }
         
     }

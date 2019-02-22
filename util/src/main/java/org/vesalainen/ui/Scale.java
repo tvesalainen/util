@@ -16,7 +16,9 @@
  */
 package org.vesalainen.ui;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import org.vesalainen.util.Merger;
 
 /**
@@ -26,45 +28,22 @@ import org.vesalainen.util.Merger;
 public interface Scale
 {
     /**
-     * Returns ScaleLevel having step lesser but closest to delta.
-     * @param min
-     * @param max
+     * Returns iterator starting with step lesser but closest to delta.
      * @return 
      */
-    default ScaleLevel closest(double min, double max)
+    default Iterator<ScaleLevel> iterator(double min, double max)
     {
         if (min >= max)
         {
             throw new IllegalArgumentException("min >= max");
         }
-        return closest(max-min);
+        return iterator(max-min);
     }
     /**
-     * Returns ScaleLevel having step lesser but closest to delta.
-     * @param delta
+     * Returns iterator starting with step lesser but closest to delta.
      * @return 
      */
-    ScaleLevel closest(double delta);
-    /**
-     * Returns true if delta is in valid range for this scale
-     * @param min
-     * @param max
-     * @return 
-     */
-    default boolean inRange(double min, double max)
-    {
-        if (min >= max)
-        {
-            throw new IllegalArgumentException("min >= max");
-        }
-        return inRange(max-min);
-    }
-    /**
-     * Returns true if delta is in valid range for this scale
-     * @param delta
-     * @return 
-     */
-    boolean inRange(double delta);
+    Iterator<ScaleLevel> iterator(double delta);
     public static Iterator<ScaleLevel> merge(double min, double max, Scale... scales)
     {
         if (min >= max)
@@ -72,6 +51,16 @@ public interface Scale
             throw new IllegalArgumentException("min >= max");
         }
         return merge(max-min, scales);
+    }
+    /**
+     * Returns merged closest ScaleLevel iterators
+     * @param delta
+     * @param scales
+     * @return 
+     */
+    public static Iterator<ScaleLevel> merge(double delta, Collection<Scale> scales)
+    {
+        return merge(delta, scales.toArray(new Scale[scales.size()]));
     }
     /**
      * Returns merged closest ScaleLevel iterators
@@ -89,17 +78,13 @@ public interface Scale
         Iterator<ScaleLevel> iterator = null;
         for (int ii=0;ii<length;ii++)
         {
-            if (scales[ii].inRange(delta))
+            if (iterator == null)
             {
-                ScaleLevel closest = scales[ii].closest(delta);
-                if (iterator == null)
-                {
-                    iterator = closest.iterator();
-                }
-                else
-                {
-                    iterator = Merger.merge(closest.iterator(), iterator);
-                }
+                iterator = scales[ii].iterator(delta);
+            }
+            else
+            {
+                iterator = Merger.merge(scales[ii].iterator(delta), iterator);
             }
         }
         return iterator;

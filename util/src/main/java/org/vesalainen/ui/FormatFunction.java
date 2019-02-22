@@ -16,45 +16,18 @@
  */
 package org.vesalainen.ui;
 
-import java.util.Iterator;
 import java.util.Locale;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface ScaleLevel extends Comparable<ScaleLevel>
+@FunctionalInterface
+public interface FormatFunction
 {
-    /**
-     * Returns step
-     * @return 
-     */
-    double step();
-    String format();
-    /**
-     * Returns formatted string for value using default locale
-     * @param value
-     * @return 
-     */
-    default String label(double value)
+    default String format(double value)
     {
-        return label(Locale.getDefault(), value);
+        return format(Locale.getDefault(), value);
     }
-    /**
-     * Returns formatted string for value
-     * @param locale
-     * @param value
-     * @return 
-     */
-    String label(Locale locale, double value);
-    /**
-     * Compares step's in descending order
-     * @param o
-     * @return 
-     */
-    @Override
-    default int compareTo(ScaleLevel o)
-    {
-        return Double.compare(o.step(), step());
-    }
+    String format(Locale locale, double value);
 }

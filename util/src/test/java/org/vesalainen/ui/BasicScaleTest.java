@@ -36,19 +36,19 @@ public class BasicScaleTest
     public void test1()
     {
         BasicScale bs = new BasicScale();
-        assertEquals(1.0, bs.closest(1).step(), 1e-10);
-        assertEquals(0.1, bs.closest(0.999999).step(), 1e-10);
-        ScaleLevel sl = bs.closest(1);
+        assertEquals(1.0, bs.iterator(1).next().step(), 1e-10);
+        assertEquals(0.1, bs.iterator(0.999999).next().step(), 1e-10);
+        Iterator<ScaleLevel> iterator = bs.iterator(1);
+        ScaleLevel sl = iterator.next();
         assertEquals("3", sl.label(Locale.US, Math.PI));
-        sl = sl.next();
+        sl = iterator.next();
         assertEquals("3.1", sl.label(Locale.US, Math.PI));
     }
     @Test
     public void testIterator()
     {
         BasicScale bs = new BasicScale();
-        ScaleLevel sl = bs.closest(1);
-        Iterator<ScaleLevel> iterator = sl.iterator();
+        Iterator<ScaleLevel> iterator = bs.iterator(1);
         assertEquals(1.0, iterator.next().step(), 1e-10);
         assertEquals(0.1, iterator.next().step(), 1e-10);
         assertEquals(0.01, iterator.next().step(), 1e-10);
@@ -57,10 +57,11 @@ public class BasicScaleTest
     public void test5()
     {
         BasicScale bs = new BasicScale(5);
-        assertEquals(0.5, bs.closest(1).step(), 1e-10);
-        assertEquals(0.5, bs.closest(0.999999).step(), 1e-10);
-        ScaleLevel sl = bs.closest(1);
-        sl = sl.next();
+        assertEquals(0.5, bs.iterator(1).next().step(), 1e-10);
+        assertEquals(0.5, bs.iterator(0.999999).next().step(), 1e-10);
+        Iterator<ScaleLevel> iterator = bs.iterator(1);
+        ScaleLevel sl = iterator.next();
+        sl = iterator.next();
         assertEquals(0.05, sl.step(), 1e-10);
     }
     @Test

@@ -34,15 +34,15 @@ import org.vesalainen.util.ConvertUtilityException;
  * Parses and formats GPS coordinates. Positive latitude means north.
  * Positive longitude means east.
  *
- * Following tokens are reqognized as format tokens. All the others are
+ * Following tokens are recognized as format tokens. All the others are
  * handled like token separators.
  *
  * DDD  Whole degrees
- * ddd  Fraktion degrees
+ * ddd  fraction degrees
  * MM   Whole minutes
- * mm   Fraktion minutes
+ * mm   fraction minutes
  * SS   Whole seconds
- * ss   Fraktion seconds
+ * ss   fraction seconds
  * N    Longitude N/E
  * E    Latitude W/E
  *
