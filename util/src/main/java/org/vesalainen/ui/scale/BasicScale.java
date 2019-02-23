@@ -17,6 +17,7 @@
 package org.vesalainen.ui.scale;
 
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -75,7 +76,6 @@ public class BasicScale implements Scale
     {
         return Scale.merge(delta, SCALE10, SCALE05);
     }
-
     public BasicScale setMinDelta(double minDelta)
     {
         this.minDelta = minDelta;
@@ -88,13 +88,31 @@ public class BasicScale implements Scale
         return this;
     }
     
+    protected void format(Formatter formatter, double value, ScaleLevel caller)
+    {
+        caller.format(formatter, value);
+    }
     private static int exponent(double delta)
     {
         return (int) Math.floor(Math.log10(delta));
     }
-    protected BasicScaleLevel createBasicScaleLevel(int exponent, double multiplier, String unit)
+    public class BasicScaleLevel extends AbstractScaleLevel
     {
-        return new BasicScaleLevel(exponent, multiplier, unit);
+
+        BasicScaleLevel(int exponent, double multiplier, String unit)
+        {
+            super(multiplier * Math.pow(10, exponent), String.format("%%.%df%s", exponent < 0 ? (int) -exponent : 0, unit));
+        }
+
+        @Override
+        public String label(Locale locale, double value)
+        {
+            StringBuilder out = new StringBuilder();
+            Formatter formatter = new Formatter(out, locale);
+            BasicScale.this.format(formatter, value, this);
+            return out.toString();
+        }
+
     }
     public class Iter implements Iterator<ScaleLevel>
     {
@@ -114,7 +132,7 @@ public class BasicScale implements Scale
         @Override
         public ScaleLevel next()
         {
-            return createBasicScaleLevel(exponent--, multiplier, unit);
+            return new BasicScaleLevel(exponent--, multiplier, unit);
         }
         
     }

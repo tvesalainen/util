@@ -39,6 +39,7 @@ public class TimeScaleTest
         TimeScale ts = new TimeScale();
         Iterator<ScaleLevel> iterator = ts.iterator(DAYS.toSeconds(10));
         ScaleLevel next = iterator.next();
+        assertTrue(next.step() <= DAYS.toSeconds(10));
         assertEquals(DAYS.toSeconds(1), next.step(), 1e-10);;
         assertEquals("12d", next.label(Locale.US, DAYS.toSeconds(12)));
         next = iterator.next();
@@ -66,6 +67,7 @@ public class TimeScaleTest
         TimeScale ts = new TimeScale();
         Iterator<ScaleLevel> iterator = ts.iterator(MINUTES.toSeconds(60));
         ScaleLevel next = iterator.next();
+        assertTrue(next.step() <= MINUTES.toSeconds(60));
         assertEquals(HOURS.toSeconds(1), next.step(), 1e-10);;
         assertEquals("23h", next.label(Locale.US, HOURS.toSeconds(23)));
         next = iterator.next();

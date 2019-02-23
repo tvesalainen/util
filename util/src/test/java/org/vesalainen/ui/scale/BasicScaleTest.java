@@ -16,9 +16,6 @@
  */
 package org.vesalainen.ui.scale;
 
-import org.vesalainen.ui.scale.Scale;
-import org.vesalainen.ui.scale.BasicScale;
-import org.vesalainen.ui.scale.ScaleLevel;
 import java.util.Iterator;
 import java.util.Locale;
 import org.junit.Test;

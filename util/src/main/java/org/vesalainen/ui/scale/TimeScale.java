@@ -39,10 +39,10 @@ public class TimeScale extends SerialScale
     {
         for (double multiplier : multipliers)
         {
-            tail.add(new BasicScale(multiplier, unit).setMaxDelta(maxDelta));
+            tail.add(new TailScale(multiplier, unit).setMaxDelta(maxDelta));
         }
     }
-        protected class HeadScaleLevel extends AbstractScaleLevel
+    protected class HeadScaleLevel extends AbstractScaleLevel
     {
         public HeadScaleLevel(double step, String format)
         {
@@ -57,25 +57,19 @@ public class TimeScale extends SerialScale
 
     }
 
-    @Override
-    protected ScaleLevel createTailScaleLevel(ScaleLevel level)
-    {
-        return new TailScaleLevelImpl(level);
-    }
-        
-    protected class TailScaleLevelImpl extends TailScaleLevel
+    private class TailScale extends BasicScale
     {
 
-        public TailScaleLevelImpl(ScaleLevel level)
+        public TailScale(double multiplier, String unit)
         {
-            super(level);
+            super(multiplier, unit);
         }
 
         @Override
-        public void format(Formatter formatter, double value)
+        protected void format(Formatter formatter, double value, ScaleLevel caller)
         {
-            double v = TimeScale.this.format(formatter, value, this, null);
-            level.format(formatter, v);
+            double v = TimeScale.this.format(formatter, value, caller, null);
+            caller.format(formatter, v);
         }
 
     }

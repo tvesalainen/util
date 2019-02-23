@@ -35,15 +35,9 @@ public class CoordinateScale extends SerialScale
     {
         this.sign = sign;
         
-        addTail(new MinuteScale());
+        addTail(new MinuteScale(1));
     }
 
-    @Override
-    protected ScaleLevel createTailScaleLevel(ScaleLevel level)
-    {
-        return level;
-    }
-    
     public static class LatitudeScale extends CoordinateScale
     {
 
@@ -96,16 +90,17 @@ public class CoordinateScale extends SerialScale
         }
         
     }
-    private class MinuteScaleLevel extends BasicScaleLevel
+    private class MinuteScale extends BasicScale
     {
 
-        public MinuteScaleLevel(int exponent)
+        public MinuteScale(double mul)
         {
-            super(exponent, MINUTE, "'");
+            super(MINUTE*mul, "'");
+            setMaxDelta(1);
         }
 
         @Override
-        public void format(Formatter formatter, double value)
+        protected void format(Formatter formatter, double value, ScaleLevel caller)
         {
             if (value >= 0)
             {
@@ -119,23 +114,7 @@ public class CoordinateScale extends SerialScale
             double deg = Math.floor(abs);
             formatter.format(DEGREE_FORMAT, deg);
             double min = 60.0*(abs-deg);
-            super.format(formatter, min);
-        }
-        
-    }
-    private class MinuteScale extends BasicScale
-    {
-
-        public MinuteScale()
-        {
-            super(MINUTE);
-            setMaxDelta(1);
-        }
-
-        @Override
-        protected BasicScaleLevel createBasicScaleLevel(int exponent, double multiplier, String unit)
-        {
-            return new MinuteScaleLevel(exponent);
+            caller.format(formatter, min);
         }
 
     }

@@ -122,26 +122,8 @@ public abstract class SerialScale implements Scale
                 }
                 isTail = true;
             }
-            return createTailScaleLevel(tail.next());
+            return tail.next();
         }
     }
 
-    protected abstract ScaleLevel createTailScaleLevel(ScaleLevel level);
-    protected abstract class TailScaleLevel implements ScaleLevel
-    {
-        protected ScaleLevel level;
-
-        public TailScaleLevel(ScaleLevel level)
-        {
-            super();
-            this.level = level;
-        }
-
-        @Override
-        public double step()
-        {
-            return level.step();
-        }
-
-    }
 }
