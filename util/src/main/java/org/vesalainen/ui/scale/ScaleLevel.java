@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui.scale;
 
+import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -30,7 +31,6 @@ public interface ScaleLevel extends Comparable<ScaleLevel>
      * @return 
      */
     double step();
-    String format();
     /**
      * Returns formatted string for value using default locale
      * @param value
@@ -46,7 +46,14 @@ public interface ScaleLevel extends Comparable<ScaleLevel>
      * @param value
      * @return 
      */
-    String label(Locale locale, double value);
+    default String label(Locale locale, double value)
+    {
+        StringBuilder out = new StringBuilder();
+        Formatter formatter = new Formatter(out, locale);
+        format(formatter, value);
+        return out.toString();
+    }
+    void format(Formatter formatter, double value);
     /**
      * Compares step's in descending order
      * @param o

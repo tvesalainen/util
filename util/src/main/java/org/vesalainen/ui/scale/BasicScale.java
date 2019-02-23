@@ -92,14 +92,9 @@ public class BasicScale implements Scale
     {
         return (int) Math.floor(Math.log10(delta));
     }
-    public class BasicScaleLevel extends AbstractScaleLevel
+    protected BasicScaleLevel createBasicScaleLevel(int exponent, double multiplier, String unit)
     {
-
-        private BasicScaleLevel(int exponent)
-        {
-            super(multiplier*Math.pow(10, exponent), String.format("%%.%df%s", exponent < 0 ? (int)-exponent : 0, unit));
-        }
-
+        return new BasicScaleLevel(exponent, multiplier, unit);
     }
     public class Iter implements Iterator<ScaleLevel>
     {
@@ -119,7 +114,7 @@ public class BasicScale implements Scale
         @Override
         public ScaleLevel next()
         {
-            return new BasicScaleLevel(exponent--);
+            return createBasicScaleLevel(exponent--, multiplier, unit);
         }
         
     }

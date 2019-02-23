@@ -60,14 +60,6 @@ public class Graphics2DDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(DoubleTransform t, AffineTransform transform)
-    {
-        AffineTransform safe = g.getTransform();
-        g.transform(transform);
-        g.setTransform(safe);
-    }
-
-    @Override
     public void draw(Shape shape)
     {
         g.draw(shape);
@@ -188,6 +180,12 @@ public class Graphics2DDrawer implements Drawer
     public Rectangle2D bounds(String text)
     {
         return g.getFontMetrics().getStringBounds(text, g);
+    }
+
+    @Override
+    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

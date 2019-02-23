@@ -16,21 +16,67 @@
  */
 package org.vesalainen.ui.scale;
 
+import java.util.Formatter;
+import java.util.Locale;
 import static java.util.concurrent.TimeUnit.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeScale extends AbstractScale
+public class TimeScale extends SerialScale
 {
 
     public TimeScale()
     {
-        addLevel(DAYS.toSeconds(1), "%.0fd");
-        addLevel(HOURS.toSeconds(1), "%.0fh");
-        addLevel(MINUTES.toSeconds(1), "%.0fm");
+        addScaleLevel(new HeadScaleLevel(DAYS.toSeconds(1), "%.0fd"));
+        addScaleLevel(new HeadScaleLevel(HOURS.toSeconds(1), "%.0fh"));
+        addScaleLevel(new HeadScaleLevel(MINUTES.toSeconds(1), "%.0fm"));
         addTail(1, "s", 1.0, 5.0);
     }
     
+    protected final void addTail(double maxDelta, String unit, double... multipliers)
+    {
+        for (double multiplier : multipliers)
+        {
+            tail.add(new BasicScale(multiplier, unit).setMaxDelta(maxDelta));
+        }
+    }
+        protected class HeadScaleLevel extends AbstractScaleLevel
+    {
+        public HeadScaleLevel(double step, String format)
+        {
+            super(step, format);
+        }
+
+        @Override
+        public String label(Locale locale, double value)
+        {
+            return TimeScale.this.format(locale, value, this, null);
+        }
+
+    }
+
+    @Override
+    protected ScaleLevel createTailScaleLevel(ScaleLevel level)
+    {
+        return new TailScaleLevelImpl(level);
+    }
+        
+    protected class TailScaleLevelImpl extends TailScaleLevel
+    {
+
+        public TailScaleLevelImpl(ScaleLevel level)
+        {
+            super(level);
+        }
+
+        @Override
+        public void format(Formatter formatter, double value)
+        {
+            double v = TimeScale.this.format(formatter, value, this, null);
+            level.format(formatter, v);
+        }
+
+    }
 }

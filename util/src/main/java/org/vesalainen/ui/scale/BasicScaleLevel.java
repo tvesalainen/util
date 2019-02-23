@@ -16,40 +16,16 @@
  */
 package org.vesalainen.ui.scale;
 
-import java.util.Formatter;
-import java.util.Locale;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractScaleLevel implements ScaleLevel
+public class BasicScaleLevel extends AbstractScaleLevel
 {
-    protected double step;
-    protected String format;
 
-    protected AbstractScaleLevel(double step, String format)
+    BasicScaleLevel(int exponent, double multiplier, String unit)
     {
-        this.step = step;
-        this.format = format;
-    }
-
-    @Override
-    public double step()
-    {
-        return step;
-    }
-
-    @Override
-    public void format(Formatter formatter, double value)
-    {
-        formatter.format(format, value);
+        super(multiplier * Math.pow(10, exponent), String.format("%%.%df%s", exponent < 0 ? (int) -exponent : 0, unit));
     }
     
-    @Override
-    public String toString()
-    {
-        return "ScaleLevel{" + "step=" + step + '}';
-    }
-
 }

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.ui;
 
-import org.vesalainen.ui.scale.AbstractScaler;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -633,7 +632,7 @@ public class AbstractPlotter extends AbstractView
         }
         
     }
-    public static class Polyline extends Drawable<DoublePolygon>
+    public class Polyline extends Drawable<DoublePolygon>
     {
 
         public Polyline(Color color, BasicStroke stroke)

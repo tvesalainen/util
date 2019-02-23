@@ -17,6 +17,7 @@
 package org.vesalainen.ui.scale;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.vesalainen.util.Merger;
@@ -78,15 +79,26 @@ public interface Scale
         Iterator<ScaleLevel> iterator = null;
         for (int ii=0;ii<length;ii++)
         {
-            if (iterator == null)
+            Iterator<ScaleLevel> di = scales[ii].iterator(delta);
+            if (di.hasNext())
             {
-                iterator = scales[ii].iterator(delta);
-            }
-            else
-            {
-                iterator = Merger.merge(scales[ii].iterator(delta), iterator);
+                if (iterator == null)
+                {
+                    iterator = di;
+                }
+                else
+                {
+                    iterator = Merger.merge(di, iterator);
+                }
             }
         }
-        return iterator;
+        if (iterator != null)
+        {
+            return iterator;
+        }
+        else
+        {
+            return Collections.emptyIterator();
+        }
     }
 }

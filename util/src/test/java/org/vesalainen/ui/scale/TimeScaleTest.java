@@ -16,8 +16,6 @@
  */
 package org.vesalainen.ui.scale;
 
-import org.vesalainen.ui.scale.TimeScale;
-import org.vesalainen.ui.scale.ScaleLevel;
 import java.util.Iterator;
 import java.util.Locale;
 import static java.util.concurrent.TimeUnit.*;
