@@ -66,7 +66,7 @@ public class TimeScale extends SerialScale
         }
 
         @Override
-        protected void format(Formatter formatter, double value, ScaleLevel caller)
+        protected void format(Formatter formatter, double value, AbstractScaleLevel caller)
         {
             double v = TimeScale.this.format(formatter, value, caller, null);
             caller.format(formatter, v);

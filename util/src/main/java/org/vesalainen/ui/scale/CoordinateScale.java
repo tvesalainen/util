@@ -100,7 +100,7 @@ public class CoordinateScale extends SerialScale
         }
 
         @Override
-        protected void format(Formatter formatter, double value, ScaleLevel caller)
+        protected void format(Formatter formatter, double value, AbstractScaleLevel caller)
         {
             if (value >= 0)
             {

@@ -88,7 +88,7 @@ public class Plotter extends AbstractPlotter
     }
     public void plot(File file, String ext) throws IOException
     {
-        ImageDrawer drawer = new ImageDrawer((int)screenBounds.width, (int)screenBounds.height);
+        ImageDrawer drawer = new ImageDrawer((int)screenBounds.width, (int)screenBounds.height, background);
         plot(drawer);
         try (FileOutputStream fos = new FileOutputStream(file))
         {

@@ -39,6 +39,7 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(100, 200);
         view.update(Stream.empty());
+        view.calculate();
         assertEquals(0, view.toScreenX(-10), Epsilon);
         assertEquals(100, view.toScreenX(10), Epsilon);
         assertEquals(150, view.toScreenY(-10), Epsilon);
@@ -61,6 +62,7 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-10, 10, -10, 10);
         view.setScreen(200, 100);
         view.update(Stream.empty());
+        view.calculate();
         assertEquals(50, view.toScreenX(-10), Epsilon);
         assertEquals(150, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);
@@ -75,9 +77,11 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView();
         view.setScreen(200, 100);
+        view.update(Stream.empty());
         view.updatePoint(0, 0);
         view.updatePoint(-10, 10);
         view.updatePoint(10, -10);
+        view.calculate();
         assertEquals(50, view.toScreenX(-10), Epsilon);
         assertEquals(150, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);
@@ -92,8 +96,10 @@ public class AbstractViewTest
     {
         AbstractView view = new AbstractView();
         view.setScreen(600, 895);
+        view.update(Stream.empty());
         double d = (895.0-600.0)/2;
         view.updatePoint(-13.60272896379027,28.131008962509526);
+        view.calculate();
         assertEquals(-13.60272896379027, view.getMinX(), Epsilon);
         assertEquals(-13.60272896379027, view.getMaxX(), Epsilon);
         assertEquals(28.131008962509526, view.getMinY(), Epsilon);
@@ -111,6 +117,7 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(-1, 2, -2, 10);
         view.setScreen(7, 12);
         view.update(Stream.empty());
+        view.calculate();
         assertEquals(2, view.toScreenX(-1), Epsilon);
         assertEquals(5, view.toScreenX(2), Epsilon);
         assertEquals(12, view.toScreenY(-2), Epsilon);
@@ -126,6 +133,7 @@ public class AbstractViewTest
         AbstractView view = new AbstractView(false, -10, 10, -10, 10);
         view.setScreen(100, 100);
         view.update(Stream.empty());
+        view.calculate();
         assertEquals(0, view.toScreenX(-10), Epsilon);
         assertEquals(100, view.toScreenX(10), Epsilon);
         assertEquals(100, view.toScreenY(-10), Epsilon);

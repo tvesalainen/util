@@ -18,6 +18,10 @@ package org.vesalainen.ui.scale;
 
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.PrimitiveIterator;
+import java.util.PrimitiveIterator.OfInt;
 
 /**
  *
@@ -41,9 +45,53 @@ public class AbstractScaleLevel implements ScaleLevel
     }
 
     @Override
-    public void format(Formatter formatter, double value)
+    public String label(Locale locale, double value)
+    {
+        StringBuilder out = new StringBuilder();
+        Formatter formatter = new Formatter(out, locale);
+        format(formatter, value);
+        return out.toString();
+    }
+
+    protected void format(Formatter formatter, double value)
     {
         formatter.format(format, value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 79 * hash + (int) (Double.doubleToLongBits(this.step) ^ (Double.doubleToLongBits(this.step) >>> 32));
+        hash = 79 * hash + Objects.hashCode(this.format);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final AbstractScaleLevel other = (AbstractScaleLevel) obj;
+        if (Double.doubleToLongBits(this.step) != Double.doubleToLongBits(other.step))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.format, other.format))
+        {
+            return false;
+        }
+        return true;
     }
     
     @Override
@@ -52,4 +100,44 @@ public class AbstractScaleLevel implements ScaleLevel
         return "ScaleLevel{" + "step=" + step + '}';
     }
 
+    @Override
+    public PrimitiveIterator.OfDouble iterator(double min, double max)
+    {
+        return new Iter(min, max);
+    }
+    private class Iter implements PrimitiveIterator.OfDouble
+    {
+        private double next;
+        private double end;
+
+        public Iter(double min, double max)
+        {
+            double start = Math.floor(min/step)*step;
+            if (start != min)
+            {
+                start += step;
+            }
+            this.next = start;
+            this.end = max;
+        }
+
+        @Override
+        public double nextDouble()
+        {
+            if (!hasNext())
+            {
+                throw new NoSuchElementException();
+            }
+            double res = next;
+            next += step;
+            return res;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return next <= end;
+        }
+        
+    }
 }

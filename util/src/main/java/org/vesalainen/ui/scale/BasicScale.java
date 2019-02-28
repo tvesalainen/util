@@ -88,7 +88,7 @@ public class BasicScale implements Scale
         return this;
     }
     
-    protected void format(Formatter formatter, double value, ScaleLevel caller)
+    protected void format(Formatter formatter, double value, AbstractScaleLevel caller)
     {
         caller.format(formatter, value);
     }

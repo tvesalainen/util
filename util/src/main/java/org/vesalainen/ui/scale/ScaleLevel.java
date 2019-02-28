@@ -19,6 +19,12 @@ package org.vesalainen.ui.scale;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.PrimitiveIterator;
+import java.util.PrimitiveIterator.OfInt;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.DoubleStream;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -46,14 +52,7 @@ public interface ScaleLevel extends Comparable<ScaleLevel>
      * @param value
      * @return 
      */
-    default String label(Locale locale, double value)
-    {
-        StringBuilder out = new StringBuilder();
-        Formatter formatter = new Formatter(out, locale);
-        format(formatter, value);
-        return out.toString();
-    }
-    void format(Formatter formatter, double value);
+    String label(Locale locale, double value);
     /**
      * Compares step's in descending order
      * @param o
@@ -63,5 +62,66 @@ public interface ScaleLevel extends Comparable<ScaleLevel>
     default int compareTo(ScaleLevel o)
     {
         return Double.compare(o.step(), step());
+    }
+    /**
+     * Returns number of markers for given level.
+     * @param min
+     * @param max
+     * @return
+     */
+    default int count(double min, double max)
+    {
+        double step = step();
+        double start = Math.floor(min/step)*step;
+        if (start != min)
+        {
+            start += step;
+        }
+        return (int) ((max-start)/step)+1;
+    }
+    /**
+     * Calls op for each value and label.
+     * @param min
+     * @param max
+     * @param locale
+     * @param op 
+     */
+    default void forEach(double min, double max, Locale locale, ScalerOperator op)
+    {
+        PrimitiveIterator.OfDouble iterator = iterator(min, max);
+        while (iterator.hasNext())
+        {
+            double value = iterator.nextDouble();
+            op.apply(value, label(locale, value));
+        }
+    }
+    /**
+     * Returns iterator for markers between min and max.
+     * @param min
+     * @param max
+     * @return 
+     */
+    PrimitiveIterator.OfDouble iterator(double min, double max);
+    /**
+     * Returns stream for markers between min and max.
+     * @param min
+     * @param max
+     * @return 
+     */
+    default DoubleStream stream(double min, double max)
+    {
+        return StreamSupport.doubleStream(spliterator(min, max), false);
+    }
+    
+
+    /**
+     * Returns Spliterator for markers between min and max.
+     * @param min
+     * @param max
+     * @return
+     */
+    default Spliterator.OfDouble spliterator(double min, double max)
+    {
+        return Spliterators.spliteratorUnknownSize(iterator(min, max), 0);
     }
 }

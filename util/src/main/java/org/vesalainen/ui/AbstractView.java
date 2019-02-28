@@ -202,7 +202,6 @@ public class AbstractView
         minUserBounds.setRect(rect);
     }
     /**
-     * @deprecated Use AffineTransform
      * Translates cartesian x-coordinate to screen coordinate.
      * @param x
      * @return 
@@ -212,12 +211,11 @@ public class AbstractView
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(x, 0);
-        affineTransform.transform(src, dst);
+        combinedTransform.transform(src, dst);
         return dst.getX();
         //return scaleX * x + xOff;
     }
     /**
-     * @deprecated Use AffineTransform
      * Translates cartesian y-coordinate to screen coordinate.
      * @param y
      * @return 
@@ -227,53 +225,34 @@ public class AbstractView
         Point2D src = srcPnt.get();
         Point2D dst = dstPnt.get();
         src.setLocation(0, y);
-        affineTransform.transform(src, dst);
+        combinedTransform.transform(src, dst);
         return dst.getY();
-        //return - scaleY * y + yOff;
     }
     /**
-     * @deprecated Use AffineTransform
      * Translates screen x-coordinate to cartesian coordinate.
      * @param x
      * @return 
      */
     public double fromScreenX(double x)
     {
-        try
-        {
-            Point2D src = srcPnt.get();
-            Point2D dst = dstPnt.get();
-            src.setLocation(x, 0);
-            affineTransform.inverseTransform(src, dst);
-            return dst.getX();
-            //return (x - xOff) / scaleX;
-        }
-        catch (NoninvertibleTransformException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        Point2D src = srcPnt.get();
+        Point2D dst = dstPnt.get();
+        src.setLocation(x, 0);
+        inverse.transform(src, dst);
+        return dst.getX();
     }
     /**
-     * @deprecated Use AffineTransform
      * Translates screen y-coordinate to cartesian coordinate.
      * @param y
      * @return 
      */
     public double fromScreenY(double y)
     {
-        try
-        {
-            Point2D src = srcPnt.get();
-            Point2D dst = dstPnt.get();
-            src.setLocation(0, y);
-            affineTransform.inverseTransform(src, dst);
-            return dst.getY();
-            //return - (y - yOff) / scaleY;
-        }
-        catch (NoninvertibleTransformException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        Point2D src = srcPnt.get();
+        Point2D dst = dstPnt.get();
+        src.setLocation(0, y);
+        inverse.transform(src, dst);
+        return dst.getY();
     }
     /**
      * Scales the argument to screen scaleToScreen.

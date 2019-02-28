@@ -40,14 +40,14 @@ public class PlotterT
     {
         try
         {
-            Plotter p = new Plotter(1000, 1000);
+            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);
             p.setColor(Color.RED);
             //p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
             //p.drawText(0, 0, TextAlignment.START_X, "start");
             //p.drawText(0, 0, TextAlignment.MIDDLE_X, "middle");
             //p.drawText(0, 0, TextAlignment.END_X, "end");
-            p.drawCircle(2, 2, 1);
+            p.drawCircle(50, 50, 50);
             //p.drawPoint(0, 0);
             //p.drawPoint(1, 1);
             //p.drawPoint(2, 0);

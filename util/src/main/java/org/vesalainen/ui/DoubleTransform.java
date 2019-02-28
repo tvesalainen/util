@@ -47,13 +47,30 @@ public interface DoubleTransform
     {
         return (x,y,c)->
         {
-            double d = x*0.01;
+            double dx = Math.ulp(x);
+            double dy = Math.ulp(y);
             Point2D.Double p1 = ThreadTemporal.tmp1.get();
             Point2D.Double p2 = ThreadTemporal.tmp2.get();
             transform(x,y,p1::setLocation);
-            transform(x+d,y+d,p2::setLocation);
-            c.accept((p2.x-p1.x)/d, (p2.y-p1.y)/d);
+            transform(x+dx,y+dy,p2::setLocation);
+            c.accept((p2.x-p1.x)/dx, (p2.y-p1.y)/dy);
         };
+    }
+    /**
+     * Transforms src to dst and returns dst. Dst can be null in which case 
+     * new Point2D.Double is created.
+     * @param src
+     * @param dst
+     * @return 
+     */
+    default Point2D transform(Point2D src, Point2D dst)
+    {
+        if (dst == null)
+        {
+            dst = new Point2D.Double();
+        }
+        transform(src.getX(), src.getY(), dst::setLocation);
+        return dst;
     }
     /**
      * Transforms points from src to dst
@@ -61,7 +78,7 @@ public interface DoubleTransform
      * @param dst
      * @param src 
      */
-    default void transform(Point2D.Double tmp, double[] src, double[] dst, int len)
+    default void transform(Point2D tmp, double[] src, double[] dst, int len)
     {
         if (dst.length < src.length || src.length%2 != 0 || len > src.length/2)
         {

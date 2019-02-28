@@ -14,14 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.ui.scale;
+
+import java.util.Iterator;
+import static org.vesalainen.ui.scale.BasicScale.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface ScalerOperator
+public class MergeScale implements Scale
 {
-    void apply(double value, String label);
+    public static final Scale BASIC15 = new MergeScale(SCALE10, SCALE05);
+    public static final Scale BASIC135 = new MergeScale(SCALE10, SCALE03, SCALE05);
+    private Scale[] array;
+
+    public MergeScale(Scale... array)
+    {
+        this.array = array;
+    }
+
+    @Override
+    public Iterator<ScaleLevel> iterator(double delta)
+    {
+        return Scale.merge(delta, array);
+    }
 }

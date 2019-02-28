@@ -30,14 +30,14 @@ import org.vesalainen.util.OrderedList;
 public abstract class SerialScale implements Scale
 {
     
-    protected OrderedList<ScaleLevel> levels = new OrderedList<>();
+    protected OrderedList<AbstractScaleLevel> levels = new OrderedList<>();
     protected List<Scale> tail = new ArrayList<>();
 
     public SerialScale()
     {
     }
 
-    protected final void addScaleLevel(ScaleLevel level)
+    protected final void addScaleLevel(AbstractScaleLevel level)
     {
         levels.add(level);
     }
@@ -49,23 +49,23 @@ public abstract class SerialScale implements Scale
     @Override
     public Iterator<ScaleLevel> iterator(double delta)
     {
-        ScaleLevel key = new AbstractScaleLevel(delta, null);
-        Iterator<ScaleLevel> headIterator = levels.tailIterator(key, true);
+        AbstractScaleLevel key = new AbstractScaleLevel(delta, null);
+        Iterator<? extends ScaleLevel> headIterator = levels.tailIterator(key, true);
         Iterator<ScaleLevel> tailIterator = Scale.merge(delta, tail);
         return new Iter(headIterator, tailIterator);
     }
-    protected String format(Locale locale, double value, ScaleLevel until, String suffix)
+    protected String format(Locale locale, double value, AbstractScaleLevel until, String suffix)
     {
         StringBuilder out = new StringBuilder();
         Formatter formatter = new Formatter(out, locale);
         format(formatter, value, until, suffix);
         return formatter.toString();
     }
-    protected double format(Formatter formatter, double value, ScaleLevel until, String suffix)
+    protected double format(Formatter formatter, double value, AbstractScaleLevel until, String suffix)
     {
         value = formatPrefix(formatter, value);
         boolean always = false;
-        for (ScaleLevel level : levels)
+        for (AbstractScaleLevel level : levels)
         {
             double v = value / level.step();
             if (always || v >= 1.0)
@@ -88,11 +88,11 @@ public abstract class SerialScale implements Scale
     }
     private class Iter implements Iterator<ScaleLevel>
     {
-        private Iterator<ScaleLevel> head;
-        private Iterator<ScaleLevel> tail;
+        private Iterator<? extends ScaleLevel> head;
+        private Iterator<? extends ScaleLevel> tail;
         private boolean isTail;
 
-        public Iter(Iterator<ScaleLevel> head, Iterator<ScaleLevel> tail)
+        public Iter(Iterator<? extends ScaleLevel> head, Iterator<? extends ScaleLevel> tail)
         {
             this.head = head;
             this.tail = tail;

@@ -16,51 +16,65 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.ui.scale.ScalerOperator;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.PrimitiveIterator;
 import java.util.PrimitiveIterator.OfDouble;
 import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.StreamSupport;
-import org.vesalainen.ui.DoubleTransform;
-import org.vesalainen.ui.ScalerOperator;
+import org.vesalainen.ui.scale.MergeScale;
+import org.vesalainen.ui.scale.Scale;
+import org.vesalainen.ui.scale.ScaleLevel;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractScaler
+public class Scaler
 {
     private static final FontRenderContext DEFAULT_FONTRENDERCONTEXT = new FontRenderContext(null, false, true);
     protected double min;
     protected double max;
+    protected Scale scale;
 
-    public AbstractScaler()
+    public Scaler()
     {
+        this(0, 0, MergeScale.BASIC15);
     }
 
-    public AbstractScaler(double min, double max)
+    public Scaler(Scale scale)
+    {
+        this(0, 0, scale);
+    }
+
+    public Scaler(double min, double max)
+    {
+        this(min, max, MergeScale.BASIC15);
+    }
+    public Scaler(double min, double max, Scale scale)
     {
         set(min, max);
+        this.scale = scale;
     }
-    public void forEach(double level, ScalerOperator op)
+    public Iterator<ScaleLevel> iterator()
+    {
+        return scale.iterator(min, max);
+    }
+    public void forEach(ScaleLevel level, ScalerOperator op)
     {
         forEach(Locale.getDefault(), level, op);
     }
-    public void forEach(Locale locale, double level, ScalerOperator op)
+    public void forEach(Locale locale, ScaleLevel level, ScalerOperator op)
     {
-        Iterator<String> li = getLabels(locale, level).iterator();
-        OfDouble vi = iterator(level);
-        while (li.hasNext() && vi.hasNext())
-        {
-            op.apply(vi.nextDouble(), li.next());
-        }
+        level.forEach(min, max, locale, op);
     }
     public final void set(double min, double max)
     {
@@ -79,7 +93,7 @@ public abstract class AbstractScaler
      * @param horizontal
      * @return 
      */
-    public double getLevelFor(Font font, boolean horizontal)
+    public ScaleLevel getLevelFor(Font font, boolean horizontal)
     {
         return getLevelFor(font, horizontal, 0);
     }
@@ -92,7 +106,7 @@ public abstract class AbstractScaler
      * @param xy Lines constant value
      * @return 
      */
-    public double getLevelFor(Font font, boolean horizontal, double xy)
+    public ScaleLevel getLevelFor(Font font, boolean horizontal, double xy)
     {
         return getLevelFor(font, DEFAULT_FONTRENDERCONTEXT, horizontal, xy);
     }
@@ -104,7 +118,7 @@ public abstract class AbstractScaler
      * @param horizontal
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, boolean horizontal)
+    public ScaleLevel getLevelFor(Font font, FontRenderContext frc, boolean horizontal)
     {
         return getLevelFor(font, frc, horizontal, 0);
     }
@@ -117,7 +131,7 @@ public abstract class AbstractScaler
      * @param xy Lines constant value
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, boolean horizontal, double xy)
+    public ScaleLevel getLevelFor(Font font, FontRenderContext frc, boolean horizontal, double xy)
     {
         return getLevelFor(font, frc, DoubleTransform.identity(), horizontal, xy);
     }
@@ -129,7 +143,7 @@ public abstract class AbstractScaler
      * @param horizontal
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal)
+    public ScaleLevel getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal)
     {
         return getLevelFor(font, frc, transformer, horizontal, 0);
     }
@@ -142,7 +156,7 @@ public abstract class AbstractScaler
      * @param xy Lines constant value
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy)
+    public ScaleLevel getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy)
     {
         return getLevelFor(font, frc, transformer, horizontal, xy, null);
     }
@@ -156,15 +170,22 @@ public abstract class AbstractScaler
      * @param bounds Accumulates label bounds here if not null.
      * @return 
      */
-    public double getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy, Rectangle2D bounds)
+    public ScaleLevel getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy, Rectangle2D bounds)
     {
         return getXYLevel(font, frc, horizontal ? transformer : DoubleTransform.swap().andThen(transformer), xy, bounds);
     }
-    private double getXYLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy, Rectangle2D bounds)
+    private ScaleLevel getXYLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy, Rectangle2D bounds)
     {
-        double level = 0;
-        while (true)
+        Rectangle2D bnds = null;
+        if (bounds != null)
         {
+            bnds = new Rectangle2D.Double();
+        }
+        Iterator<ScaleLevel> si = scale.iterator(min, max);
+        ScaleLevel stack = null;
+        while (si.hasNext())
+        {
+            ScaleLevel level = si.next();
             OfDouble vi = iterator(level);
             double value = vi.nextDouble();
             Iterator<String> li = getLabels(level).iterator();
@@ -172,7 +193,7 @@ public abstract class AbstractScaler
             Rectangle2D first = font.getStringBounds(label, frc);
             if (bounds != null)
             {
-                bounds.setRect(first);
+                bnds.setRect(first);
             }
             Rectangle2D prev = first;
             transformer.transform(value, xy, (x,y)->first.setRect(x, y, first.getWidth(), first.getHeight()));
@@ -183,17 +204,27 @@ public abstract class AbstractScaler
                 Rectangle2D cur = font.getStringBounds(label, frc);
                 if (bounds != null)
                 {
-                    bounds.add(cur);
+                    bnds.add(cur);
                 }
                 transformer.transform(value, xy, (x,y)->cur.setRect(x, y, cur.getWidth(), cur.getHeight()));
                 if (cur.intersects(prev))
                 {
-                    return level-1;
+                    if (stack == null)
+                    {
+                        throw new IllegalArgumentException("Font "+font+" is too big for coordinate");
+                    }
+                    return stack;
                 }
                 prev = cur;
             }
-            level+=0.5;
+            if (bounds != null)
+            {
+                bounds.setRect(bnds);
+            }
+            stack = level;
         }
+        assert false;   // can't come here
+        return null;
     }
 
     
@@ -211,7 +242,7 @@ public abstract class AbstractScaler
      * @param level
      * @return
      */
-    public List<String> getLabels(double level)
+    public List<String> getLabels(ScaleLevel level)
     {
         return getLabels(Locale.getDefault(), level);
     }
@@ -222,16 +253,10 @@ public abstract class AbstractScaler
      * @param level
      * @return
      */
-    public abstract List<String> getLabels(Locale locale, double level);
-
-    /**
-     * Return format string for formatting 0-level labels
-     * @param level
-     * @return
-     * @see java.lang.String#format(java.lang.String, java.lang.Object...)
-     */
-    public abstract String getFormat(double level);
-
+    public List<String> getLabels(Locale locale, ScaleLevel level)
+    {
+        return level.stream(min, max).mapToObj((d)->level.label(locale, d)).collect(Collectors.toList());
+    }
 
     /**
      * Returns stream for markers between min and max. Step is selected so that
@@ -248,7 +273,7 @@ public abstract class AbstractScaler
      * than 15.
      * @return
      */
-    public double level()
+    public ScaleLevel level()
     {
         return level(5, 15);
     }
@@ -260,23 +285,44 @@ public abstract class AbstractScaler
      * @param maxMarkers
      * @return
      */
-    public abstract double level(int minMarkers, int maxMarkers);
+    public ScaleLevel level(int minMarkers, int maxMarkers)
+    {
+        Iterator<ScaleLevel> iterator = scale.iterator(min, max);
+        ScaleLevel level = iterator.next();
+        ScaleLevel prev = null;
+        while (iterator.hasNext() && minMarkers > level.count(min, max))
+        {
+            prev = level;
+            level = iterator.next();
+        }
+        if (maxMarkers < level.count(min, max))
+        {
+            return prev;
+        }
+        else
+        {
+            return level;
+        }
+    }
 
     /**
      * Returns number of markers for given level.
      * @param level
      * @return
      */
-    public abstract double count(double level);
+    public double count(ScaleLevel level)
+    {
+        return level.count(min, max);
+    }
 
     /**
      * Returns stream for markers between min and max. 0-level returns less
      * @param level
      * @return 
      */
-    public DoubleStream stream(double level)
+    public DoubleStream stream(ScaleLevel level)
     {
-        return StreamSupport.doubleStream(spliterator(level), false);
+        return level.stream(min, max);
     }
     
 
@@ -286,16 +332,19 @@ public abstract class AbstractScaler
      * @param level >= 0
      * @return
      */
-    public Spliterator.OfDouble spliterator(double level)
+    public Spliterator.OfDouble spliterator(ScaleLevel level)
     {
-        return Spliterators.spliteratorUnknownSize(iterator(level), 0);
+        return level.spliterator(min, max);
     }
     /**
      * Returns Iterator for markers between min and max. 0-level returns less
      * @param level
      * @return 
      */
-    public abstract PrimitiveIterator.OfDouble iterator(double level);
+    public PrimitiveIterator.OfDouble iterator(ScaleLevel level)
+    {
+        return level.iterator(min, max);
+    }
 
     public double getMin()
     {

@@ -16,7 +16,10 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -60,7 +63,8 @@ public class DoubleTransformTest
         Point2D.Double exp = new Point2D.Double(2, 1);
         Point2D.Double got = new Point2D.Double();
         derivate.transform(2, 3, got::setLocation);
-        assertEquals(exp, got);
+        assertEquals(exp.x, got.x, 1e-10);
+        assertEquals(exp.y, got.y, 1e-10);
     }
     @Test
     public void testSwapDerivate()
@@ -81,5 +85,62 @@ public class DoubleTransformTest
         Point2D.Double got = new Point2D.Double();
         t3.transform(1, 1, got::setLocation);
         assertEquals(exp, got);
+    }
+    @Test
+    public void test() throws NoninvertibleTransformException
+    {
+        DoubleTransform affineTransform = Transforms.affineTransform(new AffineTransform(1, 2, 3, 4, 5, 6));
+        double m = 1000000;
+        double m2 = m/2.0;
+        Random r = new Random(1234567L);
+        for (int ii=0;ii<1000;ii++)
+        {
+            double r1 = r.nextDouble();
+            double r2 = r.nextDouble();
+            double x = r1*m-m2;
+            double y = r2*m-m2;
+            test(DoubleTransform.identity(), x, y);
+            test(DoubleTransform.swap(), x, y);
+            test(affineTransform, x, y);
+        }
+    }
+    public void test(DoubleTransform transform, double x, double y)
+    {
+        testDerivate(DoubleTransform.identity(), x, y);
+        testInverse(DoubleTransform.identity(), x, y);
+    }
+    private void testInverse(DoubleTransform transform, double x, double y)
+    {
+        DoubleTransform inverse = transform.inverse();
+        Point2D.Double tr = new Point2D.Double();
+        transform.transform(x, y, tr::setLocation);
+        Point2D.Double in = new Point2D.Double();
+        inverse.transform(tr.x, tr.y, in::setLocation);
+        assertEquals(x, in.x, 1e-10);
+        assertEquals(y, in.y, 1e-10);
+    }
+    private void testDerivate(DoubleTransform transform, double x, double y)
+    {
+        DoubleTransform derivate = transform.derivate();
+        Point2D.Double exp = new Point2D.Double();
+        derivate.transform(x, y, exp::setLocation);
+        Point2D.Double p1 = new Point2D.Double();
+        Point2D.Double p2 = new Point2D.Double();
+        transform.transform(x, y, p1::setLocation);
+        double dx = Math.ulp(x);
+        double dy = Math.ulp(y);
+        transform.transform(x+dx, y+dy, p2::setLocation);
+        assertEquals(exp.x, (p2.x-p1.x)/dx, 1e-10);
+        assertEquals(exp.y, (p2.y-p1.y)/dy, 1e-10);
+    }
+    private void test(DoubleTransform transform)
+    {
+        double d = Math.ulp(1.0);
+        for (double ii=1.0;ii<400;ii++)
+        {
+            d *= 10.0;
+            double der = ((1.0+d)-1.0)/d;
+            System.err.println(ii+": "+d+" "+der);
+        }
     }
 }

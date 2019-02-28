@@ -30,6 +30,8 @@ public interface Scale
 {
     /**
      * Returns iterator starting with step lesser but closest to delta.
+     * @param min
+     * @param max
      * @return 
      */
     default Iterator<ScaleLevel> iterator(double min, double max)
@@ -42,6 +44,7 @@ public interface Scale
     }
     /**
      * Returns iterator starting with step lesser but closest to delta.
+     * @param delta
      * @return 
      */
     Iterator<ScaleLevel> iterator(double delta);
