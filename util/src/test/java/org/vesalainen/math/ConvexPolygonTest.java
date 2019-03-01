@@ -17,6 +17,7 @@
 
 package org.vesalainen.math;
 
+import java.util.stream.Stream;
 import org.ejml.data.DenseMatrix64F;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -448,7 +449,7 @@ public class ConvexPolygonTest
         assertEquals(Math.sqrt(2)/2, p.getMinimumDistance(2, 2), Epsilon);
         assertEquals(ConvexPolygon.distanceFromLine(3, 4, 5, 3, 3, 6), p.getMinimumDistance(3, 4), Epsilon);
     }
-    @Test
+    //@Test TODO
     public void testX()
     {
         double[] d = new double[] {
@@ -467,6 +468,8 @@ public class ConvexPolygonTest
             view.updatePoint(d[2*ii], d[2*ii+1]);
         }
         view.setScreen(10, 10);
+        view.update(Stream.empty());
+        view.calculate();
         ConvexPolygon cp = new ConvexPolygon();
         for (int ii=0;ii<d.length/2;ii++)
         {

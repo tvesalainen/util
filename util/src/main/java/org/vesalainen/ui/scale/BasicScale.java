@@ -20,41 +20,81 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.function.DoubleUnaryOperator;
 
 /**
- *
+ * BasicScale provides support for basic scale 1, 2, 3, ...
+ * <p>With multiplier other than 5.0 5, 10, 15, ... 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class BasicScale implements Scale
 {
+    /**
+     * 1, 2, 3, 
+     */
     public static final Scale SCALE10 = new BasicScale();
+    /**
+     * 3, 6, 9, ...
+     */
     public static final Scale SCALE03 = new BasicScale(3);
+    /**
+     * 5, 10, 15, ...
+     */
     public static final Scale SCALE05 = new BasicScale(5);
-    private double multiplier;
-    private String unit = "";
-    private double minDelta = Double.MIN_VALUE;
-    private double maxDelta = Double.MAX_VALUE;
-    private int lowestExponent;
-
+    protected final double multiplier;
+    protected final String unit;
+    protected final DoubleUnaryOperator transform;
+    protected double minDelta = Double.MIN_VALUE;
+    protected double maxDelta = Double.MAX_VALUE;
+    protected final int lowestExponent;
+    /**
+     * Creates BasicScale with 1.0 multiplier, no unit and no transform.
+     */
     public BasicScale()
     {
-        this(1.0, "");
+        this(1.0, "", (d)->d);
     }
-
+    /**
+     * Creates BasicScale with given multiplier, no unit and no transform.
+     * @param multiplier 
+     */
     public BasicScale(double multiplier)
     {
-        this(multiplier, "");
+        this(multiplier, "", (d)->d);
     }
-
+    /**
+     * Creates BasicScale with given multiplier, given unit and no transform.
+     * @param multiplier
+     * @param unit 
+     */
     public BasicScale(double multiplier, String unit)
     {
+        this(multiplier, unit, (d)->d);
+    }
+    /**
+     * Creates BasicScale 
+     * @param multiplier
+     * @param unit
+     * @param transform Transforms values to scale values
+     */
+    public BasicScale(double multiplier, String unit, DoubleUnaryOperator transform)
+    {
         this.multiplier = multiplier;
-        this.unit = unit;
+        this.unit = unit.replace("%", "%%");
+        this.transform = transform;
         this.lowestExponent = exponent(minDelta);
     }
 
     @Override
-    public Iterator<ScaleLevel> iterator(double delta)
+    public Iterator<ScaleLevel> iterator(double min, double max)
+    {
+        if (min >= max)
+        {
+            throw new IllegalArgumentException("min >= max");
+        }
+        return iterator(transform.applyAsDouble(max)-transform.applyAsDouble(min));
+    }
+    private Iterator<ScaleLevel> iterator(double delta)
     {
         if (delta > maxDelta)
         {
@@ -72,19 +112,15 @@ public class BasicScale implements Scale
             }
         }
     }
-    public static Iterator<ScaleLevel> iterator15(double delta)
-    {
-        return Scale.merge(delta, SCALE10, SCALE05);
-    }
     public BasicScale setMinDelta(double minDelta)
     {
-        this.minDelta = minDelta;
+        this.minDelta = transform.applyAsDouble(minDelta);
         return this;
     }
 
     public BasicScale setMaxDelta(double maxDelta)
     {
-        this.maxDelta = maxDelta;
+        this.maxDelta = transform.applyAsDouble(maxDelta);
         return this;
     }
     
@@ -96,7 +132,7 @@ public class BasicScale implements Scale
     {
         return (int) Math.floor(Math.log10(delta));
     }
-    public class BasicScaleLevel extends AbstractScaleLevel
+    protected class BasicScaleLevel extends AbstractScaleLevel
     {
 
         BasicScaleLevel(int exponent, double multiplier, String unit)
@@ -109,7 +145,7 @@ public class BasicScale implements Scale
         {
             StringBuilder out = new StringBuilder();
             Formatter formatter = new Formatter(out, locale);
-            BasicScale.this.format(formatter, value, this);
+            BasicScale.this.format(formatter, transform.applyAsDouble(value), this);
             return out.toString();
         }
 
@@ -134,6 +170,6 @@ public class BasicScale implements Scale
         {
             return new BasicScaleLevel(exponent--, multiplier, unit);
         }
-        
+
     }
 }

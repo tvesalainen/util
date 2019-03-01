@@ -47,13 +47,14 @@ public abstract class SerialScale implements Scale
     }
 
     @Override
-    public Iterator<ScaleLevel> iterator(double delta)
+    public Iterator<ScaleLevel> iterator(double min, double max)
     {
-        AbstractScaleLevel key = new AbstractScaleLevel(delta, null);
+        AbstractScaleLevel key = new AbstractScaleLevel(max-min, null);
         Iterator<? extends ScaleLevel> headIterator = levels.tailIterator(key, true);
-        Iterator<ScaleLevel> tailIterator = Scale.merge(delta, tail);
+        Iterator<ScaleLevel> tailIterator = Scale.merge(min, max, tail);
         return new Iter(headIterator, tailIterator);
     }
+
     protected String format(Locale locale, double value, AbstractScaleLevel until, String suffix)
     {
         StringBuilder out = new StringBuilder();

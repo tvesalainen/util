@@ -19,7 +19,6 @@ package org.vesalainen.ui.scale;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import org.vesalainen.util.Merger;
 
 /**
@@ -34,55 +33,34 @@ public interface Scale
      * @param max
      * @return 
      */
-    default Iterator<ScaleLevel> iterator(double min, double max)
-    {
-        if (min >= max)
-        {
-            throw new IllegalArgumentException("min >= max");
-        }
-        return iterator(max-min);
-    }
+    Iterator<ScaleLevel> iterator(double min, double max);
     /**
-     * Returns iterator starting with step lesser but closest to delta.
+     * Returns merged closest ScaleLevel iterators
      * @param delta
+     * @param scales
      * @return 
      */
-    Iterator<ScaleLevel> iterator(double delta);
+    public static Iterator<ScaleLevel> merge(double min, double max, Collection<Scale> scales)
+    {
+        return merge(min, max, scales.toArray(new Scale[scales.size()]));
+    }
+    /**
+     * Returns merged closest ScaleLevel iterators
+     * @param delta
+     * @param scales
+     * @return 
+     */
     public static Iterator<ScaleLevel> merge(double min, double max, Scale... scales)
     {
         if (min >= max)
         {
             throw new IllegalArgumentException("min >= max");
         }
-        return merge(max-min, scales);
-    }
-    /**
-     * Returns merged closest ScaleLevel iterators
-     * @param delta
-     * @param scales
-     * @return 
-     */
-    public static Iterator<ScaleLevel> merge(double delta, Collection<Scale> scales)
-    {
-        return merge(delta, scales.toArray(new Scale[scales.size()]));
-    }
-    /**
-     * Returns merged closest ScaleLevel iterators
-     * @param delta
-     * @param scales
-     * @return 
-     */
-    public static Iterator<ScaleLevel> merge(double delta, Scale... scales)
-    {
-        if (delta <= 0)
-        {
-            throw new IllegalArgumentException(delta+" is illegal delta");
-        }
         int length = scales.length;
         Iterator<ScaleLevel> iterator = null;
         for (int ii=0;ii<length;ii++)
         {
-            Iterator<ScaleLevel> di = scales[ii].iterator(delta);
+            Iterator<ScaleLevel> di = scales[ii].iterator(min, max);
             if (di.hasNext())
             {
                 if (iterator == null)

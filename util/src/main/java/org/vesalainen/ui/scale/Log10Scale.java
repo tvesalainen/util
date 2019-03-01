@@ -40,11 +40,6 @@ public class Log10Scale implements Scale
         return new LevelIterator(majorExponent, minorExponent);
     }
 
-    @Override
-    public Iterator<ScaleLevel> iterator(double delta)
-    {
-        throw new UnsupportedOperationException("Use iterator(min, max)");
-    }
     private class LevelIterator implements Iterator<ScaleLevel> 
     {
         private int majorExponent;

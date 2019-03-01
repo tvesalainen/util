@@ -102,7 +102,7 @@ public class AbstractView
     {
         screenBounds.setRect(0, 0, width, height);
     }
-    protected void update(Stream<Shape> shapes)
+    public void update(Stream<Shape> shapes)
     {
         if (screenBounds.isEmpty())
         {
@@ -113,7 +113,7 @@ public class AbstractView
         update(minUserBounds);
         shapes.map(Shape::getBounds2D).forEach(this::update);
     }
-    protected void calculate()
+    public void calculate()
     {
         Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
         affineDoubleTransform = Transforms.affineTransform(affineTransform);

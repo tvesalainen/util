@@ -41,7 +41,7 @@ public class AngleScaleTest
     public void test0()
     {
         Scale cs = new AngleScale();
-        Iterator<ScaleLevel> iterator = cs.iterator(180);
+        Iterator<ScaleLevel> iterator = cs.iterator(0, 180);
         for (int ii=0;ii<10;ii++)
         {
             ScaleLevel next = iterator.next();

@@ -36,7 +36,7 @@ public class CoordinateScaleTest
     public void testLat()
     {
         Scale cs = CoordinateScale.LATITUDE;
-        Iterator<ScaleLevel> iterator = cs.iterator(20);
+        Iterator<ScaleLevel> iterator = cs.iterator(0, 20);
         ScaleLevel next = iterator.next();
         assertTrue(next.step() <= 20);
         assertEquals(10, next.step(), 1e-10);
@@ -66,7 +66,7 @@ public class CoordinateScaleTest
     public void testLon()
     {
         Scale cs = CoordinateScale.LONGITUDE;
-        Iterator<ScaleLevel> iterator = cs.iterator(20);
+        Iterator<ScaleLevel> iterator = cs.iterator(0, 20);
         ScaleLevel next = iterator.next();
         assertEquals("E60\u00B0", next.label(Locale.US, 60.5));
         assertEquals("W60\u00B0", next.label(Locale.US, -60.5));

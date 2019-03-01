@@ -14,30 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui.scale;
+package org.vesalainen.math;
 
-import java.util.Iterator;
-import static org.vesalainen.ui.scale.BasicScale.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MergeScale implements Scale
+public class MathFunctionTest
 {
-    public static final Scale BASIC15 = new MergeScale(SCALE10, SCALE05);
-    public static final Scale BASIC135 = new MergeScale(SCALE10, SCALE03, SCALE05);
-    private Scale[] array;
-
-    public MergeScale(Scale... array)
+    
+    public MathFunctionTest()
     {
-        this.array = array;
     }
 
-    @Override
-    public Iterator<ScaleLevel> iterator(double min, double max)
+    @Test
+    public void testDerivate()
     {
-        return Scale.merge(min, max, array);
+        MathFunction p = (x)->x*x;
+        MathFunction d = p.derivate();
+        assertEquals(0, d.applyAsDouble(0), 1e-10);
+        assertEquals(2, d.applyAsDouble(1), 1e-10);
+        assertEquals(-2, d.applyAsDouble(-1), 1e-10);
+    }    
+    @Test
+    public void testIntegral()
+    {
+        MathFunction p = (x)->x*x;
+        assertEquals(1.0/3.0, p.integral(0, 1), 1e-10);
     }
-
+    @Test
+    public void testArc()
+    {
+        MathFunction p = (x)->x;
+        assertEquals(Math.sqrt(2), p.arc(0, 1), 1e-10);
+    }
+    
 }

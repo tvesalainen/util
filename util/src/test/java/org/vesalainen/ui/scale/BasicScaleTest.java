@@ -18,6 +18,7 @@ package org.vesalainen.ui.scale;
 
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.PrimitiveIterator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -36,9 +37,9 @@ public class BasicScaleTest
     public void test1()
     {
         BasicScale bs = new BasicScale();
-        assertEquals(1.0, bs.iterator(1).next().step(), 1e-10);
-        assertEquals(0.1, bs.iterator(0.999999).next().step(), 1e-10);
-        Iterator<ScaleLevel> iterator = bs.iterator(1);
+        assertEquals(1.0, bs.iterator(0, 1).next().step(), 1e-10);
+        assertEquals(0.1, bs.iterator(0, 0.999999).next().step(), 1e-10);
+        Iterator<ScaleLevel> iterator = bs.iterator(0, 1);
         ScaleLevel sl = iterator.next();
         assertEquals("3", sl.label(Locale.US, Math.PI));
         sl = iterator.next();
@@ -48,7 +49,7 @@ public class BasicScaleTest
     public void testIterator()
     {
         BasicScale bs = new BasicScale();
-        Iterator<ScaleLevel> iterator = bs.iterator(1);
+        Iterator<ScaleLevel> iterator = bs.iterator(0, 1);
         assertEquals(1.0, iterator.next().step(), 1e-10);
         assertEquals(0.1, iterator.next().step(), 1e-10);
         assertEquals(0.01, iterator.next().step(), 1e-10);
@@ -57,9 +58,9 @@ public class BasicScaleTest
     public void test5()
     {
         BasicScale bs = new BasicScale(5);
-        assertEquals(0.5, bs.iterator(1).next().step(), 1e-10);
-        assertEquals(0.5, bs.iterator(0.999999).next().step(), 1e-10);
-        Iterator<ScaleLevel> iterator = bs.iterator(1);
+        assertEquals(0.5, bs.iterator(0, 1).next().step(), 1e-10);
+        assertEquals(0.5, bs.iterator(0, 0.999999).next().step(), 1e-10);
+        Iterator<ScaleLevel> iterator = bs.iterator(0, 1);
         ScaleLevel sl = iterator.next();
         sl = iterator.next();
         assertEquals(0.05, sl.step(), 1e-10);
@@ -71,7 +72,7 @@ public class BasicScaleTest
         BasicScale bs3 = new BasicScale(3);
         BasicScale bs5 = new BasicScale(5);
         
-        Iterator<ScaleLevel> iterator = Scale.merge(1, bs1, bs3, bs5);
+        Iterator<ScaleLevel> iterator = Scale.merge(0, 1, bs1, bs3, bs5);
         assertEquals(1.0, iterator.next().step(), 1e-10);
         assertEquals(0.5, iterator.next().step(), 1e-10);
         assertEquals(0.3, iterator.next().step(), 1e-10);
