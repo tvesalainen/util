@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
 import static org.vesalainen.ui.Direction.*;
+import org.vesalainen.ui.scale.BasicScale;
 
 /**
  *
@@ -41,17 +42,31 @@ public class PlotterT
         try
         {
             Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);
-            p.setColor(Color.RED);
+            p.setColor(Color.BLACK);
             //p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
-            //p.drawText(0, 0, TextAlignment.START_X, "start");
-            //p.drawText(0, 0, TextAlignment.MIDDLE_X, "middle");
-            //p.drawText(0, 0, TextAlignment.END_X, "end");
+            p.drawText(0, 0, TextAlignment.START_X, "start");
+            p.drawText(0, 0, TextAlignment.MIDDLE_X, "middle");
+            p.drawText(0, 0, TextAlignment.END_X, "end");
+            p.setColor(Color.ORANGE);
             p.drawCircle(50, 50, 50);
             //p.drawPoint(0, 0);
             //p.drawPoint(1, 1);
             //p.drawPoint(2, 0);
-            p.drawCoordinates(LEFT, RIGHT, TOP, BOTTOM);
+            BasicCoordinates bc = new BasicCoordinates(p);
+            p.setColor(Color.BLUE);
+            bc.addCoordinate(LEFT, BasicScale.SCALE10);
+            p.setColor(Color.GREEN);
+            bc.addCoordinate(BOTTOM, BasicScale.SCALE05);
+            p.setColor(Color.PINK);
+            bc.addCoordinate(RIGHT, BasicScale.SCALE03);
+            p.drawBackground(bc);
+            //p.drawCoordinates(LEFT, BOTTOM, RIGHT, TOP);
+            p.setColor(Color.RED);
+            p.drawTitle(TOP, "Ylä\notsikko");
+            p.drawTitle(LEFT, "Vasenotsikko");
+            p.drawTitle(BOTTOM, "Alaotsikko");
+            p.drawTitle(RIGHT, "Oikeaotsikko");
             p.plot("plotterTest", "png");
         }
         catch (IOException ex)

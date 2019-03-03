@@ -16,40 +16,32 @@
  */
 package org.vesalainen.ui.scale;
 
-import java.util.Formatter;
+import java.util.Iterator;
+import java.util.Locale;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.vesalainen.ui.scale.Decibel.*;
 
 /**
- * PercentScale is a BasicScale for showing percentage of something.
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PercentScale extends BasicScale
+public class DecibelScaleTest
 {
-    /**
-     * Creates PercentScale with 1.0 multiplier and % unit
-     * @param of 
-     */
-    public PercentScale(double of)
+    
+    public DecibelScaleTest()
     {
-        this(of, 1, "%");
-    }
-    /**
-     * Creates PercentScale with given multiplier and % unit
-     * @param of
-     * @param multiplier 
-     */
-    public PercentScale(double of, double multiplier)
-    {
-        this(of, multiplier, "%");
-    }
-    /**
-     * Creates PercentScale with given multiplier and given unit
-     * @param of
-     * @param multiplier
-     * @param unit 
-     */
-    public PercentScale(double of, double multiplier, String unit)
-    {
-        super(multiplier, unit, (d)->100*d/of);
     }
 
+    @Test
+    public void testW()
+    {
+        DecibelScale ds = new DecibelScale(10);
+        Iterator<ScaleLevel> i1 = ds.iterator(1, 100);
+        ScaleLevel next = i1.next();
+        assertEquals("10dB", next.label(100));
+        next.forEach(1, 100, Locale.US, (d,l)->System.err.println(d+" "+l));
+
+    }
+    
 }

@@ -28,6 +28,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     protected BasicStroke stroke = new BasicStroke();
     protected IntBinaryOperator pattern;
     protected Paint paint;
-    protected List<AbstractCoordinate> coordinates = new ArrayList<>();
+    protected List<BackgroundGenerator> backgroundGenerators = new ArrayList<>();
 
     public AbstractPlotter(int width, int height, Color background)
     {
@@ -124,10 +125,13 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         calculate();
         DoubleBounds origUserBounds = new DoubleBounds();
         origUserBounds.setRect(userBounds);
-        coordinates.forEach((c)->c.addMargin(this));
-        calculate();
+        backgroundGenerators.forEach((c)->
+        {
+            c.ensureSpace();
+            calculate();
+        });
         drawer.setTransform(combinedTransform, inverse, derivates, scale);
-        coordinates.forEach((c)->c.generate(this, origUserBounds));
+        backgroundGenerators.forEach((c)->c.generate());
         backgroundShapes.forEach((d) ->d.draw(drawer));
         drawer.setTransform(DoubleTransform.identity(), DoubleTransform.identity(), new DoubleTransform[]{}, 1.0);
         fixedShapes.forEach((d) ->d.draw(drawer));
@@ -224,7 +228,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
      */
     public void drawText(double x, double y, TextAlignment alignment, String text)
     {
-        drawText(x, y, alignment, text);
+        drawText(x, y, text, alignment);
     }
     public void drawText(double x, double y, String text, TextAlignment... alignments)
     {
@@ -250,7 +254,11 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
         Shape outline = glyphVector.getOutline();
-        fixedShapes.add(new Fixed(x, y, true, outline, alignments));
+        drawScreen(x, y, outline, alignments);
+    }
+    public void drawScreen(double x, double y, Shape shape, TextAlignment... alignments)
+    {
+        fixedShapes.add(new Fixed(x, y, true, shape, alignments));
     }
 
     public Shape text2Shape(double x, double y, String text, TextAlignment... alignments)
@@ -258,9 +266,6 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
         Rectangle2D lb = glyphVector.getLogicalBounds();
         Shape outline = glyphVector.getOutline();
-        Rectangle2D b = outline.getBounds2D();
-        Rectangle2D stringBounds = font.getStringBounds(text, fontRenderContext);
-        LineMetrics lm = font.getLineMetrics(text, fontRenderContext);
         AffineTransform at = AffineTransform.getScaleInstance(1, -1);
         //y -= lm.getDescent();
         for (TextAlignment alignment : alignments)
@@ -288,6 +293,50 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         }
         at.translate(x, y);
         return new Path2D.Double(outline, at);
+    }
+    public static Shape alignShape(Shape shape, TextAlignment... alignments)
+    {
+        return alignShape(0, 0, shape, alignments);
+    }
+    public static Shape alignShape(double x, double y, Shape shape, TextAlignment... alignments)
+    {
+        return new Path2D.Double(shape, alignShapeTransform(x, y, shape, alignments));
+    }
+    public static AffineTransform alignShapeTransform(double x, double y, Shape shape, TextAlignment... alignments)
+    {
+        AffineTransform at = AffineTransform.getScaleInstance(1, 1);
+        alignShapeTransform(x, y, shape, at, alignments);
+        return at;
+    }
+    public static void alignShapeTransform(double x, double y, Shape shape, AffineTransform at, TextAlignment... alignments)
+    {
+        Rectangle2D b = shape.getBounds2D();
+        x += -b.getX();
+        y += -b.getY();
+        for (TextAlignment alignment : alignments)
+        {
+            switch (alignment)
+            {
+                case START_X:
+                case START_Y:
+                    break;
+                case MIDDLE_X:
+                    x -= b.getWidth()/2;
+                    break;
+                case END_X:
+                    x -= b.getWidth();
+                    break;
+                case MIDDLE_Y:
+                    y -= b.getHeight()/2;
+                    break;
+                case END_Y:
+                    y -= b.getHeight();
+                    break;
+                default:
+                    throw new UnsupportedOperationException(alignments+" not supported");
+            }
+        }
+        at.translate(x, y);
     }
     public void drawCircle(Circle circle)
     {
@@ -386,7 +435,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
     /**
-     * Draws coordinates using given LinearScaler
+     * Draws backgroundGenerators using given LinearScaler
      * @param directions 
      */
     public void drawCoordinates(Direction... directions)
@@ -394,23 +443,29 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         drawCoordinates(MergeScale.BASIC15, directions);
     }
     /**
-     * Draws coordinates using given scaler
+     * Draws backgroundGenerators using given scaler
      * @param scale
      * @param directions 
      */
     public void drawCoordinates(Scale scale, Direction... directions)
     {
+        BasicCoordinates bc = new BasicCoordinates(this);
         for (Direction direction : directions)
         {
-            drawCoordinates(new AbstractCoordinate(this, scale, direction));
+            bc.addCoordinate(direction, scale);
         }
+        drawBackground(bc);
     }
-    protected void drawCoordinates(AbstractCoordinate coordinate)
+    public void drawTitle(Direction direction, String title)
     {
-            coordinates.add(coordinate);
+        drawBackground(new BasicTitle(this, direction, title));
+    }
+    protected void drawBackground(BackgroundGenerator generator)
+    {
+            backgroundGenerators.add(generator);
     }
     /**
-     * Draws coordinates using LinearScaler to LEFT and BOTTOM
+     * Draws backgroundGenerators using LinearScaler to LEFT and BOTTOM
      */
     public void drawCoordinates()
     {
@@ -418,14 +473,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         drawCoordinateY();
     }
     /**
-     * Draws coordinates using LinearScaler to BOTTOM
+     * Draws backgroundGenerators using LinearScaler to BOTTOM
      */
     public void drawCoordinateX()
     {
         drawCoordinates(BOTTOM);
     }
     /**
-     * Draws coordinates using LinearScaler to LEFT
+     * Draws backgroundGenerators using LinearScaler to LEFT
      */
     public void drawCoordinateY()
     {
@@ -538,39 +593,11 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         @Override
         public void draw(Drawer drawer)
         {
-            AffineTransform at = AffineTransform.getScaleInstance(1, 1);
-            Rectangle2D lb = shape.getBounds2D();
-            combinedTransform.transform(x, y, (xx,yy)->
-            {
-                double dx = 0;
-                double dy = 0;
-                for (TextAlignment alignment : alignments)
-                {
-                    switch (alignment)
-                    {
-                        case START_X:
-                        case START_Y:
-                            break;
-                        case MIDDLE_X:
-                            dx -= lb.getWidth()/2;
-                            break;
-                        case END_X:
-                            dx -= lb.getWidth()+1;
-                            break;
-                        case MIDDLE_Y:
-                            dy += lb.getHeight()/2;
-                            break;
-                        case END_Y:
-                            dy += lb.getHeight();
-                            break;
-                        default:
-                            throw new UnsupportedOperationException(alignments+" not supported");
-                    }
-                }
-                at.translate(xx+dx, yy+dy);
-            });
+            Point2D pnt = new Point2D.Double();
+            combinedTransform.transform(x, y, pnt::setLocation);
             Shape safe = shape;
-            shape = new Path2D.Double(safe, at);
+            shape = alignShape(pnt.getX(), pnt.getY(), safe, alignments);
+            Rectangle2D b = shape.getBounds2D();
             super.draw(drawer);
             shape = safe;
         }

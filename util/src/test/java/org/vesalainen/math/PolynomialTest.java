@@ -50,16 +50,28 @@ public class PolynomialTest
         assertEquals(-2, d.applyAsDouble(-1), 1e-10);
     }    
     @Test
-    public void testIntegral()
+    public void test1()
+    {
+        Polynomial p = new Polynomial(2, 3, 4, 5, 6, 7);
+        assertEquals(-1321, p.applyAsDouble(-3), 1e-10);
+    }
+    @Test
+    public void testIntegral1()
     {
         Polynomial p = new Polynomial(0, 0, 1);
         assertEquals(1.0/3.0, p.integral(0, 1), 1e-10);
+    }
+    @Test
+    public void testIntegral2()
+    {
+        Polynomial p = new Polynomial(0, 1);
+        assertEquals(0.5, p.integral(0, 1, 2), 1e-10);
     }
     @Test
     public void testArc()
     {
         Polynomial p = new Polynomial(0, 1, 0);
         assertEquals(1, p.degree());
-        assertEquals(Math.sqrt(2), p.arc(0, 1), 1e-10);
+        assertEquals(Math.sqrt(2), p.arc(0, 1, 2), 1e-10);
     }
 }

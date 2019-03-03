@@ -16,40 +16,47 @@
  */
 package org.vesalainen.ui.scale;
 
-import java.util.Formatter;
-
 /**
  * PercentScale is a BasicScale for showing percentage of something.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PercentScale extends BasicScale
+public class DecibelScale extends BasicScale
 {
     /**
      * Creates PercentScale with 1.0 multiplier and % unit
-     * @param of 
+     * @param reference 
      */
-    public PercentScale(double of)
+    public DecibelScale(double reference)
     {
-        this(of, 1, "%");
+        this(1, reference, 1, "dB");
     }
     /**
      * Creates PercentScale with given multiplier and % unit
-     * @param of
+     * @param reference
      * @param multiplier 
      */
-    public PercentScale(double of, double multiplier)
+    public DecibelScale(double reference, double multiplier)
     {
-        this(of, multiplier, "%");
+        this(1, reference, multiplier, "dB");
+    }
+    public DecibelScale(Decibel decibel)
+    {
+        this(decibel, 1);
+    }
+    public DecibelScale(Decibel decibel, double multiplier)
+    {
+        this(decibel.getExponent(), decibel.getReference(), multiplier, decibel.getUnit());
     }
     /**
      * Creates PercentScale with given multiplier and given unit
-     * @param of
+     * @param exponent
+     * @param reference
      * @param multiplier
      * @param unit 
      */
-    public PercentScale(double of, double multiplier, String unit)
+    public DecibelScale(int exponent, double reference, double multiplier, String unit)
     {
-        super(multiplier, unit, (d)->100*d/of);
+        super(multiplier, unit, (d)->exponent*10*Math.log10(d/reference));
     }
 
 }

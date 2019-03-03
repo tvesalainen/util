@@ -45,14 +45,6 @@ public class Polynomial implements MathFunction
         }
         return 0;
     }
-    private static double pow(double v, int exp)
-    {
-        for (int ii=1;ii<exp;ii++)
-        {
-            v *= v;
-        }
-        return v;
-    }
     public int degree()
     {
         return length-1;
@@ -64,11 +56,13 @@ public class Polynomial implements MathFunction
         {
             return 0;
         }
-        double sum = coef[0];
-        for (int ii=1;ii<length;ii++)
+        double sum = coef[length-1]*x;
+        for (int ii=length-2;ii>0;ii--)
         {
-            sum += coef[ii]*pow(x, ii);
+            sum += coef[ii];
+            sum *= x;
         }
+        sum += coef[0];
         return sum;
     }
 
