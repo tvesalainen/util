@@ -42,9 +42,21 @@ public interface MathFunction extends DoubleUnaryOperator
             return (dy-y)/d;
         };
     }
+    static MathFunction identity()
+    {
+        return new Identity();
+    }
     default double integral(double x1, double x2)
     {
-        return integral(x1, x2, 60000);
+        try
+        {
+            MathFunction integral = integral();
+            return integral.applyAsDouble(x2)-integral.applyAsDouble(x1);
+        }
+        catch (UnsupportedOperationException ex)
+        {
+            return integral(x1, x2, 60000);
+        }
     }
     default double integral(double x1, double x2, int points)
     {
@@ -62,11 +74,11 @@ public interface MathFunction extends DoubleUnaryOperator
         }
         return sum;
     }
-    default double arc(double x1, double x2)
+    default double arcLength(double x1, double x2)
     {
-        return arc(x1, x2, 60000);
+        return MathFunction.this.arcLength(x1, x2, 60000);
     }
-    default double arc(double x1, double x2, int points)
+    default double arcLength(double x1, double x2, int points)
     {
         double delta = (x2-x1)/points;
         double sum = 0;
@@ -80,5 +92,39 @@ public interface MathFunction extends DoubleUnaryOperator
             y1 = y2;
         }
         return sum;
+    }
+    public static class Identity implements MathFunction
+    {
+
+        @Override
+        public MathFunction inverse()
+        {
+            return (x)->x;
+        }
+
+        @Override
+        public MathFunction integral()
+        {
+            return (x)->x*x*0.5;
+        }
+
+        @Override
+        public MathFunction derivate()
+        {
+            return (x)->1;
+        }
+
+        @Override
+        public double arcLength(double x1, double x2)
+        {
+            return Math.hypot(x2-x1, x2-x1);
+        }
+
+        @Override
+        public double applyAsDouble(double operand)
+        {
+            return operand;
+        }
+        
     }
 }

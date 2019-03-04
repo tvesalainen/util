@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -54,13 +55,29 @@ public class AbstractPlotterTest
         assertEquals(b1.getHeight(), b2.getHeight(), 1e-10);
     }
     @Test
+    public void testAlignShapeTransform()
+    {
+        Font font = new Font("arial", 0, 10);
+        GlyphVector gv = font.createGlyphVector(frc, "qwerty");
+        Shape s = gv.getOutline();
+        Rectangle2D b1 = s.getBounds2D();
+        AffineTransform at = AffineTransform.getScaleInstance(1, -1);
+        Shape as = AbstractPlotter.alignShape(5, 6, s, at);
+        Rectangle2D b2 = as.getBounds2D();
+        assertEquals(5, b2.getMinX(), 1e-10);
+        assertEquals(6, b2.getMinY(), 1e-10);
+        assertEquals(b1.getWidth(), b2.getWidth(), 1e-10);
+        assertEquals(b1.getHeight(), b2.getHeight(), 1e-10);
+    }
+    @Test
     public void testAlignShapeStart()
     {
         Font font = new Font("arial", 0, 10);
         GlyphVector gv = font.createGlyphVector(frc, "qwerty");
         Shape s = gv.getOutline();
         Rectangle2D b1 = s.getBounds2D();
-        Shape as = AbstractPlotter.alignShape(s, START_X, START_Y);
+        AffineTransform at = AffineTransform.getScaleInstance(1, -1);
+        Shape as = AbstractPlotter.alignShape(0, 0, s, at, START_X, START_Y);
         Rectangle2D b2 = as.getBounds2D();
         assertEquals(0, b2.getMinX(), 1e-10);
         assertEquals(0, b2.getMinY(), 1e-10);
@@ -74,7 +91,7 @@ public class AbstractPlotterTest
         GlyphVector gv = font.createGlyphVector(frc, "qwerty");
         Shape s = gv.getOutline();
         Rectangle2D b1 = s.getBounds2D();
-        Shape as = AbstractPlotter.alignShape(s, MIDDLE_X, MIDDLE_Y);
+        Shape as = AbstractPlotter.alignShape(0, 0, s, MIDDLE_X, MIDDLE_Y);
         Rectangle2D b2 = as.getBounds2D();
         assertEquals(0, b2.getCenterX(), 1e-10);
         assertEquals(0, b2.getCenterY(), 1e-10);
@@ -88,7 +105,7 @@ public class AbstractPlotterTest
         GlyphVector gv = font.createGlyphVector(frc, "qwerty");
         Shape s = gv.getOutline();
         Rectangle2D b1 = s.getBounds2D();
-        Shape as = AbstractPlotter.alignShape(s, END_X, END_Y);
+        Shape as = AbstractPlotter.alignShape(0, 0, s, END_X, END_Y);
         Rectangle2D b2 = as.getBounds2D();
         assertEquals(0, b2.getMaxX(), 1e-10);
         assertEquals(0, b2.getMaxY(), 1e-10);

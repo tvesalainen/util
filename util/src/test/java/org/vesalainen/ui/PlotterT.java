@@ -45,9 +45,9 @@ public class PlotterT
             p.setColor(Color.BLACK);
             //p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
-            p.drawText(0, 0, TextAlignment.START_X, "start");
-            p.drawText(0, 0, TextAlignment.MIDDLE_X, "middle");
-            p.drawText(0, 0, TextAlignment.END_X, "end");
+            p.drawText(50, 90, "start", TextAlignment.START_X);
+            p.drawText(50, 50, "middle", TextAlignment.MIDDLE_X);
+            p.drawText(50, 10, "end", TextAlignment.END_X);
             p.setColor(Color.ORANGE);
             p.drawCircle(50, 50, 50);
             //p.drawPoint(0, 0);

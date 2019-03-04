@@ -16,40 +16,23 @@
  */
 package org.vesalainen.math;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MathFunctionTest
+public class Log10Function implements MathFunction
 {
-    
-    public MathFunctionTest()
+
+    @Override
+    public double applyAsDouble(double operand)
     {
+        return Math.log10(operand);
     }
 
-    @Test
-    public void testDerivate()
+    @Override
+    public MathFunction inverse()
     {
-        MathFunction p = (x)->x*x;
-        MathFunction d = p.derivate();
-        assertEquals(0, d.applyAsDouble(0), 1e-10);
-        assertEquals(2, d.applyAsDouble(1), 1e-10);
-        assertEquals(-2, d.applyAsDouble(-1), 1e-10);
-    }    
-    @Test
-    public void testIntegral()
-    {
-        MathFunction p = (x)->x*x;
-        assertEquals(1.0/3.0, p.integral(0, 1), 1e-10);
-    }
-    @Test
-    public void testArc()
-    {
-        MathFunction p = (x)->x;
-        assertEquals(Math.sqrt(2), p.arcLength(0, 1), 1e-10);
+        return (x)->Math.pow(10, x);
     }
     
 }

@@ -264,55 +264,19 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     public Shape text2Shape(double x, double y, String text, TextAlignment... alignments)
     {
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
-        Rectangle2D lb = glyphVector.getLogicalBounds();
-        Shape outline = glyphVector.getOutline();
+        Shape shape = glyphVector.getOutline();
         AffineTransform at = AffineTransform.getScaleInstance(1, -1);
-        //y -= lm.getDescent();
-        for (TextAlignment alignment : alignments)
-        {
-            switch (alignment)
-            {
-                case START_X:
-                case START_Y:
-                    break;
-                case MIDDLE_X:
-                    x -= lb.getWidth()/2;
-                    break;
-                case END_X:
-                    x -= lb.getWidth();
-                    break;
-                case MIDDLE_Y:
-                    y += lb.getHeight()/2;
-                    break;
-                case END_Y:
-                    y += lb.getHeight();
-                    break;
-                default:
-                    throw new UnsupportedOperationException(alignments+" not supported");
-            }
-        }
-        at.translate(x, y);
-        return new Path2D.Double(outline, at);
-    }
-    public static Shape alignShape(Shape shape, TextAlignment... alignments)
-    {
-        return alignShape(0, 0, shape, alignments);
+        Shape as = alignShape(x, y, shape, at, alignments);
+        return as;
     }
     public static Shape alignShape(double x, double y, Shape shape, TextAlignment... alignments)
     {
-        return new Path2D.Double(shape, alignShapeTransform(x, y, shape, alignments));
+        return alignShape(x, y, shape, null, alignments);
     }
-    public static AffineTransform alignShapeTransform(double x, double y, Shape shape, TextAlignment... alignments)
-    {
-        AffineTransform at = AffineTransform.getScaleInstance(1, 1);
-        alignShapeTransform(x, y, shape, at, alignments);
-        return at;
-    }
-    public static void alignShapeTransform(double x, double y, Shape shape, AffineTransform at, TextAlignment... alignments)
+    public static Shape alignShape(double x, double y, Shape shape, AffineTransform at, TextAlignment... alignments)
     {
         Rectangle2D b = shape.getBounds2D();
-        x += -b.getX();
-        y += -b.getY();
+        AffineTransform t = AffineTransform.getTranslateInstance(x, y);
         for (TextAlignment alignment : alignments)
         {
             switch (alignment)
@@ -321,22 +285,29 @@ public class AbstractPlotter extends AbstractView implements DrawContext
                 case START_Y:
                     break;
                 case MIDDLE_X:
-                    x -= b.getWidth()/2;
+                    t.translate(-b.getWidth()/2, 0);
                     break;
                 case END_X:
-                    x -= b.getWidth();
+                    t.translate(-b.getWidth(), 0);
                     break;
                 case MIDDLE_Y:
-                    y -= b.getHeight()/2;
+                    t.translate(0, -b.getHeight()/2);
                     break;
                 case END_Y:
-                    y -= b.getHeight();
+                    t.translate(0, -b.getHeight());
                     break;
                 default:
-                    throw new UnsupportedOperationException(alignments+" not supported");
+                    throw new UnsupportedOperationException(alignment+" not supported");
             }
         }
-        at.translate(x, y);
+        if (at != null)
+        {
+            t.translate(b.getWidth()/2.0, b.getHeight()/2.0);
+            t.concatenate(at);
+            t.translate(-b.getWidth()/2.0, -b.getHeight()/2.0);
+        }
+        t.translate(-b.getX(), -b.getY());
+        return t.createTransformedShape(shape);
     }
     public void drawCircle(Circle circle)
     {

@@ -72,6 +72,6 @@ public class PolynomialTest
     {
         Polynomial p = new Polynomial(0, 1, 0);
         assertEquals(1, p.degree());
-        assertEquals(Math.sqrt(2), p.arc(0, 1, 2), 1e-10);
+        assertEquals(Math.sqrt(2), p.arcLength(0, 1, 2), 1e-10);
     }
 }

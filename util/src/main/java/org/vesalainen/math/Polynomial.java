@@ -67,13 +67,6 @@ public class Polynomial implements MathFunction
     }
 
     @Override
-    public double integral(double x1, double x2)
-    {
-        MathFunction integral = integral();
-        return integral.applyAsDouble(x2)-integral.applyAsDouble(x1);
-    }
-
-    @Override
     public MathFunction derivate()
     {
         double[] c = new double[length-1];

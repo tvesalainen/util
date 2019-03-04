@@ -19,6 +19,7 @@ package org.vesalainen.ui.scale;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import org.vesalainen.math.MathFunction;
 import org.vesalainen.util.Merger;
 
 /**
@@ -35,8 +36,17 @@ public interface Scale
      */
     Iterator<ScaleLevel> iterator(double min, double max);
     /**
+     * Returns scaling function
+     * @return 
+     */
+    default MathFunction function()
+    {
+        return MathFunction.identity();
+    }
+    /**
      * Returns merged closest ScaleLevel iterators
-     * @param delta
+     * @param min
+     * @param max
      * @param scales
      * @return 
      */

@@ -152,16 +152,28 @@ public class AbstractView
             switch (dir)
             {
                 case BOTTOM:
-                    inverse.transform(0, screenBounds.height+bounds.getHeight(), this::updatePoint);
+                    combinedTransform.transform(userBounds.getCenterX(), userBounds.getMinY(), (x,y)->
+                    {
+                        inverse.transform(x, y+bounds.getHeight(), this::updatePoint);
+                    });
                     break;
                 case LEFT:
-                    inverse.transform(screenBounds.x-bounds.getWidth(), 0 , this::updatePoint);
+                    combinedTransform.transform(userBounds.getMinX(), userBounds.getCenterY(), (x,y)->
+                    {
+                        inverse.transform(x-bounds.getWidth(), y, this::updatePoint);
+                    });
                     break;
                 case RIGHT:
-                    inverse.transform(screenBounds.width+bounds.getWidth(), 0 , this::updatePoint);
+                    combinedTransform.transform(userBounds.getMaxX(), userBounds.getCenterY(), (x,y)->
+                    {
+                        inverse.transform(x+bounds.getWidth(), y, this::updatePoint);
+                    });
                     break;
                 case TOP:
-                    inverse.transform(0, screenBounds.y-bounds.getHeight(), this::updatePoint);
+                    combinedTransform.transform(userBounds.getCenterX(), userBounds.getMaxY(), (x,y)->
+                    {
+                        inverse.transform(x, y-bounds.getHeight(), this::updatePoint);
+                    });
                     break;
             }
         }

@@ -17,12 +17,9 @@
 package org.vesalainen.ui;
 
 import java.awt.BasicStroke;
-import static java.awt.BasicStroke.CAP_SQUARE;
-import static java.awt.BasicStroke.JOIN_MITER;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.function.IntBinaryOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
