@@ -24,28 +24,68 @@ import java.util.function.DoubleUnaryOperator;
  */
 public interface MathFunction extends DoubleUnaryOperator
 {
+    public static final MathFunction IDENTITY = new Identity();
+    /**
+     * Returns inverse function
+     * @return 
+     */
     default MathFunction inverse()
     {
         throw new UnsupportedOperationException("inverse not supported");
     }
+    /**
+     * Returns integral function (antiderivative)
+     * @return 
+     */
     default MathFunction integral()
     {
         throw new UnsupportedOperationException("integral not supported");
     }
-    default MathFunction derivate()
+    /**
+     * Returns derivative
+     * @return 
+     */
+    default MathFunction derivative()
     {
         return (double x)->
         {
-            double d = Math.ulp(x);
-            double y = applyAsDouble(x);
-            double dy = applyAsDouble(x+d);
-            return (dy-y)/d;
+            return MoreMath.derivate(this, x);
         };
     }
+    /**
+     * Returns identity function f(x)=x
+     * @return 
+     */
     static MathFunction identity()
     {
-        return new Identity();
+        return IDENTITY;
     }
+    /**
+     * Returns PreMultiplier function f(x) = g(x*multiplier)
+     * @param func
+     * @param multiplier
+     * @return 
+     */
+    static MathFunction preMultiplier(MathFunction func, double multiplier)
+    {
+        return new PreMultiplier(func, multiplier);
+    }
+    /**
+     * Returns PostMultiplier function f(x) = g(x)*multiplier
+     * @param func
+     * @param multiplier
+     * @return 
+     */
+    static MathFunction postMultiplier(MathFunction func, double multiplier)
+    {
+        return new PostMultiplier(func, multiplier);
+    }
+    /**
+     * Returns integral between x1 and x2
+     * @param x1
+     * @param x2
+     * @return 
+     */
     default double integral(double x1, double x2)
     {
         try
@@ -58,40 +98,149 @@ public interface MathFunction extends DoubleUnaryOperator
             return integral(x1, x2, 60000);
         }
     }
+    /**
+     * Returns numerical integral between x1 and x2
+     * @param x1
+     * @param x2
+     * @param points
+     * @return 
+     */
     default double integral(double x1, double x2, int points)
     {
-        double delta = (x2-x1)/points;
-        double delta2 = delta/2.0;
-        double sum = 0;
-        double y1 = applyAsDouble(x1);
-        double y2;
-        for (int ii=1;ii<=points;ii++)
-        {
-            x1 += delta;
-            y2 = applyAsDouble(x1);
-            sum += (y1+y2)*delta2;
-            y1 = y2;
-        }
-        return sum;
+        return MoreMath.integral(this, x1, x2, points);
     }
+    /**
+     * Returns arc length between x1 and x2
+     * @param x1
+     * @param x2
+     * @return 
+     */
     default double arcLength(double x1, double x2)
     {
         return MathFunction.this.arcLength(x1, x2, 60000);
     }
+    /**
+     * Returns numerical arc length between x1 and x2
+     * @param x1
+     * @param x2
+     * @param points
+     * @return 
+     */
     default double arcLength(double x1, double x2, int points)
     {
-        double delta = (x2-x1)/points;
-        double sum = 0;
-        double y1 = applyAsDouble(x1);
-        double y2;
-        for (int ii=1;ii<=points;ii++)
+        return MoreMath.arcLength(this, x1, x2, points);
+    }
+    public static class PreMultiplier implements MathFunction
+    {
+        private MathFunction f;
+        private double mul;
+
+        public PreMultiplier(MathFunction f, double mul)
         {
-            x1 += delta;
-            y2 = applyAsDouble(x1);
-            sum += Math.hypot(delta, (y2-y1));
-            y1 = y2;
+            this.f = f;
+            this.mul = mul;
         }
-        return sum;
+
+        @Override
+        public MathFunction inverse()
+        {
+            MathFunction inverse = f.inverse();
+            return (x)->inverse.applyAsDouble(x)/mul;
+        }
+
+        @Override
+        public MathFunction integral()
+        {
+            MathFunction integral = f.integral();
+            return (x)->integral.applyAsDouble(x*mul)/mul;
+        }
+
+        @Override
+        public MathFunction derivative()
+        {
+            MathFunction derivate = f.derivative();
+            return (x)->derivate.applyAsDouble(x*mul)*mul;
+        }
+
+        @Override
+        public double applyAsDouble(double operand)
+        {
+            return f.applyAsDouble(operand*mul);
+        }
+        
+    }
+    public static class PostMultiplier implements MathFunction
+    {
+        private MathFunction f;
+        private double mul;
+
+        public PostMultiplier(MathFunction f, double mul)
+        {
+            this.f = f;
+            this.mul = mul;
+        }
+
+        @Override
+        public MathFunction inverse()
+        {
+            MathFunction inverse = f.inverse();
+            return (x)->inverse.applyAsDouble(x/mul);
+        }
+
+        @Override
+        public MathFunction integral()
+        {
+            MathFunction integral = f.integral();
+            return (x)->integral.applyAsDouble(x)*mul;
+        }
+
+        @Override
+        public MathFunction derivative()
+        {
+            MathFunction derivate = f.derivative();
+            return (x)->derivate.applyAsDouble(x)*mul;
+        }
+
+        @Override
+        public double applyAsDouble(double operand)
+        {
+            return f.applyAsDouble(operand)*mul;
+        }
+        
+    }
+    public static class Chain implements MathFunction
+    {
+        private MathFunction f;
+        private MathFunction g;
+
+        public Chain(MathFunction f, MathFunction g)
+        {
+            this.f = f;
+            this.g = g;
+        }
+        
+        @Override
+        public MathFunction inverse()
+        {
+            MathFunction fi = f.inverse();
+            MathFunction gi = g.inverse();
+            return (x)->gi.applyAsDouble(fi.applyAsDouble(x));
+        }
+
+        @Override
+        public MathFunction derivative()
+        {
+            MathFunction df = f.derivative();
+            MathFunction dg = g.derivative();
+            return (x)->df.applyAsDouble(g.applyAsDouble(x))*dg.applyAsDouble(x);
+        }
+
+        @Override
+        public double applyAsDouble(double operand)
+        {
+            return f.applyAsDouble(g.applyAsDouble(operand));
+        }
+        
     }
     public static class Identity implements MathFunction
     {
@@ -109,7 +258,7 @@ public interface MathFunction extends DoubleUnaryOperator
         }
 
         @Override
-        public MathFunction derivate()
+        public MathFunction derivative()
         {
             return (x)->1;
         }

@@ -19,7 +19,7 @@ package org.vesalainen.ui.scale;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.PrimitiveIterator;
-import org.vesalainen.math.Log10Function;
+import org.vesalainen.math.Logarithm;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.text.Unicodes;
 
@@ -29,7 +29,6 @@ import org.vesalainen.text.Unicodes;
  */
 public class Log10Scale implements Scale
 {
-    private static final MathFunction FUNCTION = new Log10Function();
     @Override
     public Iterator<ScaleLevel> iterator(double min, double max)
     {
@@ -45,7 +44,7 @@ public class Log10Scale implements Scale
     @Override
     public MathFunction function()
     {
-        return FUNCTION;
+        return Logarithm.LOG10;
     }
 
     private class LevelIterator implements Iterator<ScaleLevel> 

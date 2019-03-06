@@ -44,7 +44,7 @@ public class PolynomialTest
     public void testDerivate()
     {
         Polynomial p = new Polynomial(0, 0, 1);
-        MathFunction d = p.derivate();
+        MathFunction d = p.derivative();
         assertEquals(0, d.applyAsDouble(0), 1e-10);
         assertEquals(2, d.applyAsDouble(1), 1e-10);
         assertEquals(-2, d.applyAsDouble(-1), 1e-10);

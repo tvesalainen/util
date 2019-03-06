@@ -21,6 +21,7 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.math.MathFunction;
 
 /**
  * BasicScale provides support for basic scale 1, 2, 3, ...
@@ -43,7 +44,7 @@ public class BasicScale implements Scale
     public static final Scale SCALE05 = new BasicScale(5);
     protected final double multiplier;
     protected final String unit;
-    protected final DoubleUnaryOperator transform;
+    protected final MathFunction transform;
     protected double minDelta = Double.MIN_VALUE;
     protected double maxDelta = Double.MAX_VALUE;
     protected final int lowestExponent;
@@ -52,7 +53,7 @@ public class BasicScale implements Scale
      */
     public BasicScale()
     {
-        this(1.0, "", (d)->d);
+        this(1.0, "", MathFunction.IDENTITY);
     }
     /**
      * Creates BasicScale with given multiplier, no unit and no transform.
@@ -60,7 +61,7 @@ public class BasicScale implements Scale
      */
     public BasicScale(double multiplier)
     {
-        this(multiplier, "", (d)->d);
+        this(multiplier, "", MathFunction.IDENTITY);
     }
     /**
      * Creates BasicScale with given multiplier, given unit and no transform.
@@ -69,7 +70,7 @@ public class BasicScale implements Scale
      */
     public BasicScale(double multiplier, String unit)
     {
-        this(multiplier, unit, (d)->d);
+        this(multiplier, unit, MathFunction.IDENTITY);
     }
     /**
      * Creates BasicScale 
@@ -77,7 +78,7 @@ public class BasicScale implements Scale
      * @param unit
      * @param transform Transforms values to scale values
      */
-    public BasicScale(double multiplier, String unit, DoubleUnaryOperator transform)
+    public BasicScale(double multiplier, String unit, MathFunction transform)
     {
         this.multiplier = multiplier;
         this.unit = unit.replace("%", "%%");
@@ -94,6 +95,13 @@ public class BasicScale implements Scale
         }
         return iterator(transform.applyAsDouble(max)-transform.applyAsDouble(min));
     }
+
+    @Override
+    public MathFunction function()
+    {
+        return transform;
+    }
+    
     private Iterator<ScaleLevel> iterator(double delta)
     {
         if (delta > maxDelta)

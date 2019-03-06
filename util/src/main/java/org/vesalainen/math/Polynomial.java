@@ -67,7 +67,7 @@ public class Polynomial implements MathFunction
     }
 
     @Override
-    public MathFunction derivate()
+    public MathFunction derivative()
     {
         double[] c = new double[length-1];
         for (int ii=1;ii<length;ii++)

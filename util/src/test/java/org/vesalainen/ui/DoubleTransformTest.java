@@ -106,8 +106,8 @@ public class DoubleTransformTest
     }
     public void test(DoubleTransform transform, double x, double y)
     {
-        testDerivate(DoubleTransform.identity(), x, y);
-        testInverse(DoubleTransform.identity(), x, y);
+        testDerivate(transform, x, y);
+        testInverse(transform, x, y);
     }
     private void testInverse(DoubleTransform transform, double x, double y)
     {

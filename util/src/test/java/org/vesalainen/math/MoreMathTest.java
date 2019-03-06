@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import static java.lang.Math.PI;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,6 +31,13 @@ public class MoreMathTest
     {
     }
 
+    @Test
+    public void testDerivate()
+    {
+        Polynomial p = new Polynomial(1, 2, 3, 4);
+        MathFunction derivate = p.derivative();
+        assertEquals(derivate.applyAsDouble(PI), MoreMath.derivate(p, PI), 1e-6);
+    }
     @Test
     public void testFactorial()
     {
