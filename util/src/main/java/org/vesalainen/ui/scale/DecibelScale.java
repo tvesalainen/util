@@ -16,11 +16,14 @@
  */
 package org.vesalainen.ui.scale;
 
+import org.vesalainen.math.Logarithm;
+import org.vesalainen.math.MathFunction;
+
 /**
  * PercentScale is a BasicScale for showing percentage of something.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DecibelScale extends BasicScale
+public class DecibelScale extends MergeScale
 {
     /**
      * Creates PercentScale with 1.0 multiplier and % unit
@@ -28,7 +31,7 @@ public class DecibelScale extends BasicScale
      */
     public DecibelScale(double reference)
     {
-        this(1, reference, 1, "dB");
+        this(1, reference, "dB");
     }
     /**
      * Creates PercentScale with given multiplier and % unit
@@ -37,15 +40,11 @@ public class DecibelScale extends BasicScale
      */
     public DecibelScale(double reference, double multiplier)
     {
-        this(1, reference, multiplier, "dB");
+        this(1, reference, "dB");
     }
     public DecibelScale(Decibel decibel)
     {
-        this(decibel, 1);
-    }
-    public DecibelScale(Decibel decibel, double multiplier)
-    {
-        this(decibel.getExponent(), decibel.getReference(), multiplier, decibel.getUnit());
+        this(decibel.getExponent(), decibel.getReference(), decibel.getUnit());
     }
     /**
      * Creates PercentScale with given multiplier and given unit
@@ -54,9 +53,12 @@ public class DecibelScale extends BasicScale
      * @param multiplier
      * @param unit 
      */
-    public DecibelScale(int exponent, double reference, double multiplier, String unit)
+    public DecibelScale(int exponent, double reference, String unit)
     {
-        super(multiplier, unit, (d)->exponent*10*Math.log10(d/reference));
+        super(
+                new BasicScale(1, unit, MathFunction.postMultiplier(MathFunction.preMultiplier(new Logarithm(10), 1.0/reference), exponent*10)),
+                new BasicScale(3, unit, MathFunction.postMultiplier(MathFunction.preMultiplier(new Logarithm(10), 1.0/reference), exponent*10))
+        );
     }
 
 }

@@ -28,20 +28,65 @@ import static org.vesalainen.ui.scale.Decibel.*;
  */
 public class DecibelScaleTest
 {
-    
+
     public DecibelScaleTest()
     {
     }
 
     @Test
-    public void testW()
+    public void test0()
     {
         DecibelScale ds = new DecibelScale(10);
-        Iterator<ScaleLevel> i1 = ds.iterator(1, 100);
-        ScaleLevel next = i1.next();
-        assertEquals("10dB", next.label(100));
-        next.forEach(1, 100, Locale.US, (d,l)->System.err.println(d+" "+l));
-
+        Tester.generator(ds, 1, 100);
     }
-    
+
+    @Test
+    public void testAuto()
+    {
+        ScaleLevel level;
+        Tester t;
+        DecibelScale scale = new DecibelScale(10);
+        Iterator<ScaleLevel> iterator = scale.iterator(1.0, 100.0);
+        t = new Tester();
+        t.add(1.0, "-10dB");
+        t.add(10.0, "0dB");
+        t.add(100.0, "10dB");
+        level = iterator.next();
+        level.forEach(1.0, 100.0, Locale.US, t::check);
+        t = new Tester();
+        t.add(1.2589254117941673, "-9dB");
+        t.add(2.51188643150958, "-6dB");
+        t.add(5.011872336272722, "-3dB");
+        t.add(10.0, "0dB");
+        t.add(19.952623149688794, "3dB");
+        t.add(39.81071705534972, "6dB");
+        t.add(79.43282347242815, "9dB");
+        level = iterator.next();
+        level.forEach(1.0, 100.0, Locale.US, t::check);
+        t = new Tester();
+        t.add(1.0, "-10dB");
+        t.add(1.2589254117941673, "-9dB");
+        t.add(1.5848931924611134, "-8dB");
+        t.add(1.9952623149688797, "-7dB");
+        t.add(2.51188643150958, "-6dB");
+        t.add(3.162277660168379, "-5dB");
+        t.add(3.981071705534972, "-4dB");
+        t.add(5.011872336272722, "-3dB");
+        t.add(6.3095734448019325, "-2dB");
+        t.add(7.943282347242815, "-1dB");
+        t.add(10.0, "0dB");
+        t.add(12.589254117941673, "1dB");
+        t.add(15.848931924611135, "2dB");
+        t.add(19.952623149688794, "3dB");
+        t.add(25.1188643150958, "4dB");
+        t.add(31.622776601683793, "5dB");
+        t.add(39.81071705534972, "6dB");
+        t.add(50.118723362727216, "7dB");
+        t.add(63.09573444801933, "8dB");
+        t.add(79.43282347242815, "9dB");
+        t.add(100.0, "10dB");
+        level = iterator.next();
+        level.forEach(1.0, 100.0, Locale.US, t::check);
+    }
+
 }

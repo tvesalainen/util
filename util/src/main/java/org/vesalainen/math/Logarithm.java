@@ -33,15 +33,17 @@ public class Logarithm implements MathFunction
      */
     public static final Logarithm LOG10 = new Logarithm(10);
     private final DoubleUnaryOperator log;
-    private final DoubleUnaryOperator inv;
+    private MathFunction inv;
     private final DoubleUnaryOperator der;
     private final DoubleUnaryOperator ader;
+    private final double base;
     /**
      * Creates a Logarithm with base
      * @param base 
      */
     public Logarithm(double base)
     {
+        this.base = base;
         double lb = Math.log(base);
         if (base == Math.E)
         {
@@ -62,7 +64,6 @@ public class Logarithm implements MathFunction
             der = (x)->1.0/(x*lb);
             ader = (x)->(x*Math.log(x)-x)/lb;
         }
-        inv = (x)->Math.pow(base, x);
     }
     @Override
     public double applyAsDouble(double operand)
@@ -73,11 +74,15 @@ public class Logarithm implements MathFunction
     @Override
     public MathFunction inverse()
     {
-        return (x)->inv.applyAsDouble(x);
+        if (inv == null)
+        {
+            inv = new Exponential(base);
+        }
+        return inv;
     }
 
     @Override
-    public MathFunction integral()
+    public MathFunction antiderivative()
     {
         return (x)->ader.applyAsDouble(x);
     }

@@ -78,7 +78,7 @@ public class Polynomial implements MathFunction
     }
 
     @Override
-    public MathFunction integral()
+    public MathFunction antiderivative()
     {
         double[] c = new double[length+1];
         for (int ii=0;ii<length;ii++)

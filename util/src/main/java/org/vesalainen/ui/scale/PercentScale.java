@@ -16,13 +16,13 @@
  */
 package org.vesalainen.ui.scale;
 
-import java.util.Formatter;
+import org.vesalainen.math.MathFunction;
 
 /**
  * PercentScale is a BasicScale for showing percentage of something.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PercentScale extends BasicScale
+public class PercentScale extends MergeScale
 {
     /**
      * Creates PercentScale with 1.0 multiplier and % unit
@@ -30,16 +30,7 @@ public class PercentScale extends BasicScale
      */
     public PercentScale(double of)
     {
-        this(of, 1, "%");
-    }
-    /**
-     * Creates PercentScale with given multiplier and % unit
-     * @param of
-     * @param multiplier 
-     */
-    public PercentScale(double of, double multiplier)
-    {
-        this(of, multiplier, "%");
+        this(of, "%");
     }
     /**
      * Creates PercentScale with given multiplier and given unit
@@ -47,9 +38,12 @@ public class PercentScale extends BasicScale
      * @param multiplier
      * @param unit 
      */
-    public PercentScale(double of, double multiplier, String unit)
+    public PercentScale(double of, String unit)
     {
-        super(multiplier, unit, (d)->100*d/of);
+        super(
+                new BasicScale(1, unit, MathFunction.postMultiplier(MathFunction.preMultiplier(MathFunction.IDENTITY, 1.0/of), 100)),
+                new BasicScale(5, unit, MathFunction.postMultiplier(MathFunction.preMultiplier(MathFunction.IDENTITY, 1.0/of), 100))
+        );
     }
 
 }

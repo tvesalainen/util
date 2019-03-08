@@ -106,8 +106,6 @@ public class Log10Scale implements Scale
     }
     private class MarkerIterator implements PrimitiveIterator.OfDouble
     {
-        private int majorExponent;
-        private int minorExponent;
         private final double min;
         private final double max;
         private double next;
@@ -116,8 +114,6 @@ public class Log10Scale implements Scale
 
         public MarkerIterator(int majorExponent, int minorExponent, double min, double max)
         {
-            this.majorExponent = majorExponent;
-            this.minorExponent = minorExponent;
             this.min = min;
             this.max = max;
             limit = Math.pow(10, majorExponent);

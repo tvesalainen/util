@@ -34,10 +34,10 @@ public interface MathFunction extends DoubleUnaryOperator
         throw new UnsupportedOperationException("inverse not supported");
     }
     /**
-     * Returns integral function (antiderivative)
+     * Returns antiderivative function
      * @return 
      */
-    default MathFunction integral()
+    default MathFunction antiderivative()
     {
         throw new UnsupportedOperationException("integral not supported");
     }
@@ -81,7 +81,7 @@ public interface MathFunction extends DoubleUnaryOperator
         return new PostMultiplier(func, multiplier);
     }
     /**
-     * Returns integral between x1 and x2
+     * Returns antiderivative between x1 and x2
      * @param x1
      * @param x2
      * @return 
@@ -90,7 +90,7 @@ public interface MathFunction extends DoubleUnaryOperator
     {
         try
         {
-            MathFunction integral = integral();
+            MathFunction integral = antiderivative();
             return integral.applyAsDouble(x2)-integral.applyAsDouble(x1);
         }
         catch (UnsupportedOperationException ex)
@@ -99,7 +99,7 @@ public interface MathFunction extends DoubleUnaryOperator
         }
     }
     /**
-     * Returns numerical integral between x1 and x2
+     * Returns numerical antiderivative between x1 and x2
      * @param x1
      * @param x2
      * @param points
@@ -149,9 +149,9 @@ public interface MathFunction extends DoubleUnaryOperator
         }
 
         @Override
-        public MathFunction integral()
+        public MathFunction antiderivative()
         {
-            MathFunction integral = f.integral();
+            MathFunction integral = f.antiderivative();
             return (x)->integral.applyAsDouble(x*mul)/mul;
         }
 
@@ -188,9 +188,9 @@ public interface MathFunction extends DoubleUnaryOperator
         }
 
         @Override
-        public MathFunction integral()
+        public MathFunction antiderivative()
         {
-            MathFunction integral = f.integral();
+            MathFunction integral = f.antiderivative();
             return (x)->integral.applyAsDouble(x)*mul;
         }
 
@@ -252,7 +252,7 @@ public interface MathFunction extends DoubleUnaryOperator
         }
 
         @Override
-        public MathFunction integral()
+        public MathFunction antiderivative()
         {
             return (x)->x*x*0.5;
         }

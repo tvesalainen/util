@@ -16,11 +16,8 @@
  */
 package org.vesalainen.ui.scale;
 
-import java.util.Formatter;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.PrimitiveIterator;
-import java.util.PrimitiveIterator.OfInt;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.DoubleStream;

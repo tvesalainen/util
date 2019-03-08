@@ -61,6 +61,11 @@ public class MathFunctionTest
     }
     
     @Test
+    public void testExponential()
+    {
+        test(new Exponential(3), -300, 300);
+    }
+    @Test
     public void testPreMultiplier()
     {
         test(MathFunction.preMultiplier(new Logarithm(10), 10), Double.MIN_VALUE, max);
@@ -94,41 +99,42 @@ public class MathFunctionTest
 
     private void testDerivate(MathFunction f, Random r, int count, double min, double max)
     {
-        MathFunction mf = (xx)->f.applyAsDouble(xx);
-        MathFunction d1 = mf.derivative();
         MathFunction d2 = f.derivative();
-        r.doubles(count, (max-min)/2.0, max).forEach((x)->
+        r.doubles(count, mid(min, max), max).forEach((x)->
         {
-            assertEquals(d1.applyAsDouble(x), d2.applyAsDouble(x), 1e-5);
+            assertEq("x="+x, MoreMath.derivate(f, x), d2.applyAsDouble(x), 1e10);
         });
     }
 
     private void testIntegral(MathFunction f, Random r, int count, double min, double max)
     {
-        MathFunction mf = (xx)->f.applyAsDouble(xx);
-        r.doubles(count, (max-min)/2.0, max).forEach((x)->
+        r.doubles(count, mid(min, max), max).forEach((x)->
         {
-            assertEq(mf.integral(x, x+1), f.integral(x, x+1));
+            assertEq(MoreMath.integral(f, x, x+1, 60000), f.integral(x, x+1), 1e6);
         });
     }
 
     private void testInverse(MathFunction f, Random r, int count, double min, double max)
     {
         MathFunction inverse = f.inverse();
-        r.doubles(count, (max-min)/2.0, max).forEach((x)->
+        r.doubles(count, mid(min, max), max).forEach((x)->
         {
             double y = f.applyAsDouble(x);
-            assertEq(x, inverse.applyAsDouble(y));
+            assertEq(x, inverse.applyAsDouble(y), 1e2);
         });
     }
-    private void assertEq(double exp, double got)
+    private double mid(double min, double max)
     {
-        assertEq(null, exp, got);
+        return (max-min)/2.0+min;
     }
-    private void assertEq(String msg, double exp, double got)
+    private void assertEq(double exp, double got, double ulps)
+    {
+        assertEq(null, exp, got, ulps);
+    }
+    private void assertEq(String msg, double exp, double got, double ulps)
     {
         double ulp = Math.ulp(exp);
         //double d = exp-got;
-        assertEquals(msg, exp, got, ulp*1000000);
+        assertEquals(msg, exp, got, ulp*ulps);
     }
 }

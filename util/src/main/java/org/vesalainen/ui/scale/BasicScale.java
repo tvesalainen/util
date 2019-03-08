@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.MathFunction;
 
 /**
@@ -28,7 +27,7 @@ import org.vesalainen.math.MathFunction;
  * <p>With multiplier other than 5.0 5, 10, 15, ... 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BasicScale implements Scale
+public class BasicScale extends AbstractScale
 {
     /**
      * 1, 2, 3, 
@@ -44,7 +43,6 @@ public class BasicScale implements Scale
     public static final Scale SCALE05 = new BasicScale(5);
     protected final double multiplier;
     protected final String unit;
-    protected final MathFunction transform;
     protected double minDelta = Double.MIN_VALUE;
     protected double maxDelta = Double.MAX_VALUE;
     protected final int lowestExponent;
@@ -76,13 +74,13 @@ public class BasicScale implements Scale
      * Creates BasicScale 
      * @param multiplier
      * @param unit
-     * @param transform Transforms values to scale values
+     * @param function Transforms values to scale values
      */
-    public BasicScale(double multiplier, String unit, MathFunction transform)
+    public BasicScale(double multiplier, String unit, MathFunction function)
     {
+        super(function);
         this.multiplier = multiplier;
         this.unit = unit.replace("%", "%%");
-        this.transform = transform;
         this.lowestExponent = exponent(minDelta);
     }
 
@@ -93,15 +91,9 @@ public class BasicScale implements Scale
         {
             throw new IllegalArgumentException("min >= max");
         }
-        return iterator(transform.applyAsDouble(max)-transform.applyAsDouble(min));
+        return iterator(function.applyAsDouble(max)-function.applyAsDouble(min));
     }
 
-    @Override
-    public MathFunction function()
-    {
-        return transform;
-    }
-    
     private Iterator<ScaleLevel> iterator(double delta)
     {
         if (delta > maxDelta)
@@ -122,13 +114,13 @@ public class BasicScale implements Scale
     }
     public BasicScale setMinDelta(double minDelta)
     {
-        this.minDelta = transform.applyAsDouble(minDelta);
+        this.minDelta = function.applyAsDouble(minDelta);
         return this;
     }
 
     public BasicScale setMaxDelta(double maxDelta)
     {
-        this.maxDelta = transform.applyAsDouble(maxDelta);
+        this.maxDelta = function.applyAsDouble(maxDelta);
         return this;
     }
     
@@ -153,7 +145,7 @@ public class BasicScale implements Scale
         {
             StringBuilder out = new StringBuilder();
             Formatter formatter = new Formatter(out, locale);
-            BasicScale.this.format(formatter, transform.applyAsDouble(value), this);
+            BasicScale.this.format(formatter, value, this);
             return out.toString();
         }
 
