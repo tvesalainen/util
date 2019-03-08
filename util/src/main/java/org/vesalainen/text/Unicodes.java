@@ -16,12 +16,38 @@
  */
 package org.vesalainen.text;
 
+import java.nio.charset.Charset;
+import java.util.Formatter;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public final class Unicodes
 {
+    public static String escape(CharSequence txt)
+    {
+        StringBuilder sb = new StringBuilder();
+        escape(txt, sb);
+        return sb.toString();
+    }
+    public static void escape(CharSequence txt, StringBuilder out)
+    {
+        Formatter f = new Formatter(out);
+        int length = txt.length();
+        for (int ii=0;ii<length;ii++)
+        {
+            char cc = txt.charAt(ii);
+            if (cc > 127)
+            {
+                f.format("\\u%04X", (int)cc);
+            }
+            else
+            {
+                f.format("%c", cc);
+            }
+        }
+    }
     public static void toSuperScript(CharSequence txt, StringBuilder out)
     {
         int length = txt.length();

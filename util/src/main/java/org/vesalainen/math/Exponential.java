@@ -45,7 +45,7 @@ public class Exponential implements MathFunction
     @Override
     public MathFunction antiderivative()
     {
-        return MathFunction.super.antiderivative(); //TODO
+        return (x)->Math.pow(base, x)/logBase;
     }
 
     @Override

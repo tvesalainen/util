@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import static org.junit.Assert.assertEquals;
+import org.vesalainen.text.Unicodes;
 
 /**
  *
@@ -45,6 +46,10 @@ public class Tester
     }
     public static void generator(Scale scale, double min, double max)
     {
+        generator(scale, min, max, 3);
+    }
+    public static void generator(Scale scale, double min, double max, int levels)
+    {
         String simpleName = scale.getClass().getSimpleName();
         System.err.println("@Test");
         System.err.println("public void testAuto()");
@@ -54,11 +59,11 @@ public class Tester
         System.err.println(simpleName+" scale = new "+simpleName+"();");
         System.err.println("Iterator<ScaleLevel> iterator = scale.iterator("+min+", "+max+");");
         Iterator<ScaleLevel> iterator = scale.iterator(min, max);
-        for (int ii=0;ii<3;ii++)
+        for (int ii=0;ii<levels;ii++)
         {
             System.err.println("t = new Tester();");
             ScaleLevel next = iterator.next();
-            next.forEach(min, max, Locale.US, (v,l)->System.err.println("t.add("+v+", \""+l+"\");"));
+            next.forEach(min, max, Locale.US, (v,l)->System.err.println("t.add("+v+", \""+Unicodes.escape(l)+"\");"));
             System.err.println("level = iterator.next();");
             System.err.println("level.forEach("+min+", "+max+", Locale.US, t::check);");
         }

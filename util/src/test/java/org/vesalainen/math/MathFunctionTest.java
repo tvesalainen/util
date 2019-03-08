@@ -110,7 +110,7 @@ public class MathFunctionTest
     {
         r.doubles(count, mid(min, max), max).forEach((x)->
         {
-            assertEq(MoreMath.integral(f, x, x+1, 60000), f.integral(x, x+1), 1e6);
+            assertEq(MoreMath.integral(f, x, x+1, 60000), f.integral(x, x+1), 1e7);
         });
     }
 
