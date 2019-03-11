@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -29,8 +30,8 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import org.vesalainen.math.BezierCurve;
 import static org.vesalainen.math.BezierCurve.*;
-import org.vesalainen.math.BezierOperator;
 import org.vesalainen.util.function.IntBiPredicate;
+import org.vesalainen.math.ParameterizedOperator;
 
 /**
  *
@@ -178,11 +179,11 @@ public class ImageDrawer extends AbstractDrawer
 
     private void draw(BezierCurve curve, double... cp)
     {
-        BezierOperator op = curve.operator(cp);
-        BezierOperator der = curve.derivate(cp);
+        ParameterizedOperator op = curve.operator(cp);
+        ParameterizedOperator der = curve.derivative(cp);
         draw(op.andThen(transform), der);
     }
-    private void draw(BezierOperator curve, BezierOperator curveDerivate)
+    private void draw(ParameterizedOperator curve, ParameterizedOperator curveDerivate)
     {
         double t = 0;
         curve.eval(0, this::drawPoint);

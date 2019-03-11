@@ -17,6 +17,7 @@
 
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;

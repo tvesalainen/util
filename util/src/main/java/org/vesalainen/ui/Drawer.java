@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.BasicStroke;
 import static java.awt.BasicStroke.CAP_SQUARE;
 import static java.awt.BasicStroke.JOIN_MITER;

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.EnumMap;

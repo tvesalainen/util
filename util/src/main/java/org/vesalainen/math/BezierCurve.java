@@ -67,14 +67,14 @@ public class BezierCurve
      * @param controlPoints
      * @return 
      */
-    public BezierOperator operator(Point2D.Double... controlPoints)
+    public ParameterizedOperator operator(Point2D.Double... controlPoints)
     {
         if (controlPoints.length != length)
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
         double[] cp = convert(controlPoints);
-        return BezierCurve.this.operator(cp);
+        return operator(cp);
     }
     /**
      * Creates Bezier function for fixed control points. Note that it is not same
@@ -84,7 +84,7 @@ public class BezierCurve
      * @param controlPoints
      * @return 
      */
-    public BezierOperator operator(double... controlPoints)
+    public ParameterizedOperator operator(double... controlPoints)
     {
         if (controlPoints.length != 2*length)
         {
@@ -93,25 +93,25 @@ public class BezierCurve
         return (t,c)->calc(t, c, controlPoints);
     }
     /**
-     * Create first derivate function for fixed control points.
+     * Create first derivative function for fixed control points.
      * @param controlPoints
      * @return 
      */
-    public BezierOperator derivate(Point2D.Double... controlPoints)
+    public ParameterizedOperator derivative(Point2D.Double... controlPoints)
     {
         if (controlPoints.length != length)
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
         double[] cp = convert(controlPoints);
-        return derivate(cp);
+        return derivative(cp);
     }
     /**
-     * Create first derivate function for fixed control points.
+     * Create first derivative function for fixed control points.
      * @param controlPoints
      * @return 
      */
-    public BezierOperator derivate(double... controlPoints)
+    public ParameterizedOperator derivative(double... controlPoints)
     {
         if (controlPoints.length != 2*length)
         {
@@ -135,11 +135,11 @@ public class BezierCurve
         }
     }
     /**
-     * Create second derivate function for fixed control points.
+     * Create second derivative function for fixed control points.
      * @param controlPoints
      * @return 
      */
-    public BezierOperator secondDerivate(Point2D.Double... controlPoints)
+    public ParameterizedOperator secondDerivate(Point2D.Double... controlPoints)
     {
         if (controlPoints.length != length)
         {
@@ -149,11 +149,11 @@ public class BezierCurve
         return secondDerivate(cp);
     }
     /**
-     * Create second derivate function for fixed control points.
+     * Create second derivative function for fixed control points.
      * @param controlPoints
      * @return 
      */
-    public BezierOperator secondDerivate(double... controlPoints)
+    public ParameterizedOperator secondDerivate(double... controlPoints)
     {
         if (controlPoints.length != 2*length)
         {

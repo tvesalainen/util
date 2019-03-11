@@ -22,7 +22,7 @@ import java.awt.geom.Point2D;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ThreadTemporal
+@Deprecated public class ThreadTemporal
 {
     public static final ThreadLocal<Point2D.Double> tmp1 = ThreadLocal.withInitial(Point2D.Double::new);
     public static final ThreadLocal<Point2D.Double> tmp2 = ThreadLocal.withInitial(Point2D.Double::new);

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;

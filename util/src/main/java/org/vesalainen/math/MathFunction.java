@@ -39,7 +39,7 @@ public interface MathFunction extends DoubleUnaryOperator
      */
     default MathFunction antiderivative()
     {
-        throw new UnsupportedOperationException("integral not supported");
+        throw new UnsupportedOperationException("antiderivative not supported");
     }
     /**
      * Returns derivative

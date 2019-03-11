@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.ui.scale.ScalerOperator;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;

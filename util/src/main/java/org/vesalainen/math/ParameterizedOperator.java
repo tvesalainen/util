@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import org.vesalainen.ui.DoubleTransform;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -24,10 +23,10 @@ import org.vesalainen.util.function.DoubleBiConsumer;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 @FunctionalInterface
-public interface BezierOperator
+public interface ParameterizedOperator
 {
     void eval(double t, DoubleBiConsumer consumer);
-    default BezierOperator andThen(DoubleTransform transform)
+    default ParameterizedOperator andThen(DoubleTransform transform)
     {
         return (t,c)->eval(t, (x,y)->transform.transform(x, y, c));
     }

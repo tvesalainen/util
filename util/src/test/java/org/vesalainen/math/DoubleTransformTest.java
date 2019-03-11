@@ -14,13 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.math;
 
+import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.util.Random;
 import org.junit.Test;
+import org.vesalainen.ui.Transforms;
 import static org.junit.Assert.*;
 
 /**
@@ -85,6 +87,22 @@ public class DoubleTransformTest
         Point2D.Double got = new Point2D.Double();
         t3.transform(1, 1, got::setLocation);
         assertEquals(exp, got);
+    }
+    @Test
+    public void testChain() throws NoninvertibleTransformException
+    {
+        AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
+        AffineTransform rot = AffineTransform.getRotateInstance(1.2);
+        at.concatenate(rot);
+        DoubleTransform t1 = Transforms.affineTransform(at);
+        DoubleTransform t2 = Transforms.affineTransform(rot);
+        DoubleTransform chain = DoubleTransform.chain(t2, t1);
+        DoubleTransform inverse = chain.inverse();
+        AffineTransform at1nv = at.createInverse();
+        Point2D.Double p1 = new Point2D.Double(2, 3);
+        Point2D.Double p2 = new Point2D.Double();
+        assertEquals(at.transform(p1, p2), chain.transform(p1, p2));
+        assertEquals(at1nv.transform(p1, p2), inverse.transform(p1, p2));
     }
     @Test
     public void test() throws NoninvertibleTransformException

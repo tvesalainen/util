@@ -32,6 +32,10 @@ public final class Points
     {
         return new Point2D.Double(factor*p.x, factor*p.y);
     }
+    public static Point2D.Double mul(Point2D.Double p1, Point2D.Double p2)
+    {
+        return new Point2D.Double(p1.x*p2.x, p1.y*p2.y);
+    }
     public static Point2D.Double sub(Point2D.Double p1, Point2D.Double p2)
     {
         return add(p1, mul(-1, p2));

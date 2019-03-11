@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.ui;
+package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import org.vesalainen.util.concurrent.ThreadTemporal;
@@ -107,9 +107,8 @@ public interface DoubleTransform
         return (x,y,n)->transform(x,y, (xx,yy)->next.transform(xx, yy, n));
     }
     /**
-     * @deprecated Bad idea
      * Creates new DoubleTransform which first calls this transform
-     * then next multiplies result.
+     * then next and multiplies result.
      * @param next
      * @return 
      */
@@ -128,37 +127,98 @@ public interface DoubleTransform
      * Returns identity transformer
      * @return 
      */
-    static DoubleTransform identity()
+    public static DoubleTransform identity()
     {
-        return new IdentityTransform();
+        return new MultiplyTransform();
     }
     /**
      * Returns parameter swap transformer
      * @return 
      */
-    static DoubleTransform swap()
+    public static DoubleTransform swap()
     {
         return new SwapTransform();
     }
-    public static class IdentityTransform implements DoubleTransform
+    /**
+     * Returns f1(f2(f3(...)))
+     * @param fx
+     * @return 
+     */
+    public static DoubleTransform chain(DoubleTransform... fx)
     {
+        if (fx.length < 2)
+        {
+            throw new IllegalArgumentException("too few arguments");
+        }
+        DoubleTransform f = fx[0];
+        for (int ii=1;ii<fx.length;ii++)
+        {
+            f = new ChainTransform(f, fx[ii]);
+        }
+        return f;
+    }
+    public static class ChainTransform implements DoubleTransform
+    {
+        private DoubleTransform f;
+        private DoubleTransform g;
 
+        public ChainTransform(DoubleTransform f, DoubleTransform g)
+        {
+            this.f = f;
+            this.g = g;
+        }
+        
         @Override
         public void transform(double x, double y, DoubleBiConsumer term)
         {
-            term.accept(x, y);
+            g.andThen(f).transform(x, y, term);
         }
 
         @Override
         public DoubleTransform inverse()
         {
-            return this;
+            return f.inverse().andThen(g.inverse());
         }
 
         @Override
         public DoubleTransform derivate()
         {
-            return (x,y,c)->c.accept(1, 1);
+            return g.andThen(f.derivate()).andThenMultiply(g.derivate());
+        }
+        
+    }
+    public static class MultiplyTransform implements DoubleTransform
+    {
+        private double cx;
+        private double cy;
+
+        public MultiplyTransform()
+        {
+            this(1, 1);
+        }
+
+        public MultiplyTransform(double cx, double cy)
+        {
+            this.cx = cx;
+            this.cy = cy;
+        }
+        
+        @Override
+        public void transform(double x, double y, DoubleBiConsumer term)
+        {
+            term.accept(cx*x, cy*y);
+        }
+
+        @Override
+        public DoubleTransform inverse()
+        {
+            return (x,y,c)->c.accept(x/cx, y/cy);
+        }
+
+        @Override
+        public DoubleTransform derivate()
+        {
+            return (x,y,c)->c.accept(cx, cy);
         }
         
     }
