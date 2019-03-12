@@ -39,7 +39,7 @@ public class TransformsTest
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
         DoubleTransform t = Transforms.affineTransform(at);
-        DoubleTransform d = t.derivate();
+        DoubleTransform d = t.derivative();
         Point2D.Double exp = new Point2D.Double(at.getScaleX()+at.getShearX(), at.getScaleY()+at.getShearY());
         Point2D.Double got = new Point2D.Double();
         d.transform(100, 6, got::setLocation);
@@ -51,7 +51,7 @@ public class TransformsTest
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
         DoubleTransform t = Transforms.affineInverseTransform(at);
-        DoubleTransform d = t.derivate();
+        DoubleTransform d = t.derivative();
         Point2D.Double exp = new Point2D.Double(-0.5, 0.5);
         Point2D.Double got = new Point2D.Double();
         d.transform(100, 6, got::setLocation);

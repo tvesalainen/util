@@ -102,7 +102,7 @@ public class MathFunctionTest
         MathFunction d2 = f.derivative();
         r.doubles(count, mid(min, max), max).forEach((x)->
         {
-            assertEq("x="+x, MoreMath.derivate(f, x), d2.applyAsDouble(x), 1e10);
+            assertEq("x="+x, MoreMath.derivative(f, x), d2.applyAsDouble(x), 1e10);
         });
     }
 

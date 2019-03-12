@@ -150,7 +150,7 @@ public final class Transforms
         }
 
         @Override
-        public DoubleTransform derivate()
+        public DoubleTransform derivative()
         {
             return (x,y,c)->c.accept(m00+m01, m10+m11);
         }

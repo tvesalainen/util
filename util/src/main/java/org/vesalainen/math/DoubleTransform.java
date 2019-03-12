@@ -39,22 +39,13 @@ public interface DoubleTransform
         throw new UnsupportedOperationException("inverse not implemented");
     }
     /**
-     * Creates numerical derivate. It is recommended to override this if
-     * derivate is known.
+     * Creates numerical derivative. It is recommended to override this if
+ derivative is known.
      * @return 
      */
-    default DoubleTransform derivate()
+    default DoubleTransform derivative()
     {
-        return (x,y,c)->
-        {
-            double dx = Math.ulp(x);
-            double dy = Math.ulp(y);
-            Point2D.Double p1 = ThreadTemporal.tmp1.get();
-            Point2D.Double p2 = ThreadTemporal.tmp2.get();
-            transform(x,y,p1::setLocation);
-            transform(x+dx,y+dy,p2::setLocation);
-            c.accept((p2.x-p1.x)/dx, (p2.y-p1.y)/dy);
-        };
+        return MoreMath.derivative(this);
     }
     /**
      * Transforms src to dst and returns dst. Dst can be null in which case 
@@ -181,9 +172,9 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivate()
+        public DoubleTransform derivative()
         {
-            return g.andThen(f.derivate()).andThenMultiply(g.derivate());
+            return g.andThen(f.derivative()).andThenMultiply(g.derivative());
         }
         
     }
@@ -216,7 +207,7 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivate()
+        public DoubleTransform derivative()
         {
             return (x,y,c)->c.accept(cx, cy);
         }
@@ -238,7 +229,7 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivate()
+        public DoubleTransform derivative()
         {
             return (x,y,c)->c.accept(1, 1);
         }

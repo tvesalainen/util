@@ -119,7 +119,7 @@ public class AbstractView
         Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
         affineDoubleTransform = Transforms.affineTransform(affineTransform);
         combinedTransform = transform.andThen(affineDoubleTransform);
-        derivates = new DoubleTransform[]{transform.derivate(), affineDoubleTransform.derivate()};
+        derivates = new DoubleTransform[]{transform.derivative(), affineDoubleTransform.derivative()};
         inverse = affineDoubleTransform.inverse().andThen(transform.inverse());
         scale = (Math.abs(affineTransform.getScaleX())+Math.abs(affineTransform.getScaleY()))/2.0;
     }

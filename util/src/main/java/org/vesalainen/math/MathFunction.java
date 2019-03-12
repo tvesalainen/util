@@ -49,7 +49,7 @@ public interface MathFunction extends DoubleUnaryOperator
     {
         return (double x)->
         {
-            return MoreMath.derivate(this, x);
+            return MoreMath.derivative(this, x);
         };
     }
     /**

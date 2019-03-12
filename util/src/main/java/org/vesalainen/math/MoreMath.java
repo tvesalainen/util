@@ -17,7 +17,9 @@
 
 package org.vesalainen.math;
 
+import java.awt.geom.Point2D;
 import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.util.concurrent.ThreadTemporal;
 
 /**
  * @author Timo Vesalainen
@@ -26,6 +28,7 @@ public final class MoreMath
 {
     public static final double EPSILON = 2.220446e-16;
     public static final double SQRT_EPSILON = Math.sqrt(2.220446e-16);
+    public static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     /**
      * Returns numerical integral between x1 and x2
      * @param x1
@@ -49,7 +52,7 @@ public final class MoreMath
         }
         return sum;
     }
-    public static double derivate(DoubleUnaryOperator f, double x)
+    public static double derivative(DoubleUnaryOperator f, double x)
     {
         double h = x != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON;
         double h2 = 2.0*h;
@@ -58,6 +61,22 @@ public final class MoreMath
         double y3 = -8.0*f.applyAsDouble(x-h);
         double y4 = f.applyAsDouble(x-h2);
         return (y1+y2+y3+y4)/(12.0*h);
+    }
+    public static DoubleTransform derivative(DoubleTransform t)
+    {
+        return (x,y,c)->
+        {
+            double a = (x+y)/2.0;
+            double h = a != 0.0 ? SQRT_EPSILON*a : SQRT_EPSILON;
+            double h2 = 2.0*h;
+            double h12 = 12.0*h;
+            Point2D.Double p = PNT1.get();
+            t.transform(x+h2, y+h2, (xx,yy)->p.setLocation(-xx, -yy));
+            t.transform(x+h, y+h, (xx,yy)->p.setLocation(p.x+8*xx, p.y+8*yy));
+            t.transform(x-h, y-h, (xx,yy)->p.setLocation(p.x-8*xx, p.y-8*yy));
+            t.transform(x-h2, y-h2, (xx,yy)->p.setLocation(p.x+xx, p.y+yy));
+            c.accept(p.x/h12, p.y/h12);
+        };
     }
     /**
      * Returns numerical arc length between x1 and x2

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
@@ -61,17 +60,17 @@ public class DoubleTransformTest
     public void test3()
     {
         DoubleTransform t = (x,y,c)->c.accept(2*x, y);
-        DoubleTransform derivate = t.derivate();
+        DoubleTransform derivate = t.derivative();
         Point2D.Double exp = new Point2D.Double(2, 1);
         Point2D.Double got = new Point2D.Double();
         derivate.transform(2, 3, got::setLocation);
-        assertEquals(exp.x, got.x, 1e-10);
-        assertEquals(exp.y, got.y, 1e-10);
+        assertEquals(exp.x, got.x, 1e-8);
+        assertEquals(exp.y, got.y, 1e-8);
     }
     @Test
     public void testSwapDerivate()
     {
-        DoubleTransform derivate = DoubleTransform.swap().derivate();
+        DoubleTransform derivate = DoubleTransform.swap().derivative();
         Point2D.Double exp = new Point2D.Double(1, 1);
         Point2D.Double got = new Point2D.Double();
         derivate.transform(2, 3, got::setLocation);
@@ -134,22 +133,19 @@ public class DoubleTransformTest
         transform.transform(x, y, tr::setLocation);
         Point2D.Double in = new Point2D.Double();
         inverse.transform(tr.x, tr.y, in::setLocation);
-        assertEquals(x, in.x, 1e-10);
-        assertEquals(y, in.y, 1e-10);
+        assertEquals(x, in.x, 1e-9);
+        assertEquals(y, in.y, 1e-9);
     }
     private void testDerivate(DoubleTransform transform, double x, double y)
     {
-        DoubleTransform derivate = transform.derivate();
+        DoubleTransform der1 = transform.derivative();
+        DoubleTransform der2 = MoreMath.derivative(transform);
         Point2D.Double exp = new Point2D.Double();
-        derivate.transform(x, y, exp::setLocation);
-        Point2D.Double p1 = new Point2D.Double();
-        Point2D.Double p2 = new Point2D.Double();
-        transform.transform(x, y, p1::setLocation);
-        double dx = Math.ulp(x);
-        double dy = Math.ulp(y);
-        transform.transform(x+dx, y+dy, p2::setLocation);
-        assertEquals(exp.x, (p2.x-p1.x)/dx, 1e-10);
-        assertEquals(exp.y, (p2.y-p1.y)/dy, 1e-10);
+        der1.transform(x, y, exp::setLocation);
+        Point2D.Double got = new Point2D.Double();
+        der2.transform(x, y, got::setLocation);
+        assertEquals("x="+x+" y="+y, exp.x, got.x, 1e-4);
+        assertEquals("x="+x+" y="+y, exp.y, got.y, 1e-4);
     }
     private void test(DoubleTransform transform)
     {
