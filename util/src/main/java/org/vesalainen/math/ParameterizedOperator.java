@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import java.awt.geom.Point2D;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -28,6 +29,49 @@ public interface ParameterizedOperator
     void eval(double t, DoubleBiConsumer consumer);
     default ParameterizedOperator andThen(DoubleTransform transform)
     {
-        return (t,c)->eval(t, (x,y)->transform.transform(x, y, c));
+        return new Chain(this, transform);
+    }
+    default ParameterizedOperator derivative()
+    {
+        throw new UnsupportedOperationException("derivative not supported");
+    }
+    default ParameterizedOperator secondDerivative()
+    {
+        throw new UnsupportedOperationException("derivative not supported");
+    }
+    static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
+    static final ThreadLocal<Point2D.Double> PNT2 = ThreadLocal.withInitial(Point2D.Double::new);
+    class Chain implements ParameterizedOperator
+    {
+        private ParameterizedOperator p;
+        private DoubleTransform f;
+
+        public Chain(ParameterizedOperator p, DoubleTransform f)
+        {
+            this.p = p;
+            this.f = f;
+        }
+        
+        @Override
+        public void eval(double t, DoubleBiConsumer consumer)
+        {
+            p.eval(t, consumer);
+        }
+
+        @Override
+        public ParameterizedOperator derivative()
+        {
+            DoubleTransform td = f.derivative();
+            ParameterizedOperator d = p.derivative();
+            return (t,c)->
+            {
+                Point2D.Double p1 = PNT1.get();
+                Point2D.Double p2 = PNT2.get();
+                p.eval(t, (x,y)->td.transform(x, y, p1::setLocation));
+                d.eval(t, p2::setLocation);
+                c.accept(p1.x*p2.x, p1.y*p2.y);
+            };
+        }
+        
     }
 }

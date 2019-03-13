@@ -28,7 +28,7 @@ public final class MoreMath
 {
     public static final double EPSILON = 2.220446e-16;
     public static final double SQRT_EPSILON = Math.sqrt(2.220446e-16);
-    public static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
+    private static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     /**
      * Returns numerical integral between x1 and x2
      * @param x1

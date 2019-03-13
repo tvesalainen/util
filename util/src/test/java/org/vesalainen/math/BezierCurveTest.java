@@ -70,7 +70,7 @@ public class BezierCurveTest
         Point2D.Double p3 = new Point2D.Double(2,1);
         BezierCurve bc = BezierCurve.getInstance(3);
         ParameterizedOperator op = bc.operator(p0, p1, p2, p3);
-        ParameterizedOperator derivate = bc.derivative(p0, p1, p2, p3);
+        ParameterizedOperator derivate = op.derivative();
         Point2D.Double exp1 = Points.mul(3, Points.sub(p1, p0));
         Point2D.Double exp2 = Points.mul(3, Points.sub(p3, p2));
         Point2D.Double p = new Point2D.Double();
@@ -97,7 +97,7 @@ public class BezierCurveTest
         Point2D.Double p3 = new Point2D.Double(2,1);
         BezierCurve bc = BezierCurve.getInstance(3);
         ParameterizedOperator op = bc.operator(p0, p1, p2, p3);
-        ParameterizedOperator secondDerivate = bc.secondDerivate(p0, p1, p2, p3);
+        ParameterizedOperator secondDerivate = op.secondDerivative();
         Point2D.Double exp1 = Points.mul(6, Points.add(p0, Points.mul(-2, p1), p2));
         Point2D.Double exp2 = Points.mul(6, Points.add(p1, Points.mul(-2, p2), p3));
         Point2D.Double p = new Point2D.Double();
@@ -111,7 +111,7 @@ public class BezierCurveTest
     {
         Point2D.Double p0 = new Point2D.Double();
         Point2D.Double p1 = new Point2D.Double(1,1);
-        ParameterizedOperator derivate = LINE.derivative(p0, p1);
+        ParameterizedOperator derivate = LINE.operator(p0, p1).derivative();
         Point2D.Double p = new Point2D.Double();
         derivate.eval(0.5, p::setLocation);
         assertEquals(p1, p);

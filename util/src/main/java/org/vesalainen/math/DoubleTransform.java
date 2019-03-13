@@ -97,6 +97,8 @@ public interface DoubleTransform
     {
         return (x,y,n)->transform(x,y, (xx,yy)->next.transform(xx, yy, n));
     }
+    static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
+    static final ThreadLocal<Point2D.Double> PNT2 = ThreadLocal.withInitial(Point2D.Double::new);
     /**
      * Creates new DoubleTransform which first calls this transform
      * then next and multiplies result.
@@ -107,8 +109,8 @@ public interface DoubleTransform
     {
         return (x,y,n)->
         {
-            Point2D.Double p1 = ThreadTemporal.tmp1.get();
-            Point2D.Double p2 = ThreadTemporal.tmp2.get();
+            Point2D.Double p1 = PNT1.get();
+            Point2D.Double p2 = PNT2.get();
             transform(x,y,p1::setLocation);
             next.transform(x,y,p2::setLocation);
             n.accept(p1.x*p2.x, p1.y*p2.y);
@@ -147,6 +149,46 @@ public interface DoubleTransform
             f = new ChainTransform(f, fx[ii]);
         }
         return f;
+    }
+    /**
+     * return DoubleTransform having separate functions for x and y.
+     * @param fx
+     * @param fy
+     * @return 
+     */
+    public static DoubleTransform composite(MathFunction fx, MathFunction fy)
+    {
+        return new CompositeTransform(fx, fy);
+    }
+    public static class CompositeTransform implements DoubleTransform
+    {
+        private MathFunction fx;
+        private MathFunction fy;
+
+        public CompositeTransform(MathFunction fx, MathFunction fy)
+        {
+            this.fx = fx;
+            this.fy = fy;
+        }
+        
+        @Override
+        public void transform(double x, double y, DoubleBiConsumer term)
+        {
+            term.accept(fx.applyAsDouble(x), fy.applyAsDouble(y));
+        }
+
+        @Override
+        public DoubleTransform inverse()
+        {
+            return (x,y,c)->c.accept(fx.inverse().applyAsDouble(x), fy.inverse().applyAsDouble(y));
+        }
+
+        @Override
+        public DoubleTransform derivative()
+        {
+            return (x,y,c)->c.accept(fx.derivative().applyAsDouble(x), fy.derivative().applyAsDouble(y));
+        }
+        
     }
     public static class ChainTransform implements DoubleTransform
     {

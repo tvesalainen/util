@@ -90,28 +90,14 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
-        return (t,c)->calc(t, c, controlPoints);
+        return new Operator(controlPoints);
     }
     /**
      * Create first derivative function for fixed control points.
      * @param controlPoints
      * @return 
      */
-    public ParameterizedOperator derivative(Point2D.Double... controlPoints)
-    {
-        if (controlPoints.length != length)
-        {
-            throw new IllegalArgumentException("control-points length not "+length);
-        }
-        double[] cp = convert(controlPoints);
-        return derivative(cp);
-    }
-    /**
-     * Create first derivative function for fixed control points.
-     * @param controlPoints
-     * @return 
-     */
-    public ParameterizedOperator derivative(double... controlPoints)
+    private ParameterizedOperator derivative(double... controlPoints)
     {
         if (controlPoints.length != 2*length)
         {
@@ -139,21 +125,7 @@ public class BezierCurve
      * @param controlPoints
      * @return 
      */
-    public ParameterizedOperator secondDerivate(Point2D.Double... controlPoints)
-    {
-        if (controlPoints.length != length)
-        {
-            throw new IllegalArgumentException("control-points length not "+length);
-        }
-        double[] cp = convert(controlPoints);
-        return secondDerivate(cp);
-    }
-    /**
-     * Create second derivative function for fixed control points.
-     * @param controlPoints
-     * @return 
-     */
-    public ParameterizedOperator secondDerivate(double... controlPoints)
+    private ParameterizedOperator secondDerivative(double... controlPoints)
     {
         if (controlPoints.length != 2*length)
         {
@@ -351,4 +323,44 @@ public class BezierCurve
         return cp;
     }
 
+    private class Operator implements ParameterizedOperator
+    {
+        private double[] controlPoints;
+        private ParameterizedOperator operator;
+        private ParameterizedOperator derivative;
+        private ParameterizedOperator secondDerivative;
+
+        public Operator(double... controlPoints)
+        {
+            this.controlPoints = controlPoints;
+            this.operator = (t,c)->calc(t, c, controlPoints);
+        }
+        
+        @Override
+        public void eval(double t, DoubleBiConsumer consumer)
+        {
+            operator.eval(t, consumer);
+        }
+
+        @Override
+        public ParameterizedOperator derivative()
+        {
+            if (derivative == null)
+            {
+                derivative = BezierCurve.this.derivative(controlPoints);
+            }
+            return derivative;
+        }
+
+        @Override
+        public ParameterizedOperator secondDerivative()
+        {
+            if (secondDerivative == null)
+            {
+                secondDerivative = BezierCurve.this.secondDerivative(controlPoints);
+            }
+            return secondDerivative;
+        }
+        
+    }
 }
