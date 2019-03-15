@@ -17,13 +17,12 @@
 
 package org.vesalainen.ui;
 
+import java.awt.Rectangle;
 import org.vesalainen.math.DoubleTransform;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import static java.awt.geom.Rectangle2D.*;
 import java.util.stream.Stream;
 
 
@@ -37,71 +36,33 @@ import java.util.stream.Stream;
  */
 public class AbstractView
 {
-    protected DoubleBounds minUserBounds = new DoubleBounds();
-    protected DoubleBounds screenBounds = new DoubleBounds();
-    protected DoubleBounds userBounds = new DoubleBounds();
-    protected DoubleBounds transformedUserBounds = new DoubleBounds();
+    protected final DoubleBounds minUserBounds = new DoubleBounds();
+    protected final Rectangle screenBounds;
+    protected final DoubleBounds userBounds = new DoubleBounds();
+    protected final DoubleBounds transformedUserBounds = new DoubleBounds();
     protected boolean keepAspectRatio;
-    protected DoubleTransform transform = DoubleTransform.identity();
+    protected final DoubleTransform transform;
     protected DoubleTransform combinedTransform;
     protected AffineTransform affineTransform = new AffineTransform();
-    protected double scale;
-    protected DoubleTransform[] derivates;
     protected DoubleTransform inverse;
+    protected double scale;
     protected DoubleTransform affineDoubleTransform;
     private static ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
     private static ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
     /**
      * Creates AbstractView which keeps aspect-ratio. Initial size is zero.
+     * @param screenWidth
+     * @param screenHeight
      */
-    public AbstractView()
+    public AbstractView(int screenWidth, int screenHeight)
     {
-        this(true);
+        this(screenWidth, screenHeight, true, DoubleTransform.identity());
     }
-    /**
-     * Creates AbstractView with given aspect-ratio. Initial size is zero.
-     * @param keepAspectRatio 
-     */
-    public AbstractView(boolean keepAspectRatio)
+    public AbstractView(int screenWidth, int screenHeight, boolean keepAspectRatio, DoubleTransform transform)
     {
-        this(keepAspectRatio, new DoubleBounds());
-    }
-    /**
-     * Creates AbstractView which keeps aspect-ratio with given initial size.
-     * @param xMin
-     * @param xMax
-     * @param yMin
-     * @param yMax 
-     */
-    public AbstractView(double xMin, double xMax, double yMin, double yMax)
-    {
-        this(true, xMin, xMax, yMin, yMax);
-    }
-    /**
-     * Creates AbstractView with given aspect-ratio with given initial size.
-     * @param keepAspectRatio
-     * @param xMin
-     * @param xMax
-     * @param yMin
-     * @param yMax 
-     */
-    public AbstractView(boolean keepAspectRatio, double xMin, double xMax, double yMin, double yMax)
-    {
-        this(keepAspectRatio, new Rectangle2D.Double(xMin, yMin, xMax-xMin, yMax-yMin));
-    }
-    public AbstractView(boolean keepAspectRatio, Rectangle2D.Double rect)
-    {
+        this.screenBounds = new Rectangle(screenWidth, screenHeight);
         this.keepAspectRatio = keepAspectRatio;
-        setRect(rect);
-    }
-    /**
-     * Sets the screen size.
-     * @param width
-     * @param height 
-     */
-    public void setScreen(double width, double height)
-    {
-        screenBounds.setRect(0, 0, width, height);
+        this.transform = transform;
     }
     public void update(Stream<Shape> shapes)
     {
@@ -118,9 +79,8 @@ public class AbstractView
     {
         Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
         affineDoubleTransform = Transforms.affineTransform(affineTransform);
-        combinedTransform = transform.andThen(affineDoubleTransform);
-        derivates = new DoubleTransform[]{transform.derivative(), affineDoubleTransform.derivative()};
-        inverse = affineDoubleTransform.inverse().andThen(transform.inverse());
+        combinedTransform = DoubleTransform.chain(affineDoubleTransform, transform);
+        inverse = combinedTransform.inverse();
         scale = (Math.abs(affineTransform.getScaleX())+Math.abs(affineTransform.getScaleY()))/2.0;
     }
     protected void update(Rectangle2D bounds)

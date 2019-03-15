@@ -68,6 +68,10 @@ public class Logarithm implements MathFunction
     @Override
     public double applyAsDouble(double operand)
     {
+        if (operand <= 0.0)
+        {
+            throw new IllegalArgumentException("not defined <= 0");
+        }
         return log.applyAsDouble(operand);
     }
 

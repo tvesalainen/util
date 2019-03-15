@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import org.junit.Test;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.BasicScale;
+import org.vesalainen.ui.scale.LogarithmScale;
+import org.vesalainen.ui.scale.MergeScale;
 
 /**
  *
@@ -41,7 +43,7 @@ public class PlotterT
     {
         try
         {
-            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);
+            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY, true, MergeScale.BASIC15, new LogarithmScale(10, "u"));
             p.setColor(Color.BLACK);
             //p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
@@ -63,7 +65,7 @@ public class PlotterT
             p.drawBackground(bc);
             //p.drawCoordinates(LEFT, BOTTOM, RIGHT, TOP);
             p.setColor(Color.RED);
-            p.drawTitle(TOP, "Ylä\notsikko");
+            p.drawTitle(TOP, "Yläotsikko");
             p.drawTitle(LEFT, "Vasenotsikko");
             p.drawTitle(BOTTOM, "Alaotsikko");
             p.drawTitle(RIGHT, "Oikeaotsikko");

@@ -24,11 +24,9 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -66,6 +64,8 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     protected IntBinaryOperator pattern;
     protected Paint paint;
     protected List<BackgroundGenerator> backgroundGenerators = new ArrayList<>();
+    private final Scale xScale;
+    private final Scale yScale;
 
     public AbstractPlotter(int width, int height, Color background)
     {
@@ -74,9 +74,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public AbstractPlotter(int width, int height, Color background, boolean keepAspectRatio)
     {
-        super(keepAspectRatio);
-        super.setScreen(width, height);
+        this(width, height, background, keepAspectRatio, MergeScale.BASIC15, MergeScale.BASIC15);
+    }
+    public AbstractPlotter(int width, int height, Color background, boolean keepAspectRatio, Scale xScale, Scale yScale)
+    {
+        super(width, height, keepAspectRatio, DoubleTransform.composite(xScale.function(), yScale.function()));
         this.background = background;
+        this.xScale = xScale;
+        this.yScale = yScale;
     }
 
     @Override
@@ -131,12 +136,12 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             c.ensureSpace();
             calculate();
         });
-        drawer.setTransform(combinedTransform, inverse, derivates, scale);
+        drawer.setTransform(combinedTransform, scale);
         backgroundGenerators.forEach((c)->c.generate());
         backgroundShapes.forEach((d) ->d.draw(drawer));
-        drawer.setTransform(DoubleTransform.identity(), DoubleTransform.identity(), new DoubleTransform[]{}, 1.0);
+        drawer.setTransform(DoubleTransform.identity(), 1.0);
         fixedShapes.forEach((d) ->d.draw(drawer));
-        drawer.setTransform(combinedTransform, inverse, derivates, scale);
+        drawer.setTransform(combinedTransform, scale);
         shapes.forEach((d) ->d.draw(drawer));
     }
     /**
@@ -166,6 +171,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
      * @param color
      * @return
      */
+    @Override
     public AbstractPlotter setColor(Color color)
     {
         this.color = color;
@@ -190,6 +196,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         return setFont(new Font(fontName, fontStyle, fontSize));
     }
 
+    @Override
     public AbstractPlotter setFont(Font font)
     {
         Objects.requireNonNull(font);
@@ -197,12 +204,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         return this;
     }
 
+    @Override
     public AbstractPlotter setPaint(Paint paint)
     {
         this.paint = paint;
         return this;
     }
 
+    @Override
     public AbstractPlotter setStroke(BasicStroke stroke)
     {
         Objects.requireNonNull(stroke);
@@ -210,10 +219,21 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         return this;
     }
 
+    @Override
     public AbstractPlotter setPattern(IntBinaryOperator pattern)
     {
         this.pattern = pattern;
         return this;
+    }
+
+    public Scale getxScale()
+    {
+        return xScale;
+    }
+
+    public Scale getyScale()
+    {
+        return yScale;
     }
     
     public void drawText(double x, double y, String text)
@@ -421,12 +441,15 @@ public class AbstractPlotter extends AbstractView implements DrawContext
      */
     public void drawCoordinates(Scale scale, Direction... directions)
     {
-        BasicCoordinates bc = new BasicCoordinates(this);
+        drawCoordinates(new BasicCoordinates(this), scale, directions);
+    }
+    public void drawCoordinates(CoordinatesGenerator generator, Scale scale, Direction... directions)
+    {
         for (Direction direction : directions)
         {
-            bc.addCoordinate(direction, scale);
+            generator.addCoordinate(direction, scale);
         }
-        drawBackground(bc);
+        drawBackground(generator);
     }
     public void drawTitle(Direction direction, String title)
     {
@@ -434,7 +457,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     protected void drawBackground(BackgroundGenerator generator)
     {
-            backgroundGenerators.add(generator);
+        backgroundGenerators.add(generator);
     }
     /**
      * Draws backgroundGenerators using LinearScaler to LEFT and BOTTOM
@@ -473,12 +496,6 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     public void drawCoordinateLine(double x1, double y1, double x2, double y2)
     {
         backgroundShapes.add( new Drawable(new Line2D.Double(x1, y1, x2, y2)));
-    }
-
-    @Override
-    public void setScreen(double width, double height)
-    {
-        throw new UnsupportedOperationException("Screen coordinates must be set in constructor");
     }
 
     /**

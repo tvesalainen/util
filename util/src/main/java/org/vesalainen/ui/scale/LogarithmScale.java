@@ -17,6 +17,7 @@
 package org.vesalainen.ui.scale;
 
 import java.util.Formatter;
+import java.util.Iterator;
 import org.vesalainen.math.Logarithm;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.text.Unicodes;
@@ -38,6 +39,16 @@ public class LogarithmScale extends BasicScale
     {
         super(1, unit, new Logarithm(base));
         this.base = base;
+    }
+
+    @Override
+    public Iterator<ScaleLevel> iterator(double min, double max)
+    {
+        if (min <= 0.0)
+        {
+            throw new IllegalArgumentException("not defined <= 0");
+        }
+        return super.iterator(min, max);
     }
     
     @Override

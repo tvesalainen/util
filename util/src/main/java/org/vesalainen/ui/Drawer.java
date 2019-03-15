@@ -18,13 +18,10 @@ package org.vesalainen.ui;
 
 import org.vesalainen.math.DoubleTransform;
 import java.awt.BasicStroke;
-import static java.awt.BasicStroke.CAP_SQUARE;
-import static java.awt.BasicStroke.JOIN_MITER;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
@@ -57,7 +54,7 @@ public interface Drawer
      * @see java.awt.BasicStroke
      */
     void setStroke(BasicStroke stroke);
-    void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale);
+    void setTransform(DoubleTransform transform, double scale);
     void userToScreen(double x, double y, DoubleBiConsumer screen);
     void screenToUser(double x, double y, DoubleBiConsumer user);
     void draw(Shape shape);

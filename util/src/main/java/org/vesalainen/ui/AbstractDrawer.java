@@ -39,7 +39,7 @@ public abstract class AbstractDrawer implements Drawer
     protected DoubleTransform transform;
     protected DoubleTransform inverse;
     protected Point2D.Double tmp = new Point2D.Double();
-    protected DoubleTransform[] derivates;
+    protected DoubleTransform derivative;
     protected Bounds fillBounds = new Bounds();
     protected double scale;
     protected double delta;
@@ -89,11 +89,11 @@ public abstract class AbstractDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
+    public void setTransform(DoubleTransform transform, double scale)
     {
         this.transform = transform;
-        this.derivates = derivates;
-        this.inverse = inverse;
+        this.derivative = transform.derivative();
+        this.inverse = transform.inverse();
         this.scale = scale;
     }
 
@@ -111,13 +111,7 @@ public abstract class AbstractDrawer implements Drawer
     
     protected void updateDelta(double dx, double dy)
     {
-        deltax = dx;
-        deltay = dy;
-        for (DoubleTransform d : derivates)
-        {
-            d.transform(dx, dy, this::multiplyDerivate);
-        }
-        delta = Math.hypot(deltax, deltay);
+        delta = Math.hypot(dx, dy);
     }
     private void multiplyDerivate(double dx, double dy)
     {

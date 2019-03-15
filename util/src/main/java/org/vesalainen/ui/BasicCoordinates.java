@@ -28,7 +28,7 @@ import org.vesalainen.ui.scale.ScaleLevel;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BasicCoordinates extends BackgroundGenerator
+public class BasicCoordinates extends CoordinatesGenerator
 {
     protected Map<Direction,Scaler> map = new EnumMap(Direction.class);
     protected Map<Direction,ScaleLevel> levelMap = new EnumMap(Direction.class);
@@ -39,9 +39,22 @@ public class BasicCoordinates extends BackgroundGenerator
         super(plotter);
     }
     
+    @Override
     public void addCoordinate(Direction direction, Scale scale)
     {
-        map.put(direction, new Scaler(scale));
+        switch (direction)
+        {
+            case LEFT:
+                map.put(direction, new Scaler(yScale));
+                break;
+            case BOTTOM:
+                map.put(direction, new Scaler(xScale));
+                break;
+            case TOP:
+            case RIGHT:
+                map.put(direction, new Scaler(scale));
+                break;
+        }
         ctxMap.put(direction, new SimpleDrawContext(plotter));
     }
     @Override

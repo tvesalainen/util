@@ -38,24 +38,24 @@ public final class Transforms
      * @param keepAspectRatio 
      * @return 
      */
-    public static AffineTransform createScreenTransform(Rectangle2D.Double userBounds, Rectangle2D.Double screenBounds, boolean keepAspectRatio)
+    public static AffineTransform createScreenTransform(Rectangle2D userBounds, Rectangle2D screenBounds, boolean keepAspectRatio)
     {
         return createScreenTransform(userBounds, screenBounds, keepAspectRatio, new AffineTransform());
     }
     /**
-     * Creates translation that translates userBounds in cartesian coordinates 
+     * Creates translation that translates userBounds in Cartesian coordinates 
      * to screenBound in screen coordinates.
-     * <p>In cartesian y grows up while in screen y grows down
+     * <p>In Cartesian y grows up while in screen y grows down
      * @param userBounds
      * @param screenBounds
      * @param keepAspectRatio
      * @param transform 
      * @return Returns parameter transform
      */
-    public static AffineTransform createScreenTransform(Rectangle2D.Double userBounds, Rectangle2D.Double screenBounds, boolean keepAspectRatio, AffineTransform transform)
+    public static AffineTransform createScreenTransform(Rectangle2D userBounds, Rectangle2D screenBounds, boolean keepAspectRatio, AffineTransform transform)
     {
-        double width = screenBounds.width;
-        double height = screenBounds.height;
+        double width = screenBounds.getWidth();
+        double height = screenBounds.getHeight();
         double aspect = width / height;
         double xMin = userBounds.getMinX();
         double yMin = userBounds.getMinY();

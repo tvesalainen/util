@@ -45,6 +45,8 @@ public interface ParameterizedOperator
     {
         private ParameterizedOperator p;
         private DoubleTransform f;
+        private ParameterizedOperator operator;
+        private ParameterizedOperator derivative;
 
         public Chain(ParameterizedOperator p, DoubleTransform f)
         {
@@ -55,22 +57,30 @@ public interface ParameterizedOperator
         @Override
         public void eval(double t, DoubleBiConsumer consumer)
         {
-            p.eval(t, consumer);
+            if (operator == null)
+            {
+                operator = (tt,c)->p.eval(tt, (x,y)->f.transform(x, y, c));
+            }
+            operator.eval(t, consumer);
         }
 
         @Override
         public ParameterizedOperator derivative()
         {
-            DoubleTransform td = f.derivative();
-            ParameterizedOperator d = p.derivative();
-            return (t,c)->
+            if (derivative == null)
             {
-                Point2D.Double p1 = PNT1.get();
-                Point2D.Double p2 = PNT2.get();
-                p.eval(t, (x,y)->td.transform(x, y, p1::setLocation));
-                d.eval(t, p2::setLocation);
-                c.accept(p1.x*p2.x, p1.y*p2.y);
-            };
+                DoubleTransform td = f.derivative();
+                ParameterizedOperator d = p.derivative();
+                derivative = (t,c)->
+                {
+                    Point2D.Double p1 = PNT1.get();
+                    Point2D.Double p2 = PNT2.get();
+                    p.eval(t, (x,y)->td.transform(x, y, p1::setLocation));
+                    d.eval(t, p2::setLocation);
+                    c.accept(p1.x*p2.x, p1.y*p2.y);
+                };
+            }
+            return derivative;
         }
         
     }

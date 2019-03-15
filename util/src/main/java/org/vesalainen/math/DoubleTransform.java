@@ -162,8 +162,8 @@ public interface DoubleTransform
     }
     public static class CompositeTransform implements DoubleTransform
     {
-        private MathFunction fx;
-        private MathFunction fy;
+        private final MathFunction fx;
+        private final MathFunction fy;
 
         public CompositeTransform(MathFunction fx, MathFunction fy)
         {
@@ -192,8 +192,8 @@ public interface DoubleTransform
     }
     public static class ChainTransform implements DoubleTransform
     {
-        private DoubleTransform f;
-        private DoubleTransform g;
+        private final DoubleTransform f;
+        private final DoubleTransform g;
 
         public ChainTransform(DoubleTransform f, DoubleTransform g)
         {
@@ -222,8 +222,8 @@ public interface DoubleTransform
     }
     public static class MultiplyTransform implements DoubleTransform
     {
-        private double cx;
-        private double cy;
+        private final double cx;
+        private final double cy;
 
         public MultiplyTransform()
         {

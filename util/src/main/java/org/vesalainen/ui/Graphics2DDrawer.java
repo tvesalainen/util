@@ -184,7 +184,7 @@ public class Graphics2DDrawer implements Drawer
     }
 
     @Override
-    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
+    public void setTransform(DoubleTransform transform, double scale)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -20,6 +20,7 @@ package org.vesalainen.ui;
 import java.util.stream.Stream;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.math.DoubleTransform;
 
 /**
  *
@@ -36,8 +37,8 @@ public class AbstractViewTest
     @Test
     public void testView1()
     {
-        AbstractView view = new AbstractView(-10, 10, -10, 10);
-        view.setScreen(100, 200);
+        AbstractView view = new AbstractView(100, 200);
+        view.setRect(-10, 10, -10, 10);
         view.update(Stream.empty());
         view.calculate();
         assertEquals(0, view.toScreenX(-10), Epsilon);
@@ -59,8 +60,8 @@ public class AbstractViewTest
     @Test
     public void testView2()
     {
-        AbstractView view = new AbstractView(-10, 10, -10, 10);
-        view.setScreen(200, 100);
+        AbstractView view = new AbstractView(200, 100);
+        view.setRect(-10, 10, -10, 10);
         view.update(Stream.empty());
         view.calculate();
         assertEquals(50, view.toScreenX(-10), Epsilon);
@@ -75,8 +76,7 @@ public class AbstractViewTest
     @Test
     public void testView3()
     {
-        AbstractView view = new AbstractView();
-        view.setScreen(200, 100);
+        AbstractView view = new AbstractView(200, 100);
         view.update(Stream.empty());
         view.updatePoint(0, 0);
         view.updatePoint(-10, 10);
@@ -94,8 +94,7 @@ public class AbstractViewTest
     @Test
     public void testView4()
     {
-        AbstractView view = new AbstractView();
-        view.setScreen(600, 895);
+        AbstractView view = new AbstractView(600, 895);
         view.update(Stream.empty());
         double d = (895.0-600.0)/2;
         view.updatePoint(-13.60272896379027,28.131008962509526);
@@ -114,8 +113,8 @@ public class AbstractViewTest
     @Test
     public void testView5()
     {
-        AbstractView view = new AbstractView(-1, 2, -2, 10);
-        view.setScreen(7, 12);
+        AbstractView view = new AbstractView(7, 12);
+        view.setRect(-1, 2, -2, 10);
         view.update(Stream.empty());
         view.calculate();
         assertEquals(2, view.toScreenX(-1), Epsilon);
@@ -130,8 +129,8 @@ public class AbstractViewTest
     @Test
     public void testView7()
     {
-        AbstractView view = new AbstractView(false, -10, 10, -10, 10);
-        view.setScreen(100, 100);
+        AbstractView view = new AbstractView(100, 100, false, DoubleTransform.identity());
+        view.setRect(-10, 10, -10, 10);
         view.update(Stream.empty());
         view.calculate();
         assertEquals(0, view.toScreenX(-10), Epsilon);

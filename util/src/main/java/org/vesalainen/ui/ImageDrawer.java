@@ -66,9 +66,9 @@ public class ImageDrawer extends AbstractDrawer
     }
 
     @Override
-    public void setTransform(DoubleTransform transform, DoubleTransform inverse, DoubleTransform[] derivates, double scale)
+    public void setTransform(DoubleTransform transform, double scale)
     {
-        super.setTransform(transform, inverse, derivates, scale);
+        super.setTransform(transform, scale);
         isInside = (x,y)->
         {
             inverse.transform(x, y, (xx,yy)->fillPoint.setLocation(xx, yy));
@@ -180,12 +180,12 @@ public class ImageDrawer extends AbstractDrawer
     private void draw(BezierCurve curve, double... cp)
     {
         ParameterizedOperator op = curve.operator(cp);
-        ParameterizedOperator der = curve.derivative(cp);
-        draw(op.andThen(transform), der);
+        draw(op.andThen(transform));
     }
-    private void draw(ParameterizedOperator curve, ParameterizedOperator curveDerivate)
+    private void draw(ParameterizedOperator curve)
     {
         double t = 0;
+        ParameterizedOperator curveDerivate = curve.derivative();
         curve.eval(0, this::drawPoint);
         curveDerivate.eval(t, this::updateDelta);
         t += 1.0/delta;

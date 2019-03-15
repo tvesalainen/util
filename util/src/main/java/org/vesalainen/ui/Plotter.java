@@ -18,25 +18,11 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Stream;
 import javax.imageio.ImageIO;
-import org.ejml.data.DenseMatrix64F;
-import org.vesalainen.math.Circle;
-import org.vesalainen.math.Point;
-import org.vesalainen.math.Polygon;
-import org.vesalainen.math.Rect;
+import org.vesalainen.ui.scale.Scale;
 
 /**
  *
@@ -53,6 +39,10 @@ public class Plotter extends AbstractPlotter
     public Plotter(int width, int height, Color background)
     {
         super(width, height, background);
+    }
+    public Plotter(int width, int height, Color background, boolean keepAspectRatio, Scale xScale, Scale yScale)
+    {
+        super(width, height, background, keepAspectRatio, xScale, yScale);
     }
     /**
      * Set default directory for plotting. Affects only plot methods with String
