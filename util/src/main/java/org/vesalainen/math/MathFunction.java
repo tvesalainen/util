@@ -110,6 +110,15 @@ public interface MathFunction extends DoubleUnaryOperator
         return MoreMath.integral(this, x1, x2, points);
     }
     /**
+     * Returns arcLength function or throws UnsupportedOperationException if
+     * as usual there is no arcLength function.
+     * @return 
+     */
+    default MathFunction arcLength()
+    {
+        throw new UnsupportedOperationException();
+    }
+    /**
      * Returns arc length between x1 and x2
      * @param x1
      * @param x2
@@ -117,7 +126,15 @@ public interface MathFunction extends DoubleUnaryOperator
      */
     default double arcLength(double x1, double x2)
     {
-        return MathFunction.this.arcLength(x1, x2, 60000);
+        try
+        {
+            MathFunction arcLength = arcLength();
+            return arcLength.applyAsDouble(x2) - arcLength.applyAsDouble(x1);
+        }
+        catch (UnsupportedOperationException ex)
+        {
+            return MathFunction.this.arcLength(x1, x2, 60000);
+        }
     }
     /**
      * Returns numerical arc length between x1 and x2

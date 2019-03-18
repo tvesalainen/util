@@ -14,45 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
-
-import static java.lang.Math.PI;
-import org.junit.Test;
-import static org.junit.Assert.*;
+package org.vesalainen.util.function;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MoreMathTest
+@FunctionalInterface
+public interface DoubleBiPredicate
 {
-    
-    public MoreMathTest()
-    {
-    }
-
-    @Test
-    public void testDerivate()
-    {
-        Polynomial p = new Polynomial(1, 2, 3, 4);
-        MathFunction derivate = p.derivative();
-        assertEquals(derivate.applyAsDouble(PI), MoreMath.derivative(p, PI), 1e-6);
-    }
-    @Test
-    public void testFactorial()
-    {
-        assertEquals(24, MoreMath.factorial(4));
-    }
-    @Test
-    public void testSolve()
-    {
-        double res = MoreMath.solve(
-                (x,a)->a*a+x,
-                1,
-                2,
-                -10, 
-                100);
-        assertEquals(1, res, 1e-10);
-    }
-    
+    boolean test(double left, double right);
 }

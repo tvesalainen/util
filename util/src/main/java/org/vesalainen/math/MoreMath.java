@@ -18,8 +18,10 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
-import org.vesalainen.util.concurrent.ThreadTemporal;
+import org.vesalainen.util.function.DoubleBiPredicate;
 
 /**
  * @author Timo Vesalainen
@@ -129,5 +131,66 @@ public final class MoreMath
             result = Math.multiplyExact(result, ii);
         }
         return result;
+    }
+    /**
+     * Returns coefficient that fulfills targetY = f(targetX, coef)
+     * @param f F(x, coef)
+     * @param targetX
+     * @param targetY
+     * @param minCoef
+     * @param maxCoef
+     * @return 
+     */
+    public static double solve(
+            DoubleBinaryOperator f,
+            double targetX,
+            double targetY,
+            double minCoef,
+            double maxCoef
+    )
+    {
+        double coef = (maxCoef-minCoef)/2.0;
+        double x = 0;
+        double d = coef/2.0;
+        int s = 0;
+        DoubleBiPredicate test;
+        x = f.applyAsDouble(targetX, coef);
+        double x2 = f.applyAsDouble(targetX, coef*0.5);
+        if (x2 > x)
+        {
+            test = (l,r)->l>r;
+        }
+        else
+        {
+            test = (l,r)->l<r;
+        }
+        for (int ii=0;ii<128;ii++)
+        {
+            x = f.applyAsDouble(targetX, coef);
+            if (x == x2)
+            {
+                return coef;
+            }
+            x2 = x;
+            if (test.test(x, targetY))
+            {
+                coef += d;
+                if (s != 1)
+                {
+                    d /= 2;
+                    s = 1;
+                }
+            }
+            else
+            {
+                coef -= d;
+                if (s != 2)
+                {
+                    d /= 2;
+                    s = 2;
+                }
+            }
+        }
+        throw new IllegalArgumentException();
     }
 }
