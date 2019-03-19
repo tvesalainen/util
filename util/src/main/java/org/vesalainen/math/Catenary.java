@@ -60,7 +60,22 @@ public class Catenary implements MathFunction
     {
         return (x)->Math.sinh(x/a); // s/a
     }
-
+    /**Returns a for a catenary having height h at x. Height is distance from 
+     * vertex (a) to y.
+     * 
+     * @param x
+     * @param h
+     * @return 
+     */
+    public static double aForXAndH(double x, double h)
+    {
+        return MoreMath.solve(
+                (xx,a)->a*Math.cosh(xx/a)-a, 
+                x, 
+                h, 
+                Double.MIN_VALUE, 
+                100);
+    }
     public static double aForSAndH(double s, double h)
     {
         throw new UnsupportedOperationException();

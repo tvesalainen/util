@@ -75,5 +75,13 @@ public class CatenaryTest
         Catenary c = new Catenary(a);
         assertEquals(2753.308225072277, c.integral(0, 5), 1e-9);
     }
-    
+    @Test
+    public void testAForXAndH()
+    {
+        double x = 25;
+        double y = 5;
+        double a = Catenary.aForXAndH(x, y);
+        Catenary c = new Catenary(a);
+        assertEquals(y+a, c.applyAsDouble(x), 1e-9);
+    }    
 }

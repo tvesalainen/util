@@ -150,13 +150,13 @@ public final class MoreMath
     )
     {
         double coef = (maxCoef-minCoef)/2.0;
-        double x = 0;
+        double y = 0;
         double d = coef/2.0;
         int s = 0;
         DoubleBiPredicate test;
-        x = f.applyAsDouble(targetX, coef);
-        double x2 = f.applyAsDouble(targetX, coef*0.5);
-        if (x2 > x)
+        y = f.applyAsDouble(targetX, coef);
+        double y2 = f.applyAsDouble(targetX, coef*0.5);
+        if (y2 > y)
         {
             test = (l,r)->l>r;
         }
@@ -166,13 +166,13 @@ public final class MoreMath
         }
         for (int ii=0;ii<128;ii++)
         {
-            x = f.applyAsDouble(targetX, coef);
-            if (x == x2)
+            y = f.applyAsDouble(targetX, coef);
+            if (y == y2)
             {
                 return coef;
             }
-            x2 = x;
-            if (test.test(x, targetY))
+            y2 = y;
+            if (test.test(y, targetY))
             {
                 coef += d;
                 if (s != 1)
