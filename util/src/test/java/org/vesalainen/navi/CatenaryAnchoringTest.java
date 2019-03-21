@@ -33,10 +33,26 @@ public class CatenaryAnchoringTest
     }
 
     @Test
+    public void test0()
+    {
+        double mm = 10;
+        ElasticChain ec = new ElasticChain(mm);
+        double d = 5;
+        double s = 25;
+        double T = ec.fairleadTension(s, d);
+        double Th0 = ec.horizontalForce(d, s);
+        double Th = ec.AE*Math.sqrt(Math.pow(T/ec.AE+1, 2)-2*ec.w*d/ec.AE)-ec.AE;
+        double lmin = Math.sqrt(T*T-Th*Th)/ec.w;
+        double x0 = ec.horizontalScope(Th, d, s);
+        double a = Th0/ec.w;
+        Catenary c = new Catenary(a);
+        assertEquals(d+a, c.applyAsDouble(x0), 1e-10);
+    }
+    @Test
     public void testDepth()
     {
         double mm = 10;
-        CatenaryAnchoring ca = new CatenaryAnchoring(mm);
+        ElasticChain ca = new ElasticChain(mm);
         double d0 = 5;
         double s0 = 25;
         double Th = ca.horizontalForce(d0, s0);
@@ -52,7 +68,7 @@ public class CatenaryAnchoringTest
         double mm = 10;
         double d = 10;
         double s = 40;
-        CatenaryAnchoring ca = new CatenaryAnchoring(mm);
+        ElasticChain ca = new ElasticChain(mm);
         double F = ca.fairleadTension(s, d);
         assertEquals(s, ca.chainLength(F, d), 1e-10);
     }
@@ -62,9 +78,9 @@ public class CatenaryAnchoringTest
         double mm = 10;
         double d = 10;
         double s = 40;
-        CatenaryAnchoring ca = new CatenaryAnchoring(mm);
+        ElasticChain ca = new ElasticChain(mm);
         double F = ca.fairleadTension(s, d);
-        double x = ca.horizontalDistance(F, d);
+        double x = ca.horizontalScope(F, d);
         double a = Catenary.aForXAndH(x, d);
         Catenary c = new Catenary(a);
         assertEquals(d+a, c.applyAsDouble(x), 1e-10);
@@ -75,7 +91,7 @@ public class CatenaryAnchoringTest
         double mm = 10;
         double d = 10;
         double s = 40;
-        CatenaryAnchoring ca = new CatenaryAnchoring(mm);
+        ElasticChain ca = new ElasticChain(mm);
         double T = ca.fairleadTension(s, d);
         double Th = ca.horizontalForce(d, s);
         double Tz = ca.w*s;

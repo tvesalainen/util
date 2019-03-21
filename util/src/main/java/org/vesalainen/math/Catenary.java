@@ -25,8 +25,6 @@ import java.util.function.DoubleUnaryOperator;
 public class Catenary implements MathFunction
 {
     private double a;
-    private static DoubleUnaryOperator arsinh = (x)->Math.log(x+Math.sqrt(x*x+1));
-    private static DoubleUnaryOperator arcosh = (x)->Math.log(x+Math.sqrt(x*x-1));
 
     public Catenary(double a)
     {
@@ -46,7 +44,7 @@ public class Catenary implements MathFunction
     @Override
     public MathFunction inverse()
     {
-        return (x)->a*arcosh.applyAsDouble(x/a);
+        return (x)->a*MoreMath.arcosh(x/a);
     }
 
     @Override
@@ -83,7 +81,7 @@ public class Catenary implements MathFunction
     public static double aForY(double targetX, double targetY)
     {
         return MoreMath.solve(
-                (x,a)->a*arcosh.applyAsDouble(x/a), 
+                (x,a)->a*MoreMath.arcosh(x/a), 
                 targetX, 
                 targetY, 
                 Double.MIN_VALUE, 

@@ -133,6 +133,24 @@ public final class MoreMath
         return result;
     }
     /**
+     * Returns sinh inverse
+     * @param x
+     * @return 
+     */
+    public static double arsinh(double x)
+    {
+        return Math.log(x+Math.sqrt(x*x+1));
+    }
+    /**
+     * Returns cosh inverse
+     * @param x
+     * @return 
+     */
+    public static double arcosh(double x)
+    {
+        return Math.log(x+Math.sqrt(x*x-1));
+    }
+    /**
      * Returns coefficient that fulfills targetY = f(targetX, coef)
      * @param f F(x, coef)
      * @param targetX
