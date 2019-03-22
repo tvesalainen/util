@@ -20,10 +20,8 @@ import org.vesalainen.math.DoubleTransform;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
@@ -182,8 +180,10 @@ public class ImageDrawer extends AbstractDrawer
         ParameterizedOperator op = curve.operator(cp);
         draw(op.andThen(transform));
     }
-    private void draw(ParameterizedOperator curve)
+    @Override
+    public void draw(ParameterizedOperator op)
     {
+        ParameterizedOperator curve = op.andThen(transform);
         double t = 0;
         ParameterizedOperator curveDerivate = curve.derivative();
         curve.eval(0, this::drawPoint);
@@ -197,6 +197,7 @@ public class ImageDrawer extends AbstractDrawer
         }
         curve.eval(1, this::drawPoint);
     }
+    
     public void fill()
     {
         if (!fillBounds.isEmpty())

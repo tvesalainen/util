@@ -16,10 +16,16 @@
  */
 package org.vesalainen.navi;
 
+import java.awt.Color;
+import static java.awt.Font.BOLD;
+import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.Catenary;
 import org.vesalainen.math.MathFunction;
+import org.vesalainen.ui.Plotter;
+import org.vesalainen.ui.scale.LogarithmScale;
+import org.vesalainen.ui.scale.MergeScale;
 
 /**
  *
@@ -46,7 +52,18 @@ public class CatenaryAnchoringTest
         double x0 = ec.horizontalScope(Th, d, s);
         double a = Th0/ec.w;
         Catenary c = new Catenary(a);
-        assertEquals(d+a, c.applyAsDouble(x0), 1e-10);
+        assertEquals(d+a, c.applyAsDouble(x0), 1);
+    }
+    @Test
+    public void testPlot() throws IOException
+    {
+        Plotter p = new Plotter(1000, 1000, Color.CYAN);
+        p.setFont("Arial", BOLD, 20);
+        Catenary catenary = new Catenary(60);
+        p.draw(catenary, 0, 60, 40, 140);
+        p.drawCoordinates();
+        p.plot("Anchoring", "png");
+        
     }
     @Test
     public void testDepth()

@@ -37,9 +37,10 @@ import java.util.function.IntBinaryOperator;
 import java.util.stream.Stream;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
+import org.vesalainen.math.MathFunction;
+import org.vesalainen.math.ParameterizedOperator;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
-import org.vesalainen.math.Rect;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.MergeScale;
 import org.vesalainen.ui.scale.Scale;
@@ -127,7 +128,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     protected void plot(Drawer drawer)
     {
-        update(shapes.stream().map(Drawable::getShape));
+        update(shapes.stream().map(Drawable::getBounds));
         calculate();
         DoubleBounds origUserBounds = new DoubleBounds();
         origUserBounds.setRect(userBounds);
@@ -253,7 +254,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     public void drawText(double x, double y, String text, TextAlignment... alignments)
     {
-        shapes.add(new Drawable(true, text2Shape(x, y, text, alignments)));
+        shapes.add(new DrawableShape(true, text2Shape(x, y, text, alignments)));
     }
 
     public void drawScreenText(double x, double y, String text)
@@ -337,7 +338,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawCircle(double x, double y, double r)
     {
-        shapes.add(new Drawable(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
+        shapes.add(new DrawableShape(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
     }
 
     public void drawPoint(DenseMatrix64F point)
@@ -362,12 +363,12 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawPolygon(Polygon polygon)
     {
-        shapes.add(new Drawable(new DoublePolygon(polygon)));
+        shapes.add(new DrawableShape(new DoublePolygon(polygon)));
     }
 
     public void drawPolygon(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(new DoublePolygon(polygon)));
+        shapes.add(new DrawableShape(new DoublePolygon(polygon)));
     }
 
     public void drawPoints(double[] arr)
@@ -397,6 +398,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         lastY = y;
     }
 
+    public void draw(MathFunction func, Rectangle2D bounds)
+    {
+        shapes.add(new DrawableFunction(this, func, bounds));
+    }
+    public void draw(MathFunction func, double minX, double minY, double maxX, double maxY)
+    {
+        draw(func, new Rectangle2D.Double(minX, minY, maxX-minX, maxY-minY));
+    }
     public void drawLine(Point p1, Point p2)
     {
         drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
@@ -404,7 +413,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawLine(double x1, double y1, double x2, double y2)
     {
-        shapes.add(new Drawable(new Line2D.Double(x1, y1, x2, y2)));
+        shapes.add(new DrawableShape(new Line2D.Double(x1, y1, x2, y2)));
     }
 
     public void drawPolyline(Polyline polyline)
@@ -414,7 +423,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawLines(double[] data)
     {
-        shapes.add(new Drawable(new DoublePolygon(data)));
+        shapes.add(new DrawableShape(new DoublePolygon(data)));
     }
 
     public void drawLines(Polygon polygon)
@@ -424,7 +433,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawLines(DenseMatrix64F polygon)
     {
-        shapes.add(new Drawable(new DoublePolygon(polygon)));
+        shapes.add(new DrawableShape(new DoublePolygon(polygon)));
     }
     /**
      * Draws backgroundGenerators using given LinearScaler
@@ -495,7 +504,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     public void drawCoordinateLine(double x1, double y1, double x2, double y2)
     {
-        backgroundShapes.add( new Drawable(new Line2D.Double(x1, y1, x2, y2)));
+        backgroundShapes.add( new DrawableShape(new Line2D.Double(x1, y1, x2, y2)));
     }
 
     /**
@@ -516,24 +525,13 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         return new Polyline(color, stroke);
     }
  
-    public class Drawable<S extends Shape> extends SimpleDrawContext
+    public abstract class Drawable extends SimpleDrawContext
     {
-        protected boolean fill;
-        protected S shape;
-
-        public Drawable(S shape)
+        
+        public Drawable(DrawContext ctx)
         {
-            super(AbstractPlotter.this);
-            this.shape = shape;
+            super(ctx);
         }
-
-        public Drawable(boolean fill, S shape)
-        {
-            super(AbstractPlotter.this);
-            this.shape = shape;
-            this.fill = fill;
-        }
-
         public void draw(Drawer drawer)
         {
             drawer.setColor(color);
@@ -541,6 +539,31 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             drawer.setStroke(stroke);
             drawer.setPattern(pattern);
             drawer.setPaint(paint);
+        }       
+        public abstract Rectangle2D getBounds();
+    }
+    public class DrawableShape<S extends Shape> extends Drawable
+    {
+        protected boolean fill;
+        protected S shape;
+
+        public DrawableShape(S shape)
+        {
+            super(AbstractPlotter.this);
+            this.shape = shape;
+        }
+
+        public DrawableShape(boolean fill, S shape)
+        {
+            super(AbstractPlotter.this);
+            this.shape = shape;
+            this.fill = fill;
+        }
+
+        @Override
+        public void draw(Drawer drawer)
+        {
+            super.draw(drawer);
             if (fill)
             {
                 drawer.fill(shape);
@@ -551,13 +574,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             }
         }
 
-        public S getShape()
+        @Override
+        public Rectangle2D getBounds()
         {
-            return shape;
+            return shape.getBounds2D();
         }
-        
+
     }
-    private class Fixed extends Drawable
+    private class Fixed extends DrawableShape
     {
         private double x;
         private double y;
@@ -592,43 +616,31 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         }
         
     }
-    public class HorizontalLine extends Drawable<Line2D>
+    public class DrawableFunction extends Drawable
     {
-        double y;
+        private ParameterizedOperator op;
+        private Rectangle2D bounds;
         
-        public HorizontalLine(double y)
+        public DrawableFunction(DrawContext ctx, MathFunction f, Rectangle2D bounds)
         {
-            super(new Line2D.Double());
-            this.y = y;
+            super(ctx);
+            this.op = ParameterizedOperator.parameterize(f, bounds.getMinX(), bounds.getMaxX());
+            this.bounds = bounds;
         }
-
         @Override
         public void draw(Drawer drawer)
         {
-            shape.setLine(transformedUserBounds.getMinX(), y, transformedUserBounds.getMaxX(), y);
             super.draw(drawer);
+            drawer.draw(op);
         }
-        
-    }
-    public class VerticalLine extends Drawable<Line2D>
-    {
-        double x;
-        
-        public VerticalLine(double x)
-        {
-            super(new Line2D.Double());
-            this.x = x;
-        }
-
         @Override
-        public void draw(Drawer drawer)
+        public Rectangle2D getBounds()
         {
-            shape.setLine(x, transformedUserBounds.getMinY(), x, transformedUserBounds.getMaxY());
-            super.draw(drawer);
+            return bounds;
         }
         
     }
-    public class Polyline extends Drawable<DoublePolygon>
+    public class Polyline extends DrawableShape<DoublePolygon>
     {
 
         public Polyline(Color color, BasicStroke stroke)
@@ -648,13 +660,13 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         {
             stream.forEach(this::lineTo);
         }
-        
+        /*
         public Rect getBounds()
         {
             Rectangle2D b = shape.getBounds2D();
             return new Rect(b.getMinX(), b.getMaxX(), b.getMinY(), b.getMaxY());
         }
-        
+        */
     }
     
 }

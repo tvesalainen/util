@@ -27,6 +27,8 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.math.MathFunction;
+import org.vesalainen.math.ParameterizedOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -185,6 +187,12 @@ public class Graphics2DDrawer implements Drawer
 
     @Override
     public void setTransform(DoubleTransform transform, double scale)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void draw(ParameterizedOperator curve)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

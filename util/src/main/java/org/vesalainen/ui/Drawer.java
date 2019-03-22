@@ -24,6 +24,8 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.math.MathFunction;
+import org.vesalainen.math.ParameterizedOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -58,6 +60,7 @@ public interface Drawer
     void userToScreen(double x, double y, DoubleBiConsumer screen);
     void screenToUser(double x, double y, DoubleBiConsumer user);
     void draw(Shape shape);
+    void draw(ParameterizedOperator curve);
     void fill(Shape shape);
     default void moveTo(double... cp){}
     void drawLine(double... cp);

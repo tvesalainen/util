@@ -64,7 +64,7 @@ public class AbstractView
         this.keepAspectRatio = keepAspectRatio;
         this.transform = transform;
     }
-    public void update(Stream<Shape> shapes)
+    public void update(Stream<Rectangle2D> shapes)
     {
         if (screenBounds.isEmpty())
         {
@@ -73,7 +73,7 @@ public class AbstractView
         userBounds.clear();
         transformedUserBounds.clear();
         update(minUserBounds);
-        shapes.map(Shape::getBounds2D).forEach(this::update);
+        shapes.forEach(this::update);
     }
     public void calculate()
     {

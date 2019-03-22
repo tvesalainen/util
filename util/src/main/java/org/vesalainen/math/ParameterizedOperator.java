@@ -39,6 +39,48 @@ public interface ParameterizedOperator
     {
         throw new UnsupportedOperationException("derivative not supported");
     }
+    /**
+     * Returns parameterized MathFunction  at range 0.0 - 1.0 
+     * @param f
+     * @param min
+     * @param max
+     * @return 
+     */
+    static ParameterizedOperator parameterize(MathFunction f, double min, double max)
+    {
+        return new Parameterized(f, min, max);
+    }
+    class Parameterized implements ParameterizedOperator
+    {
+        private MathFunction f;
+        private double a;
+        private double b;
+
+        public Parameterized(MathFunction f, double min, double max)
+        {
+            this(1.0/(max-min), min, f);
+        }
+        private Parameterized(double a, double b, MathFunction f)
+        {
+            this.f = f;
+            this.a = a;
+            this.b = b;
+        }
+        
+        @Override
+        public void eval(double t, DoubleBiConsumer consumer)
+        {
+            double x = a*t+b;
+            consumer.accept(x, f.applyAsDouble(x));
+        }
+
+        @Override
+        public ParameterizedOperator derivative()
+        {
+            return (t,c)->c.accept(1, f.derivative().applyAsDouble(a*t+b));
+        }
+        
+    }
     static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     static final ThreadLocal<Point2D.Double> PNT2 = ThreadLocal.withInitial(Point2D.Double::new);
     class Chain implements ParameterizedOperator
