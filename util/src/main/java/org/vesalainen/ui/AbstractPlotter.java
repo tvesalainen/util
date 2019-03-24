@@ -79,7 +79,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     public AbstractPlotter(int width, int height, Color background, boolean keepAspectRatio, Scale xScale, Scale yScale)
     {
-        super(width, height, keepAspectRatio, DoubleTransform.composite(xScale.function(), yScale.function()));
+        super(width, height, keepAspectRatio, DoubleTransform.identity());//.composite(xScale.function(), yScale.function()));
         this.background = background;
         this.xScale = xScale;
         this.yScale = yScale;

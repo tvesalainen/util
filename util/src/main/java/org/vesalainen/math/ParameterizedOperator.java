@@ -58,7 +58,7 @@ public interface ParameterizedOperator
 
         public Parameterized(MathFunction f, double min, double max)
         {
-            this(1.0/(max-min), min, f);
+            this(max-min, min, f);
         }
         private Parameterized(double a, double b, MathFunction f)
         {
@@ -77,7 +77,7 @@ public interface ParameterizedOperator
         @Override
         public ParameterizedOperator derivative()
         {
-            return (t,c)->c.accept(1, f.derivative().applyAsDouble(a*t+b));
+            return (t,c)->c.accept(a, f.derivative().applyAsDouble(a*t+b));
         }
         
     }

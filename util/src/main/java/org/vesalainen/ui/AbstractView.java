@@ -19,7 +19,6 @@ package org.vesalainen.ui;
 
 import java.awt.Rectangle;
 import org.vesalainen.math.DoubleTransform;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -77,11 +76,13 @@ public class AbstractView
     }
     public void calculate()
     {
+        System.err.println(transformedUserBounds);
         Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
         affineDoubleTransform = Transforms.affineTransform(affineTransform);
         combinedTransform = DoubleTransform.chain(affineDoubleTransform, transform);
         inverse = combinedTransform.inverse();
         scale = (Math.abs(affineTransform.getScaleX())+Math.abs(affineTransform.getScaleY()))/2.0;
+        combinedTransform.transform(transformedUserBounds.getCenterX(), transformedUserBounds.getCenterY(), (x,y)->System.err.printf("TR %.1f, %.1f\n", x, y));
     }
     protected void update(Rectangle2D bounds)
     {

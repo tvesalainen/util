@@ -178,7 +178,7 @@ public class ImageDrawer extends AbstractDrawer
     private void draw(BezierCurve curve, double... cp)
     {
         ParameterizedOperator op = curve.operator(cp);
-        draw(op.andThen(transform));
+        draw(op);
     }
     @Override
     public void draw(ParameterizedOperator op)

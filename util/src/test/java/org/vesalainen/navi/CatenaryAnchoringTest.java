@@ -58,9 +58,10 @@ public class CatenaryAnchoringTest
     public void testPlot() throws IOException
     {
         Plotter p = new Plotter(1000, 1000, Color.CYAN);
+        p.setColor(Color.BLACK);
         p.setFont("Arial", BOLD, 20);
         Catenary catenary = new Catenary(60);
-        p.draw(catenary, 0, 60, 40, 140);
+        p.draw(catenary, 0, 60, 100, 100);
         p.drawCoordinates();
         p.plot("Anchoring", "png");
         
