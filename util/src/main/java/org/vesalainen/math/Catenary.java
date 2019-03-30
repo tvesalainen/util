@@ -16,8 +16,6 @@
  */
 package org.vesalainen.math;
 
-import java.util.function.DoubleUnaryOperator;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -25,26 +23,40 @@ import java.util.function.DoubleUnaryOperator;
 public class Catenary implements MathFunction
 {
     private double a;
-
+    private double b;
+    /**
+     * Creates catenary a*cosh(x/a)
+     * @param a 
+     */
     public Catenary(double a)
+    {
+        this(a, 0);
+    }
+    /**
+     * Creates catenary with y-shift a*cosh(x/a)+b
+     * @param a
+     * @param b 
+     */
+    public Catenary(double a, double b)
     {
         if (a <= 0)
         {
             throw new IllegalArgumentException("a must be positive");
         }
         this.a = a;
+        this.b = b;
     }
     
     @Override
     public double applyAsDouble(double x)
     {
-        return a*Math.cosh(x/a);
+        return a*Math.cosh(x/a)+b;
     }
 
     @Override
     public MathFunction inverse()
     {
-        return (x)->a*MoreMath.arcosh(x/a);
+        return (x)->a*MoreMath.arcosh((x-b)/a);
     }
 
     @Override

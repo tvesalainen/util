@@ -44,8 +44,9 @@ public class CatenaryTest
     public void testInverse()
     {
         double a = 0.5;
+        double b = -a;
         double x = 2;
-        Catenary c = new Catenary(a);
+        Catenary c = new Catenary(a, b);
         MathFunction inverse = c.inverse();
         assertEquals(x, inverse.applyAsDouble(c.applyAsDouble(x)), 1e-10);
     }
@@ -53,8 +54,9 @@ public class CatenaryTest
     public void testArc()
     {
         double a = 0.5;
+        double b = -a;
         double x = 2;
-        Catenary c = new Catenary(a);
+        Catenary c = new Catenary(a, b);
         double exp = a*Math.sinh(x/a);
         assertEquals(exp, c.arcLength(0, x), 1e-9);
     }
@@ -62,8 +64,9 @@ public class CatenaryTest
     public void testDerivative()
     {
         double a = 0.5;
+        double b = -a;
         double x = 2;
-        Catenary c = new Catenary(a);
+        Catenary c = new Catenary(a, b);
         MathFunction derivative = c.derivative();
         assertEquals(27.28991719712775, derivative.applyAsDouble(x), 1e-9);
     }
@@ -84,4 +87,12 @@ public class CatenaryTest
         Catenary c = new Catenary(a);
         assertEquals(y+a, c.applyAsDouble(x), 1e-9);
     }    
+    @Test
+    public void testX()
+    {
+        double a = 75.17433;
+        double b = -a;
+        Catenary c = new Catenary(a, b);
+        assertEquals(46, c.arcLength().applyAsDouble(41.5), 1e-10);
+    }
 }

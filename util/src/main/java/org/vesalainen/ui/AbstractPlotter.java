@@ -616,29 +616,13 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         }
         
     }
-    public class DrawableFunction extends Drawable
+    public class DrawableFunction extends DrawableShape<MathFunctionShape>
     {
-        private ParameterizedOperator op;
-        private Rectangle2D bounds;
         
         public DrawableFunction(DrawContext ctx, MathFunction f, Rectangle2D bounds)
         {
-            super(ctx);
-            this.op = ParameterizedOperator.parameterize(f, bounds.getMinX(), bounds.getMaxX());
-            this.bounds = bounds;
+            super(new MathFunctionShape(f, bounds, screenBounds.width));
         }
-        @Override
-        public void draw(Drawer drawer)
-        {
-            super.draw(drawer);
-            drawer.draw(op);
-        }
-        @Override
-        public Rectangle2D getBounds()
-        {
-            return bounds;
-        }
-        
     }
     public class Polyline extends DrawableShape<DoublePolygon>
     {

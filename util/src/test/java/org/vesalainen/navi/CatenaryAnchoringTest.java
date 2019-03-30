@@ -52,7 +52,17 @@ public class CatenaryAnchoringTest
         double x0 = ec.horizontalScope(Th, d, s);
         double a = Th0/ec.w;
         Catenary c = new Catenary(a);
-        assertEquals(d+a, c.applyAsDouble(x0), 1);
+        //assertEquals(d+a, c.applyAsDouble(x0), 1);
+    }
+    @Test
+    public void test1()
+    {
+        double mm = 10;
+        ElasticChain ec = new ElasticChain(mm);
+        double d = 13;
+        double Th = 1409;
+        double s = ec.chainLengthForHorizontalForce(Th, d);
+        double x0 = ec.horizontalScope(Th, d, s);
     }
     @Test
     public void testPlot() throws IOException
@@ -61,7 +71,7 @@ public class CatenaryAnchoringTest
         p.setColor(Color.BLACK);
         p.setFont("Arial", BOLD, 20);
         Catenary catenary = new Catenary(60);
-        p.draw(catenary, 0, 60, 100, 100);
+        p.draw(catenary, -100, 100, 100, 200);
         p.drawCoordinates();
         p.plot("Anchoring", "png");
         
