@@ -180,8 +180,7 @@ public class ImageDrawer extends AbstractDrawer
         ParameterizedOperator op = curve.operator(cp);
         draw(op);
     }
-    @Override
-    public void draw(ParameterizedOperator op)
+    private void draw(ParameterizedOperator op)
     {
         ParameterizedOperator curve = op.andThen(transform);
         double t = 0;

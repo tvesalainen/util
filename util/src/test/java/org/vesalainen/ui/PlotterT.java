@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import static java.awt.Font.BOLD;
 import java.io.IOException;
@@ -43,16 +44,17 @@ public class PlotterT
     {
         try
         {
-            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);//, true, MergeScale.BASIC15, new LogarithmScale(10, "u"));
+            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY, true, MergeScale.BASIC15, new LogarithmScale(10, "u"));
             p.setColor(Color.BLACK);
-            //p.setStroke(new BasicStroke(10));
+            p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
             p.drawText(50, 90, "start", TextAlignment.START_X);
             p.drawText(50, 50, "middle", TextAlignment.MIDDLE_X);
             p.drawText(50, 10, "end", TextAlignment.END_X);
             p.setColor(Color.ORANGE);
-            p.drawCircle(50, 50, 50);
-            //p.drawPoint(0, 0);
+            p.drawCircle(50, 50, 30);
+            p.setColor(Color.RED);
+            p.drawCross(47, 30);
             //p.drawPoint(1, 1);
             //p.drawPoint(2, 0);
             BasicCoordinates bc = new BasicCoordinates(p);

@@ -24,7 +24,6 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
-import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.ParameterizedOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
@@ -57,10 +56,12 @@ public interface Drawer
      */
     void setStroke(BasicStroke stroke);
     void setTransform(DoubleTransform transform, double scale);
-    void userToScreen(double x, double y, DoubleBiConsumer screen);
-    void screenToUser(double x, double y, DoubleBiConsumer user);
     void draw(Shape shape);
-    void draw(ParameterizedOperator curve);
+    /**
+     * Draws shape after shrinking it to stroke line width
+     * @param mark 
+     */
+    void drawMark(Shape mark);
     void fill(Shape shape);
     default void moveTo(double... cp){}
     void drawLine(double... cp);

@@ -21,7 +21,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
@@ -98,24 +101,21 @@ public abstract class AbstractDrawer implements Drawer
     }
 
     @Override
-    public void userToScreen(double x, double y, DoubleBiConsumer screen)
+    public void drawMark(Shape mark)
     {
-        transform.transform(x, y, screen);
+        Rectangle2D b = mark.getBounds2D();
+        Point2D p1 = new Point2D.Double();
+        Point2D p2 = new Point2D.Double();
+        transform.transform(b.getCenterX(), b.getCenterY(), p1::setLocation);
+        transform.transform(b.getCenterX()+b.getWidth(), b.getCenterY()+b.getHeight(), p2::setLocation);
+        double distance = p1.distance(p2)/1.4;
+        float lineWidth = stroke.getLineWidth();
+        double s = lineWidth/distance;
+        fill(Shapes.scaleInPlace(mark, s, s));
     }
 
-    @Override
-    public void screenToUser(double x, double y, DoubleBiConsumer user)
-    {
-        inverse.transform(x, y, user);
-    }
-    
     protected void updateDelta(double dx, double dy)
     {
         delta = Math.hypot(dx, dy);
-    }
-    private void multiplyDerivate(double dx, double dy)
-    {
-        deltax *= dx;
-        deltay *= dy;
     }
 }
