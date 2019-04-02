@@ -72,7 +72,8 @@ public class Matrix implements Cloneable
 
     public void sub(int i, int j, double v)
     {
-        add(i, j, -v);
+        updated = true;
+        consumer.set(i, j, supplier.get(i, j) - v);
     }
 
     public void mul(int i, int j, double v)
@@ -83,7 +84,8 @@ public class Matrix implements Cloneable
 
     public void div(int i, int j, double v)
     {
-        mul(i, j, 1.0 / v);
+        updated = true;
+        consumer.set(i, j, supplier.get(i, j) / v);
     }
 
     public void scalarMultiply(double c)
@@ -189,7 +191,7 @@ public class Matrix implements Cloneable
         return lupDeterminant(A, P);
     }
 
-    public void solve(double[] b, double[] x)
+    public void solve(Matrix b, Matrix x)
     {
         Matrix A = clone();
         int[] P = new int[rows() + 1];
@@ -268,17 +270,26 @@ public class Matrix implements Cloneable
 
     }
 
-    private void lupSolve(Matrix A, int[] P, double[] b, double[] x)
+    private void lupSolve(Matrix A, int[] P, Matrix b, Matrix x)
     {
         ItemSupplier As = A.supplier;
-        int N = A.colums();
+        ItemSupplier bs = b.supplier;
+        ItemSupplier xs = x.supplier;
+        ItemConsumer xc = x.consumer;
+        int N = A.rows();
+        int M = b.colums();
         for (int i = 0; i < N; i++)
         {
-            x[i] = b[P[i]];
-
+            for (int j = 0; j < M; j++)
+            {
+                xc.set(i, j, bs.get(P[i], j));
+            }
             for (int k = 0; k < i; k++)
             {
-                x[i] -= As.get(i, k) * x[k];
+                for (int j = 0; j < M; j++)
+                {
+                    x.sub(i, j, As.get(i, k) * xs.get(k, j));
+                }
             }
         }
 
@@ -286,10 +297,16 @@ public class Matrix implements Cloneable
         {
             for (int k = i + 1; k < N; k++)
             {
-                x[i] -= As.get(i, k) * x[k];
+                for (int j = 0; j < M; j++)
+                {
+                    x.sub(i, j, As.get(i, k) * xs.get(k, j));
+                }
             }
 
-            x[i] = x[i] / As.get(i, i);
+            for (int j = 0; j < M; j++)
+            {
+                x.div(i, j, As.get(i, i));
+            }
         }
     }
 
@@ -386,7 +403,10 @@ public class Matrix implements Cloneable
             {
                 for (int j = 0; j < n; j++)
                 {
-                    if (get(i, j) != mt.get(i, j))
+                    double v = get(i, j);
+                    double u = 2*Math.ulp(v);
+                    double d = v - mt.get(i, j);
+                    if (Math.abs(d) > u)
                     {
                         return false;
                     }

@@ -192,10 +192,10 @@ public class MatrixTest
     public void testSolve()
     {
         Matrix m = Matrix.getInstance(3, 3, 2, -1, 2, -2, 4, -1, 0.5, -1);
-        double[] b = new double[]{1, -2, 0};
-        double[] exp = new double[]{1, -2, -2};
-        double[] x = new double[3];
+        Matrix b = Matrix.getInstance(3, 1, -2, 0);
+        Matrix exp = Matrix.getInstance(3, 1, -2, -2);
+        Matrix x = Matrix.getInstance(3, 1);
         m.solve(b, x);
-        assertArrayEquals(exp, x, 1e-10);
+        assertEquals(exp, x);
     }
 }
