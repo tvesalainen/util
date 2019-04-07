@@ -29,11 +29,9 @@ import org.vesalainen.math.MathFunction;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MathFunctionShape implements Shape
+public class MathFunctionShape extends AbstractShape
 {
     private MathFunction f;
-    private Rectangle bounds;
-    private Rectangle2D bounds2D;
     private double delta;
 
     public MathFunctionShape(MathFunction f, Rectangle2D bounds, int xResolution)
@@ -42,63 +40,11 @@ public class MathFunctionShape implements Shape
     }
     public MathFunctionShape(MathFunction f, Rectangle2D bounds, double delta)
     {
+        super(bounds);
         this.f = f;
-        this.bounds2D = bounds;
         this.delta = delta;
     }
     
-    @Override
-    public Rectangle2D getBounds2D()
-    {
-        return bounds2D;
-    }
-
-    @Override
-    public boolean contains(double x, double y)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean intersects(double x, double y, double w, double h)
-    {
-        return bounds2D.intersects(x, y, w, h);
-    }
-
-    @Override
-    public boolean contains(double x, double y, double w, double h)
-    {
-        return bounds2D.contains(x, y, w, h);
-    }
-
-    @Override
-    public Rectangle getBounds()
-    {
-        if (bounds == null)
-        {
-            bounds = new Rectangle();
-            bounds.setRect(bounds2D);
-        }
-        return bounds;
-    }
-
-    @Override
-    public boolean contains(Point2D p)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean intersects(Rectangle2D r)
-    {
-        return bounds2D.intersects(r);
-    }
-
-    @Override
-    public boolean contains(Rectangle2D r)
-    {
-        return bounds2D.contains(r);
-    }
 
     @Override
     public PathIterator getPathIterator(AffineTransform at)
@@ -106,11 +52,6 @@ public class MathFunctionShape implements Shape
         return new PathIteratorImpl(at);
     }
 
-    @Override
-    public PathIterator getPathIterator(AffineTransform at, double flatness)
-    {
-        return new FlatteningPathIterator(getPathIterator(at), flatness);
-    }
     private class PathIteratorImpl implements PathIterator
     {
         private AffineTransform at;
@@ -122,8 +63,8 @@ public class MathFunctionShape implements Shape
         public PathIteratorImpl(AffineTransform at)
         {
             this.at = at;
-            this.x = bounds2D.getX();
-            this.max = bounds2D.getMaxX();
+            this.x = bounds.getX();
+            this.max = bounds.getMaxX();
             eval();
         }
         
@@ -188,12 +129,23 @@ public class MathFunctionShape implements Shape
         
         private void eval()
         {
-            y = f.applyAsDouble(x);
-            while (x < max && !bounds2D.contains(x, y))
+            if (x < max)
             {
-                x += delta;
                 y = f.applyAsDouble(x);
-                closed = true;
+                if (!bounds.contains(x, y))
+                {
+                    closed = true;
+                    x += delta;
+                    while (x < max)
+                    {
+                        y = f.applyAsDouble(x);
+                        if (bounds.contains(x, y))
+                        {
+                            return;
+                        }
+                        x += delta;
+                    }
+                }
             }
         }
     }

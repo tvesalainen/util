@@ -20,77 +20,226 @@ import java.util.Arrays;
 import java.util.function.IntSupplier;
 
 /**
- *
+ * A Matrix.
+ * <p>Note! Row and column numbers start with 0.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Matrix implements Cloneable
+public abstract class Matrix implements Cloneable
 {
 
     protected IntSupplier rows;
     protected IntSupplier cols;
     protected ItemSupplier supplier;
     protected ItemConsumer consumer;
-    protected boolean updated = true;
 
-    public Matrix(int rows, int cols)
+    protected Matrix(int rows, int cols)
     {
         this(() -> rows, () -> cols);
     }
 
-    public Matrix(IntSupplier rows, IntSupplier cols)
+    protected Matrix(IntSupplier rows, IntSupplier cols)
     {
         this.rows = rows;
         this.cols = cols;
     }
-
+    /**
+     * Returns number of rows
+     * @return 
+     */
     public int rows()
     {
         return rows.getAsInt();
     }
-
-    public int colums()
+    /**
+     * Returns number of columns
+     * @return 
+     */
+    public int columns()
     {
         return cols.getAsInt();
     }
-
+    /**
+     * Returns item at i,j. Starts at 0.
+     * @param i
+     * @param j
+     * @return 
+     */
     public double get(int i, int j)
     {
         return supplier.get(i, j);
     }
-
+    /**
+     * Assign matrix A items starting at i,j
+     * @param i
+     * @param j
+     * @param B 
+     */
+    public void set(int i, int j, Matrix B)
+    {
+        int m = B.rows();
+        int n = B.columns();
+        for (int ii = 0; ii < m; ii++)
+        {
+            for (int jj = 0; jj < n; jj++)
+            {
+                set(i+ii, j+jj, B.get(ii, jj));
+            }
+        }
+    }
+    /**
+     * Sets item at i,j
+     * @param i
+     * @param j
+     * @param v 
+     */
     public void set(int i, int j, double v)
     {
-        updated = true;
         consumer.set(i, j, v);
     }
-
+    /**
+     * Aij = array[j]
+     * @param i
+     * @param array
+     * @param offset 
+     */
+    public void setRow(int i, double[] array, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            set(i, j, array[j+offset]);
+        }
+    }
+    /**
+     * array[j] = Aij
+     * @param i
+     * @param array
+     * @param offset 
+     */
+    public void getRow(int i, double[] array, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            array[j+offset] = get(i, j);
+        }
+    }
+    /**
+     * array[i] = Aij
+     * @param j
+     * @param array
+     * @param offset 
+     */
+    public void getColumn(int j, double[] array, int offset)
+    {
+        int m = rows.getAsInt();
+        for (int i=0;i<m;i++)
+        {
+            array[i+offset] = get(i, j);
+        }
+    }
+    /**
+     * Aij += array[j]
+     * @param i
+     * @param arr
+     * @param offset 
+     */
+    public void addRow(int i, double[] arr, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            add(i, j, arr[j+offset]);
+        }
+    }
+    /**
+     * Aij -= array[j]
+     * @param i
+     * @param arr
+     * @param offset 
+     */
+    public void subRow(int i, double[] arr, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            sub(i, j, arr[j+offset]);
+        }
+    }
+    /**
+     * Aij *= array[j]
+     * @param i
+     * @param arr
+     * @param offset 
+     */
+    public void mulRow(int i, double[] arr, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            mul(i, j, arr[j+offset]);
+        }
+    }
+    /**
+     * Aij /= array[j]
+     * @param i
+     * @param arr
+     * @param offset 
+     */
+    public void divRow(int i, double[] arr, int offset)
+    {
+        int n = cols.getAsInt();
+        for (int j=0;j<n;j++)
+        {
+            div(i, j, arr[j+offset]);
+        }
+    }
+    /**
+     * Aij += v
+     * @param i
+     * @param j
+     * @param v 
+     */
     public void add(int i, int j, double v)
     {
-        updated = true;
         consumer.set(i, j, supplier.get(i, j) + v);
     }
-
+    /**
+     * Aij -= v
+     * @param i
+     * @param j
+     * @param v 
+     */
     public void sub(int i, int j, double v)
     {
-        updated = true;
         consumer.set(i, j, supplier.get(i, j) - v);
     }
-
+    /**
+     * Aij *= v
+     * @param i
+     * @param j
+     * @param v 
+     */
     public void mul(int i, int j, double v)
     {
-        updated = true;
         consumer.set(i, j, supplier.get(i, j) * v);
     }
-
+    /**
+     * Aij /= v
+     * @param i
+     * @param j
+     * @param v 
+     */
     public void div(int i, int j, double v)
     {
-        updated = true;
         consumer.set(i, j, supplier.get(i, j) / v);
     }
-
+    /**
+     * Scalar multiplies each item with c
+     * @param c 
+     */
     public void scalarMultiply(double c)
     {
-        updated = true;
         int m = rows.getAsInt();
         int n = cols.getAsInt();
         for (int i = 0; i < m; i++)
@@ -118,40 +267,62 @@ public class Matrix implements Cloneable
         }
         return sb.toString();
     }
-
+    /**
+     * Return new Matrix which is copy of this Matrix with each item scalar multiplies with c.
+     * @param c
+     * @return 
+     */
     public Matrix multiply(double c)
     {
         Matrix clone = clone();
         clone.scalarMultiply(c);
         return clone;
     }
-
+    /**
+     * Return new Matrix which is copy of given Matrix with each item scalar multiplies with c.
+     * @param c
+     * @param m
+     * @return 
+     */
     public static Matrix multiply(double c, Matrix m)
     {
         Matrix clone = m.clone();
         clone.scalarMultiply(c);
         return clone;
     }
-
+    /**
+     * Returns true if matrix is square.
+     * @return 
+     */
     public boolean isSquare()
     {
         return rows.getAsInt() == cols.getAsInt();
     }
-
+    /**
+     * Returns true if matrix has no rows or columns.
+     * @return 
+     */
     public boolean isEmpty()
     {
         return rows.getAsInt() == 0 && cols.getAsInt() == 0;
     }
-
+    /**
+     * Returns new Matrix which is this added to m
+     * @param m
+     * @return 
+     */
     public Matrix add(Matrix m)
     {
         return add(this, m);
     }
-
+    /**
+     * Returns new Matrix which is transpose of this.
+     * @return 
+     */
     public Matrix transpose()
     {
         int m = rows();
-        int n = colums();
+        int n = columns();
         ItemSupplier s = supplier;
         Matrix tr = getInstance(n, m);
         ItemConsumer c = tr.consumer;
@@ -164,10 +335,14 @@ public class Matrix implements Cloneable
         }
         return tr;
     }
-
+    /**
+     * Swaps row r1 and r2
+     * @param r1
+     * @param r2 
+     */
     public void swapRows(int r1, int r2)
     {
-        int n = colums();
+        int n = columns();
         ItemSupplier s = supplier;
         ItemConsumer c = consumer;
         for (int j = 0; j < n; j++)
@@ -177,12 +352,20 @@ public class Matrix implements Cloneable
             c.set(r2, j, v);
         }
     }
-
+    /**
+     * Swaps row r1 and r2 possibly using tmp
+     * @param r1
+     * @param r2
+     * @param tmp double [columns]
+     */
     public void swapRows(int r1, int r2, double[] tmp)
     {
         swapRows(r1, r2);
     }
-
+    /**
+     * Return determinant.
+     * @return 
+     */
     public double determinant()
     {
         Matrix A = clone();
@@ -190,7 +373,22 @@ public class Matrix implements Cloneable
         lupDecompose(A, 0.001, P);
         return lupDeterminant(A, P);
     }
-
+    /**
+     * Solve linear equation Ax = b returning x
+     * @param b
+     * @return 
+     */
+    public Matrix solve(Matrix b)
+    {
+        Matrix x = getInstance(b.rows(), b.columns());
+        solve(b, x);
+        return x;
+    }
+    /**
+     * Solve linear equation Ax = b
+     * @param b
+     * @param x 
+     */
     public void solve(Matrix b, Matrix x)
     {
         Matrix A = clone();
@@ -198,11 +396,14 @@ public class Matrix implements Cloneable
         lupDecompose(A, 0.001, P);
         lupSolve(A, P, b, x);
     }
-
+    /**
+     * Returns inverted
+     * @return 
+     */
     public Matrix invert()
     {
         Matrix A = clone();
-        Matrix IA = getInstance(rows(), colums());
+        Matrix IA = getInstance(rows(), columns());
         int[] P = new int[rows() + 1];
         lupDecompose(A, 0.001, P);
         lupInvert(A, P, IA);
@@ -216,7 +417,7 @@ public class Matrix implements Cloneable
             throw new IllegalArgumentException("not square");
         }
         ItemSupplier As = A.supplier;
-        int N = A.colums();
+        int N = A.columns();
         int i, j, k, imax;
         double maxA, absA;
         double[] tmp = new double[N];
@@ -277,7 +478,7 @@ public class Matrix implements Cloneable
         ItemSupplier xs = x.supplier;
         ItemConsumer xc = x.consumer;
         int N = A.rows();
-        int M = b.colums();
+        int M = b.columns();
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < M; j++)
@@ -315,7 +516,7 @@ public class Matrix implements Cloneable
         ItemSupplier As = A.supplier;
         ItemSupplier IAs = IA.supplier;
         ItemConsumer IAc = IA.consumer;
-        int N = A.colums();
+        int N = A.columns();
 
         for (int j = 0; j < N; j++)
         {
@@ -351,7 +552,7 @@ public class Matrix implements Cloneable
     private static double lupDeterminant(Matrix A, int[] P)
     {
         ItemSupplier As = A.supplier;
-        int N = A.colums();
+        int N = A.columns();
 
         double det = As.get(0, 0);
 
@@ -369,27 +570,24 @@ public class Matrix implements Cloneable
             return -det;
         }
     }
-
+    /**
+     * Returns independent clone
+     * @return 
+     */
     @Override
-    public Matrix clone()
-    {
-        try
-        {
-            return (Matrix) super.clone();
-        }
-        catch (CloneNotSupportedException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
-    }
-
+    public abstract Matrix clone();
+    /**
+     * Returns true if oth conforms with this and each item differs less than 2*ulp(v).
+     * @param oth
+     * @return 
+     */
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(Object oth)
     {
-        if (obj instanceof Matrix)
+        if (oth instanceof Matrix)
         {
-            Matrix mt = (Matrix) obj;
-            if (mt.colums() != colums())
+            Matrix mt = (Matrix) oth;
+            if (mt.columns() != columns())
             {
                 return false;
             }
@@ -398,7 +596,7 @@ public class Matrix implements Cloneable
                 return false;
             }
             int m = rows();
-            int n = colums();
+            int n = columns();
             for (int i = 0; i < m; i++)
             {
                 for (int j = 0; j < n; j++)
@@ -416,21 +614,57 @@ public class Matrix implements Cloneable
         }
         return false;
     }
-
+    /**
+     * Returns new Matrix initialized to zeroes.
+     * @param rows
+     * @param cols
+     * @return 
+     */
     public static Matrix getInstance(int rows, int cols)
     {
         return new MatrixImpl(rows, cols);
     }
-
+    /**
+     * Returns new Matrix initialized to values.
+     * <p>E.g. 2x2 matrix has A00, A01, A10, A11
+     * @param rows Number of rows
+     * @param values Values row by row
+     * @return 
+     */
     public static Matrix getInstance(int rows, double... values)
     {
         if (values.length % rows != 0)
         {
             throw new IllegalArgumentException("not full rows");
         }
-        return new MatrixImpl(rows, values.length / rows, values);
+        return new MatrixImpl(rows, values.length / rows, Arrays.copyOf(values, values.length));
     }
-
+    /**
+     * Returns new Matrix initialized by function
+     * @param rows
+     * @param cols
+     * @param s
+     * @return 
+     */
+    public static Matrix getInstance(int rows, int cols, ItemSupplier s)
+    {
+        Matrix m = new MatrixImpl(rows, cols);
+        ItemConsumer c = m.consumer;
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                c.set(i, j, s.get(i, j));
+            }
+        }
+        return m;
+    }
+    /**
+     * Returns new Matrix which is m1 added with m2
+     * @param m1
+     * @param m2
+     * @return 
+     */
     public static Matrix add(Matrix m1, Matrix m2)
     {
         if (m1.rows.getAsInt() != m2.rows.getAsInt()
@@ -453,7 +687,12 @@ public class Matrix implements Cloneable
         }
         return mr;
     }
-
+    /**
+     * Returns new Matrix which is m1 multiplied with m2.
+     * @param m1
+     * @param m2
+     * @return 
+     */
     public static Matrix multiply(Matrix m1, Matrix m2)
     {
         if (m1.cols.getAsInt() != m2.rows.getAsInt())
@@ -481,52 +720,26 @@ public class Matrix implements Cloneable
         }
         return mr;
     }
-
+    /**
+     * Returns new identity matrix.
+     * @param n
+     * @return 
+     */
     public static Matrix identity(int n)
     {
-        return new Identity(n);
+        return getInstance(n ,n, (i, j) -> i == j ? 1 : 0);
     }
 
-    public static class Identity extends Matrix
+    protected static class MatrixImpl extends Matrix
     {
-
-        public Identity(int n)
-        {
-            super(n, n);
-            supplier = (i, j) -> i == j ? 1 : 0;
-        }
-
-        @Override
-        public void add(int i, int j, double v)
-        {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public void set(int i, int j, double v)
-        {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public void swapRows(int r1, int r2, double[] tmp)
-        {
-            throw new UnsupportedOperationException("Not supported");
-        }
-
-    }
-
-    public static class MatrixImpl extends Matrix
-    {
-
         private double[] d;
 
-        public MatrixImpl(int rows, int cols)
+        protected MatrixImpl(int rows, int cols)
         {
             this(rows, cols, new double[rows * cols]);
         }
 
-        public MatrixImpl(int rows, int cols, double[] d)
+        protected MatrixImpl(int rows, int cols, double[] d)
         {
             super(rows, cols);
             this.d = d;
@@ -543,7 +756,7 @@ public class Matrix implements Cloneable
         @Override
         public void swapRows(int r1, int r2, double[] tmp)
         {
-            int col = colums();
+            int col = columns();
             System.arraycopy(d, col * r1, tmp, 0, col);
             System.arraycopy(d, col * r2, d, col * r1, col);
             System.arraycopy(tmp, 0, d, col * r2, col);
@@ -551,7 +764,7 @@ public class Matrix implements Cloneable
     }
 
     @FunctionalInterface
-    protected interface ItemSupplier
+    public interface ItemSupplier
     {
 
         /**

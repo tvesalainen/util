@@ -90,7 +90,11 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
-        return new Operator(controlPoints);
+        return operator(controlPoints, 0);
+    }
+    public ParameterizedOperator operator(double[] controlPoints, int offset)
+    {
+        return new Operator(controlPoints, offset);
     }
     /**
      * Create first derivative function for fixed control points.
@@ -103,11 +107,15 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
+        return derivative(controlPoints, 0);
+    }
+    private ParameterizedOperator derivative(double[] controlPoints, int offset)
+    {
         double[] cp = new double[2*length-2];
         for (int ii=0;ii<length-1;ii++)
         {
-            cp[2*ii] = controlPoints[2*(ii+1)]-controlPoints[2*ii];
-            cp[2*ii+1] = controlPoints[2*(ii+1)+1]-controlPoints[2*ii+1];
+            cp[2*ii] = controlPoints[2*(ii+1)+offset]-controlPoints[2*ii+offset];
+            cp[2*ii+1] = controlPoints[2*(ii+1)+1+offset]-controlPoints[2*ii+1+offset];
         }
         int degree = getDegree();
         if (degree == 1)
@@ -131,11 +139,15 @@ public class BezierCurve
         {
             throw new IllegalArgumentException("control-points length not "+length);
         }
+        return secondDerivative(controlPoints, 0);
+    }
+    private ParameterizedOperator secondDerivative(double[] controlPoints, int offset)
+    {
         double[] cp = new double[2*length-2];
         for (int ii=0;ii<length-1;ii++)
         {
-            cp[2*ii] = controlPoints[2*(ii+1)]-controlPoints[2*ii];
-            cp[2*ii+1] = controlPoints[2*(ii+1)+1]-controlPoints[2*ii+1];
+            cp[2*ii] = controlPoints[2*(ii+1)+offset]-controlPoints[2*ii+offset];
+            cp[2*ii+1] = controlPoints[2*(ii+1)+1+offset]-controlPoints[2*ii+1+offset];
         }
         for (int ii=0;ii<length-2;ii++)
         {
@@ -216,21 +228,21 @@ public class BezierCurve
      */
     public void calc(double t, DoubleBiConsumer result, double... controlPoints)
     {
+        calc(t, result, controlPoints, 0);
+    }
+    public void calc(double t, DoubleBiConsumer result, double[] controlPoints, int offset)
+    {
         if (t < 0 || t > 1)
         {
             throw new IllegalArgumentException("t not in [0..1]");
-        }
-        if (controlPoints.length < 2*length)
-        {
-            throw new IllegalArgumentException("control-points length not "+2*length);
         }
         double x = 0;
         double y = 0;
         for (int n=0;n<length;n++)
         {
             double c = array[n].applyAsDouble(t);
-            x += controlPoints[2*n]*c;
-            y += controlPoints[2*n+1]*c;
+            x += controlPoints[2*n+offset]*c;
+            y += controlPoints[2*n+1+offset]*c;
         }
         result.accept(x, y);
     }
@@ -326,14 +338,20 @@ public class BezierCurve
     private class Operator implements ParameterizedOperator
     {
         private double[] controlPoints;
+        private int offset;
         private ParameterizedOperator operator;
         private ParameterizedOperator derivative;
         private ParameterizedOperator secondDerivative;
 
         public Operator(double... controlPoints)
         {
+            this(controlPoints, 0);
+        }
+        public Operator(double[] controlPoints, int offset)
+        {
             this.controlPoints = controlPoints;
-            this.operator = (t,c)->calc(t, c, controlPoints);
+            this.offset = offset;
+            this.operator = (t,c)->calc(t, c, controlPoints, offset);
         }
         
         @Override
@@ -347,7 +365,7 @@ public class BezierCurve
         {
             if (derivative == null)
             {
-                derivative = BezierCurve.this.derivative(controlPoints);
+                derivative = BezierCurve.this.derivative(controlPoints, offset);
             }
             return derivative;
         }
@@ -357,7 +375,7 @@ public class BezierCurve
         {
             if (secondDerivative == null)
             {
-                secondDerivative = BezierCurve.this.secondDerivative(controlPoints);
+                secondDerivative = BezierCurve.this.secondDerivative(controlPoints, offset);
             }
             return secondDerivative;
         }

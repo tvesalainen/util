@@ -426,7 +426,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         lastX = x;
         lastY = y;
     }
-
+    public void draw(Shape shape)
+    {
+        shapes.add(new Drawable(shape));
+    }
     public void draw(MathFunction func, Rectangle2D bounds)
     {
         shapes.add(new DrawableFunction(this, func, bounds));
