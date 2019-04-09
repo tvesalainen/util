@@ -16,15 +16,14 @@
  */
 package org.vesalainen.math;
 
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import static org.vesalainen.math.BezierCurve.CUBIC;
 import org.vesalainen.ui.AbstractShape;
-import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -32,13 +31,44 @@ import org.vesalainen.util.CollectionHelp;
  */
 public abstract class AbstractCubicSpline extends AbstractShape implements MathFunction
 {
+    private static final Map<Class<? extends AbstractCubicSpline>,Map<Integer,Matrix>> matrixCache = new HashMap<>();
     
-    protected boolean isInjection;
+    protected boolean closed;
+    protected boolean injection;
     protected double[] xArr;
     protected double[] controlPoints;
     protected ParameterizedOperator[] curves;
+    protected int pointCount;
+    protected int curveCount;
+
+    protected AbstractCubicSpline()
+    {
+    }
 
     protected AbstractCubicSpline(double... points)
+    {
+        this(false, points);
+    }
+    protected AbstractCubicSpline(boolean closed, double... points)
+    {
+        this.closed = closed;
+        update(points);
+    }
+    /**
+     * Updates points
+     * @param points 
+     */
+    public final void update(double... points)
+    {
+        checkInput(points);
+        if (!closed)
+        {
+            this.injection = checkInjection(points, 0);
+        }
+        double[] cp = createControlPoints(points);
+        init(cp);
+    }
+    protected final void checkInput(double[] points)
     {
         if (
                 points.length % 2 != 0 ||
@@ -47,41 +77,97 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         {
             throw new IllegalArgumentException("wrong number of points");
         }
-        this.isInjection = checkInjection(points, 0);
+    }
+    protected final double[] createControlPoints(double[] points)
+    {
         int n = points.length/2;
         Matrix S = Matrix.getInstance(n, points);
-        xArr = new double[n];
-        S.getColumn(0, xArr, 0);
-        Matrix M = createMatrix(n);
-        Matrix B = M.solve(S);
-        controlPoints = new double[6*(n-1)+2];
-        int pi = 0;
-        S.getRow(0, controlPoints, pi);
-        pi += 2;
-        curves = new ParameterizedOperator[n-1];
-        int offset = 0;
-        for (int ii=0;ii<curves.length;ii++)
+        int cc;
+        if (closed)
         {
+            cc = n;
+        }
+        else
+        {
+            cc = n-1;
+        }
+        Matrix M = getMatrix(n);
+        Matrix B = M.solve(S);
+        double[] cp = new double[6*cc+2];
+        int pi = 0;
+        S.getRow(0, cp, pi);
+        pi += 2;
+        for (int ii=0;ii<cc;ii++)
+        {
+            int ni = (ii+1)%n;
             double bx1 = B.get(ii, 0);
             double by1 = B.get(ii, 1);
-            double bx2 = B.get(ii+1, 0);
-            double by2 = B.get(ii+1, 1);
-            controlPoints[pi++] = bx1+(bx2-bx1)/3;
-            controlPoints[pi++] = by1+(by2-by1)/3;
-            controlPoints[pi++] = bx1+2*(bx2-bx1)/3;
-            controlPoints[pi++] = by1+2*(by2-by1)/3;
-            S.getRow(ii+1, controlPoints, pi);
+            double bx2 = B.get(ni, 0);
+            double by2 = B.get(ni, 1);
+            cp[pi++] = bx1+(bx2-bx1)/3;
+            cp[pi++] = by1+(by2-by1)/3;
+            cp[pi++] = bx1+2*(bx2-bx1)/3;
+            cp[pi++] = by1+2*(by2-by1)/3;
+            S.getRow(ni, cp, pi);
             pi += 2;
+        }
+        return cp;
+    }
+    protected final void init(double[] controlPoints)
+    {
+        this.controlPoints = controlPoints;
+        this.curveCount = (controlPoints.length-2)/6;
+        if (closed)
+        {
+            pointCount = curveCount;
+        }
+        else
+        {
+            pointCount = curveCount+1;
+        }
+        if (injection)
+        {
+            xArr = new double[pointCount];
+            for (int ii=0;ii<pointCount;ii++)
+            {
+                xArr[ii] = controlPoints[6*ii];
+            }
+        }
+        curves = new ParameterizedOperator[curveCount];
+        int offset = 0;
+        for (int ii=0;ii<curveCount;ii++)
+        {
             curves[ii] = CUBIC.operator(controlPoints, offset);
             offset += 6;
         }
         int len = controlPoints.length/2;
-        for (int ii=0;ii<len;ii+=2)
+        for (int ii=0;ii<len;ii++)
         {
             bounds.add(controlPoints[2*ii], controlPoints[2*ii+1]);
         }
     }
-
+    /**
+     * Returns class cached Matrix with decompose already called.
+     * @param n
+     * @return 
+     */
+    protected Matrix getMatrix(int n)
+    {
+        Map<Integer, Matrix> degreeMap = matrixCache.get(this.getClass());
+        if (degreeMap == null)
+        {
+            degreeMap = new HashMap<>();
+            matrixCache.put(this.getClass(), degreeMap);
+        }
+        Matrix m = degreeMap.get(n);
+        if (m == null)
+        {
+            m = createMatrix(n);
+            m.decompose();
+            degreeMap.put(n, m);
+        }
+        return m;
+    }
     protected abstract Matrix createMatrix(int n);
     
     @Override
@@ -97,7 +183,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
 
     public double eval(double x, double deltaX, Point2D.Double pnt)
     {
-        if (!isInjection)
+        if (!injection)
         {
             throw new IllegalArgumentException("curve is not injection");
         }
@@ -137,7 +223,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
 
     public boolean isIsInjection()
     {
-        return isInjection;
+        return injection;
     }
 
     protected boolean checkInjection(double[] points, int offset)
@@ -159,6 +245,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     {
         return new PathIteratorImpl(at);
     }
+
     private class PathIteratorImpl implements PathIterator
     {
         private AffineTransform at;

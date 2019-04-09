@@ -177,12 +177,14 @@ public class MatrixTest
     public void testDeterminant()
     {
         Matrix m = Matrix.getInstance(2, 1, 2, 3, 4);
+        m.decompose();
         assertEquals(1*4-2*3, m.determinant(), 1e-10);
     }
     @Test
     public void testInvert()
     {
         Matrix m = Matrix.getInstance(2, -1, 1.5, 1, -1);
+        m.decompose();
         assertEquals(-0.5, m.determinant(), 1e-10);
         Matrix im = m.invert();
         Matrix id = Matrix.identity(2);
@@ -195,6 +197,7 @@ public class MatrixTest
         Matrix b = Matrix.getInstance(3, 1, -2, 0);
         Matrix exp = Matrix.getInstance(3, 1, -2, -2);
         Matrix x = Matrix.getInstance(3, 1);
+        m.decompose();
         m.solve(b, x);
         assertEquals(exp, x);
     }

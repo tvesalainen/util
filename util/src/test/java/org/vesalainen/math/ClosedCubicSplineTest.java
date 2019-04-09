@@ -16,37 +16,35 @@
  */
 package org.vesalainen.math;
 
+import java.awt.Color;
+import static java.awt.Font.BOLD;
+import java.io.IOException;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.vesalainen.ui.Plotter;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RelaxedCubicSpline extends AbstractCubicSpline
+public class ClosedCubicSplineTest
 {
-    private static final double D1P6 = 1.0/6.0;
-    private static final double D4P6 = 4.0/6.0;
-
-    protected RelaxedCubicSpline()
-    {
-    }
     
-    public RelaxedCubicSpline(double... points)
+    public ClosedCubicSplineTest()
     {
-        super(points);
     }
 
-    @Override
-    protected Matrix createMatrix(int n)
+    @Test
+    public void testEval() throws IOException
     {
-        Matrix m = Matrix.getInstance(n, n);
-        m.set(0, 0, 1);
-        for (int i=1;i<n-1;i++)
-        {
-            m.set(i, i-1, D1P6);
-            m.set(i, i, D4P6);
-            m.set(i, i+1, D1P6);
-        }
-        m.set(n-1, n-1, 1);
-        return m;
+        double[] p = new double[]{1, -1, -1, 2, 1, 4};
+        ClosedCubicSpline csi = new ClosedCubicSpline(p);
+        Plotter plotter = new Plotter(1000, 1000, Color.WHITE);
+        plotter.setColor(Color.RED);
+        plotter.setFont("Arial", BOLD, 20);
+        plotter.draw(csi);
+        plotter.drawCoordinates();
+        plotter.plot("closed", "png");
     }
     
 }

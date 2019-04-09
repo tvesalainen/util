@@ -20,32 +20,26 @@ package org.vesalainen.math;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RelaxedCubicSpline extends AbstractCubicSpline
+public class ClosedCubicSpline extends AbstractCubicSpline
 {
     private static final double D1P6 = 1.0/6.0;
     private static final double D4P6 = 4.0/6.0;
-
-    protected RelaxedCubicSpline()
-    {
-    }
     
-    public RelaxedCubicSpline(double... points)
+    public ClosedCubicSpline(double... points)
     {
-        super(points);
+        super(true, points);
     }
 
     @Override
     protected Matrix createMatrix(int n)
     {
         Matrix m = Matrix.getInstance(n, n);
-        m.set(0, 0, 1);
-        for (int i=1;i<n-1;i++)
+        for (int i=0;i<n;i++)
         {
-            m.set(i, i-1, D1P6);
+            m.set(i, Math.floorMod(i-1, n), D1P6);
             m.set(i, i, D4P6);
-            m.set(i, i+1, D1P6);
+            m.set(i, Math.floorMod(i+1, n), D1P6);
         }
-        m.set(n-1, n-1, 1);
         return m;
     }
     

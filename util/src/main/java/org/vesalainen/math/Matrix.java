@@ -16,21 +16,27 @@
  */
 package org.vesalainen.math;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.IntSupplier;
 
 /**
- * A Matrix.
+ * A Matrix. Uses LUP decomposing for invert, solve and determinant. Call 
+ * decompose before calling these methods. Decompose tells if matrix is invertible.
+ * No use to call determinant for that.
  * <p>Note! Row and column numbers start with 0.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class Matrix implements Cloneable
+public abstract class Matrix implements Cloneable, Serializable
 {
+    private static final long serialVersionUID = 1L;
 
     protected IntSupplier rows;
     protected IntSupplier cols;
     protected ItemSupplier supplier;
     protected ItemConsumer consumer;
+    private Matrix A;
+    private int[] P;
 
     protected Matrix(int rows, int cols)
     {
@@ -268,7 +274,7 @@ public abstract class Matrix implements Cloneable
         return sb.toString();
     }
     /**
-     * Return new Matrix which is copy of this Matrix with each item scalar multiplies with c.
+     * Return new Matrix which is copy of this Matrix with each item scalar multiplied with c.
      * @param c
      * @return 
      */
@@ -279,7 +285,7 @@ public abstract class Matrix implements Cloneable
         return clone;
     }
     /**
-     * Return new Matrix which is copy of given Matrix with each item scalar multiplies with c.
+     * Return new Matrix which is copy of given Matrix with each item scalar multiplied with c.
      * @param c
      * @param m
      * @return 
@@ -368,9 +374,10 @@ public abstract class Matrix implements Cloneable
      */
     public double determinant()
     {
-        Matrix A = clone();
-        int[] P = new int[rows() + 1];
-        lupDecompose(A, 0.001, P);
+        if (A == null)
+        {
+            throw new IllegalArgumentException("decompose() not called");
+        }
         return lupDeterminant(A, P);
     }
     /**
@@ -391,9 +398,10 @@ public abstract class Matrix implements Cloneable
      */
     public void solve(Matrix b, Matrix x)
     {
-        Matrix A = clone();
-        int[] P = new int[rows() + 1];
-        lupDecompose(A, 0.001, P);
+        if (A == null)
+        {
+            throw new IllegalArgumentException("decompose() not called");
+        }
         lupSolve(A, P, b, x);
     }
     /**
@@ -402,14 +410,25 @@ public abstract class Matrix implements Cloneable
      */
     public Matrix invert()
     {
-        Matrix A = clone();
+        if (A == null)
+        {
+            throw new IllegalArgumentException("decompose() not called");
+        }
         Matrix IA = getInstance(rows(), columns());
-        int[] P = new int[rows() + 1];
-        lupDecompose(A, 0.001, P);
         lupInvert(A, P, IA);
         return IA;
     }
-
+    /**
+     * Does LUP decomposition. This method is called before solve(), invert() or
+     * determinant() and must be called if matrix has changed before calling previous
+     * methods.
+     */
+    public void decompose()
+    {
+        A = clone();
+        P = new int[rows() + 1];
+        lupDecompose(A, 0.001, P);
+    }
     private static void lupDecompose(Matrix A, double Tol, int[] P)
     {
         if (!A.isSquare())
@@ -577,16 +596,16 @@ public abstract class Matrix implements Cloneable
     @Override
     public abstract Matrix clone();
     /**
-     * Returns true if oth conforms with this and each item differs less than 2*ulp(v).
-     * @param oth
+     * Returns true if other conforms with this and each item differs less than 2*ulp(v).
+     * @param other
      * @return 
      */
     @Override
-    public boolean equals(Object oth)
+    public boolean equals(Object other)
     {
-        if (oth instanceof Matrix)
+        if (other instanceof Matrix)
         {
-            Matrix mt = (Matrix) oth;
+            Matrix mt = (Matrix) other;
             if (mt.columns() != columns())
             {
                 return false;
