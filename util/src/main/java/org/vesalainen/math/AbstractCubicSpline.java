@@ -180,7 +180,30 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     {
         return eval(x, deltaX, new Point2D.Double());
     }
-
+    public ParameterizedOperator getCurve(double x)
+    {
+        int idx = Arrays.binarySearch(xArr, x);
+        if (idx >= 0)
+        {
+            if (idx != xArr.length-1)
+            {
+                return curves[idx];
+            }
+            else
+            {
+                return curves[idx-1];
+            }
+        }
+        else
+        {
+            int ip = -idx - 1;
+            if (ip <= 0 || ip > curves.length)
+            {
+                throw new IllegalArgumentException("out of range");
+            }
+            return curves[ip - 1];
+        }
+    }
     public double eval(double x, double deltaX, Point2D.Double pnt)
     {
         if (!injection)

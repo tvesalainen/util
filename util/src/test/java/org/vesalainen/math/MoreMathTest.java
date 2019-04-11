@@ -16,7 +16,9 @@
  */
 package org.vesalainen.math;
 
+import java.awt.geom.Point2D;
 import static java.lang.Math.PI;
+import java.util.function.DoubleUnaryOperator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -54,5 +56,35 @@ public class MoreMathTest
                 100);
         assertEquals(1, res, 1e-10);
     }
-    
+    @Test
+    public void testSinDerivative()
+    {
+        DoubleUnaryOperator f = (x)->Math.sin(x);
+        for (double a=0;a<2*Math.PI;a+=0.2)
+        {
+            assertEquals(Math.cos(a), MoreMath.derivative(f, a), 1e-8);
+        }
+    }    
+    @Test
+    public void testCosDerivative()
+    {
+        DoubleUnaryOperator f = (x)->Math.cos(x);
+        for (double a=0;a<2*Math.PI;a+=0.2)
+        {
+            assertEquals(-Math.sin(a), MoreMath.derivative(f, a), 1e-7);
+        }
+    }    
+    @Test
+    public void testDoubleTransformDerivative()
+    {
+        DoubleTransform t = (x,y,c)->c.accept(y*Math.sin(x), y*Math.cos(x));
+        DoubleTransform d = MoreMath.derivative(t);
+        Point2D.Double p = new Point2D.Double();
+        for (double x=0;x<2*Math.PI;x+=0.2)
+        {
+            d.transform(x, 1, p::setLocation);
+            assertEquals(Math.cos(x), p.x, 1e-8);
+            assertEquals(-Math.sin(x), p.y, 1e-7);
+        }
+    }
 }

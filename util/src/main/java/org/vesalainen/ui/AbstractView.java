@@ -82,15 +82,11 @@ public class AbstractView
         combinedTransform = DoubleTransform.chain(affineDoubleTransform, transform);
         inverse = combinedTransform.inverse();
         scale = (Math.abs(affineTransform.getScaleX())+Math.abs(affineTransform.getScaleY()))/2.0;
-        combinedTransform.transform(transformedUserBounds.getCenterX(), transformedUserBounds.getCenterY(), (x,y)->System.err.printf("TR %.1f, %.1f\n", x, y));
     }
     protected void update(Rectangle2D bounds)
     {
-        if (!bounds.isEmpty())
-        {
-            updatePoint(bounds.getMaxX(), bounds.getMaxY());
-            updatePoint(bounds.getMinX(), bounds.getMinY());
-        }
+        updatePoint(bounds.getMaxX(), bounds.getMaxY());
+        updatePoint(bounds.getMinX(), bounds.getMinY());
     }
     /**
      * Updates the limits if point is not inside visible screen.

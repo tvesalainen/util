@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.ui.scale.Scale;
 
 /**
@@ -44,6 +45,12 @@ public class Plotter extends AbstractPlotter
     {
         super(width, height, background, keepAspectRatio, xScale, yScale);
     }
+
+    public Plotter(int width, int height, Color background, boolean keepAspectRatio, Scale xScale, Scale yScale, DoubleTransform transform)
+    {
+        super(width, height, background, keepAspectRatio, xScale, yScale, transform);
+    }
+    
     /**
      * Set default directory for plotting. Affects only plot methods with String
      * filename.

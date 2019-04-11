@@ -22,6 +22,8 @@ import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.ui.Plotter;
+import org.vesalainen.ui.PolarTransform;
+import org.vesalainen.ui.scale.MergeScale;
 
 /**
  *
@@ -38,13 +40,8 @@ public class PolarCubicSplineTest
     public void testEval() throws IOException
     {
         PolarCubicSpline pcs = new PolarCubicSpline(0, 100, 90, 150, 180, 50, 270, 150);
-        //PolarCubicSpline pcs = new PolarCubicSpline(0, 10, 10, 20, 30, 10, 90, 30, 180, 20, 270, 30, 300, 30, 350, -20);
-        Plotter plotter = new Plotter(1000, 1000, Color.WHITE);
-        plotter.setColor(Color.RED);
-        plotter.setFont("Arial", BOLD, 20);
-        plotter.draw(pcs);
-        plotter.drawCoordinates();
-        plotter.plot("polar", "png");
+        ParameterizedOperator c0 = pcs.getCurve(0);
+        ParameterizedOperator c360 = pcs.getCurve(360);
     }
     
 }
