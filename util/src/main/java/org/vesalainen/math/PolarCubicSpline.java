@@ -16,48 +16,46 @@
  */
 package org.vesalainen.math;
 
-import java.util.Arrays;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class PolarCubicSpline extends RelaxedCubicSpline
 {
-    private double fullCircle;
 
     public PolarCubicSpline(double... points)
     {
-        this(false, points);
+        this(false, 3, points);
     }
-    public PolarCubicSpline(boolean useRadians, double... points)
+    public PolarCubicSpline(boolean useRadians, int external, double... points)
     {
-        super();
+        super(createControlPoints(useRadians, external, points));
+    }
+    private static double[] createControlPoints(boolean useRadians, int external, double... points)
+    {
+        double fullCircle;
         if (useRadians)
         {
-            this.fullCircle = Math.PI;
+            fullCircle = 2*Math.PI;
         }
         else
         {
-            this.fullCircle = 360;
+            fullCircle = 360;
         }
-        int e = 3;
         int pe = points.length;
-        double[] pts = new double [points.length+4*e];
-        for (int ii=0;ii<e;ii++)
+        double[] pts = new double [points.length+4*external];
+        for (int ii=0;ii<external;ii++)
         {
-            pts[2*ii] = points[pe-2*e+2*ii]-fullCircle;
-            pts[2*ii+1] = points[pe-2*e+1+2*ii];
+            pts[2*ii] = points[pe-2*external+2*ii]-fullCircle;
+            pts[2*ii+1] = points[pe-2*external+1+2*ii];
         }
-        System.arraycopy(points, 0, pts, 2*e, pe);
-        for (int ii=0;ii<e;ii++)
+        System.arraycopy(points, 0, pts, 2*external, pe);
+        for (int ii=0;ii<external;ii++)
         {
-            pts[2*ii+pts.length-2*e] = points[2*ii]+fullCircle;
-            pts[2*ii+pts.length-2*e+1] = points[2*ii+1];
+            pts[2*ii+pts.length-2*external] = points[2*ii]+fullCircle;
+            pts[2*ii+pts.length-2*external+1] = points[2*ii+1];
         }
-        double[] cp1 = createControlPoints(pts);
-        double[] cp2 = Arrays.copyOfRange(cp1, 6*e, cp1.length-6*e);
-        init(cp1);
+        return pts;
     }
     
 }

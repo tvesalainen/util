@@ -94,7 +94,7 @@ public class BezierCurve
     }
     public ParameterizedOperator operator(double[] controlPoints, int offset)
     {
-        return new Operator(controlPoints, offset);
+        return new Operator(getDegree(), controlPoints, offset);
     }
     /**
      * Create first derivative function for fixed control points.
@@ -112,12 +112,12 @@ public class BezierCurve
     private ParameterizedOperator derivative(double[] controlPoints, int offset)
     {
         double[] cp = new double[2*length-2];
+        int degree = getDegree();
         for (int ii=0;ii<length-1;ii++)
         {
-            cp[2*ii] = controlPoints[2*(ii+1)+offset]-controlPoints[2*ii+offset];
-            cp[2*ii+1] = controlPoints[2*(ii+1)+1+offset]-controlPoints[2*ii+1+offset];
+            cp[2*ii] = degree*(controlPoints[2*(ii+1)+offset]-controlPoints[2*ii+offset]);
+            cp[2*ii+1] = degree*(controlPoints[2*(ii+1)+1+offset]-controlPoints[2*ii+1+offset]);
         }
-        int degree = getDegree();
         if (degree == 1)
         {
             return (t,c)->c.accept(cp[0], cp[1]);
@@ -125,7 +125,7 @@ public class BezierCurve
         else
         {
             BezierCurve bc = getInstance(degree-1);
-            return (t,c)->bc.calc(t, (x,y)->c.accept(degree*x, degree*y), cp);
+            return bc.operator(cp);
         }
     }
     /**
@@ -143,28 +143,8 @@ public class BezierCurve
     }
     private ParameterizedOperator secondDerivative(double[] controlPoints, int offset)
     {
-        double[] cp = new double[2*length-2];
-        for (int ii=0;ii<length-1;ii++)
-        {
-            cp[2*ii] = controlPoints[2*(ii+1)+offset]-controlPoints[2*ii+offset];
-            cp[2*ii+1] = controlPoints[2*(ii+1)+1+offset]-controlPoints[2*ii+1+offset];
-        }
-        for (int ii=0;ii<length-2;ii++)
-        {
-            cp[2*ii] = cp[2*(ii+1)]-cp[2*ii];
-            cp[2*ii+1] = cp[2*(ii+1)+1]-cp[2*ii+1];
-        }
-        int degree = getDegree();
-        if (degree == 2)
-        {
-            return (t,c)->c.accept(cp[0], cp[1]);
-        }
-        else
-        {
-            BezierCurve bc = getInstance(degree-2);
-            double n = degree*(degree-1);
-            return (t,c)->bc.calc(t, (x,y)->c.accept(n*x, n*y), cp);
-        }
+        ParameterizedOperator derivative = derivative(controlPoints, offset);
+        return derivative.derivative();
     }
     /**
      * Creates or gets BezierCurve instance
@@ -337,18 +317,20 @@ public class BezierCurve
 
     private class Operator implements ParameterizedOperator
     {
+        private int degree;
         private double[] controlPoints;
         private int offset;
         private ParameterizedOperator operator;
         private ParameterizedOperator derivative;
         private ParameterizedOperator secondDerivative;
 
-        public Operator(double... controlPoints)
+        public Operator(int degree, double... controlPoints)
         {
-            this(controlPoints, 0);
+            this(degree, controlPoints, 0);
         }
-        public Operator(double[] controlPoints, int offset)
+        public Operator(int degree, double[] controlPoints, int offset)
         {
+            this.degree = degree;
             this.controlPoints = controlPoints;
             this.offset = offset;
             this.operator = (t,c)->calc(t, c, controlPoints, offset);
@@ -378,6 +360,76 @@ public class BezierCurve
                 secondDerivative = BezierCurve.this.secondDerivative(controlPoints, offset);
             }
             return secondDerivative;
+        }
+
+        @Override
+        public double evalTForX(double x, double deltaX, Point2D.Double pnt)
+        {
+            double s1 = controlPoints[offset];
+            double s2 = controlPoints[offset+2*degree];
+            if (x < s1 || x > s2)
+            {
+                throw new IllegalArgumentException("out of range");
+            }
+            if (x == s1)
+            {
+                return 0;
+            }
+            if (x == s2)
+            {
+                return 1;
+            }
+            double t = (x - s1) / (s2 - s1);
+            eval(t, pnt::setLocation);
+            int count = 0;
+            while (Math.abs(x - pnt.x) > deltaX)
+            {
+                if (count > 128)
+                {
+                    throw new IllegalArgumentException("deltaX too small");
+                }
+                double d = x - pnt.x;
+                derivative().eval(t, pnt::setLocation);
+                t += d / pnt.x;
+                eval(t, pnt::setLocation);
+                count++;
+            }
+            return t;
+        }
+
+        @Override
+        public double evalTForY(double y, double deltaY, Point2D.Double pnt)
+        {
+            double s1 = controlPoints[offset+1];
+            double s2 = controlPoints[offset+2*degree+1];
+            if (y < s1 || y > s2)
+            {
+                throw new IllegalArgumentException("out of range");
+            }
+            if (y == s1)
+            {
+                return 0;
+            }
+            if (y == s2)
+            {
+                return 1;
+            }
+            double t = (y - s1) / (s2 - s1);
+            eval(t, pnt::setLocation);
+            int count = 0;
+            while (Math.abs(y - pnt.y) > deltaY)
+            {
+                if (count > 128)
+                {
+                    throw new IllegalArgumentException("deltaX too small");
+                }
+                double d = y - pnt.y;
+                derivative().eval(t, pnt::setLocation);
+                t += d / pnt.y;
+                eval(t, pnt::setLocation);
+                count++;
+            }
+            return t;
         }
         
     }

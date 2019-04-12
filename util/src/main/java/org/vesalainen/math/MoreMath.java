@@ -80,6 +80,21 @@ public final class MoreMath
             c.accept(p.x/h12, p.y/h12);
         };
     }
+    public static ParameterizedOperator derivative(ParameterizedOperator op)
+    {
+        return (t,c)->
+        {
+            double h = t != 0.0 ? SQRT_EPSILON*t : SQRT_EPSILON;
+            double h2 = 2.0*h;
+            double h12 = 12.0*h;
+            Point2D.Double p = PNT1.get();
+            op.eval(t+h2, (xx,yy)->p.setLocation(-xx, -yy));
+            op.eval(t+h, (xx,yy)->p.setLocation(p.x+8*xx, p.y+8*yy));
+            op.eval(t-h, (xx,yy)->p.setLocation(p.x-8*xx, p.y-8*yy));
+            op.eval(t-h2, (xx,yy)->p.setLocation(p.x+xx, p.y+yy));
+            c.accept(p.x/h12, p.y/h12);
+        };
+    }
     /**
      * Returns numerical arc length between x1 and x2
      * @param x1

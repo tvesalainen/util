@@ -176,10 +176,6 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         return eval(x, 10 * Math.ulp(x));
     }
 
-    public double eval(double x, double deltaX)
-    {
-        return eval(x, deltaX, new Point2D.Double());
-    }
     public ParameterizedOperator getCurve(double x)
     {
         int idx = Arrays.binarySearch(xArr, x);
@@ -204,6 +200,10 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             return curves[ip - 1];
         }
     }
+    public double eval(double x, double deltaX)
+    {
+        return eval(x, deltaX, new Point2D.Double());
+    }
     public double eval(double x, double deltaX, Point2D.Double pnt)
     {
         if (!injection)
@@ -223,24 +223,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
                 throw new IllegalArgumentException("out of range");
             }
             ParameterizedOperator curve = curves[ip - 1];
-            double s1 = xArr[ip - 1];
-            double s2 = xArr[ip];
-            double t = (x - s1) / (s2 - s1);
-            curve.eval(t, pnt::setLocation);
-            int count = 0;
-            while (Math.abs(x - pnt.x) > deltaX)
-            {
-                if (count > 128)
-                {
-                    throw new IllegalArgumentException("deltaX too small");
-                }
-                double d = x - pnt.x;
-                curve.derivative().eval(t, pnt::setLocation);
-                t += d / pnt.x;
-                curve.eval(t, pnt::setLocation);
-                count++;
-            }
-            return pnt.y;
+            return curve.evalY(x, deltaX, pnt);
         }
     }
 

@@ -39,6 +39,58 @@ public interface ParameterizedOperator
     {
         throw new UnsupportedOperationException("derivative not supported");
     }
+    default double evalY(double x)
+    {
+        return evalY(x, 10 * Math.ulp(x));
+    }
+    default double evalY(double x, double deltaX)
+    {
+        return evalY(x, deltaX, new Point2D.Double());
+    }
+    default double evalY(double x, double deltaX, Point2D.Double pnt)
+    {
+        double t = evalTForX(x, deltaX, pnt);
+        eval(t, pnt::setLocation);
+        return pnt.y;
+    }
+    default double evalX(double y)
+    {
+        return evalX(y, 10 * Math.ulp(y));
+    }
+    default double evalX(double y, double deltaY)
+    {
+        return evalX(y, deltaY, new Point2D.Double());
+    }
+    default double evalX(double y, double deltaY, Point2D.Double pnt)
+    {
+        double t = evalTForY(y, deltaY, pnt);
+        eval(t, pnt::setLocation);
+        return pnt.x;
+    }
+    default double evalTForY(double y)
+    {
+        return evalTForY(y, 10 * Math.ulp(y));
+    }
+    default double evalTForY(double y, double deltaY)
+    {
+        return evalTForY(y, deltaY, new Point2D.Double());
+    }
+    default double evalTForY(double y, double deltaY, Point2D.Double pnt)
+    {
+        throw new UnsupportedOperationException();
+    }
+    default double evalTForX(double x)
+    {
+        return evalTForX(x, 10 * Math.ulp(x));
+    }
+    default double evalTForX(double x, double deltaX)
+    {
+        return evalTForX(x, deltaX, new Point2D.Double());
+    }
+    default double evalTForX(double x, double deltaX, Point2D.Double pnt)
+    {
+        throw new UnsupportedOperationException();
+    }
     /**
      * Returns parameterized MathFunction  at range 0.0 - 1.0 
      * @param f

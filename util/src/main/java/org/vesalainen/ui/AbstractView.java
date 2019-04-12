@@ -85,8 +85,11 @@ public class AbstractView
     }
     protected void update(Rectangle2D bounds)
     {
-        updatePoint(bounds.getMaxX(), bounds.getMaxY());
-        updatePoint(bounds.getMinX(), bounds.getMinY());
+        if (bounds.getWidth() > 0 || bounds.getHeight() > 0)
+        {
+            updatePoint(bounds.getMaxX(), bounds.getMaxY());
+            updatePoint(bounds.getMinX(), bounds.getMinY());
+        }
     }
     /**
      * Updates the limits if point is not inside visible screen.

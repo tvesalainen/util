@@ -70,6 +70,7 @@ public class BezierCurveTest
         Point2D.Double p3 = new Point2D.Double(2,1);
         BezierCurve bc = BezierCurve.getInstance(3);
         ParameterizedOperator op = bc.operator(p0, p1, p2, p3);
+        ParameterizedOperator numder = MoreMath.derivative(op);
         ParameterizedOperator derivate = op.derivative();
         Point2D.Double exp1 = Points.mul(3, Points.sub(p1, p0));
         Point2D.Double exp2 = Points.mul(3, Points.sub(p3, p2));
@@ -78,12 +79,13 @@ public class BezierCurveTest
         assertEquals(exp1, p);
         derivate.eval(1, p::setLocation);
         assertEquals(exp2, p);
-        double t=0;
-        while(t<=1)
+        double t=0.1;
+        while(t<1)
         {
             op.eval(t, p::setLocation);
             System.err.print("P(t)="+p);
             derivate.eval(t, p::setLocation);
+            numder.eval(t, exp1::setLocation);
             System.err.println(" P'(t)="+p);
             t += 1.0/Points.len(p);
         }
@@ -148,5 +150,22 @@ public class BezierCurveTest
             assertTrue(pathLength < pathLengthEstimate);
         }
     }
-    
+    @Test
+    public void testEval()
+    {
+        Point2D.Double p0 = new Point2D.Double(0,0);
+        Point2D.Double p1 = new Point2D.Double(1,5);
+        Point2D.Double p2 = new Point2D.Double(2,7);
+        Point2D.Double p3 = new Point2D.Double(3,8);
+        Point2D.Double p = new Point2D.Double();
+        BezierCurve bc = BezierCurve.getInstance(3);
+        ParameterizedOperator op = bc.operator(p0, p1, p2, p3);
+        assertEquals(0, op.evalY(0), 1e-10);
+        assertEquals(8, op.evalY(3), 1e-10);
+        assertEquals(0, op.evalX(0), 1e-10);
+        assertEquals(3, op.evalX(8), 1e-10);
+        op.eval(0.5, p::setLocation);
+        assertEquals(p.y, op.evalY(p.x), 1e-10);
+        assertEquals(p.x, op.evalX(p.y), 1e-10);
+    }
 }
