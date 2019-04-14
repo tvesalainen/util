@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.ui.Plotter;
+import org.vesalainen.ui.PolarPlotter;
 import org.vesalainen.ui.PolarTransform;
 import org.vesalainen.ui.scale.MergeScale;
 
@@ -65,18 +66,13 @@ public class PolarCubicSplineTest
     @Test
     public void testPlot() throws IOException
     {
-        Plotter plotter = new Plotter(1000, 1000, Color.WHITE, true, MergeScale.BASIC15, MergeScale.BASIC15, new PolarTransform());
-        plotter.updatePoint(0, 2);
-        plotter.updatePoint(90, 2);
-        plotter.updatePoint(180, 2);
-        plotter.updatePoint(270, 2);
+        PolarPlotter plotter = new PolarPlotter(200, 200, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
         plotter.drawLine(0, 1, 360, 1);
-        plotter.drawLine(0, 2, 100, 2);
         //plotter.draw(pcs);
         //plotter.drawCoordinates();
-        plotter.plot("polar", "png");
+        plotter.plot("polar.png");
     }
 }
 

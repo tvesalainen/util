@@ -56,21 +56,21 @@ public class Plotter extends AbstractPlotter
      * filename.
      * @param dir 
      */
-    public void setDir(File dir)
+    @Deprecated public void setDir(File dir)
     {
         this.dir = dir;
     }
 
-    public void plotToDocFiles(Class<?> cls, String filename, String ext) throws IOException
+    @Deprecated public void plotToDocFiles(Class<?> cls, String filename, String ext) throws IOException
     {
         String dirName = String.format("src/main/resources/%s/doc-files", 
                 cls.getPackage().getName().replace('.', '/'));
         File dir = new File(dirName);
         dir.mkdirs();
         File file = new File(dir, filename+"."+ext);
-        plot(file, ext);
+        plot(file.toPath());
     }
-    public void plot(String filename, String ext) throws IOException
+    @Deprecated public void plot(String filename, String ext) throws IOException
     {
         File file;
         if (dir != null)
@@ -81,21 +81,7 @@ public class Plotter extends AbstractPlotter
         {
             file = new File(filename+'.'+ext);
         }
-        plot(file, ext);
-    }
-    public void plot(File file, String ext) throws IOException
-    {
-        ImageDrawer drawer = new ImageDrawer((int)screenBounds.width, (int)screenBounds.height, background);
-        plot(drawer);
-        try (FileOutputStream fos = new FileOutputStream(file))
-        {
-            //System.err.println(Arrays.toString(ImageIO.getWriterMIMETypes()));  // [image/vnd.wap.wbmp, image/png, image/x-png, image/jpeg, image/bmp, image/gif]
-            ImageIO.write(drawer.getImage(), ext, fos);
-        }
-        catch (IOException ex)
-        {
-            throw ex;
-         }
+        plot(file.toPath());
     }
 
 }

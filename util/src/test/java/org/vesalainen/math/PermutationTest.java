@@ -16,39 +16,40 @@
  */
 package org.vesalainen.math;
 
-import org.vesalainen.math.matrix.DoubleMatrix;
+import java.util.Arrays;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RelaxedCubicSpline extends AbstractCubicSpline
+public class PermutationTest
 {
-    private static final double D1P6 = 1.0/6.0;
-    private static final double D4P6 = 4.0/6.0;
-
-    protected RelaxedCubicSpline()
-    {
-    }
     
-    public RelaxedCubicSpline(double... points)
+    public PermutationTest()
     {
-        super(points);
     }
 
-    @Override
-    protected DoubleMatrix createMatrix(int n)
+    @Test
+    public void test0()
     {
-        DoubleMatrix m = DoubleMatrix.getInstance(n, n);
-        m.set(0, 0, 1);
-        for (int i=1;i<n-1;i++)
+        Permutation p = new Permutation(2);
+        while (p.hasNext())
         {
-            m.set(i, i-1, D1P6);
-            m.set(i, i, D4P6);
-            m.set(i, i+1, D1P6);
+            System.err.println(p.sign+" "+Arrays.toString(p.array));
+            p.nextInt();
         }
-        m.set(n-1, n-1, 1);
-        return m;
+    }
+    @Test
+    public void test1()
+    {
+        Permutation p = new Permutation(3);
+        while (p.hasNext())
+        {
+            System.err.println(p.sign+" "+Arrays.toString(p.array));
+            p.nextInt();
+        }
     }
     
 }

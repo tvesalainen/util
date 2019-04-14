@@ -36,11 +36,4 @@ public class ScreenPlotter extends AbstractPlotter
         super(component.getWidth(), component.getHeight(), background, keepAspectRatio);
     }
     
-    public void plot(Graphics2D graphics2D)
-    {
-        graphics2D.setBackground(background);
-        graphics2D.clearRect(0, 0, (int)screenBounds.width, (int)screenBounds.height);
-        Graphics2DDrawer g2d = new Graphics2DDrawer(graphics2D);
-        plot(g2d);
-    }
 }

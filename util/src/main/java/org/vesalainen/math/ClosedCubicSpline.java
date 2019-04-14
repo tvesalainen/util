@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math;
 
+import org.vesalainen.math.matrix.DoubleMatrix;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -31,9 +33,9 @@ public class ClosedCubicSpline extends AbstractCubicSpline
     }
 
     @Override
-    protected Matrix createMatrix(int n)
+    protected DoubleMatrix createMatrix(int n)
     {
-        Matrix m = Matrix.getInstance(n, n);
+        DoubleMatrix m = DoubleMatrix.getInstance(n, n);
         for (int i=0;i<n;i++)
         {
             m.set(i, Math.floorMod(i-1, n), D1P6);

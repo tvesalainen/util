@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import org.vesalainen.math.matrix.DoubleMatrix;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -31,7 +32,7 @@ import org.vesalainen.ui.AbstractShape;
  */
 public abstract class AbstractCubicSpline extends AbstractShape implements MathFunction
 {
-    private static final Map<Class<? extends AbstractCubicSpline>,Map<Integer,Matrix>> matrixCache = new HashMap<>();
+    private static final Map<Class<? extends AbstractCubicSpline>,Map<Integer,DoubleMatrix>> matrixCache = new HashMap<>();
     
     protected boolean closed;
     protected boolean injection;
@@ -81,7 +82,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     protected final double[] createControlPoints(double[] points)
     {
         int n = points.length/2;
-        Matrix S = Matrix.getInstance(n, points);
+        DoubleMatrix S = DoubleMatrix.getInstance(n, points);
         int cc;
         if (closed)
         {
@@ -91,8 +92,8 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         {
             cc = n-1;
         }
-        Matrix M = getMatrix(n);
-        Matrix B = M.solve(S);
+        DoubleMatrix M = getMatrix(n);
+        DoubleMatrix B = M.solve(S);
         double[] cp = new double[6*cc+2];
         int pi = 0;
         S.getRow(0, cp, pi);
@@ -147,19 +148,19 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         }
     }
     /**
-     * Returns class cached Matrix with decompose already called.
+     * Returns class cached DoubleMatrix with decompose already called.
      * @param n
      * @return 
      */
-    protected Matrix getMatrix(int n)
+    protected DoubleMatrix getMatrix(int n)
     {
-        Map<Integer, Matrix> degreeMap = matrixCache.get(this.getClass());
+        Map<Integer, DoubleMatrix> degreeMap = matrixCache.get(this.getClass());
         if (degreeMap == null)
         {
             degreeMap = new HashMap<>();
             matrixCache.put(this.getClass(), degreeMap);
         }
-        Matrix m = degreeMap.get(n);
+        DoubleMatrix m = degreeMap.get(n);
         if (m == null)
         {
             m = createMatrix(n);
@@ -168,7 +169,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         }
         return m;
     }
-    protected abstract Matrix createMatrix(int n);
+    protected abstract DoubleMatrix createMatrix(int n);
     
     @Override
     public double applyAsDouble(double x)

@@ -23,13 +23,13 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.function.IntBinaryOperator;
-import org.vesalainen.math.ParameterizedOperator;
-import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T> Write target
  */
 public interface Drawer
 {
@@ -68,6 +68,8 @@ public interface Drawer
     void drawQuad(double... cp);
     void drawCubic(double... cp);
     void closePath(double... cp);
+    <T> boolean supports(T target);
+    <T> void write(T target);
     // ----------------- to be removed --------------------------------
     @Deprecated default Rectangle2D bounds(String text)
     {

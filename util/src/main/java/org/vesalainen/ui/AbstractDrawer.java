@@ -116,6 +116,10 @@ public abstract class AbstractDrawer implements Drawer
 
     protected void updateDelta(double dx, double dy)
     {
+        if (dx < 0)
+        {
+            System.err.println("DELTA "+dx+", "+dy);
+        }
         delta = Math.hypot(dx, dy);
     }
 }

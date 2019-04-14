@@ -71,7 +71,7 @@ public class PlotterT
             p.drawTitle(LEFT, "Vasenotsikko");
             p.drawTitle(BOTTOM, "Alaotsikko");
             p.drawTitle(RIGHT, "Oikeaotsikko");
-            p.plot("plotterTest", "png");
+            p.plot("plotterTest.png");
         }
         catch (IOException ex)
         {

@@ -20,6 +20,7 @@ import org.vesalainen.math.DoubleTransform;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -29,6 +30,9 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +42,6 @@ import java.util.stream.Stream;
 import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.MathFunction;
-import org.vesalainen.math.ParameterizedOperator;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
 import static org.vesalainen.ui.Direction.*;
@@ -130,6 +133,22 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         return paint;
     }
 
+    public void plot(String path) throws IOException
+    {
+        plot(Paths.get(path));
+    }
+    public void plot(Path path) throws IOException
+    {
+        ImageDrawer drawer = new ImageDrawer(screenBounds.width, screenBounds.height, background);
+        plot(drawer);
+        drawer.write(path);
+    }
+    public void plot(Graphics2D g) throws IOException
+    {
+        ImageDrawer drawer = new ImageDrawer(screenBounds.width, screenBounds.height, background);
+        plot(drawer);
+        drawer.write(g);
+    }
     protected void plot(Drawer drawer)
     {
         update(shapes.stream().map(Drawable::getBounds));

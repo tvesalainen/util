@@ -26,6 +26,11 @@ import java.awt.geom.PathIterator;
 import static java.awt.geom.PathIterator.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.imageio.ImageIO;
 import org.vesalainen.math.BezierCurve;
 import static org.vesalainen.math.BezierCurve.*;
 import org.vesalainen.util.function.IntBiPredicate;
@@ -254,6 +259,71 @@ public class ImageDrawer extends AbstractDrawer
     public BufferedImage getImage()
     {
         return image;
+    }
+
+    @Override
+    public <T> boolean supports(T target)
+    {
+        if (target instanceof Graphics2D)
+        {
+            return true;
+        }
+        if (target instanceof Path)
+        {
+            Path path = (Path) target;
+            String fs = path.getFileName().toString();
+            int idx = fs.lastIndexOf('.');
+            if (idx == -1)
+            {
+                return false;
+            }
+            String fileSuffix = fs.substring(idx-1);
+            for (String suffix : ImageIO.getReaderFileSuffixes())
+            {
+                if (fileSuffix.equalsIgnoreCase(suffix))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    
+    @Override
+    public <T> void write(T target)
+    {
+        if (target instanceof Graphics2D)
+        {
+            Graphics2D g = (Graphics2D) target;
+            g.drawImage(image, null, null);
+        }
+        else
+        {
+            if (target instanceof Path)
+            {
+                Path path = (Path) target;
+                String fs = path.getFileName().toString();
+                int idx = fs.lastIndexOf('.');
+                if (idx == -1)
+                {
+                    throw new IllegalArgumentException("no file suffix");
+                }
+                String fileFormat = fs.substring(idx+1);
+                try (OutputStream os = Files.newOutputStream(path))
+                {
+                    ImageIO.write(image, fileFormat, os);
+                }
+                catch (IOException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+            }
+            else
+            {
+                throw new UnsupportedOperationException(target+" not supported");
+            }
+        }
     }
     
 }
