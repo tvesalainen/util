@@ -14,55 +14,51 @@
  * You should have received get copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
+package org.vesalainen.math.matrix;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.function.IntSupplier;
 
 /**
- * A Matrix. Uses LUP decomposing for invert, solve and determinant. Call 
+ * A DoubleMatrix. Uses LUP decomposing for invert, solve and determinant. Call 
  * decompose before calling these methods. Decompose tells if matrix is invertible.
  * No use to call determinant for that.
  * <p>Note! Row and column numbers start with 0.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class Matrix implements Cloneable, Serializable
+public class DoubleMatrix extends AbstractMatrix
 {
-    private static final long serialVersionUID = 1L;
-
-    protected IntSupplier rows;
-    protected IntSupplier cols;
     protected ItemSupplier supplier;
     protected ItemConsumer consumer;
-    private Matrix A;
+    private DoubleMatrix A;
     private int[] P;
 
-    protected Matrix(int rows, int cols)
+    protected DoubleMatrix(int rows, int cols)
     {
-        this(() -> rows, () -> cols);
+        this(rows, cols, new double[rows * cols]);
     }
 
-    protected Matrix(IntSupplier rows, IntSupplier cols)
+    protected DoubleMatrix(int rows, int cols, double[] d)
     {
-        this.rows = rows;
-        this.cols = cols;
+        super(rows, cols, d);
+        supplier = (i, j) -> d[cols * i + j];
+        consumer = (i, j, v) -> d[cols * i + j] = v;
     }
-    /**
-     * Returns number of rows
-     * @return 
-     */
-    public int rows()
+
+     @Override
+    public DoubleMatrix clone()
     {
-        return rows.getAsInt();
+        return new DoubleMatrix(rows, cols, (double[]) copyOf(array, cls));
     }
+
     /**
-     * Returns number of columns
-     * @return 
+     * Swaps row r1 and r2 possibly using tmp
+     * @param r1
+     * @param r2
+     * @param tmp double [columns]
      */
-    public int columns()
+    public void swapRows(int r1, int r2, double[] tmp)
     {
-        return cols.getAsInt();
+        super.swapRows(r1, r2, tmp);
     }
     /**
      * Returns item at i,j. Starts at 0.
@@ -80,7 +76,7 @@ public abstract class Matrix implements Cloneable, Serializable
      * @param j
      * @param B 
      */
-    public void set(int i, int j, Matrix B)
+    public void set(int i, int j, DoubleMatrix B)
     {
         int m = B.rows();
         int n = B.columns();
@@ -110,7 +106,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void setRow(int i, double[] array, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             set(i, j, array[j+offset]);
@@ -124,7 +120,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void getRow(int i, double[] array, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             array[j+offset] = get(i, j);
@@ -138,7 +134,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void getColumn(int j, double[] array, int offset)
     {
-        int m = rows.getAsInt();
+        int m = rows;
         for (int i=0;i<m;i++)
         {
             array[i+offset] = get(i, j);
@@ -152,7 +148,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void addRow(int i, double[] arr, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             add(i, j, arr[j+offset]);
@@ -166,7 +162,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void subRow(int i, double[] arr, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             sub(i, j, arr[j+offset]);
@@ -180,7 +176,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void mulRow(int i, double[] arr, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             mul(i, j, arr[j+offset]);
@@ -194,7 +190,7 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void divRow(int i, double[] arr, int offset)
     {
-        int n = cols.getAsInt();
+        int n = cols;
         for (int j=0;j<n;j++)
         {
             div(i, j, arr[j+offset]);
@@ -246,8 +242,8 @@ public abstract class Matrix implements Cloneable, Serializable
      */
     public void scalarMultiply(double c)
     {
-        int m = rows.getAsInt();
-        int n = cols.getAsInt();
+        int m = rows;
+        int n = cols;
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < n; j++)
@@ -257,80 +253,49 @@ public abstract class Matrix implements Cloneable, Serializable
         }
     }
 
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        int m = rows.getAsInt();
-        int n = cols.getAsInt();
-        for (int i = 0; i < m; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                sb.append(supplier.get(i, j)).append(' ');
-            }
-            sb.append('\n');
-        }
-        return sb.toString();
-    }
     /**
-     * Return new Matrix which is copy of this Matrix with each item scalar multiplied with c.
+     * Return new DoubleMatrix which is copy of this DoubleMatrix with each item scalar multiplied with c.
      * @param c
      * @return 
      */
-    public Matrix multiply(double c)
+    public DoubleMatrix multiply(double c)
     {
-        Matrix clone = clone();
+        DoubleMatrix clone = clone();
         clone.scalarMultiply(c);
         return clone;
     }
     /**
-     * Return new Matrix which is copy of given Matrix with each item scalar multiplied with c.
+     * Return new DoubleMatrix which is copy of given DoubleMatrix with each item scalar multiplied with c.
      * @param c
      * @param m
      * @return 
      */
-    public static Matrix multiply(double c, Matrix m)
+    public static DoubleMatrix multiply(double c, DoubleMatrix m)
     {
-        Matrix clone = m.clone();
+        DoubleMatrix clone = m.clone();
         clone.scalarMultiply(c);
         return clone;
     }
     /**
-     * Returns true if matrix is square.
-     * @return 
-     */
-    public boolean isSquare()
-    {
-        return rows.getAsInt() == cols.getAsInt();
-    }
-    /**
-     * Returns true if matrix has no rows or columns.
-     * @return 
-     */
-    public boolean isEmpty()
-    {
-        return rows.getAsInt() == 0 && cols.getAsInt() == 0;
-    }
-    /**
-     * Returns new Matrix which is this added to m
+     * Returns new DoubleMatrix which is this added to m
      * @param m
      * @return 
      */
-    public Matrix add(Matrix m)
+    public DoubleMatrix add(DoubleMatrix m)
     {
         return add(this, m);
     }
     /**
-     * Returns new Matrix which is transpose of this.
+     * Returns new DoubleMatrix which is transpose of this.
      * @return 
      */
-    public Matrix transpose()
+    @Override
+    public DoubleMatrix transpose()
     {
         int m = rows();
         int n = columns();
         ItemSupplier s = supplier;
-        Matrix tr = getInstance(n, m);
+        DoubleMatrix tr = getInstance(n, m);
         ItemConsumer c = tr.consumer;
         for (int i = 0; i < m; i++)
         {
@@ -359,16 +324,6 @@ public abstract class Matrix implements Cloneable, Serializable
         }
     }
     /**
-     * Swaps row r1 and r2 possibly using tmp
-     * @param r1
-     * @param r2
-     * @param tmp double [columns]
-     */
-    public void swapRows(int r1, int r2, double[] tmp)
-    {
-        swapRows(r1, r2);
-    }
-    /**
      * Return determinant.
      * @return 
      */
@@ -385,9 +340,9 @@ public abstract class Matrix implements Cloneable, Serializable
      * @param b
      * @return 
      */
-    public Matrix solve(Matrix b)
+    public DoubleMatrix solve(DoubleMatrix b)
     {
-        Matrix x = getInstance(b.rows(), b.columns());
+        DoubleMatrix x = getInstance(b.rows(), b.columns());
         solve(b, x);
         return x;
     }
@@ -396,7 +351,7 @@ public abstract class Matrix implements Cloneable, Serializable
      * @param b
      * @param x 
      */
-    public void solve(Matrix b, Matrix x)
+    public void solve(DoubleMatrix b, DoubleMatrix x)
     {
         if (A == null)
         {
@@ -408,13 +363,13 @@ public abstract class Matrix implements Cloneable, Serializable
      * Returns inverted
      * @return 
      */
-    public Matrix invert()
+    public DoubleMatrix invert()
     {
         if (A == null)
         {
             throw new IllegalArgumentException("decompose() not called");
         }
-        Matrix IA = getInstance(rows(), columns());
+        DoubleMatrix IA = getInstance(rows(), columns());
         lupInvert(A, P, IA);
         return IA;
     }
@@ -429,7 +384,7 @@ public abstract class Matrix implements Cloneable, Serializable
         P = new int[rows() + 1];
         lupDecompose(A, 0.001, P);
     }
-    private static void lupDecompose(Matrix A, double Tol, int[] P)
+    private static void lupDecompose(DoubleMatrix A, double Tol, int[] P)
     {
         if (!A.isSquare())
         {
@@ -490,7 +445,7 @@ public abstract class Matrix implements Cloneable, Serializable
 
     }
 
-    private void lupSolve(Matrix A, int[] P, Matrix b, Matrix x)
+    private void lupSolve(DoubleMatrix A, int[] P, DoubleMatrix b, DoubleMatrix x)
     {
         ItemSupplier As = A.supplier;
         ItemSupplier bs = b.supplier;
@@ -530,7 +485,7 @@ public abstract class Matrix implements Cloneable, Serializable
         }
     }
 
-    private void lupInvert(Matrix A, int[] P, Matrix IA)
+    private void lupInvert(DoubleMatrix A, int[] P, DoubleMatrix IA)
     {
         ItemSupplier As = A.supplier;
         ItemSupplier IAs = IA.supplier;
@@ -568,7 +523,7 @@ public abstract class Matrix implements Cloneable, Serializable
         }
     }
 
-    private static double lupDeterminant(Matrix A, int[] P)
+    private static double lupDeterminant(DoubleMatrix A, int[] P)
     {
         ItemSupplier As = A.supplier;
         int N = A.columns();
@@ -590,12 +545,6 @@ public abstract class Matrix implements Cloneable, Serializable
         }
     }
     /**
-     * Returns independent clone
-     * @return 
-     */
-    @Override
-    public abstract Matrix clone();
-    /**
      * Returns true if other conforms with this and each item differs less than 2*ulp(v).
      * @param other
      * @return 
@@ -603,9 +552,9 @@ public abstract class Matrix implements Cloneable, Serializable
     @Override
     public boolean equals(Object other)
     {
-        if (other instanceof Matrix)
+        if (other instanceof DoubleMatrix)
         {
-            Matrix mt = (Matrix) other;
+            DoubleMatrix mt = (DoubleMatrix) other;
             if (mt.columns() != columns())
             {
                 return false;
@@ -634,40 +583,40 @@ public abstract class Matrix implements Cloneable, Serializable
         return false;
     }
     /**
-     * Returns new Matrix initialized to zeroes.
+     * Returns new DoubleMatrix initialized to zeroes.
      * @param rows
      * @param cols
      * @return 
      */
-    public static Matrix getInstance(int rows, int cols)
+    public static DoubleMatrix getInstance(int rows, int cols)
     {
-        return new MatrixImpl(rows, cols);
+        return new DoubleMatrix(rows, cols);
     }
     /**
-     * Returns new Matrix initialized to values.
+     * Returns new DoubleMatrix initialized to values.
      * <p>E.g. 2x2 matrix has A00, A01, A10, A11
      * @param rows Number of rows
      * @param values Values row by row
      * @return 
      */
-    public static Matrix getInstance(int rows, double... values)
+    public static DoubleMatrix getInstance(int rows, double... values)
     {
         if (values.length % rows != 0)
         {
             throw new IllegalArgumentException("not full rows");
-        }
-        return new MatrixImpl(rows, values.length / rows, Arrays.copyOf(values, values.length));
+    }
+        return new DoubleMatrix(rows, values.length / rows, Arrays.copyOf(values, values.length));
     }
     /**
-     * Returns new Matrix initialized by function
+     * Returns new DoubleMatrix initialized by function
      * @param rows
      * @param cols
      * @param s
      * @return 
      */
-    public static Matrix getInstance(int rows, int cols, ItemSupplier s)
+    public static DoubleMatrix getInstance(int rows, int cols, ItemSupplier s)
     {
-        Matrix m = new MatrixImpl(rows, cols);
+        DoubleMatrix m = getInstance(rows, cols);
         ItemConsumer c = m.consumer;
         for (int i = 0; i < rows; i++)
         {
@@ -679,23 +628,23 @@ public abstract class Matrix implements Cloneable, Serializable
         return m;
     }
     /**
-     * Returns new Matrix which is m1 added with m2
+     * Returns new DoubleMatrix which is m1 added with m2
      * @param m1
      * @param m2
      * @return 
      */
-    public static Matrix add(Matrix m1, Matrix m2)
+    public static DoubleMatrix add(DoubleMatrix m1, DoubleMatrix m2)
     {
-        if (m1.rows.getAsInt() != m2.rows.getAsInt()
-                || m1.cols.getAsInt() != m2.cols.getAsInt())
+        if (m1.rows != m2.rows
+                || m1.cols != m2.cols)
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows.getAsInt();
-        int n = m1.cols.getAsInt();
+        int m = m1.rows;
+        int n = m1.cols;
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
-        Matrix mr = Matrix.getInstance(m, n);
+        DoubleMatrix mr = DoubleMatrix.getInstance(m, n);
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {
@@ -707,23 +656,23 @@ public abstract class Matrix implements Cloneable, Serializable
         return mr;
     }
     /**
-     * Returns new Matrix which is m1 multiplied with m2.
+     * Returns new DoubleMatrix which is m1 multiplied with m2.
      * @param m1
      * @param m2
      * @return 
      */
-    public static Matrix multiply(Matrix m1, Matrix m2)
+    public static DoubleMatrix multiply(DoubleMatrix m1, DoubleMatrix m2)
     {
-        if (m1.cols.getAsInt() != m2.rows.getAsInt())
+        if (m1.cols != m2.rows)
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows.getAsInt();
-        int n = m1.cols.getAsInt();
-        int p = m2.cols.getAsInt();
+        int m = m1.rows;
+        int n = m1.cols;
+        int p = m2.cols;
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
-        Matrix mr = Matrix.getInstance(m, p);
+        DoubleMatrix mr = DoubleMatrix.getInstance(m, p);
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {
@@ -744,42 +693,9 @@ public abstract class Matrix implements Cloneable, Serializable
      * @param n
      * @return 
      */
-    public static Matrix identity(int n)
+    public static DoubleMatrix identity(int n)
     {
         return getInstance(n ,n, (i, j) -> i == j ? 1 : 0);
-    }
-
-    protected static class MatrixImpl extends Matrix
-    {
-        private double[] d;
-
-        protected MatrixImpl(int rows, int cols)
-        {
-            this(rows, cols, new double[rows * cols]);
-        }
-
-        protected MatrixImpl(int rows, int cols, double[] d)
-        {
-            super(rows, cols);
-            this.d = d;
-            supplier = (i, j) -> d[cols * i + j];
-            consumer = (i, j, v) -> d[cols * i + j] = v;
-        }
-
-        @Override
-        public Matrix clone()
-        {
-            return new MatrixImpl(rows.getAsInt(), cols.getAsInt(), Arrays.copyOf(d, d.length));
-        }
-
-        @Override
-        public void swapRows(int r1, int r2, double[] tmp)
-        {
-            int col = columns();
-            System.arraycopy(d, col * r1, tmp, 0, col);
-            System.arraycopy(d, col * r2, d, col * r1, col);
-            System.arraycopy(tmp, 0, d, col * r2, col);
-        }
     }
 
     @FunctionalInterface
@@ -787,7 +703,7 @@ public abstract class Matrix implements Cloneable, Serializable
     {
 
         /**
-         * Returns get ij of matrix
+         * Returns get M of matrix
          *
          * @param i
          * @param j
@@ -811,7 +727,7 @@ public abstract class Matrix implements Cloneable, Serializable
     {
 
         /**
-         * Set ij of matrix
+         * Set M of matrix
          *
          * @param i
          * @param j
