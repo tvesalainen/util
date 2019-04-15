@@ -18,6 +18,7 @@ package org.vesalainen.math.matrix;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.util.Objects;
 
 /**
  *
@@ -35,16 +36,21 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     protected AbstractMatrix(int rows, int cols, Class<T> cls)
     {
-        this(rows, cols, Array.newInstance(cls, rows*cols));
+        this(rows, Array.newInstance(cls, rows*cols));
     }
-    protected AbstractMatrix(int rows, int cols, Object array)
+    protected AbstractMatrix(int rows, Object array)
     {
         if (!array.getClass().isArray())
         {
             throw new IllegalArgumentException("not array");
         }
+        int length = Array.getLength(array);
+        if (length % rows != 0)
+        {
+            throw new IllegalArgumentException("wrong number of items");
+        }
         this.rows = rows;
-        this.cols = cols;
+        this.cols = length/rows;
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> cols * i + j;
@@ -58,7 +64,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public static AbstractMatrix getInstance(int rows, int cols, Class<?> cls)
     {
-        return new AbstractMatrix(rows, cols, Array.newInstance(cls, rows*cols));
+        return new AbstractMatrix(rows, Array.newInstance(cls, rows*cols));
     }
     /**
      * Returns new AbstractMatrix initialized to values.
@@ -74,7 +80,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         {
             throw new IllegalArgumentException("not full rows");
         }
-        return new AbstractMatrix(rows, length / rows, copyOf(values, cls));
+        return new AbstractMatrix(rows, copyOf(values, cls));
     }
     protected static Object copyOf(Object arr, Class<?> cls)
     {
@@ -179,6 +185,52 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             }
         }
         return tr;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 67 * hash + this.rows;
+        hash = 67 * hash + this.cols;
+        hash = 67 * hash + Objects.hashCode(this.array);
+        hash = 67 * hash + Objects.hashCode(this.cls);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final AbstractMatrix<?> other = (AbstractMatrix<?>) obj;
+        if (this.rows != other.rows)
+        {
+            return false;
+        }
+        if (this.cols != other.cols)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.array, other.array))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.cls, other.cls))
+        {
+            return false;
+        }
+        return true;
     }
 
     @FunctionalInterface

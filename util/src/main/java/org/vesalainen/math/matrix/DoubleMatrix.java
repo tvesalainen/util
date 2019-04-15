@@ -34,20 +34,20 @@ public class DoubleMatrix extends AbstractMatrix
 
     protected DoubleMatrix(int rows, int cols)
     {
-        this(rows, cols, new double[rows * cols]);
+        this(rows, new double[rows * cols]);
     }
 
-    protected DoubleMatrix(int rows, int cols, double[] d)
+    protected DoubleMatrix(int rows, double[] d)
     {
-        super(rows, cols, d);
+        super(rows, d);
         supplier = (i, j) -> d[cols * i + j];
         consumer = (i, j, v) -> d[cols * i + j] = v;
     }
 
-     @Override
+    @Override
     public DoubleMatrix clone()
     {
-        return new DoubleMatrix(rows, cols, (double[]) copyOf(array, cls));
+        return new DoubleMatrix(rows, (double[]) copyOf(array, cls));
     }
 
     /**
@@ -331,9 +331,31 @@ public class DoubleMatrix extends AbstractMatrix
     {
         if (A == null)
         {
-            throw new IllegalArgumentException("decompose() not called");
+            return permutationDeterminant();
         }
         return lupDeterminant(A, P);
+    }
+    /**
+     * Calculates determinant by using permutations
+     * @return 
+     */
+    public double permutationDeterminant()
+    {
+        int sign = 1;
+        double sum = 0;
+        PermutationMatrix pm = PermutationMatrix.getInstance(rows);
+        int perms = pm.rows;
+        for (int p=0;p<perms;p++)
+        {
+            double mul = 1;
+            for (int i=0;i<rows;i++)
+            {
+                mul *= get(i, pm.get(p, i));
+            }
+            sum += sign*mul;
+            sign = -sign;
+        }
+        return sum;
     }
     /**
      * Solve linear equation Ax = b returning x
@@ -583,6 +605,7 @@ public class DoubleMatrix extends AbstractMatrix
         return false;
     }
     /**
+     * @deprecated Use initializer
      * Returns new DoubleMatrix initialized to zeroes.
      * @param rows
      * @param cols
@@ -601,11 +624,15 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix getInstance(int rows, double... values)
     {
+        if (rows < 1)
+        {
+            throw new IllegalArgumentException("rows");
+        }
         if (values.length % rows != 0)
         {
             throw new IllegalArgumentException("not full rows");
-    }
-        return new DoubleMatrix(rows, values.length / rows, Arrays.copyOf(values, values.length));
+        }
+        return new DoubleMatrix(rows, Arrays.copyOf(values, values.length));
     }
     /**
      * Returns new DoubleMatrix initialized by function
@@ -616,7 +643,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix getInstance(int rows, int cols, ItemSupplier s)
     {
-        DoubleMatrix m = getInstance(rows, cols);
+        DoubleMatrix m = new DoubleMatrix(rows, cols);
         ItemConsumer c = m.consumer;
         for (int i = 0; i < rows; i++)
         {
@@ -654,6 +681,15 @@ public class DoubleMatrix extends AbstractMatrix
             }
         }
         return mr;
+    }
+    /**
+     * Returns new DoubleMatrix which is this multiplied with m.
+     * @param m
+     * @return 
+     */
+    public DoubleMatrix multiply(DoubleMatrix m)
+    {
+        return multiply(this, m);
     }
     /**
      * Returns new DoubleMatrix which is m1 multiplied with m2.
@@ -711,15 +747,6 @@ public class DoubleMatrix extends AbstractMatrix
          */
         double get(int i, int j);
 
-        /**
-         * Returns ItemSupplier which swaps i and j
-         *
-         * @return
-         */
-        default ItemSupplier swap()
-        {
-            return (i, j) -> get(j, i);
-        }
     }
 
     @FunctionalInterface
@@ -735,14 +762,5 @@ public class DoubleMatrix extends AbstractMatrix
          */
         void set(int i, int j, double v);
 
-        /**
-         * Returns ItemConsumer which swaps i and j
-         *
-         * @return
-         */
-        default ItemConsumer swap()
-        {
-            return (i, j, v) -> set(j, i, v);
-        }
     }
 }

@@ -17,7 +17,6 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
-import org.vesalainen.util.concurrent.ThreadTemporal;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**

@@ -64,6 +64,42 @@ public final class MoreMath
         double y4 = f.applyAsDouble(x-h2);
         return (y1+y2+y3+y4)/(12.0*h);
     }
+    /**
+     * Return partial derivative x
+     * @param f
+     * @return 
+     */
+    public static DoubleBinaryOperator dx(DoubleBinaryOperator f)
+    {
+        return (x,y)->
+        {
+            double h = x != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON;
+            double h2 = 2.0*h;
+            double y1 = -f.applyAsDouble(x+h2, y);
+            double y2 = 8.0*f.applyAsDouble(x+h, y);
+            double y3 = -8.0*f.applyAsDouble(x-h, y);
+            double y4 = f.applyAsDouble(x-h2, y);
+            return (y1+y2+y3+y4)/(12.0*h);
+        };
+    }
+    /**
+     * Return partial derivative x
+     * @param f
+     * @return 
+     */
+    public static DoubleBinaryOperator dy(DoubleBinaryOperator f)
+    {
+        return (x,y)->
+        {
+            double h = y != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON;
+            double h2 = 2.0*h;
+            double y1 = -f.applyAsDouble(x, y+h2);
+            double y2 = 8.0*f.applyAsDouble(x, y+h);
+            double y3 = -8.0*f.applyAsDouble(x, y-h);
+            double y4 = f.applyAsDouble(x, y-h2);
+            return (y1+y2+y3+y4)/(12.0*h);
+        };
+    }
     public static DoubleTransform derivative(DoubleTransform t)
     {
         return (x,y,c)->

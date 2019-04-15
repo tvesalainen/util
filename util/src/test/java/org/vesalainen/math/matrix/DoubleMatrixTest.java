@@ -176,9 +176,10 @@ public class DoubleMatrixTest
     @Test
     public void testDeterminant()
     {
-        DoubleMatrix m = DoubleMatrix.getInstance(2, 1, 2, 3, 4);
+        DoubleMatrix m = DoubleMatrix.getInstance(3, -2, 2, -3, -1, 1, 3, 2, 0, -1);
         m.decompose();
-        assertEquals(1*4-2*3, m.determinant(), 1e-10);
+        assertEquals(18, m.determinant(), 1e-10);
+        assertEquals(18, m.permutationDeterminant(), 1e-10);
     }
     @Test
     public void testInvert()

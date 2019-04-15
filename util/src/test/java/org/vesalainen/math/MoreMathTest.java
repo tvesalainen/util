@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import static java.lang.Math.PI;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -75,16 +76,12 @@ public class MoreMathTest
         }
     }    
     @Test
-    public void testDoubleTransformDerivative()
+    public void testPartialDerivative()
     {
-        DoubleTransform t = (x,y,c)->c.accept(y*Math.sin(x), y*Math.cos(x));
-        DoubleTransform d = MoreMath.derivative(t);
-        Point2D.Double p = new Point2D.Double();
-        for (double x=0;x<2*Math.PI;x+=0.2)
-        {
-            d.transform(x, 1, p::setLocation);
-            assertEquals(Math.cos(x), p.x, 1e-8);
-            assertEquals(-Math.sin(x), p.y, 1e-7);
-        }
+        DoubleBinaryOperator f = (x,y)->x*x*y;
+        DoubleBinaryOperator dx = MoreMath.dx(f);
+        DoubleBinaryOperator dy = MoreMath.dy(f);
+        assertEquals(24, dx.applyAsDouble(3, 4), 1e-6);
+        assertEquals(9, dy.applyAsDouble(3, 4), 1e-6);
     }
 }
