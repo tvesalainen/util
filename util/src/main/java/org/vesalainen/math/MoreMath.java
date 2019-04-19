@@ -21,6 +21,8 @@ import java.awt.geom.Point2D;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
+import org.vesalainen.math.matrix.DoubleUnaryMatrix;
 import org.vesalainen.util.function.DoubleBiPredicate;
 
 /**
@@ -91,7 +93,7 @@ public final class MoreMath
     {
         return (x,y)->
         {
-            double h = y != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON;
+            double h = y != 0.0 ? SQRT_EPSILON*y : SQRT_EPSILON;
             double h2 = 2.0*h;
             double y1 = -f.applyAsDouble(x, y+h2);
             double y2 = 8.0*f.applyAsDouble(x, y+h);
@@ -100,21 +102,51 @@ public final class MoreMath
             return (y1+y2+y3+y4)/(12.0*h);
         };
     }
-    public static DoubleTransform derivative(DoubleTransform t)
+    /**
+     * Returns Jacobian matrix
+     * @return 
+     */
+    public static DoubleBinaryMatrix gradient(DoubleTransform t)
     {
-        return (x,y,c)->
+        return new DoubleBinaryMatrix(2,
+                MoreMath.dx(t.fx()),
+                MoreMath.dy(t.fx()),
+                MoreMath.dx(t.fy()),
+                MoreMath.dy(t.fy())
+        );
+    }
+    public static DoubleUnaryOperator dx(ParameterizedOperator op)
+    {
+        return (t)->
         {
-            double a = (x+y)/2.0;
-            double h = a != 0.0 ? SQRT_EPSILON*a : SQRT_EPSILON;
+            double h = t != 0.0 ? SQRT_EPSILON*t : SQRT_EPSILON;
             double h2 = 2.0*h;
-            double h12 = 12.0*h;
-            Point2D.Double p = PNT1.get();
-            t.transform(x+h2, y+h2, (xx,yy)->p.setLocation(-xx, -yy));
-            t.transform(x+h, y+h, (xx,yy)->p.setLocation(p.x+8*xx, p.y+8*yy));
-            t.transform(x-h, y-h, (xx,yy)->p.setLocation(p.x-8*xx, p.y-8*yy));
-            t.transform(x-h2, y-h2, (xx,yy)->p.setLocation(p.x+xx, p.y+yy));
-            c.accept(p.x/h12, p.y/h12);
+            double y1 = -op.calcX(t+h2);
+            double y2 = 8.0*op.calcX(t+h);
+            double y3 = -8.0*op.calcX(t-h);
+            double y4 = op.calcX(t-h2);
+            return (y1+y2+y3+y4)/(12.0*h);
         };
+    }
+    public static DoubleUnaryOperator dy(ParameterizedOperator op)
+    {
+        return (t)->
+        {
+            double h = t != 0.0 ? SQRT_EPSILON*t : SQRT_EPSILON;
+            double h2 = 2.0*h;
+            double y1 = -op.calcY(t+h2);
+            double y2 = 8.0*op.calcY(t+h);
+            double y3 = -8.0*op.calcY(t-h);
+            double y4 = op.calcY(t-h2);
+            return (y1+y2+y3+y4)/(12.0*h);
+        };
+    }
+    public static DoubleUnaryMatrix gradient(ParameterizedOperator op)
+    {
+        return new DoubleUnaryMatrix(2,
+                MoreMath.dx(op),
+                MoreMath.dy(op)
+        );
     }
     public static ParameterizedOperator derivative(ParameterizedOperator op)
     {
@@ -124,10 +156,10 @@ public final class MoreMath
             double h2 = 2.0*h;
             double h12 = 12.0*h;
             Point2D.Double p = PNT1.get();
-            op.eval(t+h2, (xx,yy)->p.setLocation(-xx, -yy));
-            op.eval(t+h, (xx,yy)->p.setLocation(p.x+8*xx, p.y+8*yy));
-            op.eval(t-h, (xx,yy)->p.setLocation(p.x-8*xx, p.y-8*yy));
-            op.eval(t-h2, (xx,yy)->p.setLocation(p.x+xx, p.y+yy));
+            op.calc(t+h2, (xx,yy)->p.setLocation(-xx, -yy));
+            op.calc(t+h, (xx,yy)->p.setLocation(p.x+8*xx, p.y+8*yy));
+            op.calc(t-h, (xx,yy)->p.setLocation(p.x-8*xx, p.y-8*yy));
+            op.calc(t-h2, (xx,yy)->p.setLocation(p.x+xx, p.y+yy));
             c.accept(p.x/h12, p.y/h12);
         };
     }

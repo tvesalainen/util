@@ -17,6 +17,9 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
+import org.vesalainen.math.matrix.DoubleUnaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -26,112 +29,153 @@ import org.vesalainen.util.function.DoubleBiConsumer;
 @FunctionalInterface
 public interface ParameterizedOperator
 {
-    void eval(double t, DoubleBiConsumer consumer);
+    /**
+     * Calculates (x, y)
+     * @param t
+     * @param consumer 
+     */
+    void calc(double t, DoubleBiConsumer consumer);
+    /**
+     * Calculates x
+     * @param t
+     * @return 
+     */
+    default double calcX(double t)
+    {
+        Point2D.Double p = new Point2D.Double();
+        calc(t, p::setLocation);
+        return p.x;
+    }
+    /**
+     * Calculates y
+     * @param t
+     * @return 
+     */
+    default double calcY(double t)
+    {
+        Point2D.Double p = new Point2D.Double();
+        calc(t, p::setLocation);
+        return p.y;
+    }
+    /**
+     * Creates ParameterizedOperator that first calls this and with result calls
+     * transform.
+     * @param transform
+     * @return 
+     */
     default ParameterizedOperator andThen(DoubleTransform transform)
     {
         return new Chain(this, transform);
     }
-    default ParameterizedOperator derivative()
+    /**
+     * Returns derivative vector
+     * @return 
+     */
+    default DoubleUnaryMatrix derivative()
     {
         throw new UnsupportedOperationException("derivative not supported");
     }
-    default ParameterizedOperator secondDerivative()
+    /**
+     * Returns derivative vector of second derivative
+     * @return 
+     */
+    default DoubleUnaryMatrix secondDerivative()
     {
         throw new UnsupportedOperationException("derivative not supported");
     }
+    /**
+     * Returns gradients magnitude.
+     * @return 
+     */
+    default DoubleUnaryOperator hypot()
+    {
+        throw new UnsupportedOperationException("derivative not supported");
+    }
+    /**
+     * Tries to find y for x with 10*ulp(x) precision.
+     * <p>If y=f(x) is not injection the result will be unpredictable!
+     * @param x
+     * @return 
+     */
     default double evalY(double x)
     {
         return evalY(x, 10 * Math.ulp(x));
     }
+    /**
+     * Tries to find y for x with deltaX precision.
+     * <p>If y=f(x) is not injection the result will be unpredictable!
+     * @param x
+     * @param deltaX
+     * @return 
+     */
     default double evalY(double x, double deltaX)
     {
-        return evalY(x, deltaX, new Point2D.Double());
+        double t = evalTForX(x, deltaX);
+        return calcY(t);
     }
-    default double evalY(double x, double deltaX, Point2D.Double pnt)
-    {
-        double t = evalTForX(x, deltaX, pnt);
-        eval(t, pnt::setLocation);
-        return pnt.y;
-    }
+    /**
+     * Tries to find x for y with 10*ulp(y) precision.
+     * <p>If x=f(y) is not injection the result will be unpredictable!
+     * @param y
+     * @return 
+     */
     default double evalX(double y)
     {
         return evalX(y, 10 * Math.ulp(y));
     }
+    /**
+     * Tries to find x for y with deltaY precision.
+     * <p>If x=f(y) is not injection the result will be unpredictable!
+     * @param y
+     * @param deltaY
+     * @return 
+     */
     default double evalX(double y, double deltaY)
     {
-        return evalX(y, deltaY, new Point2D.Double());
+        double t = evalTForY(y, deltaY);
+        return calcX(t);
     }
-    default double evalX(double y, double deltaY, Point2D.Double pnt)
-    {
-        double t = evalTForY(y, deltaY, pnt);
-        eval(t, pnt::setLocation);
-        return pnt.x;
-    }
+    /**
+     * Tries to find t for y with 10*ulp(y) precision.
+     * <p>If x=f(y) is not injection the result will be unpredictable!
+     * @param y
+     * @return 
+     */
     default double evalTForY(double y)
     {
         return evalTForY(y, 10 * Math.ulp(y));
     }
+    /**
+     * Tries to find t for y with deltaY precision.
+     * <p>If x=f(y) is not injection the result will be unpredictable!
+     * @param y
+     * @param deltaY
+     * @return 
+     */
     default double evalTForY(double y, double deltaY)
-    {
-        return evalTForY(y, deltaY, new Point2D.Double());
-    }
-    default double evalTForY(double y, double deltaY, Point2D.Double pnt)
-    {
-        throw new UnsupportedOperationException();
-    }
-    default double evalTForX(double x)
-    {
-        return evalTForX(x, 10 * Math.ulp(x));
-    }
-    default double evalTForX(double x, double deltaX)
-    {
-        return evalTForX(x, deltaX, new Point2D.Double());
-    }
-    default double evalTForX(double x, double deltaX, Point2D.Double pnt)
     {
         throw new UnsupportedOperationException();
     }
     /**
-     * Returns parameterized MathFunction  at range 0.0 - 1.0 
-     * @param f
-     * @param min
-     * @param max
+     * Tries to find t for x with 10*ulp(y) precision.
+     * <p>If y=f(x) is not injection the result will be unpredictable!
+     * @param x
      * @return 
      */
-    static ParameterizedOperator parameterize(MathFunction f, double min, double max)
+    default double evalTForX(double x)
     {
-        return new Parameterized(f, min, max);
+        return evalTForX(x, 10 * Math.ulp(x));
     }
-    class Parameterized implements ParameterizedOperator
+    /**
+     * Tries to find t for x with deltaX precision.
+     * <p>If y=f(x) is not injection the result will be unpredictable!
+     * @param x
+     * @param deltaX
+     * @return 
+     */
+    default double evalTForX(double x, double deltaX)
     {
-        private MathFunction f;
-        private double a;
-        private double b;
-
-        public Parameterized(MathFunction f, double min, double max)
-        {
-            this(max-min, min, f);
-        }
-        private Parameterized(double a, double b, MathFunction f)
-        {
-            this.f = f;
-            this.a = a;
-            this.b = b;
-        }
-        
-        @Override
-        public void eval(double t, DoubleBiConsumer consumer)
-        {
-            double x = a*t+b;
-            consumer.accept(x, f.applyAsDouble(x));
-        }
-
-        @Override
-        public ParameterizedOperator derivative()
-        {
-            return (t,c)->c.accept(a, f.derivative().applyAsDouble(a*t+b));
-        }
-        
+        throw new UnsupportedOperationException();
     }
     static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     static final ThreadLocal<Point2D.Double> PNT2 = ThreadLocal.withInitial(Point2D.Double::new);
@@ -140,7 +184,7 @@ public interface ParameterizedOperator
         private ParameterizedOperator p;
         private DoubleTransform f;
         private ParameterizedOperator operator;
-        private ParameterizedOperator derivative;
+        private DoubleUnaryMatrix derivative;
 
         public Chain(ParameterizedOperator p, DoubleTransform f)
         {
@@ -149,30 +193,78 @@ public interface ParameterizedOperator
         }
         
         @Override
-        public void eval(double t, DoubleBiConsumer consumer)
+        public void calc(double t, DoubleBiConsumer consumer)
         {
             if (operator == null)
             {
-                operator = (tt,c)->p.eval(tt, (x,y)->f.transform(x, y, c));
+                operator = (tt,c)->p.calc(tt, (x,y)->f.transform(x, y, c));
             }
-            operator.eval(t, consumer);
+            operator.calc(t, consumer);
         }
 
         @Override
-        public ParameterizedOperator derivative()
+        public double calcX(double t)
+        {
+            return f.evalX(p.calcX(t), p.calcY(t));
+        }
+
+        @Override
+        public double calcY(double t)
+        {
+            return f.evalY(p.calcX(t), p.calcY(t));
+        }
+
+        public DoubleUnaryOperator hypot()
+        {
+            DoubleBinaryMatrix J = f.gradient();
+            DoubleUnaryMatrix d = p.derivative();
+            return (t)->
+            {
+                double x = p.calcX(t);
+                double y = p.calcY(t);
+                double det = J.determinant().applyAsDouble(x, y);
+                double dx = d.eval(0, 0, t);
+                double dy = d.eval(1, 0, t);
+                double Jfxdx = J.eval(0, 0, x, y);
+                double Jfxdy = J.eval(0, 1, x, y);
+                double Jfydx = J.eval(1, 0, x, y);
+                double Jfydy = J.eval(1, 1, x, y);
+                return Math.hypot(
+                        dx*Jfxdx+dy*Jfxdy, 
+                        dx*Jfydx+dy*Jfydy
+                );
+            };
+                  
+        }
+        @Override
+        public DoubleUnaryMatrix derivative()
         {
             if (derivative == null)
             {
-                DoubleTransform td = f.derivative();
-                ParameterizedOperator d = p.derivative();
-                derivative = (t,c)->
-                {
-                    Point2D.Double p1 = PNT1.get();
-                    Point2D.Double p2 = PNT2.get();
-                    p.eval(t, (x,y)->td.transform(x, y, p1::setLocation));
-                    d.eval(t, p2::setLocation);
-                    c.accept(p1.x*p2.x, p1.y*p2.y);
-                };
+                DoubleBinaryMatrix J = f.gradient();
+                DoubleUnaryMatrix d = p.derivative();
+                derivative = new DoubleUnaryMatrix(2,
+                        (t)->
+                        {
+                            double x = p.calcX(t);
+                            double y = p.calcY(t);
+                            double dx = d.eval(0, 0, t);
+                            double dy = d.eval(1, 0, t);
+                            double Jfxdx = J.eval(0, 0, x, y);
+                            double Jfxdy = J.eval(0, 1, x, y);
+                            return dx*Jfxdx+dy*Jfxdy;
+                        },
+                        (t)->
+                        {
+                            double x = p.calcX(t);
+                            double y = p.calcY(t);
+                            double dx = d.eval(0, 0, t);
+                            double dy = d.eval(1, 0, t);
+                            double Jfydy = J.eval(1, 1, x, y);
+                            double Jfydx = J.eval(1, 0, x, y);
+                            return dx*Jfydx+dy*Jfydy;
+                        }
+                );
             }
             return derivative;
         }

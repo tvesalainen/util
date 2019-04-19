@@ -20,6 +20,8 @@ import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
+import java.util.function.DoubleBinaryOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -150,11 +152,23 @@ public final class Transforms
         }
 
         @Override
-        public DoubleTransform derivative()
+        public DoubleBinaryOperator fx()
         {
-            return (x,y,c)->c.accept(m00+m01, m10+m11);
+            return (x,y)->m00*x+m01*y+m02;
         }
-        
+
+        @Override
+        public DoubleBinaryOperator fy()
+        {
+            return (x,y)->m10*x+m11*y+m12;
+        }
+
+        @Override
+        public DoubleBinaryMatrix gradient()
+        {
+            return DoubleBinaryMatrix.getInstance(2, m00, m01, m10, m11);
+        }
+
     }
     public static class AffineInverseTransform extends AffineDoubleTransform
     {

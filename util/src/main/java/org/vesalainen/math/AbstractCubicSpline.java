@@ -203,10 +203,6 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     }
     public double eval(double x, double deltaX)
     {
-        return eval(x, deltaX, new Point2D.Double());
-    }
-    public double eval(double x, double deltaX, Point2D.Double pnt)
-    {
         if (!injection)
         {
             throw new IllegalArgumentException("curve is not injection");
@@ -224,7 +220,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
                 throw new IllegalArgumentException("out of range");
             }
             ParameterizedOperator curve = curves[ip - 1];
-            return curve.evalY(x, deltaX, pnt);
+            return curve.evalY(x, deltaX);
         }
     }
 

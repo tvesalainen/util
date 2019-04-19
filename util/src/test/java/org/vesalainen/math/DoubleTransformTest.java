@@ -23,6 +23,7 @@ import java.util.Random;
 import org.junit.Test;
 import org.vesalainen.ui.Transforms;
 import static org.junit.Assert.*;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 
 /**
  *
@@ -57,37 +58,6 @@ public class DoubleTransformTest
         assertEquals(3, dst[3], 1e-10);
     }    
     @Test
-    public void test3()
-    {
-        DoubleTransform t = (x,y,c)->c.accept(2*x, y);
-        DoubleTransform derivate = t.derivative();
-        Point2D.Double exp = new Point2D.Double(2, 1);
-        Point2D.Double got = new Point2D.Double();
-        derivate.transform(2, 3, got::setLocation);
-        assertEquals(exp.x, got.x, 1e-8);
-        assertEquals(exp.y, got.y, 1e-8);
-    }
-    @Test
-    public void testSwapDerivate()
-    {
-        DoubleTransform derivate = DoubleTransform.swap().derivative();
-        Point2D.Double exp = new Point2D.Double(1, 1);
-        Point2D.Double got = new Point2D.Double();
-        derivate.transform(2, 3, got::setLocation);
-        assertEquals(exp, got);
-    }
-    @Test
-    public void testAndTheMultiply()
-    {
-        DoubleTransform t1 = (x,y,c)->c.accept(2*x, 3*y);
-        DoubleTransform t2 = (x,y,c)->c.accept(4*x, 5*y);
-        DoubleTransform t3 = t1.andThenMultiply(t2);
-        Point2D.Double exp = new Point2D.Double(8, 15);
-        Point2D.Double got = new Point2D.Double();
-        t3.transform(1, 1, got::setLocation);
-        assertEquals(exp, got);
-    }
-    @Test
     public void testChain() throws NoninvertibleTransformException
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
@@ -107,6 +77,10 @@ public class DoubleTransformTest
     public void test() throws NoninvertibleTransformException
     {
         DoubleTransform affineTransform = Transforms.affineTransform(new AffineTransform(1, 2, 3, 4, 5, 6));
+        AffineTransform rot = AffineTransform.getRotateInstance(1.2);
+        DoubleTransform t2 = Transforms.affineTransform(rot);
+        DoubleTransform chain = DoubleTransform.chain(t2, affineTransform);
+        DoubleTransform inverse = chain.inverse();
         double m = 1000000;
         double m2 = m/2.0;
         Random r = new Random(1234567L);
@@ -116,6 +90,7 @@ public class DoubleTransformTest
             double r2 = r.nextDouble();
             double x = r1*m-m2;
             double y = r2*m-m2;
+            test(chain, x, y);
             test(DoubleTransform.identity(), x, y);
             test(DoubleTransform.swap(), x, y);
             test(affineTransform, x, y);
@@ -123,7 +98,7 @@ public class DoubleTransformTest
     }
     public void test(DoubleTransform transform, double x, double y)
     {
-        testDerivate(transform, x, y);
+        testGradient(transform, x, y);
         testInverse(transform, x, y);
     }
     private void testInverse(DoubleTransform transform, double x, double y)
@@ -133,28 +108,19 @@ public class DoubleTransformTest
         transform.transform(x, y, tr::setLocation);
         Point2D.Double in = new Point2D.Double();
         inverse.transform(tr.x, tr.y, in::setLocation);
-        assertEquals(x, in.x, 1e-9);
-        assertEquals(y, in.y, 1e-9);
+        assertEquals(x, in.x, 10000*Math.ulp(x));
+        assertEquals(y, in.y, 10000*Math.ulp(y));
     }
-    private void testDerivate(DoubleTransform transform, double x, double y)
+    private void testGradient(DoubleTransform transform, double x, double y)
     {
-        DoubleTransform der1 = transform.derivative();
-        DoubleTransform der2 = MoreMath.derivative(transform);
-        Point2D.Double exp = new Point2D.Double();
-        der1.transform(x, y, exp::setLocation);
-        Point2D.Double got = new Point2D.Double();
-        der2.transform(x, y, got::setLocation);
-        assertEquals("x="+x+" y="+y, exp.x, got.x, 1e-4);
-        assertEquals("x="+x+" y="+y, exp.y, got.y, 1e-4);
-    }
-    private void test(DoubleTransform transform)
-    {
-        double d = Math.ulp(1.0);
-        for (double ii=1.0;ii<400;ii++)
+        DoubleBinaryMatrix J = transform.gradient();
+        DoubleBinaryMatrix Jn = MoreMath.gradient(transform);
+        for (int i=0;i<2;i++)
         {
-            d *= 10.0;
-            double der = ((1.0+d)-1.0)/d;
-            System.err.println(ii+": "+d+" "+der);
+            for (int j=0;j<2;j++)
+            {
+                assertEquals(Jn.eval(i, j, x, y), J.eval(i, j, x, y), 1e-4);
+            }
         }
     }
 }

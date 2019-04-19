@@ -25,19 +25,19 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FunctionMatrixTest
+public class DoubleBinaryMatrixTest
 {
     
-    public FunctionMatrixTest()
+    public DoubleBinaryMatrixTest()
     {
     }
 
     @Test
     public void testMultiply()
     {
-        FunctionMatrix m1 = FunctionMatrix.getInstance(2, 2, 3, 4, 1, 0, 0);
-        FunctionMatrix m2 = FunctionMatrix.getInstance(3, 0, 1000, 1, 100, 0, 10);
-        FunctionMatrix res = FunctionMatrix.multiply(m1, m2);
+        DoubleBinaryMatrix m1 = DoubleBinaryMatrix.getInstance(2, 2, 3, 4, 1, 0, 0);
+        DoubleBinaryMatrix m2 = DoubleBinaryMatrix.getInstance(3, 0, 1000, 1, 100, 0, 10);
+        DoubleBinaryMatrix res = DoubleBinaryMatrix.multiply(m1, m2);
         assertEquals(3, res.get(0, 0).applyAsDouble(0,0), 1e-10);
         assertEquals(2340, res.get(0, 1).applyAsDouble(0,0), 1e-10);
         assertEquals(0, res.get(1, 0).applyAsDouble(0,0), 1e-10);
@@ -46,7 +46,7 @@ public class FunctionMatrixTest
     @Test
     public void testDeterminant()
     {
-        FunctionMatrix m = FunctionMatrix.getInstance(3, -2, 2, -3, -1, 1, 3, 2, 0, -1);
+        DoubleBinaryMatrix m = DoubleBinaryMatrix.getInstance(3, -2, 2, -3, -1, 1, 3, 2, 0, -1);
         DoubleBinaryOperator determinant = m.determinant();
         assertEquals(18, determinant.applyAsDouble(0,0), 1e-10);
     }

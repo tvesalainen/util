@@ -23,7 +23,6 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.function.IntBinaryOperator;
 
 /**

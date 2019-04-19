@@ -62,7 +62,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     private double lastY = Double.NaN;
     protected Locale locale = Locale.getDefault();
     protected Color color = Color.BLACK;
-    protected Font font;
+    protected Font font = new Font("ariel", 0, 12);
     protected final Color background;
     protected BasicStroke stroke = new BasicStroke();
     protected IntBinaryOperator pattern;

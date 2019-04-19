@@ -18,27 +18,58 @@ package org.vesalainen.math.matrix;
 
 import java.util.Arrays;
 import java.util.function.DoubleBinaryOperator;
-import org.vesalainen.math.Operators;
-import org.vesalainen.math.Operators.MultiplyBuilder;
-import org.vesalainen.math.Operators.SumBuilder;
+import org.vesalainen.math.DoubleBinaryOperators;
+import org.vesalainen.math.DoubleBinaryOperators.MultiplyBuilder;
+import org.vesalainen.math.DoubleBinaryOperators.SumBuilder;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FunctionMatrix extends Matrix<DoubleBinaryOperator>
+public class DoubleBinaryMatrix extends Matrix<DoubleBinaryOperator>
 {
-
-    public FunctionMatrix(int rows, int cols)
+    private static final DoubleBinaryOperator ZERO = (x,y)->0;
+    
+    public DoubleBinaryMatrix(int rows, int cols)
     {
         super(rows, cols, DoubleBinaryOperator.class);
+        Arrays.fill((Object[]) array, ZERO);
     }
 
-    public FunctionMatrix(int rows, DoubleBinaryOperator... array)
+    public DoubleBinaryMatrix(int rows, DoubleBinaryOperator... array)
     {
         super(rows, array);
     }
-    public static FunctionMatrix getInstance(int rows, final double... constants)
+    public double eval(int i, int j, double x, double y)
+    {
+        return get(i, j).applyAsDouble(x, y);
+    }
+    public double hypot(double x, double y)
+    {
+        if ((rows < 1 || cols < 1) || (rows > 1 && cols > 1))
+        {
+            throw new IllegalArgumentException("not a vector");
+        }
+        double sum = 0;
+        if (cols == 1)
+        {
+            for (int i=0;i<rows;i++)
+            {
+                double v = eval(i, 0, x, y);
+                sum += v*v;
+            }
+        }
+        else
+        {
+            for (int j=0;j<cols;j++)
+            {
+                double v = eval(0, j, x, y);
+                sum += v*v;
+            }
+        }
+        return Math.sqrt(sum);
+    }
+    public static DoubleBinaryMatrix getInstance(int rows, final double... constants)
     {
         if (rows < 1)
         {
@@ -55,9 +86,13 @@ public class FunctionMatrix extends Matrix<DoubleBinaryOperator>
             double c = constants[ii];
             array[ii] = (x,y)->c;
         }
-        return new FunctionMatrix(rows, array);
+        return new DoubleBinaryMatrix(rows, array);
     }
-    public static FunctionMatrix multiply(FunctionMatrix m1, FunctionMatrix m2)
+    public DoubleBinaryMatrix multiply(DoubleBinaryMatrix m)
+    {
+        return DoubleBinaryMatrix.multiply(this, m);
+    }
+    public static DoubleBinaryMatrix multiply(DoubleBinaryMatrix m1, DoubleBinaryMatrix m2)
     {
         if (m1.cols != m2.rows)
         {
@@ -68,13 +103,13 @@ public class FunctionMatrix extends Matrix<DoubleBinaryOperator>
         int p = m2.cols;
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
-        FunctionMatrix mr = new FunctionMatrix(m, p);
+        DoubleBinaryMatrix mr = new DoubleBinaryMatrix(m, p);
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < p; j++)
             {
-                SumBuilder sum = Operators.sumBuilder();
+                SumBuilder sum = DoubleBinaryOperators.sumBuilder();
                 for (int r = 0; r < n; r++)
                 {
                     DoubleBinaryOperator f1 = (DoubleBinaryOperator) s1.get(i, r);
@@ -93,18 +128,51 @@ public class FunctionMatrix extends Matrix<DoubleBinaryOperator>
     public DoubleBinaryOperator determinant()
     {
         int sign = 1;
-        SumBuilder sum = Operators.sumBuilder();
+        SumBuilder sum = DoubleBinaryOperators.sumBuilder();
         PermutationMatrix pm = PermutationMatrix.getInstance(rows);
         int perms = pm.rows;
         for (int p=0;p<perms;p++)
         {
-            MultiplyBuilder mul = Operators.multiplyBuilder();
+            MultiplyBuilder mul = DoubleBinaryOperators.multiplyBuilder();
             for (int i=0;i<rows;i++)
             {
                 mul.add(get(i, pm.get(p, i)));
             }
-            sum.add(Operators.sign(sign, mul.build()));
+            sum.add(DoubleBinaryOperators.sign(sign, mul.build()));
             sign = -sign;
         }
         return sum.build();
-    }}
+    }
+    public boolean equals(DoubleBinaryMatrix other, double x, double y, double delta)
+    {
+        if (rows != other.rows || cols != other.cols)
+        {
+            return false;
+        }
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                double e1 = eval(i, j, x, y);
+                double e2 = other.eval(i, j, x, y);
+                if (Math.abs(e1-e2) > delta)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public DoubleMatrix snapshot(double x, double y)
+    {
+        DoubleMatrix m = new DoubleMatrix(rows, cols);
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                m.set(i, j, eval(i, j, x, y));
+            }
+        }
+        return m;
+    }
+}

@@ -26,6 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -42,7 +43,7 @@ public abstract class AbstractDrawer implements Drawer
     protected DoubleTransform transform;
     protected DoubleTransform inverse;
     protected Point2D.Double tmp = new Point2D.Double();
-    protected DoubleTransform derivative;
+    protected DoubleBinaryMatrix gradient;
     protected Bounds fillBounds = new Bounds();
     protected double scale;
     protected double delta;
@@ -95,7 +96,7 @@ public abstract class AbstractDrawer implements Drawer
     public void setTransform(DoubleTransform transform, double scale)
     {
         this.transform = transform;
-        this.derivative = transform.derivative();
+        this.gradient = transform.gradient();
         this.inverse = transform.inverse();
         this.scale = scale;
     }

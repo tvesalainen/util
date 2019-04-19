@@ -25,7 +25,7 @@ import org.vesalainen.util.CollectionHelp;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public final class Operators
+public final class DoubleBinaryOperators
 {
     public static DoubleBinaryOperator sign(int sign, DoubleBinaryOperator f)
     {

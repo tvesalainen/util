@@ -20,6 +20,8 @@ import java.awt.geom.Point2D;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.DoubleTransform;
+import org.vesalainen.math.MoreMath;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 
 /**
  *
@@ -96,52 +98,48 @@ public class PolarTransformTest
         assertEquals(exp.getY(), p1.getY(), 1e-10);
     }
     @Test
-    public void testDerivative1()
+    public void testGradientGrad()
     {
         PolarTransform pt = new PolarTransform(true);
-        DoubleTransform derivative = pt.derivative();
-        Point2D p1 = new Point2D.Double(A0, 1);
-        Point2D p2 = new Point2D.Double();
-        Point2D exp = new Point2D.Double(1, 1);
-        derivative.transform(p1, p2);
-        assertEquals(exp.getX(), p2.getX(), 1e-8);
-        assertEquals(exp.getY(), p2.getY(), 1e-8);
+        DoubleBinaryMatrix Jn = MoreMath.gradient(pt);
+        DoubleBinaryMatrix J = pt.gradient();
+        for (int i=0;i<2;i++)
+        {
+            for (int j=0;j<2;j++)
+            {
+                assertEquals(Jn.eval(i, j, A0, 1), J.eval(i, j, A0, 1), 1e-8);
+                assertEquals(Jn.eval(i, j, A90, 1), J.eval(i, j, A90, 1), 1e-8);
+                assertEquals(Jn.eval(i, j, A180, 1), J.eval(i, j, A180, 1), 1e-8);
+                assertEquals(Jn.eval(i, j, A270, 1), J.eval(i, j, A270, 1), 1e-8);
+            }
+        }
     }
     @Test
-    public void testDerivative2()
+    public void testGradientDeg()
     {
-        PolarTransform pt = new PolarTransform(true);
-        DoubleTransform derivative = pt.derivative();
-        Point2D p1 = new Point2D.Double(A90, 1);
-        Point2D p2 = new Point2D.Double();
-        Point2D exp = new Point2D.Double(1, -1);
-        derivative.transform(p1, p2);
-        assertEquals(exp.getX(), p2.getX(), 1e-8);
-        assertEquals(exp.getY(), p2.getY(), 1e-8);
+        PolarTransform pt = new PolarTransform(false);
+        DoubleBinaryMatrix Jn = MoreMath.gradient(pt);
+        DoubleBinaryMatrix J = pt.gradient();
+        for (int i=0;i<2;i++)
+        {
+            for (int j=0;j<2;j++)
+            {
+                assertEquals(Jn.eval(i, j, 0, 2), J.eval(i, j, 0, 2), 1e-8);
+                assertEquals(Jn.eval(i, j, 90, 2), J.eval(i, j, 90, 2), 1e-8);
+                assertEquals(Jn.eval(i, j, 180, 2), J.eval(i, j, 180, 2), 1e-8);
+                assertEquals(Jn.eval(i, j, 270, 2), J.eval(i, j, 270, 2), 1e-8);
+            }
+        }
     }
     @Test
-    public void testDerivative3()
+    public void testGradient2()
     {
-        PolarTransform pt = new PolarTransform(true);
-        DoubleTransform derivative = pt.derivative();
-        Point2D p1 = new Point2D.Double(A180, 1);
-        Point2D p2 = new Point2D.Double();
-        Point2D exp = new Point2D.Double(-1, -1);
-        derivative.transform(p1, p2);
-        assertEquals(exp.getX(), p2.getX(), 1e-8);
-        assertEquals(exp.getY(), p2.getY(), 1e-8);
+        PolarTransform pt = new PolarTransform(false);
+        DoubleBinaryMatrix J = pt.gradient();
+        double d1 = J.determinant().applyAsDouble(0, 1);
+        DoubleBinaryMatrix m = DoubleBinaryMatrix.getInstance(2, 100, 0, 0, -100);
+        double d2 = m.determinant().applyAsDouble(0, 1);
+        DoubleBinaryMatrix mm = m.multiply(J);
+        double d3 = mm.determinant().applyAsDouble(0, 1);
     }
-    @Test
-    public void testDerivative4()
-    {
-        PolarTransform pt = new PolarTransform(true);
-        DoubleTransform derivative = pt.derivative();
-        Point2D p1 = new Point2D.Double(A270, 1);
-        Point2D p2 = new Point2D.Double();
-        Point2D exp = new Point2D.Double(-1, 1);
-        derivative.transform(p1, p2);
-        assertEquals(exp.getX(), p2.getX(), 1e-8);
-        assertEquals(exp.getY(), p2.getY(), 1e-7);
-    }
-    
 }

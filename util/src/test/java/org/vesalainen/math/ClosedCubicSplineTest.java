@@ -44,7 +44,7 @@ public class ClosedCubicSplineTest
         plotter.setFont("Arial", BOLD, 20);
         plotter.draw(csi);
         plotter.drawCoordinates();
-        plotter.plot("closed", "png");
+        plotter.plot("closed.png");
     }
     
 }

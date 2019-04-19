@@ -16,8 +16,10 @@
  */
 package org.vesalainen.ui;
 
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.DoubleTransform;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -27,8 +29,7 @@ import org.vesalainen.util.function.DoubleBiConsumer;
 public class PolarTransform implements DoubleTransform
 {
     private static final double PI2 = 2*Math.PI;
-    private DoubleUnaryOperator toRadians;
-    private DoubleUnaryOperator fromRadians;
+    private double C;
 
     public PolarTransform()
     {
@@ -38,13 +39,11 @@ public class PolarTransform implements DoubleTransform
     {
         if (useRadians)
         {
-            this.toRadians = (x)->x;
-            this.fromRadians = (x)->x;
+            C = 1;
         }
         else
         {
-            this.toRadians = Math::toRadians;
-            this.fromRadians = Math::toDegrees;
+            C = Math.PI/180;
         }
     }
     
@@ -55,24 +54,36 @@ public class PolarTransform implements DoubleTransform
         {
             throw new IllegalArgumentException("not defined for negative values");
         }
-        double a = toRadians.applyAsDouble(x);
-        term.accept(y*Math.sin(a), y*Math.cos(a));
+        term.accept(y*Math.sin(C*x), y*Math.cos(C*x));
     }
 
     @Override
     public DoubleTransform inverse()
     {
-        return (x,y, c)->c.accept(fromRadians.applyAsDouble((PI2+Math.atan2(x, y))%PI2), Math.hypot(x, y));
+        return (x,y, c)->c.accept(((PI2+Math.atan2(x, y))%PI2)/C, Math.hypot(x, y));
     }
 
     @Override
-    public DoubleTransform derivative()
+    public DoubleBinaryOperator fx()
     {
-        return (x,y, c)->
-        {
-            double a = toRadians.applyAsDouble(x);
-            c.accept(Math.sin(a)+y*Math.cos(a), Math.cos(a)-y*Math.sin(a));
-        };
+        return (x,y)->y*Math.sin(C*x);
+    }
+
+    @Override
+    public DoubleBinaryOperator fy()
+    {
+        return (x,y)->y*Math.cos(C*x);
+    }
+
+    @Override
+    public DoubleBinaryMatrix gradient()
+    {
+        return new DoubleBinaryMatrix(2, 
+                (x,y)->y*Math.cos(C*x)*C, 
+                (x,y)->Math.sin(C*x), 
+                (x,y)->-y*Math.sin(C*x)*C,
+                (x,y)->Math.cos(C*x)
+        );
     }
 
 }

@@ -30,11 +30,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
 import javax.imageio.ImageIO;
 import org.vesalainen.math.BezierCurve;
 import static org.vesalainen.math.BezierCurve.*;
 import org.vesalainen.util.function.IntBiPredicate;
 import org.vesalainen.math.ParameterizedOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 
 /**
  *
@@ -189,17 +192,15 @@ public class ImageDrawer extends AbstractDrawer
     {
         ParameterizedOperator curve = op.andThen(transform);
         double t = 0;
-        ParameterizedOperator curveDerivate = curve.derivative();
-        curve.eval(0, this::drawPoint);
-        curveDerivate.eval(t, this::updateDelta);
-        t += 1.0/delta;
+        DoubleUnaryOperator hypot = curve.hypot();
+        curve.calc(t, this::drawPoint);
+        t += 1.0/hypot.applyAsDouble(t);
         while (t < 1)
         {
-            curveDerivate.eval(t, this::updateDelta);
-            curve.eval(t, this::drawPoint);
-            t += 1.0/delta;
+            curve.calc(t, this::drawPoint);
+            t += 1.0/hypot.applyAsDouble(t);
         }
-        curve.eval(1, this::drawPoint);
+        curve.calc(1, this::drawPoint);
     }
     
     public void fill()

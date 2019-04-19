@@ -22,10 +22,7 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ui.Plotter;
 import org.vesalainen.ui.PolarPlotter;
-import org.vesalainen.ui.PolarTransform;
-import org.vesalainen.ui.scale.MergeScale;
 
 /**
  *
@@ -47,15 +44,9 @@ public class PolarCubicSplineTest
         Point2D.Double ddy360 = new Point2D.Double();
         PolarCubicSpline pcs = new PolarCubicSpline(0, 100, 90, 150, 180, 50, 270, 150);
         ParameterizedOperator c0 = pcs.getCurve(0);
-        double t0 = c0.evalTForX(0);
         double y0 = c0.evalY(0);
-        c0.derivative().eval(t0, dy0::setLocation);
-        c0.secondDerivative().eval(t0, ddy0::setLocation);
         ParameterizedOperator c360 = pcs.getCurve(360);
-        double t360 = c360.evalTForX(360);
         double y360 = c360.evalY(360);
-        c360.derivative().eval(t360, dy360::setLocation);
-        c360.secondDerivative().eval(t360, ddy360::setLocation);
         assertEquals(y0, y360, 1e-10);
         assertEquals(dy0.x, dy360.x, 1e-10);
         assertEquals(dy0.y, dy360.y, 1e-10);

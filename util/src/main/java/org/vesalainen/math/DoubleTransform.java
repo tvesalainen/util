@@ -17,6 +17,8 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.util.function.DoubleBinaryOperator;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -37,14 +39,37 @@ public interface DoubleTransform
     {
         throw new UnsupportedOperationException("inverse not implemented");
     }
+    default double evalX(double x, double y)
+    {
+        return fx().applyAsDouble(x,y);
+    }
+    default double evalY(double x, double y)
+    {
+        return fy().applyAsDouble(x,y);
+    }
     /**
-     * Creates numerical derivative. It is recommended to override this if
- derivative is known.
+     * Returns x-coordinate function
      * @return 
      */
-    default DoubleTransform derivative()
+    default DoubleBinaryOperator fx()
     {
-        return MoreMath.derivative(this);
+        throw new UnsupportedOperationException();
+    }
+    /**
+     * Returns y-coordinate function
+     * @return 
+     */
+    default DoubleBinaryOperator fy()
+    {
+        throw new UnsupportedOperationException();
+    }
+    /**
+     * Returns Jacobian matrix
+     * @return 
+     */
+    default DoubleBinaryMatrix gradient()
+    {
+        return MoreMath.gradient(this);
     }
     /**
      * Transforms src to dst and returns dst. Dst can be null in which case 
@@ -94,27 +119,10 @@ public interface DoubleTransform
      */
     default DoubleTransform andThen(DoubleTransform next)
     {
-        return (x,y,n)->transform(x,y, (xx,yy)->next.transform(xx, yy, n));
+        return chain(next, this);
     }
     static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     static final ThreadLocal<Point2D.Double> PNT2 = ThreadLocal.withInitial(Point2D.Double::new);
-    /**
-     * Creates new DoubleTransform which first calls this transform
-     * then next and multiplies result.
-     * @param next
-     * @return 
-     */
-    default DoubleTransform andThenMultiply(DoubleTransform next)
-    {
-        return (x,y,n)->
-        {
-            Point2D.Double p1 = PNT1.get();
-            Point2D.Double p2 = PNT2.get();
-            transform(x,y,p1::setLocation);
-            next.transform(x,y,p2::setLocation);
-            n.accept(p1.x*p2.x, p1.y*p2.y);
-        };
-    }
     /**
      * Returns identity transformer
      * @return 
@@ -163,6 +171,7 @@ public interface DoubleTransform
     {
         private final MathFunction fx;
         private final MathFunction fy;
+        private DoubleBinaryMatrix gradient;
 
         public CompositeTransform(MathFunction fx, MathFunction fy)
         {
@@ -183,16 +192,38 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivative()
+        public DoubleBinaryOperator fx()
         {
-            return (x,y,c)->c.accept(fx.derivative().applyAsDouble(x), fy.derivative().applyAsDouble(y));
+            return (x,y)->fx.applyAsDouble(x);
         }
-        
+
+        @Override
+        public DoubleBinaryOperator fy()
+        {
+            return (x,y)->fy.applyAsDouble(y);
+        }
+
+        @Override
+        public DoubleBinaryMatrix gradient()
+        {
+            if (gradient == null)
+            {
+                MathFunction dx = fx.derivative();
+                MathFunction dy = fy.derivative();
+                gradient = new DoubleBinaryMatrix(2, 2);
+                gradient.set(0, 0, (x,y)->dx.applyAsDouble(x));
+                gradient.set(1, 1, (x,y)->dy.applyAsDouble(y));
+            }
+            return gradient;
+        }
+
     }
     public static class ChainTransform implements DoubleTransform
     {
         private final DoubleTransform f;
         private final DoubleTransform g;
+        private DoubleBinaryMatrix gradient;
+
 
         public ChainTransform(DoubleTransform f, DoubleTransform g)
         {
@@ -203,21 +234,37 @@ public interface DoubleTransform
         @Override
         public void transform(double x, double y, DoubleBiConsumer term)
         {
-            g.andThen(f).transform(x, y, term);
+            g.transform(x, y, (xx,yy)->f.transform(xx, yy, (xxx,yyy)->term.accept(xxx, yyy)));
         }
 
         @Override
         public DoubleTransform inverse()
         {
-            return f.inverse().andThen(g.inverse());
+            return new ChainTransform(g.inverse(), f.inverse());
         }
 
         @Override
-        public DoubleTransform derivative()
+        public DoubleBinaryOperator fx()
         {
-            return g.andThen(f.derivative()).andThenMultiply(g.derivative());
+            return (x,y)->f.evalX(g.evalX(x, y), g.evalY(x, y));
         }
-        
+
+        @Override
+        public DoubleBinaryOperator fy()
+        {
+            return (x,y)->f.evalY(g.evalX(x, y), g.evalY(x, y));
+        }
+
+        @Override
+        public DoubleBinaryMatrix gradient()
+        {
+            if (gradient == null)
+            {
+                gradient = f.gradient().multiply(g.gradient());
+            }
+            return gradient;
+        }
+
     }
     public static class MultiplyTransform implements DoubleTransform
     {
@@ -248,11 +295,23 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivative()
+        public DoubleBinaryOperator fx()
         {
-            return (x,y,c)->c.accept(cx, cy);
+            return (x,y)->cx*x;
         }
-        
+
+        @Override
+        public DoubleBinaryOperator fy()
+        {
+            return (x,y)->cy*y;
+        }
+
+        @Override
+        public DoubleBinaryMatrix gradient()
+        {
+            return DoubleBinaryMatrix.getInstance(2, cx, 0, 0, cy);
+        }
+
     }
     public static class SwapTransform implements DoubleTransform
     {
@@ -270,10 +329,22 @@ public interface DoubleTransform
         }
 
         @Override
-        public DoubleTransform derivative()
+        public DoubleBinaryOperator fx()
         {
-            return (x,y,c)->c.accept(1, 1);
+            return (x,y)->y;
         }
-        
+
+        @Override
+        public DoubleBinaryOperator fy()
+        {
+            return (x,y)->x;
+        }
+
+        @Override
+        public DoubleBinaryMatrix gradient()
+        {
+            return DoubleBinaryMatrix.getInstance(2, 0, 1, 1, 0);
+        }
+
     }
 }

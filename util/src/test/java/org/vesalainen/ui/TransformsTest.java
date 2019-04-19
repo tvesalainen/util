@@ -19,9 +19,9 @@ package org.vesalainen.ui;
 import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 
 /**
  *
@@ -39,24 +39,27 @@ public class TransformsTest
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
         DoubleTransform t = Transforms.affineTransform(at);
-        DoubleTransform d = t.derivative();
-        Point2D.Double exp = new Point2D.Double(at.getScaleX()+at.getShearX(), at.getScaleY()+at.getShearY());
-        Point2D.Double got = new Point2D.Double();
-        d.transform(100, 6, got::setLocation);
-        assertEquals(exp.x, got.x, 1e-10);
-        assertEquals(exp.y, got.y, 1e-10);
+        DoubleBinaryMatrix J = t.gradient();
+        assertEquals(J.eval(0, 0, 100, 6)+J.eval(0, 1, 100, 6), at.getScaleX()+at.getShearX(), 1e-10);
+        assertEquals(J.eval(1, 0, 100, 6)+J.eval(1, 1, 100, 6), at.getScaleY()+at.getShearY(), 1e-10);
     }
     @Test
     public void testInverseAffineTransform() throws NoninvertibleTransformException
     {
         AffineTransform at = new AffineTransform(1, 2, 3, 4, 5, 6);
         DoubleTransform t = Transforms.affineInverseTransform(at);
-        DoubleTransform d = t.derivative();
-        Point2D.Double exp = new Point2D.Double(-0.5, 0.5);
-        Point2D.Double got = new Point2D.Double();
-        d.transform(100, 6, got::setLocation);
-        assertEquals(exp.x, got.x, 1e-10);
-        assertEquals(exp.y, got.y, 1e-10);
+        DoubleBinaryMatrix J = t.gradient();
+        assertEquals(J.eval(0, 0, 100, 6)+J.eval(0, 1, 100, 6), -0.5, 1e-10);
+        assertEquals(J.eval(1, 0, 100, 6)+J.eval(1, 1, 100, 6), 0.5, 1e-10);
     }
-    
+    @Test
+    public void testScale()
+    {
+        double scale = 10;
+        AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
+        DoubleTransform t = Transforms.affineTransform(at);
+        DoubleBinaryMatrix J = t.gradient();
+        double det = J.determinant().applyAsDouble(0, 0);
+        assertEquals(scale*scale, det, 1e-10);
+    }
 }
