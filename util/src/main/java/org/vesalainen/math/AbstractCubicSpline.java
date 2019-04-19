@@ -249,14 +249,22 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         return new PathIteratorImpl(at);
     }
 
-    private class PathIteratorImpl implements PathIterator
+    protected class PathIteratorImpl implements PathIterator
     {
         private AffineTransform at;
+        private int offset;
+        private int length;
         private int index;
 
         public PathIteratorImpl(AffineTransform at)
         {
+            this(at, 0, controlPoints.length);
+        }
+        public PathIteratorImpl(AffineTransform at, int offset, int length)
+        {
             this.at = at != null ? at : new AffineTransform();
+            this.offset = offset;
+            this.length = length;
         }
         
         @Override
@@ -268,7 +276,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         @Override
         public boolean isDone()
         {
-            return index >= controlPoints.length;
+            return index >= length;
         }
 
         @Override
@@ -289,12 +297,12 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         {
             if (index == 0)
             {
-                at.transform(controlPoints, index, coords, 0, 1);
+                at.transform(controlPoints, offset+index, coords, 0, 1);
                 return SEG_MOVETO;
             }
             else
             {
-                at.transform(controlPoints, index, coords, 0, 3);
+                at.transform(controlPoints, offset+index, coords, 0, 3);
                 return SEG_CUBICTO;
             }
         }
@@ -304,12 +312,12 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         {
             if (index == 0)
             {
-                at.transform(controlPoints, index, coords, 0, 1);
+                at.transform(controlPoints, offset+index, coords, 0, 1);
                 return SEG_MOVETO;
             }
             else
             {
-                at.transform(controlPoints, index, coords, 0, 3);
+                at.transform(controlPoints, offset+index, coords, 0, 3);
                 return SEG_CUBICTO;
             }
         }

@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.PolarPlotter;
 
 /**
@@ -57,12 +58,13 @@ public class PolarCubicSplineTest
     @Test
     public void testPlot() throws IOException
     {
-        PolarPlotter plotter = new PolarPlotter(200, 200, Color.WHITE);
+        PolarCubicSpline pcs = new PolarCubicSpline(false, 4, 0, 100, 90, 150, 180, 50, 270, 150);
+        PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
-        plotter.drawLine(0, 1, 360, 1);
-        //plotter.draw(pcs);
-        //plotter.drawCoordinates();
+        //plotter.drawLine(0, 1, 360, 1);
+        plotter.draw(pcs);
+        //plotter.drawCoordinates(LEFT, TOP);
         plotter.plot("polar.png");
     }
 }

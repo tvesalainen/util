@@ -16,23 +16,33 @@
  */
 package org.vesalainen.math;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class PolarCubicSpline extends RelaxedCubicSpline
 {
-
+    private int offset;
+    private int length;
     public PolarCubicSpline(double... points)
     {
-        this(false, 3, points);
+        this(false, 4, points);
     }
     public PolarCubicSpline(boolean useRadians, int external, double... points)
     {
         super(createControlPoints(useRadians, external, points));
+        this.offset = 6*external;
+        this.length = 6*(points.length/2)+2;
     }
     private static double[] createControlPoints(boolean useRadians, int external, double... points)
     {
+        if (external > points.length/2)
+        {
+            throw new IllegalArgumentException("not enough points for external");
+        }
         double fullCircle;
         if (useRadians)
         {
@@ -56,6 +66,12 @@ public class PolarCubicSpline extends RelaxedCubicSpline
             pts[2*ii+pts.length-2*external+1] = points[2*ii+1];
         }
         return pts;
+    }
+
+    @Override
+    public PathIterator getPathIterator(AffineTransform at)
+    {
+        return new PathIteratorImpl(at, offset, length);
     }
     
 }
