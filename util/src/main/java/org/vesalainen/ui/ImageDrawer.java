@@ -117,30 +117,30 @@ public class ImageDrawer extends AbstractDrawer
             {
                 case SEG_MOVETO:
                     moveTo(arr[0], arr[1]);
-                    System.err.printf("MOVETO %.1f %.1f\n", arr[0], arr[1]);
+                    //System.err.printf("MOVETO %.1f %.1f\n", arr[0], arr[1]);
                     fx = lx = arr[0];
                     fy = ly = arr[1];
                     break;
                 case SEG_LINETO:
                     drawLine(lx, ly, arr[0], arr[1]);
-                    System.err.printf("LINETO %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1]);
+                    //System.err.printf("LINETO %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1]);
                     lx = arr[0];
                     ly = arr[1];
                     break;
                 case SEG_QUADTO:
                     drawQuad(lx, ly, arr[0], arr[1], arr[2], arr[3]);
-                    System.err.printf("QUADTO %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    //System.err.printf("QUADTO %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3]);
                     lx = arr[2];
                     ly = arr[3];
                     break;
                 case SEG_CUBICTO:
                     drawCubic(lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                    System.err.printf("CUBICTO %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    //System.err.printf("CUBICTO %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
                     lx = arr[4];
                     ly = arr[5];
                     break;
                 case SEG_CLOSE:
-                    System.err.printf("CLOSE\n");
+                    //System.err.printf("CLOSE\n");
                     closePath(lx, ly, fx, fy);
                     lx = -1;
                     ly = -1;
