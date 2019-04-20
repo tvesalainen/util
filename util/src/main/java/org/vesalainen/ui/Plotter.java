@@ -41,6 +41,10 @@ public class Plotter extends AbstractPlotter
     {
         super(width, height, background);
     }
+    public Plotter(int width, int height, Color background, boolean keepAspectRatio)
+    {
+        super(width, height, background, keepAspectRatio);
+    }
     public Plotter(int width, int height, Color background, boolean keepAspectRatio, Scale xScale, Scale yScale)
     {
         super(width, height, background, keepAspectRatio, xScale, yScale);
