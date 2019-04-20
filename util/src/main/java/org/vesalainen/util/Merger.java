@@ -130,7 +130,8 @@ public class Merger
         return iterator(queue, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
     /**
-     * Returns Queue as iterator. Calls poll method
+     * Returns Queue as iterator. Calls poll method. When timeout throws 
+     * NoSuchElementException which will remove it from merger.
      * @param <T>
      * @param queue
      * @param time
@@ -143,7 +144,12 @@ public class Merger
         {
             try
             {
-                return queue.poll(time, unit);
+                T item = queue.poll(time, unit);
+                if (item == null)
+                {
+                    throw new NoSuchElementException("timeout");
+                }
+                return item;
             }
             catch (InterruptedException ex)
             {
@@ -229,7 +235,14 @@ public class Merger
             T tmp = v1;
             if (i1.hasNext())
             {
-                v1 = i1.next();
+                try
+                {
+                    v1 = i1.next();
+                }
+                catch (NoSuchElementException ex)
+                {
+                    v1 = null;
+                }
             }
             else
             {
@@ -242,7 +255,14 @@ public class Merger
             T tmp = v2;
             if (i2.hasNext())
             {
-                v2 = i2.next();
+                try
+                {
+                    v2 = i2.next();
+                }
+                catch (NoSuchElementException ex)
+                {
+                    v2 = null;
+                }
             }
             else
             {
