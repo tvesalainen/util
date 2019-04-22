@@ -16,12 +16,40 @@
  */
 package org.vesalainen.util;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public final class ArrayHelp
 {
+    public static final double[] flatten(double[][] m)
+    {
+        int rows = m.length;
+        int cols = m[0].length;
+        int len = rows*cols;
+        double[] arr = new double[len];
+        for (int ii=0;ii<len;ii++)
+        {
+            arr[ii] = m[ii/cols][ii%cols];
+        }
+        return arr;
+    }
+    public static final double[][] unFlatten(int rows, double... arr)
+    {
+        if (arr.length % rows != 0)
+        {
+            throw new IllegalArgumentException("not full rows");
+        }
+        int cols = arr.length/rows;
+        double[][] m = new double[rows][];
+        for (int ii=0;ii<rows;ii++)
+        {
+            m[ii] = Arrays.copyOfRange(arr, ii*cols, (ii+1)*cols);
+        }
+        return m;
+    }
     public static final int indexOf(boolean[] array, boolean item)
     {
         int len = array.length;
