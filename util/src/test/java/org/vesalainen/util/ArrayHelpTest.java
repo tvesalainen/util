@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,6 +31,14 @@ public class ArrayHelpTest
     {
     }
 
+    @Test
+    public void testFlatten()
+    {
+        double[][] m = new double[][]{{1,2}, {3,4}, {5,6}};
+        double[] exp = new double[]{1,2, 3,4, 5,6};
+        assertArrayEquals(exp, ArrayHelp.flatten(m), 1e-10);
+        assertTrue(Arrays.deepEquals(m, ArrayHelp.unFlatten(3, exp)));
+    }
     @Test
     public void testIndexOf()
     {
