@@ -17,6 +17,7 @@
 package org.vesalainen.math.matrix;
 
 import java.util.Arrays;
+import org.vesalainen.util.ArrayHelp;
 
 /**
  * A DoubleMatrix. Uses LUP decomposing for invert, solve and determinant. Call 
@@ -32,18 +33,30 @@ public class DoubleMatrix extends AbstractMatrix
     private DoubleMatrix A;
     private int[] P;
 
-    protected DoubleMatrix(int rows, int cols)
+    public DoubleMatrix(int rows, int cols)
     {
         this(rows, new double[rows * cols]);
     }
 
-    protected DoubleMatrix(int rows, double[] d)
+    public DoubleMatrix(double[][] m)
+    {
+        this(m.length, ArrayHelp.flatten(m));
+    }
+
+    public DoubleMatrix(int rows, double[] d)
     {
         super(rows, d);
         supplier = (i, j) -> d[cols * i + j];
         consumer = (i, j, v) -> d[cols * i + j] = v;
     }
-
+    /**
+     * Return copy of matrix as 2D array.
+     * @return 
+     */
+    public double[][] as2D()
+    {
+        return ArrayHelp.unFlatten(rows, (double[]) array);
+    }
     @Override
     public DoubleMatrix clone()
     {
