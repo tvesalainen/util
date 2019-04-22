@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 
 /**
  *
@@ -27,6 +28,7 @@ public class PolarCubicSpline extends RelaxedCubicSpline
 {
     private int offset;
     private int length;
+    private double fullCircle;
     public PolarCubicSpline(double... points)
     {
         this(false, 4, points);
@@ -36,6 +38,14 @@ public class PolarCubicSpline extends RelaxedCubicSpline
         super(createControlPoints(useRadians, external, points));
         this.offset = 6*external;
         this.length = 6*(points.length/2)+2;
+        if (useRadians)
+        {
+            this.fullCircle = 2*Math.PI;
+        }
+        else
+        {
+            this.fullCircle = 360;
+        }
     }
     private static double[] createControlPoints(boolean useRadians, int external, double... points)
     {
@@ -66,6 +76,17 @@ public class PolarCubicSpline extends RelaxedCubicSpline
             pts[2*ii+pts.length-2*external+1] = points[2*ii+1];
         }
         return pts;
+    }
+
+    @Override
+    public Rectangle2D getBounds2D()
+    {
+        Rectangle2D b = super.getBounds2D();
+        if (b.getMinX() < 0 || b.getWidth() > fullCircle)
+        {
+            b.setRect(0, b.getMinY(), fullCircle, b.getHeight());
+        }
+        return b;
     }
 
     @Override
