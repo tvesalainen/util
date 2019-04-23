@@ -637,10 +637,9 @@ public class CharSequences
      * Creates a CharSequence from a ByteBuffer. ByteBuffer must support array.
      * From position to limit.
      * @param bb
-     * @return
-     * @throws IOException 
+     * @return 
      */
-    public static final CharSequence getAsciiCharSequence(ByteBuffer bb) throws IOException
+    public static final CharSequence getAsciiCharSequence(ByteBuffer bb)
     {
         return new ASCIICharSequence(bb);
     }
