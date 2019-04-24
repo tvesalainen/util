@@ -59,7 +59,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
      * Updates points
      * @param points 
      */
-    public final void update(double... points)
+    private void update(double... points)
     {
         checkInput(points);
         if (!closed)

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -24,6 +25,126 @@ import java.util.Arrays;
  */
 public final class ArrayHelp
 {
+    public static final RowComparator NATURAL_ROW_COMPARATOR = new NaturalRowComparator();
+    /**
+     * Sorts rows in 1D array in ascending order comparing each rows column.
+     * @param data
+     * @param rowLength 
+     */
+    public static void sort(double[] data, int rowLength)
+    {
+        quickSort(data, 0, (data.length - 1)/rowLength, rowLength, NATURAL_ROW_COMPARATOR, new double[rowLength], new double[rowLength]);
+    }
+
+    /**
+     * Sorts rows in 1D array in ascending order using given comparator.
+     * @param data
+     * @param rowLength
+     * @param comparator 
+     */
+    public static void sort(double[] data, int rowLength, RowComparator comparator)
+    {
+        quickSort(data, 0, (data.length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
+    }
+
+    public static void quickSort(double[] arr, int left, int right, int len, RowComparator c, double[] pivot, double[] tmp)
+    {
+        int i = left, j = right;
+        System.arraycopy(arr, ((left + right) / 2)*len, pivot, 0, len);
+
+        /* partition */
+        while (i <= j)
+        {
+            while (c.compare(arr, i, pivot, len) < 0)
+            {
+                i++;
+            }
+            while (c.compare(arr, j, pivot, len) > 0)
+            {
+                j--;
+            }
+            if (i <= j)
+            {
+                if (i != j)
+                {
+                    System.arraycopy(arr, i*len, tmp, 0, len);
+                    System.arraycopy(arr, j*len, arr, i*len, len);
+                    System.arraycopy(tmp, 0, arr, j*len, len);
+                }
+                i++;
+                j--;
+            }
+        };
+
+        /* recursion */
+        if (left < j)
+        {
+            quickSort(arr, left, j, len, c, pivot, tmp);
+        }
+        if (i < right)
+        {
+            quickSort(arr, i, right, len, c, pivot, tmp);
+        }
+    }
+    public static class NaturalRowComparator implements RowComparator
+    {
+
+        @Override
+        public int compare(double[] data, int row, double[] pivot, int len)
+        {
+            for (int ii=0;ii<len;ii++)
+            {
+                if (data[len*row+ii] != pivot[ii])
+                {
+                    return Double.compare(data[len*row+ii], pivot[ii]);
+                }
+            }
+            return 0;
+        }
+        
+    }
+    public interface RowComparator
+    {
+        /**
+         * Compares sub array of data to pivot array.
+         * 
+         * <p>Returns -1 if data[row*len,...,(row+1)*len-1] &lt; pivot.
+         * <p>Returns 1 if data[row*len,...,(row+1)*len-1] &gt; pivot.
+         * <p>Returns 0 if data[row*len,...,(row+1)*len-1] == pivot.
+         * @param data
+         * @param row
+         * @param pivot
+         * @param len
+         * @return 
+         */
+        int compare(double[] data, int row, double[] pivot, int len);
+    }
+    public static final <T> T[] flatten(T[][] m)
+    {
+        int rows = m.length;
+        int cols = m[0].length;
+        int len = rows*cols;
+        T[] arr = (T[]) Array.newInstance(m[0][0].getClass(), len);
+        for (int ii=0;ii<len;ii++)
+        {
+            arr[ii] = m[ii/cols][ii%cols];
+        }
+        return arr;
+    }
+    public static final <T> T[][] unFlatten(int rows, T... arr)
+    {
+        if (arr.length % rows != 0)
+        {
+            throw new IllegalArgumentException("not full rows");
+        }
+        int cols = arr.length/rows;
+        T[][] m = (T[][]) Array.newInstance(arr[0].getClass(), rows, cols);
+        for (int ii=0;ii<rows;ii++)
+        {
+            m[ii] = Arrays.copyOfRange(arr, ii*cols, (ii+1)*cols);
+        }
+        return m;
+    }
     public static final double[] flatten(double[][] m)
     {
         int rows = m.length;

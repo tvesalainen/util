@@ -189,6 +189,7 @@ public final class Matrices
         quickSort(matrix.data, 0, matrix.numRows-1, len, comparator, new double[len], new double[len]);
     }
     /**
+     * @deprecated Moved to ArrayHelp
      * Sorts rows in 1D array in ascending order using given comparator.
      * @param data
      * @param rowLength
@@ -198,7 +199,16 @@ public final class Matrices
     {
         quickSort(data, 0, (data.length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
     }
-
+    /**
+     * @deprecated Moved to ArrayHelp
+     * @param arr
+     * @param left
+     * @param right
+     * @param len
+     * @param c
+     * @param pivot
+     * @param tmp 
+     */
     private static void quickSort(double[] arr, int left, int right, int len, RowComparator c, double[] pivot, double[] tmp)
     {
         int i = left, j = right;
@@ -238,7 +248,9 @@ public final class Matrices
             quickSort(arr, i, right, len, c, pivot, tmp);
         }
     }
-
+    /**
+     * @deprecated Moved to ArrayHelp
+     */
     public interface RowComparator
     {
         /**

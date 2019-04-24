@@ -26,6 +26,8 @@ import java.awt.geom.Rectangle2D;
  */
 public class PolarCubicSpline extends RelaxedCubicSpline
 {
+    private boolean useRadians;
+    private int external;
     private int offset;
     private int length;
     private double fullCircle;
@@ -36,6 +38,8 @@ public class PolarCubicSpline extends RelaxedCubicSpline
     public PolarCubicSpline(boolean useRadians, int external, double... points)
     {
         super(createControlPoints(useRadians, external, points));
+        this.useRadians = useRadians;
+        this.external = external;
         this.offset = 6*external;
         this.length = 6*(points.length/2)+2;
         if (useRadians)
