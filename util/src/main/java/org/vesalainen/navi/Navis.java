@@ -220,6 +220,10 @@ public class Navis
         double distance = distance(lat1, lon1, lat2, lon2);
         double duration = time2-time1;
         double hours = duration/3600000.0;
+        if (hours == 0 && distance == 0)
+        {
+            return 0;
+        }
         double speed = distance/hours;
         return speed;
     }
