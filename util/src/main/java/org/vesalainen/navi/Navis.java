@@ -380,7 +380,7 @@ public class Navis
      */
     public  static final double signed(double angle)
     {
-        angle = normalizeToFullAngle(angle);
+        angle = normalizeAngle(angle);
         if (angle > 180)
         {
             return angle - 360;
