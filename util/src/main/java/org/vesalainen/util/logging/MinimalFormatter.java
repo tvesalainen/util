@@ -119,13 +119,13 @@ public class MinimalFormatter extends Formatter
             Clock newClock = clockFactory.get();
             if (!newClock.equals(clock))
             {
-                ZoneOffset zoneOffset = ZoneOffset.from(newClock.instant());
+                ZoneOffset zoneOffset = ZoneOffset.of(newClock.getZone().getId());
                 long zo = systemOffset - zoneOffset.getTotalSeconds()*1000;
                 long o = clock.millis() - newClock.millis();
                 offset = zo + o;
                 clock = newClock;
             }
-            return record.getMillis()-offset;
+            return clock.millis();  //record.getMillis()-offset; TODO should change LogRecord
         }
         else
         {
