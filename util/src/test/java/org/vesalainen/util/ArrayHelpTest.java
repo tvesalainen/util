@@ -32,6 +32,14 @@ public class ArrayHelpTest
     }
 
     @Test
+    public void testArePointsInXOrder()
+    {
+        double[] array = new double[]{2, 3, 1, 2, 0, 5, 7, 8};
+        assertFalse(ArrayHelp.arePointsInXOrder(array));
+        ArrayHelp.sort(array, 2);
+        assertTrue(ArrayHelp.arePointsInXOrder(array));
+    }
+    @Test
     public void testFlatten()
     {
         double[][] m = new double[][]{{1,2}, {3,4}, {5,6}};
