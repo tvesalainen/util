@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import static org.vesalainen.math.BezierCurve.CUBIC;
 import org.vesalainen.ui.AbstractShape;
+import org.vesalainen.util.ArrayHelp;
 
 /**
  *
@@ -61,13 +62,22 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     private void update(double... points)
     {
         checkInput(points);
-        if (!closed)
-        {
-            this.injection = checkInjection(points, 0);
-        }
         double[] cp = createControlPoints(points);
         init(cp);
+        if (!closed)
+        {
+            this.injection = ArrayHelp.arePointsInXOrder(cp);
+        }
     }
+    /**
+     * Returns true if each x-value evaluates to exactly one y-value.
+     * @return 
+     */
+    public boolean isInjection()
+    {
+        return injection;
+    }
+    
     protected final void checkInput(double[] points)
     {
         if (
@@ -226,20 +236,6 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     public boolean isIsInjection()
     {
         return injection;
-    }
-
-    protected boolean checkInjection(double[] points, int offset)
-    {
-        double v = points[offset];
-        for (int ii = 2; ii < points.length; ii += 2)
-        {
-            if (v > points[ii + offset])
-            {
-                return false;
-            }
-            v = points[ii + offset];
-        }
-        return true;
     }
 
     @Override

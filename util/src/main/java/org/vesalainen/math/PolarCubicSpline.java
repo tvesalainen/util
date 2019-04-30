@@ -37,7 +37,7 @@ public class PolarCubicSpline extends RelaxedCubicSpline
     }
     public PolarCubicSpline(boolean useRadians, int external, double... points)
     {
-        super(createControlPoints(useRadians, external, points));
+        super(createPoints(useRadians, external, points));
         this.useRadians = useRadians;
         this.external = external;
         this.offset = 6*external;
@@ -51,7 +51,7 @@ public class PolarCubicSpline extends RelaxedCubicSpline
             this.fullCircle = 360;
         }
     }
-    private static double[] createControlPoints(boolean useRadians, int external, double... points)
+    private static double[] createPoints(boolean useRadians, int external, double... points)
     {
         if (external > points.length/2)
         {

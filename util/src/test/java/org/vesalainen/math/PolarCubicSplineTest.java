@@ -58,7 +58,12 @@ public class PolarCubicSplineTest
     @Test
     public void testPlot() throws IOException
     {
-        PolarCubicSpline pcs = new PolarCubicSpline(false, 4, 0, 100, 90, 150, 180, 50, 270, 150);
+        PointList list = new PointList();
+        list.add(17, 105);
+        list.add(117, 103);
+        list.add(317, 100.5);
+        list.add(357, 100);
+        PolarCubicSpline pcs = new PolarCubicSpline(list.array());
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
