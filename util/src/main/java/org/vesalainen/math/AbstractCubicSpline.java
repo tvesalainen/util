@@ -232,12 +232,6 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             return curve.evalY(x, deltaX);
         }
     }
-
-    public boolean isIsInjection()
-    {
-        return injection;
-    }
-
     @Override
     public PathIterator getPathIterator(AffineTransform at)
     {
