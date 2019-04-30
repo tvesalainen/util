@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -38,9 +39,9 @@ public class PointList
         this.array = new double[initialSize];
     }
 
-    public void add(Point2D.Double p)
+    public void add(Point2D p)
     {
-        add(p.x, p.y);
+        add(p.getX(), p.getY());
     }
     public void add(int index, Point2D.Double p)
     {
@@ -88,6 +89,53 @@ public class PointList
         }
         return new Point2D.Double(array[2*index], array[2*index+1]);
     }
+    public int indexOf(Point2D p)
+    {
+        return indexOf(p.getX(), p.getY());
+    }
+    /**
+     * Returns first index of point equals given x and y or either given x or y is NaN.
+     * @param x
+     * @param y
+     * @return 
+     */
+    public int indexOf(double x, double y)
+    {
+        return indexOf(0, x, y, 0, 0);
+    }
+    /**
+     * Returns first index of point which x differs max deltaX and y differs max
+     * deltaY or either given x or y is NaN.
+     * @param from
+     * @param x
+     * @param y
+     * @param deltaX
+     * @param deltaY
+     * @return 
+     */
+    public int indexOf(int from, double x, double y, double deltaX, double deltaY)
+    {
+        int len = size();
+        for (int ii=from;ii<len;ii++)
+        {
+            if (
+                    (Double.isNaN(x) || Math.abs(x-array[2*ii])<= deltaX) &&
+                    (Double.isNaN(y) || Math.abs(y-array[2*ii+1])<= deltaY)
+                    )
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    public void forEach(DoubleBiConsumer act)
+    {
+        int len = size();
+        for (int ii=0;ii<len;ii++)
+        {
+            act.accept(array[2*ii], array[2*ii+1]);
+        }
+    }
     /**
      * Returns copy of array with size*2 length
      * @return 
@@ -110,4 +158,15 @@ public class PointList
     {
         array = Arrays.copyOf(array, array.length*2);
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        forEach((x,y)->sb.append('{').append(x).append(", ").append(y).append(')'));
+        sb.append('}');
+        return sb.toString();
+    }
+    
 }
