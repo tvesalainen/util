@@ -32,6 +32,24 @@ public class PointListTest
     }
 
     @Test
+    public void testIndexOf()
+    {
+        PointList pl = new PointList();
+        Point2D.Double p1 = new Point2D.Double(1,2);
+        Point2D.Double p2 = new Point2D.Double(3,4);
+        Point2D.Double p3 = new Point2D.Double(5,6);
+        Point2D.Double p4 = new Point2D.Double(7,8);
+        pl.add(p1);
+        pl.add(p2);
+        pl.add(p3);
+        pl.add(p4);
+        assertEquals(0, pl.indexOf(p1));
+        assertEquals(3, pl.indexOf(p4));
+        assertEquals(2, pl.indexOf(1, 5.5, 5.5, 0.5, 0.5));
+        assertEquals(2, pl.indexOf(1, Double.NaN, 5.5, 0.5, 0.5));
+        assertEquals(2, pl.indexOf(2, Double.NaN, Double.NaN, 0.5, 0.5));
+    }
+    @Test
     public void test1()
     {
         PointList pl = new PointList(2);
