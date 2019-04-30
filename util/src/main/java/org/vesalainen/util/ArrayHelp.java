@@ -25,6 +25,41 @@ import java.util.Arrays;
  */
 public final class ArrayHelp
 {
+    /**
+     * returns true if 2-dimensional points x-coordinates are ordered ascending.
+     * @param array
+     * @return 
+     */
+    public static boolean arePointsInXOrder(double[] array)
+    {
+        return inOrder(array, 0, 2);
+    }
+    /**
+     * Returns true if every rows k's number is not greater than next rows.
+     * @param array
+     * @param k
+     * @param cols
+     * @return 
+     */
+    public static boolean inOrder(double[] array, int k, int cols)
+    {
+        if (array.length % cols != 0)
+        {
+            throw new IllegalArgumentException("row length dont match");
+        }
+        double prev = array[k];
+        int len = array.length / cols;
+        for (int ii=1;ii<len;ii++)
+        {
+            double next = array[ii*cols+k];
+            if (next < prev)
+            {
+                return false;
+            }
+            prev = next;
+        }
+        return true;
+    }
     public static final RowComparator NATURAL_ROW_COMPARATOR = new NaturalRowComparator();
     /**
      * Sorts rows in 1D array in ascending order comparing each rows column.
