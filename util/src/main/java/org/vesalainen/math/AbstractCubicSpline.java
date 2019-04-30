@@ -233,7 +233,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         double v = points[offset];
         for (int ii = 2; ii < points.length; ii += 2)
         {
-            if (v >= points[ii + offset])
+            if (v > points[ii + offset])
             {
                 return false;
             }
