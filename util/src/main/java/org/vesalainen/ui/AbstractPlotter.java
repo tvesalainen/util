@@ -628,6 +628,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             return shape.getBounds2D();
         }
 
+        public void transform(AffineTransform at)
+        {
+            shape = (S) at.createTransformedShape(shape);
+        }
     }
     private class Fixed extends Drawable
     {

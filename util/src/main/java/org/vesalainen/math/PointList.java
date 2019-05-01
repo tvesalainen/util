@@ -19,6 +19,9 @@ package org.vesalainen.math;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Locale;
+import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.ArrayHelp.RowComparator;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
@@ -193,6 +196,21 @@ public class PointList implements Serializable
     {
         size = 0;
     }
+    /**
+     * Sorts points according to x in ascending order.
+     */
+    public void sort()
+    {
+        ArrayHelp.sort(array, 0, 2*size, 2);
+    }
+    /**
+     * Sorts points using given comparator.
+     * @param comp 
+     */
+    public void sort(RowComparator comp)
+    {
+        ArrayHelp.sort(array, 0, 2*size, 2, comp);
+    }
     protected void grow()
     {
         array = Arrays.copyOf(array, array.length*2);
@@ -203,7 +221,7 @@ public class PointList implements Serializable
     {
         StringBuilder sb = new StringBuilder();
         sb.append('{');
-        forEach((x,y)->sb.append('{').append(x).append(", ").append(y).append(')'));
+        forEach((x,y)->sb.append('{').append(String.format(Locale.US, "%.1f", x)).append(", ").append(String.format(Locale.US, "%.1f", y)).append(')'));
         sb.append('}');
         return sb.toString();
     }

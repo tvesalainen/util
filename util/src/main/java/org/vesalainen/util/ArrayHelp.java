@@ -68,18 +68,56 @@ public final class ArrayHelp
      */
     public static void sort(double[] data, int rowLength)
     {
-        quickSort(data, 0, (data.length - 1)/rowLength, rowLength, NATURAL_ROW_COMPARATOR, new double[rowLength], new double[rowLength]);
+        sort(data, 0, data.length, rowLength);
+    }
+    /**
+     * Sorts rows in 1D array in ascending order comparing each rows column.
+     * @param data
+     * @param offset
+     * @param length Length of data
+     * @param rowLength 
+     */
+    public static void sort(double[] data, int offset, int length, int rowLength)
+    {
+        if (offset % rowLength != 0)
+        {
+            throw new IllegalArgumentException("offset not dividable by rowLength");
+        }
+        if (length % rowLength != 0)
+        {
+            throw new IllegalArgumentException("length not dividable by rowLength");
+        }
+        quickSort(data, offset/rowLength, (offset + length - 1)/rowLength, rowLength, NATURAL_ROW_COMPARATOR, new double[rowLength], new double[rowLength]);
     }
 
     /**
-     * Sorts rows in 1D array in ascending order using given comparator.
+     * Sorts rows in 1D array using given comparator.
      * @param data
      * @param rowLength
      * @param comparator 
      */
     public static void sort(double[] data, int rowLength, RowComparator comparator)
     {
-        quickSort(data, 0, (data.length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
+        sort(data, 0, data.length, rowLength, comparator);
+    }
+    /**
+     * Sorts rows in 1D array using given comparator.
+     * @param data
+     * @param length Length of data
+     * @param rowLength
+     * @param comparator 
+     */
+    public static void sort(double[] data, int offset, int length, int rowLength, RowComparator comparator)
+    {
+        if (offset % rowLength != 0)
+        {
+            throw new IllegalArgumentException("offset not dividable by rowLength");
+        }
+        if (length % rowLength != 0)
+        {
+            throw new IllegalArgumentException("length not dividable by rowLength");
+        }
+        quickSort(data, offset/rowLength, (offset + length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
     }
 
     public static void quickSort(double[] arr, int left, int right, int len, RowComparator c, double[] pivot, double[] tmp)

@@ -90,5 +90,22 @@ public class PointListTest
         assertEquals(p4, pl.get(0));
         assertEquals(p2, pl.get(1));
     }
-    
+    @Test
+    public void testSort()
+    {
+        PointList pl = new PointList(2);
+        Point2D.Double p1 = new Point2D.Double(1,2);
+        Point2D.Double p2 = new Point2D.Double(3,4);
+        Point2D.Double p3 = new Point2D.Double(5,6);
+        Point2D.Double p4 = new Point2D.Double(7,8);
+        pl.add(p4);
+        pl.add(p3);
+        pl.add(p2);
+        pl.add(p1);
+        pl.sort();
+        assertEquals(p1, pl.get(0));
+        assertEquals(p2, pl.get(1));
+        assertEquals(p3, pl.get(2));
+        assertEquals(p4, pl.get(3));
+    }
 }

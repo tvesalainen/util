@@ -20,10 +20,12 @@ import java.awt.Color;
 import static java.awt.Font.BOLD;
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.nio.file.Paths;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.vesalainen.ui.Direction.*;
+import org.vesalainen.io.IO;
 import org.vesalainen.ui.PolarPlotter;
+import org.vesalainen.util.ArrayHelp;
 
 /**
  *
@@ -56,21 +58,23 @@ public class PolarCubicSplineTest
     }
     
     @Test
-    public void testPlot() throws IOException
+    public void testPlot() throws IOException, ClassNotFoundException
     {
-        PointList list = new PointList();
-        list.add(17, 105);
-        list.add(117, 103);
-        list.add(317, 100.5);
-        list.add(357, 100);
-        PolarCubicSpline pcs = new PolarCubicSpline(list.array());
+        PointList list = IO.deserialize(Paths.get("c:\\temp\\deviation_build.ser"));//new PointList();
+        //list.add(17, 105);
+        //list.add(117, 103);
+        //list.add(317, 100.5);
+        //list.add(357, 100);
+        double[] array = list.array();
+        ArrayHelp.sort(array, 2);
+        PolarCubicSpline pcs = new PolarCubicSpline(array);
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
         //plotter.drawLine(0, 1, 360, 1);
         plotter.draw(pcs);
         //plotter.drawCoordinates(LEFT, TOP);
-        plotter.plot("polar.png");
+        plotter.plot("dev.png");
     }
 }
 

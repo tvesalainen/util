@@ -32,6 +32,14 @@ public class ArrayHelpTest
     }
 
     @Test
+    public void testSort1()
+    {
+        double[] array = new double[]{2, 3, 1, 2, 0, 5, 7, 8};
+        double[] exp = new double[]{2, 3, 0, 5, 1, 2, 7, 8};
+        ArrayHelp.sort(array, 2, 4, 2);
+        assertArrayEquals(exp, array, 1e-10);
+    }
+    @Test
     public void testArePointsInXOrder()
     {
         double[] array = new double[]{2, 3, 1, 2, 0, 5, 7, 8};

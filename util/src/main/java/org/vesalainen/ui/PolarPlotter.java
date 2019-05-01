@@ -17,6 +17,8 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
 import org.vesalainen.ui.scale.AngleScale;
@@ -44,6 +46,25 @@ public class PolarPlotter extends AbstractPlotter
     {
         super(width, height, background, true, new AngleScale(), yScale, new PolarTransform(useRadians));
         this.useRadians = useRadians;
+    }
+
+    @Override
+    protected void plot(Drawer drawer)
+    {
+        DoubleBounds bounds = new DoubleBounds();
+        for (Drawable drawable : shapes)
+        {
+            bounds.add(drawable.getBounds());
+        }
+        if (bounds.getMinY() < 0)
+        {
+            AffineTransform at = AffineTransform.getTranslateInstance(0, -bounds.getMinY());
+            for (Drawable drawable : shapes)
+            {
+                drawable.transform(at);
+            }
+        }
+        super.plot(drawer);
     }
 
     @Override
