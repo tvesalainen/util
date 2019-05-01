@@ -46,7 +46,7 @@ public class RelaxedCubicSplineTest
         plotter.setColor(Color.BLUE);
         plotter.draw(csi, 0, 2, 5, 5);
         plotter.drawCoordinates();
-        plotter.plot("relaxed", "png");
+        plotter.plot("relaxed.png");
         for (int ii=0;ii<5;ii++)
         {
             assertEquals(p[2*ii+1], csi.applyAsDouble(p[2*ii]), 1e-10);

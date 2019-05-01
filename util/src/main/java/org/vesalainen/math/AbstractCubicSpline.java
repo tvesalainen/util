@@ -62,10 +62,14 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     private void update(double... points)
     {
         checkInput(points);
+        if (!closed)
+        {   // check first with initialpoints
+            this.injection = ArrayHelp.arePointsInXOrder(points);
+        }
         double[] cp = createControlPoints(points);
         init(cp);
-        if (!closed)
-        {
+        if (!closed && injection)
+        {   // might still not be injection if control points cause loops etc.
             this.injection = ArrayHelp.arePointsInXOrder(cp);
         }
     }
