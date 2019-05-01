@@ -17,6 +17,14 @@
 package org.vesalainen.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
 
 /**
  *
@@ -24,6 +32,41 @@ import java.io.IOException;
  */
 public class IO
 {
+    /**
+     * Writes object to path
+     * @param <T>
+     * @param obj
+     * @param path
+     * @param options
+     * @throws IOException 
+     */
+    public static final <T extends Serializable> void serialize(T obj, Path path, OpenOption... options) throws IOException
+    {
+        try (   OutputStream os = Files.newOutputStream(path, options);
+                ObjectOutputStream oos = new ObjectOutputStream(os);
+                )
+        {
+            oos.writeObject(obj);
+        }
+    }
+    /**
+     * Reads serialized object from path
+     * @param <T>
+     * @param path
+     * @param options
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
+    public static final <T extends Serializable> T deserialize(Path path, OpenOption... options) throws IOException, ClassNotFoundException
+    {
+        try (   InputStream is = Files.newInputStream(path, options);
+                ObjectInputStream ois = new ObjectInputStream(is);
+                )
+        {
+            return (T) ois.readObject();
+        }
+    }
     public static final int readFully(Reader reader, byte[] buffer) throws IOException
     {
         return readFully(reader, buffer, 0, buffer.length);
