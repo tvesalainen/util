@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 import java.util.Arrays;
 import org.vesalainen.util.function.DoubleBiConsumer;
 
@@ -24,8 +25,9 @@ import org.vesalainen.util.function.DoubleBiConsumer;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PointList
+public class PointList implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private double[] array;
     private int size;
 
@@ -128,6 +130,43 @@ public class PointList
         }
         return -1;
     }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 89 * hash + Arrays.hashCode(this.array);
+        hash = 89 * hash + this.size;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final PointList other = (PointList) obj;
+        if (this.size != other.size)
+        {
+            return false;
+        }
+        if (!Arrays.equals(this.array, other.array))
+        {
+            return false;
+        }
+        return true;
+    }
+    
     public void forEach(DoubleBiConsumer act)
     {
         int len = size();

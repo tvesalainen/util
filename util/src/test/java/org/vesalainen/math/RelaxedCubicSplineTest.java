@@ -64,19 +64,19 @@ public class RelaxedCubicSplineTest
         plotter.setFont("Arial", BOLD, 20);
         plotter.draw(csi);
         plotter.drawCoordinates();
-        plotter.plot("BSpline", "png");
+        plotter.plot("BSpline.png");
     }
     @Test
     public void testInjection1()
     {
         RelaxedCubicSpline csi = new RelaxedCubicSpline(0, 0, 1, 2, 2, 3);
-        assertTrue(csi.isIsInjection());
+        assertTrue(csi.isInjection());
     }
     @Test
     public void testInjection3()
     {
         RelaxedCubicSpline csi = new RelaxedCubicSpline(2, 0, 1, 2, 2, 3);
-        assertFalse(csi.isIsInjection());
+        assertFalse(csi.isInjection());
     }
     
 }
