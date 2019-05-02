@@ -134,6 +134,10 @@ public class PointList implements Serializable
         return -1;
     }
 
+    public boolean isEmpty()
+    {
+        return size == 0;
+    }
     @Override
     public int hashCode()
     {
