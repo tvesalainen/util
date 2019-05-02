@@ -48,9 +48,9 @@ public class PointList implements Serializable
     {
         add(p.getX(), p.getY());
     }
-    public void add(int index, Point2D.Double p)
+    public void add(int index, Point2D p)
     {
-        add(index, p.x, p.y);
+        add(index, p.getX(), p.getY());
     }
     public void add(double x, double y)
     {
@@ -76,6 +76,19 @@ public class PointList implements Serializable
         array[2*index] = x;
         array[2*index+1] = y;
         size++;
+    }
+    public void set(int index, Point2D p)
+    {
+        set(index, p.getX(), p.getY());
+    }
+    public void set(int index, double x, double y)
+    {
+        if (index < 0 || index >= size)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        array[2*index] = x;
+        array[2*index+1] = y;
     }
     public void remove(int index)
     {
