@@ -22,10 +22,9 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Paths;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.vesalainen.io.IO;
+import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.PolarPlotter;
-import org.vesalainen.util.ArrayHelp;
 
 /**
  *
@@ -38,23 +37,25 @@ public class PolarCubicSplineTest
     {
     }
 
-    //@Test
-    public void testEval() throws IOException
+    @Test
+    public void test1() throws IOException
     {
-        Point2D.Double dy0 = new Point2D.Double();
-        Point2D.Double ddy0 = new Point2D.Double();
-        Point2D.Double dy360 = new Point2D.Double();
-        Point2D.Double ddy360 = new Point2D.Double();
-        PolarCubicSpline pcs = new PolarCubicSpline(0, 100, 90, 150, 180, 50, 270, 150);
-        ParameterizedOperator c0 = pcs.getCurve(0);
-        double y0 = c0.evalY(0);
-        ParameterizedOperator c360 = pcs.getCurve(360);
-        double y360 = c360.evalY(360);
-        assertEquals(y0, y360, 1e-10);
-        assertEquals(dy0.x, dy360.x, 1e-10);
-        assertEquals(dy0.y, dy360.y, 1e-10);
-        assertEquals(ddy0.x, ddy360.x, 1e-10);
-        assertEquals(ddy0.y, ddy360.y, 1e-10);
+        Point2D.Double p1 = new Point2D.Double(270, 6);
+        Point2D.Double p2 = new Point2D.Double(280, 5);
+        Point2D.Double p3 = new Point2D.Double(290, 6);
+        Point2D.Double p4 = new Point2D.Double(270, 15);
+        PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
+        PolarCubicSpline pcs = new PolarCubicSpline(p1, p2, p3);
+        if (!pcs.isInjection())
+        {
+            pcs.forceInjection();
+        }
+        plotter.setColor(Color.RED);
+        plotter.setFont("Arial", BOLD, 20);
+        plotter.draw(pcs);
+        plotter.setColor(Color.LIGHT_GRAY);
+        plotter.drawCoordinates(LEFT, TOP);
+        plotter.plot("dev2.png");
     }
     
     @Test
@@ -65,9 +66,8 @@ public class PolarCubicSplineTest
         //list.add(117, 103);
         //list.add(317, 100.5);
         //list.add(357, 100);
-        double[] array = list.array();
-        ArrayHelp.sort(array, 2);
-        PolarCubicSpline pcs = new PolarCubicSpline(array);
+        list.sort();
+        PolarCubicSpline pcs = new PolarCubicSpline(list.array());
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);

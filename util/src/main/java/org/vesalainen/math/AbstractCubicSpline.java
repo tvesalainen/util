@@ -19,6 +19,7 @@ package org.vesalainen.math;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,8 +43,9 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     protected int pointCount;
     protected int curveCount;
 
-    protected AbstractCubicSpline()
+    protected AbstractCubicSpline(Point2D... points)
     {
+        this(convert(points));
     }
 
     protected AbstractCubicSpline(double... points)
@@ -161,6 +163,39 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         }
     }
     /**
+    * Modifies PolarCubicSpline to be x-injection
+    * after which it is not PolarCubicSpline any more.
+    * 
+    * <p>It can be proved that Bezier curve is x-injection if it's control points
+    * x-components are in ascending order. I.e x0 &le; x1 &le; x2 &le; x3. If Bezier
+    * curve's x1 &gt; x2  it can be modified to be x-injection by changing P1 and P2.
+    * After modification first and second derivatives don't equal at connecting
+    * points any more.
+     */
+    public void forceInjection()
+    {
+        int length = controlPoints.length-2;
+        for (int ii=0;ii<length;ii+=6)
+        {
+            double x0 = controlPoints[ii];
+            double x1 = controlPoints[ii+2];
+            double x2 = controlPoints[ii+4];
+            double x3 = controlPoints[ii+6];
+            if (x0 > x3)
+            {
+                throw new IllegalArgumentException("x0 > x3");
+            }
+            if (x1 > x2)
+            {
+                double a = (x0+x3)/2.0;
+                controlPoints[ii+2] = a;
+                controlPoints[ii+4] = a;
+            }
+        }
+        injection = true;
+    }
+    
+    /**
      * Returns class cached DoubleMatrix with decompose already called.
      * @param n
      * @return 
@@ -187,7 +222,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     @Override
     public double applyAsDouble(double x)
     {
-        return eval(x, 10 * Math.ulp(x));
+        return eval(x, 100 * Math.ulp(x));
     }
 
     public ParameterizedOperator getCurve(double x)
@@ -236,6 +271,18 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             return curve.evalY(x, deltaX);
         }
     }
+    protected static double[] convert(Point2D... points)
+    {
+        int len = points.length;
+        double[] cp = new double[len*2];
+        for (int n=0;n<len;n++)
+        {
+            cp[2*n] = points[n].getX();
+            cp[2*n+1] = points[n].getY();
+        }
+        return cp;
+    }
+
     @Override
     public PathIterator getPathIterator(AffineTransform at)
     {
