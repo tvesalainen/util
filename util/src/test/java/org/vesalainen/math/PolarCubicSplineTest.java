@@ -59,6 +59,33 @@ public class PolarCubicSplineTest
     }
     
     @Test
+    public void test2() throws IOException
+    {
+        Point2D.Double p1 = new Point2D.Double(121, -10.2);
+        Point2D.Double p2 = new Point2D.Double(133, 12.3);
+        Point2D.Double p3 = new Point2D.Double(156, 25.5);
+        Point2D.Double p4 = new Point2D.Double(172, -19.2);
+        Point2D.Double p5 = new Point2D.Double(179, -9.7);
+        Point2D.Double p6 = new Point2D.Double(180, -15.6);
+        Point2D.Double p7 = new Point2D.Double(182, -14.2);
+        Point2D.Double p8 = new Point2D.Double(190, 2.1);
+        Point2D.Double p9 = new Point2D.Double(200, -1.9);
+        Point2D.Double p10 = new Point2D.Double(206, 1.4);
+        PolarCubicSpline pcs = new PolarCubicSpline(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        if (!pcs.isInjection())
+        {
+            pcs.forceInjection();
+        }
+        double v = pcs.eval(200, 0.01);
+        PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
+        plotter.setColor(Color.RED);
+        plotter.setFont("Arial", BOLD, 20);
+        plotter.draw(pcs);
+        plotter.setColor(Color.LIGHT_GRAY);
+        plotter.drawCoordinates(LEFT, TOP);
+        plotter.plot("dev3.png");
+    }
+    //@Test
     public void testPlot() throws IOException, ClassNotFoundException
     {
         PointList list = IO.deserialize(Paths.get("c:\\temp\\deviation_build.ser"));//new PointList();

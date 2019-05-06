@@ -68,7 +68,7 @@ public class BezierCurve
      * @param controlPoints
      * @return 
      */
-    public ParameterizedOperator operator(Point2D.Double... controlPoints)
+    public ParameterizedOperator operator(Point2D... controlPoints)
     {
         if (controlPoints.length != length)
         {
@@ -348,14 +348,14 @@ public class BezierCurve
         }
         return (maxX-minX+maxY-minY)*1.35;
     }
-    private static double[] convert(Point2D.Double... points)
+    private static double[] convert(Point2D... points)
     {
         int len = points.length;
         double[] cp = new double[len*2];
         for (int n=0;n<len;n++)
         {
-            cp[2*n] = points[n].x;
-            cp[2*n+1] = points[n].y;
+            cp[2*n] = points[n].getX();
+            cp[2*n+1] = points[n].getY();
         }
         return cp;
     }

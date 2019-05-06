@@ -36,16 +36,24 @@ public abstract class AbstractShape implements Shape
 
     protected AbstractShape()
     {
-        this(new Rectangle2D.Double());
     }
     protected AbstractShape(Rectangle2D bounds2D)
     {
         this.bounds = bounds2D;
     }
 
+    protected void calculateBounds()
+    {
+    }
+    
     @Override
     public Rectangle2D getBounds2D()
     {
+        if (bounds == null)
+        {
+            bounds = new Bounds();
+            calculateBounds();
+        }
         return bounds;
     }
 
@@ -73,7 +81,7 @@ public abstract class AbstractShape implements Shape
         if (rect == null)
         {
             rect = new Rectangle();
-            rect.setRect(bounds);
+            rect.setRect(getBounds2D());
         }
         return rect;
     }

@@ -20,7 +20,7 @@ import org.ejml.ops.CommonOps;
  * <p><img src="doc-files/test3.png">
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="dd_splines.pdf">http://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf</a>
- * @see org.vesalainen.math.CubicBezierCurve
+ * @see org.vesalainen.math.CubicBezierCurve0
  */
 public class CubicSplineCurve implements Serializable
 {
@@ -29,7 +29,7 @@ public class CubicSplineCurve implements Serializable
     private double epsilon = Epsilon;
     private Point[] S;
     private Point[] P;
-    private CubicBezierCurve[] cbc;
+    private CubicBezierCurve0[] cbc;
     // temporary
     private AbstractPoint tmpPoint = new AbstractPoint();
     private AbstractPoint tmpKey = new AbstractPoint();
@@ -106,10 +106,10 @@ public class CubicSplineCurve implements Serializable
             P[(ii-1)*3+2] = mids[1];
             P[(ii-1)*3+3] = S[ii];
         }
-        cbc = new CubicBezierCurve[B.length-1];
+        cbc = new CubicBezierCurve0[B.length-1];
         for (int ii=0;ii<cbc.length;ii++)
         {
-            cbc[ii] = new CubicBezierCurve(3*ii, P);
+            cbc[ii] = new CubicBezierCurve0(3*ii, P);
         }
      //   cbc[0].curveStart();
      //   cbc[cbc.length-1].curveEnd();

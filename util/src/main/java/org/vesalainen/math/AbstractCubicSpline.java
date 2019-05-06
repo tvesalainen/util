@@ -156,12 +156,16 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             curves[ii] = CUBIC.operator(controlPoints, offset);
             offset += 6;
         }
+    }
+    protected void calculateBounds()
+    {
         int len = controlPoints.length/2;
         for (int ii=0;ii<len;ii++)
         {
             bounds.add(controlPoints[2*ii], controlPoints[2*ii+1]);
         }
     }
+
     /**
     * Modifies PolarCubicSpline to be x-injection
     * after which it is not PolarCubicSpline any more.
@@ -185,7 +189,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             {
                 throw new IllegalArgumentException("x0 > x3");
             }
-            if (x1 > x2)
+            if (!(x0 <= x1 && x1 <= x2 && x2 <= x3))
             {
                 double a = (x0+x3)/2.0;
                 controlPoints[ii+2] = a;

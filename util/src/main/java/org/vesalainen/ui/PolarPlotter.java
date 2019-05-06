@@ -56,9 +56,9 @@ public class PolarPlotter extends AbstractPlotter
         {
             bounds.add(drawable.getBounds());
         }
-        if (bounds.getMinY() < 0)
+        if (bounds.getMinY() < bounds.height)
         {
-            AffineTransform at = AffineTransform.getTranslateInstance(0, -bounds.getMinY());
+            AffineTransform at = AffineTransform.getTranslateInstance(0, bounds.height-bounds.getMinY());
             for (Drawable drawable : shapes)
             {
                 drawable.transform(at);
