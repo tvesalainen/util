@@ -26,6 +26,33 @@ import static org.vesalainen.math.BezierCurve.CUBIC;
  */
 public final class CubicBezierCurves
 {
+    /**
+    * Modifies CubicBezierCurve to be x-injection.
+    * 
+    * <p>It can be proved that Bezier curve is x-injection if it's control points
+    * x-components are in ascending order. I.e x0 &le; x1 &le; x2 &le; x3. If Bezier
+    * curve's x1 &gt; x2  it can be modified to be x-injection by changing P1 and P2.
+     * @param controlPoints
+     * @param offset 
+     */
+    public static void forceInjection(double[] controlPoints, int offset)
+    {
+        double x0 = controlPoints[offset];
+        double x1 = controlPoints[offset+2];
+        double x2 = controlPoints[offset+4];
+        double x3 = controlPoints[offset+6];
+        if (x0 > x3)
+        {
+            throw new IllegalArgumentException("x0 > x3");
+        }
+        if (!(x0 <= x1 && x1 <= x2 && x2 <= x3))
+        {
+            double a = (x0+x3)/2.0;
+            controlPoints[offset+2] = a;
+            controlPoints[offset+4] = a;
+        }
+    }
+    
     public static ParameterizedOperator firstSplitOperator(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
     {
         return CUBIC.operator(firstSplit(t, 0, convert(P0, P1, P2, P3)));

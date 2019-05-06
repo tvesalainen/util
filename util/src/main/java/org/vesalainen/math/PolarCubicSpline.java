@@ -16,10 +16,9 @@
  */
 package org.vesalainen.math;
 
-import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
+import static org.vesalainen.math.BezierCurve.CUBIC;
 
 /**
  *
@@ -27,11 +26,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class PolarCubicSpline extends RelaxedCubicSpline
 {
-    private boolean useRadians;
-    private int external;
-    private int offset;
-    private int length;
-    private double fullCircle;
+    private static final double FULL_CIRCLE = 360;
 
     public PolarCubicSpline(Point2D... points)
     {
@@ -40,70 +35,63 @@ public class PolarCubicSpline extends RelaxedCubicSpline
     
     public PolarCubicSpline(double... points)
     {
-        this(false, Math.min(4, points.length/2), points);
+        this(Math.min(4, points.length/2), points);
     }
-    public PolarCubicSpline(boolean useRadians, int external, double... points)
+    public PolarCubicSpline(int external, double... points)
     {
-        super(createPoints(useRadians, external, points));
-        this.useRadians = useRadians;
-        this.external = external;
-        this.offset = 6*external;
-        this.length = 6*(points.length/2)+2;
-        if (useRadians)
-        {
-            this.fullCircle = 2*Math.PI;
-        }
-        else
-        {
-            this.fullCircle = 360;
-        }
+        super(createPoints(external, points));
     }
-    private static double[] createPoints(boolean useRadians, int external, double... points)
+    private static double[] createPoints(int external, double... points)
     {
         if (external > points.length/2)
         {
             throw new IllegalArgumentException("not enough points for external");
         }
-        double fullCircle;
-        if (useRadians)
-        {
-            fullCircle = 2*Math.PI;
-        }
-        else
-        {
-            fullCircle = 360;
-        }
         int pe = points.length;
         double[] pts = new double [points.length+4*external];
         for (int ii=0;ii<external;ii++)
         {
-            pts[2*ii] = points[pe-2*external+2*ii]-fullCircle;
+            pts[2*ii] = points[pe-2*external+2*ii]-FULL_CIRCLE;
             pts[2*ii+1] = points[pe-2*external+1+2*ii];
         }
         System.arraycopy(points, 0, pts, 2*external, pe);
         for (int ii=0;ii<external;ii++)
         {
-            pts[2*ii+pts.length-2*external] = points[2*ii]+fullCircle;
+            pts[2*ii+pts.length-2*external] = points[2*ii]+FULL_CIRCLE;
             pts[2*ii+pts.length-2*external+1] = points[2*ii+1];
         }
         return pts;
     }
 
     @Override
-    public Rectangle2D getBounds2D()
+    protected double[] createControlPoints(double[] points)
     {
-        Rectangle2D b = super.getBounds2D();
-        if (b.getMinX() < 0 || b.getWidth() > fullCircle)
+        double[] cp = super.createControlPoints(points);
+        int o1=0;
+        for (;;o1+=6)
         {
-            b.setRect(0, b.getMinY(), fullCircle, b.getHeight());
+            if (cp[o1] <= 0 && cp[o1+6] > 0)
+            {
+                break;
+            }
         }
-        return b;
+        CubicBezierCurves.forceInjection(cp, o1);
+        ParameterizedOperator op1 = CUBIC.operator(cp, o1);
+        double t1 = op1.evalTForX(0, 0.01);
+        CubicBezierCurves.replaceSecondSplit(t1, o1, cp);
+        int o2 = cp.length - 8;
+        for (;;o2-=6)
+        {
+            if (cp[o2] < FULL_CIRCLE && cp[o2+6] >= FULL_CIRCLE)
+            {
+                break;
+            }
+        }
+        CubicBezierCurves.forceInjection(cp, o2);
+        ParameterizedOperator op2 = CUBIC.operator(cp, o2);
+        double t2 = op2.evalTForX(FULL_CIRCLE, 0.01);
+        CubicBezierCurves.replaceFirstSplit(t2, o2, cp);
+        return Arrays.copyOfRange(cp, o1, o2+8);
     }
 
-    @Override
-    public PathIterator getPathIterator(AffineTransform at)
-    {
-        return new PathIteratorImpl(at, offset, length);
-    }
-    
 }

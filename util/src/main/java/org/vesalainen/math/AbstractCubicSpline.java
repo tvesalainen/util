@@ -94,7 +94,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             throw new IllegalArgumentException("wrong number of points");
         }
     }
-    protected final double[] createControlPoints(double[] points)
+    protected double[] createControlPoints(double[] points)
     {
         int n = points.length/2;
         DoubleMatrix S = DoubleMatrix.getInstance(n, points);
@@ -157,6 +157,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             offset += 6;
         }
     }
+    @Override
     protected void calculateBounds()
     {
         int len = controlPoints.length/2;
@@ -181,20 +182,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         int length = controlPoints.length-2;
         for (int ii=0;ii<length;ii+=6)
         {
-            double x0 = controlPoints[ii];
-            double x1 = controlPoints[ii+2];
-            double x2 = controlPoints[ii+4];
-            double x3 = controlPoints[ii+6];
-            if (x0 > x3)
-            {
-                throw new IllegalArgumentException("x0 > x3");
-            }
-            if (!(x0 <= x1 && x1 <= x2 && x2 <= x3))
-            {
-                double a = (x0+x3)/2.0;
-                controlPoints[ii+2] = a;
-                controlPoints[ii+4] = a;
-            }
+            CubicBezierCurves.forceInjection(controlPoints, ii);
         }
         injection = true;
     }
