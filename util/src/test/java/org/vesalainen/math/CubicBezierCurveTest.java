@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,10 @@
  */
 package org.vesalainen.math;
 
+import java.awt.geom.Point2D;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.math.BezierCurve.CUBIC;
 
 /**
  *
@@ -25,21 +27,38 @@ import static org.junit.Assert.*;
  */
 public class CubicBezierCurveTest
 {
-    static final double Epsilon = 1e-6;
+    
     public CubicBezierCurveTest()
     {
     }
 
     @Test
-    public void test1()
+    public void testSplit()
     {
-        CubicBezierCurve cbc = new CubicBezierCurve(0, 2, 1, 3, 2, 3, 3, 4);
-        Point p = cbc.eval(0.3);
-        assertEquals(0.9, p.getX(), Epsilon);
-        assertEquals(2.684, p.getY(), Epsilon);
-        p = cbc.eval(0.6);
-        assertEquals(1.8, p.getX(), Epsilon);
-        assertEquals(3.152, p.getY(), Epsilon);
+        double t = 0.5;
+        Point2D.Double p0 = new Point2D.Double(2,3);
+        Point2D.Double p1 = new Point2D.Double(0,5);
+        Point2D.Double p2 = new Point2D.Double(-1,-2);
+        Point2D.Double p3 = new Point2D.Double(2,1);
+        ParameterizedOperator op1 = CUBIC.operator(p0, p1, p2, p3);
+        ParameterizedOperator op2 = CubicBezierCurve.firstSplitOperator(t, p0, p1, p2, p3);
+        for (double tt=0;tt<t;tt+=0.1)
+        {
+            assertEquals(op1.calcX(tt), op2.calcX(tt/t), 1e-10);
+            assertEquals(op1.calcY(tt), op2.calcY(tt/t), 1e-10);
+        }
+        ParameterizedOperator op3 = CubicBezierCurve.secondSplitOperator(t, p0, p1, p2, p3);
+        for (double tt=t;tt<1;tt+=0.1)
+        {
+            assertEquals(op1.calcX(tt), op3.calcX((tt-t)/(1-t)), 1e-10);
+            assertEquals(op1.calcY(tt), op3.calcY((tt-t)/(1-t)), 1e-10);
+        }
     }
-    
+    @Test
+    public void testMidPoint()
+    {
+        Point2D.Double p0 = new Point2D.Double(2,3);
+        Point2D.Double p1 = new Point2D.Double(0,5);
+        assertEquals(p1, CubicBezierCurve.midPoint(1, p0, p1));
+    }
 }
