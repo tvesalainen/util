@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Timo Vesalainen
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,123 +16,136 @@
  */
 package org.vesalainen.math;
 
-import java.io.Serializable;
-
+import java.awt.geom.Point2D;
+import java.util.Arrays;
+import static org.vesalainen.math.BezierCurve.CUBIC;
 
 /**
- * This class implements a Cubic Bezier Curve
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @see <a href="bb_bezier.pdf">http://www.math.ucla.edu/~baker/149.1.02w/handouts/bb_bezier.pdf</a>
  */
-public class CubicBezierCurve implements Serializable
+public class CubicBezierCurve
 {
-    private static final long serialVersionUID = 1L;
-    private Point[] P;
-    private int start;
-    /**
-     * Creates a CubicBezierCurve by point coordinates
-     * @param p Point coordinates x1, y1, x2, y2, x3, y3, x4, y4
-     */
-    public CubicBezierCurve(double... p)
+    public static ParameterizedOperator firstSplitOperator(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
     {
-        this(makeArr(p));
+        return CUBIC.operator(firstSplit(t, 0, convert(P0, P1, P2, P3)));
+    }
+    public static ParameterizedOperator secondSplitOperator(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
+    {
+        return CUBIC.operator(secondSplit(t, 0, convert(P0, P1, P2, P3)));
+    }
+    public static ParameterizedOperator firstSplitOperator(double t, int offset, double... cp)
+    {
+        return CUBIC.operator(firstSplit(t, offset, cp));
+    }
+    public static ParameterizedOperator secondSplitOperator(double t, int offset, double... cp)
+    {
+        return CUBIC.operator(secondSplit(t, offset, cp));
+    }
+    public static double[] firstSplit(double t, int offset, double... cp)
+    {
+        double[] array = Arrays.copyOfRange(cp, offset, offset+8);
+        replaceFirstSplit(t, 0, array);
+        return array;
     }
     /**
-     * Creates a CubicBezierCurve
-     * @param controlPoints 4 control points starting at 0
-     */
-    public CubicBezierCurve(Point... controlPoints)
-    {
-        if (controlPoints.length < 4)
-        {
-            throw new IllegalArgumentException("controlPoints length < 4");
-        }
-        P = controlPoints;
-    }
-    /**
-     * Creates a CubicBezierCurve
-     * @param start index
-     * @param controlPoints 4 control points starting at start
-     */
-    public CubicBezierCurve(int start, Point... controlPoints)
-    {
-        if (controlPoints.length < start+4)
-        {
-            throw new IllegalArgumentException("controlPoints length < 4");
-        }
-        P = controlPoints;
-        this.start = start;
-    }
-    /**
-     * Evaluates point in Bezier Curve.
-     * @param t Param t in [0,1]
-     * @return A CurvePoint in Bezier Curve
-     */
-    public Point eval(double t)
-    {
-        return eval(t, new AbstractPoint());
-    }
-    /**
-     * Evaluates point in Bezier Curve. Returned Point is the same as given in 
-     * parameter p.
+     * Splits curve at t and replaces curve with first divide of split.
      * @param t
-     * @param p
-     * @return 
+     * @param offset
+     * @param cp 
      */
-    public Point eval(double t, AbstractPoint p)
+    public static void replaceFirstSplit(double t, int offset, double[] cp)
     {
-        if (t < 0 || t > 1)
-        {
-            throw new IllegalArgumentException("t="+t+" not in [0,1]");
-        }
-        p.set(0, 0);
-        double c0 = Math.pow(1-t, 3);
-        double c1 = 3*Math.pow(1-t, 2)*t;
-        double c2 = 3*(1-t)*t*t;
-        double c3 = t*t*t;
-        p.add(c0*P[start].getX(), c0*P[start].getY());
-        p.add(c1*P[start+1].getX(), c1*P[start+1].getY());
-        p.add(c2*P[start+2].getX(), c2*P[start+2].getY());
-        p.add(c3*P[start+3].getX(), c3*P[start+3].getY());
-        return p;
+        double Q0x = midPoint(t, cp[offset+0], cp[offset+2]);
+        double Q0y = midPoint(t, cp[offset+1], cp[offset+3]);
+        double Q1x = midPoint(t, cp[offset+2], cp[offset+4]);
+        double Q1y = midPoint(t, cp[offset+3], cp[offset+5]);
+        double Q2x = midPoint(t, cp[offset+4], cp[offset+6]);
+        double Q2y = midPoint(t, cp[offset+5], cp[offset+7]);
+        double R0x = midPoint(t, Q0x, Q1x);
+        double R0y = midPoint(t, Q0y, Q1y);
+        double R1x = midPoint(t, Q1x, Q2x);
+        double R1y = midPoint(t, Q1y, Q2y);
+        double S0x = midPoint(t, R0x, R1x);
+        double S0y = midPoint(t, R0y, R1y);
+        cp[offset+2] = Q0x;
+        cp[offset+3] = Q0y;
+        cp[offset+4] = R0x;
+        cp[offset+5] = R0y;
+        cp[offset+6] = S0x;
+        cp[offset+7] = S0y;
     }
-    private static Point[] makeArr(double... p)
+    public static double[] secondSplit(double t, int offset, double... cp)
     {
-        if (p.length != 8)
+        double[] array = Arrays.copyOfRange(cp, offset, offset+8);
+        replaceSecondSplit(t, 0, array);
+        return array;
+    }
+    /**
+     * Splits curve at t and replaces curve with second divide of split.
+     * @param t
+     * @param offset
+     * @param cp 
+     */
+    public static void replaceSecondSplit(double t, int offset, double[] cp)
+    {
+        double Q0x = midPoint(t, cp[offset+0], cp[offset+2]);
+        double Q0y = midPoint(t, cp[offset+1], cp[offset+3]);
+        double Q1x = midPoint(t, cp[offset+2], cp[offset+4]);
+        double Q1y = midPoint(t, cp[offset+3], cp[offset+5]);
+        double Q2x = midPoint(t, cp[offset+4], cp[offset+6]);
+        double Q2y = midPoint(t, cp[offset+5], cp[offset+7]);
+        double R0x = midPoint(t, Q0x, Q1x);
+        double R0y = midPoint(t, Q0y, Q1y);
+        double R1x = midPoint(t, Q1x, Q2x);
+        double R1y = midPoint(t, Q1y, Q2y);
+        double S0x = midPoint(t, R0x, R1x);
+        double S0y = midPoint(t, R0y, R1y);
+        cp[offset+0] = S0x;
+        cp[offset+1] = S0y;
+        cp[offset+2] = R1x;
+        cp[offset+3] = R1y;
+        cp[offset+4] = Q2x;
+        cp[offset+5] = Q2y;
+    }
+    public static double[] firstSplit(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
+    {
+        Point2D Q0 = midPoint(t, P0, P1);
+        Point2D Q1 = midPoint(t, P1, P2);
+        Point2D Q2 = midPoint(t, P2, P3);
+        Point2D R0 = midPoint(t, Q0, Q1);
+        Point2D R1 = midPoint(t, Q1, Q2);
+        Point2D S0 = midPoint(t, R0, R1);
+        return convert(P0, Q0, R0, S0);
+    }
+    static double[] secondSplit(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
+    {
+        Point2D Q0 = midPoint(t, P0, P1);
+        Point2D Q1 = midPoint(t, P1, P2);
+        Point2D Q2 = midPoint(t, P2, P3);
+        Point2D R0 = midPoint(t, Q0, Q1);
+        Point2D R1 = midPoint(t, Q1, Q2);
+        Point2D S0 = midPoint(t, R0, R1);
+        return convert(S0, R1, Q2, P3);
+    }
+    static double midPoint(double t, double p1, double p2)
+    {
+        return p1+t*(p2-p1);
+    }
+    static Point2D midPoint(double t, Point2D p1, Point2D p2)
+    {
+        return new Point2D.Double(p1.getX()+t*(p2.getX()-p1.getX()), p1.getY()+t*(p2.getY()-p1.getY()));
+    }
+    private static double[] convert(Point2D... points)
+    {
+        int len = points.length;
+        double[] cp = new double[len*2];
+        for (int n=0;n<len;n++)
         {
-            throw new IllegalArgumentException("4 controlPoints need 8 values");
-        }
-        Point[] cp = new Point[4];
-        for (int ii=0;ii<4;ii++)
-        {
-            cp[ii] = new AbstractPoint(p[2*ii], p[2*ii+1]);
+            cp[2*n] = points[n].getX();
+            cp[2*n+1] = points[n].getY();
         }
         return cp;
     }
-    /**
-     * Experimental! makes the start curve like the end
-     */
-    public void curveStart()
-    {
-        double d0 = AbstractPoint.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = AbstractPoint.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = AbstractPoint.angle(P[start+3], P[start+2]);    // P3 -> P2
-        double a1 = d1 - d2;
-        double a2 = d0 + a1;
-        double di = AbstractPoint.distance(P[start+3], P[start+2]);
-        P[start+1] = AbstractPoint.move(P[start], a2, di);
-    }
-    /**
-     * Experimental! makes the end curve like the start
-     */
-    public void curveEnd()
-    {
-        double d0 = AbstractPoint.angle(P[start], P[start+3]);      // P0 -> P3
-        double d1 = AbstractPoint.angle(P[start+3], P[start]);      // P3 -> P0
-        double d2 = AbstractPoint.angle(P[start], P[start+1]);    // P0 -> P1
-        double a1 = d2 - d0;
-        double a2 = d0 + a1;
-        double di = AbstractPoint.distance(P[start], P[start+1]);
-        P[start+2] = AbstractPoint.move(P[start+3], a2, di);
-    }
+
 }
