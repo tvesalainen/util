@@ -21,10 +21,10 @@ import java.util.Arrays;
 import static org.vesalainen.math.BezierCurve.CUBIC;
 
 /**
- *
+ * CubicBezierCurve helpers.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CubicBezierCurve
+public final class CubicBezierCurves
 {
     public static ParameterizedOperator firstSplitOperator(double t, Point2D P0, Point2D P1, Point2D P2, Point2D P3)
     {

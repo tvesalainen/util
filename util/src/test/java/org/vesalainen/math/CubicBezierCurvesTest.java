@@ -25,10 +25,10 @@ import static org.vesalainen.math.BezierCurve.CUBIC;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CubicBezierCurveTest
+public class CubicBezierCurvesTest
 {
     
-    public CubicBezierCurveTest()
+    public CubicBezierCurvesTest()
     {
     }
 
@@ -41,13 +41,13 @@ public class CubicBezierCurveTest
         Point2D.Double p2 = new Point2D.Double(-1,-2);
         Point2D.Double p3 = new Point2D.Double(2,1);
         ParameterizedOperator op1 = CUBIC.operator(p0, p1, p2, p3);
-        ParameterizedOperator op2 = CubicBezierCurve.firstSplitOperator(t, p0, p1, p2, p3);
+        ParameterizedOperator op2 = CubicBezierCurves.firstSplitOperator(t, p0, p1, p2, p3);
         for (double tt=0;tt<t;tt+=0.1)
         {
             assertEquals(op1.calcX(tt), op2.calcX(tt/t), 1e-10);
             assertEquals(op1.calcY(tt), op2.calcY(tt/t), 1e-10);
         }
-        ParameterizedOperator op3 = CubicBezierCurve.secondSplitOperator(t, p0, p1, p2, p3);
+        ParameterizedOperator op3 = CubicBezierCurves.secondSplitOperator(t, p0, p1, p2, p3);
         for (double tt=t;tt<1;tt+=0.1)
         {
             assertEquals(op1.calcX(tt), op3.calcX((tt-t)/(1-t)), 1e-10);
@@ -59,6 +59,6 @@ public class CubicBezierCurveTest
     {
         Point2D.Double p0 = new Point2D.Double(2,3);
         Point2D.Double p1 = new Point2D.Double(0,5);
-        assertEquals(p1, CubicBezierCurve.midPoint(1, p0, p1));
+        assertEquals(p1, CubicBezierCurves.midPoint(1, p0, p1));
     }
 }
