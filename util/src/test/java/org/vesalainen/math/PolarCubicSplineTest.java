@@ -37,7 +37,7 @@ public class PolarCubicSplineTest
     {
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException
     {
         Point2D.Double p1 = new Point2D.Double(270, 6);

@@ -17,10 +17,10 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
+import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.AngleScale;
 import org.vesalainen.ui.scale.MergeScale;
 import org.vesalainen.ui.scale.Scale;
@@ -31,8 +31,8 @@ import org.vesalainen.ui.scale.Scale;
  */
 public class PolarPlotter extends AbstractPlotter
 {
-
-    private final boolean useRadians;
+    private DoubleBounds bounds = new DoubleBounds();
+    private double translateY;
 
     public PolarPlotter(int width, int height, Color background)
     {
@@ -40,25 +40,20 @@ public class PolarPlotter extends AbstractPlotter
     }
     public PolarPlotter(int width, int height, Color background, Scale yScale)
     {
-        this(width, height, background, yScale, false);
-    }
-    public PolarPlotter(int width, int height, Color background, Scale yScale, boolean useRadians)
-    {
-        super(width, height, background, true, new AngleScale(), yScale, new PolarTransform(useRadians));
-        this.useRadians = useRadians;
+        super(width, height, background, true, new AngleScale(), yScale, new PolarTransform());
     }
 
     @Override
     protected void plot(Drawer drawer)
     {
-        DoubleBounds bounds = new DoubleBounds();
         for (Drawable drawable : shapes)
         {
             bounds.add(drawable.getBounds());
         }
         if (bounds.getMinY() < bounds.height)
         {
-            AffineTransform at = AffineTransform.getTranslateInstance(0, bounds.height-bounds.getMinY());
+            translateY = bounds.height-bounds.getMinY();
+            AffineTransform at = AffineTransform.getTranslateInstance(0, translateY);
             for (Drawable drawable : shapes)
             {
                 drawable.transform(at);
@@ -72,11 +67,37 @@ public class PolarPlotter extends AbstractPlotter
     {
         super.update(shapes);
         double maxY = userBounds.getMaxY();
-        double full = useRadians ? 2*Math.PI : 360;
-        for (double a=0;a<full;a+=full/4)
+        for (double a=0;a<360;a+=90)
         {
             updatePoint(a, maxY);
         }
     }
-    
+
+    @Override
+    public void drawCoordinateY()
+    {
+    }
+
+    @Override
+    public void drawCoordinateX()
+    {
+    }
+
+    @Override
+    public void drawCoordinates()
+    {
+        super.drawCoordinates(LEFT, TOP);
+    }
+
+    @Override
+    public void drawCoordinates(Scale scale, Direction... directions)
+    {
+        drawCoordinates(new PolarCoordinates(this, bounds, this::getTranslateY), scale, directions);
+    }
+
+    public double getTranslateY()
+    {
+        return translateY;
+    }
+
 }

@@ -183,7 +183,7 @@ public class Scaler
             bnds = new Rectangle2D.Double();
         }
         Iterator<ScaleLevel> si = scale.iterator(min, max);
-        ScaleLevel stack = null;
+        Deque<ScaleLevel> stack = new ArrayDeque<>();
         while (si.hasNext())
         {
             ScaleLevel level = si.next();
@@ -210,11 +210,16 @@ public class Scaler
                 transformer.transform(value, xy, (x,y)->cur.setRect(x, y, cur.getWidth(), cur.getHeight()));
                 if (cur.intersects(prev))
                 {
-                    if (stack == null)
+                    if (stack.isEmpty())
                     {
                         throw new IllegalArgumentException("Font "+font+" is too big for coordinate");
                     }
-                    return stack;
+                    ScaleLevel pop = stack.pop();
+                    if (!stack.isEmpty() && stack.peek().count(min, max) > 1)
+                    {
+                        pop = stack.pop();
+                    }
+                    return pop;
                 }
                 prev = cur;
             }
@@ -222,7 +227,7 @@ public class Scaler
             {
                 bounds.setRect(bnds);
             }
-            stack = level;
+            stack.push(level);
         }
         assert false;   // can't come here
         return null;

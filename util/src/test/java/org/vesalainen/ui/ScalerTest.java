@@ -155,8 +155,8 @@ public class ScalerTest
         ScaleLevel l1_0 = iterator.next();
         ScaleLevel l1_5 = iterator.next();
         assertEquals(exp, sc.getLabels(Locale.US, l0_0));
-        assertEquals(l0_5, sc.getLevelFor(new Font("ariel", 0, 5), true));
-        assertEquals(l1_0, sc.getLevelFor(new Font("ariel", 0, 5), false));
+        assertEquals(l0_0, sc.getLevelFor(new Font("ariel", 0, 5), true));
+        assertEquals(l0_5, sc.getLevelFor(new Font("ariel", 0, 5), false));
     }
     @Test
     public void test6()

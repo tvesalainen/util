@@ -466,6 +466,17 @@ public class BezierCurve
                 }
                 double d = x - ex;
                 t += d / derivative().eval(0, 0, t);
+                if (t < 0)
+                {
+                    t = 0;
+                }
+                else
+                {
+                    if (t > 1)
+                    {
+                        t = 1;
+                    }
+                }
                 ex = calcX(t);
                 count++;
             }
