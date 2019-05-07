@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import java.util.function.DoubleUnaryOperator;
+import static org.vesalainen.math.MoreMath.SQRT_EPSILON;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.math.matrix.DoubleUnaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;
@@ -92,14 +93,14 @@ public interface ParameterizedOperator
         throw new UnsupportedOperationException("derivative not supported");
     }
     /**
-     * Tries to find y for x with 10*ulp(x) precision.
+     * Tries to find y for x with some precision.
      * <p>If y=f(x) is not injection the result will be unpredictable!
      * @param x
      * @return 
      */
     default double evalY(double x)
     {
-        return evalY(x, 10 * Math.ulp(x));
+        return evalY(x, x != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON);
     }
     /**
      * Tries to find y for x with deltaX precision.
@@ -114,14 +115,14 @@ public interface ParameterizedOperator
         return calcY(t);
     }
     /**
-     * Tries to find x for y with 10*ulp(y) precision.
+     * Tries to find x for y with some precision.
      * <p>If x=f(y) is not injection the result will be unpredictable!
      * @param y
      * @return 
      */
     default double evalX(double y)
     {
-        return evalX(y, 10 * Math.ulp(y));
+        return evalX(y, y != 0.0 ? SQRT_EPSILON*y : SQRT_EPSILON);
     }
     /**
      * Tries to find x for y with deltaY precision.
@@ -136,14 +137,14 @@ public interface ParameterizedOperator
         return calcX(t);
     }
     /**
-     * Tries to find t for y with 10*ulp(y) precision.
+     * Tries to find t for y with some precision.
      * <p>If x=f(y) is not injection the result will be unpredictable!
      * @param y
      * @return 
      */
     default double evalTForY(double y)
     {
-        return evalTForY(y, 10 * Math.ulp(y));
+        return evalTForY(y, y != 0.0 ? SQRT_EPSILON*y : SQRT_EPSILON);
     }
     /**
      * Tries to find t for y with deltaY precision.
@@ -157,14 +158,14 @@ public interface ParameterizedOperator
         throw new UnsupportedOperationException();
     }
     /**
-     * Tries to find t for x with 10*ulp(y) precision.
+     * Tries to find t for x with some precision.
      * <p>If y=f(x) is not injection the result will be unpredictable!
      * @param x
      * @return 
      */
     default double evalTForX(double x)
     {
-        return evalTForX(x, 10 * Math.ulp(x));
+        return evalTForX(x, x != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON);
     }
     /**
      * Tries to find t for x with deltaX precision.
