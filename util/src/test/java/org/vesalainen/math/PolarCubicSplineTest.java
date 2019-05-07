@@ -37,7 +37,7 @@ public class PolarCubicSplineTest
     {
     }
 
-    //@Test
+    @Test
     public void test1() throws IOException
     {
         Point2D.Double p1 = new Point2D.Double(270, 6);
@@ -76,7 +76,7 @@ public class PolarCubicSplineTest
         {
             pcs.forceInjection();
         }
-        double v = pcs.eval(200, 0.01);
+        pcs.setDrawWithControlPoints(true);
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);

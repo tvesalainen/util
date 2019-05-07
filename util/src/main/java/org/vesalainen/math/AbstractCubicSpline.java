@@ -42,6 +42,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     protected ParameterizedOperator[] curves;
     protected int pointCount;
     protected int curveCount;
+    protected boolean drawWithControlPoints;
 
     protected AbstractCubicSpline(Point2D... points)
     {
@@ -214,7 +215,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     @Override
     public double applyAsDouble(double x)
     {
-        return eval(x, 100 * Math.ulp(x));
+        return eval(x, MoreMath.sqrtEpsilon(x));
     }
 
     public ParameterizedOperator getCurve(double x)
@@ -275,28 +276,50 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         return cp;
     }
 
+    public void setDrawWithControlPoints(boolean drawWithControlPoints)
+    {
+        this.drawWithControlPoints = drawWithControlPoints;
+    }
+
     @Override
     public PathIterator getPathIterator(AffineTransform at)
     {
-        return new PathIteratorImpl(at);
+        if (drawWithControlPoints)
+        {
+            return new PathIteratorWithControlPoints(at);
+        }
+        else
+        {
+            return new PathIteratorImpl(at);
+        }
     }
 
+    protected class PathIteratorWithControlPoints extends PathIteratorImpl
+    {
+
+        public PathIteratorWithControlPoints(AffineTransform at)
+        {
+            super(at);
+            this.length = controlPoints.length - 1;
+        }
+
+        @Override
+        public void next()
+        {
+            index++;
+        }
+        
+    }
     protected class PathIteratorImpl implements PathIterator
     {
-        private AffineTransform at;
-        private int offset;
-        private int length;
-        private int index;
+        protected AffineTransform at;
+        protected int length;
+        protected int index;
 
         public PathIteratorImpl(AffineTransform at)
         {
-            this(at, 0, controlPoints.length);
-        }
-        public PathIteratorImpl(AffineTransform at, int offset, int length)
-        {
             this.at = at != null ? at : new AffineTransform();
-            this.offset = offset;
-            this.length = length;
+            this.length = controlPoints.length - 5;
         }
         
         @Override
@@ -314,43 +337,74 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
         @Override
         public void next()
         {
-            if (index == 0)
+            switch (index % 6)
             {
-                index += 2;
-            }
-            else
-            {
-                index += 6;
+                case 0:
+                    index++;
+                    break;
+                case 1:
+                    index+=6;
+                    break;
+                default:
+                    throw new UnsupportedOperationException("should not happen");
             }
         }
 
         @Override
         public int currentSegment(float[] coords)
         {
-            if (index == 0)
+            int idx = 6*(index/6);
+            switch (index % 6)
             {
-                at.transform(controlPoints, offset+index, coords, 0, 1);
-                return SEG_MOVETO;
-            }
-            else
-            {
-                at.transform(controlPoints, offset+index, coords, 0, 3);
-                return SEG_CUBICTO;
+                case 0:
+                    at.transform(controlPoints, idx, coords, 0, 1);
+                    return SEG_MOVETO;
+                case 1:
+                    at.transform(controlPoints, idx+2, coords, 0, 3);
+                    return SEG_CUBICTO;
+                case 2:
+                    at.transform(controlPoints, idx, coords, 0, 1);
+                    return SEG_MOVETO;
+                case 3:
+                    at.transform(controlPoints, idx+2, coords, 0, 1);
+                    return SEG_LINETO;
+                case 4:
+                    at.transform(controlPoints, idx+4, coords, 0, 1);
+                    return SEG_LINETO;
+                case 5:
+                    at.transform(controlPoints, idx+6, coords, 0, 1);
+                    return SEG_LINETO;
+                default:
+                    throw new UnsupportedOperationException("should not happen");
             }
         }
 
         @Override
         public int currentSegment(double[] coords)
         {
-            if (index == 0)
+            int idx = 6*(index/6);
+            switch (index % 6)
             {
-                at.transform(controlPoints, offset+index, coords, 0, 1);
-                return SEG_MOVETO;
-            }
-            else
-            {
-                at.transform(controlPoints, offset+index, coords, 0, 3);
-                return SEG_CUBICTO;
+                case 0:
+                    at.transform(controlPoints, idx, coords, 0, 1);
+                    return SEG_MOVETO;
+                case 1:
+                    at.transform(controlPoints, idx+2, coords, 0, 3);
+                    return SEG_CUBICTO;
+                case 2:
+                    at.transform(controlPoints, idx, coords, 0, 1);
+                    return SEG_MOVETO;
+                case 3:
+                    at.transform(controlPoints, idx+2, coords, 0, 1);
+                    return SEG_LINETO;
+                case 4:
+                    at.transform(controlPoints, idx+4, coords, 0, 1);
+                    return SEG_LINETO;
+                case 5:
+                    at.transform(controlPoints, idx+6, coords, 0, 1);
+                    return SEG_LINETO;
+                default:
+                    throw new UnsupportedOperationException("should not happen");
             }
         }
         
