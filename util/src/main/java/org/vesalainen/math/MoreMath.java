@@ -34,6 +34,15 @@ public final class MoreMath
     public static final double SQRT_EPSILON = Math.sqrt(2.220446e-16);
     private static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     /**
+     * Returns sqrt(MACHINE_EPSILON)*x or if x == 0 sqrt(MACHINE_EPSILON)
+     * @param x
+     * @return 
+     */
+    public static double sqrtEpsilon(double x)
+    {
+        return x != 0.0 ? SQRT_EPSILON*x : SQRT_EPSILON;
+    }
+    /**
      * Returns numerical integral between x1 and x2
      * @param x1
      * @param x2
