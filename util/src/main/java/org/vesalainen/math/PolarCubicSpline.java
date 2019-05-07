@@ -77,8 +77,9 @@ public class PolarCubicSpline extends RelaxedCubicSpline
         }
         CubicBezierCurves.forceInjection(cp, o1);
         ParameterizedOperator op1 = CUBIC.operator(cp, o1);
-        double t1 = op1.evalTForX(0, 0.01);
+        double t1 = op1.evalTForX(0);
         CubicBezierCurves.replaceSecondSplit(t1, o1, cp);
+        cp[o1] = 0;
         int o2 = cp.length - 8;
         for (;;o2-=6)
         {
@@ -89,8 +90,9 @@ public class PolarCubicSpline extends RelaxedCubicSpline
         }
         CubicBezierCurves.forceInjection(cp, o2);
         ParameterizedOperator op2 = CUBIC.operator(cp, o2);
-        double t2 = op2.evalTForX(FULL_CIRCLE, 0.01);
+        double t2 = op2.evalTForX(FULL_CIRCLE);
         CubicBezierCurves.replaceFirstSplit(t2, o2, cp);
+        cp[o2+6] = FULL_CIRCLE;
         return Arrays.copyOfRange(cp, o1, o2+8);
     }
 
