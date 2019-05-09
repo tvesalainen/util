@@ -61,20 +61,42 @@ public class PolarCubicSplineTest
     @Test
     public void test2() throws IOException
     {
-        Point2D.Double p1 = new Point2D.Double(121, -10.2);
-        Point2D.Double p2 = new Point2D.Double(133, 12.3);
-        Point2D.Double p3 = new Point2D.Double(156, 25.5);
-        Point2D.Double p4 = new Point2D.Double(172, -19.2);
-        Point2D.Double p5 = new Point2D.Double(179, -9.7);
-        Point2D.Double p6 = new Point2D.Double(180, -15.6);
-        Point2D.Double p7 = new Point2D.Double(182, -14.2);
-        Point2D.Double p8 = new Point2D.Double(190, 2.1);
-        Point2D.Double p9 = new Point2D.Double(200, -1.9);
-        Point2D.Double p10 = new Point2D.Double(206, 1.4);
-        PolarCubicSpline pcs = new PolarCubicSpline(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        Point2D.Double p1 = new Point2D.Double(0, 13.1);
+        Point2D.Double p2 = new Point2D.Double(120, 2.2);
+        Point2D.Double p3 = new Point2D.Double(124, 0.9);
+        Point2D.Double p4 = new Point2D.Double(126, 4.0);
+        Point2D.Double p5 = new Point2D.Double(128, 0.9);
+        Point2D.Double p6 = new Point2D.Double(130, 1.8);
+        Point2D.Double p7 = new Point2D.Double(134, 11.9);
+        Point2D.Double p8 = new Point2D.Double(137, 3.2);
+        Point2D.Double p9 = new Point2D.Double(140, 0.7);
+        Point2D.Double p10 = new Point2D.Double(145, 1.0);
+        Point2D.Double p11 = new Point2D.Double(151, 3.3);
+        Point2D.Double p12 = new Point2D.Double(154, 1.8);
+        Point2D.Double p13 = new Point2D.Double(156, 1.1);
+        Point2D.Double p14 = new Point2D.Double(159, 1.1);
+        Point2D.Double p15 = new Point2D.Double(160, 2.3);
+        Point2D.Double p16 = new Point2D.Double(163, 1.1);
+        Point2D.Double p17 = new Point2D.Double(165, 5.3);
+        Point2D.Double p18 = new Point2D.Double(166, 3.8);
+        Point2D.Double p19 = new Point2D.Double(169, 2.9);
+        Point2D.Double p20 = new Point2D.Double(171, 3.5);
+        Point2D.Double p21 = new Point2D.Double(172, 1.4);
+        Point2D.Double p22 = new Point2D.Double(175, 0.8);
+        Point2D.Double p23 = new Point2D.Double(177, 3.9);
+        Point2D.Double p24 = new Point2D.Double(182, 5.1);
+        Point2D.Double p25 = new Point2D.Double(183, 5.4);
+        Point2D.Double p26 = new Point2D.Double(190, 8.5);
+        Point2D.Double p27 = new Point2D.Double(194, -5.3);
+        Point2D.Double p28 = new Point2D.Double(195, -4.8);
+        Point2D.Double p29 = new Point2D.Double(198, -4.7);
+        Point2D.Double p30 = new Point2D.Double(303, -5.5);
+        Point2D.Double p31 = new Point2D.Double(319, 3.8);
+        
+        PolarCubicSpline pcs = new PolarCubicSpline(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31);
         if (!pcs.isInjection())
         {
-            pcs.forceInjection();
+            pcs.forceInjection((i)->System.err.println(i));
         }
         pcs.setDrawWithControlPoints(true);
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);

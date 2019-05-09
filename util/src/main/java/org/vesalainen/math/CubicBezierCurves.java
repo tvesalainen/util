@@ -35,7 +35,7 @@ public final class CubicBezierCurves
      * @param controlPoints
      * @param offset 
      */
-    public static void forceInjection(double[] controlPoints, int offset)
+    public static boolean forceInjection(double[] controlPoints, int offset)
     {
         double x0 = controlPoints[offset];
         double x1 = controlPoints[offset+2];
@@ -50,6 +50,11 @@ public final class CubicBezierCurves
             double a = (x0+x3)/2.0;
             controlPoints[offset+2] = a;
             controlPoints[offset+4] = a;
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
     

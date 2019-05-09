@@ -23,9 +23,11 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntConsumer;
 import static org.vesalainen.math.BezierCurve.CUBIC;
 import org.vesalainen.ui.AbstractShape;
 import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -180,10 +182,17 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
      */
     public void forceInjection()
     {
+        forceInjection((i)->{});
+    }
+    public void forceInjection(IntConsumer reporter)
+    {
         int length = controlPoints.length-2;
         for (int ii=0;ii<length;ii+=6)
         {
-            CubicBezierCurves.forceInjection(controlPoints, ii);
+            if (CubicBezierCurves.forceInjection(controlPoints, ii))
+            {
+                reporter.accept(ii/6);
+            }
         }
         injection = true;
     }
