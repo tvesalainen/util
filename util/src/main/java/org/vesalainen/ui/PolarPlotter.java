@@ -74,12 +74,12 @@ public class PolarPlotter extends AbstractPlotter
     }
 
     @Override
-    public void drawCoordinateY()
+    @Deprecated public void drawCoordinateY()
     {
     }
 
     @Override
-    public void drawCoordinateX()
+    @Deprecated public void drawCoordinateX()
     {
     }
 
@@ -87,6 +87,15 @@ public class PolarPlotter extends AbstractPlotter
     public void drawCoordinates()
     {
         super.drawCoordinates(LEFT, TOP);
+    }
+    /**
+     * @deprecated Use drawCoordinates()
+     * @param directions 
+     */
+    @Override
+    public void drawCoordinates(Direction... directions)
+    {
+        super.drawCoordinates(directions);
     }
 
     @Override
