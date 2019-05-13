@@ -37,7 +37,7 @@ public class PolarCubicSplineTest
     {
     }
 
-    @Test
+    //@Test
     public void test1() throws IOException
     {
         Point2D.Double p1 = new Point2D.Double(270, 6);
@@ -58,7 +58,7 @@ public class PolarCubicSplineTest
         plotter.plot("dev2.png");
     }
     
-    @Test
+    //@Test
     public void test2() throws IOException
     {
         Point2D.Double p1 = new Point2D.Double(0, 13.1);
@@ -107,22 +107,17 @@ public class PolarCubicSplineTest
         plotter.drawCoordinates(LEFT, TOP);
         plotter.plot("dev3.png");
     }
-    //@Test
+    @Test
     public void testPlot() throws IOException, ClassNotFoundException
     {
-        PointList list = IO.deserialize(Paths.get("c:\\temp\\deviation_build.ser"));//new PointList();
-        //list.add(17, 105);
-        //list.add(117, 103);
-        //list.add(317, 100.5);
-        //list.add(357, 100);
-        list.sort();
-        PolarCubicSpline pcs = new PolarCubicSpline(list.array());
+        PolarCubicSpline pcs = new PolarCubicSpline(0.0, -1.0, 180, 0, 270, 1);
+        pcs.setDrawWithControlPoints(true);
         PolarPlotter plotter = new PolarPlotter(1000, 1000, Color.WHITE);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
-        //plotter.drawLine(0, 1, 360, 1);
         plotter.draw(pcs);
-        //plotter.drawCoordinates(LEFT, TOP);
+        plotter.setColor(Color.LIGHT_GRAY);
+        plotter.drawCoordinates();
         plotter.plot("dev.png");
     }
 }

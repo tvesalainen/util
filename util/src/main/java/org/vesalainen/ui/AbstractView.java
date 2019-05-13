@@ -76,7 +76,6 @@ public class AbstractView
     }
     public void calculate()
     {
-        System.err.println(transformedUserBounds);
         Transforms.createScreenTransform(transformedUserBounds, screenBounds, keepAspectRatio, affineTransform);
         affineDoubleTransform = Transforms.affineTransform(affineTransform);
         combinedTransform = DoubleTransform.chain(affineDoubleTransform, transform);

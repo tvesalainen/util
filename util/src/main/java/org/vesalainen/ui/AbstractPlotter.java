@@ -139,6 +139,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     public void plot(Path path) throws IOException
     {
+
         ImageDrawer drawer = new ImageDrawer(screenBounds.width, screenBounds.height, background);
         plot(drawer);
         drawer.write(path);
