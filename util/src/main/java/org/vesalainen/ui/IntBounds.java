@@ -24,40 +24,40 @@ import java.awt.Rectangle;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Bounds extends Rectangle
+public class IntBounds extends Rectangle
 {
 
-    public Bounds()
+    public IntBounds()
     {
         clear();
     }
 
-    public Bounds(Rectangle r)
+    public IntBounds(Rectangle r)
     {
         super(r);
     }
 
-    public Bounds(int x, int y, int width, int height)
+    public IntBounds(int x, int y, int width, int height)
     {
         super(x, y, width, height);
     }
 
-    public Bounds(int width, int height)
+    public IntBounds(int width, int height)
     {
         super(width, height);
     }
 
-    public Bounds(Point p, Dimension d)
+    public IntBounds(Point p, Dimension d)
     {
         super(p, d);
     }
 
-    public Bounds(Point p)
+    public IntBounds(Point p)
     {
         super(p);
     }
 
-    public Bounds(Dimension d)
+    public IntBounds(Dimension d)
     {
         super(d);
     }

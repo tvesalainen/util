@@ -51,7 +51,7 @@ public abstract class AbstractShape implements Shape
     {
         if (bounds == null)
         {
-            bounds = new Bounds();
+            bounds = new DoubleBounds();
             calculateBounds();
         }
         return bounds;

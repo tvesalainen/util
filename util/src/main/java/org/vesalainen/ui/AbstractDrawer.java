@@ -44,7 +44,7 @@ public abstract class AbstractDrawer implements Drawer
     protected DoubleTransform inverse;
     protected Point2D.Double tmp = new Point2D.Double();
     protected DoubleBinaryMatrix gradient;
-    protected Bounds fillBounds = new Bounds();
+    protected IntBounds fillBounds = new IntBounds();
     protected double scale;
     protected double delta;
     private double deltax;
