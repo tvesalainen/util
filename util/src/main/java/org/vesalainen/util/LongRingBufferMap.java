@@ -35,14 +35,35 @@ public class LongRingBufferMap<T>
     private int index;
     private int size;
     private final int capacity;
-
+    private final boolean inOrder;
+    /**
+     * Creates new LongRingBufferMap expecting keys in-order.
+     * @param capacity 
+     */
     public LongRingBufferMap(int capacity)
     {
+        this(capacity, true);
+    }
+    /**
+     * Creates new LongRingBufferMap expecting keys in-order if inOrder is true.
+     * Otherwise keys can be in any order. Get methods will scan all keys for a
+     * closest match.
+     * @param capacity
+     * @param inOrder 
+     */
+    public LongRingBufferMap(int capacity, boolean inOrder)
+    {
         this.capacity = capacity;
+        this.inOrder = inOrder;
         this.keys = new long[capacity];
         this.values = (T[]) new Object[capacity];
     }
-    
+    /**
+     * Put new key/value pair.
+     * <p>Note! Key order is not checked even if inOrder is true.
+     * @param key
+     * @param value 
+     */
     public void put(long key, T value)
     {
         int idx = Math.floorMod(index, capacity);
@@ -54,10 +75,21 @@ public class LongRingBufferMap<T>
             size++;
         }
     }
+    /**
+     * Returns first exact match.
+     * @param key
+     * @return 
+     */
     public T get(long key)
     {
         return getClosest(key, 0);
     }
+    /**
+     * Returns first match which differs delta maximum.
+     * @param key
+     * @param delta
+     * @return 
+     */
     public T getClosest(long key, long delta)
     {
         long max = Long.MAX_VALUE;
@@ -72,6 +104,13 @@ public class LongRingBufferMap<T>
                 closest = i;
                 max = dif;
             }
+            else
+            {
+                if (inOrder)
+                {
+                    break;
+                }
+            }
         }
         if (closest != -1 && max <= delta)
         {
@@ -82,6 +121,10 @@ public class LongRingBufferMap<T>
             return null;
         }
     }
+    /**
+     * Calls c for each key/value pair.
+     * @param c 
+     */
     public void forEach(ObjLongConsumer<T> c)
     {
         int idx = Math.floorMod(index-size, capacity);
