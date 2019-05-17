@@ -21,9 +21,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Spliterator;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
+ * <p>Note! This class is thread-safe.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class BoundedPriorityQueue<T> extends AbstractQueue<T>
@@ -31,6 +33,7 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
     private T[] values;
     private int size;
     private Comparator<T> comparator;
+    private ReentrantLock lock = new ReentrantLock();
 
     public BoundedPriorityQueue(int capacity)
     {
@@ -45,7 +48,15 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
     @Override
     public Iterator<T> iterator()
     {
-        return new ArrayIterator<>(values, 0, size);
+        lock.lock();
+        try
+        {
+            return new ArrayIterator<>(Arrays.copyOf(values, size), 0, size);
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -57,19 +68,27 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
     @Override
     public boolean offer(T e)
     {
-        int idx = Arrays.binarySearch(values, 0, size, e, comparator);
-        int insertPoint = insertPoint(idx);
-        if (size < values.length)
+        lock.lock();
+        try
         {
-            System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint);
-            size++;
+            int idx = Arrays.binarySearch(values, 0, size, e, comparator);
+            int insertPoint = insertPoint(idx);
+            if (size < values.length)
+            {
+                System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint);
+                size++;
+            }
+            else
+            {
+                System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint - 1);
+            }
+            values[insertPoint] = e;
+            return true;
         }
-        else
+        finally
         {
-            System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint - 1);
+            lock.unlock();
         }
-        values[insertPoint] = e;
-        return true;
     }
 
     private int insertPoint(int idx)
@@ -79,28 +98,44 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
     @Override
     public T poll()
     {
-        if (size > 0)
+        lock.lock();
+        try
         {
-            T value = values[0];
-            System.arraycopy(values, 1, values, 0, --size);
-            return value;
+            if (size > 0)
+            {
+                T value = values[0];
+                System.arraycopy(values, 1, values, 0, --size);
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
-        else
+        finally
         {
-            return null;
+            lock.unlock();
         }
     }
 
     @Override
     public T peek()
     {
-        if (size > 0)
+        lock.lock();
+        try
         {
-            return values[0];
+            if (size > 0)
+            {
+                return values[0];
+            }
+            else
+            {
+                return null;
+            }
         }
-        else
+        finally
         {
-            return null;
+            lock.unlock();
         }
     }
     
