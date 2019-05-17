@@ -37,9 +37,9 @@ public class BoundedPriorityQueueTest
         q.offer(9);
         assertEquals(1, q.size());
         assertEquals((Integer)9, q.peek());
-        q.offer(8);
+        q.offer(9);
         assertEquals(2, q.size());
-        assertEquals((Integer)8, q.peek());
+        assertEquals((Integer)9, q.peek());
         q.offer(7);
         assertEquals(3, q.size());
         assertEquals((Integer)7, q.peek());
@@ -51,7 +51,7 @@ public class BoundedPriorityQueueTest
         assertEquals(2, q.size());
         assertEquals((Integer)7, q.poll());
         assertEquals(1, q.size());
-        assertEquals((Integer)8, q.poll());
+        assertEquals((Integer)9, q.poll());
         assertEquals(0, q.size());
     }
     
