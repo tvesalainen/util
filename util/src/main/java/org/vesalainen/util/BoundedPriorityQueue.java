@@ -93,7 +93,14 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
 
     private int insertPoint(int idx)
     {
-        return -idx-1;
+        if (idx >= 0)
+        {
+            return idx;
+        }
+        else
+        {
+            return -idx-1;
+        }
     }
     @Override
     public T poll()
