@@ -70,6 +70,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     protected List<BackgroundGenerator> backgroundGenerators = new ArrayList<>();
     private final Scale xScale;
     private final Scale yScale;
+    private Color traceColor;
 
     public AbstractPlotter(int width, int height, Color background)
     {
@@ -154,12 +155,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         update(shapes.stream().map(Drawable::getBounds));
         calculate();
+        trace();
         DoubleBounds origUserBounds = new DoubleBounds();
         origUserBounds.setRect(userBounds);
         backgroundGenerators.forEach((c)->
         {
             c.ensureSpace();
             calculate();
+            trace();
         });
         drawer.setTransform(combinedTransform, scale);
         backgroundGenerators.forEach((c)->c.generate());
@@ -312,14 +315,14 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
         Shape shape = glyphVector.getOutline();
         AffineTransform at = AffineTransform.getScaleInstance(1, -1);
-        Shape as = alignShape(x, y, shape, at, alignments);
+        Shape as = alignShape(x, y, margin, shape, at, alignments);
         return as;
     }
-    public static Shape alignShape(double x, double y, Shape shape, TextAlignment... alignments)
+    public static Shape alignShape(double x, double y, int margin, Shape shape, TextAlignment... alignments)
     {
-        return alignShape(x, y, shape, null, alignments);
+        return alignShape(x, y, margin, shape, null, alignments);
     }
-    public static Shape alignShape(double x, double y, Shape shape, AffineTransform at, TextAlignment... alignments)
+    public static Shape alignShape(double x, double y, int margin, Shape shape, AffineTransform at, TextAlignment... alignments)
     {
         Rectangle2D b = shape.getBounds2D();
         AffineTransform t = AffineTransform.getTranslateInstance(x, y);
@@ -331,16 +334,16 @@ public class AbstractPlotter extends AbstractView implements DrawContext
                 case START_Y:
                     break;
                 case MIDDLE_X:
-                    t.translate(-b.getWidth()/2, 0);
+                    t.translate(-b.getWidth()/2-margin, 0);
                     break;
                 case END_X:
-                    t.translate(-b.getWidth(), 0);
+                    t.translate(-b.getWidth()-margin, 0);
                     break;
                 case MIDDLE_Y:
-                    t.translate(0, -b.getHeight()/2);
+                    t.translate(0, -b.getHeight()/2-margin);
                     break;
                 case END_Y:
-                    t.translate(0, -b.getHeight());
+                    t.translate(0, -b.getHeight()-margin);
                     break;
                 default:
                     throw new UnsupportedOperationException(alignment+" not supported");
@@ -585,6 +588,22 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         return new Polyline(color, stroke);
     }
+
+    private void trace()
+    {
+        if (traceColor != null)
+        {
+            Color safe = color;
+            color = traceColor;
+            draw((Shape)userBounds.clone());
+            color = safe;
+        }
+    }
+
+    public void setTraceColor(Color traceColor)
+    {
+        this.traceColor = traceColor;
+    }
  
     public class Drawable<S extends Shape> extends SimpleDrawContext
     {
@@ -662,7 +681,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             Point2D pnt = new Point2D.Double();
             combinedTransform.transform(x, y, pnt::setLocation);
             Shape safe = shape;
-            shape = alignShape(pnt.getX(), pnt.getY(), safe, alignments);
+            shape = alignShape(pnt.getX(), pnt.getY(), margin, safe, alignments);
             Rectangle2D b = shape.getBounds2D();
             super.draw(drawer);
             shape = safe;

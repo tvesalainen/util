@@ -190,6 +190,29 @@ public final class Sets
         return set;
     }
     /**
+     * Cartesian product of A and A, denoted A × A, is the set whose members are 
+     * all possible ordered pairs (a, b) where a is a member of A and b is a 
+     * member of A and a != b.
+     * @param <A>
+     * @param a
+     * @return 
+     */
+    public static final <A> Set<OrderedPair<A,A>> cartesianProduct(Set<A> a)
+    {
+        Set<OrderedPair<A,A>> set = new HashSet<>();
+        for (A t : a)
+        {
+            for (A v : a)
+            {
+                if (!t.equals(v))
+                {
+                    set.add(new OrderedPair(t, v));
+                }
+            }
+        }
+        return set;
+    }
+    /**
      * Power set of a set A is the set whose members are all possible subsets of A.
      * @param <T>
      * @param set

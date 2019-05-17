@@ -84,6 +84,13 @@ public class SetsTest
         assertEquals(exp, Sets.cartesianProduct(is, ss));
     }
     @Test
+    public void testCartesianProduct2()
+    {
+        Set<OrderedPair<Integer,Integer>> exp = set(pair(1, 2), pair(2, 1));
+        Set<Integer> is = set(1, 2);
+        assertEquals(exp, Sets.cartesianProduct(is));
+    }
+    @Test
     public void testPowerSet()
     {
         Set<Set<Integer>> exp = set(set(), set(1), set(2), set(1,2));

@@ -46,7 +46,8 @@ public class PlotterT
         {
             Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);//, true, MergeScale.BASIC15, new LogarithmScale(10, "u"));
             p.setColor(Color.BLACK);
-            p.setStroke(new BasicStroke(10));
+            p.setTraceColor(Color.BLACK);
+            //p.setStroke(new BasicStroke(10));
             p.setFont("Arial", BOLD, 20);
             p.drawText(50, 90, "start", TextAlignment.START_X);
             p.drawText(50, 50, "middle", TextAlignment.MIDDLE_X);
