@@ -73,17 +73,24 @@ public class BoundedPriorityQueue<T> extends AbstractQueue<T>
         {
             int idx = Arrays.binarySearch(values, 0, size, e, comparator);
             int insertPoint = insertPoint(idx);
-            if (size < values.length)
+            if (insertPoint < values.length)
             {
-                System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint);
-                size++;
+                if (size < values.length)
+                {
+                    System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint);
+                    size++;
+                }
+                else
+                {
+                    System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint - 1);
+                }
+                values[insertPoint] = e;
+                return true;
             }
             else
             {
-                System.arraycopy(values, insertPoint, values, insertPoint+1, size - insertPoint - 1);
+                return false;
             }
-            values[insertPoint] = e;
-            return true;
         }
         finally
         {
