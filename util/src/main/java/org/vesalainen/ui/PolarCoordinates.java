@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ui;
 
+import java.awt.Rectangle;
 import org.vesalainen.math.DoubleTransform;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
@@ -68,6 +69,7 @@ public class PolarCoordinates extends CoordinatesGenerator
     {
         DoubleTransform combinedTransform = (x,y,c)->plotter.combinedTransform.transform(x, y+transY.getAsDouble(), c);
         FontRenderContext fontRenderContext = plotter.fontRenderContext;
+        Rectangle screenBounds = plotter.screenBounds;
         Rectangle2D bounds = new Rectangle2D.Double();
         map.forEach((direction, scaler)->
         {
@@ -77,22 +79,21 @@ public class PolarCoordinates extends CoordinatesGenerator
                 case TOP:
                     scaler.set(origPolarBounds.getMinX(), origPolarBounds.getMaxX());
                     levelMap.put(direction, scaler.getLevelFor(font, fontRenderContext, combinedTransform, true, origPolarBounds.getMaxY(), bounds));
-                    plotter.setMargin(bounds, TOP, LEFT, RIGHT, BOTTOM);
-                    break;
-                case BOTTOM:
-                    scaler.set(origPolarBounds.getMinX(), origPolarBounds.getMaxX());
-                    levelMap.put(direction, scaler.getLevelFor(font, fontRenderContext, combinedTransform, true, origPolarBounds.getMinY(), bounds));
-                    plotter.setMargin(bounds, TOP, LEFT, RIGHT, BOTTOM);
+                    double dx = bounds.getWidth() - screenBounds.width+transY.getAsDouble();
+                    double dy = bounds.getHeight() - screenBounds.height+transY.getAsDouble();
+                    double max = Math.max(dx, dy);
+                    if (max > 0)
+                    {
+                        plotter.setMargin(-max, TOP);
+                    }
                     break;
                 case LEFT:
                     scaler.set(origPolarBounds.getMinY(), origPolarBounds.getMaxY());
                     levelMap.put(direction, scaler.getLevelFor(font, fontRenderContext, combinedTransform, false, origPolarBounds.getMinX(), bounds));
-                    plotter.setMargin(bounds, direction);
                     break;
                 case RIGHT:
                     scaler.set(origPolarBounds.getMinY(), origPolarBounds.getMaxY());
                     levelMap.put(direction, scaler.getLevelFor(font, fontRenderContext, combinedTransform, false, origPolarBounds.getMaxX(), bounds));
-                    plotter.setMargin(bounds, direction);
                     break;
             }
         });

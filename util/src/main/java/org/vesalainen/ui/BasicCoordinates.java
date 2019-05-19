@@ -110,7 +110,7 @@ public class BasicCoordinates extends CoordinatesGenerator
                     scaler.forEach(locale, levelMap.get(direction), (value,label)->
                     {
                         plotter.drawCoordinateLine(value, origUserBounds.getMinY(), value, origUserBounds.getMaxY());
-                        plotter.drawScreenText(value, origUserBounds.getMinY(), label, TextAlignment.MIDDLE_X);
+                        plotter.drawScreenText(value, origUserBounds.getMinY(), label, TextAlignment.MIDDLE_X, TextAlignment.START_Y);
                     });
                     break;
                 case LEFT:

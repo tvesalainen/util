@@ -44,7 +44,7 @@ public class PlotterT
     {
         try
         {
-            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);//, true, MergeScale.BASIC15, new LogarithmScale(10, "u"));
+            Plotter p = new Plotter(1000, 1000, Color.LIGHT_GRAY);
             p.setColor(Color.BLACK);
             p.setTraceColor(Color.BLACK);
             //p.setStroke(new BasicStroke(10));
@@ -61,9 +61,10 @@ public class PlotterT
             BasicCoordinates bc = new BasicCoordinates(p);
             p.setColor(Color.BLUE);
             bc.addCoordinate(LEFT, BasicScale.SCALE10);
+            bc.addCoordinate(TOP, BasicScale.SCALE10);
             p.setColor(Color.GREEN);
             bc.addCoordinate(BOTTOM, BasicScale.SCALE05);
-            p.setColor(Color.PINK);
+            p.setColor(Color.MAGENTA);
             bc.addCoordinate(RIGHT, BasicScale.SCALE03);
             p.drawBackground(bc);
             //p.drawCoordinates(LEFT, BOTTOM, RIGHT, TOP);

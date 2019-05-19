@@ -20,9 +20,7 @@ import java.awt.Color;
 import static java.awt.Font.BOLD;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.nio.file.Paths;
 import org.junit.Test;
-import org.vesalainen.io.IO;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.PolarPlotter;
 
@@ -37,7 +35,7 @@ public class PolarCubicSplineTest
     {
     }
 
-    //@Test
+    @Test
     public void test1() throws IOException
     {
         Point2D.Double p1 = new Point2D.Double(270, 6);
@@ -50,11 +48,12 @@ public class PolarCubicSplineTest
         {
             pcs.forceInjection();
         }
+        plotter.setTraceColor(Color.BLACK);
         plotter.setColor(Color.RED);
         plotter.setFont("Arial", BOLD, 20);
         plotter.draw(pcs);
         plotter.setColor(Color.LIGHT_GRAY);
-        plotter.drawCoordinates(LEFT, TOP);
+        plotter.drawCoordinates();
         plotter.plot("dev2.png");
     }
     
@@ -104,10 +103,10 @@ public class PolarCubicSplineTest
         plotter.setFont("Arial", BOLD, 20);
         plotter.draw(pcs);
         plotter.setColor(Color.LIGHT_GRAY);
-        plotter.drawCoordinates(LEFT, TOP);
+        plotter.drawCoordinates();
         plotter.plot("dev3.png");
     }
-    @Test
+    //@Test
     public void testPlot() throws IOException, ClassNotFoundException
     {
         PolarCubicSpline pcs = new PolarCubicSpline(0.0, -1.0, 180, 0, 270, 1);

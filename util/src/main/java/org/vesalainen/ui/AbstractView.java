@@ -18,7 +18,6 @@
 package org.vesalainen.ui;
 
 import java.awt.Rectangle;
-import java.awt.Shape;
 import org.vesalainen.math.DoubleTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -47,7 +46,7 @@ public class AbstractView
     protected DoubleTransform inverse;
     protected double scale;
     protected DoubleTransform affineDoubleTransform;
-    protected int margin = 5;   // pixel
+    protected int margin = 4;   // pixel
     private static ThreadLocal<Point2D> srcPnt = ThreadLocal.withInitial(Point2D.Double::new);
     private static ThreadLocal<Point2D> dstPnt = ThreadLocal.withInitial(Point2D.Double::new);
     /**
@@ -105,41 +104,53 @@ public class AbstractView
     /**
      * Enlarges margin in screen coordinates to given directions
      * @param bounds
-     * @param dirs 
+     * @param dir 
      */
     public void setMargin(Rectangle2D bounds, Direction... dirs)
     {
         for (Direction dir : dirs)
         {
-            System.err.println(dir+" "+userBounds);
             switch (dir)
             {
+                case TOP:
                 case BOTTOM:
-                    combinedTransform.transform(userBounds.getCenterX(), userBounds.getMinY(), (x,y)->
-                    {
-                        inverse.transform(x, y+bounds.getHeight()+2*margin, this::updatePoint);
-                    });
+                    setMargin(bounds.getHeight(), dir);
                     break;
                 case LEFT:
-                    combinedTransform.transform(userBounds.getMinX(), userBounds.getCenterY(), (x,y)->
-                    {
-                        inverse.transform(x-bounds.getWidth()-2*margin, y, this::updatePoint);
-                    });
-                    break;
                 case RIGHT:
-                    combinedTransform.transform(userBounds.getMaxX(), userBounds.getCenterY(), (x,y)->
-                    {
-                        inverse.transform(x+bounds.getWidth()+2*margin, y, this::updatePoint);
-                    });
-                    break;
-                case TOP:
-                    combinedTransform.transform(userBounds.getCenterX(), userBounds.getMaxY(), (x,y)->
-                    {
-                        inverse.transform(x, y-bounds.getHeight()-2*margin, this::updatePoint);
-                    });
+                    setMargin(bounds.getWidth(), dir);
                     break;
             }
-            System.err.println(dir+" "+userBounds);
+        }
+    }
+    public void setMargin(double m, Direction dir)
+    {
+        switch (dir)
+        {
+            case BOTTOM:
+                combinedTransform.transform(userBounds.getCenterX(), userBounds.getMinY(), (x,y)->
+                {
+                    inverse.transform(x, y+m+2*margin, this::updatePoint);
+                });
+                break;
+            case LEFT:
+                combinedTransform.transform(userBounds.getMinX(), userBounds.getCenterY(), (x,y)->
+                {
+                    inverse.transform(x-m-2*margin, y, this::updatePoint);
+                });
+                break;
+            case RIGHT:
+                combinedTransform.transform(userBounds.getMaxX(), userBounds.getCenterY(), (x,y)->
+                {
+                    inverse.transform(x+m+2*margin, y, this::updatePoint);
+                });
+                break;
+            case TOP:
+                combinedTransform.transform(userBounds.getCenterX(), userBounds.getMaxY(), (x,y)->
+                {
+                    inverse.transform(x, y-m-2*margin, this::updatePoint);
+                });
+                break;
         }
     }
     /**

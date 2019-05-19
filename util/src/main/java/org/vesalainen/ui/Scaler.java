@@ -19,7 +19,9 @@ package org.vesalainen.ui;
 import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.ui.scale.ScalerOperator;
 import java.awt.Font;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -173,15 +175,15 @@ public class Scaler
      */
     public ScaleLevel getLevelFor(Font font, FontRenderContext frc, DoubleTransform transformer, boolean horizontal, double xy, Rectangle2D bounds)
     {
+        if (bounds == null)
+        {
+            bounds = new Rectangle2D.Double();
+        }
         return getXYLevel(font, frc, horizontal ? transformer : DoubleTransform.swap().andThen(transformer), xy, bounds);
     }
     private ScaleLevel getXYLevel(Font font, FontRenderContext frc, DoubleTransform transformer, double xy, Rectangle2D bounds)
     {
-        Rectangle2D bnds = null;
-        if (bounds != null)
-        {
-            bnds = new Rectangle2D.Double();
-        }
+        Deque<Rectangle2D> boundsStack = new ArrayDeque<>();
         Iterator<ScaleLevel> si = scale.iterator(min, max);
         Deque<ScaleLevel> stack = new ArrayDeque<>();
         while (si.hasNext())
@@ -192,22 +194,17 @@ public class Scaler
             Iterator<String> li = getLabels(level).iterator();
             String label = li.next();
             Rectangle2D first = font.getStringBounds(label, frc);
-            if (bounds != null)
-            {
-                bnds.setRect(first);
-            }
+            Rectangle2D bnds = new Rectangle2D.Double();
             Rectangle2D prev = first;
             transformer.transform(value, xy, (x,y)->first.setRect(x, y, first.getWidth(), first.getHeight()));
+            bnds.setRect(first);
             while (vi.hasNext())
             {
                 value = vi.nextDouble();
                 label = li.next();
                 Rectangle2D cur = font.getStringBounds(label, frc);
-                if (bounds != null)
-                {
-                    bnds.add(cur);
-                }
                 transformer.transform(value, xy, (x,y)->cur.setRect(x, y, cur.getWidth(), cur.getHeight()));
+                bnds.add(cur);
                 if (cur.intersects(prev))
                 {
                     if (stack.isEmpty())
@@ -215,17 +212,20 @@ public class Scaler
                         throw new IllegalArgumentException("Font "+font+" is too big for coordinate");
                     }
                     ScaleLevel pop = stack.pop();
+                    bnds = boundsStack.pop();
                     if (!stack.isEmpty() && stack.peek().count(min, max) > 1)
                     {
                         pop = stack.pop();
+                        bnds = boundsStack.pop();
                     }
+                    bounds.setRect(bnds);
                     return pop;
                 }
                 prev = cur;
             }
             if (bounds != null)
             {
-                bounds.setRect(bnds);
+                boundsStack.push(bnds);
             }
             stack.push(level);
         }

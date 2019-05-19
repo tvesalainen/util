@@ -17,8 +17,8 @@
 package org.vesalainen.ui;
 
 import java.awt.Shape;
-import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
@@ -37,19 +37,18 @@ public class BasicTitle extends BackgroundGenerator
     {
         super(plotter);
         this.direction = direction;
-        GlyphVector glyphVector = font.createGlyphVector(plotter.fontRenderContext, text);
-        Shape shape = glyphVector.getOutline();
+        TextLayout textLayout = new TextLayout(text, font, plotter.fontRenderContext);
         switch (direction)
         {
             case TOP:
             case BOTTOM:
-                this.title = shape;
+                this.title = textLayout.getOutline(null);
                 break;
             case LEFT:
-                this.title = new Path2D.Double(shape, AffineTransform.getQuadrantRotateInstance(3));
+                this.title = textLayout.getOutline(AffineTransform.getQuadrantRotateInstance(3));
                 break;
             case RIGHT:
-                this.title = new Path2D.Double(shape, AffineTransform.getQuadrantRotateInstance(1));
+                this.title = textLayout.getOutline(AffineTransform.getQuadrantRotateInstance(1));
                 break;
         }
         this.bounds = title.getBounds2D();
@@ -70,7 +69,7 @@ public class BasicTitle extends BackgroundGenerator
                 plotter.drawScreen(origUserBounds.getCenterX(), origUserBounds.getMaxY(), title, TextAlignment.MIDDLE_X, TextAlignment.END_Y);
                 break;
             case BOTTOM:
-                plotter.drawScreen(origUserBounds.getCenterX(), origUserBounds.getMinY(), title, TextAlignment.MIDDLE_X);
+                plotter.drawScreen(origUserBounds.getCenterX(), origUserBounds.getMinY(), title, TextAlignment.MIDDLE_X, TextAlignment.START_Y);
                 break;
             case LEFT:
                 plotter.drawScreen(origUserBounds.getMinX(), origUserBounds.getCenterY(), title, TextAlignment.END_X, TextAlignment.MIDDLE_Y);

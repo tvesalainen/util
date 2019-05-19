@@ -331,16 +331,19 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             switch (alignment)
             {
                 case START_X:
+                    t.translate(margin, 0);
+                    break;
                 case START_Y:
+                    t.translate(0, margin);
                     break;
                 case MIDDLE_X:
-                    t.translate(-b.getWidth()/2-margin, 0);
+                    t.translate(-b.getWidth()/2, 0);
                     break;
                 case END_X:
                     t.translate(-b.getWidth()-margin, 0);
                     break;
                 case MIDDLE_Y:
-                    t.translate(0, -b.getHeight()/2-margin);
+                    t.translate(0, -b.getHeight()/2);
                     break;
                 case END_Y:
                     t.translate(0, -b.getHeight()-margin);
