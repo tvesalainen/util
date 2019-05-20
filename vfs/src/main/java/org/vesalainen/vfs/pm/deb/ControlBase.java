@@ -25,7 +25,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
 import org.vesalainen.nio.file.attribute.PosixHelp;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import static org.vesalainen.vfs.pm.deb.FieldType.*;
 
 /**
@@ -43,7 +43,7 @@ public class ControlBase
     {
         this.debian = debian;
         this.name = name;
-        this.paragraphs = Lists.create(paragraphs);
+        this.paragraphs = CollectionHelp.create(paragraphs);
     }
 
     public ControlBase(Path debian, String name) throws IOException

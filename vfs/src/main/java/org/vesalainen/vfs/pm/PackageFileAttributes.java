@@ -22,7 +22,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.vesalainen.nio.file.attribute.UserAttrs;
 import org.vesalainen.util.EnumSetFlagger;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -38,7 +38,7 @@ public class PackageFileAttributes
     public static final void setUsage(Path path, FileUse... use) throws IOException
     {
         EnumSet<FileUse> set = EnumSet.noneOf(FileUse.class);
-        Lists.addAll(set, use);
+        CollectionHelp.addAll(set, use);
         setUsage(path, set);
     }
     public static final void setUsage(Path path, EnumSet<FileUse> use) throws IOException

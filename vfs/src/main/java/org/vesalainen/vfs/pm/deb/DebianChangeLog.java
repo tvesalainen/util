@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.vesalainen.parsers.date.Dates;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.vfs.pm.SimpleChangeLog;
 
 /**
@@ -67,7 +67,7 @@ public class DebianChangeLog extends SimpleChangeLog
         this.version = version;
         this.release = release;
         this.urgency = urgency;
-        this.distributions = Lists.create(distributions);
+        this.distributions = CollectionHelp.create(distributions);
     }
     
     public DebianChangeLog(BufferedReader br, String line) throws IOException
@@ -183,7 +183,7 @@ public class DebianChangeLog extends SimpleChangeLog
 
     public void setDistributions(String... distributions)
     {
-        this.distributions = Lists.create(distributions);
+        this.distributions = CollectionHelp.create(distributions);
     }
 
     public String getUrgency()

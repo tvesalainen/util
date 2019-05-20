@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -49,7 +49,7 @@ public class Paragraph
             list = new ArrayList<>();
             fields.put(field, list);
         }
-        Lists.addAll(list, values);
+        CollectionHelp.addAll(list, values);
     }
     public List<String> getList(Field field)
     {

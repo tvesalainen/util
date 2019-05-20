@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 import org.vesalainen.util.Bijection;
 import org.vesalainen.util.HashBijection;
 import org.vesalainen.util.HashMapSet;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.MapSet;
 import org.vesalainen.vfs.unix.UnixFileAttributeView;
 
@@ -212,7 +212,7 @@ public final class FileAttributeName
     }
     public static final Set<String> topViews(Set<String> views)
     {
-        return topViews(Lists.toArray(views, String.class));
+        return topViews(CollectionHelp.toArray(views, String.class));
     }
     public static final Set<String> topViews(String... views)
     {
