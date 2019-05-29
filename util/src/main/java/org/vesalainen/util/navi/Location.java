@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import org.vesalainen.math.Unit;
 import static org.vesalainen.math.UnitType.NM;
+import org.vesalainen.navi.Navis;
 
 /**
  *
@@ -301,14 +302,18 @@ public class Location extends Point2D.Double
     public static Location center(Location... location)
     {
         double lat = 0;
-        double lon = 0;
-        double height = 0;
+        double sin = 0;
+        double cos = 0;
         for (int ii=0;ii<location.length;ii++)
         {
             lat += location[ii].getLatitude();
-            lon += location[ii].getLongitude();
+            double rad = Math.toRadians(location[ii].getLongitude());
+            sin += Math.sin(rad);
+            cos += Math.cos(rad);
         }
-        Location loc = new Location(lat/location.length, lon/location.length);
+        double atan2 = Math.atan2(sin, cos);
+        double lon = Navis.normalizeToHalfAngle(Math.toDegrees(atan2));
+        Location loc = new Location(lat/location.length, lon);
         return loc;
     }
     

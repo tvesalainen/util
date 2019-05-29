@@ -286,6 +286,23 @@ public class Navis
         return deg % 360;
     }
     /**
+     * Normalizes angle to be in -180 - 180
+     * @param deg in degrees
+     * @return 
+     */
+    public static final double normalizeToHalfAngle(double deg)
+    {
+        double norm = normalizeAngle(deg);
+        if (norm > 180)
+        {
+            return norm - 360;
+        }
+        else
+        {
+            return norm;
+        }
+    }
+    /**
      * @deprecated Use UnitType 
      * Converts fathoms to meters
      * @param fathom

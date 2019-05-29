@@ -230,6 +230,33 @@ public class LocationTest
         Location result = Location.center(location);
         assertEquals(expResult, result);
     }
+    @Test
+    public void testCenter2()
+    {
+        System.out.println("center2");
+        Location[] location = {new Location(-10,175),new Location(-8,-175)};
+        Location expResult = new Location(-9,180);
+        Location result = Location.center(location);
+        assertEquals(expResult, result);
+    }
+    @Test
+    public void testCenter3()
+    {
+        System.out.println("center3");
+        Location[] location = {new Location(-10,-160),new Location(-8,-170)};
+        Location expResult = new Location(-9,-165);
+        Location result = Location.center(location);
+        assertEquals(expResult, result);
+    }
+    @Test
+    public void testCenter4()
+    {
+        System.out.println("center3");
+        Location[] location = {new Location(-10,160),new Location(-8,170)};
+        Location expResult = new Location(-9,165);
+        Location result = Location.center(location);
+        assertEquals(expResult, result);
+    }
 
     /**
      * Test of getNMEALongitude method, of class Location.
