@@ -17,8 +17,9 @@
 package org.vesalainen.navi;
 
 import java.util.concurrent.TimeUnit;
-import static org.vesalainen.util.navi.Angle.FULL_CIRCLE;
-import static org.vesalainen.util.navi.Angle.normalizeToFullAngle;
+import java.util.function.IntToDoubleFunction;
+import java.util.function.Supplier;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * Collection of navigational methods etc.
@@ -27,14 +28,43 @@ import static org.vesalainen.util.navi.Angle.normalizeToFullAngle;
  * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Navis
+public final class Navis
 {
-    public static final double Kilo = 1000;
-    public static final double NMInMeters = 1852;
-    public static final double FeetInMeters = 0.3048;
-    public static final double FathomInMeters = 1.8288;
-    public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
-    public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
+    @Deprecated public static final double Kilo = 1000;
+    @Deprecated public static final double NMInMeters = 1852;
+    @Deprecated public static final double FeetInMeters = 0.3048;
+    @Deprecated public static final double FathomInMeters = 1.8288;
+    @Deprecated public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
+    @Deprecated public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
+    @FunctionalInterface
+    public interface LocationFactory<T>
+    {
+        T create(double latitude, double longitude);
+    }
+    public static <T> T locationCenter(LocationFactory<T> factory, double... coordinates)
+    {
+        if (coordinates.length % 2 != 0)
+        {
+            throw new IllegalArgumentException("odd numer of coordinates");
+        }
+        return locationCenter(factory, (i)->coordinates[2*i], (i)->coordinates[2*i+1], coordinates.length/2);
+    }
+    public static <T> T locationCenter(LocationFactory<T> factory, IntToDoubleFunction latSup, IntToDoubleFunction lonSup, int count)
+    {
+        double lat = 0;
+        double sin = 0;
+        double cos = 0;
+        for (int ii=0;ii<count;ii++)
+        {
+            lat += latSup.applyAsDouble(ii);
+            double rad = Math.toRadians(lonSup.applyAsDouble(ii));
+            sin += Math.sin(rad);
+            cos += Math.cos(rad);
+        }
+        double atan2 = Math.atan2(sin, cos);
+        double lon = Navis.normalizeToHalfAngle(Math.toDegrees(atan2));
+        return factory.create(lat/count, lon);
+    }
     /**
      * Return latitude change after moving distance at bearing
      * @param distance  NM
@@ -391,6 +421,7 @@ public class Navis
         return kmh/HoursInSecondPerKilo;
     }
     /**
+     * @deprecated Use normalizeToHalfAngle
      * Convert full angle to signed angle -180 - 180. 340 -&gt; -20
      * @param angle in degrees
      * @return

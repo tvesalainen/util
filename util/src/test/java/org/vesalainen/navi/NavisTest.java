@@ -18,6 +18,7 @@ package org.vesalainen.navi;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
@@ -30,6 +31,13 @@ public class NavisTest
     {
     }
 
+    @Test
+    public void testCenter()
+    {
+        Location expResult = new Location();
+        Location result = Navis.locationCenter(Location::new, -2, 2, 2, 2, 2, -2, -2, -2);
+        assertEquals(expResult, result);
+    }
     @Test
     public void testDeltaLatitude1()
     {
@@ -122,8 +130,8 @@ public class NavisTest
     {
         assertEquals(45, Navis.normalizeToHalfAngle(45), Epsilon);
         assertEquals(180, Navis.normalizeToHalfAngle(180), Epsilon);
-        assertEquals(179, Navis.normalizeToHalfAngle(181), Epsilon);
-        assertEquals(10, Navis.normalizeToHalfAngle(350), Epsilon);
+        assertEquals(-179, Navis.normalizeToHalfAngle(181), Epsilon);
+        assertEquals(-10, Navis.normalizeToHalfAngle(350), Epsilon);
     }
     @Test
     public void testSigned()
