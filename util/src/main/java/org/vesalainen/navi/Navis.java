@@ -37,10 +37,20 @@ public final class Navis
     @Deprecated public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
     @Deprecated public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
     @FunctionalInterface
+    /**
+     * Location creator
+     */
     public interface LocationFactory<T>
     {
         T create(double latitude, double longitude);
     }
+    /**
+     * Creates center location from coordinates
+     * @param <T>
+     * @param factory
+     * @param coordinates lat1, lon1, ...
+     * @return 
+     */
     public static <T> T locationCenter(LocationFactory<T> factory, double... coordinates)
     {
         if (coordinates.length % 2 != 0)
@@ -49,6 +59,15 @@ public final class Navis
         }
         return locationCenter(factory, (i)->coordinates[2*i], (i)->coordinates[2*i+1], coordinates.length/2);
     }
+    /**
+     * Creates center location from locations.
+     * @param <T>
+     * @param factory
+     * @param latSup
+     * @param lonSup
+     * @param count
+     * @return 
+     */
     public static <T> T locationCenter(LocationFactory<T> factory, IntToDoubleFunction latSup, IntToDoubleFunction lonSup, int count)
     {
         double lat = 0;
