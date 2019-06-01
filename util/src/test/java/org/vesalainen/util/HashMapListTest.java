@@ -16,10 +16,17 @@
  */
 package org.vesalainen.util;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.*;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.io.IO;
 
 /**
  *
@@ -32,6 +39,25 @@ public class HashMapListTest
     {
     }
 
+    @Test
+    public void testSerialize() throws IOException, ClassNotFoundException
+    {
+        Path path = Files.createTempFile(null, null);
+        try
+        {
+            HashMapList<String,String> ml = new HashMapList<>();
+            ml.add("foo", "bar");
+            ml.add("foo", "goo");
+            IO.serialize(ml, path, CREATE, WRITE);
+            ml = IO.deserialize(path);
+            assertTrue(ml.contains("foo", "bar"));
+            assertTrue(ml.contains("foo", "goo"));
+        }
+        finally
+        {
+            Files.deleteIfExists(path);
+        }
+    }
     @Test
     public void test1()
     {

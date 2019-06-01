@@ -16,10 +16,12 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,10 +35,16 @@ import java.util.function.Function;
  * @param <K>
  * @param <V>
  */
-public abstract class AbstractMapList<K,V> implements MapList<K,V>
+public abstract class AbstractMapList<K,V> implements MapList<K,V>, Serializable
 {
+    private static final long serialVersionUID = 1L;
     protected Map<K,List<V>> map;
     protected Comparator<V> comparator;
+
+    public AbstractMapList()
+    {
+        this(new HashMap<>(), null);
+    }
 
     public AbstractMapList(Map<K, List<V>> map, Comparator<V> comparator)
     {
