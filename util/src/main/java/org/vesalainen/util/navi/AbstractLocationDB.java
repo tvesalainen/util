@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util.navi;
 
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +34,10 @@ import java.util.stream.Stream;
  * mappings are not unique. One location can be associated with several data entries.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractLocationDB<L,T> implements Comparator<Entry<L,T>>
+public class AbstractLocationDB<L,T> implements Comparator<Entry<L,T>>, Serializable
 {
+    protected static final long serialVersionUID = 1L;
+
     private ToDoubleFunction<L> longitudeSupplier;
     private ToDoubleFunction<L> latitudeSupplier;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -42,6 +45,10 @@ public class AbstractLocationDB<L,T> implements Comparator<Entry<L,T>>
     private WriteLock writeLock = rwLock.writeLock();
     private List<Entry<L,T>> entries = new ArrayList<>();
     private boolean sorted;
+
+    protected AbstractLocationDB()
+    {
+    }
 
     protected AbstractLocationDB(AbstractLocationSupport support)
     {
