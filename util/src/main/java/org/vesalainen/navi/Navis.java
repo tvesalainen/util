@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.Supplier;
 import org.vesalainen.util.function.DoubleBiConsumer;
+import org.vesalainen.util.navi.AbstractLocationSupport.LocationFactory;
 
 /**
  * Collection of navigational methods etc.
@@ -36,14 +37,6 @@ public final class Navis
     @Deprecated public static final double FathomInMeters = 1.8288;
     @Deprecated public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
     @Deprecated public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
-    @FunctionalInterface
-    /**
-     * Location creator
-     */
-    public interface LocationFactory<T>
-    {
-        T create(double latitude, double longitude);
-    }
     /**
      * Creates center location from coordinates
      * @param <T>
