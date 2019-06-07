@@ -234,6 +234,19 @@ public abstract class AbstractMapList<K,V> implements MapList<K,V>, Serializable
         return list;
     }
 
+    public void addAll(K key, V... array)
+    {
+        List<V> list = map.get(key);
+        if (list == null)
+        {
+            list = createList();
+            put(key, list);
+        }
+        for (V v : array)
+        {
+            list.add(v);
+        }
+    }
     @Override
     public List<V> get(Object key)
     {
@@ -288,7 +301,21 @@ public abstract class AbstractMapList<K,V> implements MapList<K,V>, Serializable
         }
         return list.contains(value);
     }
-    
+    /**
+     * Calls trimToSize for each ArrayList list value.
+     * @see java.util.ArrayList#trimToSize() 
+     */
+    public void trimToSize()
+    {
+        for (List<V> list : map.values())
+        {
+            if (list instanceof ArrayList)
+            {
+                ArrayList<V> al = (ArrayList<V>) list;
+                al.trimToSize();
+            }
+        }
+    }
     protected List<V> createList()
     {
         if (comparator != null)
