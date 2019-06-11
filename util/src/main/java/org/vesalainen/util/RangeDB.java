@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,8 +33,10 @@ import java.util.stream.StreamSupport;
  * snapshot.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class RangeDB<K,V>
+public class RangeDB<K,V> implements Serializable
 {
+    protected static final long serialVersionUID = 1L;
+
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
@@ -41,6 +44,17 @@ public class RangeDB<K,V>
     private List<Entry> fromList = new ArrayList<>();
     private List<Entry> toList = new ArrayList<>();
     private boolean sorted;
+
+    public RangeDB()
+    {
+        this(null);
+    }
+
+    public RangeDB(Comparator<K> comparator)
+    {
+        this.comparator = comparator;
+    }
+    
     /**
      * Puts range.
      * @param from
