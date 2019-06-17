@@ -62,7 +62,21 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
                 support.longitudeSupplier.applyAsDouble(southWest)
         );
     }
-
+    /**
+     * 
+     * @param support
+     * @param center
+     * @param dia diameter in NM
+     */
+    protected AbstractBoundingBox(AbstractLocationSupport support, L center, double dia)
+    {
+        this(
+                support,
+                support.latitudeSupplier.applyAsDouble(center), 
+                support.longitudeSupplier.applyAsDouble(center), 
+                dia
+        );
+    }
     /**
      * 
      * @param latitude
