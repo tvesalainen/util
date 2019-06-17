@@ -41,7 +41,7 @@ import org.vesalainen.ham.bc.BroadcastOptimizer;
 import org.vesalainen.ham.bc.BroadcastOptimizer.BestStation;
 import org.vesalainen.ham.filter.CoeffReader;
 import org.vesalainen.ham.filter.FIRFilter;
-import org.vesalainen.ham.hffax.FaxDecoder;
+import org.vesalainen.ham.hffax.FaxDecoder0;
 import org.vesalainen.ham.hffax.FaxRectifier;
 import org.vesalainen.ham.itshfbc.Noise;
 import org.vesalainen.ham.riff.ListInfoChunk;
@@ -152,7 +152,7 @@ public class RadioRecorder extends LoggingCommandLine
         try
         {
             fine("startFax(%d, %d, %s, %s", lpm, ioc, in, out);
-            FaxDecoder decoder = new FaxDecoder(lpm, ioc, in, out);
+            FaxDecoder0 decoder = new FaxDecoder0(lpm, ioc, in, out);
             decoder.parse();
         }
         catch (Exception ex)

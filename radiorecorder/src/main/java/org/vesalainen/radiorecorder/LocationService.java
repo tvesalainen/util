@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import org.vesalainen.code.PropertySetter;
 import org.vesalainen.parsers.nmea.NMEAService;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.navi.Location;
 
 /*
@@ -33,7 +34,7 @@ public class LocationService extends NMEAService implements PropertySetter
     private double latitude;
     private double longitude;
     private CountDownLatch latch;
-    public LocationService(String address, int port, ExecutorService executor) throws IOException
+    public LocationService(String address, int port, CachedScheduledThreadPool executor) throws IOException
     {
         super(address, port, executor);
         latch = new CountDownLatch(4);

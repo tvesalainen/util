@@ -18,12 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 <radio-recorder xmlns="https://github.com/tvesalainen/util/blob/master/radiorecorder/src/main/xsd/radio-recorder.xsd">
-    <files directory="c:\\tmp"/>
+    <files directory="c:\\temp"/>
     <receiver-location>
         <nmea-multicast nmea-group="224.0.0.3" nmea-port="10110"/>
     </receiver-location>
     <radio-control>
-        <icomHfMarine id="0" port="COM5"/>
+        <icomHfMarine id="0" port="COM6"/>
     </radio-control>
     <audio-capture 
         mixer="Microphone (5- USB PnP Sound De, version Unknown Version" 
