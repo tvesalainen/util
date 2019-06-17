@@ -28,7 +28,7 @@ import org.vesalainen.nio.file.PathHelper;
 import org.vesalainen.pm.ComponentBuilder;
 import org.vesalainen.pm.FileUse;
 import org.vesalainen.pm.PackageBuilder;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -69,7 +69,7 @@ public final class MultiFileBuilder implements ComponentBuilder
     @Override
     public ComponentBuilder addFileAttributes(FileAttribute<?>... attrs)
     {
-        Lists.addAll(this.attrs, attrs);
+        CollectionHelp.addAll(this.attrs, attrs);
         return this;
     }
 
@@ -199,7 +199,7 @@ public final class MultiFileBuilder implements ComponentBuilder
                 }
                 if (!attrs.isEmpty())
                 {
-                    builder.addFileAttributes(Lists.toArray(attrs, FileAttribute.class));
+                    builder.addFileAttributes(CollectionHelp.toArray(attrs, FileAttribute.class));
                 }
                 builder.build();
             }

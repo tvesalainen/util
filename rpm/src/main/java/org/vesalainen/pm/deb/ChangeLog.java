@@ -26,7 +26,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -66,7 +66,7 @@ public class ChangeLog
 
     public void setDistributions(String... distributions)
     {
-        this.distributions = Lists.create(distributions);
+        this.distributions = CollectionHelp.create(distributions);
     }
     
     public void save(Path debian) throws IOException

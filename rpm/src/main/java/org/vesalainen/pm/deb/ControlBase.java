@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.vesalainen.util.Lists;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -39,7 +39,7 @@ public class ControlBase
     {
         this.debian = debian;
         this.name = name;
-        this.paragraphs = Lists.create(paragraphs);
+        this.paragraphs = CollectionHelp.create(paragraphs);
     }
 
     void save(Path debian) throws IOException
