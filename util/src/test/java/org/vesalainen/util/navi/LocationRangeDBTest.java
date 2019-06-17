@@ -44,7 +44,7 @@ public class LocationRangeDBTest
         db.put(bb1, "bb1");
         db.put(bb2, "bb2");
         db.put(bb3, "bb3");
-        db.put(bb4, "bb4");
+        db.put(bb4, "bb4"); 
         
         List<String> list;
         
