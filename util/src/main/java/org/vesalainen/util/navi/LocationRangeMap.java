@@ -20,10 +20,10 @@ package org.vesalainen.util.navi;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationRangeDB<T> extends AbstractLocationRangeDB<Location,T>
+public class LocationRangeMap<T> extends AbstractLocationRangeMap<Location,T>
 {
 
-    public LocationRangeDB()
+    public LocationRangeMap()
     {
         super(LocationSupport.LOCATION_SUPPORT);
     }

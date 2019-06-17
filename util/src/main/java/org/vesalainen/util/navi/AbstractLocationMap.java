@@ -30,11 +30,11 @@ import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
 
 /**
- * AbstractLocationDB is a base class for location related data store. Location
+ * AbstractLocationMap is a base class for location related data store. Location
  * mappings are not unique. One location can be associated with several data entries.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractLocationDB<L,T> implements Comparator<Entry<L,T>>, Serializable
+public class AbstractLocationMap<L,T> implements Comparator<Entry<L,T>>, Serializable
 {
     protected static final long serialVersionUID = 1L;
 
@@ -46,11 +46,11 @@ public class AbstractLocationDB<L,T> implements Comparator<Entry<L,T>>, Serializ
     private List<Entry<L,T>> entries = new ArrayList<>();
     private boolean sorted;
 
-    protected AbstractLocationDB()
+    protected AbstractLocationMap()
     {
     }
 
-    protected AbstractLocationDB(AbstractLocationSupport support)
+    protected AbstractLocationMap(AbstractLocationSupport support)
     {
         this.longitudeSupplier = support.longitudeSupplier;
         this.latitudeSupplier = support.latitudeSupplier;

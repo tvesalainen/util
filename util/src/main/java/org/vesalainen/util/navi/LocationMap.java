@@ -20,7 +20,7 @@ package org.vesalainen.util.navi;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationMap<T> extends AbstractLocationDB<Location,T>
+public class LocationMap<T> extends AbstractLocationMap<Location,T>
 {
     
     public LocationMap()
