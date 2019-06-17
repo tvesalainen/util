@@ -16,7 +16,9 @@
  */
 package org.vesalainen.ham.bc;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -46,10 +48,10 @@ public class BroadcastOptimizerTest
     
     public BroadcastOptimizerTest()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
+        //JavaLogging.setConsoleHandler("org.vesalainen", Level.FINE);
     }
 
-    @Test
+    //@Test
     public void test0() throws IOException, JAXBException
     {
         Location location = new Location(9, -79);
@@ -64,18 +66,42 @@ public class BroadcastOptimizerTest
             start = start.with(to);
         }
     }
-    //@Test
+    @Test
     public void test1() throws IOException, JAXBException
     {
-        dumpStations();
+        //dumpStations();
+        PrintStream out = new PrintStream("c:\\temp\\pacific_fax_schedules_2018.txt");
+        out.printf("Best Frequency/Station for time of day for specific coordinates\r\n");
+        out.printf("Note! Frequency is dial frequency. (1.9 KHz less than in rfax.pdf)\r\n");
+        out.printf("Mode is Upper Side Band (USB). F3C in some radios\r\n");
+        out.printf("Station data is from NOAA http://www.nws.noaa.gov/om/marine/rfax.pdf\r\n");
+        out.printf("Uses VOACAP for radio weather predictions\r\n");
+        out.printf("THIS IS EXPERIMENTAL!!!\r\n");
+        out.printf("Comments: Timo Vesalainen S/Y Iiris timo.vesalainen@iki.fi \r\n");
         BroadcastOptimizer opt = new BroadcastOptimizer();
-        OffsetDateTime start = OffsetDateTime.now();
-        OffsetDateTime end = start.plus(1, ChronoUnit.DAYS);
-        OffsetDateTime now = start;
-        while (now.isBefore(end))
+        for (Location loc : new Location[]{
+            new Location(5, -92),
+            new Location(1, -104),
+            new Location(-2, -116),
+            new Location(-6, -127)
+        })
         {
-            BestStation bestStation = opt.bestStation(new Location(9, -79), now);
-            now = TimeUtils.next(now, bestStation.getTo());
+            OffsetDateTime start = OffsetDateTime.now();
+            out.printf("\r\n\r\nHF Fax Schedule at %s %s\r\n\r\n", loc, start);
+            OffsetDateTime end = start.plus(1, ChronoUnit.DAYS);
+            OffsetDateTime now = start;
+            while (now.isBefore(end))
+            {
+                BestStation bestStation = opt.bestStation(loc, now);
+                out.printf("%s - %s %f MHz %s %s\r\n", 
+                        bestStation.getFrom(),
+                        bestStation.getTo(),
+                        bestStation.getFrequency() - 0.0019,
+                        bestStation.getContent(),
+                        bestStation.getStation().getName()
+                );
+                now = TimeUtils.next(now, bestStation.getTo());
+            }
         }
     }
     private void dumpStations() throws IOException, JAXBException

@@ -17,6 +17,7 @@
         <module>rpm</module>
         <module>vfs</module>
         <module>ham</module>
+        <module>radiorecorder</module>
     </modules>
     <name>Utilities Parent</name>
     <description>
