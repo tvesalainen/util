@@ -40,7 +40,7 @@ public class LocationRangeDBTest
         LocationBoundingBox bb3 = new LocationBoundingBox(-10, -170, -20, 170);
         LocationBoundingBox bb4 = new LocationBoundingBox(-30, -160, -40, -170);
         
-        LocationRangeDB<String> db = new LocationRangeDB<>();
+        LocationRangeMap<String> db = new LocationRangeMap<>();
         db.put(bb1, "bb1");
         db.put(bb2, "bb2");
         db.put(bb3, "bb3");
