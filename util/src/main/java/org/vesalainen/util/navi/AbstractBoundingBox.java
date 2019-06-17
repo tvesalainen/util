@@ -27,8 +27,8 @@ import org.vesalainen.navi.Navis;
  */
 public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implements Serializable, BoundingBox<L>
 {
-    
     protected static final long serialVersionUID = 1L;
+    
     protected static final double HalfCircle = 180;
     protected static final double FullCircle = 360;
     protected boolean init;

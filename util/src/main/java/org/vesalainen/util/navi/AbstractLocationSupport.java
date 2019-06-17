@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util.navi;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
@@ -25,8 +26,10 @@ import java.util.function.ToDoubleFunction;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <L> Location type
  */
-public class AbstractLocationSupport<L>
+public class AbstractLocationSupport<L> implements Serializable
 {
+    protected static final long serialVersionUID = 1L;
+
     protected ToDoubleFunction<L> longitudeSupplier;
     protected ToDoubleFunction<L> latitudeSupplier;
     protected LocationFactory<L> locationFactory;

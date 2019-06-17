@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util.navi;
 
+import java.io.Serializable;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
 import org.vesalainen.util.Range;
@@ -30,15 +31,15 @@ import org.vesalainen.util.RangeDB.Entry;
  * with overlapping method only distinct values are returned.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractLocationRangeMap<L,T> extends RangeDB<L,T>
+public class AbstractLocationRangeMap<L,T> extends RangeDB<L,T> implements Serializable
 {
-    private ToDoubleFunction<L> longitudeSupplier;
+    protected static final long serialVersionUID = 1L;
+
     private ToDoubleFunction<L> latitudeSupplier;
 
     protected AbstractLocationRangeMap(AbstractLocationSupport support)
     {
         super(support, support.longitudeOrder());
-        this.longitudeSupplier = support.longitudeSupplier;
         this.latitudeSupplier = support.latitudeSupplier;
     }
 
