@@ -82,4 +82,25 @@ public interface BoundingBox<L>
     boolean overlapLatitude(double latitude);
     
     boolean overlapLongitude(double longitude);
+    /**
+     * Returns true if west lesser or equal than east
+     * @return 
+     */
+    default boolean isWestToEast()
+    {
+        return getWest() <= getEast();
+    }
+    /**
+     * Returns true if south lesser or equal than north
+     * @return 
+     */
+    default boolean isSouthToNorth()
+    {
+        return getSouth() <= getNorth();
+    }
+    /**
+     * Returns 2 or 1 bounding boxes possibly split at anti-meridian
+     * @return 
+     */
+    BoundingBox[] splitAntiMeridian();
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.vesalainen.util.navi.AbstractLocationSupport;
 
 /**
  * RangeDB is a non unique mapping from range to item
@@ -37,21 +38,23 @@ public class RangeDB<K,V> implements Serializable
 {
     protected static final long serialVersionUID = 1L;
 
+    protected final AbstractLocationSupport support;
+    protected final Comparator<K> comparator;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
-    private Comparator<K> comparator;
     private List<Entry> fromList = new ArrayList<>();
     private List<Entry> toList = new ArrayList<>();
     private boolean sorted;
 
-    public RangeDB()
+    protected RangeDB()
     {
-        this(null);
+        this(null, null);
     }
 
-    public RangeDB(Comparator<K> comparator)
+    public RangeDB(AbstractLocationSupport support, Comparator<K> comparator)
     {
+        this.support = support;
         this.comparator = comparator;
     }
     
@@ -63,14 +66,14 @@ public class RangeDB<K,V> implements Serializable
      */
     public void put(K from, K to, V value)
     {
-        put(new SimpleRange<>(from, to), value);
+        put(new SimpleRange<>(from, to, comparator), value);
     }
     /**
      * Puts range.
      * @param range
      * @param value 
      */
-    public void put(Range<K> range, V value)
+    protected void put(Range<K> range, V value)
     {
         writeLock.lock();
         try
@@ -92,7 +95,11 @@ public class RangeDB<K,V> implements Serializable
      */
     public Stream<V>  overlapping(K from, K to)
     {
-        return overlapping(new SimpleRange<>(from, to));
+        return overlappingEntries(from, to).map((e)->e.value);
+    }
+    protected Stream<Entry>  overlappingEntries(K from, K to)
+    {
+        return overlappingEntries(new SimpleRange<>(from, to, comparator));
     }
     /**
      * Returns stream of values whose range overlaps given range.
@@ -101,6 +108,14 @@ public class RangeDB<K,V> implements Serializable
      */
     public Stream<V>  overlapping(Range<K> range)
     {
+        return overlappingEntries(range).map((e)->e.value);
+    }
+    protected Stream<Entry>  overlappingEntries(Range<K> range)
+    {
+        if (!range.isInOrder())
+        {
+            throw new IllegalArgumentException("from > to");
+        }
         if (toList.isEmpty())
         {
             return Stream.empty();
@@ -113,51 +128,28 @@ public class RangeDB<K,V> implements Serializable
             Entry toKey = new Entry(range.getTo(), range, null);
             int p1 = point(fromList, toKey, false);
             int p2 = point(toList, fromKey, true);
-            int hits = toList.size() - excludeFrom(p1) - excludeTo(p2);
-            int ip = insertPoint(p2);
-            return StreamSupport.stream(new IntersectingSpliterator(toList, range, hits, ip), false).map((e)->e.value);
+            int size = toList.size();
+            int excludeFrom = excludeFrom(p1);
+            int excludeTo = excludeTo(p2);
+            int hits = size - excludeFrom - excludeTo;
+            int max = size - 1;
+            int ip1 = Math.min(insertPoint(p1), max);
+            int ip2 = Math.min(insertPoint(p2), max);
+            if (max - ip2 < ip1)
+            {
+                return StreamSupport.stream(new IntersectingSpliterator(toList, range, hits, ip2, 1), false);
+            }
+            else
+            {
+                return StreamSupport.stream(new IntersectingSpliterator(fromList, range, hits, ip1, -1), false);
+            }
         }
         finally
         {
             readLock.unlock();
         }
     }
-    private class IntersectingSpliterator extends AbstractSpliterator<Entry>
-    {
-        List<Entry> list;
-        private Range<K> range;
-        private int hits;
-        private int index;
 
-        public IntersectingSpliterator(List<Entry> list, Range<K> range, int hits, int index)
-        {
-            super(hits, 0);
-            this.list = list;
-            this.range = range;
-            this.hits = hits;
-            this.index = index;
-        }
-
-        @Override
-        public boolean tryAdvance(Consumer<? super Entry> action)
-        {
-            if (hits == 0)
-            {
-                return false;
-            }
-            Entry entry = toList.get(index);
-            while (!range.isOverlapping(entry.range))
-            {
-                index++;
-                entry = toList.get(index);
-            }
-            index++;
-            hits--;
-            action.accept(entry);
-            return true;
-        }
-
-    }
     private int point(List<Entry> list, Entry key, boolean up)
     {
         if (up)
@@ -171,7 +163,7 @@ public class RangeDB<K,V> implements Serializable
     }
     private int lowPoint(List<Entry> list, Entry key)
     {
-        int idx = Collections.binarySearch(list, key);
+        int idx = search(list, key);
         if (idx >= 0)
         {
             while (idx > 1 && key.compareTo(list.get(idx-1)) == 0)
@@ -183,7 +175,7 @@ public class RangeDB<K,V> implements Serializable
     }
     private int highPoint(List<Entry> list, Entry key)
     {
-        int idx = Collections.binarySearch(list, key);
+        int idx = search(list, key);
         if (idx >= 0)
         {
             int size = list.size() - 2;
@@ -193,6 +185,25 @@ public class RangeDB<K,V> implements Serializable
             }
         }
         return idx;
+    }
+    private int search(List<Entry> list, Entry key)
+    {
+        Range<K> range = key.range;
+        if (range.getFrom() == null)
+        {
+            return 0;
+        }
+        else
+        {
+            if (range.getTo() == null)
+            {
+                return list.size();
+            }
+            else
+            {
+                return Collections.binarySearch(list, key);
+            }
+        }
     }
     int excludeFrom(int idx)
     {
@@ -218,7 +229,14 @@ public class RangeDB<K,V> implements Serializable
     }
     private int insertPoint(int idx)
     {
-        return -idx-1;
+        if (idx >= 0)
+        {
+            return idx;
+        }
+        else
+        {
+            return -idx-1;
+        }
     }
     void ensureSorted()
     {
@@ -237,7 +255,45 @@ public class RangeDB<K,V> implements Serializable
             writeLock.unlock();
         }
     }
-    private class Entry implements Comparable<Entry>
+    private class IntersectingSpliterator extends AbstractSpliterator<Entry>
+    {
+        List<Entry> list;
+        private Range<K> range;
+        private int hits;
+        private int index;
+        private int step;
+
+        public IntersectingSpliterator(List<Entry> list, Range<K> range, int hits, int index, int step)
+        {
+            super(hits, 0);
+            this.list = list;
+            this.range = range;
+            this.hits = hits;
+            this.index = index;
+            this.step = step;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Entry> action)
+        {
+            if (hits == 0)
+            {
+                return false;
+            }
+            Entry entry = list.get(index);
+            while (!range.isOverlapping(entry.range))
+            {
+                index += step;
+                entry = list.get(index);
+            }
+            index += step;
+            hits--;
+            action.accept(entry);
+            return true;
+        }
+
+    }
+    public class Entry implements Comparable<Entry>
     {
         private K key;
         private Range<K> range;
@@ -249,6 +305,22 @@ public class RangeDB<K,V> implements Serializable
             this.range = range;
             this.value = value;
         }
+
+        public K getKey()
+        {
+            return key;
+        }
+
+        public Range<K> getRange()
+        {
+            return range;
+        }
+
+        public V getValue()
+        {
+            return value;
+        }
+        
         
         @Override
         public int compareTo(Entry o)

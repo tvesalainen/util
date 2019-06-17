@@ -20,13 +20,12 @@ package org.vesalainen.util.navi;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationSupport extends AbstractLocationSupport<Location>
+public class LocationRangeDB<T> extends AbstractLocationRangeDB<Location,T>
 {
-    public static final LocationSupport LOCATION_SUPPORT = new LocationSupport();
-    
-    public LocationSupport()
+
+    public LocationRangeDB()
     {
-        super((l)->l.x, (l)->l.y, Location::new, LocationBoundingBox::new);
+        super(LocationSupport.LOCATION_SUPPORT);
     }
     
 }

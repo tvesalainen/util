@@ -107,7 +107,7 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     }
 
     /**
-     * Return true if a2 right of a1
+     * Return true if east right of west
      * @param west
      * @param east
      * @return
@@ -274,7 +274,7 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     @Override
     public L getNorthEast()
     {
-        return locationFactory.create((float) north, (float) east);
+        return locationFactory.create(north, east);
     }
 
     @Override
@@ -305,6 +305,22 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     public double getEast()
     {
         return east;
+    }
+
+    @Override
+    public BoundingBox[] splitAntiMeridian()
+    {
+        if (isWestToEast())
+        {
+            return new BoundingBox[]{this};
+        }
+        else
+        {
+            return new BoundingBox[]{
+                new AbstractBoundingBox(this, north, 180, south, west),
+                new AbstractBoundingBox(this, north, east, south, -180)
+            };
+        }
     }
 
     @Override

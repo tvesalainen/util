@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -27,6 +28,7 @@ public class SimpleRange<T> implements Range<T>
 {
     protected T from;
     protected T to;
+    protected Comparator<T> comparator;
     /**
      * Creates new Range
      * @param other 
@@ -35,6 +37,7 @@ public class SimpleRange<T> implements Range<T>
     {
         this.from = other.from;
         this.to = other.to;
+        this.comparator = other.comparator;
     }
     
     /**
@@ -44,8 +47,14 @@ public class SimpleRange<T> implements Range<T>
      */
     public SimpleRange(T from, T to)
     {
+        this(from, to, null);
+    }
+
+    public SimpleRange(T from, T to, Comparator<T>  comparator)
+    {
         this.from = from;
         this.to = to;
+        this.comparator = comparator;
     }
 
     @Override
@@ -58,6 +67,12 @@ public class SimpleRange<T> implements Range<T>
     public T getTo()
     {
         return to;
+    }
+
+    @Override
+    public Comparator<T> comparator()
+    {
+        return comparator;
     }
 
     @Override

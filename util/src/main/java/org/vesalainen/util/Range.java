@@ -107,5 +107,12 @@ public interface Range<T> extends Comparable<Range<T>>
                 other.isInRange(getFrom(), false, false) ||
                 other.isInRange(getTo(), false, false);
     }
-    
+    /**
+     * Returns true if to is greater or equal than from
+     * @return 
+     */
+    default boolean isInOrder()
+    {
+        return compare(getFrom(), getTo()) <= 0;
+    }
 }

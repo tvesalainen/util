@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util.navi;
 
+import java.util.Comparator;
+import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -28,6 +30,7 @@ public class AbstractLocationSupport<L>
     protected ToDoubleFunction<L> longitudeSupplier;
     protected ToDoubleFunction<L> latitudeSupplier;
     protected LocationFactory<L> locationFactory;
+    protected BiFunction<L,L,BoundingBox<L>> boundingBoxFactory;
 
     public AbstractLocationSupport()
     {
@@ -35,14 +38,44 @@ public class AbstractLocationSupport<L>
 
     public AbstractLocationSupport(AbstractLocationSupport support)
     {
-        this(support.longitudeSupplier, support.latitudeSupplier, support.locationFactory);
+        this(support.longitudeSupplier, support.latitudeSupplier, support.locationFactory, support.boundingBoxFactory);
     }
 
-    public AbstractLocationSupport(ToDoubleFunction<L> longitudeSupplier, ToDoubleFunction<L> latitudeSupplier, LocationFactory<L> locationFactory)
+    public AbstractLocationSupport(
+            ToDoubleFunction<L> longitudeSupplier, 
+            ToDoubleFunction<L> latitudeSupplier, 
+            LocationFactory<L> locationFactory,
+            BiFunction<L,L,BoundingBox<L>> boundingBoxFactory
+    )
     {
         this.longitudeSupplier = longitudeSupplier;
         this.latitudeSupplier = latitudeSupplier;
         this.locationFactory = locationFactory;
+        this.boundingBoxFactory = boundingBoxFactory;
+    }
+
+    public Comparator<L> comparator()
+    {
+        return (L o1, L o2)->
+        {
+            int c = Double.compare(longitudeSupplier.applyAsDouble(o1), longitudeSupplier.applyAsDouble(o2));
+            if (c == 0)
+            {
+                return Double.compare(latitudeSupplier.applyAsDouble(o1), latitudeSupplier.applyAsDouble(o2));
+            }
+            else
+            {
+                return c;
+            }
+        };
+    }
+    
+    public Comparator<L> longitudeOrder()
+    {
+        return (L o1, L o2)->
+        {
+            return Double.compare(longitudeSupplier.applyAsDouble(o1), longitudeSupplier.applyAsDouble(o2));
+        };
     }
     
     @FunctionalInterface
