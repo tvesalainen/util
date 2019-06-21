@@ -22,7 +22,7 @@ import org.vesalainen.lang.Primitives;
 import org.vesalainen.navi.Navis;
 
 /**
- *
+ * <p>Note! Bounding box covers newer more than half of sphere.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implements Serializable, BoundingBox<L>
@@ -31,11 +31,11 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     
     protected static final double HalfCircle = 180;
     protected static final double FullCircle = 360;
-    protected boolean init;
-    protected double north;
-    protected double south;
-    protected double west;
-    protected double east;
+    private boolean init;
+    private double north;
+    private double south;
+    private double west;
+    private double east;
 
 
     protected AbstractBoundingBox()
@@ -99,11 +99,8 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     protected AbstractBoundingBox(AbstractLocationSupport support, double north, double east, double south, double west)
     {
         super(support);
-        this.north = north;
-        this.east = east;
-        this.south = south;
-        this.west = west;
-        init = true;
+        add(north, east);
+        add(south, west);
     }
     
     private static String[] split(String southWestNorthEast)
@@ -196,10 +193,15 @@ public class AbstractBoundingBox<L> extends AbstractLocationSupport<L> implement
     @Override
     public void add(double latitude, double longitude)
     {
-        assert latitude >= -90;
-        assert latitude <= 90;
-        assert longitude >= -180;
-        assert longitude <= 180;
+        if (
+                (latitude < -90) ||
+                (latitude > 90) ||
+                (longitude < -180) ||
+                (longitude > 180)
+                )
+        {
+            throw new IllegalArgumentException("illegal coordinates");
+        }
         if (init)
         {
             north = Math.max(north, latitude);
