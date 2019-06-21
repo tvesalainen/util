@@ -71,6 +71,10 @@ public class AbstractLocationMap<L,T> implements Comparator<Entry<L,T>>, Seriali
     }
     private Stream<Entry<L, T>>  subStream(L southWest, boolean included1, L northEast, boolean included2)
     {
+        if (entries.isEmpty())
+        {
+            return Stream.empty();
+        }
         ensureSorted();
         readLock.lock();
         try
@@ -87,6 +91,10 @@ public class AbstractLocationMap<L,T> implements Comparator<Entry<L,T>>, Seriali
 
     private Stream<Entry<L, T>>  tailStream(L southWest, boolean included)
     {
+        if (entries.isEmpty())
+        {
+            return Stream.empty();
+        }
         ensureSorted();
         readLock.lock();
         try
@@ -102,6 +110,10 @@ public class AbstractLocationMap<L,T> implements Comparator<Entry<L,T>>, Seriali
 
     private Stream<Entry<L, T>>  headStream(L northEast, boolean included)
     {
+        if (entries.isEmpty())
+        {
+            return Stream.empty();
+        }
         ensureSorted();
         readLock.lock();
         try

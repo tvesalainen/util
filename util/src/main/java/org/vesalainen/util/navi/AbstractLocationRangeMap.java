@@ -17,7 +17,6 @@
 package org.vesalainen.util.navi;
 
 import java.io.Serializable;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
 import org.vesalainen.util.Range;
 import org.vesalainen.util.RangeDB;
