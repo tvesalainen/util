@@ -26,7 +26,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.vesalainen.util.navi.AbstractLocationSupport.SerializableComparator;
 
 /**
  * RangeMap is a non unique mapping from range to item
@@ -38,7 +37,7 @@ public class RangeMap<K,V> implements Serializable
 {
     protected static final long serialVersionUID = 1L;
 
-    protected final SerializableComparator<K> comparator;
+    protected final Comparator<K> comparator;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
@@ -51,7 +50,7 @@ public class RangeMap<K,V> implements Serializable
         this(null);
     }
 
-    public RangeMap(SerializableComparator<K> comparator)
+    public RangeMap(Comparator<K> comparator)
     {
         this.comparator = comparator;
     }

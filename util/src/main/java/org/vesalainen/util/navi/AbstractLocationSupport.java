@@ -57,7 +57,19 @@ public class AbstractLocationSupport<L> implements Serializable
 
     public Comparator<L> comparator()
     {
-        return (L o1, L o2)->
+        return new LongitudeFirstComparator();
+    }
+    
+    public Comparator<L> longitudeOrder()
+    {
+        return new LongitudeOrderComparator();
+    }
+    
+    public class LongitudeFirstComparator implements Comparator<L>, Serializable
+    {
+
+        @Override
+        public int compare(L o1, L o2)
         {
             int c = Double.compare(longitudeSupplier.applyAsDouble(o1), longitudeSupplier.applyAsDouble(o2));
             if (c == 0)
@@ -68,17 +80,19 @@ public class AbstractLocationSupport<L> implements Serializable
             {
                 return c;
             }
-        };
+        }
+        
     }
-    
-    public Comparator<L> longitudeOrder()
+    public class LongitudeOrderComparator implements Comparator<L>, Serializable
     {
-        return (L o1, L o2)->
+
+        @Override
+        public int compare(L o1, L o2)
         {
             return Double.compare(longitudeSupplier.applyAsDouble(o1), longitudeSupplier.applyAsDouble(o2));
-        };
+        }
+        
     }
-    
     @FunctionalInterface
     public interface CoordinateSupplier<T> extends Serializable
     {

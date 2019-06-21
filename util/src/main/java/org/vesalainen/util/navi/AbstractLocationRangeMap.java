@@ -16,11 +16,10 @@
  */
 package org.vesalainen.util.navi;
 
-import java.io.Serializable;
 import java.util.stream.Stream;
 import org.vesalainen.util.Range;
-import org.vesalainen.util.RangeDB;
-import org.vesalainen.util.RangeDB.Entry;
+import org.vesalainen.util.RangeMap;
+import org.vesalainen.util.RangeMap.Entry;
 import org.vesalainen.util.navi.AbstractLocationSupport.CoordinateSupplier;
 
 /**
@@ -31,7 +30,7 @@ import org.vesalainen.util.navi.AbstractLocationSupport.CoordinateSupplier;
  * with overlapping method only distinct values are returned.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractLocationRangeMap<L,T> extends RangeDB<L,T> implements Serializable
+public class AbstractLocationRangeMap<L,T> extends RangeMap<L,T>
 {
     protected static final long serialVersionUID = 1L;
 
@@ -39,7 +38,7 @@ public class AbstractLocationRangeMap<L,T> extends RangeDB<L,T> implements Seria
 
     protected AbstractLocationRangeMap(AbstractLocationSupport support)
     {
-        super(support, support.longitudeOrder());
+        super(support.longitudeOrder());
         this.latitudeSupplier = support.latitudeSupplier;
     }
 

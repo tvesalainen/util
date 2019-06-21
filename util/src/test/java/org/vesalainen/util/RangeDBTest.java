@@ -35,7 +35,7 @@ public class RangeDBTest
     @Test
     public void test1()
     {
-        RangeDB<Integer,String> db = new RangeDB<>();
+        RangeMap<Integer,String> db = new RangeMap<>();
         List<String> list;
         list = db.overlapping(12, 100).collect(Collectors.toList());
         assertEquals(0, list.size());

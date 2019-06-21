@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -24,8 +25,9 @@ import java.util.Objects;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class SimpleRange<T> implements Range<T>
+public class SimpleRange<T> implements Range<T>, Serializable
 {
+    protected static final long serialVersionUID = 1L;
     protected T from;
     protected T to;
     protected Comparator<T> comparator;

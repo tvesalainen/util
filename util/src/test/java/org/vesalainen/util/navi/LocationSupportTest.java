@@ -24,29 +24,17 @@ import org.vesalainen.test.Asserts;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationBoundingBoxTest
+public class LocationSupportTest
 {
     
-    public LocationBoundingBoxTest()
+    public LocationSupportTest()
     {
     }
 
     @Test
-    public void test()
+    public void testSerializable()
     {
-                                                        //n   e    s   w
-        LocationBoundingBox bb1 = new LocationBoundingBox(30, 170, 20, 160);
-        assertEquals(30, bb1.getNorth(), 1e-10);
-        assertEquals(170, bb1.getEast(), 1e-10);
-        assertEquals(20, bb1.getSouth(), 1e-10);
-        assertEquals(160, bb1.getWest(), 1e-10);
-        Location southWest = bb1.getSouthWest();
-        assertEquals(20, southWest.getLatitude(), 1e-10);
-        assertEquals(160, southWest.getLongitude(), 1e-10);
-        Location northEast = bb1.getNorthEast();
-        assertEquals(30, northEast.getLatitude(), 1e-10);
-        assertEquals(170, northEast.getLongitude(), 1e-10);
-        Asserts.assertSerializable(bb1);
+        Asserts.assertSerializable(LocationSupport.LOCATION_SUPPORT);
     }
     
 }

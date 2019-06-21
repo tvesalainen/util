@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.test.Asserts;
 
 /**
  *
@@ -36,6 +37,7 @@ public class LocationMapTest
     public void test1()
     {
         LocationMap<Location> map = makeMap();
+        Asserts.assertSerializable(map);
         LocationBoundingBox bb = new LocationBoundingBox("59,24,60,26");
         List<Location> list = map.strickValues(bb).collect(Collectors.toList());
         assertEquals(6, list.size());

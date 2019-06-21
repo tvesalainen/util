@@ -16,19 +16,21 @@
  */
 package org.vesalainen.util.navi;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.test.Asserts;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class LocationRangeDBTest
+public class LocationRangeMapTest
 {
     
-    public LocationRangeDBTest()
+    public LocationRangeMapTest()
     {
     }
 
@@ -53,6 +55,8 @@ public class LocationRangeDBTest
         
         list  = db.overlapping(bb3).collect(Collectors.toList());
         assertEquals(1, list.size());
+        
+        Asserts.assertSerializable(db);
     }
     
 }
