@@ -26,8 +26,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
+import org.vesalainen.util.navi.AbstractLocationSupport.CoordinateSupplier;
 
 /**
  * AbstractLocationMap is a base class for location related data store. Location
@@ -38,8 +38,8 @@ public class AbstractLocationMap<L,T> implements Comparator<Entry<L,T>>, Seriali
 {
     protected static final long serialVersionUID = 1L;
 
-    private ToDoubleFunction<L> longitudeSupplier;
-    private ToDoubleFunction<L> latitudeSupplier;
+    private CoordinateSupplier<L> longitudeSupplier;
+    private CoordinateSupplier<L> latitudeSupplier;
     private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private ReadLock readLock = rwLock.readLock();
     private WriteLock writeLock = rwLock.writeLock();

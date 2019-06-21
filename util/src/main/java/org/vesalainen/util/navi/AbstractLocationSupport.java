@@ -18,8 +18,6 @@ package org.vesalainen.util.navi;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.function.BiFunction;
-import java.util.function.ToDoubleFunction;
 
 /**
  *
@@ -30,10 +28,10 @@ public class AbstractLocationSupport<L> implements Serializable
 {
     protected static final long serialVersionUID = 1L;
 
-    protected ToDoubleFunction<L> longitudeSupplier;
-    protected ToDoubleFunction<L> latitudeSupplier;
+    protected CoordinateSupplier<L> longitudeSupplier;
+    protected CoordinateSupplier<L> latitudeSupplier;
     protected LocationFactory<L> locationFactory;
-    protected BiFunction<L,L,BoundingBox<L>> boundingBoxFactory;
+    protected BoundingBoxFactory<L> boundingBoxFactory;
 
     public AbstractLocationSupport()
     {
@@ -45,10 +43,10 @@ public class AbstractLocationSupport<L> implements Serializable
     }
 
     public AbstractLocationSupport(
-            ToDoubleFunction<L> longitudeSupplier, 
-            ToDoubleFunction<L> latitudeSupplier, 
+            CoordinateSupplier<L> longitudeSupplier, 
+            CoordinateSupplier<L> latitudeSupplier, 
             LocationFactory<L> locationFactory,
-            BiFunction<L,L,BoundingBox<L>> boundingBoxFactory
+            BoundingBoxFactory<L> boundingBoxFactory
     )
     {
         this.longitudeSupplier = longitudeSupplier;
@@ -82,8 +80,18 @@ public class AbstractLocationSupport<L> implements Serializable
     }
     
     @FunctionalInterface
-    public interface LocationFactory<T>
+    public interface CoordinateSupplier<T> extends Serializable
+    {
+        double applyAsDouble(T item);
+    }
+    @FunctionalInterface
+    public interface LocationFactory<T> extends Serializable
     {
         T create(double latitude, double longitude);
+    }
+    @FunctionalInterface
+    public interface BoundingBoxFactory<T> extends Serializable
+    {
+        BoundingBox<T> apply(T sw, T ne);
     }
 }

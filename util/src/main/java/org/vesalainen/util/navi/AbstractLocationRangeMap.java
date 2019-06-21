@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.vesalainen.util.Range;
 import org.vesalainen.util.RangeDB;
 import org.vesalainen.util.RangeDB.Entry;
+import org.vesalainen.util.navi.AbstractLocationSupport.CoordinateSupplier;
 
 /**
  *
@@ -35,7 +36,7 @@ public class AbstractLocationRangeMap<L,T> extends RangeDB<L,T> implements Seria
 {
     protected static final long serialVersionUID = 1L;
 
-    private ToDoubleFunction<L> latitudeSupplier;
+    private CoordinateSupplier<L> latitudeSupplier;
 
     protected AbstractLocationRangeMap(AbstractLocationSupport support)
     {
