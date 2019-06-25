@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.test.Asserts;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -42,16 +43,25 @@ public class LocationRangeMapTest
         LocationBoundingBox bb3 = new LocationBoundingBox(-10, -170, -20, 170);
         LocationBoundingBox bb4 = new LocationBoundingBox(-30, -160, -40, -170);
         
-        LocationRangeMap<String> db = new LocationRangeMap<>();
-        db.put(bb1, "bb1");
-        db.put(bb2, "bb2");
-        db.put(bb3, "bb3");
-        db.put(bb4, "bb4"); 
+        LocationRangeMap<LocationBoundingBox> db = new LocationRangeMap<>();
+        db.put(bb1, bb1);
+        db.put(bb2, bb2);
+        db.put(bb3, bb3);
+        db.put(bb4, bb4); 
         
-        List<String> list;
+        List<LocationBoundingBox> all = CollectionHelp.create(bb1, bb2, bb3, bb4);
+        List<LocationBoundingBox> list;
         
         list  = db.overlapping(bb2).collect(Collectors.toList());
-        assertEquals(1, list.size());
+        for (LocationBoundingBox bb : list)
+        {
+            assertTrue(bb2.isIntersecting(bb));
+        }
+        all.removeAll(list);
+        for (LocationBoundingBox bb : all)
+        {
+            assertFalse(bb2.isIntersecting(bb));
+        }
         
         list  = db.overlapping(bb3).collect(Collectors.toList());
         assertEquals(1, list.size());
