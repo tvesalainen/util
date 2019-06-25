@@ -78,9 +78,8 @@ public class AbstractLocationRangeMap<L,T> extends RangeMap<L,T>
         double north = latitudeSupplier.applyAsDouble(range.getTo());
         return super.overlappingEntries(range).filter((Entry e)->
         {
-            Range<L> r = e.getRange();
-            double s = latitudeSupplier.applyAsDouble(r.getFrom());
-            double n = latitudeSupplier.applyAsDouble(r.getTo());
+            double s = latitudeSupplier.applyAsDouble(range.getFrom());
+            double n = latitudeSupplier.applyAsDouble(range.getTo());
             return 
                     (s >= south && s <= north) ||
                     (n >= south && n <= north) ||
