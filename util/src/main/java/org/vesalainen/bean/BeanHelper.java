@@ -726,7 +726,24 @@ public class BeanHelper
     {
         return "is" + upper(fieldName);
     }
-
+    /**
+     * Return true if method name starts with get.
+     * @param method
+     * @return 
+     */
+    public static final boolean isGetter(Method method)
+    {
+        return method.getName().startsWith("get");
+    }
+    /**
+     * Return true if method name starts with set.
+     * @param method
+     * @return 
+     */
+    public static final boolean isSetter(Method method)
+    {
+        return method.getName().startsWith("set");
+    }
     /**
      * property -> setField
      *
