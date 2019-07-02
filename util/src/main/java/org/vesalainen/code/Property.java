@@ -30,4 +30,5 @@ import java.lang.annotation.Target;
 public @interface Property
 {
     String value() default "";
+    int ordinal() default 0;
 }
