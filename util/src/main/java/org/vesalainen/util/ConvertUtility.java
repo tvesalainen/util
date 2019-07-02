@@ -315,6 +315,15 @@ public class ConvertUtility
                     }
                     throw new IllegalArgumentException("Unknown primitive type '" + expectedReturnType+"'");
                 }
+                if (Character.class.equals(expectedReturnType))
+                {
+                    if (string.length() != 1)
+                    {
+                        throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
+                    }
+                    Character cc = string.charAt(0);
+                    return (T)cc;
+                }
                 if (expectedReturnType.isEnum())
                 {
                     return (T) Enum.valueOf((Class<Enum>) expectedReturnType, string);
