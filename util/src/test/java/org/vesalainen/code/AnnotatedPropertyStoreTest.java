@@ -16,10 +16,13 @@
  */
 package org.vesalainen.code;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import static java.lang.invoke.MethodHandles.filterReturnValue;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -37,19 +40,7 @@ public class AnnotatedPropertyStoreTest
     }
 
     @Test
-    public void test0() throws NoSuchMethodException, IllegalAccessException, Throwable
-    {
-        MethodHandle cat = lookup().findVirtual(String.class,
-                "concat", methodType(String.class, String.class));
-        MethodHandle length = lookup().findVirtual(String.class,
-                "length", methodType(int.class));
-        System.out.println((String) cat.invokeExact("x", "y")); // xy
-        MethodHandle f0 = filterReturnValue(cat, length);
-        System.out.println((int) f0.invokeExact("x", "y")); // 2
-    }
-
-    @Test
-    public void test1()
+    public void test1() throws IOException
     {
         APS aps = new APS();
 
@@ -61,8 +52,9 @@ public class AnnotatedPropertyStoreTest
 
         assertArrayEquals(exp, prefixes);
 
-        aps.set("string", "ääkkönen");
-        assertEquals("ääkkönen", aps.getObject("string"));
+        String testStr = "ääkkönen\r\nloppu";
+        aps.set("string", testStr);
+        assertEquals(testStr, aps.getObject("string"));
 
         aps.set("boolean", true);
         assertTrue(aps.getBoolean("boolean"));
@@ -94,131 +86,13 @@ public class AnnotatedPropertyStoreTest
         APS aps2 = new APS(aps);
         assertEquals(aps, aps2);
 
+        Path tmp = Files.createTempFile(null, null);
+        aps.store(tmp);
+        APS aps3 = new APS(tmp);
+        assertEquals(aps, aps3);
+        APS aps4 = AnnotatedPropertyStore.getInstance(tmp);
+        assertEquals(aps, aps4);
+        Files.deleteIfExists(tmp);
     }
 
-    class APS extends AnnotatedPropertyStore
-    {
-
-        @Property(value = "string", ordinal = 1)
-        String s;
-        @Property(value = "boolean", ordinal = 2)
-        boolean b;
-        @Property(value = "byte", ordinal = 3)
-        byte by;
-        @Property(value = "char", ordinal = 4)
-        char cc;
-        @Property(value = "short", ordinal = 5)
-        short sh;
-        @Property(value = "long", ordinal = 6)
-        long ll;
-        @Property(value = "double", ordinal = 7)
-        double db;
-        @Property(ordinal = 8)
-        float foo;
-        @Property(value = "bar", ordinal = 9)
-        float ba;
-        private int i;
-
-        public APS(AnnotatedPropertyStore aps)
-        {
-            super(aps);
-        }
-
-        public APS()
-        {
-        }
-
-        @Property(ordinal = 10)
-        public void setGoo(int i)
-        {
-            this.i = i;
-        }
-        @Property(ordinal = 10)
-        public int getGoo()
-        {
-            return i;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 7;
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-            {
-                return true;
-            }
-            if (obj == null)
-            {
-                return false;
-            }
-            if (getClass() != obj.getClass())
-            {
-                return false;
-            }
-            final APS other = (APS) obj;
-            if (this.b != other.b)
-            {
-                return false;
-            }
-            if (this.by != other.by)
-            {
-                return false;
-            }
-            if (this.cc != other.cc)
-            {
-                return false;
-            }
-            if (this.sh != other.sh)
-            {
-                return false;
-            }
-            if (this.ll != other.ll)
-            {
-                return false;
-            }
-            if (Double.doubleToLongBits(this.db) != Double.doubleToLongBits(other.db))
-            {
-                return false;
-            }
-            if (Float.floatToIntBits(this.foo) != Float.floatToIntBits(other.foo))
-            {
-                return false;
-            }
-            if (Float.floatToIntBits(this.ba) != Float.floatToIntBits(other.ba))
-            {
-                return false;
-            }
-            if (this.i != other.i)
-            {
-                return false;
-            }
-            if (!Objects.equals(this.s, other.s))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public void start(String reason)
-        {
-        }
-
-        @Override
-        public void rollback(String reason)
-        {
-        }
-
-        @Override
-        public void commit(String reason)
-        {
-        }
-
-    }
 }

@@ -16,12 +16,19 @@
  */
 package org.vesalainen.code;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,19 +36,29 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
+import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * AnnotatedPropertyStore is a PropertyGetter/Setter implementation which 
+ * automates getting and or setting properties which are either accessed by
+ * fields or methods. Fields and methods must be annotated with @Property and
+ * they must have public or packet private access.
+ * 
+ * <p>Loading and storing to file implements a subset of properties features.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AnnotatedPropertyStore extends JavaLogging implements PropertyGetter, PropertySetter, Transactional
+public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
 {
+    private static final String PREFIX = "#AnnotatedPropertyStore:";
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
     
+    private Map<String,Class<?>> types;
     private Map<String,MethodHandle> setters;
     private Map<String,MethodHandle> getters;
     private Map<String,MethodHandle> copiers;
@@ -52,9 +69,13 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
         this();
         copyFrom(aps);
     }
+    public AnnotatedPropertyStore(Path path) throws IOException
+    {
+        this();
+        load(path);
+    }    
     public AnnotatedPropertyStore()
     {
-        super(AnnotatedPropertyStore.class);
         Class<? extends AnnotatedPropertyStore> cls = this.getClass();
         Inner inner = INNERS.get(cls);
         if (inner != null)
@@ -64,6 +85,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
         else
         {
             Set<Prop> props = new HashSet<>();
+            types = new HashMap<>();
             setters = new HashMap<>();
             getters = new HashMap<>();
             copiers = new HashMap<>();
@@ -81,6 +103,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
                             name = field.getName();
                         }
                         props.add(new Prop(property, name));
+                        types.put(name, field.getType());
                         MethodHandle mhg = lookup.unreflectGetter(field);
                         MethodType mtg = MethodType.methodType(field.getType(), AnnotatedPropertyStore.class);
                         MethodHandle getter = mhg.asType(mtg);
@@ -113,6 +136,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
                             MethodType mt = MethodType.methodType(method.getReturnType(), AnnotatedPropertyStore.class);
                             MethodHandle getter = mh.asType(mt);
                             getters.put(name, getter);
+                            types.put(name, method.getReturnType());
                         }
                         else
                         {
@@ -127,6 +151,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
                                 MethodType mt = MethodType.methodType(void.class, AnnotatedPropertyStore.class, parameterTypes[0]);
                                 MethodHandle setter = mh.asType(mt);
                                 setters.put(name, setter);
+                                types.put(name, parameterTypes[0]);
                             }
                             else
                             {
@@ -161,27 +186,101 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
         return properties;
     }
 
-    public final void copyFrom(AnnotatedPropertyStore oth)
+    public final void copyFrom(AnnotatedPropertyStore from)
     {
-        if (!this.getClass().isAssignableFrom(oth.getClass()))
+        if (!this.getClass().isAssignableFrom(from.getClass()))
         {
-            throw new IllegalArgumentException("can't copy from "+oth);
+            throw new IllegalArgumentException("can't copy from "+from);
         }
-        for (String property : properties)
+        for (Map.Entry<String, MethodHandle> entry : copiers.entrySet())
         {
-            MethodHandle copier = copiers.get(property);
-            if (copier == null)
-            {
-                throw new IllegalArgumentException(property+" missing getter and/or setter");
-            }
+            MethodHandle copier = entry.getValue();
             try
             {
-                copier.invokeExact(this, oth);
+                copier.invokeExact(this, from);
             }
             catch (Throwable ex)
             {
-                throw new IllegalArgumentException("with "+property, ex);
+                throw new IllegalArgumentException("with "+entry.getKey(), ex);
             }
+        }
+    }
+    public static <T extends AnnotatedPropertyStore> T getInstance(Path path) throws IOException
+    {
+        try (BufferedReader br = Files.newBufferedReader(path))
+        {
+            String line = br.readLine();
+            if (line.startsWith(PREFIX))
+            {
+                String className = line.substring(PREFIX.length());
+                try
+                {
+                    Class<T> cls = (Class<T>) Class.forName(className);
+                    Constructor<T> constructor = cls.getConstructor();
+                    T aps = constructor.newInstance();
+                    aps.load(br);
+                    return aps;
+                }
+                catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+                {
+                    throw new IllegalArgumentException(ex);
+                }
+            }
+            else
+            {
+                throw new IllegalArgumentException(line+" wrong start of file");
+            }
+        }
+    }
+    public final void load(Path path) throws IOException
+    {
+        try (BufferedReader br = Files.newBufferedReader(path))
+        {
+            load(br);
+        }
+    }
+    public final void load(BufferedReader br) throws IOException
+    {
+        String line = br.readLine();
+        checkClass(line);
+        while (line != null)
+        {
+            line = line.trim();
+            if (!line.startsWith("#"))
+            {
+                String[] split = line.split("=", 2);
+                String property = split[0];
+                String value = "";
+                if (split.length == 2)
+                {
+                    value = unescape(split[1].trim());
+                }
+                Class<?> type = types.get(property);
+                Object newValue = ConvertUtility.convert(type, value);
+                set(property, newValue);
+            }
+            line = br.readLine();
+        }
+    }
+    public void store(Path path) throws IOException
+    {
+        try (BufferedWriter bw = Files.newBufferedWriter(path, WRITE, CREATE))
+        {
+            store(bw);
+        }
+    }
+    public void store(Appendable out) throws IOException
+    {
+        out.append(PREFIX);
+        out.append(this.getClass().getName());
+        out.append('\n');
+        for (String property : properties)
+        {
+            out.append(property);
+            out.append('=');
+            Object value = getObject(property);
+            out.append(escape(value.toString()));
+            out.append('\n');
         }
     }
     @Override
@@ -561,8 +660,35 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
             throw new IllegalArgumentException(property+" has no method handler");
         }
     }
+
+    private String escape(String str)
+    {
+        return str
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                ;
+    }
+    private String unescape(String str)
+    {
+        return str
+                .replace("\\r", "\r")
+                .replace("\\n", "\n")
+                ;
+    }
+
+    private void checkClass(String line)
+    {
+        if (line.startsWith(PREFIX))
+        {
+            if (!this.getClass().getName().equals(line.substring(PREFIX.length())))
+            {
+                throw new IllegalArgumentException(line+" wrong class");
+            }
+        }
+    }
     private static class Inner
     {
+        private Map<String,Class<?>> types;
         private Map<String,MethodHandle> setters;
         private Map<String,MethodHandle> getters;
         private Map<String,MethodHandle> copiers;
@@ -570,6 +696,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
 
         public Inner(AnnotatedPropertyStore aps)
         {
+            this.types = aps.types;
             this.setters = aps.setters;
             this.getters = aps.getters;
             this.copiers = aps.copiers;
@@ -578,6 +705,7 @@ public abstract class AnnotatedPropertyStore extends JavaLogging implements Prop
         
         private void populate(AnnotatedPropertyStore aps)
         {
+            aps.types = this.types;
             aps.getters = this.getters;
             aps.setters = this.setters;
             aps.copiers = this.copiers;
