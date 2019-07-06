@@ -26,7 +26,9 @@ import java.util.Objects;
  */
 public class APS extends AnnotatedPropertyStore
 {
-    
+    enum E {A1, B2, C3 }; 
+    @Property(value = "enum", ordinal = 0)
+    E e;
     @Property(value = "string", ordinal = 1)
     String s;
     @Property(value = "boolean", ordinal = 2)
@@ -71,72 +73,6 @@ public class APS extends AnnotatedPropertyStore
     public int getGoo()
     {
         return i;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int hash = 7;
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        if (getClass() != obj.getClass())
-        {
-            return false;
-        }
-        final APS other = (APS) obj;
-        if (this.b != other.b)
-        {
-            return false;
-        }
-        if (this.by != other.by)
-        {
-            return false;
-        }
-        if (this.cc != other.cc)
-        {
-            return false;
-        }
-        if (this.sh != other.sh)
-        {
-            return false;
-        }
-        if (this.ll != other.ll)
-        {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.db) != Double.doubleToLongBits(other.db))
-        {
-            return false;
-        }
-        if (Float.floatToIntBits(this.foo) != Float.floatToIntBits(other.foo))
-        {
-            return false;
-        }
-        if (Float.floatToIntBits(this.ba) != Float.floatToIntBits(other.ba))
-        {
-            return false;
-        }
-        if (this.i != other.i)
-        {
-            return false;
-        }
-        if (!Objects.equals(this.s, other.s))
-        {
-            return false;
-        }
-        return true;
     }
 
 }

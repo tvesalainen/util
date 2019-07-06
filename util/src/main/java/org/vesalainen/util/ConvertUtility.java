@@ -286,12 +286,18 @@ public class ConvertUtility
                     }
                     if (char.class.equals(expectedReturnType))
                     {
-                        if (string.length() != 1)
+                        Character cc;
+                        switch (string.length())
                         {
-                            throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
+                            case 0:
+                                cc = Character.valueOf((char)0);
+                                return (T)cc;
+                            case 1:
+                                cc = string.charAt(0);
+                                return (T)cc;
+                            default:
+                                throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
                         }
-                        Character cc = string.charAt(0);
-                        return (T)cc;
                     }
                     if (short.class.equals(expectedReturnType))
                     {
@@ -317,12 +323,18 @@ public class ConvertUtility
                 }
                 if (Character.class.equals(expectedReturnType))
                 {
-                    if (string.length() != 1)
+                    Character cc;
+                    switch (string.length())
                     {
-                        throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
+                        case 0:
+                            cc = Character.valueOf((char)0);
+                            return (T)cc;
+                        case 1:
+                            cc = string.charAt(0);
+                            return (T)cc;
+                        default:
+                            throw new IllegalArgumentException("Cannot convert '" + string + "' to char");
                     }
-                    Character cc = string.charAt(0);
-                    return (T)cc;
                 }
                 if (expectedReturnType.isEnum())
                 {

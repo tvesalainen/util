@@ -39,8 +39,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import static javax.lang.model.element.Modifier.*;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
@@ -49,6 +51,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -58,9 +61,10 @@ import org.vesalainen.util.Transactional;
 @SupportedAnnotationTypes({
     "org.vesalainen.code.BeanProxyClass",
     "org.vesalainen.code.TransactionalSetterClass",
-    "org.vesalainen.code.PropertyDispatcherClass"
+    "org.vesalainen.code.PropertyDispatcherClass",
+    "org.vesalainen.code.FunctionalSetter"
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class Processor extends AbstractProcessor
 {
     private static final Set<String> classnames = new HashSet<>();
@@ -100,6 +104,9 @@ public class Processor extends AbstractProcessor
                         case "org.vesalainen.code.PropertyDispatcherClass":
                             generatePropertyDispatcher(type, processingEnv);
                             break;
+                        case "org.vesalainen.code.FunctionalSetter":
+                            generateFunctionalSetter(type, processingEnv);
+                            break;
                         default:
                             throw new UnsupportedOperationException(te.getQualifiedName().toString()+" not supported");
                     }
@@ -116,6 +123,100 @@ public class Processor extends AbstractProcessor
         return true;
     }
 
+    private void generateFunctionalSetter(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
+    {
+        FunctionalSetter annotation = cls.getAnnotation(FunctionalSetter.class);
+        if (annotation == null)
+        {
+            throw new IllegalArgumentException("@"+FunctionalSetter.class.getSimpleName()+" missing in cls");
+        }
+        Name qualifiedName = cls.getQualifiedName();
+        String classname = qualifiedName.toString()+"Impl";
+        List<? extends ExecutableElement> methods = getMethods(cls);
+        methods.removeIf((ExecutableElement m)->
+        {
+            List<? extends VariableElement> parameters = m.getParameters();
+            TypeMirror returnType = m.getReturnType();
+            String name = m.getSimpleName().toString();
+            return !(
+                    (name.startsWith("set") || name.startsWith("start") || name.startsWith("commit") || name.startsWith("rollback")) && 
+                    parameters.size() == 1 &&
+                    returnType.getKind() == VOID
+                    );
+        });
+        Filer filer = processingEnv.getFiler();
+        JavaFileObject sourceFile = filer.createSourceFile(classname);
+        try (Writer writer = sourceFile.openWriter())
+        {
+            CodePrinter mp = new CodePrinter(writer);
+            int idx = classname.lastIndexOf('.');
+            String simplename = classname.substring(idx+1);
+            String pgk = classname.substring(0, idx);
+
+            List<? extends TypeMirror> interfaces = cls.getInterfaces();
+            mp.println("package "+pgk+";");
+            mp.println("import java.lang.invoke.MethodHandle;");
+            mp.println("import javax.annotation.Generated;");
+
+            mp.println("@Generated(");
+            mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
+            mp.println("\t, comments=\"Generated for "+cls+"\"");
+            Date date = new Date();
+            mp.println("\t, date=\""+date+"\"");
+            mp.println(")");
+            CodePrinter cp = mp.createClass(EnumSet.of(PUBLIC), simplename, cls);
+            for (ExecutableElement m : methods)
+            {
+                String property = getProperty(m);
+                List<? extends VariableElement> parameters = m.getParameters();
+                String name = m.getSimpleName().toString();
+                VariableElement ve = parameters.get(0);
+                TypeMirror tm = ve.asType();
+                TypeKind tk = tm.getKind();
+                String typename = getTypename(tk);
+                cp.print("MethodHandle ");
+                cp.print(property);
+                cp.println("Handle = NO_OP;");
+                
+                // array
+                cp.print(tm.toString());
+                cp.print("[]");
+                cp.print(" ");
+                cp.print(property);
+                cp.print(" = new ");
+                cp.print(tm.toString());
+                cp.println("[2];");
+            }
+            for (ExecutableElement m : methods)
+            {
+                List<? extends VariableElement> parameters = m.getParameters();
+                VariableElement ve = parameters.get(0);
+                cp.println("@Override");
+                String name = m.getSimpleName().toString();
+                EnumSet<Modifier> modifiers = EnumSet.of(PUBLIC);
+                CodePrinter cm = cp.createMethod(modifiers, m);
+                String property = getProperty(m);
+
+                cm.println("try");
+                cm.println("{");
+                CodePrinter cs = cm.createSub("}");
+                cs.print("this.");
+                cs.print(property);
+                cs.print("Handle.invokeExact(");
+                cs.print(ve.getSimpleName());
+                cs.println(");");
+                cs.flush();
+                cm.println("catch (Throwable ex)");
+                cm.println("{");
+                CodePrinter cc = cm.createSub("}");
+                cc.println("throw new IllegalArgumentException(ex);");
+                cc.flush();
+                cm.flush();
+            }
+            cp.flush();
+        }
+    }
+
     private void generatePropertyDispatcher(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
     {
         PropertyDispatcherClass annotation = cls.getAnnotation(PropertyDispatcherClass.class);
@@ -123,9 +224,9 @@ public class Processor extends AbstractProcessor
         {
             throw new IllegalArgumentException("@"+PropertyDispatcherClass.class.getSimpleName()+" missing in cls");
         }
-        TypeElement transactional = elements.getTypeElement(Transactional.class.getCanonicalName());
+        Name qualifiedName = cls.getQualifiedName();
+        String value = qualifiedName.toString()+"Impl";
         Filer filer = processingEnv.getFiler();
-        String value = annotation.value();
         JavaFileObject sourceFile = filer.createSourceFile(value);
         try (Writer writer = sourceFile.openWriter())
         {
@@ -355,7 +456,8 @@ public class Processor extends AbstractProcessor
         }
         TypeElement transactional = elements.getTypeElement(Transactional.class.getCanonicalName());
         Filer filer = processingEnv.getFiler();
-        String value = annotation.value();
+        Name qualifiedName = cls.getQualifiedName();
+        String value = qualifiedName.toString()+"Impl";
         JavaFileObject sourceFile = filer.createSourceFile(value);
         try (Writer writer = sourceFile.openWriter())
         {
@@ -538,7 +640,8 @@ public class Processor extends AbstractProcessor
             throw new IllegalArgumentException("@"+BeanProxyClass.class.getSimpleName()+" missing in cls");
         }
         Filer filer = processingEnv.getFiler();
-        String value = annotation.value();
+        Name qualifiedName = cls.getQualifiedName();
+        String value = qualifiedName.toString()+"Impl";
         JavaFileObject sourceFile = filer.createSourceFile(value);
         try (Writer writer = sourceFile.openWriter())
         {
@@ -672,10 +775,22 @@ public class Processor extends AbstractProcessor
         return name.substring(3)+'_'+typeString;
     }
 
+    private boolean isSetter(ExecutableElement m)
+    {
+        String name = m.getSimpleName().toString();
+        return CharSequences.startsWith(name, "set");
+    }
     private String getProperty(ExecutableElement m)
     {
         String name = m.getSimpleName().toString();
-        return Character.toLowerCase(name.charAt(3))+name.substring(4);
+        if (CharSequences.startsWith(name, "get") || CharSequences.startsWith(name, "set"))
+        {
+            return Character.toLowerCase(name.charAt(3))+name.substring(4);
+        }
+        else
+        {
+            return name.toString();
+        }
     }
 
     private String getter(TypeKind kind)

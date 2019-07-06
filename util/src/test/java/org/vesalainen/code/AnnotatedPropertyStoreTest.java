@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.code.APS.E;
+import static org.vesalainen.code.APS.E.B2;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -43,14 +45,21 @@ public class AnnotatedPropertyStoreTest
     public void test1() throws IOException
     {
         APS aps = new APS();
+        Path tmp = Files.createTempFile(null, null);
+        aps.store(tmp);
+        APS aps0 = new APS(tmp);
+        assertTrue(aps.isSame(aps0));
 
         String[] prefixes = aps.getPrefixes();
         String[] exp = new String[]
         {
-            "string", "boolean", "byte", "char", "short", "long", "double", "foo", "bar", "goo"
+            "enum", "string", "boolean", "byte", "char", "short", "long", "double", "foo", "bar", "goo"
         };
 
         assertArrayEquals(exp, prefixes);
+
+        aps.set("enum", B2);
+        assertEquals(B2, aps.getObject("enum"));
 
         String testStr = "ääkkönen\r\nloppu";
         aps.set("string", testStr);
@@ -84,14 +93,13 @@ public class AnnotatedPropertyStoreTest
         assertEquals(123, aps.i);
 
         APS aps2 = new APS(aps);
-        assertEquals(aps, aps2);
+        assertTrue(aps.isSame(aps2));
 
-        Path tmp = Files.createTempFile(null, null);
         aps.store(tmp);
         APS aps3 = new APS(tmp);
-        assertEquals(aps, aps3);
+        assertTrue(aps.isSame(aps3));
         APS aps4 = AnnotatedPropertyStore.getInstance(tmp);
-        assertEquals(aps, aps4);
+        assertTrue(aps.isSame(aps4));
         Files.deleteIfExists(tmp);
     }
 

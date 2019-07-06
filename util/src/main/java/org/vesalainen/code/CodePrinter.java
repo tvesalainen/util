@@ -98,7 +98,7 @@ public class CodePrinter
         print(name+" ");
         if (superClass != null)
         {
-            print("extends "+superClass.getQualifiedName());
+            print("extends "+superClass.getSimpleName());
         }
         if (interfaces != null && interfaces.length > 0)
         {

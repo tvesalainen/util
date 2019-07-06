@@ -36,13 +36,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.util.ConvertUtility;
-import org.vesalainen.util.Transactional;
-import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * AnnotatedPropertyStore is a PropertyGetter/Setter implementation which 
@@ -250,7 +246,7 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
             {
                 String[] split = line.split("=", 2);
                 String property = split[0];
-                String value = "";
+                String value = null;
                 if (split.length == 2)
                 {
                     value = unescape(split[1].trim());
@@ -277,11 +273,56 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
         for (String property : properties)
         {
             out.append(property);
-            out.append('=');
             Object value = getObject(property);
-            out.append(escape(value.toString()));
+            if (value != null)
+            {
+                out.append('=');
+                out.append(escape(value.toString()));
+            }
             out.append('\n');
         }
+    }
+    /**
+     * Hash code is calculated by using all property values
+     * @return 
+     */
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        for (String property : properties)
+        {
+            hash += Objects.hashCode(getObject(property));
+        }
+        return hash;
+    }
+    /**
+     * Returns true if objects have same class and all properties are equal.
+     * @param aps
+     * @return 
+     */
+    public boolean isSame(AnnotatedPropertyStore aps)
+    {
+        if (this == aps)
+        {
+            return true;
+        }
+        if (aps == null)
+        {
+            return false;
+        }
+        if (getClass() != aps.getClass())
+        {
+            return false;
+        }
+        for (String property : properties)
+        {
+            if (!Objects.equals(getObject(property), aps.getObject(property)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
     @Override
     public boolean getBoolean(String property)
