@@ -42,7 +42,6 @@ import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
@@ -176,16 +175,14 @@ public class Processor extends AbstractProcessor
                 String typename = getTypename(tk);
                 cp.print("MethodHandle ");
                 cp.print(property);
-                cp.println("Handle = NO_OP;");
+                cp.println("Handle;");
                 
                 // array
                 cp.print(tm.toString());
                 cp.print("[]");
                 cp.print(" ");
                 cp.print(property);
-                cp.print(" = new ");
-                cp.print(tm.toString());
-                cp.println("[2];");
+                cp.println(";");
             }
             for (ExecutableElement m : methods)
             {

@@ -19,16 +19,19 @@ package org.vesalainen.code;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.IdentityArraySet;
 import org.vesalainen.util.IdentityHashMapList;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.Transactional;
@@ -39,19 +42,16 @@ import org.vesalainen.util.Transactional;
  */
 public class AbstractFunctionalSetter implements Transactional
 {
-    public static final MethodHandle NO_OP;
-    public static final void noOp(){};
-    static
-    {
-        try
-        {
-            NO_OP = MethodHandles.lookup().findStatic(AbstractFunctionalSetter.class, "noOp", MethodType.methodType(void.class));
-        }
-        catch (NoSuchMethodException | IllegalAccessException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
-    }
+    public static final void noOp(boolean arg){};
+    public static final void noOp(byte arg){};
+    public static final void noOp(char arg){};
+    public static final void noOp(short arg){};
+    public static final void noOp(int arg){};
+    public static final void noOp(long arg){};
+    public static final void noOp(float arg){};
+    public static final void noOp(double arg){};
+    public static final <T> void noOp(T arg){};
+
     public static <T extends AbstractFunctionalSetter> T newInstance(Class<T> base)
     {
         try
@@ -66,7 +66,13 @@ public class AbstractFunctionalSetter implements Transactional
         }
     }
 
+    protected int VERSION;
+    protected List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
+    protected Set<Transactional> TRANSACTION_TARGETS = new IdentityArraySet<>();
+    private MethodHandle transactionAdder;
     private Map<String,MethodHandle> handleSetters = new HashMap<>();
+    private Map<String,MethodHandle> savers = new HashMap<>();
+    private Map<String,MethodHandle> arrayGetters = new HashMap<>();
     private MapList<String,MethodHandle> setters = new HashMapList<>();
     private MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
     private Map<String,Class<?>> types = new HashMap<>();
@@ -78,24 +84,47 @@ public class AbstractFunctionalSetter implements Transactional
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try
         {
+            Field versionField = AbstractFunctionalSetter.class.getDeclaredField("VERSION");
+            MethodHandle vfg = lookup.unreflectGetter(versionField);
+            MethodHandle versionFieldGetter = vfg.bindTo(this);
+            
+            MethodHandle addObject = lookup.findVirtual(Collection.class, "add", MethodType.methodType(boolean.class, Object.class));
+            MethodHandle addString = addObject.asType(MethodType.methodType(void.class, List.class, String.class));
+            transactionAdder = addString.bindTo(TRANSACTION_PROPERTIES);  // List.add(String) void
+
             for (Field field : cls.getDeclaredFields())
             {
-                String name = field.getName();
-                Class<?> type = field.getType();
-                if (type.isArray())
+                String property = field.getName();
+                if (!"VERSION".equals(property))
                 {
-                    types.put(name, type.getComponentType());
-                }
-                else
-                {
-                    name = name.substring(0, name.length()-6);
-                    MethodHandle mhs = lookup.unreflectSetter(field);
-                    MethodHandle setter = mhs.bindTo(this);
-                    handleSetters.put(name, setter);
+                    Class<?> type = field.getType();
+                    if (type.isArray())
+                    {
+                        types.put(property, type.getComponentType());
+                        Object value = Array.newInstance(type.getComponentType(), 2);
+                        field.set(this, value);
+                        MethodHandle aes = MethodHandles.arrayElementSetter(type);
+                        MethodHandle bound = aes.bindTo(value);
+                        savers.put(property, MethodHandles.foldArguments(bound, versionFieldGetter));
+                        MethodHandle aeg = MethodHandles.arrayElementGetter(type);
+                        MethodHandle arrayGetter = aeg.bindTo(value);
+                        arrayGetters.put(property, arrayGetter);
+                    }
+                    else
+                    {
+                        property = property.substring(0, property.length()-6);
+                        MethodHandle mhs = lookup.unreflectSetter(field);
+                        MethodHandle setter = mhs.bindTo(this);
+                        handleSetters.put(property, setter);
+                    }
                 }
             }
+            for (String property : handleSetters.keySet())
+            {
+                assignMethod(property, null);
+            }
         }
-        catch (IllegalAccessException ex)
+        catch (Throwable ex)
         {
             throw new IllegalArgumentException(ex);
         }
@@ -113,20 +142,26 @@ public class AbstractFunctionalSetter implements Transactional
                 {
                     throw new IllegalArgumentException(property+" not found");
                 }
-                if (type.isPrimitive())
+                try
                 {
-                    try
+                    MethodHandle mh;
+                    if (type.isPrimitive())
                     {
-                        MethodHandle mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, type));
-                        MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
-                        setters.add(property, bound);
-                        undoSetters.add(setter, bound);
-                        compile(property);
+                        mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, type));
                     }
-                    catch (NoSuchMethodException | IllegalAccessException ex)
+                    else
                     {
-                        throw new IllegalArgumentException(ex);
+                        mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, Object.class));
+                        mh = mh.asType(MethodType.methodType(void.class, setter.getClass(), String.class, type));
                     }
+                    MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
+                    setters.add(property, bound);
+                    undoSetters.add(setter, bound);
+                    compile(property);
+                }
+                catch (NoSuchMethodException | IllegalAccessException ex)
+                {
+                    throw new IllegalArgumentException(ex);
                 }
             }
         }
@@ -163,14 +198,13 @@ public class AbstractFunctionalSetter implements Transactional
     {
         try
         {
-            MethodHandle methodSetter = handleSetters.get(property);
             List<MethodHandle> list = setters.get(property);
-            MethodHandle setter = NO_OP;
+            MethodHandle setter = null;
             if (list != null)
             {
                 for (MethodHandle mh : list)
                 {
-                    if (setter == NO_OP)
+                    if (setter == null)
                     {
                         setter = mh;
                     }
@@ -180,7 +214,7 @@ public class AbstractFunctionalSetter implements Transactional
                     }
                 }
             }
-            methodSetter.invokeExact(setter);
+            assignMethod(property, setter);
         }
         catch (Throwable ex)
         {
@@ -205,4 +239,27 @@ public class AbstractFunctionalSetter implements Transactional
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    private void assignMethod(String property, MethodHandle setter) throws Throwable
+    {
+        MethodHandle methodSetter = handleSetters.get(property);
+        if (setter == null)
+        {
+            Class<?> type = types.get(property);
+            if (type.isPrimitive())
+            {
+                setter = MethodHandles.lookup().findStatic(AbstractFunctionalSetter.class, "noOp", MethodType.methodType(void.class, type));
+            }
+            else
+            {
+                setter = MethodHandles.lookup().findStatic(AbstractFunctionalSetter.class, "noOp", MethodType.methodType(void.class, Object.class));
+                setter = setter.asType(MethodType.methodType(void.class, type));
+            }
+        }
+        MethodHandle saver = savers.get(property);
+        MethodHandle folded = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
+        MethodHandle folded2 = MethodHandles.foldArguments(folded, saver);
+        methodSetter.invokeExact(folded2);
+    }
+    
 }

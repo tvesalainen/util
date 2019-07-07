@@ -34,10 +34,17 @@ public class FunctionalSetterTest
     public void test1()
     {
         FS fs = FS.newInstance(FS.class);
+        fs.setB((byte)1);
+        fs.setString("kukkuu");
         S s1 = new S();
         S s2 = new S();
         fs.addObserver(s1);
         fs.addObserver(s2);
+        fs.setB((byte)1);
+        fs.setString("kukkuu");
+        fs.removeObserver(s2);
+        fs.setB((byte)1);
+        fs.removeObserver(s1);
         fs.setB((byte)1);
     }
     
@@ -47,11 +54,11 @@ public class FunctionalSetterTest
         @Override
         public String[] getPrefixes()
         {
-            return new String[]{"b", "c", "d"};
+            return new String[]{"string", "b", "c", "d"};
         }
 
         @Override
-        public void set(String property, byte arg)
+        public void setProperty(String property, Object arg)
         {
             System.err.println(this+" "+property+"="+arg);
         }
