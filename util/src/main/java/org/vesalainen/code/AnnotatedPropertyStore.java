@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -181,7 +182,14 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
     {
         return properties;
     }
-
+    /**
+     * Returns unmodifiable map of unbound setters.
+     * @return 
+     */
+    public Map<String,MethodHandle> getSetters()
+    {
+        return Collections.unmodifiableMap(setters);
+    }
     public final void copyFrom(AnnotatedPropertyStore from)
     {
         if (!this.getClass().isAssignableFrom(from.getClass()))

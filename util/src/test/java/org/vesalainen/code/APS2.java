@@ -16,15 +16,29 @@
  */
 package org.vesalainen.code;
 
+import org.vesalainen.util.Transactional;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalSetter
-public abstract class FS extends InterfaceDispatcher implements TrIntf
+public class APS2 extends AnnotatedPropertyStore implements Transactional
 {
-    public static FS newInstance()
+    @Property byte b;
+    @Property String string;
+
+    @Override
+    public void start(String reason)
     {
-        return newInstance(FS.class);
+    }
+
+    @Override
+    public void rollback(String reason)
+    {
+    }
+
+    @Override
+    public void commit(String reason)
+    {
     }
 }

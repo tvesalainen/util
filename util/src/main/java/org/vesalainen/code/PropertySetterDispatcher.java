@@ -17,6 +17,7 @@
 package org.vesalainen.code;
 
 /**
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * A PropertySetter that can dispatch property set events to other PropertySetter's.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */

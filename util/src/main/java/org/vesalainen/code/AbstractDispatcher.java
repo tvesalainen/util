@@ -22,7 +22,7 @@ import static org.vesalainen.code.JavaType.DECLARED;
 import org.vesalainen.util.Transactional;
 
 /**
- *
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * @author Timo Vesalainen
  */
 public abstract class AbstractDispatcher implements Transactional

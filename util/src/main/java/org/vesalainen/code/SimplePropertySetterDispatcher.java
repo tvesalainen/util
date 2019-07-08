@@ -20,12 +20,11 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HashMapSet;
-import org.vesalainen.util.MapList;
 import org.vesalainen.util.MapSet;
 
 /**
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * SimplePropertySetterDispatcher is a PropertySetter which can dispatch property
  settings to several PropertySetters acting as observers.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>

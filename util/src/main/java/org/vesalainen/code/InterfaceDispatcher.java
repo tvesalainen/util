@@ -30,17 +30,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import static java.util.logging.Level.SEVERE;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.IdentityArraySet;
 import org.vesalainen.util.IdentityHashMapList;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.Transactional;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * InterfaceDispatcher implements fast dispatching of properties to
+ * AnnotatedPropertyStore or PropertySetter. If those targets implement
+ * Transactional the transactions are handled. Rollback will restore property
+ * values to last committed values.
+ * 
+ * <p>Usage: public class MyClass extends InterfaceDispatcher implements MyInterface
+ * <p>Compiler will generate MyClassImpl which you can get from MyClass.getInstance(MyClass.class).
+ * Calling any of those interface methods will have no effect before you
+ * add observer.
+ * <p>If observer implements Transactional frame set methods with transaction method.
+ * start() setx(x) setY(y) commit(). You can call rollback() instead of commit()
+ * which will restore properties to values after last commit.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractFunctionalSetter implements Transactional
+public class InterfaceDispatcher extends JavaLogging implements Transactional
 {
     public static final void noOp(boolean arg){};
     public static final void noOp(byte arg){};
@@ -51,8 +64,13 @@ public class AbstractFunctionalSetter implements Transactional
     public static final void noOp(float arg){};
     public static final void noOp(double arg){};
     public static final <T> void noOp(T arg){};
-
-    public static <T extends AbstractFunctionalSetter> T newInstance(Class<T> base)
+    /**
+     * Convenience method to get access to generated class. 
+     * @param <T>
+     * @param base
+     * @return 
+     */
+    public static <T extends InterfaceDispatcher> T newInstance(Class<T> base)
     {
         try
         {
@@ -68,7 +86,7 @@ public class AbstractFunctionalSetter implements Transactional
 
     protected int VERSION;
     protected List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
-    protected Set<Transactional> TRANSACTION_TARGETS = new IdentityArraySet<>();
+    private Set<Transactional> transactionTargets = new IdentityArraySet<>();
     private MethodHandle transactionAdder;
     private Map<String,MethodHandle> handleSetters = new HashMap<>();
     private Map<String,MethodHandle> savers = new HashMap<>();
@@ -76,15 +94,17 @@ public class AbstractFunctionalSetter implements Transactional
     private MapList<String,MethodHandle> setters = new HashMapList<>();
     private MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
     private Map<String,Class<?>> types = new HashMap<>();
+    private MapList<String,Transactional> transactionalProperties = new HashMapList<>();
     private ReentrantLock lock = new ReentrantLock();
     
-    public AbstractFunctionalSetter()
+    public InterfaceDispatcher()
     {
-        Class<? extends AbstractFunctionalSetter> cls = this.getClass();
+        super(InterfaceDispatcher.class);
+        Class<? extends InterfaceDispatcher> cls = this.getClass();
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try
         {
-            Field versionField = AbstractFunctionalSetter.class.getDeclaredField("VERSION");
+            Field versionField = InterfaceDispatcher.class.getDeclaredField("VERSION");
             MethodHandle vfg = lookup.unreflectGetter(versionField);
             MethodHandle versionFieldGetter = vfg.bindTo(this);
             
@@ -130,13 +150,56 @@ public class AbstractFunctionalSetter implements Transactional
         }
     }
     
+    public void addObserver(AnnotatedPropertyStore aps)
+    {
+        lock.lock();
+        try
+        {
+            Transactional transactional = null;
+            if (aps instanceof Transactional)
+            {
+                transactional = (Transactional) aps;
+            }
+            Map<String, MethodHandle> map = aps.getSetters();
+            for (String property : map.keySet())
+            {
+                if (transactional != null)
+                {
+                    transactionalProperties.add(property, transactional);
+                }
+                Class<?> type = types.get(property);
+                if (type == null)
+                {
+                    throw new IllegalArgumentException(property+" not found");
+                }
+                MethodHandle mh = map.get(property);
+                MethodHandle bound = mh.bindTo(aps);
+                setters.add(property, bound);
+                undoSetters.add(aps, bound);
+                compile(property);
+            }
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
     public void addObserver(PropertySetter setter)
     {
         lock.lock();
         try
         {
+            Transactional transactional = null;
+            if (setter instanceof Transactional)
+            {
+                transactional = (Transactional) setter;
+            }
             for (String property : setter.getPrefixes())
             {
+                if (transactional != null)
+                {
+                    transactionalProperties.add(property, transactional);
+                }
                 Class<?> type = types.get(property);
                 if (type == null)
                 {
@@ -172,6 +235,11 @@ public class AbstractFunctionalSetter implements Transactional
     }
     public void removeObserver(PropertySetter setter)
     {
+        Transactional transactional = null;
+        if (setter instanceof Transactional)
+        {
+            transactional = (Transactional) setter;
+        }
         lock.lock();
         try
         {
@@ -180,18 +248,31 @@ public class AbstractFunctionalSetter implements Transactional
             {
                 for (String property : setter.getPrefixes())
                 {
+                    if (transactional != null)
+                    {
+                        transactionalProperties.removeItem(property, transactional);
+                    }
                     List<MethodHandle> mhs = setters.get(property);
                     if (mhs != null && mhs.removeAll(list))
                     {
                         compile(property);
                     }
                 }
+                undoSetters.remove(setter);
             }
         }
         finally
         {
             lock.unlock();
         }
+    }
+    /**
+     * Return true if no observers
+     * @return 
+     */
+    public boolean hasObservers()
+    {
+        return !undoSetters.isEmpty();
     }
 
     private void compile(String property)
@@ -225,19 +306,71 @@ public class AbstractFunctionalSetter implements Transactional
     @Override
     public void start(String reason)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TRANSACTION_PROPERTIES.clear();
+        transactionTargets.clear();
+        VERSION = VERSION == 0 ? 1 : 0;
     }
 
     @Override
     public void rollback(String reason)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        VERSION = VERSION == 0 ? 1 : 0;
+        TRANSACTION_PROPERTIES.forEach((String property)->
+        {
+            try
+            {
+                MethodHandle ag = arrayGetters.get(property);
+                Object committedValue = ag.invoke(VERSION);
+                for (MethodHandle setter : setters.get(property))
+                {
+                    setter.invoke(committedValue);
+                }
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "%s", ex.getMessage());
+            }
+            List<Transactional> list = transactionalProperties.get(property);
+            if (list != null)
+            {
+                transactionTargets.addAll(list);
+            }
+        });
+        transactionTargets.forEach((Transactional t)->
+        {
+            try
+            {
+                t.rollback(reason);
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "%s", ex.getMessage());
+            }
+        });
     }
 
     @Override
     public void commit(String reason)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TRANSACTION_PROPERTIES.forEach((property)->
+        {
+            List<Transactional> list = transactionalProperties.get(property);
+            if (list != null)
+            {
+                transactionTargets.addAll(list);
+            }
+        });
+        transactionTargets.forEach((Transactional t)->
+        {
+            try
+            {
+                t.commit(reason);
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "%s", ex.getMessage());
+            }
+        });
     }
 
     private void assignMethod(String property, MethodHandle setter) throws Throwable
@@ -248,18 +381,21 @@ public class AbstractFunctionalSetter implements Transactional
             Class<?> type = types.get(property);
             if (type.isPrimitive())
             {
-                setter = MethodHandles.lookup().findStatic(AbstractFunctionalSetter.class, "noOp", MethodType.methodType(void.class, type));
+                setter = MethodHandles.lookup().findStatic(InterfaceDispatcher.class, "noOp", MethodType.methodType(void.class, type));
             }
             else
             {
-                setter = MethodHandles.lookup().findStatic(AbstractFunctionalSetter.class, "noOp", MethodType.methodType(void.class, Object.class));
+                setter = MethodHandles.lookup().findStatic(InterfaceDispatcher.class, "noOp", MethodType.methodType(void.class, Object.class));
                 setter = setter.asType(MethodType.methodType(void.class, type));
             }
         }
-        MethodHandle saver = savers.get(property);
-        MethodHandle folded = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
-        MethodHandle folded2 = MethodHandles.foldArguments(folded, saver);
-        methodSetter.invokeExact(folded2);
+        if (transactionalProperties.containsKey(property))
+        {
+            setter = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
+            MethodHandle saver = savers.get(property);
+            setter = MethodHandles.foldArguments(setter, saver);
+        }
+        methodSetter.invokeExact(setter);
     }
     
 }

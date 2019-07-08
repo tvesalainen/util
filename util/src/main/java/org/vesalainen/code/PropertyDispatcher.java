@@ -22,8 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -63,6 +61,7 @@ import org.vesalainen.util.Transactional;
  *        pd.addObserver(ps, "string", "i");
  *        pd.setI(123);
  * </code>
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * @author Timo Vesalainen
  * @see org.vesalainen.util.Transactional
  */

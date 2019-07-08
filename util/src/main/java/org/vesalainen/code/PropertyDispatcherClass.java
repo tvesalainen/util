@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 import javax.lang.model.element.Modifier;
 
 /**
- *
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * @author Timo Vesalainen
  */
 @Retention(RetentionPolicy.RUNTIME)
