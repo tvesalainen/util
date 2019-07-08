@@ -34,7 +34,7 @@ public class TransactionalSetterTest
     /**
      * Test of getInstance method, of class TransactionalSetter.
      */
-    @Test
+    //@Test
     public void testGetInstance()
     {
         TrIntfImpl tri = new TrIntfImpl();
