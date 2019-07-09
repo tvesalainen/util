@@ -29,6 +29,15 @@ public class MapListPropertySetter extends AbstractPropertySetter
 {
     private final MapList<String,Object> map = new HashMapList<>();
 
+    public MapListPropertySetter()
+    {
+    }
+
+    public MapListPropertySetter(String... prefixes)
+    {
+        super(prefixes);
+    }
+
     @Override
     public void setProperty(String property, Object arg)
     {

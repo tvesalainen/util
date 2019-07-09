@@ -61,7 +61,7 @@ import org.vesalainen.util.Transactional;
     "org.vesalainen.code.BeanProxyClass",
     "org.vesalainen.code.TransactionalSetterClass",
     "org.vesalainen.code.PropertyDispatcherClass",
-    "org.vesalainen.code.FunctionalSetter"
+    "org.vesalainen.code.InterfaceDispatcherAnnotation"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class Processor extends AbstractProcessor
@@ -103,8 +103,8 @@ public class Processor extends AbstractProcessor
                         case "org.vesalainen.code.PropertyDispatcherClass":
                             generatePropertyDispatcher(type, processingEnv);
                             break;
-                        case "org.vesalainen.code.FunctionalSetter":
-                            generateFunctionalSetter(type, processingEnv);
+                        case "org.vesalainen.code.InterfaceDispatcherAnnotation":
+                            generateInterfaceDispatcher(type, processingEnv);
                             break;
                         default:
                             throw new UnsupportedOperationException(te.getQualifiedName().toString()+" not supported");
@@ -122,12 +122,12 @@ public class Processor extends AbstractProcessor
         return true;
     }
 
-    private void generateFunctionalSetter(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
+    private void generateInterfaceDispatcher(TypeElement cls, ProcessingEnvironment processingEnv) throws IOException
     {
-        FunctionalSetter annotation = cls.getAnnotation(FunctionalSetter.class);
+        InterfaceDispatcherAnnotation annotation = cls.getAnnotation(InterfaceDispatcherAnnotation.class);
         if (annotation == null)
         {
-            throw new IllegalArgumentException("@"+FunctionalSetter.class.getSimpleName()+" missing in cls");
+            throw new IllegalArgumentException("@"+InterfaceDispatcherAnnotation.class.getSimpleName()+" missing in cls");
         }
         Name qualifiedName = cls.getQualifiedName();
         String classname = qualifiedName.toString()+"Impl";
@@ -152,7 +152,6 @@ public class Processor extends AbstractProcessor
             String simplename = classname.substring(idx+1);
             String pgk = classname.substring(0, idx);
 
-            List<? extends TypeMirror> interfaces = cls.getInterfaces();
             mp.println("package "+pgk+";");
             mp.println("import java.lang.invoke.MethodHandle;");
             mp.println("import javax.annotation.Generated;");
@@ -173,17 +172,25 @@ public class Processor extends AbstractProcessor
                 TypeMirror tm = ve.asType();
                 TypeKind tk = tm.getKind();
                 String typename = getTypename(tk);
-                cp.print("MethodHandle ");
+                cp.print("private MethodHandle ");
                 cp.print(property);
                 cp.println("Handle;");
                 
                 // array
+                cp.print("private ");
                 cp.print(tm.toString());
                 cp.print("[]");
                 cp.print(" ");
                 cp.print(property);
                 cp.println(";");
             }
+            cp.print("public ");
+            cp.print(simplename);
+            cp.println("()");
+            cp.println("{");
+            CodePrinter cb = cp.createSub("}");
+            cb.println("super(java.lang.invoke.MethodHandles.lookup());");
+            cb.flush();
             for (ExecutableElement m : methods)
             {
                 List<? extends VariableElement> parameters = m.getParameters();

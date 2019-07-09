@@ -17,18 +17,11 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandle;
-import static java.lang.invoke.MethodHandles.filterReturnValue;
-import static java.lang.invoke.MethodHandles.lookup;
-import static java.lang.invoke.MethodType.methodType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.code.APS.E;
 import static org.vesalainen.code.APS.E.B2;
-import org.vesalainen.util.ArrayHelp;
 
 /**
  *

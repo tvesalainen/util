@@ -18,6 +18,7 @@ package org.vesalainen.code;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -72,6 +73,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
      */
     public static <T extends InterfaceDispatcher> T newInstance(Class<T> base)
     {
+        if (base.getDeclaredAnnotation(InterfaceDispatcherAnnotation.class) == null)
+        {
+            throw new IllegalArgumentException("no @InterfaceDispatcherAnnotation present");
+        }
         try
         {
             Class<?> cls = Class.forName(base.getCanonicalName()+"Impl");
@@ -97,11 +102,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     private MapList<String,Transactional> transactionalProperties = new HashMapList<>();
     private ReentrantLock lock = new ReentrantLock();
     
-    public InterfaceDispatcher()
+    public InterfaceDispatcher(Lookup lookup)
     {
         super(InterfaceDispatcher.class);
         Class<? extends InterfaceDispatcher> cls = this.getClass();
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        //Lookup lookup = MethodHandles.lookup();
         try
         {
             Field versionField = InterfaceDispatcher.class.getDeclaredField("VERSION");
@@ -122,7 +127,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                     {
                         types.put(property, type.getComponentType());
                         Object value = Array.newInstance(type.getComponentType(), 2);
-                        field.set(this, value);
+                        MethodHandle mhs = lookup.unreflectSetter(field);
+                        mhs.invoke(this, value);
                         MethodHandle aes = MethodHandles.arrayElementSetter(type);
                         MethodHandle bound = aes.bindTo(value);
                         savers.put(property, MethodHandles.foldArguments(bound, versionFieldGetter));

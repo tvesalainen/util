@@ -16,6 +16,7 @@
  */
 package org.vesalainen.code;
 
+import java.lang.invoke.MethodHandles;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -26,6 +27,11 @@ public class APS2 extends AnnotatedPropertyStore implements Transactional
 {
     @Property byte b;
     @Property String string;
+
+    public APS2()
+    {
+        super(MethodHandles.lookup());
+    }
 
     @Override
     public void start(String reason)

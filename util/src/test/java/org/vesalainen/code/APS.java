@@ -17,6 +17,7 @@
 package org.vesalainen.code;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 
 /**
@@ -27,26 +28,26 @@ public class APS extends AnnotatedPropertyStore
 {
     enum E {A1, B2, C3 }; 
     @Property(value = "enum", ordinal = 0)
-    E e;
+    protected E e;
     @Property(value = "string", ordinal = 1)
-    String s;
+    protected String s;
     @Property(value = "boolean", ordinal = 2)
-    boolean b;
+    protected boolean b;
     @Property(value = "byte", ordinal = 3)
-    byte by;
+    protected byte by;
     @Property(value = "char", ordinal = 4)
-    char cc;
+    protected char cc;
     @Property(value = "short", ordinal = 5)
-    short sh;
+    protected short sh;
     @Property(value = "long", ordinal = 6)
-    long ll;
+    protected long ll;
     @Property(value = "double", ordinal = 7)
-    double db;
+    protected double db;
     @Property(ordinal = 8)
-    float foo;
+    protected float foo;
     @Property(value = "bar", ordinal = 9)
-    float ba;
-    int i;
+    protected float ba;
+    protected int i;
 
     public APS(AnnotatedPropertyStore aps)
     {
@@ -55,11 +56,12 @@ public class APS extends AnnotatedPropertyStore
 
     public APS(Path path) throws IOException
     {
-        super(path);
+        super(MethodHandles.lookup(), path);
     }
 
     public APS()
     {
+        super(MethodHandles.lookup());
     }
 
     @Property(ordinal = 10)

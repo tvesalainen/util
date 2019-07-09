@@ -16,13 +16,21 @@
  */
 package org.vesalainen.code;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalSetter
+@InterfaceDispatcherAnnotation
 public abstract class FS extends InterfaceDispatcher implements TrIntf
 {
+
+    protected FS(MethodHandles.Lookup lookup)
+    {
+        super(lookup);
+    }
+    
     public static FS newInstance()
     {
         return newInstance(FS.class);

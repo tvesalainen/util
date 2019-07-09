@@ -26,7 +26,18 @@ import org.vesalainen.util.Transactional;
  */
 public abstract class AbstractPropertySetter implements PropertySetter, Transactional
 {
+    private String[] prefixes;
 
+    public AbstractPropertySetter()
+    {
+        this(new String[]{});
+    }
+
+    public AbstractPropertySetter(String... prefixes)
+    {
+        this.prefixes = prefixes;
+    }
+    
     protected void setProperty(String property, Object arg)
     {
         throw new UnsupportedOperationException("Not supported for property '"+property+"'");
@@ -104,7 +115,7 @@ public abstract class AbstractPropertySetter implements PropertySetter, Transact
     @Override
     public String[] getPrefixes()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return prefixes;
     }
     
 }

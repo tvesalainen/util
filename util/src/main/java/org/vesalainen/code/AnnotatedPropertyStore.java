@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -63,15 +64,15 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
 
     public AnnotatedPropertyStore(AnnotatedPropertyStore aps)
     {
-        this();
+        this((Lookup)null);
         copyFrom(aps);
     }
-    public AnnotatedPropertyStore(Path path) throws IOException
+    public AnnotatedPropertyStore(Lookup lookup, Path path) throws IOException
     {
-        this();
+        this(lookup);
         load(path);
     }    
-    public AnnotatedPropertyStore()
+    public AnnotatedPropertyStore(Lookup lookup)
     {
         Class<? extends AnnotatedPropertyStore> cls = this.getClass();
         Inner inner = INNERS.get(cls);
@@ -88,7 +89,6 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
             copiers = new HashMap<>();
             try
             {
-                MethodHandles.Lookup lookup = MethodHandles.lookup();
                 for (Field field : cls.getDeclaredFields())
                 {
                     Property property = field.getDeclaredAnnotation(Property.class);
