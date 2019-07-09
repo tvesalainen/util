@@ -45,6 +45,7 @@ package org.vesalainen.code;
  *     TrIntfImpl tri = new TrIntfImpl();
  *     TS ts = TS.getInstance(TS.class, tri);
  * </code>
+ * @deprecated InterfaceDispatcher implements same functionality but faster.
  * @author Timo Vesalainen
  * @see org.vesalainen.util.Transactional
  */
