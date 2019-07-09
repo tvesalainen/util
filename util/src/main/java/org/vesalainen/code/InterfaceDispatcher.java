@@ -45,7 +45,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * Transactional the transactions are handled. Rollback will restore property
  * values to last committed values.
  * 
- * <p>Usage: public class MyClass extends InterfaceDispatcher implements MyInterface
+ * <p>Usage: @InterfaceDispatcherAnnotation public class MyClass extends InterfaceDispatcher implements MyInterface
  * <p>Compiler will generate MyClassImpl which you can get from MyClass.getInstance(MyClass.class).
  * Calling any of those interface methods will have no effect before you
  * add observer.
