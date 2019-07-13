@@ -41,6 +41,7 @@ import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.util.ConvertUtility;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * AnnotatedPropertyStore is a PropertyGetter/Setter implementation which 
@@ -51,7 +52,7 @@ import org.vesalainen.util.ConvertUtility;
  * <p>Loading and storing to file implements a subset of properties features.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
+public class AnnotatedPropertyStore extends JavaLogging implements PropertyGetter, PropertySetter
 {
     private static final String PREFIX = "#AnnotatedPropertyStore:";
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
@@ -74,6 +75,7 @@ public class AnnotatedPropertyStore implements PropertyGetter, PropertySetter
     }    
     public AnnotatedPropertyStore(Lookup lookup)
     {
+        super(AnnotatedPropertyStore.class);
         Class<? extends AnnotatedPropertyStore> cls = this.getClass();
         Inner inner = INNERS.get(cls);
         if (inner != null)
