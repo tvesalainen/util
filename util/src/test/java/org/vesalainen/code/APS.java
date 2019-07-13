@@ -67,6 +67,10 @@ public class APS extends AnnotatedPropertyStore
     @Property(ordinal = 10)
     public void setGoo(int i)
     {
+        if (i > 1000)
+        {
+            throw new IllegalArgumentException(i+" is too big");
+        }
         this.i = i;
     }
 

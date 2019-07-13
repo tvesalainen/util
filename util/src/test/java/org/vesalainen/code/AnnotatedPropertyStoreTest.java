@@ -85,6 +85,9 @@ public class AnnotatedPropertyStoreTest
         aps.set("goo", 123);
         assertEquals(123, aps.i);
 
+        aps.set("goo", 123456789);
+        assertEquals(123, aps.i);
+
         APS aps2 = new APS(aps);
         assertTrue(aps.isSame(aps2));
 

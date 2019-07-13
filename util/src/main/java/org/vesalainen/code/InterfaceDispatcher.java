@@ -56,15 +56,15 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class InterfaceDispatcher extends JavaLogging implements Transactional
 {
-    public static final void noOp(boolean arg){};
-    public static final void noOp(byte arg){};
-    public static final void noOp(char arg){};
-    public static final void noOp(short arg){};
-    public static final void noOp(int arg){};
-    public static final void noOp(long arg){};
-    public static final void noOp(float arg){};
-    public static final void noOp(double arg){};
-    public static final <T> void noOp(T arg){};
+    private static void noOp(boolean arg){};
+    private static void noOp(byte arg){};
+    private static void noOp(char arg){};
+    private static void noOp(short arg){};
+    private static void noOp(int arg){};
+    private static void noOp(long arg){};
+    private static void noOp(float arg){};
+    private static void noOp(double arg){};
+    private static <T> void noOp(T arg){};
     /**
      * Convenience method to get access to generated class. 
      * @param <T>
@@ -334,7 +334,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             catch (Throwable ex)
             {
-                log(SEVERE, ex, "%s", ex.getMessage());
+                log(SEVERE, ex, "rollback restoring %s", property);
             }
             List<Transactional> list = transactionalProperties.get(property);
             if (list != null)
@@ -350,7 +350,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             catch (Throwable ex)
             {
-                log(SEVERE, ex, "%s", ex.getMessage());
+                log(SEVERE, ex, "rollback(%s)", reason);
             }
         });
     }
@@ -374,7 +374,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             catch (Throwable ex)
             {
-                log(SEVERE, ex, "%s", ex.getMessage());
+                log(SEVERE, ex, "commit(%s)", reason);
             }
         });
     }

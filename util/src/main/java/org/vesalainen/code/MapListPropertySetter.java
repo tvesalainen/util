@@ -16,7 +16,9 @@
  */
 package org.vesalainen.code;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
 
@@ -28,6 +30,8 @@ import org.vesalainen.util.MapList;
 public class MapListPropertySetter extends AbstractPropertySetter
 {
     private final MapList<String,Object> map = new HashMapList<>();
+    private Map<String,Object> active = new HashMap<>();
+    private Map<String,Object> committed = new HashMap<>();
 
     public MapListPropertySetter()
     {
@@ -42,10 +46,30 @@ public class MapListPropertySetter extends AbstractPropertySetter
     public void setProperty(String property, Object arg)
     {
         map.add(property, arg);
+        active.put(property, arg);
     }
     
     public List<Object> getProperty(String property)
     {
         return map.get(property);
     }
+
+    @Override
+    public void commit(String reason)
+    {
+        Map<String,Object> safe = committed;
+        committed = active;
+        active = safe;
+        active.clear();
+        super.commit(reason);
+    }
+
+    @Override
+    public void rollback(String reason)
+    {
+        active.forEach((s,o)->map.removeItem(s, o));
+        active.clear();
+        super.rollback(reason);
+    }
+    
 }

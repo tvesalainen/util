@@ -89,7 +89,7 @@ public class InterfaceDispatcherTest
     {
         FS fs = FS.newInstance();
         S s1 = new S("string", "b", "c", "d");
-        S s2 = new S("string");
+        S s2 = new S("string", "j");
         fs.addObserver(s1);
         fs.addObserver(s2);
         fs.start("");
@@ -109,6 +109,9 @@ public class InterfaceDispatcherTest
         fs.setB((byte)3);
         fs.commit("");
         assertEquals((byte)3, s1.get("b"));
+        fs.start("");
+        fs.setJ(123456L);
+        fs.commit("");
     }
     private static class S extends AbstractPropertySetter
     {
@@ -129,6 +132,10 @@ public class InterfaceDispatcherTest
         @Override
         public void setProperty(String property, Object arg)
         {
+            if (arg instanceof Long)
+            {
+                throw new IllegalArgumentException("long not ok");
+            }
             map.put(property, arg);
         }
         public Object get(String property)

@@ -154,6 +154,7 @@ public class Processor extends AbstractProcessor
 
             mp.println("package "+pgk+";");
             mp.println("import java.lang.invoke.MethodHandle;");
+            mp.println("import static java.util.logging.Level.SEVERE;");
             mp.println("import javax.annotation.Generated;");
 
             mp.println("@Generated(");
@@ -196,24 +197,28 @@ public class Processor extends AbstractProcessor
                 List<? extends VariableElement> parameters = m.getParameters();
                 VariableElement ve = parameters.get(0);
                 cp.println("@Override");
-                String name = m.getSimpleName().toString();
                 EnumSet<Modifier> modifiers = EnumSet.of(PUBLIC);
                 CodePrinter cm = cp.createMethod(modifiers, m);
                 String property = getProperty(m);
-
+                Name methodName = m.getSimpleName();
+                Name paramName = ve.getSimpleName();
                 cm.println("try");
                 cm.println("{");
                 CodePrinter cs = cm.createSub("}");
                 cs.print("this.");
                 cs.print(property);
                 cs.print("Handle.invokeExact(");
-                cs.print(ve.getSimpleName());
+                cs.print(paramName);
                 cs.println(");");
                 cs.flush();
                 cm.println("catch (Throwable ex)");
                 cm.println("{");
                 CodePrinter cc = cm.createSub("}");
-                cc.println("throw new IllegalArgumentException(ex);");
+                cc.print("log(SEVERE, ex, \"");
+                cc.print(methodName);
+                cc.print("(%s)\", ");
+                cc.print(paramName);
+                cc.println(");");
                 cc.flush();
                 cm.flush();
             }
