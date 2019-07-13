@@ -85,7 +85,15 @@ public class AnnotatedPropertyStoreTest
         aps.set("goo", 123);
         assertEquals(123, aps.i);
 
-        aps.set("goo", 123456789);
+        try
+        {
+            aps.set("goo", 123456789);
+            fail();
+        }
+        catch (IllegalArgumentException ex)
+        {
+            
+        }
         assertEquals(123, aps.i);
 
         APS aps2 = new APS(aps);
