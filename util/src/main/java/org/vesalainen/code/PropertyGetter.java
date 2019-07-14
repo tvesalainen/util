@@ -31,5 +31,5 @@ public interface PropertyGetter
     long getLong(String property);
     float getFloat(String property);
     double getDouble(String property);
-    Object getObject(String property);
+    <T> T getObject(String property);
 }
