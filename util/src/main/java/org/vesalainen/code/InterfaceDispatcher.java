@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
 
     protected int VERSION;
     protected List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
+    private List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
     private Set<Transactional> transactionTargets = new IdentityArraySet<>();
     private MethodHandle transactionAdder;
     private Map<String,MethodHandle> handleSetters = new HashMap<>();
@@ -192,6 +194,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     }
     public void addObserver(PropertySetter setter)
     {
+        if (setter instanceof AnnotatedPropertyStore)
+        {
+            AnnotatedPropertyStore aps = (AnnotatedPropertyStore) setter;
+            addObserver(aps);
+        }
         lock.lock();
         try
         {
@@ -370,7 +377,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         {
             try
             {
-                t.commit(reason);
+                t.commit(reason, unmodifiableTransactionProperties);
             }
             catch (Throwable ex)
             {
