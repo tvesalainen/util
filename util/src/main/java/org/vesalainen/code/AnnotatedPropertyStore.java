@@ -41,6 +41,7 @@ import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.util.ConvertUtility;
+import org.vesalainen.util.Transactional;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -52,7 +53,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * <p>Loading and storing to file implements a subset of properties features.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AnnotatedPropertyStore extends JavaLogging implements PropertyGetter, PropertySetter
+public class AnnotatedPropertyStore extends JavaLogging implements PropertyGetter, PropertySetter, Transactional
 {
     private static final String PREFIX = "#AnnotatedPropertyStore:";
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
@@ -736,6 +737,21 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 throw new IllegalArgumentException(line+" wrong class");
             }
         }
+    }
+
+    @Override
+    public void start(String reason)
+    {
+    }
+
+    @Override
+    public void rollback(String reason)
+    {
+    }
+
+    @Override
+    public void commit(String reason)
+    {
     }
     private static class Inner
     {
