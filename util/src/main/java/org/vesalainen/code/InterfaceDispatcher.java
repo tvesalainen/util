@@ -91,18 +91,18 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     }
 
     protected int VERSION;
-    protected List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
-    private List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
-    private Set<Transactional> transactionTargets = new IdentityArraySet<>();
-    private MethodHandle transactionAdder;
-    private Map<String,MethodHandle> handleSetters = new HashMap<>();
-    private Map<String,MethodHandle> savers = new HashMap<>();
-    private Map<String,MethodHandle> arrayGetters = new HashMap<>();
-    private MapList<String,MethodHandle> setters = new HashMapList<>();
-    private MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
-    private Map<String,Class<?>> types = new HashMap<>();
-    private MapList<String,Transactional> transactionalProperties = new HashMapList<>();
-    private ReentrantLock lock = new ReentrantLock();
+    protected final List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
+    private final List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
+    private final Set<Transactional> transactionTargets = new IdentityArraySet<>();
+    private final MethodHandle transactionAdder;
+    private final Map<String,MethodHandle> handleSetters = new HashMap<>();
+    private final Map<String,MethodHandle> savers = new HashMap<>();
+    private final Map<String,MethodHandle> arrayGetters = new HashMap<>();
+    private final MapList<String,MethodHandle> setters = new HashMapList<>();
+    private final MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
+    private final Map<String,Class<?>> types = new HashMap<>();
+    private final MapList<String,Transactional> transactionalProperties = new HashMapList<>();
+    private final ReentrantLock lock = new ReentrantLock();
     
     public InterfaceDispatcher(Lookup lookup)
     {
