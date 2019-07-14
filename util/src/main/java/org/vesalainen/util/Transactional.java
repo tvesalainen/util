@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.util.List;
+
 /**
  * An interface for transactional changes
  * 
@@ -29,16 +31,25 @@ public interface Transactional
      * Start transaction that will end in commit or rollback methods.
      * @param reason
      */
-    void start(String reason);
+    default void start(String reason){}
     /**
      * Undo changes after start.
      * @param reason 
      */
-    void rollback(String reason);
+    default void rollback(String reason){}
     /**
      * Confirm changes after start.
      * @param reason 
      */
-    void commit(String reason);
+    default void commit(String reason, List<String> updatedProperties)
+    {
+        commit(reason);
+    }
+    /**
+     * Confirm changes after start.
+     * @param reason 
+     */
+    default void commit(String reason){}
+            
 
 }
