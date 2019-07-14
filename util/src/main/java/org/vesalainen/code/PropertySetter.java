@@ -17,6 +17,8 @@
 
 package org.vesalainen.code;
 
+import org.vesalainen.util.ArrayHelp;
+
 /**
  *
  * @author Timo Vesalainen
@@ -24,10 +26,28 @@ package org.vesalainen.code;
 public interface PropertySetter
 {
     /**
+     * @deprecated Use getProperties(). Prefix handling is not supported anymore.
      * Returns list of interested property prefixes
      * @return 
      */
     String[] getPrefixes();
+    /**
+     * Returns list of interested properties
+     * @return 
+     */
+    default String[] getProperties()
+    {
+        return getPrefixes();
+    }
+    /**
+     * Returns true if property is one that getProperties() returns.
+     * @param property
+     * @return 
+     */
+    default boolean wantsProperty(String property)
+    {
+        return ArrayHelp.contains(getProperties(), property);
+    }
     default void set(String property, boolean arg){}
     default void set(String property, byte arg){}
     default void set(String property, char arg){}
@@ -36,5 +56,5 @@ public interface PropertySetter
     default void set(String property, long arg){}
     default void set(String property, float arg){}
     default void set(String property, double arg){}
-    default void set(String property, Object arg){}
+    default <T> void set(String property, T arg){}
 }
