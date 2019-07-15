@@ -135,11 +135,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     @Override
     public V get(Object key)
     {
-        if (ttlSet.contains(key))
-        {
-            return map.get(key);
-        }
-        return null;
+        return map.get(key);
     }
     /**
      * Returns true if map contains key and it haven't expired.
