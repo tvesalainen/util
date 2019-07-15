@@ -51,7 +51,6 @@ public class TimeToLiveMapTest
         
         clock = Clock.offset(clock, Duration.ofSeconds(2));
         map.setClock(clock);
-        assertEquals(null, map.get(2));
         assertEquals(0, map.size());
         assertEquals(0, map.entrySet().stream().count());
         assertEquals(0, map.keySet().stream().count());
