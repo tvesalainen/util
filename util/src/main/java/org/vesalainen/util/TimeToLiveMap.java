@@ -131,7 +131,12 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
         }
         return old;
     }
-
+    /**
+     * Returns mapped value. Mapping might be expired. If this is not desired
+     * call contains before get.
+     * @param key
+     * @return 
+     */
     @Override
     public V get(Object key)
     {
