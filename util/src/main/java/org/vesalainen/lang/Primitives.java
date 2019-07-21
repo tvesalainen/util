@@ -43,7 +43,7 @@ import org.vesalainen.util.CharSequences;
  * @see java.lang.Double
  * @author Timo Vesalainen
  */
-public class Primitives
+public final class Primitives
 {
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
