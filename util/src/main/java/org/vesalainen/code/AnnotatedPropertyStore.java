@@ -30,6 +30,9 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +43,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
+import org.vesalainen.lang.Bytes;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
 import org.vesalainen.util.logging.JavaLogging;
@@ -63,6 +67,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     private Map<String,MethodHandle> getters;
     private Map<String,MethodHandle> copiers;
     private String[] properties;
+    private Map<String, MethodHandle> unmodifiableSetters;
 
     public AnnotatedPropertyStore(AnnotatedPropertyStore aps)
     {
@@ -71,8 +76,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     public AnnotatedPropertyStore(Lookup lookup, Path path) throws IOException
     {
+        this(lookup, path, true);
+    }
+    public AnnotatedPropertyStore(Lookup lookup, Path path, boolean reportMissingProperties) throws IOException
+    {
         this(lookup);
-        load(path);
+        load(path, reportMissingProperties);
     }    
     public AnnotatedPropertyStore(Lookup lookup)
     {
@@ -179,9 +188,10 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 throw new IllegalArgumentException(ex);
             }
         }
+        unmodifiableSetters = Collections.unmodifiableMap(setters);
     }
     @Override
-    public String[] getPrefixes()
+    public String[] getProperties()
     {
         return properties;
     }
@@ -191,15 +201,57 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
      */
     public Map<String,MethodHandle> getSetters()
     {
-        return Collections.unmodifiableMap(setters);
+        return unmodifiableSetters;
     }
+    /**
+     * Copies listed properties
+     * @param from
+     * @param properties 
+     */
+    public final void copyFrom(AnnotatedPropertyStore from, Collection<String> properties)
+    {
+        copyFrom(from, properties, true);
+    }
+    public final void copyFrom(AnnotatedPropertyStore from, Collection<String> properties, boolean reportMissingProperties)
+    {
+        if (!this.getClass().isAssignableFrom(from.getClass()))
+        {
+            throw new IllegalArgumentException("can't copy from "+from);
+        }
+        properties.forEach((property) ->
+        {
+            MethodHandle copier = copiers.get(property);
+            if (copier != null)
+            {
+                try
+                {
+                    copier.invokeExact(this, from);
+                }
+                catch (Throwable ex)
+                {
+                    throw new IllegalArgumentException("with "+property, ex);
+                }
+            }
+            else
+            {
+                if (reportMissingProperties)
+                {
+                    throw new IllegalArgumentException("can't copy "+property);
+                }
+            }
+        });
+    }
+    /**
+     * Copies all properties.
+     * @param from 
+     */
     public final void copyFrom(AnnotatedPropertyStore from)
     {
         if (!this.getClass().isAssignableFrom(from.getClass()))
         {
             throw new IllegalArgumentException("can't copy from "+from);
         }
-        for (Map.Entry<String, MethodHandle> entry : copiers.entrySet())
+        copiers.entrySet().forEach((entry) ->
         {
             MethodHandle copier = entry.getValue();
             try
@@ -210,9 +262,13 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             {
                 throw new IllegalArgumentException("with "+entry.getKey(), ex);
             }
-        }
+        });
     }
     public static <T extends AnnotatedPropertyStore> T getInstance(Path path) throws IOException
+    {
+        return getInstance(path, true);
+    }
+    public static <T extends AnnotatedPropertyStore> T getInstance(Path path, boolean reportMissingProperties) throws IOException
     {
         try (BufferedReader br = Files.newBufferedReader(path))
         {
@@ -225,7 +281,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                     Class<T> cls = (Class<T>) Class.forName(className);
                     Constructor<T> constructor = cls.getConstructor();
                     T aps = constructor.newInstance();
-                    aps.load(br);
+                    aps.load(br, reportMissingProperties);
                     return aps;
                 }
                 catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
@@ -241,12 +297,16 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     public final void load(Path path) throws IOException
     {
+        load(path, true);
+    }
+    public final void load(Path path, boolean reportMissingProperties) throws IOException
+    {
         try (BufferedReader br = Files.newBufferedReader(path))
         {
-            load(br);
+            load(br, reportMissingProperties);
         }
     }
-    public final void load(BufferedReader br) throws IOException
+    public final void load(BufferedReader br, boolean reportMissingProperties) throws IOException
     {
         String line = br.readLine();
         checkClass(line);
@@ -263,8 +323,18 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                     value = unescape(split[1].trim());
                 }
                 Class<?> type = types.get(property);
-                Object newValue = ConvertUtility.convert(type, value);
-                set(property, newValue);
+                if (type != null)
+                {
+                    Object newValue = ConvertUtility.convert(type, value);
+                    set(property, newValue);
+                }
+                else
+                {
+                    if (reportMissingProperties)
+                    {
+                        throw new IllegalArgumentException(property+" missing");
+                    }
+                }
             }
             line = br.readLine();
         }
@@ -308,12 +378,77 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         return hash;
     }
     /**
+     * Returns SHA-1 digest which is updated with properties content.
+     * @return
+     * @throws NoSuchAlgorithmException 
+     * @see org.vesalainen.lang.Bytes
+     */
+    public byte[] getSha1() throws NoSuchAlgorithmException
+    {
+        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        update(sha1);
+        return sha1.digest();
+    }
+    /**
+     * Updates digest with properties content
+     * @param digest 
+     * @see org.vesalainen.lang.Bytes
+     */
+    public void update(MessageDigest digest)
+    {
+        for (String property : properties)
+        {
+            Class<?> type = types.get(property);
+            if (type == null)
+            {
+                throw new IllegalArgumentException(property+" don't exist");
+            }
+            switch (type.getSimpleName())
+            {
+                case "boolean":
+                    Bytes.set(getBoolean(property), digest::update);
+                    break;
+                case "byte":
+                    Bytes.set(getByte(property), digest::update);
+                    break;
+                case "char":
+                    Bytes.set(getChar(property), digest::update);
+                    break;
+                case "short":
+                    Bytes.set(getShort(property), digest::update);
+                    break;
+                case "int":
+                    Bytes.set(getInt(property), digest::update);
+                    break;
+                case "long":
+                    Bytes.set(getLong(property), digest::update);
+                    break;
+                case "float":
+                    Bytes.set(getFloat(property), digest::update);
+                    break;
+                case "double":
+                    Bytes.set(getDouble(property), digest::update);
+                    break;
+                default:
+                    Bytes.set(getObject(property), digest::update);
+                    break;
+            }
+        }
+    }
+    /**
      * Returns true if objects have same class and all properties are equal.
      * @param aps
      * @return 
      */
-    public boolean isSame(AnnotatedPropertyStore aps)
+    
+    @Override
+    public boolean equals(Object obj)
     {
+        if (!(obj instanceof AnnotatedPropertyStore))
+        {
+            return false;
+        }
+        AnnotatedPropertyStore aps = (AnnotatedPropertyStore) obj;
         if (this == aps)
         {
             return true;
@@ -335,6 +470,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         }
         return true;
     }
+    
     @Override
     public boolean getBoolean(String property)
     {

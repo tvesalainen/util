@@ -19,6 +19,7 @@ package org.vesalainen.code;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.vesalainen.code.APS.E.B2;
@@ -35,21 +36,21 @@ public class AnnotatedPropertyStoreTest
     }
 
     @Test
-    public void test1() throws IOException
+    public void test1() throws IOException, NoSuchAlgorithmException
     {
         APS aps = new APS();
         Path tmp = Files.createTempFile(null, null);
         aps.store(tmp);
         APS aps0 = new APS(tmp);
-        assertTrue(aps.isSame(aps0));
+        assertTrue(aps.equals(aps0));
 
-        String[] prefixes = aps.getPrefixes();
+        String[] properties = aps.getProperties();
         String[] exp = new String[]
         {
             "enum", "string", "boolean", "byte", "char", "short", "long", "double", "foo", "bar", "goo"
         };
 
-        assertArrayEquals(exp, prefixes);
+        assertArrayEquals(exp, properties);
 
         aps.set("enum", B2);
         assertEquals(B2, aps.getObject("enum"));
@@ -97,13 +98,18 @@ public class AnnotatedPropertyStoreTest
         assertEquals(123, aps.i);
 
         APS aps2 = new APS(aps);
-        assertTrue(aps.isSame(aps2));
+        assertTrue(aps.equals(aps2));
 
         aps.store(tmp);
         APS aps3 = new APS(tmp);
-        assertTrue(aps.isSame(aps3));
+        assertTrue(aps.equals(aps3));
         APS aps4 = AnnotatedPropertyStore.getInstance(tmp);
-        assertTrue(aps.isSame(aps4));
+        assertTrue(aps.equals(aps4));
+        
+        byte[] sha1 = aps.getSha1();
+        byte[] sha14 = aps4.getSha1();
+        assertArrayEquals(sha1, sha14);
+        
         Files.deleteIfExists(tmp);
     }
 
