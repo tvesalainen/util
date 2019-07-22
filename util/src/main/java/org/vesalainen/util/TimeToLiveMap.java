@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 /**
  * TimeToLiveMap is a ConcurrentHashMap backed implementation of Map interface
@@ -42,6 +43,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     private Map<K,V> map = new ConcurrentHashMap<>();
     private long purgeLimit = INIT_PURGE_LIMIT;
     private long lastPurge;
+    private BiConsumer<K,V> removeObserver;
     /**
      * Creates TimeToLiveMap with system clock
      * @param defaultTimeout
@@ -50,7 +52,17 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public TimeToLiveMap(long defaultTimeout, TimeUnit unit)
     {
-        this(Clock.systemUTC(), defaultTimeout, unit);
+        this(defaultTimeout, unit, null);
+    }
+    /**
+     * Creates TimeToLiveMap
+     * @param defaultTimeout
+     * @param unit
+     * @param removeObserver is called when mapping has been removed.
+     */
+    public TimeToLiveMap(long defaultTimeout, TimeUnit unit, BiConsumer<K,V> removeObserver)
+    {
+        this(Clock.systemUTC(), defaultTimeout, unit, removeObserver);
     }
     /**
      * Creates TimeToLiveMap
@@ -60,7 +72,19 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public TimeToLiveMap(Clock clock, long defaultTimeout, TimeUnit unit)
     {
+        this(clock, defaultTimeout, unit, null);
+    }
+    /**
+     * Creates TimeToLiveMap
+     * @param clock
+     * @param defaultTimeout
+     * @param unit
+     * @param removeObserver is called when mapping has been removed.
+     */
+    public TimeToLiveMap(Clock clock, long defaultTimeout, TimeUnit unit, BiConsumer<K,V> removeObserver)
+    {
         this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit, map::remove);
+        this.removeObserver = removeObserver;
     }
     /**
      * Returns live-set of keys
@@ -87,6 +111,10 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
             old = map.get(key);
         }
         ttlSet.remove(key);
+        if (removeObserver != null)
+        {
+            removeObserver.accept((K) key, old);
+        }
         return old;
     }
     /**
