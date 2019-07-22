@@ -99,6 +99,10 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     @Override
     public void clear()
     {
+        if (removeObserver != null)
+        {
+            map.forEach(removeObserver);
+        }
         ttlSet.clear();
     }
 
@@ -110,11 +114,11 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
         {
             old = map.get(key);
         }
-        ttlSet.remove(key);
         if (removeObserver != null)
         {
             removeObserver.accept((K) key, old);
         }
+        ttlSet.remove(key);
         return old;
     }
     /**
