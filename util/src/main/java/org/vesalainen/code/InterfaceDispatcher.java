@@ -160,6 +160,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     
     public void addObserver(AnnotatedPropertyStore aps)
     {
+        addObserver(aps, true);
+    }
+    public void addObserver(AnnotatedPropertyStore aps, boolean reportMissingProperties)
+    {
         lock.lock();
         try
         {
@@ -171,20 +175,26 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             Map<String, MethodHandle> map = aps.getSetters();
             for (String property : map.keySet())
             {
-                if (transactional != null)
-                {
-                    transactionalProperties.add(property, transactional);
-                }
                 Class<?> type = types.get(property);
                 if (type == null)
                 {
-                    throw new IllegalArgumentException(property+" not found");
+                    if (reportMissingProperties)
+                    {
+                        throw new IllegalArgumentException(property+" not found");
+                    }
                 }
-                MethodHandle mh = map.get(property);
-                MethodHandle bound = mh.bindTo(aps);
-                setters.add(property, bound);
-                undoSetters.add(aps, bound);
-                compile(property);
+                else
+                {
+                    if (transactional != null)
+                    {
+                        transactionalProperties.add(property, transactional);
+                    }
+                    MethodHandle mh = map.get(property);
+                    MethodHandle bound = mh.bindTo(aps);
+                    setters.add(property, bound);
+                    undoSetters.add(aps, bound);
+                    compile(property);
+                }
             }
         }
         finally
@@ -193,6 +203,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         }
     }
     public void addObserver(PropertySetter setter)
+    {
+        addObserver(setter, true);
+    }
+    public void addObserver(PropertySetter setter, boolean reportMissingProperties)
     {
         if (setter instanceof AnnotatedPropertyStore)
         {
@@ -209,35 +223,41 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             for (String property : setter.getPrefixes())
             {
-                if (transactional != null)
-                {
-                    transactionalProperties.add(property, transactional);
-                }
                 Class<?> type = types.get(property);
                 if (type == null)
                 {
-                    throw new IllegalArgumentException(property+" not found");
-                }
-                try
-                {
-                    MethodHandle mh;
-                    if (type.isPrimitive())
+                    if (reportMissingProperties)
                     {
-                        mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, type));
+                        throw new IllegalArgumentException(property+" not found");
                     }
-                    else
-                    {
-                        mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, Object.class));
-                        mh = mh.asType(MethodType.methodType(void.class, setter.getClass(), String.class, type));
-                    }
-                    MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
-                    setters.add(property, bound);
-                    undoSetters.add(setter, bound);
-                    compile(property);
                 }
-                catch (NoSuchMethodException | IllegalAccessException ex)
+                else
                 {
-                    throw new IllegalArgumentException(ex);
+                    if (transactional != null)
+                    {
+                        transactionalProperties.add(property, transactional);
+                    }
+                    try
+                    {
+                        MethodHandle mh;
+                        if (type.isPrimitive())
+                        {
+                            mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, type));
+                        }
+                        else
+                        {
+                            mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, Object.class));
+                            mh = mh.asType(MethodType.methodType(void.class, setter.getClass(), String.class, type));
+                        }
+                        MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
+                        setters.add(property, bound);
+                        undoSetters.add(setter, bound);
+                        compile(property);
+                    }
+                    catch (NoSuchMethodException | IllegalAccessException ex)
+                    {
+                        throw new IllegalArgumentException(ex);
+                    }
                 }
             }
         }
@@ -259,7 +279,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             List<MethodHandle> list = undoSetters.get(setter);
             if (!list.isEmpty())
             {
-                for (String property : setter.getPrefixes())
+                for (String property : setter.getProperties())
                 {
                     if (transactional != null)
                     {
@@ -312,7 +332,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         }
         catch (Throwable ex)
         {
-            throw new IllegalArgumentException(ex);
+            throw new IllegalArgumentException(property, ex);
         }
     }
 
