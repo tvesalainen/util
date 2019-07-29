@@ -383,9 +383,17 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
      * @throws NoSuchAlgorithmException 
      * @see org.vesalainen.lang.Bytes
      */
-    public byte[] getSha1() throws NoSuchAlgorithmException
+    public byte[] getSha1()
     {
-        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        MessageDigest sha1;
+        try
+        {
+            sha1 = MessageDigest.getInstance("SHA-1");
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
         update(sha1);
         return sha1.digest();
     }
@@ -472,7 +480,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     
     @Override
-    public boolean getBoolean(String property)
+    public final boolean getBoolean(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -493,7 +501,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public byte getByte(String property)
+    public final byte getByte(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -514,7 +522,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public char getChar(String property)
+    public final char getChar(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -535,7 +543,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public short getShort(String property)
+    public final short getShort(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -556,7 +564,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public int getInt(String property)
+    public final int getInt(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -577,7 +585,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public long getLong(String property)
+    public final long getLong(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -598,7 +606,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public float getFloat(String property)
+    public final float getFloat(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -619,7 +627,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public double getDouble(String property)
+    public final double getDouble(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
@@ -640,14 +648,14 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public Object getObject(String property)
+    public final <T> T getObject(String property)
     {
         MethodHandle mh = getters.get(property);
         if (mh != null)
         {
             try
             {
-                return mh.invoke(this);
+                return (T) mh.invoke(this);
             }
             catch (Throwable ex)
             {
@@ -661,7 +669,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, boolean arg)
+    public final void set(String property, boolean arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -682,7 +690,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, byte arg)
+    public final void set(String property, byte arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -703,7 +711,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, char arg)
+    public final void set(String property, char arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -724,7 +732,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, short arg)
+    public final void set(String property, short arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -745,7 +753,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, int arg)
+    public final void set(String property, int arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -766,7 +774,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, long arg)
+    public final void set(String property, long arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -787,7 +795,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, float arg)
+    public final void set(String property, float arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -808,7 +816,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, double arg)
+    public final void set(String property, double arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
@@ -829,7 +837,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
 
     @Override
-    public void set(String property, Object arg)
+    public final void set(String property, Object arg)
     {
         MethodHandle mh = setters.get(property);
         if (mh != null)
