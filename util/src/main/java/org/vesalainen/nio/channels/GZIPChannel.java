@@ -607,25 +607,28 @@ public class GZIPChannel implements SeekableByteChannel, ScatteringSupport, Gath
 
     private void readTrailer() throws IOException
     {
-        compBuf.position(compBuf.position() - inflater.getRemaining());
-        compBuf.compact();
-        channel.read(compBuf);
-        compBuf.flip();
-        int crc = compBuf.getInt();
-        int value = (int) crc32.getValue();
-        if (crc != value)
+        if (!trailerRead)
         {
-            throw new IOException("CRC32 mismatch");
+            compBuf.position(compBuf.position() - inflater.getRemaining());
+            compBuf.compact();
+            channel.read(compBuf);
+            compBuf.flip();
+            int crc = compBuf.getInt();
+            int value = (int) crc32.getValue();
+            if (crc != value)
+            {
+                throw new IOException("CRC32 mismatch");
+            }
+            int isize = compBuf.getInt();
+            if (isize != (inflater.getBytesWritten() & 0xffffffff))
+            {
+                throw new IOException("Size mismatch");
+            }
+            channel.position(channel.position()-compBuf.remaining());
+            compBuf.clear();
+            compBuf.compact();
+            trailerRead = true;
         }
-        int isize = compBuf.getInt();
-        if (isize != (inflater.getBytesWritten() & 0xffffffff))
-        {
-            throw new IOException("Size mismatch");
-        }
-        channel.position(channel.position()-compBuf.remaining());
-        compBuf.clear();
-        compBuf.compact();
-        trailerRead = true;
     }
     /**
      * After read returns -1 call nextInput to advance to nextInput file.
