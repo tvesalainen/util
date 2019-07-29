@@ -17,49 +17,33 @@
 package org.vesalainen.navi;
 
 import org.vesalainen.math.UnitType;
-import static org.vesalainen.math.UnitType.*;
+import static org.vesalainen.math.UnitType.Meter;
+import static org.vesalainen.math.UnitType.NM;
 
 /**
- * BoatPosition stores a position in boat. Examples are GPS, Radar, etc. BoatPosition
- * is used in making coordinate transforms. 
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BoatPosition
+public interface BoatPosition
 {
-    private double toSb;
-    private double toPort;
-    private double toBow;
-    private double toStern;
+
     /**
-     * Creates BoatPosition
-     * @param toSb Meters to starboard side.
-     * @param toPort Meters to port side.
-     * @param toBow Meters to bow.
-     * @param toStern  Meters to stern.
-     */
-    public BoatPosition(double toSb, double toPort, double toBow, double toStern)
-    {
-        this.toSb = toSb;
-        this.toPort = toPort;
-        this.toBow = toBow;
-        this.toStern = toStern;
-    }
-    /**
-     * Returns boats length.
+     * Returns boats getLength.
      * @return 
      */
-    public double length()
+    default double getLength()
     {
-        return toBow + toStern;
+        return getDimensionToBow() + getDimensionToStern();
     }
     /**
-     * Returns boats beam.
+     * Returns boats getBeam.
      * @return 
      */
-    public double beam()
+    default double getBeam()
     {
-        return toSb + toPort;
+        return getDimensionToStarboard() + getDimensionToPort();
     }
+
     /**
      * Returns center latitude with given coordinates and heading.
      * @param latitude
@@ -67,10 +51,23 @@ public class BoatPosition
      * @param heading
      * @return 
      */
-    public double centerLatitude(double latitude, double longitude, double heading)
+    default double centerLatitude(double latitude, double longitude, double heading)
     {
-        return latitudeAt(beam()/2, length()/2, latitude, longitude, heading);
+        return latitudeAt(getBeam()/2, getLength()/2, latitude, heading);
     }
+
+    /**
+     * Returns center longitude with given coordinates and heading.
+     * @param latitude
+     * @param longitude
+     * @param heading
+     * @return 
+     */
+    default double centerLongitude(double latitude, double longitude, double heading)
+    {
+        return longitudeAt(getBeam()/2, getLength()/2, latitude, longitude, heading);
+    }
+
     /**
      * Returns latitude at pos with given this coordinates and heading.
      * @param pos
@@ -79,34 +76,16 @@ public class BoatPosition
      * @param heading
      * @return 
      */
-    public double latitudeAt(BoatPosition pos, double latitude, double longitude, double heading)
+    default double latitudeAt(BoatPosition pos, double latitude, double longitude, double heading)
     {
-        if (length() != pos.length() || beam() != pos.beam())
+        if (getLength() != pos.getLength() || getBeam() != pos.getBeam())
         {
             throw new IllegalArgumentException("dimensions differ");
         }
-        return latitudeAt(pos.toPort, pos.toBow, latitude, longitude, heading);
+        return latitudeAt(pos.getDimensionToPort(), pos.getDimensionToBow(), latitude, heading);
     }
-    private double latitudeAt(double toPort, double toBow, double latitude, double longitude, double heading)
-    {
-        double bowDir = this.toBow - toBow; 
-        double portDir = this.toPort - toPort;
-        double meters = Math.hypot(bowDir, portDir);
-        double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
-        double bearing = Navis.normalizeAngle(angle+heading);
-        return latitude + Navis.deltaLatitude(UnitType.convert(meters, Meter, NM), bearing);
-    }
-    /**
-     * Returns center longitude with given coordinates and heading.
-     * @param latitude
-     * @param longitude
-     * @param heading
-     * @return 
-     */
-    public double centerLongitude(double latitude, double longitude, double heading)
-    {
-        return longitudeAt(beam()/2, length()/2, latitude, longitude, heading);
-    }
+
+
     /**
      * Returns longitude at pos with given this coordinates and heading.
      * @param pos
@@ -115,21 +94,39 @@ public class BoatPosition
      * @param heading
      * @return 
      */
-    public double longitudeAt(BoatPosition pos, double latitude, double longitude, double heading)
+    default double longitudeAt(SimpleBoatPosition pos, double latitude, double longitude, double heading)
     {
-        if (length() != pos.length() || beam() != pos.beam())
+        if (getLength() != pos.getLength() || getBeam() != pos.getBeam())
         {
             throw new IllegalArgumentException("dimensions differ");
         }
-        return longitudeAt(pos.toPort, pos.toBow, latitude, longitude, heading);
+        return longitudeAt(pos.getDimensionToPort(), pos.getDimensionToBow(), latitude, longitude, heading);
     }
-    private double longitudeAt(double toPort, double toBow, double latitude, double longitude, double heading)
+    
+    default double latitudeAt(double toPort, double toBow, double latitude, double heading)
     {
-        double bowDir = this.toBow - toBow; 
-        double portDir = this.toPort - toPort;
+        double bowDir = getDimensionToBow() - toBow; 
+        double portDir = getDimensionToPort() - toPort;
+        double meters = Math.hypot(bowDir, portDir);
+        double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
+        double bearing = Navis.normalizeAngle(angle+heading);
+        return latitude + Navis.deltaLatitude(UnitType.convert(meters, Meter, NM), bearing);
+    }
+    default double longitudeAt(double toPort, double toBow, double latitude, double longitude, double heading)
+    {
+        double bowDir = getDimensionToBow() - toBow; 
+        double portDir = getDimensionToPort() - toPort;
         double meters = Math.hypot(bowDir, portDir);
         double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
         double bearing = Navis.normalizeAngle(angle+heading);
         return longitude + Navis.deltaLongitude(latitude, UnitType.convert(meters, Meter, NM), bearing);
     }
+    double getDimensionToStarboard();
+
+    double getDimensionToPort();
+
+    double getDimensionToBow();
+
+    double getDimensionToStern();
+    
 }
