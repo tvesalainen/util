@@ -122,6 +122,19 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
         discard();
     }
     /**
+     * Tries to mark mark items. If mark is greater than remaining, remaining
+     * items are marked.
+     * @param mark 
+     */
+    public void mark(int mark)
+    {
+        int m = remaining > mark ? remaining : mark;
+        marked += m;
+        position = (position+m) % capacity;
+        remaining -= m;
+        updated();
+    }
+    /**
      * Return item as int value at index position from discard.
      * @param index
      * @return 
