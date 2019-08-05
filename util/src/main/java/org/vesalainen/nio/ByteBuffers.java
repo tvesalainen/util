@@ -16,9 +16,7 @@
  */
 package org.vesalainen.nio;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import org.vesalainen.util.ArrayIterator;
 
@@ -26,8 +24,24 @@ import org.vesalainen.util.ArrayIterator;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ByteBuffers
+public final class ByteBuffers
 {
+    /**
+     * Returns accumulated remaining of ByteBuffers.
+     * @param dsts
+     * @param offset
+     * @param length
+     * @return 
+     */
+    public static int remaining(ByteBuffer[] dsts, int offset, int length)
+    {
+        int rem = 0;
+        for (int ii=offset;ii<length;ii++)
+        {
+            rem += dsts[ii].remaining();
+        }
+        return rem;
+    }
       /**
      * Increments position so that position mod align == 0
      * @param bb
