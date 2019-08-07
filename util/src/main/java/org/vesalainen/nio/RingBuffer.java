@@ -128,11 +128,15 @@ public abstract class RingBuffer<B extends Buffer,R,W> implements CharSequence
      */
     public void mark(int mark)
     {
-        int m = remaining > mark ? remaining : mark;
+        int m = remaining < mark ? remaining : mark;
         marked += m;
         position = (position+m) % capacity;
         remaining -= m;
         updated();
+    }
+    public int capacity()
+    {
+        return capacity;
     }
     /**
      * Return item as int value at index position from discard.
