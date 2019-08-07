@@ -16,10 +16,9 @@
  */
 package org.vesalainen.util.concurrent;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -29,8 +28,8 @@ import java.util.function.BooleanSupplier;
  */
 public class PredicateSynchronizer
 {
-    private Object blocker = this;
-    private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
+    private ReentrantLock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
     /**
      * Creates PredicateSynchronizer with blocker as self.
      */
@@ -38,17 +37,17 @@ public class PredicateSynchronizer
     {
     }
     /**
+     * @deprecated Blocker object is not supported anymore.
      * Creates PredicateSynchronizer with given blocker.
      * @param blocker 
      */
     public PredicateSynchronizer(Object blocker)
     {
-        this.blocker = blocker;
     }
     
     public boolean waitUntil(BooleanSupplier predicate) throws InterruptedException
     {
-        return waitUntil(predicate, -1, TimeUnit.MILLISECONDS);
+        return waitUntil(predicate, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
     /**
      * Waits until predicate is true or after timeout.
@@ -70,31 +69,29 @@ public class PredicateSynchronizer
         {
             return true;
         }
-        long deadline = timeout > 0 ? System.currentTimeMillis() + unit.toMillis(timeout) : Long.MAX_VALUE;
-        waiters.add(Thread.currentThread());
+        if (timeout == 0)
+        {
+            return false;
+        }
+        lock.lock();
         try
         {
             while (true)
             {
-                LockSupport.parkUntil(blocker, deadline);
-                if (Thread.interrupted())
+                boolean status = condition.await(timeout, unit);
+                if (!status)
                 {
-                    throw new InterruptedException();
+                    return false;
                 }
                 if (predicate.getAsBoolean())
                 {
                     return true;
                 }
-                if (deadline <= System.currentTimeMillis())
-                {
-                    return false;
-                }
             }
         }
         finally
         {
-            boolean removed = waiters.remove(Thread.currentThread());
-            assert removed;
+            lock.unlock();
         }
     }
     /**
@@ -103,9 +100,14 @@ public class PredicateSynchronizer
      */
     public void update()
     {
-        for (Thread thread : waiters)
+        lock.lock();
+        try
         {
-            LockSupport.unpark(thread);
+            condition.signalAll();
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
 }
