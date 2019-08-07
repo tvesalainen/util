@@ -44,17 +44,32 @@ public class ByteBufferChannel implements Closeable, AutoCloseable, Channel, Gat
         this.sink = sink;
         this.source = source;
     }
-
+    /**
+     * Creates ByteBufferChannel pair. Writing to one is readable in another.
+     * @param size ByteBuffer size
+     * @param direct ByteBuffer direct/heap
+     * @return 
+     */
     public static ByteBufferChannel[] open(int size, boolean direct)
     {
         ByteBufferPipe pipe1 = new ByteBufferPipe(size, direct);
         ByteBufferPipe pipe2 = new ByteBufferPipe(size, direct);
         return new ByteBufferChannel[]{new ByteBufferChannel(pipe1.sink(), pipe2.source()), new ByteBufferChannel(pipe2.sink(), pipe1.source())};
     }
+    /**
+     * Set time for write method.
+     * @param timeout
+     * @param unit 
+     */
     public void setWriteTimeout(long timeout, TimeUnit unit)
     {
         sink.setTimeout(timeout, unit);
     }
+    /**
+     * Set timeout for read method.
+     * @param timeout
+     * @param unit 
+     */
     public void setReadTimeout(long timeout, TimeUnit unit)
     {
         source.setTimeout(timeout, unit);
