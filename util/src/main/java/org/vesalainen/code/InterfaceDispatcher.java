@@ -95,6 +95,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     private final List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
     private final Set<Transactional> transactionTargets = new IdentityArraySet<>();
     private final MethodHandle transactionAdder;
+    private boolean transaction;
     private final Map<String,MethodHandle> handleSetters = new HashMap<>();
     private final Map<String,MethodHandle> savers = new HashMap<>();
     private final Map<String,MethodHandle> arrayGetters = new HashMap<>();
@@ -339,6 +340,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     @Override
     public void start(String reason)
     {
+        if (transaction)
+        {
+            throw new IllegalStateException("transaction not ended");
+        }
+        transaction = true;
         TRANSACTION_PROPERTIES.clear();
         transactionTargets.clear();
         VERSION = VERSION == 0 ? 1 : 0;
@@ -347,6 +353,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     @Override
     public void rollback(String reason)
     {
+        if (!transaction)
+        {
+            throw new IllegalStateException("transaction not started");
+        }
+        transaction = false;
         VERSION = VERSION == 0 ? 1 : 0;
         TRANSACTION_PROPERTIES.forEach((String property)->
         {
@@ -385,6 +396,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     @Override
     public void commit(String reason)
     {
+        if (!transaction)
+        {
+            throw new IllegalStateException("transaction not started");
+        }
+        transaction = false;
         TRANSACTION_PROPERTIES.forEach((property)->
         {
             List<Transactional> list = transactionalProperties.get(property);

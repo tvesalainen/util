@@ -83,8 +83,16 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public TimeToLiveMap(Clock clock, long defaultTimeout, TimeUnit unit, BiConsumer<K,V> removeObserver)
     {
-        this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit, map::remove);
+        this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit, this::onRemove);
         this.removeObserver = removeObserver;
+    }
+    private void onRemove(K key)
+    {
+        V value = map.remove(key);
+        if (removeObserver != null)
+        {
+            removeObserver.accept(key, value);
+        }
     }
     /**
      * Returns live-set of keys
@@ -119,6 +127,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
             removeObserver.accept((K) key, old);
         }
         ttlSet.remove(key);
+        map.remove(key);
         return old;
     }
     /**

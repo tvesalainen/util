@@ -30,7 +30,10 @@ public interface PropertySetter
      * Returns list of interested property prefixes
      * @return 
      */
-    String[] getPrefixes();
+    default String[] getPrefixes()
+    {
+        throw new UnsupportedOperationException("getPrefixes() deprecated use getProperties()");
+    }
     /**
      * Returns list of interested properties
      * @return 

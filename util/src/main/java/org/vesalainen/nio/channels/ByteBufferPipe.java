@@ -44,6 +44,10 @@ public class ByteBufferPipe
     private Condition hasRoom = lock.newCondition();
     private Condition hasData = lock.newCondition();
 
+    public ByteBufferPipe()
+    {
+        this(4096, false);
+    }
     public ByteBufferPipe(int size, boolean direct)
     {
         this.buffer = new RingByteBuffer(size, direct);

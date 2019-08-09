@@ -16,7 +16,7 @@
  */
 package org.vesalainen.util;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * An interface for transactional changes
@@ -41,7 +41,7 @@ public interface Transactional
      * Confirm changes after start.
      * @param reason 
      */
-    default void commit(String reason, List<String> updatedProperties)
+    default void commit(String reason, Collection<String> updatedProperties)
     {
         commit(reason);
     }

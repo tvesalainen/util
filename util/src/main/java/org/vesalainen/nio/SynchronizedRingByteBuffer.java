@@ -38,8 +38,8 @@ public class SynchronizedRingByteBuffer extends RingByteBuffer
 {
     private ReentrantLock fillLock = new ReentrantLock();   // limit
     private ReentrantLock writeToLock = new ReentrantLock();  // writeSplitter
-    private PredicateSynchronizer fillSync = new PredicateSynchronizer(this);
-    private PredicateSynchronizer getSync = new PredicateSynchronizer(this);
+    private PredicateSynchronizer fillSync = new PredicateSynchronizer();
+    private PredicateSynchronizer getSync = new PredicateSynchronizer();
     
     public SynchronizedRingByteBuffer(int size)
     {
