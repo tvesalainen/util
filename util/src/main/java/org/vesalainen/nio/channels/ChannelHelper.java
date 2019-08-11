@@ -33,6 +33,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.function.Consumer;
+import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.util.function.IOToIntFunction;
 
 /**
@@ -274,13 +275,10 @@ public final class ChannelHelper
      * @param length
      * @throws IOException If couldn't write all.
      */
-    public static void writeAll(GatheringByteChannel ch, ByteBuffer[] bbs, int offset, int length) throws IOException
+    public static long writeAll(GatheringByteChannel ch, ByteBuffer[] bbs, int offset, int length) throws IOException
     {
-        long all = 0;
-        for (int ii=0;ii<length;ii++)
-        {
-            all += bbs[offset+ii].remaining();
-        }
+        long all = ByteBuffers.remaining(bbs, offset, length);
+        long sum = all;
         int count = 0;
         while (all > 0)
         {
@@ -298,6 +296,7 @@ public final class ChannelHelper
                 throw new IOException("Couldn't write all.");
             }
         }
+        return sum;
     }
     /**
      * Writes to ch until no remaining left or throws IOException
