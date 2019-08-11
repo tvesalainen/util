@@ -236,6 +236,42 @@ public class ByteBufferPipe
         {
             return read(dsts, 0, dsts.length);
         }
+        /**
+         * Waits until at least one byte is available and then writes all
+         * available bytes to channel. This is same as reading and then writing
+         * to channel, but more efficient.
+         * @param channel
+         * @return
+         * @throws IOException 
+         */
+        public int writeTo(GatheringByteChannel channel) throws IOException
+        {
+            lock.lock();
+            try
+            {
+                while (!buffer.hasRemaining())
+                {
+                    if (!hasData.await(timeout, unit))
+                    {
+                        return 0;
+                    }
+                }
+                int remaining = buffer.remaining();
+                buffer.mark(remaining);
+                int rc = buffer.writeTo(channel);
+                buffer.discard();
+                hasRoom.signal();
+                return rc;
+            }
+            catch (InterruptedException ex)
+            {
+                throw new IOException(ex);
+            }            
+            finally
+            {
+                lock.unlock();
+            }
+        }
 
         @Override
         public boolean isOpen()
