@@ -22,9 +22,9 @@ import static java.util.concurrent.TimeUnit.HOURS;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Cource
+public interface Course
 {
-    default long getCPATime(Cource o)
+    default long getCPATime(Course o)
     {
         double x0 = getLatitude()-o.getLatitude();
         double x1 = deltaLatitude()-o.deltaLatitude();
@@ -47,7 +47,7 @@ public interface Cource
 
         return (long) t;
     }
-    default double getCPADistance(Cource o)
+    default double getCPADistance(Course o)
     {
         double x0 = getLatitude()-o.getLatitude();
         double x1 = deltaLatitude()-o.deltaLatitude();
@@ -87,14 +87,14 @@ public interface Cource
     }
     default double deltaLatitude()
     {
-        return Math.cos(Math.toRadians(getBearing()))*getSpeed()/HOURS.toMillis(60);
+        return Math.cos(Math.toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60);
     }
     default double deltaLongitude()
     {
-        return Math.cos(Math.toRadians(getLatitude()))*Math.sin(Math.toRadians(getBearing()))*getSpeed()/HOURS.toMillis(60);
+        return Math.cos(Math.toRadians(getLatitude()))*Math.sin(Math.toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60);
     }
     double getLatitude();
     double getLongitude();
-    double getBearing();
+    double getCourse();
     double getSpeed();
 }

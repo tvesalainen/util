@@ -20,7 +20,7 @@ package org.vesalainen.navi.cpa;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SimpleCource implements Cource
+public class SimpleCource implements Course
 {
     private double latitude;
     private double longitude;
@@ -54,7 +54,7 @@ public class SimpleCource implements Cource
     }
 
     @Override
-    public double getBearing()
+    public double getCourse()
     {
         return bearing;
     }

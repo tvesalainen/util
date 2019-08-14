@@ -36,6 +36,10 @@ import java.nio.BufferUnderflowException;
    free|                        |free---
  </pre>
  *  A bytes are available for reading.
+ * <p>Fill fills space between limit and discard. Moves limit.
+ * <p>Mark and get moves position
+ * <p>writeTo writes data from discard to position. Doesn't move anything.
+ * <p>Discard moves discard to position.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <B> Buffer type
  * @param <R> Reader type

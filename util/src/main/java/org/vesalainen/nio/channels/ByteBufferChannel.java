@@ -19,22 +19,27 @@ package org.vesalainen.nio.channels;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.Channel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.InterruptibleChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.nio.channels.ByteBufferPipe.Sink;
 import org.vesalainen.nio.channels.ByteBufferPipe.Source;
+import org.vesalainen.nio.channels.vc.VirtualCircuit;
+import org.vesalainen.nio.channels.vc.VirtualCircuitFactory;
 
 /**
  * ByteBufferChannel is like PipeChannel except that it uses ByteBuffer as 
  * intermediate buffer.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ByteBufferChannel implements Closeable, AutoCloseable, Channel, GatheringByteChannel, InterruptibleChannel, WritableByteChannel, ReadableByteChannel, ScatteringByteChannel
+public class ByteBufferChannel implements Closeable, AutoCloseable, ByteChannel, GatheringByteChannel, InterruptibleChannel, WritableByteChannel, ReadableByteChannel, ScatteringByteChannel
 {
     private Sink sink;
     private Source source;
@@ -123,6 +128,26 @@ public class ByteBufferChannel implements Closeable, AutoCloseable, Channel, Gat
     public long read(ByteBuffer[] dsts) throws IOException
     {
         return source.read(dsts);
+    }
+
+    private static class BufferedByteBufferChannel extends ByteBufferChannel
+    {
+
+        private final VirtualCircuit vc;
+
+        public BufferedByteBufferChannel(Sink sink, Source source, VirtualCircuit vc)
+        {
+            super(sink, source);
+            this.vc = vc;
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            vc.stop();
+            super.close();
+        }
+        
     }
     
 }

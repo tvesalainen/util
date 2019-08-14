@@ -22,6 +22,7 @@ import java.nio.Buffer;
 /**
  * A FunctionalInterface for Scattering/Gathering operations.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <B>
  */
 @FunctionalInterface
 public interface SparseBufferOperator<B extends Buffer>

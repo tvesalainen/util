@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
+import org.vesalainen.nio.channels.ChannelHelper;
 
 /**
  * RingByteBuffer is a ByteBuffer implementation of RingBuffer
@@ -85,22 +86,52 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
             return ByteBuffer.allocate(size);
         }
     }
-
+    /**
+     * Reads bytes from reader as much as there is room in this buffer starting from 
+     * limit and not passing mark/position. Positions are updated in reader and also
+     * in this buffer.
+     * @param reader
+     * @return
+     * @throws IOException 
+     */
     @Override
     public int fill(ScatteringByteChannel reader) throws IOException
     {
         return fill((dsts, offset, length)->reader.read(dsts, offset, length), fillSplitter);
     }
-
+    /**
+     * Reads bytes from ring as much as there is room in this buffer starting from 
+     * limit and not passing mark/position. Positions are updated in ring and also
+     * in this buffer.
+     * @param ring
+     * @return
+     * @throws IOException 
+     */
     public int fill(RingByteBuffer ring) throws IOException
     {
         return fill((dsts, offset, length)->ring.writeTo(dsts, offset, length), fillSplitter);
     }
+    /**
+     * Writes all bytes from mark (included) to position (excluded) to writer.
+     * @param writer
+     * @return
+     * @throws IOException 
+     */
     @Override
     public int writeTo(GatheringByteChannel writer) throws IOException
     {
-        return writeTo((srcs, offset, length)->writer.write(srcs, offset, length), writeToSplitter);
+        return writeTo((srcs, offset, length)->ChannelHelper.writeAll(writer, srcs, offset, length), writeToSplitter);
     }
+    /**
+     * Reads bytes from bbs as much as there is room in this buffer starting from 
+     * limit and not passing mark/position. Positions are updated in bbs and also
+     * in this buffer.
+     * @param bbs
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     */
     public int fill(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
         int count = 0;
@@ -110,6 +141,15 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
         }
         return count;
     }
+    /**
+     * Writes bytes from mark (included) to position (excluded) to bbs as much as
+     * bbs has remaining. bbs positions are updated.
+     * @param bbs
+     * @param offset
+     * @param length
+     * @return
+     * @throws IOException 
+     */
     public int writeTo(ByteBuffer[] bbs, int offset, int length) throws IOException
     {
         int count = 0;
@@ -140,6 +180,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     /**
      * Writes bytes from mark (included) to position (excluded) to bb as much as
      * bb has remaining. bb positions are updated.
+     * <p>Note! Positions in this buffer are not updated
      * @param bb
      * @return
      * @throws IOException 
