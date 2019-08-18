@@ -344,6 +344,17 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         {
             throw new IllegalStateException("transaction not ended");
         }
+        transactionTargets.forEach((Transactional t)->
+        {
+            try
+            {
+                t.start(reason);
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "start(%s)", reason);
+            }
+        });
         transaction = true;
         TRANSACTION_PROPERTIES.clear();
         transactionTargets.clear();
