@@ -25,6 +25,7 @@ import java.util.Arrays;
  */
 public final class ArrayHelp
 {
+    public static final Object[] EMPTY = new Object[]{};
     /**
      * returns true if 2-dimensional points x-coordinates are ordered ascending.
      * @param array
