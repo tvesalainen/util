@@ -25,8 +25,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @deprecated Not used at all
+ * @deprecated ByteBufferChannel has more simple API.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see org.vesalainen.nio.channels.ByteBufferChannel
  */
 public class SynchronizedRingBuffer
 {
