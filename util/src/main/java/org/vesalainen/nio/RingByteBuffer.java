@@ -120,7 +120,7 @@ public class RingByteBuffer extends RingBuffer<ByteBuffer,ScatteringByteChannel,
     @Override
     public int writeTo(GatheringByteChannel writer) throws IOException
     {
-        return writeTo((srcs, offset, length)->ChannelHelper.writeAll(writer, srcs, offset, length), writeToSplitter);
+        return writeTo((srcs, offset, length)->writer.write(srcs, offset, length), writeToSplitter);
     }
     /**
      * Reads bytes from bbs as much as there is room in this buffer starting from 
