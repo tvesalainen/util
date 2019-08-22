@@ -258,15 +258,23 @@ public class ByteBufferPipe
                 }
                 int remaining = buffer.remaining();
                 buffer.mark(remaining);
-                int rc = buffer.writeTo(channel);
-                buffer.discard();
-                hasRoom.signal();
-                return rc;
             }
             catch (InterruptedException ex)
             {
                 throw new IOException(ex);
             }            
+            finally
+            {
+                lock.unlock();
+            }
+            int rc = buffer.writeTo(channel);
+            lock.lock();
+            try
+            {
+                buffer.discard();
+                hasRoom.signal();
+                return rc;
+            }
             finally
             {
                 lock.unlock();
