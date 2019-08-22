@@ -20,19 +20,15 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.Channel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.InterruptibleChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.vesalainen.nio.channels.ByteBufferPipe.Sink;
 import org.vesalainen.nio.channels.ByteBufferPipe.Source;
 import org.vesalainen.nio.channels.vc.VirtualCircuit;
-import org.vesalainen.nio.channels.vc.VirtualCircuitFactory;
 
 /**
  * ByteBufferChannel is like PipeChannel except that it uses ByteBuffer as 
