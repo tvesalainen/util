@@ -46,15 +46,26 @@ public class ByteBufferChannel implements Closeable, AutoCloseable, ByteChannel,
         this.source = source;
     }
     /**
-     * Creates ByteBufferChannel pair. Writing to one is readable in another.
+     * Creates ByteBufferChannel pair with unfair locking policy. Writing to one is readable in another.
      * @param size ByteBuffer size
      * @param direct ByteBuffer direct/heap
      * @return 
      */
     public static ByteBufferChannel[] open(int size, boolean direct)
     {
-        ByteBufferPipe pipe1 = new ByteBufferPipe(size, direct);
-        ByteBufferPipe pipe2 = new ByteBufferPipe(size, direct);
+        return open(size, direct, false);
+    }
+    /**
+     * Creates ByteBufferChannel pair. Writing to one is readable in another.
+     * @param size ByteBuffer size
+     * @param direct ByteBuffer direct/heap
+     * @param fair Locking policy
+     * @return 
+     */
+    public static ByteBufferChannel[] open(int size, boolean direct, boolean fair)
+    {
+        ByteBufferPipe pipe1 = new ByteBufferPipe(size, direct, fair);
+        ByteBufferPipe pipe2 = new ByteBufferPipe(size, direct, fair);
         return new ByteBufferChannel[]{new ByteBufferChannel(pipe1.sink(), pipe2.source()), new ByteBufferChannel(pipe2.sink(), pipe1.source())};
     }
     /**
