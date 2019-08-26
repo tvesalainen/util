@@ -24,11 +24,8 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.nio.ByteBuffers;
 import org.vesalainen.nio.RingByteBuffer;
-import org.vesalainen.util.concurrent.PredicateSynchronizer;
 
 /**
  *
@@ -37,22 +34,43 @@ import org.vesalainen.util.concurrent.PredicateSynchronizer;
 public class ByteBufferPipe
 {
     
-    private Sink sink;
-    private Source source;
+    private final Sink sink;
+    private final Source source;
     private RingByteBuffer buffer;
-    private ReentrantLock lock = new ReentrantLock();
-    private Condition hasRoom = lock.newCondition();
-    private Condition hasData = lock.newCondition();
-
+    private final ReentrantLock lock;
+    private final Condition hasRoom;
+    private final Condition hasData;
+    /**
+     * Creates new ByteBufferPipe with 4096 buffer, heap ByteBuffer and unfair
+     * locking policy.
+     */
     public ByteBufferPipe()
     {
         this(4096, false);
     }
+    /**
+     * Creates new ByteBufferPipe with size buffer and unfair locking policy.
+     * @param size
+     * @param direct 
+     */
     public ByteBufferPipe(int size, boolean direct)
+    {
+        this(size, direct, false);
+    }
+    /**
+     * Creates new ByteBufferPipe with size buffer and unfair locking policy.
+     * @param size Buffer size
+     * @param direct Direct or heap ByteBuffer
+     * @param fair Locking policy
+     */
+    public ByteBufferPipe(int size, boolean direct, boolean fair)
     {
         this.buffer = new RingByteBuffer(size, direct);
         this.sink = new Sink();
         this.source = new Source();
+        lock = new ReentrantLock(fair);
+        hasRoom = lock.newCondition();
+        hasData = lock.newCondition();
     }
 
     public Sink sink()
