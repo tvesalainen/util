@@ -26,6 +26,7 @@ import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -39,7 +40,7 @@ import java.util.stream.StreamSupport;
 public class TimeToLiveSet<T> extends AbstractSet<T>
 {
     private LongMap<T> map = new LongMap<>(new ConcurrentHashMap<>());
-    private Clock clock;
+    private LongSupplier millis;
     private long defaultTimeout;
     private Consumer<T> onRemove;
     /**
@@ -71,7 +72,11 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      */
     public TimeToLiveSet(Clock clock, long defaultTimeout, TimeUnit unit, Consumer<T> onRemove)
     {
-        this.clock = clock;
+        this(clock::millis, defaultTimeout, unit, onRemove);
+    }
+    public TimeToLiveSet(LongSupplier millis, long defaultTimeout, TimeUnit unit, Consumer<T> onRemove)
+    {
+        this.millis = millis;
         this.defaultTimeout = unit.toMillis(defaultTimeout);
         this.onRemove = onRemove;
     }
@@ -81,7 +86,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      */
     void setClock(Clock clock)
     {
-        this.clock = clock;
+        this.millis = clock::millis;
     }
     /**
      * @deprecated Use add
@@ -120,7 +125,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      */
     public boolean add(T item, long timeout, TimeUnit unit)
     {
-        return add(item, clock.millis() + unit.toMillis(timeout));
+        return add(item, millis.getAsLong() + unit.toMillis(timeout));
     }
     /**
      * Add/Refresh item with given expiry time
@@ -171,7 +176,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         try
         {
             long expires = map.getLong(item);
-            if (expires < clock.millis())
+            if (expires < millis.getAsLong())
             {
                 map.remove(item);
                 onRemove.accept(item);
@@ -256,7 +261,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
             while (iterator.hasNext())
             {
                 entry = iterator.next();
-                if (entry.getValue().value >= clock.millis())
+                if (entry.getValue().value >= millis.getAsLong())
                 {
                     return true;
                 }
