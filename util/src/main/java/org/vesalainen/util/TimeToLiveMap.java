@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.LongSupplier;
 
 /**
  * TimeToLiveMap is a ConcurrentHashMap backed implementation of Map interface
@@ -44,6 +45,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     private long purgeLimit = INIT_PURGE_LIMIT;
     private long lastPurge;
     private BiConsumer<K,V> removeObserver;
+    private final LongSupplier millis;
     /**
      * Creates TimeToLiveMap with system clock
      * @param defaultTimeout
@@ -83,8 +85,20 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public TimeToLiveMap(Clock clock, long defaultTimeout, TimeUnit unit, BiConsumer<K,V> removeObserver)
     {
-        this.ttlSet = new TimeToLiveSet<>(clock, defaultTimeout, unit, this::onRemove);
+        this(clock::millis, defaultTimeout, unit, removeObserver);
+    }
+    /**
+     * Creates TimeToLiveMap
+     * @param millis
+     * @param defaultTimeout
+     * @param unit
+     * @param removeObserver 
+     */
+    public TimeToLiveMap(LongSupplier millis, long defaultTimeout, TimeUnit unit, BiConsumer<K,V> removeObserver)
+    {
+        this.ttlSet = new TimeToLiveSet<>(millis, defaultTimeout, unit, this::onRemove);
         this.removeObserver = removeObserver;
+        this.millis = millis;
     }
     private void onRemove(K key)
     {
@@ -153,7 +167,7 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
     {
         if (timeout != -1)
         {
-            return put(key, value, System.currentTimeMillis() + unit.toMillis(timeout));
+            return put(key, value, millis.getAsLong() + unit.toMillis(timeout));
         }
         else
         {
@@ -169,10 +183,10 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public V put(K key, V value, long expires)
     {
-        if (lastPurge < System.currentTimeMillis())
+        if (lastPurge < millis.getAsLong())
         {
             size();
-            lastPurge = System.currentTimeMillis() + purgeLimit;
+            lastPurge = millis.getAsLong() + purgeLimit;
         }
         V old = null;
         if (ttlSet.contains(key))
