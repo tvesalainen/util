@@ -151,6 +151,24 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
      */
     public V put(K key, V value, long timeout, TimeUnit unit)
     {
+        if (timeout != -1)
+        {
+            return put(key, value, System.currentTimeMillis() + unit.toMillis(timeout));
+        }
+        else
+        {
+            return put(key, value, -1);
+        }
+    }
+    /**
+     * Puts/refreshes mapping with given expiry time
+     * @param key
+     * @param value
+     * @param expires
+     * @return 
+     */
+    public V put(K key, V value, long expires)
+    {
         if (lastPurge < System.currentTimeMillis())
         {
             size();
@@ -162,13 +180,13 @@ public class TimeToLiveMap<K,V> extends AbstractMap<K,V>
             old = map.get(key);
         }
         map.put(key, value);
-        if (unit == null)
+        if (expires == -1)
         {
             ttlSet.add(key);
         }
         else
         {
-            ttlSet.add(key, timeout, unit);
+            ttlSet.add(key, expires);
         }
         return old;
     }
