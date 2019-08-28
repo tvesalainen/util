@@ -92,7 +92,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         add(item);
     }
     /**
-     * Refresh item with default timeout
+     * Add/Refresh item with default timeout
      * @param item 
      * @return  
      */
@@ -112,7 +112,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         add(item, timeout, unit);
     }
     /**
-     * 
+     * Add/Refresh item with given timeout
      * @param item
      * @param timeout
      * @param unit 
@@ -120,10 +120,19 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      */
     public boolean add(T item, long timeout, TimeUnit unit)
     {
-        LongReference old = map.put(item, clock.millis() + unit.toMillis(timeout));
+        return add(item, clock.millis() + unit.toMillis(timeout));
+    }
+    /**
+     * Add/Refresh item with given expiry time
+     * @param item
+     * @param expires
+     * @return 
+     */
+    public boolean add(T item, long expires)
+    {
+        LongReference old = map.put(item, expires);
         return old != null;
     }
-
     @Override
     public void clear()
     {
