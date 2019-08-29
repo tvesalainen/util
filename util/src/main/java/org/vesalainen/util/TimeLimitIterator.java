@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.time;
+package org.vesalainen.util;
 
 import java.util.PrimitiveIterator.OfLong;
 import java.util.function.LongSupplier;
@@ -38,6 +38,10 @@ public class TimeLimitIterator implements OfLong
 
     public TimeLimitIterator(LongSupplier now, long... gaps)
     {
+        if (gaps.length == 0)
+        {
+            throw new IllegalArgumentException("no gaps");
+        }
         this.millis = now;
         this.gaps = gaps;
         this.begin = now.getAsLong();
