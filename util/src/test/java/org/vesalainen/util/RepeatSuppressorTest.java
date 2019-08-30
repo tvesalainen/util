@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.text.MillisDuration;
 
 /**
  *
@@ -29,6 +30,7 @@ public class RepeatSuppressorTest
     private int count;
     private long time;
     private String item;
+    private String formatted;
     
     public RepeatSuppressorTest()
     {
@@ -43,6 +45,7 @@ public class RepeatSuppressorTest
         assertEquals(1, count);
         assertEquals(0, time);
         assertEquals("foo", item);
+        assertEquals("0.000 s", formatted);
         
         millis = 1;
 
@@ -50,6 +53,7 @@ public class RepeatSuppressorTest
         assertEquals(1, count);
         assertEquals(0, time);
         assertEquals("foo", item);
+        assertEquals("0.000 s", formatted);
         
         millis = 2;
 
@@ -57,6 +61,7 @@ public class RepeatSuppressorTest
         assertEquals(1, count);
         assertEquals(0, time);
         assertEquals("bar", item);
+        assertEquals("0.000 s", formatted);
         
         millis = 6;
 
@@ -64,6 +69,7 @@ public class RepeatSuppressorTest
         assertEquals(3, count);
         assertEquals(6, time);
         assertEquals("foo", item);
+        assertEquals("0.006 s", formatted);
         
         millis = 111;
 
@@ -71,16 +77,18 @@ public class RepeatSuppressorTest
         assertEquals(1, count);
         assertEquals(0, time);
         assertEquals("foo", item);
+        assertEquals("0.000 s", formatted);
     }
     
     private long millis()
     {
         return millis;
     }
-    private void forward(int count, long time, String item)
+    private void forward(int count, long time, MillisDuration formattable, String item)
     {
         this.count = count;
         this.time = time;
         this.item = item;
+        this.formatted = String.format("%s", formattable);
     }
 }
