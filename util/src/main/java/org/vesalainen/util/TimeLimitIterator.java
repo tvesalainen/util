@@ -26,7 +26,6 @@ import java.util.function.LongSupplier;
  */
 public class TimeLimitIterator implements OfLong
 {
-    private final LongSupplier millis;
     private final long[] gaps;
     private int index;
     private long begin;
@@ -42,7 +41,6 @@ public class TimeLimitIterator implements OfLong
         {
             throw new IllegalArgumentException("no gaps");
         }
-        this.millis = now;
         this.gaps = gaps;
         this.begin = now.getAsLong();
     }
