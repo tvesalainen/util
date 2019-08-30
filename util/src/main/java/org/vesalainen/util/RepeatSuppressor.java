@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
+import org.vesalainen.text.MillisDuration;
 
 /**
  * RepeatSuppressor purpose is to suppress repetitive actions like log entries.
@@ -29,7 +30,7 @@ public class RepeatSuppressor<T>
     @FunctionalInterface
     public interface Forwarder<T>
     {
-        void forward(int count, long time, T item);
+        void forward(int count, long time, MillisDuration formattable, T item);
     }
     private final TimeToLiveMap<T,Entry> ttlMap;
     private final LongSupplier millis;
@@ -77,9 +78,9 @@ public class RepeatSuppressor<T>
     private void remove(T item, Entry entry)
     {
         long now = millis.getAsLong();
-        forwarder.forward(entry.count, now-entry.begin, item);
+        forwarder.forward(entry.count, now-entry.begin, entry, item);
     }
-    private class Entry
+    private class Entry implements MillisDuration
     {
         private final TimeLimitIterator iterator;
         private final long begin;
@@ -97,10 +98,16 @@ public class RepeatSuppressor<T>
             long now = millis.getAsLong();
             if (now >= limit)
             {
-                forwarder.forward(count, now-begin, item);
+                forwarder.forward(count, now-begin, this, item);
                 limit = iterator.nextLong();
                 ttlMap.put(item, this, limit);
             }
+        }
+
+        @Override
+        public long millis()
+        {
+            return millis.getAsLong()-begin;
         }
     }
 }
