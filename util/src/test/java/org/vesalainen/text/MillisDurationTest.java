@@ -96,6 +96,48 @@ public class MillisDurationTest
         assertEquals("1 DAYS 2 HOURS 3 MINUTES 4.567 SECONDS", String.format("%#S", m));
     }
     
+    @Test
+    public void testSecond()
+    {
+        assertEquals("1.000 s", String.format("%s", new M(1000)));
+    }
+    
+    @Test
+    public void testMillis()
+    {
+        assertEquals("0.123 s", String.format("%s", new M(123)));
+    }
+    
+    @Test
+    public void test00()
+    {
+        assertEquals("0 d", String.format("%.0s", new M(0)));
+    }
+    
+    @Test
+    public void test01()
+    {
+        assertEquals("0 h", String.format("%.1s", new M(0)));
+    }
+    
+    @Test
+    public void test02()
+    {
+        assertEquals("0 m", String.format("%.2s", new M(0)));
+    }
+    
+    @Test
+    public void test03()
+    {
+        assertEquals("0 s", String.format("%.3s", new M(0)));
+    }
+    
+    @Test
+    public void test04()
+    {
+        assertEquals("0.000 s", String.format("%.4s", new M(0)));
+    }
+    
     class M implements MillisDuration
     {
         long millis;
