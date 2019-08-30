@@ -22,7 +22,17 @@ import java.util.Formatter;
 import java.util.Locale;
 
 /**
- *
+ * MillisDuration contains default methods to format milli seconds duration.
+ * <p>Flag LEFT_JUSTIFY '-' as normal
+ * <p>UPPERCASE 'S' as normal
+ * <p>ALTERNATE '#' uses longer unit name. With '#' 'seconds' without 's'
+ * <p>Width is minimum as also maximum number of characters in output. If 
+ * output is less pads with ' '. If output is longer than width fields are
+ * dropped until it fits width. Might cause blank output.
+ * <p>Precision: If omitted outputs days, hours, minutes, seconds and milli 
+ * seconds. 0 outputs days. 1 outputs days and hours. 2 outputs days, hours
+ * and minutes. 3 outputs days, hours, minutes and seconds. 4 outputs days, 
+ * hours, minutes, seconds and milli seconds.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface MillisDuration extends Formattable
@@ -31,7 +41,23 @@ public interface MillisDuration extends Formattable
     static final long MINUTES = 60*SECONDS;
     static final long HOURS = 60*MINUTES;
     static final long DAYS = 24*HOURS;
-
+    /**
+     * Formats milli second duration.
+     * <p>Flag LEFT_JUSTIFY '-' as normal
+     * <p>UPPERCASE 'S' as normal
+     * <p>ALTERNATE '#' uses longer unit name. With '#' 'seconds' without 's'
+     * <p>Width is minimum as also maximum number of characters in output. If 
+     * output is less pads with ' '. If output is longer than width fields are
+     * dropped until it fits width. Might cause blank output.
+     * <p>Precision: If omitted outputs days, hours, minutes, seconds and milli 
+     * seconds. 0 outputs days. 1 outputs days and hours. 2 outputs days, hours
+     * and minutes. 3 outputs days, hours, minutes and seconds. 4 outputs days, 
+     * hours, minutes, seconds and milli seconds.
+     * @param formatter
+     * @param flags
+     * @param width
+     * @param precision 
+     */
     @Override
     default void formatTo(Formatter formatter, int flags, int width, int precision)
     {
@@ -50,7 +76,7 @@ public interface MillisDuration extends Formattable
         String next = null;
         String delim = "";
         long days = millis / DAYS;
-        if (days != 0)
+        if (days != 0 || parts == 0)
         {
             if (alt)
             {
@@ -76,7 +102,7 @@ public interface MillisDuration extends Formattable
                 delim = " ";
             }
             long hours = millis / HOURS;
-            if (hours != 0 || len > 0)
+            if (hours != 0 || len > 0 || parts == 1)
             {
                 if (alt)
                 {
@@ -101,7 +127,7 @@ public interface MillisDuration extends Formattable
                     delim = " ";
                 }
                 long minutes = millis / MINUTES;
-                if (minutes != 0 || len > 0)
+                if (minutes != 0 || len > 0 || parts == 2)
                 {
                     if (alt)
                     {
@@ -126,7 +152,7 @@ public interface MillisDuration extends Formattable
                         delim = " ";
                     }
                     long seconds = millis / SECONDS;
-                    if (seconds != 0 || len > 0)
+                    if (seconds != 0 || len > 0 || parts == 3)
                     {
                         if (parts >= 4)
                         {
@@ -158,6 +184,27 @@ public interface MillisDuration extends Formattable
                             return sb.toString();
                         }
                         sb.append(next);
+                    }
+                    if (parts >= 4)
+                    {
+                        len = sb.length();
+                        if (len > 0)
+                        {
+                            delim = " ";
+                        }
+                        if (alt)
+                        {
+                            next = String.format(loc, "%s0.%03d seconds", delim, millis);
+                        }
+                        else
+                        {
+                            next = String.format(loc, "%s0.%03d s", delim, millis);
+                        }
+                        if (len + next.length() <= limit)
+                        {
+                            sb.append(next);
+                            return sb.toString();
+                        }
                     }
                 }
             }
