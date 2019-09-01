@@ -39,7 +39,7 @@ public class RepeatSuppressor<T>
     /**
      * Creates new RepeatSuppressor
      * @param forwarder
-     * @param gaps 
+     * @param gaps In milli seconds
      */
     public RepeatSuppressor(Forwarder<T> forwarder, long... gaps)
     {
@@ -49,12 +49,12 @@ public class RepeatSuppressor<T>
      * Creates new RepeatSuppressor
      * @param millis
      * @param forwarder
-     * @param gaps 
+     * @param gaps In milli seconds
      */
     public RepeatSuppressor(LongSupplier millis, Forwarder<T> forwarder, long... gaps)
     {
         this.millis = millis;
-        this.ttlMap = new TimeToLiveMap<>(millis, 1, TimeUnit.DAYS, this::remove);
+        this.ttlMap = new TimeToLiveMap<>(millis, 1, TimeUnit.MINUTES, this::remove);
         this.forwarder = forwarder;
         this.gaps = gaps;
     }
@@ -100,7 +100,7 @@ public class RepeatSuppressor<T>
             {
                 forwarder.forward(count, now-begin, this, item);
                 limit = iterator.nextLong();
-                ttlMap.put(item, this, limit);
+                ttlMap.put(item, this, limit, TimeUnit.MILLISECONDS);
             }
         }
 
