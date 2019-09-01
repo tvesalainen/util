@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
+import org.vesalainen.text.MillisDuration;
+import org.vesalainen.util.RepeatSuppressor;
 
 /**
  *
@@ -35,6 +37,8 @@ public abstract class BaseLogging
      * DEBUG log level is finer that VERBOSE (100)
      */
     public static final Level DEBUG = new Debug();
+    
+    private RepeatSuppressor<String> repeatSuppressor = new RepeatSuppressor<>(this::forwardWarning, 1000, 5000, 60000, 500000);
     /**
      * Write to log SEVERE level.
      * @param format
@@ -71,7 +75,7 @@ public abstract class BaseLogging
     {
         if (isLoggable(WARNING))
         {
-            logIt(WARNING, String.format(format, args));
+            repeatSuppressor.forward(String.format(format, args));
         }
     }
     /**
@@ -82,7 +86,18 @@ public abstract class BaseLogging
     {
         if (isLoggable(WARNING))
         {
-            logIt(WARNING, msgSupplier);
+            repeatSuppressor.forward(msgSupplier.get());
+        }
+    }
+    private void forwardWarning(int count, long time, MillisDuration formattable, String warning)
+    {
+        if (count == 1)
+        {
+            logIt(WARNING, warning);
+        }
+        else
+        {
+            logIt(WARNING, String.format("repeated %d times in %s : %s", count, formattable, warning));
         }
     }
     /**
