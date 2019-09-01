@@ -19,6 +19,7 @@ package org.vesalainen.util;
 import java.time.Clock;
 import java.util.AbstractSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
@@ -39,45 +40,45 @@ import java.util.stream.StreamSupport;
  */
 public class TimeToLiveSet<T> extends AbstractSet<T>
 {
-    private LongMap<T> map = new LongMap<>(new ConcurrentHashMap<>());
+    private Map<T,TTLEntry> map = new ConcurrentHashMap<>();
     private LongSupplier millis;
-    private long defaultTimeout;
+    private long defaultTTL;
     private Consumer<T> onRemove;
     /**
      * Creates a new TimeToLiveSet using UTC clock
-     * @param defaultTimeout
+     * @param defaultTTL
      * @param unit 
      * @see java.time.Clock#systemUTC() 
      */
-    public TimeToLiveSet(long defaultTimeout, TimeUnit unit)
+    public TimeToLiveSet(long defaultTTL, TimeUnit unit)
     {
-        this(Clock.systemUTC(), defaultTimeout, unit);
+        this(Clock.systemUTC(), defaultTTL, unit);
     }
     /**
      * Creates a new TimeToLiveSet
      * @param clock
-     * @param defaultTimeout
+     * @param defaultTTL
      * @param unit 
      */
-    public TimeToLiveSet(Clock clock, long defaultTimeout, TimeUnit unit)
+    public TimeToLiveSet(Clock clock, long defaultTTL, TimeUnit unit)
     {
-        this(clock, defaultTimeout, unit, (k)->{});
+        this(clock, defaultTTL, unit, (k)->{});
     }
     /**
      * Creates a new TimeToLiveSet
      * @param clock
-     * @param defaultTimeout
+     * @param defaultTTL
      * @param unit
      * @param onRemove IS called when item is removed
      */
-    public TimeToLiveSet(Clock clock, long defaultTimeout, TimeUnit unit, Consumer<T> onRemove)
+    public TimeToLiveSet(Clock clock, long defaultTTL, TimeUnit unit, Consumer<T> onRemove)
     {
-        this(clock::millis, defaultTimeout, unit, onRemove);
+        this(clock::millis, defaultTTL, unit, onRemove);
     }
-    public TimeToLiveSet(LongSupplier millis, long defaultTimeout, TimeUnit unit, Consumer<T> onRemove)
+    public TimeToLiveSet(LongSupplier millis, long defaultTTL, TimeUnit unit, Consumer<T> onRemove)
     {
         this.millis = millis;
-        this.defaultTimeout = unit.toMillis(defaultTimeout);
+        this.defaultTTL = unit.toMillis(defaultTTL);
         this.onRemove = onRemove;
     }
     /**
@@ -104,7 +105,16 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     @Override
     public boolean add(T item)
     {
-        return add(item, defaultTimeout, TimeUnit.MILLISECONDS);
+        TTLEntry old = map.get(item);
+        if (old != null)
+        {
+            old.refresh();
+        }
+        else
+        {
+            add(item, defaultTTL, TimeUnit.MILLISECONDS);
+        }
+        return old != null;
     }
     /**
      * @deprecated Use add
@@ -119,13 +129,13 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     /**
      * Add/Refresh item with given timeout
      * @param item
-     * @param timeout
+     * @param ttl
      * @param unit 
      * @return  
      */
-    public boolean add(T item, long timeout, TimeUnit unit)
+    public boolean add(T item, long ttl, TimeUnit unit)
     {
-        return add(item, millis.getAsLong() + unit.toMillis(timeout));
+        return add(item, ttl, millis.getAsLong() + unit.toMillis(ttl));
     }
     /**
      * Add/Refresh item with given expiry time
@@ -133,9 +143,17 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      * @param expires
      * @return 
      */
-    public boolean add(T item, long expires)
+    public boolean add(T item, long ttl, long expires)
     {
-        LongReference old = map.put(item, expires);
+        TTLEntry old = map.get(item);
+        if (old != null)
+        {
+            old.refresh(ttl, expires);
+        }
+        else
+        {
+            map.put(item, new TTLEntry(ttl, expires));
+        }
         return old != null;
     }
     @Override
@@ -151,7 +169,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     @Override
     public boolean remove(Object key)
     {
-        LongReference old = map.remove((T)key);
+        TTLEntry old = map.remove((T)key);
         onRemove.accept((T) key);
         return old != null;
     }
@@ -165,7 +183,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         return contains(item);
     }
     /**
-     * Return true if item has not expired
+     * Return true if set contains item and it has not expired
      * @param o
      * @return 
      */
@@ -173,10 +191,10 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     public boolean contains(Object o)
     {
         T item = (T) o;
-        try
+        TTLEntry old = map.get(item);
+        if (old != null)
         {
-            long expires = map.getLong(item);
-            if (expires < millis.getAsLong())
+            if (old.expires < millis.getAsLong())
             {
                 map.remove(item);
                 onRemove.accept(item);
@@ -186,9 +204,6 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
             {
                 return true;
             }
-        }
-        catch (IllegalArgumentException ex)
-        {
         }
         return false;
     }
@@ -252,8 +267,8 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     }
     private class IteratorImpl implements Iterator<T>
     {
-        private Iterator<Entry<T, LongReference>> iterator = map.entrySet().iterator();
-        private Entry<T, LongReference> entry;
+        private Iterator<Entry<T, TTLEntry>> iterator = map.entrySet().iterator();
+        private Entry<T, TTLEntry> entry;
 
         @Override
         public boolean hasNext()
@@ -261,7 +276,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
             while (iterator.hasNext())
             {
                 entry = iterator.next();
-                if (entry.getValue().value >= millis.getAsLong())
+                if (entry.getValue().expires >= millis.getAsLong())
                 {
                     return true;
                 }
@@ -277,7 +292,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         {
             if (entry != null)
             {
-                Entry<T, LongReference> e = entry;
+                Entry<T, TTLEntry> e = entry;
                 entry = null;
                 return e.getKey();
             }
@@ -290,5 +305,25 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
             iterator.remove();
         }
         
+    }
+    private class TTLEntry
+    {
+        private long ttl;
+        private long expires;
+
+        private TTLEntry(long ttl, long expires)
+        {
+            this.ttl = ttl;
+            this.expires = expires;
+        }
+        private void refresh(long ttl, long expires)
+        {
+            this.ttl = ttl;
+            this.expires = expires;
+        }
+        private void refresh()
+        {
+            expires = millis.getAsLong() + ttl;
+        }
     }
 }
