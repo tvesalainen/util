@@ -341,7 +341,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     public void store(Path path) throws IOException
     {
-        try (BufferedWriter bw = Files.newBufferedWriter(path, WRITE, CREATE))
+        try (BufferedWriter bw = Files.newBufferedWriter(path, WRITE, CREATE, TRUNCATE_EXISTING))
         {
             store(bw);
         }
