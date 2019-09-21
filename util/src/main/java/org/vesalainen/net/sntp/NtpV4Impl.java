@@ -29,44 +29,26 @@ public class NtpV4Impl extends NtpV3Impl
 
     public NtpV4Impl()
     {
-        DatagramPacket datagramPacket = getDatagramPacket();
-        buf = datagramPacket.getData(); // superclass buf is private
         setVersion(VERSION_4);
     }
     
-    public void setReferenceId(ReferenceIdentifier referenceIdentifier)
+    public void setReferenceId(ReferenceClock referenceClock)
+    {
+        setReferenceId(referenceClock.name());
+    }
+
+    public void setReferenceId(String referenceId)
     {
         int id = 0;
-        String name = referenceIdentifier.name();
         for (int ii=0;ii<4;ii++)
         {
             id <<=8;
-            if (name.length() > ii)
+            if (referenceId.length() > ii)
             {
-                id += name.charAt(ii);
+                id += referenceId.charAt(ii);
             }
         }
         setReferenceId(id);
     }
 
-    public void setRootDelay(int value)
-    {
-        setInt(4, value);
-    }
-    
-    public void setRootDispersion(int value)
-    {
-        setInt(8, value);
-    }
-    
-    protected void setInt(int index, int value)
-    {
-        buf[index+3] = (byte) (value & 0xff);
-        value >>=8;
-        buf[index+2] = (byte) (value & 0xff);
-        value >>=8;
-        buf[index+1] = (byte) (value & 0xff);
-        value >>=8;
-        buf[index] = (byte) (value & 0xff);
-    }
 }
