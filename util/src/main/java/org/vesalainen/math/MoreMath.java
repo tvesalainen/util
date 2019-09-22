@@ -34,6 +34,16 @@ public final class MoreMath
     public static final double SQRT_EPSILON = Math.sqrt(2.220446e-16);
     private static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
     /**
+     * Returns logarithm with base b.
+     * @param b
+     * @param x
+     * @return 
+     */
+    public static double log(double b, double x)
+    {
+        return Math.log(x)/Math.log(b);
+    }
+    /**
      * Returns sqrt(MACHINE_EPSILON)*x or if x == 0 sqrt(MACHINE_EPSILON)
      * @param x
      * @return 

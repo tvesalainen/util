@@ -35,6 +35,11 @@ public class MoreMathTest
     }
 
     @Test
+    public void testLog()
+    {
+        assertEquals(Math.log10(PI), MoreMath.log(10, PI), 1e-10);
+    }
+    @Test
     public void testDerivate()
     {
         Polynomial p = new Polynomial(1, 2, 3, 4);
