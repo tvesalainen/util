@@ -16,37 +16,33 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.stream.LongStream;
-
 /**
- *
+ * In this class min is calculated for size last samples.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface TimeArray
+public class DoubleSlidingMin extends DoubleAbstractSlidingBound
 {
-    /**
-     * Returns a stream of sample times
-     * @return 
-     */
-    LongStream timeStream();
-    /**
-     * Returns time of first sample
-     * @return 
-     */
-    long firstTime();
-    /**
-     * Returns time of last sample
-     * @return 
-     */
-    long lastTime();
-    /**
-     * Returns time of previous sample
-     * @return 
-     */
-    long previousTime();
-    /**
-     * Returns max duration
-     * @return 
-     */
-    long maxDuration();
+
+    public DoubleSlidingMin(int size)
+    {
+        super(size);
+    }
+
+    @Override
+    protected boolean exceedsBounds(int index, double value)
+    {
+        return ring[index] > value;
+    }
+
+    public double getMin()
+    {
+        return getBound();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SlidingMin{" + getBound() + '}';
+    }
+    
 }

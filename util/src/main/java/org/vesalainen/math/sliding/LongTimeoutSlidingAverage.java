@@ -18,25 +18,30 @@ package org.vesalainen.math.sliding;
 
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.function.LongSupplier;
 import java.util.stream.LongStream;
 
 /**
- * TimeoutSlidingAverage calculates average for given timeout.
+ * DoubleTimeoutSlidingAverage calculates average for given timeout.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Timeouting, TimeArray
+public class LongTimeoutSlidingAverage extends LongAbstractSlidingAverage implements Timeouting, TimeArray
 {
     protected final long timeout;
     protected long[] times;
-    protected Clock clock;
+    protected LongSupplier clock;
     /**
      * Creates TimeoutSlidingAverage
      * @param size Initial size of ring buffer
      * @param timeout Sample timeout
      */
-    public TimeoutSlidingAverage(int size, long timeout)
+    public LongTimeoutSlidingAverage(int size, long timeout)
     {
-        this(Clock.systemUTC(), size, timeout);
+        this(System::currentTimeMillis, size, timeout);
+    }
+    public LongTimeoutSlidingAverage(Clock clock, int initialSize, long timeout)
+    {
+        this(clock::millis, initialSize, timeout);
     }
     /**
      * Creates TimeoutSlidingAverage
@@ -44,7 +49,7 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
      * @param initialSize Initial size of ring buffer
      * @param timeout Sample timeout
      */
-    public TimeoutSlidingAverage(Clock clock, int initialSize, long timeout)
+    public LongTimeoutSlidingAverage(LongSupplier clock, int initialSize, long timeout)
     {
         super(initialSize);
         this.clock = clock;
@@ -61,23 +66,52 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     @Override
     protected boolean isRemovable(int index)
     {
-        return clock.millis() - times[index] > timeout;
+        return clock.getAsLong()- times[index] > timeout;
     }
 
     @Override
     protected void grow()
     {
         int newSize = newSize();
-        ring = (double[]) newArray(ring, size, new double[newSize]);
+        ring = (long[]) newArray(ring, size, new long[newSize]);
         times = (long[]) newArray(times, times.length, new long[newSize]);
         size = newSize;
     }
 
     @Override
-    protected void assign(int index, double value)
+    public void accept(long value)
+    {
+        accept(value, clock.getAsLong());
+    }
+    public void accept(long value, long time)
+    {
+        writeLock.lock();
+        try
+        {
+            eliminate();
+            int count = count();
+            if (count >= size)
+            {
+                grow();
+            }
+            assign(endMod(), value, time);
+            endIncr();
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+            
+    @Override
+    protected void assign(int index, long value)
+    {
+        throw new UnsupportedOperationException();
+    }
+    protected void assign(int index, long value, long time)
     {
         super.assign(index, value);
-        times[index] = clock.millis();
+        times[index] = time;
     }
     /**
      * Returns time values as array. Returned array is independent.
@@ -169,12 +203,12 @@ public class TimeoutSlidingAverage extends AbstractSlidingAverage implements Tim
     }
     
     @Override
-    public Clock clock()
+    public LongSupplier clock()
     {
         return clock;
     }
     @Override
-    public void clock(Clock clock)
+    public void clock(LongSupplier clock)
     {
         this.clock = clock;
     }

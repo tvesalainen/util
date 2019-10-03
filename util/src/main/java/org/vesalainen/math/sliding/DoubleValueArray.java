@@ -16,37 +16,27 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.stream.LongStream;
+import java.util.stream.DoubleStream;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface TimeArray
+public interface DoubleValueArray
 {
     /**
-     * Returns a stream of sample times
+     * Returns last sample
      * @return 
      */
-    LongStream timeStream();
+    double last();
     /**
-     * Returns time of first sample
+     * Returns previous sample value
      * @return 
      */
-    long firstTime();
+    double previous();
     /**
-     * Returns time of last sample
+     * Returns values as stream in the same order as entered
      * @return 
      */
-    long lastTime();
-    /**
-     * Returns time of previous sample
-     * @return 
-     */
-    long previousTime();
-    /**
-     * Returns max duration
-     * @return 
-     */
-    long maxDuration();
+    DoubleStream stream();
 }

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.LongSupplier;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.vesalainen.code.PropertySetter;
@@ -34,7 +35,7 @@ import org.vesalainen.util.MapList;
  */
 public class TimeoutStatsService implements PropertySetter
 {
-    private Clock clock;
+    private LongSupplier clock;
     private final PropertySetterDispatcher dispatcher;
     private final Map<String,Map<Integer,TimeoutStats>> map = new HashMap<>();
     private final MapList<TimeArray,StatsObserver> observerMap = new HashMapList<>();
@@ -50,10 +51,10 @@ public class TimeoutStatsService implements PropertySetter
 
     public TimeoutStatsService(PropertySetterDispatcher dispatcher, String preferencePath)
     {
-        this(Clock.systemUTC(), dispatcher, preferencePath);
+        this(System::currentTimeMillis, dispatcher, preferencePath);
     }
     
-    public TimeoutStatsService(Clock clock, PropertySetterDispatcher dispatcher, String preferencePath)
+    public TimeoutStatsService(LongSupplier clock, PropertySetterDispatcher dispatcher, String preferencePath)
     {
         this.clock = clock;
         this.dispatcher = dispatcher;

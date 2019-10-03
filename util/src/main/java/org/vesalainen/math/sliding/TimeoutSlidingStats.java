@@ -17,25 +17,30 @@
 package org.vesalainen.math.sliding;
 
 import java.time.Clock;
+import java.util.function.LongSupplier;
 
 /**
  * TimeoutSlidingStats is a combined class for average, min, max calculations.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeoutSlidingStats extends TimeoutSlidingAverage implements TimeoutStats
+public class TimeoutSlidingStats extends DoubleTimeoutSlidingAverage implements TimeoutStats
 {
-    protected TimeoutSlidingMin min;
-    protected TimeoutSlidingMax max;
+    protected DoubleTimeoutSlidingMin min;
+    protected DoubleTimeoutSlidingMax max;
     
     public TimeoutSlidingStats(int size, long timeout)
     {
-        this(Clock.systemUTC(), size, timeout);
+        this(System::currentTimeMillis, size, timeout);
     }
     public TimeoutSlidingStats(Clock clock, int initialSize, long timeout)
     {
+        this(clock::millis, initialSize, timeout);
+    }
+    public TimeoutSlidingStats(LongSupplier clock, int initialSize, long timeout)
+    {
         super(clock, initialSize, timeout);
-        min = new TimeoutSlidingMin(this);
-        max = new TimeoutSlidingMax(this);
+        min = new DoubleTimeoutSlidingMin(this);
+        max = new DoubleTimeoutSlidingMax(this);
     }
 
     @Override
@@ -66,7 +71,6 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage implements Timeou
      * Returns Minimum value
      * @return 
      */
-    @Override
     public double getMin()
     {
         return min.getBound();
@@ -75,7 +79,6 @@ public class TimeoutSlidingStats extends TimeoutSlidingAverage implements Timeou
      * Returns maximum value
      * @return 
      */
-    @Override
     public double getMax()
     {
         return max.getBound();

@@ -22,7 +22,7 @@ import java.util.PrimitiveIterator;
  * Base class for sliding angle average calculation
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractSlidingAngleAverage extends AbstractSlidingAverage
+public abstract class AbstractSlidingAngleAverage extends DoubleAbstractSlidingAverage
 {
     
     protected double[] cos;

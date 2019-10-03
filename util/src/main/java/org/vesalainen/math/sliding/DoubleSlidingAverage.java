@@ -17,33 +17,32 @@
 package org.vesalainen.math.sliding;
 
 /**
- * In this class min is calculated for size last samples.
+ * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SlidingMin extends AbstractSlidingBound implements Min
+public class DoubleSlidingAverage extends DoubleAbstractSlidingAverage
 {
-
-    public SlidingMin(int size)
+    /**
+     * 
+     * @param windowSize Initial size of ring buffer
+     */
+    public DoubleSlidingAverage(int windowSize)
     {
-        super(size);
+        super(windowSize);
     }
 
     @Override
-    protected boolean exceedsBounds(int index, double value)
+    protected boolean isRemovable(int index)
     {
-        return ring[index] > value;
+        return count() >= windowSize;
     }
 
     @Override
-    public double getMin()
+    protected void grow()
     {
-        return getBound();
-    }
-
-    @Override
-    public String toString()
-    {
-        return "SlidingMin{" + getBound() + '}';
+        int newSize = newSize();
+        ring = (double[]) newArray(ring, size, new double[newSize]);
+        size = newSize;
     }
     
 }

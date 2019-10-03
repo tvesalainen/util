@@ -17,6 +17,7 @@
 package org.vesalainen.math.sliding;
 
 import java.time.Clock;
+import java.util.function.LongSupplier;
 
 /**
  *
@@ -27,6 +28,10 @@ interface Timeouting
     int getSize();
     long getTimeout();
     long[] getTimes();
-    Clock clock();
-    void clock(Clock clock);
+    LongSupplier clock();
+    default void clock(Clock clock)
+    {
+        clock(clock::millis);
+    }
+    void clock(LongSupplier clock);
 }

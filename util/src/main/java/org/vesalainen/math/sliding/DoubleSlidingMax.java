@@ -17,14 +17,35 @@
 package org.vesalainen.math.sliding;
 
 /**
- * @deprecated Use from package org.vesalainen.math
+ * In this class max is calculated for size last samples.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Max
+public class DoubleSlidingMax extends DoubleAbstractSlidingBound
 {
     /**
-     * Returns maximum value
-     * @return
+     * 
+     * @param size Initial size and max number of samples
      */
-    double getMax();
+    public DoubleSlidingMax(int size)
+    {
+        super(size);
+    }
+
+    @Override
+    protected boolean exceedsBounds(int index, double value)
+    {
+        return ring[index] < value;
+    }
+
+    public double getMax()
+    {
+        return getBound();
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "SlidingMax{" + getBound() + '}';
+    }
+    
 }

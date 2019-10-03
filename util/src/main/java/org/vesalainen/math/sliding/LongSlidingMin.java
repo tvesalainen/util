@@ -16,27 +16,33 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.stream.DoubleStream;
-
 /**
- *
+ * In this class min is calculated for size last samples.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface ValueArray
+public class LongSlidingMin extends LongAbstractSlidingBound
 {
-    /**
-     * Returns last sample
-     * @return 
-     */
-    double last();
-    /**
-     * Returns previous sample value
-     * @return 
-     */
-    double previous();
-    /**
-     * Returns values as stream in the same order as entered
-     * @return 
-     */
-    DoubleStream stream();
+
+    public LongSlidingMin(int size)
+    {
+        super(size);
+    }
+
+    @Override
+    protected boolean exceedsBounds(int index, long value)
+    {
+        return ring[index] > value;
+    }
+
+    public long getMin()
+    {
+        return getBound();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SlidingMin{" + getBound() + '}';
+    }
+    
 }

@@ -16,44 +16,33 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.time.Clock;
-
 /**
- * A class for counting min value for given time.
+ * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeoutSlidingMin extends AbstractTimeoutSlidingBound implements Min
+public class LongSlidingAverage extends LongAbstractSlidingAverage
 {
     /**
      * 
-     * @param size Initial size of buffers
-     * @param timeout Sample timeout in millis 
+     * @param windowSize Initial size of ring buffer
      */
-    public TimeoutSlidingMin(int size, long timeout)
+    public LongSlidingAverage(int windowSize)
     {
-        this(Clock.systemUTC(), size, timeout);
-    }
-    public TimeoutSlidingMin(Clock clock, int size, long timeout)
-    {
-        super(clock, size, timeout);
-    }
-
-    public TimeoutSlidingMin(Timeouting parent)
-    {
-        super(parent);
+        super(windowSize);
     }
 
     @Override
-    protected boolean exceedsBounds(int index, double value)
+    protected boolean isRemovable(int index)
     {
-        return ring[index] >value;
+        return count() >= windowSize;
     }
 
     @Override
-    public double getMin()
+    protected void grow()
     {
-        return getBound();
+        int newSize = newSize();
+        ring = (long[]) newArray(ring, size, new long[newSize]);
+        size = newSize;
     }
     
-   
 }

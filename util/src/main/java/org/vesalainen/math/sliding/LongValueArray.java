@@ -16,33 +16,27 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.stream.LongStream;
+
 /**
- * 
+ *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SlidingAverage extends AbstractSlidingAverage
+public interface LongValueArray
 {
     /**
-     * 
-     * @param windowSize Initial size of ring buffer
+     * Returns last sample
+     * @return 
      */
-    public SlidingAverage(int windowSize)
-    {
-        super(windowSize);
-    }
-
-    @Override
-    protected boolean isRemovable(int index)
-    {
-        return count() >= windowSize;
-    }
-
-    @Override
-    protected void grow()
-    {
-        int newSize = newSize();
-        ring = (double[]) newArray(ring, size, new double[newSize]);
-        size = newSize;
-    }
-    
+    long last();
+    /**
+     * Returns previous sample value
+     * @return 
+     */
+    long previous();
+    /**
+     * Returns values as stream in the same order as entered
+     * @return 
+     */
+    LongStream stream();
 }

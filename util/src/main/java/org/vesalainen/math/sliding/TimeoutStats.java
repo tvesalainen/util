@@ -22,7 +22,7 @@ import java.util.function.DoubleConsumer;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface TimeoutStats extends DoubleConsumer, Average, Min, Max, ValueArray, TimeArray
+public interface TimeoutStats extends DoubleConsumer, DoubleValueArray, TimeArray
 {
     
 }

@@ -16,23 +16,21 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.util.Arrays;
 import java.util.PrimitiveIterator;
-import java.util.function.DoubleConsumer;
-import java.util.stream.DoubleStream;
+import java.util.function.LongConsumer;
 
 /**
  * Base class for sliding bound calculation
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractSlidingBound extends AbstractSliding implements DoubleConsumer, ValueArray
+public abstract class LongAbstractSlidingBound extends LongAbstractSliding implements LongConsumer, LongValueArray
 {
     protected int windowSize;
     /**
      * 
      * @param initialSize Initial size of the ringbuffer
      */
-    public AbstractSlidingBound(int initialSize)
+    public LongAbstractSlidingBound(int initialSize)
     {
         super(initialSize);
         this.windowSize = initialSize;
@@ -41,7 +39,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      * Returns the calculated bound
      * @return 
      */
-    public double getBound()
+    public long getBound()
     {
         readLock.lock();
         try
@@ -58,7 +56,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      * @param value 
      */
     @Override
-    public void accept(double value)
+    public void accept(long value)
     {
         writeLock.lock();
         try
@@ -92,7 +90,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      * @param value 
      */
     @Override
-    protected void assign(int index, double value)
+    protected void assign(int index, long value)
     {
         ring[index] = value;
     }
@@ -121,7 +119,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
     protected void grow()
     {
         int newSize = newSize();
-        ring = (double[]) newArray(ring, size, new double[newSize]);
+        ring = (long[]) newArray(ring, size, new long[newSize]);
         size = newSize;
     }
     /**
@@ -130,10 +128,10 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
      * @param value
      * @return 
      */
-    protected abstract boolean exceedsBounds(int index, double value);
+    protected abstract boolean exceedsBounds(int index, long value);
     
     @Override
-    public double last()
+    public long last()
     {
         if (count() < 1)
         {
@@ -143,7 +141,7 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
     }
 
     @Override
-    public double previous()
+    public long previous()
     {
         if (count() < 2)
         {

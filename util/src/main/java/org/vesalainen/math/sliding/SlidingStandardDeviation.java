@@ -23,7 +23,7 @@ import java.util.PrimitiveIterator;
  * size last values.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SlidingStandardDeviation extends SlidingAverage
+public class SlidingStandardDeviation extends DoubleSlidingAverage
 {
     private double stdevSum;
     private double[] stdevRing;

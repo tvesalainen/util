@@ -17,21 +17,21 @@
 package org.vesalainen.math.sliding;
 
 import java.util.PrimitiveIterator;
-import java.util.function.DoubleConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * Base class for sliding average calculation
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractSlidingAverage extends AbstractSliding implements DoubleConsumer, ValueArray, Average
+public abstract class LongAbstractSlidingAverage extends LongAbstractSliding implements LongConsumer, LongValueArray
 {
     protected int windowSize;
-    protected double sum;
+    protected long sum;
     /**
      * Creates an AbstractSlidingAverage
      * @param windowSize Size of the sliding window
      */
-    protected AbstractSlidingAverage(int windowSize)
+    protected LongAbstractSlidingAverage(int windowSize)
     {
         super(windowSize);
         this.windowSize = windowSize;
@@ -41,7 +41,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
      * @param value 
      */
     @Override
-    public void accept(double value)
+    public void accept(long value)
     {
         writeLock.lock();
         try
@@ -62,7 +62,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     }
             
     @Override
-    protected void assign(int index, double value)
+    protected void assign(int index, long value)
     {
         ring[index] = value;
         sum += value;
@@ -78,13 +78,12 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
      * Returns average without actually calculating cell by cell
      * @return 
      */
-    @Override
-    public double fast()
+    public long fast()
     {
         readLock.lock();
         try
         {
-            return sum/(double)(count());
+            return sum/(long)(count());
         }
         finally
         {
@@ -96,13 +95,12 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
      * Returns average by calculating cell by cell
      * @return 
      */
-    @Override
-    public double average()
+    public long average()
     {
         readLock.lock();
         try
         {
-            double s = 0;
+            long s = 0;
             PrimitiveIterator.OfInt it = modIterator();
             while (it.hasNext())
             {
@@ -116,7 +114,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
         }
     }
     @Override
-    public double last()
+    public long last()
     {
         readLock.lock();
         try
@@ -134,7 +132,7 @@ public abstract class AbstractSlidingAverage extends AbstractSliding implements 
     }
 
     @Override
-    public double previous()
+    public long previous()
     {
         readLock.lock();
         try

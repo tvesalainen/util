@@ -16,37 +16,38 @@
  */
 package org.vesalainen.math.sliding;
 
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.PrimitiveIterator;
+import java.util.function.LongSupplier;
 import java.util.stream.LongStream;
 
 /**
  * Base class for timeout sliding bound calculation. Each sample has given timeout.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound implements Timeouting, TimeArray
+public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSlidingBound implements Timeouting, TimeArray
 {
-    protected final long timeout;
-    protected long[] times;
+    private final long timeout;
+    private long[] times;
     Timeouting parent;
-    protected Clock clock;
+    private LongSupplier clock;
     /**
-     * 
+     * Creates DoubleAbstractTimeoutSlidingBound
      * @param initialSize Initial ringbuffer size
      * @param timeout Sample timeout in millis.
      */
-    protected AbstractTimeoutSlidingBound(int initialSize, long timeout)
+    protected DoubleAbstractTimeoutSlidingBound(int initialSize, long timeout)
     {
-        this(Clock.systemUTC(), initialSize, timeout);
+        this(System::currentTimeMillis, initialSize, timeout);
     }
     /**
-     * 
+     * Creates DoubleAbstractTimeoutSlidingBound. Clock and timeout have to be in 
+     * same units. (currentTimeMillis in millis and nanoTime in nanos)
      * @param clock
      * @param initialSize Initial ringbuffer size
      * @param timeout Sample timeout in millis.
      */
-    protected AbstractTimeoutSlidingBound(Clock clock, int initialSize, long timeout)
+    protected DoubleAbstractTimeoutSlidingBound(LongSupplier clock, int initialSize, long timeout)
     {
         super(initialSize);
         this.clock = clock;
@@ -57,7 +58,7 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
      * 
      * @param parent
      */
-    AbstractTimeoutSlidingBound(Timeouting parent)
+    DoubleAbstractTimeoutSlidingBound(Timeouting parent)
     {
         super(parent.getSize());
         this.clock = parent.clock();
@@ -79,6 +80,10 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     @Override
     public void accept(double value)
     {
+        accept(value, clock().getAsLong());
+    }
+    public void accept(double value, long time)
+    {
         writeLock.lock();
         try
         {
@@ -90,13 +95,13 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
             endIncr();
             PrimitiveIterator.OfInt rev = modReverseIterator();
             int e = rev.nextInt();
-            assign(e, value);
+            assign(e, value, time);
             while (rev.hasNext())
             {
                 e = rev.nextInt();
                 if (exceedsBounds(e, value))
                 {
-                    assign(e, value);
+                    assign(e, value, time);
                 }
                 else
                 {
@@ -129,17 +134,21 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     @Override
     protected void assign(int index, double value)
     {
+        throw new UnsupportedOperationException();
+    }
+    protected void assign(int index, double value, long time)
+    {
         ring[index] = value;
         if (parent == null)
         {
-            times[index] = clock().millis();
+            times[index] = time;
         }
     }
 
     @Override
     protected boolean isRemovable(int index)
     {
-        return clock().millis() - times[index] > timeout;
+        return clock().getAsLong() - times[index] > timeout;
     }
 
     @Override
@@ -239,7 +248,7 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     }
 
     @Override
-    public Clock clock()
+    public LongSupplier clock()
     {
         if (parent != null)
         {
@@ -249,7 +258,7 @@ public abstract class AbstractTimeoutSlidingBound extends AbstractSlidingBound i
     }
 
     @Override
-    public void clock(Clock clock)
+    public void clock(LongSupplier clock)
     {
         this.clock = clock;
     }

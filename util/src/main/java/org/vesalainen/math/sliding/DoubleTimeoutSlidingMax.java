@@ -16,19 +16,36 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.time.Clock;
+import java.util.function.LongSupplier;
+
 /**
- * In this class max is calculated for size last samples.
+ * A class for counting max value for given time.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SlidingMax extends AbstractSlidingBound implements Max
+public class DoubleTimeoutSlidingMax extends DoubleAbstractTimeoutSlidingBound
 {
     /**
      * 
-     * @param size Initial size and max number of samples
+     * @param size Initial size of buffers
+     * @param timeout Sample timeout in millis 
      */
-    public SlidingMax(int size)
+    public DoubleTimeoutSlidingMax(int size, long timeout)
     {
-        super(size);
+        this(System::currentTimeMillis, size, timeout);
+    }
+    public DoubleTimeoutSlidingMax(Clock clock, int size, long timeout)
+    {
+        this(clock::millis, size, timeout);
+    }
+    public DoubleTimeoutSlidingMax(LongSupplier clock, int size, long timeout)
+    {
+        super(clock, size, timeout);
+    }
+
+    public DoubleTimeoutSlidingMax(Timeouting parent)
+    {
+        super(parent);
     }
 
     @Override
@@ -37,16 +54,10 @@ public class SlidingMax extends AbstractSlidingBound implements Max
         return ring[index] < value;
     }
 
-    @Override
     public double getMax()
     {
         return getBound();
     }
     
-    @Override
-    public String toString()
-    {
-        return "SlidingMax{" + getBound() + '}';
-    }
-    
+   
 }

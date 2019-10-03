@@ -18,6 +18,7 @@ package org.vesalainen.math.sliding;
 
 import java.time.Clock;
 import java.util.PrimitiveIterator;
+import java.util.function.LongSupplier;
 
 /**
  *
@@ -32,15 +33,14 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
     
     public TimeoutSlidingAngleStats(int size, long timeout)
     {
-        this(Clock.systemUTC(), size, timeout);
+        this(System::currentTimeMillis, size, timeout);
     }
-    public TimeoutSlidingAngleStats(Clock clock, int initialSize, long timeout)
+    public TimeoutSlidingAngleStats(LongSupplier clock, int initialSize, long timeout)
     {
         super(clock, initialSize, timeout);
         angles = new double[size];
     }
 
-    @Override
     public double getMax()
     {
         readLock.lock();
@@ -55,7 +55,6 @@ public class TimeoutSlidingAngleStats extends TimeoutSlidingAngleAverage impleme
         }
     }
 
-    @Override
     public double getMin()
     {
         readLock.lock();
