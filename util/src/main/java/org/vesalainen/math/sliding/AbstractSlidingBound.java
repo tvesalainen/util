@@ -27,7 +27,6 @@ import java.util.stream.DoubleStream;
  */
 public abstract class AbstractSlidingBound extends AbstractSliding implements DoubleConsumer, ValueArray
 {
-    protected double[] ring;
     protected int windowSize;
     /**
      * 
@@ -37,7 +36,6 @@ public abstract class AbstractSlidingBound extends AbstractSliding implements Do
     {
         super(initialSize);
         this.windowSize = initialSize;
-        this.ring = new double[size];
     }
     /**
      * Returns the calculated bound
