@@ -23,79 +23,79 @@ package org.vesalainen.net.sntp;
 public enum ReferenceClock
 {
     /**
-     * uncalibrated local clock
+     * Geosynchronous Orbit Environment Satellite
      */
-      LOCL,
-      /**
-       * calibrated Cesium clock
-       */
-      CESM,
-      /**
-       * calibrated Rubidium clock
-       */
-      RBDM,
-      /**
-       * calibrated quartz clock or other pulse-per-second source
-       */
-      PPS,
-      /**
-       * Inter-Range Instrumentation Group
-       */
-      IRIG,
-      /**
-       * NIST telephone modem service
-       */
-      ACTS,
-      /**
-       * USNO telephone modem service
-       */
-      USNO,
-      /**
-       * PTB (Germany) telephone modem service
-       */
-      PTB,
-      /**
-       * Allouis (France) Radio 164 kHz
-       */
-      TDF,
-      /**
-       * Mainflingen (Germany) Radio 77.5 kHz
-       */
-      DCF,
-      /**
-       * Rugby (UK) Radio 60 kHz
-       */
-      MSF,
-      /**
-       * Ft. Collins (US) Radio 2.5, 5, 10, 15, 20 MHz
-       */
-      WWV,
-      /**
-       * Boulder (US) Radio 60 kHz
-       */
-      WWVB,
-      /**
-       * Kauai Hawaii (US) Radio 2.5, 5, 10, 15 MHz
-       */
-      WWVH,
-      /**
-       * Ottawa (Canada) Radio 3330, 7335, 14670 kHz
-       */
-      CHU,
-      /**
-       * LORAN-C radionavigation system
-       */
-      LORC,
-      /**
-       * OMEGA radionavigation system
-       */
-      OMEG,
-      /**
-       * Global Positioning Service
-       */
-      GPS,
-      /**
-       * Galileo Positioning System
-       */
-      GAL
+     GOES,
+     /**
+      * Global Position System
+      */
+     GPS,
+     /**
+      * Galileo Positioning System
+      */
+     GAL,
+     /**
+      * Generic pulse-per-second
+      */
+     PPS,
+     /**
+      * Inter-Range Instrumentation Group
+      */
+     IRIG,
+     /**
+      * LF Radio WWVB Ft. Collins, CO 60 kHz
+      */
+     WWVB,
+     /**
+      * LF Radio DCF77 Mainflingen, DE 77.5 kHz
+      */
+     DCF,
+     /**
+      * LF Radio HBG Prangins, HB 75 kHz
+      */
+     HBG,
+     /**
+      * LF Radio MSF Anthorn, UK 60 kHz
+      */
+     MSF,
+     /**
+      * LF Radio JJY Fukushima, JP 40 kHz, Saga, JP 60 kHz
+      */
+     JJY,
+     /**
+      * MF Radio LORAN C station, 100 kHz
+      */
+     LORC,
+     /**
+      * MF Radio Allouis, FR 162 kHz
+      */
+     TDF,
+     /**
+      * HF Radio CHU Ottawa, Ontario
+      */
+     CHU,
+     /**
+      * HF Radio WWV Ft. Collins, CO
+      */
+     WWV,
+     /**
+      * HF Radio WWVH Kauai, HI
+      */
+     WWVH,
+     /**
+      * NIST telephone modem
+      */
+     NIST,
+     /**
+      * NIST telephone modem
+      */
+     ACTS,
+     /**
+      * USNO telephone modem
+      */
+     USNO,
+     /**
+      * European telephone modem
+      */
+     PTB,      
 }
