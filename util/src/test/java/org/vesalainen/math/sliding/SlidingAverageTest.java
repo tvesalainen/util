@@ -40,7 +40,7 @@ public class SlidingAverageTest
     @Test
     public void test1()
     {
-        SlidingAverage sa = new SlidingAverage(2);
+        DoubleSlidingAverage sa = new DoubleSlidingAverage(2);
         sa.accept(1);
         assertEquals(1, sa.last(), Epsilon);
         assertEquals(1, sa.fast(), Epsilon);
@@ -63,7 +63,7 @@ public class SlidingAverageTest
     @Test
     public void test2()
     {
-        SlidingAverage sa = new SlidingAverage(2);
+        DoubleSlidingAverage sa = new DoubleSlidingAverage(2);
         DoubleStream ds = DoubleStream.of(1, 3, 5, 7);
         ds.forEach(sa);
         assertEquals(6, sa.fast(), Epsilon);
@@ -74,7 +74,7 @@ public class SlidingAverageTest
     @Test
     public void test3()
     {
-        SlidingAverage sa = new SlidingAverage(3);
+        DoubleSlidingAverage sa = new DoubleSlidingAverage(3);
         DoubleStream ds = DoubleStream.of(1, 3, 5, 7);
         ds.forEach(sa);
         assertEquals(5, sa.fast(), Epsilon);
@@ -84,7 +84,7 @@ public class SlidingAverageTest
     //@Test // takes about 2419 s
     public void testOverflow()
     {
-        SlidingAverage sa = new SlidingAverage(10);
+        DoubleSlidingAverage sa = new DoubleSlidingAverage(10);
         for (int ii=1;ii<=10;ii++)
         {
             sa.accept(ii);

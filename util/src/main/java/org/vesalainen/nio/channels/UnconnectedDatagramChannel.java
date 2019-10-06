@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ProtocolFamily;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.StandardProtocolFamily;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
@@ -162,12 +163,16 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     @Override
     public int write(ByteBuffer src) throws IOException
     {
+        return send(src, address);
+    }
+    public int send(ByteBuffer src, SocketAddress addr) throws IOException
+    {
         writeLock.lock();
         try
         {
             int rem = src.remaining();
             int p1 = src.position();
-            channel.send(src, address);
+            channel.send(src, addr);
             int p2 = src.position();
             log(Level.FINEST, "send", src, p1, p2-p1);
             return rem-src.remaining();

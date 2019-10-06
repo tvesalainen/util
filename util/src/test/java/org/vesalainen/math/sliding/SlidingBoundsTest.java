@@ -41,7 +41,7 @@ public class SlidingBoundsTest
     public void testSlidingMax()
     {
         // 10 9 8 7 6 9 10 11 9 8 7
-        SlidingMax sm = new SlidingMax(3);
+        DoubleSlidingMax sm = new DoubleSlidingMax(3);
         sm.accept(10);
         assertEquals(10, sm.getBound(), Epsilon);
         sm.accept(9);
@@ -70,7 +70,7 @@ public class SlidingBoundsTest
     public void testSlidingMin()
     {
         // 10 9 8 7 6 9 10 11 9 8 7
-        SlidingMin sm = new SlidingMin(3);
+        DoubleSlidingMin sm = new DoubleSlidingMin(3);
         sm.accept(10);
         assertEquals(10, sm.getBound(), Epsilon);
         sm.accept(9);
@@ -107,7 +107,7 @@ public class SlidingBoundsTest
         //            ---------
         //              ----------
         Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
-        TimeoutSlidingMax sm = new TimeoutSlidingMax(clock, 3, 1000);
+        DoubleTimeoutSlidingMax sm = new DoubleTimeoutSlidingMax(clock, 3, 1000);
         sm.accept(10);
         clock = Clock.offset(clock, Duration.ofMillis(300));
         sm.clock(clock);
@@ -166,7 +166,7 @@ public class SlidingBoundsTest
         //            --------- 2400-2700
         //              ---------- 2700-3000
         Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
-        TimeoutSlidingMin sm = new TimeoutSlidingMin(clock, 3, 1000);
+        DoubleTimeoutSlidingMin sm = new DoubleTimeoutSlidingMin(clock, 3, 1000);
         sm.accept(10); // 0
         clock = Clock.offset(clock, Duration.ofMillis(300));
         sm.clock(clock);

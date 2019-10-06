@@ -39,7 +39,7 @@ public class TimeSlidingAverageTest
     public void test1()
     {
         Clock clock = Clock.fixed(Instant.now(), ZoneId.of("Z"));
-        TimeoutSlidingAverage tsa = new TimeoutSlidingAverage(clock, 2, 1000);
+        DoubleTimeoutSlidingAverage tsa = new DoubleTimeoutSlidingAverage(clock, 2, 1000);
         tsa.accept(1);
         clock = Clock.offset(clock, Duration.ofMillis(300));
         tsa.clock(clock);

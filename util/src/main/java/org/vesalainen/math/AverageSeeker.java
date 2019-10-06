@@ -17,8 +17,8 @@
 package org.vesalainen.math;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.vesalainen.math.sliding.SlidingMax;
-import org.vesalainen.math.sliding.SlidingMin;
+import org.vesalainen.math.sliding.DoubleSlidingMax;
+import org.vesalainen.math.sliding.DoubleSlidingMin;
 
 /**
  * AverageSeeker is used to seek average value until values precision is within
@@ -30,8 +30,8 @@ import org.vesalainen.math.sliding.SlidingMin;
 public class AverageSeeker extends AbstractSeeker
 {
     private SimpleAverage average;
-    private SlidingMin min;
-    private SlidingMax max;
+    private DoubleSlidingMin min;
+    private DoubleSlidingMax max;
     /**
      * Creates AverageSeeker
      * @param windowSize 
@@ -51,8 +51,8 @@ public class AverageSeeker extends AbstractSeeker
     {
         super(tolerance, action);
         this.average = new SimpleAverage();
-        this.min = new SlidingMin(windowSize);
-        this.max = new SlidingMax(windowSize);
+        this.min = new DoubleSlidingMin(windowSize);
+        this.max = new DoubleSlidingMax(windowSize);
     }
     /**
      * Add new value with weight
