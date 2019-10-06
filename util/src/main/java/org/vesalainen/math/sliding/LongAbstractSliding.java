@@ -40,7 +40,7 @@ public abstract class LongAbstractSliding extends AbstractSliding
         }
         else
         {
-            this.size = 1<<Integer.highestOneBit(initialSize);
+            this.size = 2*Integer.highestOneBit(initialSize);
         }
         ring = new long[size];
     }

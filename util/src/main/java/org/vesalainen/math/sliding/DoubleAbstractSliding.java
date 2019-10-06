@@ -17,10 +17,6 @@
 package org.vesalainen.math.sliding;
 
 import java.util.Arrays;
-import java.util.PrimitiveIterator.OfInt;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.stream.DoubleStream;
 
 /**
@@ -44,7 +40,7 @@ public abstract class DoubleAbstractSliding extends AbstractSliding
         }
         else
         {
-            this.size = 1<<Integer.highestOneBit(initialSize);
+            this.size = 2*Integer.highestOneBit(initialSize);
         }
         ring = new double[size];
     }
