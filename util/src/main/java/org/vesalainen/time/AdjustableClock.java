@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,31 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.net.sntp;
+package org.vesalainen.time;
 
-import java.util.logging.Level;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.vesalainen.util.logging.JavaLogging;
+import java.time.Instant;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SNTPServerT
+public interface AdjustableClock
 {
-    
-    public SNTPServerT()
+    /**
+     * Adjust clock +- nano seconds
+     * @param nanos 
+     */
+    void adjust(long nanos);
+    /**
+     * returns offset in nano seconds
+     * @return 
+     */
+    long offset();
+    long millis();
+    Instant instant();
+    /**
+     * Returns time when clock reference is last synchronized.
+     * @return 
+     */
+    default Instant reference()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
+        return instant();
     }
-
-    @Test
-    public void test()
-    {
-        SNTPServer server = new SNTPServer();
-        server.setServer("pi3media");
-        server.run();
-    }
-    
 }

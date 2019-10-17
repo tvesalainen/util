@@ -17,24 +17,30 @@
 package org.vesalainen.net.sntp;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.time.Clock;
 import java.time.Instant;
 import static java.time.temporal.ChronoUnit.NANOS;
+import java.util.Enumeration;
 import java.util.concurrent.Future;
-import java.util.function.LongSupplier;
+import java.util.concurrent.ScheduledFuture;
+import static java.util.concurrent.TimeUnit.*;
+import java.util.function.Supplier;
 import static java.util.logging.Level.*;
-import org.apache.commons.net.ntp.NtpUtils;
 import static org.apache.commons.net.ntp.NtpV3Packet.*;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.vesalainen.math.MoreMath;
 import static org.vesalainen.net.sntp.NtpV4Packet.Mode.*;
 import static org.vesalainen.net.sntp.ReferenceClock.*;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
+import org.vesalainen.time.AdjustableClock;
+import org.vesalainen.time.SimpleAdjustableClock;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -44,16 +50,20 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class SNTPServer extends JavaLogging implements Runnable
 {
-    private static final int INIT_LOOP = 10;
+    private static final int SERVER_TIMEOUT_MINUTES = 10;
+    private static final long SERVER_TIMEOUT = MILLISECONDS.convert(SERVER_TIMEOUT_MINUTES, MINUTES);
     private static final long B16 = 65536;
-    private final Clock clock;
+    private final AdjustableClock clock;
     private final CachedScheduledThreadPool executor;
     private Future<?> future;
     private final int poll;
-    private final long rootDelay;
-    private final int rootDispersion;
     private final int precision;
     private ReferenceClock referenceClock;
+    private Supplier<Instant> reference;
+    private Server server;
+    private long request;
+    private UnconnectedDatagramChannel channel4;
+    private UnconnectedDatagramChannel channel6;
 
     public SNTPServer()
     {
@@ -76,23 +86,30 @@ public class SNTPServer extends JavaLogging implements Runnable
         }
         this.poll = poll;
         this.referenceClock = referenceClock;
-        this.clock = clock;
+        if (clock instanceof AdjustableClock)
+        {
+            this.clock = (AdjustableClock) clock;
+            this.clock.adjust(rootDelay*1000000L);
+        }
+        else
+        {
+            this.clock = new SimpleAdjustableClock(clock, rootDelay*1000000L);
+        }
+        this.reference = reference;
         this.executor = executor;
         this.precision = calcPrecision();
         config("precision=%d", precision);
-        this.rootDelay = rootDelay;
-        this.rootDispersion = 0;
     }
     private int calcPrecision()
     {
         Instant i1;
         Instant i0 = i1 = clock.instant();
-        config("%s", i0);
         while (i0.equals(i1))
         {
             i1 = clock.instant();
-            config("%s", i1);
         }
+        config("%s", i0);
+        config("%s", i1);
         long prec = i0.until(i1, NANOS);
         double s = prec / 1000000000.0;
         return (int) -Math.round(MoreMath.log(2, 1.0/s));
@@ -105,9 +122,26 @@ public class SNTPServer extends JavaLogging implements Runnable
     {
         return (int) ((nanos * B16) / 1000000000);
     }
+    private int pow2(int exp)
+    {
+        int p = 2;
+        for (int ii=1;ii<exp;ii++)
+        {
+            p *= 2;
+        }
+        return p;
+    }
     private Instant instant()
     {
-        return clock.instant().plusMillis(rootDelay);
+        return clock.instant();
+    }
+    private Instant reference()
+    {
+        return clock.reference();
+    }
+    public long offset()
+    {
+        return clock.offset()/1000000L;
     }
     public void start()
     {
@@ -128,22 +162,79 @@ public class SNTPServer extends JavaLogging implements Runnable
         future = null;
     }
 
+    public void setServer(String host)
+    {
+        try
+        {
+            for (InetAddress address : InetAddress.getAllByName(host))
+            {
+                setServer(new InetSocketAddress(address, 123));
+            }
+        }
+        catch (UnknownHostException ex)
+        {
+            warning("host %s unknown", host);
+        }
+    }
+    public void setServer(InetSocketAddress address)
+    {
+        if (server != null)
+        {
+            throw new IllegalArgumentException();
+        }
+        config("set NTP server %s", address);
+        server = new Server(address);
+        server.schedule();
+    }
     @Override
     public void run()
     {
         try
         {
-            UnconnectedDatagramChannel channel = UnconnectedDatagramChannel.open("0.0.0.0", 123, 64, true, false);
-            config("SNTP listening %s", channel);
+            Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+            while (nis.hasMoreElements())
+            {
+                NetworkInterface ni = nis.nextElement();
+                if (ni.isUp())
+                {
+                    config("Network Interface %s", ni);
+                    Enumeration<InetAddress> ia = ni.getInetAddresses();
+                    while (ia.hasMoreElements())
+                    {
+                        InetAddress addr = ia.nextElement();
+                        config("  %s", addr.getHostAddress());
+                    }
+                }
+            }
+            channel4 = UnconnectedDatagramChannel.open("0.0.0.0", 123, 64, true, true);
+            channel4.configureBlocking(false);
+            config("SNTP listening %s", channel4);
+            
+            channel6 = UnconnectedDatagramChannel.open("::", 123, 64, true, true);
+            channel6.configureBlocking(false);
+            config("SNTP listening %s", channel6);
+            
             ByteBuffer bb = ByteBuffer.allocateDirect(64);
+            Selector selector = Selector.open();
+            channel4.register(selector, SelectionKey.OP_READ, channel4);
+            channel6.register(selector, SelectionKey.OP_READ, channel6);
             while (true)
             {
-                channel.read(bb);
-                handlePacket(channel, bb, instant());
-                bb.clear();
+                int count = selector.select();
+                Instant instant = instant();
+                for (SelectionKey sk : selector.selectedKeys())
+                {
+                    UnconnectedDatagramChannel rc = (UnconnectedDatagramChannel) sk.attachment();
+                    int cnt = rc.read(bb);
+                    if (cnt > 0)
+                    {
+                        handlePacket(rc, bb, instant);
+                    }
+                    bb.clear();
+                }
             }
         }
-        catch (IOException ex)
+        catch (Throwable ex)
         {
             log(SEVERE, ex, "%s", ex.getMessage());
         }
@@ -156,33 +247,172 @@ public class SNTPServer extends JavaLogging implements Runnable
     protected void handlePacket(UnconnectedDatagramChannel channel, ByteBuffer bb, Instant rcvTime) throws IOException
     {
         NtpV4Packet message = new NtpV4Packet(bb);
-        SocketAddress addr = channel.getFromAddress();
-        info("NTP packet from %s mode=%s%n", addr,
-                message.getMode());
-        if (message.getMode() == CLIENT)
+        InetSocketAddress addr = channel.getFromAddress();
+        fine("NTP packet %s %s from %s", message.getMode(), message.getReferenceIdString(), addr);
+        switch (message.getMode())
         {
-            NtpV4Packet response = new NtpV4Packet();
-
-            response.setStratum(1);
-            response.setMode(SERVER);
-            response.setPrecision(precision);
-            response.setPoll(poll);
-            response.setRootDelayRaw(0);
-            response.setRootDispersionRaw(0);
-
-            // originate time as defined in RFC-1305 (t1)
-            response.setOriginateTime(message.getTransmitTime());
-            // Receive Time is time request received by server (t2)
-            response.setReceiveInstant(rcvTime);
-            response.setReferenceTime(response.getReceiveTime());
-            response.setReferenceId(referenceClock);
-
-            // Transmit time is time reply sent by server (t3)
-            response.setTransmitInstant(instant());
-
-            ByteBuffer buffer = response.getBuffer();
-            buffer.clear();
-            channel.send(buffer, addr);
+            case CLIENT:
+                handleClient(channel, rcvTime, message, addr);
+                break;
+            case SERVER:
+                handleServer(rcvTime, message, addr);
+                break;
+            default:
+                warning("NTP packet %s %s from %s", message.getMode(), message.getReferenceIdString(), addr);
         }
+    }
+
+    private void handleServer(Instant t3, NtpV4Packet message, InetSocketAddress address) throws IOException
+    {
+        long originateTime = message.getOriginateTime();
+        if (originateTime == request)
+        {
+            server.set(message, t3);
+        }
+    }
+    private void handleClient(UnconnectedDatagramChannel channel, Instant rcvTime, NtpV4Packet message, InetSocketAddress addr) throws IOException
+    {
+        NtpV4Packet response = new NtpV4Packet();
+
+        response.setStratum(1);
+        response.setMode(SERVER);
+        response.setPrecision(precision);
+        response.setPoll(poll);
+        response.setRootDelayRaw(0);
+        response.setRootDispersionRaw(0);
+
+        // originate time as defined in RFC-1305 (t1)
+        response.setOriginateTime(message.getTransmitTime());
+        // Receive Time is time request received by server (t2)
+        response.setReceiveInstant(rcvTime);
+        response.setReferenceInstant(reference());
+        response.setReferenceId(referenceClock);
+
+        // Transmit time is time reply sent by server (t3)
+        response.setTransmitInstant(instant());
+
+        ByteBuffer buffer = response.getBuffer();
+        buffer.clear();
+        channel.send(buffer, addr);
+    }
+    private long sendRequest(InetSocketAddress address) throws IOException
+    {
+        NtpV4Packet request = new NtpV4Packet();
+
+        request.setStratum(1);
+        request.setMode(CLIENT);
+        request.setPrecision(precision);
+        request.setPoll(poll);
+        request.setRootDelayRaw(0);
+        request.setRootDispersionRaw(0);
+        request.setReferenceId(referenceClock);
+
+        request.setTransmitInstant(instant());
+
+        ByteBuffer buffer = request.getBuffer();
+        buffer.clear();
+        if (address.getAddress() instanceof Inet6Address)
+        {
+            channel6.send(buffer, address);
+        }
+        else
+        {
+            channel4.send(buffer, address);
+        }
+        return request.getTransmitTime();
+    }
+    private class Server
+    {
+        private InetSocketAddress address;
+        private int stratum;
+        private int poll;
+        private int precision;
+        private int rootDelay;
+        private int rootDispersion;
+        private String referenceId;
+        private Instant referenceTimestamp;
+        private ScheduledFuture<?> future;
+        private int rate = 64;
+
+        public Server(InetSocketAddress address)
+        {
+            this.address = address;
+        }
+        
+        public void set(NtpV4Packet message, Instant t4)
+        {
+            stratum = message.getStratum();
+            if (stratum == 0)
+            {
+                String kissCode = message.getReferenceIdString();
+                fine("KoD %s", kissCode);
+                switch (kissCode)
+                {
+                    case "DENY":
+                    case "RSTR":
+                        future.cancel(true);
+                        break;
+                    case "RATE":
+                        rate *= 2;
+                        schedule();
+                        break;
+                }
+            }
+            else
+            {
+                poll = message.getPoll();
+                precision = message.getPrecision();
+                rootDelay = message.getRootDelayRaw();
+                rootDispersion = message.getRootDispersionRaw();
+                referenceId = message.getReferenceIdString();
+                referenceTimestamp = message.getReferenceInstant();
+
+                Instant t1 = message.getOriginateInstant();
+                Instant t2 = message.getReceiveInstant();
+                Instant t3 = message.getTransmitInstant();
+                // offset = ((t2-t1)+(t3-t4))/2
+                long d12 = t1.until(t2, NANOS);
+                long d34 = t4.until(t3, NANOS);
+
+                long off = (d12 + d34) / 2L;
+                clock.adjust(off);
+                // delay = (t4-t1) - (t3-t2)
+                long d14 = t1.until(t4, NANOS);
+                long d23 = t2.until(t3, NANOS);
+
+                long del = d14 - d23;
+                finest("t1=%s", t1);
+                finest("t2=%s", t2);
+                finest("t3=%s", t3);
+                finest("t4=%s", t4);
+                config("%s offset=%f delay=%f rt=%f", address, (double)off/1000000000.0, (double)del/1000000000.0, (double)clock.offset()/1000000000.0);
+            }
+        }
+
+        public void schedule()
+        {
+            if (future != null)
+            {
+                future.cancel(true);
+            }
+            future = executor.scheduleWithFixedDelay(this::poll, rate, rate, SECONDS);
+        }
+        private void poll()
+        {
+            try
+            {
+                request = sendRequest(address);
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        @Override
+        public String toString()
+        {
+            return "Server{" + "address=" + address + '}';
+        }
+        
     }
 }

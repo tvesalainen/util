@@ -19,19 +19,25 @@ package org.vesalainen.time;
 import java.time.Instant;
 import static java.time.temporal.ChronoField.*;
 import java.time.temporal.TemporalAccessor;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.vesalainen.lang.Primitives;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public final class MutableInstant implements Comparable<MutableInstant>
+public class MutableInstant implements Comparable<MutableInstant>
 {
     private static final long T3 = 1000L;
     private static final long T6 = 1000000L;
     private static final long T9 = 1000000000L;
-    private long second;
-    private long nano;
+    protected long second;
+    protected long nano;
+    private ReentrantReadWriteLock rcLock = new ReentrantReadWriteLock();
+    protected ReadLock rl = rcLock.readLock();
+    protected WriteLock wl = rcLock.writeLock();
 
     public MutableInstant()
     {
@@ -57,9 +63,17 @@ public final class MutableInstant implements Comparable<MutableInstant>
     }
     public long until(MutableInstant mi)
     {
-        long ds = mi.second-second;
-        long dn = mi.nano-nano;
-        return Math.multiplyExact(ds, T9)+dn;
+        rl.lock();
+        try
+        {
+            long ds = mi.second-second;
+            long dn = mi.nano-nano;
+            return Math.multiplyExact(ds, T9)+dn;
+        }
+        finally
+        {
+            rl.unlock();
+        }
     }
     public void set(MutableInstant mi)
     {
@@ -77,20 +91,44 @@ public final class MutableInstant implements Comparable<MutableInstant>
     {
         set(0, nano);
     }
-    public void set(long second, long nano)
+    public final void set(long second, long nano)
     {
-        this.second = second + Math.floorDiv(nano, T9);
-        this.nano = Math.floorMod(nano, T9);
+        wl.lock();
+        try
+        {
+            this.second = second + Math.floorDiv(nano, T9);
+            this.nano = Math.floorMod(nano, T9);
+        }
+        finally
+        {
+            wl.unlock();
+        }
     }
     public long millis()
     {
-        return Math.multiplyExact(T3, second)+nano/T6;
+        rl.lock();
+        try
+        {
+            return Math.multiplyExact(T3, second)+nano/T6;
+        }
+        finally
+        {
+            rl.unlock();
+        }
     }
     public Instant instant()
     {
-        return Instant.ofEpochSecond(second, nano);
+        rl.lock();
+        try
+        {
+            return Instant.ofEpochSecond(second, nano);
+        }
+        finally
+        {
+            rl.unlock();
+        }
     }
-    public boolean isSame(Instant instant)
+    public boolean isEqual(Instant instant)
     {
         return second == instant.getEpochSecond() && nano == instant.getNano();
     }
@@ -131,12 +169,12 @@ public final class MutableInstant implements Comparable<MutableInstant>
         return true;
     }
     
-    public long second()
+    long second()
     {
         return second;
     }
 
-    public long nano()
+    long nano()
     {
         return nano;
     }

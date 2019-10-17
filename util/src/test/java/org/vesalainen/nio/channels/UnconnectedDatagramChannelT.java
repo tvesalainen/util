@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,31 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.net.sntp;
+package org.vesalainen.nio.channels;
 
-import java.util.logging.Level;
+import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SNTPServerT
+public class UnconnectedDatagramChannelT
 {
     
-    public SNTPServerT()
+    public UnconnectedDatagramChannelT()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINEST);
     }
 
     @Test
-    public void test()
+    public void test1() throws IOException
     {
-        SNTPServer server = new SNTPServer();
-        server.setServer("pi3media");
-        server.run();
+        try (UnconnectedDatagramChannel open = UnconnectedDatagramChannel.open("5.9.207.224", 5321, 100, true, true))
+        {
+            
+        }
     }
     
 }

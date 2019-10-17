@@ -16,10 +16,17 @@
  */
 package org.vesalainen.net.sntp;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.Arrays;
 
 /**
  *
@@ -219,19 +226,77 @@ public class NtpV4Packet
 
     public String getReferenceIdString()
     {
+        int stratum = getStratum();
+        if (stratum <= 1 || stratum > 15)
+        {
+            byte[] refId = getReferenceId();
+            int len = 4;
+            while (len > 0 && refId[len-1] == 0)
+            {
+                len--;
+            }
+            return new String(refId, 0, len, US_ASCII);
+        }
+        else
+        {
+            byte[] referenceId = getReferenceId();
+            try
+            {
+                InetAddress addr = InetAddress.getByAddress(referenceId);
+                return addr.getHostAddress();
+            }
+            catch (UnknownHostException ex)
+            {
+                return "????";
+            }
+        }
+    }
+
+    public byte[] getReferenceId()
+    {
         byte[] refId = new byte[4];
         for (int ii=0;ii<4;ii++)
         {
             refId[ii] = buffer.get(12+ii);
         }
-        int len = 4;
-        while (len > 0 && refId[len-1] == 0)
-        {
-            len--;
-        }
-        return new String(refId, 0, len, US_ASCII);
+        return refId;
     }
-
+        
+    public boolean referenceEquals(InetAddress address)
+    {
+        int stratum = getStratum();
+        if (stratum <= 1 || stratum > 15)
+        {
+            return false;
+        }
+        byte[] referenceId = getReferenceId();
+        if (address instanceof Inet4Address)
+        {
+            Inet4Address address4 = (Inet4Address) address;
+            return Arrays.equals(referenceId, address4.getAddress());
+        }
+        else
+        {
+            try
+            {
+                Inet6Address address6 = (Inet6Address) address;
+                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                byte[] digest = md5.digest(address6.getAddress());
+                for (int ii=0;ii<4;ii++)
+                {
+                    if (digest[ii] != referenceId[ii])
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            catch (NoSuchAlgorithmException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
     public Instant getReferenceInstant()
     {
         return ntpTimestamp2Instant(getReferenceTime());

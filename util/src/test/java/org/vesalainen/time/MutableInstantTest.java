@@ -51,10 +51,10 @@ public class MutableInstantTest
         MutableInstant mi = MutableInstant.now();
         Instant exp = mi.instant();
         assertEquals(exp.toEpochMilli(), mi.millis());
-        assertTrue(mi.isSame(exp));
+        assertTrue(mi.isEqual(exp));
         long v = 12345678912345L;
         mi.plus(v);
-        assertTrue(mi.isSame(exp.plusNanos(v)));
+        assertTrue(mi.isEqual(exp.plusNanos(v)));
     }
     @Test
     public void testUntil()

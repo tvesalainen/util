@@ -101,20 +101,24 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     
     public static UnconnectedDatagramChannel open(String host, int port, int maxDatagramSize, boolean direct, boolean loop) throws IOException
     {
-        ProtocolFamily family = StandardProtocolFamily.INET;
         InetAddress ia = InetAddress.getByName(host);
+        return open(new InetSocketAddress(ia, port), maxDatagramSize, direct, loop);
+    }
+    public static UnconnectedDatagramChannel open(InetSocketAddress address, int maxDatagramSize, boolean direct, boolean loop) throws IOException
+    {
+        InetAddress ia = address.getAddress();
+        ProtocolFamily family = StandardProtocolFamily.INET;
         if (ia instanceof Inet6Address)
         {
             family = StandardProtocolFamily.INET6;
         }
-        InetSocketAddress address = new InetSocketAddress(ia, port);
         DatagramChannel channel = DatagramChannel.open(family);
         if (isBroadcast(ia))
         {
             channel.setOption(SO_BROADCAST, true);
         }
         channel.setOption(SO_REUSEADDR, true);
-        channel.bind(new InetSocketAddress(port));
+        channel.bind(new InetSocketAddress(address.getPort()));
         if (ia.isMulticastAddress())
         {
             channel.setOption(IP_MULTICAST_LOOP, loop);
