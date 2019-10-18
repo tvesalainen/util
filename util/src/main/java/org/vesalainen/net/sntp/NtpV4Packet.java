@@ -27,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  *
@@ -262,6 +263,10 @@ public class NtpV4Packet
         return refId;
     }
         
+    public boolean referenceEquals(Collection<InetAddress> addresses)
+    {
+        return addresses.stream().anyMatch((ia) -> (referenceEquals(ia)));
+    }
     public boolean referenceEquals(InetAddress address)
     {
         int stratum = getStratum();

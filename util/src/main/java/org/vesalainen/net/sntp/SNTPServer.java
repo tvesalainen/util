@@ -28,7 +28,9 @@ import java.nio.channels.Selector;
 import java.time.Clock;
 import java.time.Instant;
 import static java.time.temporal.ChronoUnit.NANOS;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import static java.util.concurrent.TimeUnit.*;
@@ -64,6 +66,7 @@ public class SNTPServer extends JavaLogging implements Runnable
     private long request;
     private UnconnectedDatagramChannel channel4;
     private UnconnectedDatagramChannel channel6;
+    private List<InetAddress> ownAddresses = new ArrayList<>();
 
     public SNTPServer()
     {
@@ -203,6 +206,10 @@ public class SNTPServer extends JavaLogging implements Runnable
                     {
                         InetAddress addr = ia.nextElement();
                         config("  %s", addr.getHostAddress());
+                        if (!addr.isLoopbackAddress())
+                        {
+                            ownAddresses.add(addr);
+                        }
                     }
                 }
             }
@@ -265,7 +272,7 @@ public class SNTPServer extends JavaLogging implements Runnable
     private void handleServer(Instant t3, NtpV4Packet message, InetSocketAddress address) throws IOException
     {
         long originateTime = message.getOriginateTime();
-        if (originateTime == request)
+        if (originateTime == request && !message.referenceEquals(ownAddresses))
         {
             server.set(message, t3);
         }
@@ -385,7 +392,7 @@ public class SNTPServer extends JavaLogging implements Runnable
                 finest("t2=%s", t2);
                 finest("t3=%s", t3);
                 finest("t4=%s", t4);
-                config("%s offset=%f delay=%f rt=%f", address, (double)off/1000000000.0, (double)del/1000000000.0, (double)clock.offset()/1000000000.0);
+                fine("%s offset=%f delay=%f rt=%f", address, (double)off/1000000000.0, (double)del/1000000000.0, (double)clock.offset()/1000000000.0);
             }
         }
 
