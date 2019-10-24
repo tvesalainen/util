@@ -366,7 +366,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     {
         if (!transaction)
         {
-            throw new IllegalStateException("transaction not started");
+            throw new IllegalStateException("transaction not started: "+reason);
         }
         transaction = false;
         VERSION = VERSION == 0 ? 1 : 0;
