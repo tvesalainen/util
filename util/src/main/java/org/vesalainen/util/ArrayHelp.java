@@ -67,9 +67,9 @@ public final class ArrayHelp
      * @param data
      * @param rowLength 
      */
-    public static void sort(double[] data, int rowLength)
+    public static void sort(Object data, int rowLength)
     {
-        sort(data, 0, data.length, rowLength);
+        sort(data, 0, Array.getLength(data), rowLength);
     }
     /**
      * Sorts rows in 1D array in ascending order comparing each rows column.
@@ -78,7 +78,7 @@ public final class ArrayHelp
      * @param length Length of data
      * @param rowLength 
      */
-    public static void sort(double[] data, int offset, int length, int rowLength)
+    public static void sort(Object data, int offset, int length, int rowLength)
     {
         if (offset % rowLength != 0)
         {
@@ -97,9 +97,9 @@ public final class ArrayHelp
      * @param rowLength
      * @param comparator 
      */
-    public static void sort(double[] data, int rowLength, RowComparator comparator)
+    public static void sort(Object data, int rowLength, RowComparator comparator)
     {
-        sort(data, 0, data.length, rowLength, comparator);
+        sort(data, 0, Array.getLength(data), rowLength, comparator);
     }
     /**
      * Sorts rows in 1D array using given comparator.
@@ -108,7 +108,7 @@ public final class ArrayHelp
      * @param rowLength
      * @param comparator 
      */
-    public static void sort(double[] data, int offset, int length, int rowLength, RowComparator comparator)
+    public static void sort(Object data, int offset, int length, int rowLength, RowComparator comparator)
     {
         if (offset % rowLength != 0)
         {
@@ -121,7 +121,7 @@ public final class ArrayHelp
         quickSort(data, offset/rowLength, (offset + length - 1)/rowLength, rowLength, comparator, new double[rowLength], new double[rowLength]);
     }
 
-    public static void quickSort(double[] arr, int left, int right, int len, RowComparator c, double[] pivot, double[] tmp)
+    public static void quickSort(Object arr, int left, int right, int len, RowComparator c, Object pivot, Object tmp)
     {
         int i = left, j = right;
         System.arraycopy(arr, ((left + right) / 2)*len, pivot, 0, len);
@@ -164,13 +164,14 @@ public final class ArrayHelp
     {
 
         @Override
-        public int compare(double[] data, int row, double[] pivot, int len)
+        public int compare(Object data, int row, Object pivot, int len)
         {
             for (int ii=0;ii<len;ii++)
             {
-                if (data[len*row+ii] != pivot[ii])
+                int compare = Double.compare(Array.getDouble(data, len*row+ii), Array.getDouble(pivot, ii));
+                if (compare != 0)
                 {
-                    return Double.compare(data[len*row+ii], pivot[ii]);
+                    return compare;
                 }
             }
             return 0;
@@ -191,7 +192,7 @@ public final class ArrayHelp
          * @param len
          * @return 
          */
-        int compare(double[] data, int row, double[] pivot, int len);
+        int compare(Object data, int row, Object pivot, int len);
     }
     public static final <T> T[] flatten(T[][] m)
     {
