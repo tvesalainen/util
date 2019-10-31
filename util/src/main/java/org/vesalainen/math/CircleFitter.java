@@ -18,11 +18,11 @@
 package org.vesalainen.math;
 
 import java.io.Serializable;
-import org.ejml.data.DenseMatrix64F;
-import static org.ejml.ops.CommonOps.*;
+import java.lang.reflect.Array;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
-import org.vesalainen.math.Matrices.RowComparator;
+import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.util.ArrayHelp.RowComparator;
 
 /**
  * CircleFitter is a simple class that helps finding circle tempCenter and radius for
@@ -44,17 +44,16 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
     private static final long serialVersionUID = 1L;
     private static final double Epsilon = 1e-10;
     
-    private DenseMatrix64F di;
-    private final DenseMatrix64F initCenter = new DenseMatrix64F(2, 1);
-    private final double[] centerData = initCenter.data;
-    private final DenseMatrix64F zero = new DenseMatrix64F(1, 1);
+    private DoubleMatrix di;
+    private final DoubleMatrix initCenter = new DoubleMatrix(2, 1);
+    private final DoubleMatrix zero = new DoubleMatrix(1, 1);
     private final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
     private double radius;
-    private DenseMatrix64F points;
+    private DoubleMatrix points;
     /**
      * Creates a CircleFitter with estimated tempCenter. Estimated tempCenter can by 
  calculated with method initialCenter
-     * @see org.vesalainen.math.CircleFitter#initialCenter(org.ejml.data.DenseMatrix64F, org.ejml.data.DenseMatrix64F) 
+     * @see org.vesalainen.math.CircleFitter#initialCenter(org.ejml.data.DoubleMatrix, org.ejml.data.DoubleMatrix) 
      */
     public CircleFitter()
     {
@@ -63,15 +62,15 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * Fits points to a circle
      * @param points 
      */
-    public Circle fit(Point initPoint, DenseMatrix64F points)
+    public Circle fit(Point initPoint, DoubleMatrix points)
     {
-        initCenter.data[0] = initPoint.getX();
-        initCenter.data[1] = initPoint.getY();
+        initCenter.set(0, 0, initPoint.getX());
+        initCenter.set(1, 0, initPoint.getY());
         radius = Double.NaN;
         fit(points);
         return this;
     }
-    public Circle fit(DenseMatrix64F initPoint, DenseMatrix64F points)
+    public Circle fit(DoubleMatrix initPoint, DoubleMatrix points)
     {
         initCenter.setReshape(initPoint);
         radius = Double.NaN;
@@ -82,21 +81,21 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * Fits points to a circle
      * @param points 
      */
-    public Circle fit(Circle initCircle, DenseMatrix64F points)
+    public Circle fit(Circle initCircle, DoubleMatrix points)
     {
-        initCenter.data[0] = initCircle.getX();
-        initCenter.data[1] = initCircle.getY();
+        initCenter.set(0, 0, initCircle.getX());
+        initCenter.set(1, 0, initCircle.getY());
         radius = initCircle.getRadius();
         fit(points);
         return this;
     }
-    private void fit(DenseMatrix64F points)
+    private void fit(DoubleMatrix points)
     {
         this.points = points;
         radius = Double.NaN;
-        if (zero.numRows != points.numRows)
+        if (zero.rows() != points.rows())
         {
-            zero.reshape(points.numRows, 1);
+            zero.reshape(points.rows(), 1);
         }
         if (levenbergMarquardt.optimize(initCenter, points, zero))
         {
@@ -112,23 +111,22 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * @param points
      * @param center 
      */
-    public static void filterInnerPoints(DenseMatrix64F points, DenseMatrix64F center, int minLeft, double percent)
+    public static void filterInnerPoints(DoubleMatrix points, DoubleMatrix center, int minLeft, double percent)
     {
-        assert points.numCols == 2;
-        assert center.numCols == 1;
-        assert center.numRows == 2;
+        assert points.columns() == 2;
+        assert center.columns() == 1;
+        assert center.rows() == 2;
         if (percent <= 0 || percent >= 1)
         {
             throw new IllegalArgumentException("percent "+percent+" is not between 0 & 1");
         }
-        DistComp dc = new DistComp(center.data[0], center.data[1]);
-        Matrices.sort(points, dc);
-        int rows = points.numRows;
-        double[] d = points.data;
-        double limit = dc.distance(d[0], d[1])*percent;
+        DistComp dc = new DistComp(center.get(0, 0), center.get(1, 0));
+        points.sort(dc);
+        int rows = points.rows();
+        double limit = dc.distance(points.get(0, 0), points.get(0, 1))*percent;
         for (int r=minLeft;r<rows;r++)
         {
-            double distance = dc.distance(d[2*r], d[2*r+1]);
+            double distance = dc.distance(points.get(r, 0), points.get(r, 1));
             if (distance < limit)
             {
                 points.reshape(r/2, 2, true);
@@ -144,12 +142,12 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * @param min
      * @param max 
      */
-    public static void limitDistance(DenseMatrix64F p0, DenseMatrix64F pr, double min, double max)
+    public static void limitDistance(DoubleMatrix p0, DoubleMatrix pr, double min, double max)
     {
-        double x0 = p0.data[0];
-        double y0 = p0.data[1];
-        double xr = pr.data[0];
-        double yr = pr.data[1];
+        double x0 = p0.get(0, 0);
+        double y0 = p0.get(0, 1);
+        double xr = pr.get(0, 0);;
+        double yr = pr.get(0, 1);;
         double dx = xr-x0;
         double dy = yr-y0;
         double r = Math.sqrt(dx*dx+dy*dy);
@@ -168,19 +166,19 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
             {
                 if (m > 0)
                 {
-                    pr.data[1] = y0 +  r;
+                    pr.set(0, 1, y0 +  r);
                 }
                 else
                 {
-                    pr.data[1] = y0 -  r;
+                    pr.set(0, 1, y0 -  r);
                 }
             }
             else
             {
                 double x = Math.sqrt((r*r)/(m*m+1));
                 double y = m*x;
-                pr.data[0] = x0 +  x;
-                pr.data[1] = y0 +  y;
+                pr.set(0, 0, x0 +  x);
+                pr.set(0, 1, y0 +  y);
             }
         }
     }
@@ -190,25 +188,24 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * @param center out
      * @return 
      */
-    public static double meanCenter(DenseMatrix64F points, DenseMatrix64F center)
+    public static double meanCenter(DoubleMatrix points, DoubleMatrix center)
     {
-        assert points.numCols == 2;
-        assert center.numCols == 1;
-        assert center.numRows == 2;
+        assert points.columns() == 2;
+        assert center.columns() == 1;
+        assert center.rows() == 2;
         center.zero();
-        int count = points.numRows;
-        double[] d = points.data;
+        int count = points.rows();
         for (int i=0;i<count;i++)
         {
-            center.add(0, 0, d[2*i]);
-            center.add(1, 0, d[2*i+1]);
+            center.add(0, 0, points.get(i, 0));
+            center.add(1, 0, points.get(i, 1));
         }
         if (count > 0)
         {
-            divide(center, count);
-            DenseMatrix64F di = new DenseMatrix64F(points.numRows, 1);
+            DoubleMatrix.divide(center, count);
+            DoubleMatrix di = new DoubleMatrix(points.rows(), 1);
             computeDi(center, points, di);
-            return elementSum(di) / (double)points.numRows;
+            return DoubleMatrix.elementSum(di) / (double)points.rows();
         }
         else
         {
@@ -222,14 +219,14 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
      * @param center
      * @return 
      */
-    public static double initialCenter(DenseMatrix64F points, DenseMatrix64F center)
+    public static double initialCenter(DoubleMatrix points, DoubleMatrix center)
     {
-        assert points.numCols == 2;
-        assert center.numCols == 1;
-        assert center.numRows == 2;
+        assert points.columns() == 2;
+        assert center.columns() == 1;
+        assert center.rows() == 2;
         center.zero();
         int count = 0;
-        int len1 = points.numRows;
+        int len1 = points.rows();
         int len2 = len1-1;
         int len3 = len2-1;
         for (int i=0;i<len3;i++)
@@ -247,10 +244,10 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
         if (count > 0)
         {
-            divide(center, count);
-            DenseMatrix64F di = new DenseMatrix64F(points.numRows, 1);
+            DoubleMatrix.divide(center, count);
+            DoubleMatrix di = new DoubleMatrix(points.rows(), 1);
             computeDi(center, points, di);
-            return elementSum(di) / (double)points.numRows;
+            return DoubleMatrix.elementSum(di) / (double)points.rows();
         }
         else
         {
@@ -258,7 +255,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
     }
 
-    private static boolean center(DenseMatrix64F points, int i, int j, int k, DenseMatrix64F center)
+    private static boolean center(DoubleMatrix points, int i, int j, int k, DoubleMatrix center)
     {
         double xi = points.get(i, 0);
         double yi = points.get(i, 1);
@@ -282,27 +279,27 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         return true;
     }
         
-    private void computeDi(DenseMatrix64F center, DenseMatrix64F points)
+    private void computeDi(DoubleMatrix center, DoubleMatrix points)
     {
         if (di == null)
         {
-            di = new DenseMatrix64F(points.numRows, 1);
+            di = new DoubleMatrix(points.rows(), 1);
         }
         else
         {
-            if (di.numRows != points.numRows)
+            if (di.rows() != points.rows())
             {
-                di.reshape(points.numRows, 1);
+                di.reshape(points.rows(), 1);
             }
         }
         computeDi(center, points, di);
     }
-    private static void computeDi(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F di)
+    private static void computeDi(DoubleMatrix center, DoubleMatrix points, DoubleMatrix di)
     {
         double xx = center.get(0, 0);
         double yy = center.get(1, 0);
 
-        for (int row=0;row<points.numRows;row++)
+        for (int row=0;row<points.rows();row++)
         {
             double xd = xx - points.get(row, 0);
             double yd = yy - points.get(row, 1);
@@ -311,63 +308,61 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
     }
     @Override
-    public void compute(DenseMatrix64F center, DenseMatrix64F points, DenseMatrix64F y)
+    public void compute(DoubleMatrix center, DoubleMatrix points, DoubleMatrix y)
     {
         double r;
         if (Double.isNaN(radius))
         {
             computeDi(center, points);
-            r = elementSum(di) / (double)points.numRows;
+            r = DoubleMatrix.elementSum(di) / (double)points.rows();
         }
         else
         {
             r = radius;
         }
-        int len = points.numRows;
-        double[] yd = y.data;
-        double[] did = di.data;
+        int len = points.rows();
         for (int row=0;row<len;row++)
         {
-            yd[row] = did[row] - r;
+            y.set(row, 0, di.get(row, 0) - r);
         }
     }
 
     @Override
-    public void computeJacobian(DenseMatrix64F param, DenseMatrix64F x, DenseMatrix64F jacobian)
+    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
     {
         computeDi(param, x);
         double xx = param.get(0, 0);
         double yy = param.get(1, 0);
         double sumXDk = 0;
         double sumYDk = 0;
-        int n = x.numRows;
+        int n = x.rows();
         for (int i=0;i<n;i++)
         {
-            sumXDk += (xx - x.get(i, 0))/di.data[i];
+            sumXDk += (xx - x.get(i, 0))/di.get(i, 0);
         }
         double xDk = sumXDk / n;
         for (int i=0;i<n;i++)
         {
-            sumYDk += (yy - x.get(i, 1))/di.data[i];
+            sumYDk += (yy - x.get(i, 1))/di.get(i, 0);
         }
         double yDk = sumYDk / n;
         for (int i=0;i<n;i++)
         {
-            jacobian.set(0, i, (xx - x.get(i, 0))/di.data[i] - xDk);
-            jacobian.set(1, i, (yy - x.get(i, 1))/di.data[i] - yDk);
+            jacobian.set(0, i, (xx - x.get(i, 0))/di.get(i, 0) - xDk);
+            jacobian.set(1, i, (yy - x.get(i, 1))/di.get(i, 0) - yDk);
         }
     }
 
     @Override
     public double getX()
     {
-        return centerData[0];
+        return initCenter.get(0, 0);
     }
 
     @Override
     public double getY()
     {
-        return centerData[1];
+        return initCenter.get(0, 1);
     }
 
     @Override
@@ -376,7 +371,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         if (Double.isNaN(radius))
         {
             computeDi(initCenter, points);
-            radius = elementSum(di) / (double)points.numRows;
+            radius = DoubleMatrix.elementSum(di) / (double)points.rows();
         }
         return radius;
     }
@@ -398,10 +393,10 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
         
         @Override
-        public int compare(double[] data, int row, double[] pivot, int len)
+        public int compare(Object data, int row, Object pivot, int len)
         {
-            double dd = distance(data[row*len], data[row*len+1]);
-            double dp = distance(pivot[0], pivot[1]);
+            double dd = distance(Array.getDouble(data, row*len), Array.getDouble(data, row*len+1));
+            double dp = distance(Array.getDouble(pivot, 0), Array.getDouble(pivot, 1));
             if (dd < dp)
             {
                 return 1;

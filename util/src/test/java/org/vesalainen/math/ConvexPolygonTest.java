@@ -17,11 +17,9 @@
 
 package org.vesalainen.math;
 
-import java.util.stream.Stream;
-import org.ejml.data.DenseMatrix64F;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.ui.AbstractView;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
@@ -149,7 +147,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon1()
     {
-        DenseMatrix64F x = new DenseMatrix64F(22, 2, true,
+        DoubleMatrix x = new DoubleMatrix(22, 2, true,
                 1, 6,
                 2, 3,
                 2, 4,
@@ -197,11 +195,11 @@ public class ConvexPolygonTest
         assertTrue(p.isVertex(6, 1));
         assertTrue(p.isVertex(9, 2));
         assertFalse(p.isInside(0, 0));
-        for (int r=0;r<x.numRows;r++)
+        for (int r=0;r<x.rows();r++)
         {
             assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
+                    p.isInside(x.get(r, 0), x.get(r, 1)) ||
+                    p.isVertex(x.get(r, 0), x.get(r, 1))
             );
         }
     }
@@ -209,7 +207,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon2()
     {
-        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+        DoubleMatrix x = new DoubleMatrix(6, 2, true,
                 1, 1,
                 3.1, 3,
                 6, 1,
@@ -223,11 +221,11 @@ public class ConvexPolygonTest
         assertTrue(p.isInside(5, 2));
         assertTrue(p.isInside(3, 2));
         assertFalse(p.isInside(0, 0));
-        for (int r=0;r<x.numRows;r++)
+        for (int r=0;r<x.rows();r++)
         {
             assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
+                    p.isInside(x.get(r, 0), x.get(r, 1)) ||
+                    p.isVertex(x.get(r, 0), x.get(r, 1))
             );
         }
     }
@@ -235,7 +233,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon3()
     {
-        DenseMatrix64F x = new DenseMatrix64F(10, 2, true,
+        DoubleMatrix x = new DoubleMatrix(10, 2, true,
                 1, 1,
                 2, 1,
                 4, 1,
@@ -258,7 +256,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon4()
     {
-        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+        DoubleMatrix x = new DoubleMatrix(7, 2, true,
                 1, 1,
                 2, 3,
                 3, 2,
@@ -273,11 +271,11 @@ public class ConvexPolygonTest
         assertTrue(p.isInside(3, 4));
         assertTrue(p.isInside(3, 2));
         assertFalse(p.isInside(0, 0));
-        for (int r=0;r<x.numRows;r++)
+        for (int r=0;r<x.rows();r++)
         {
             assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
+                    p.isInside(x.get(r, 0), x.get(r, 1)) ||
+                    p.isVertex(x.get(r, 0), x.get(r, 1))
             );
         }
     }
@@ -285,7 +283,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon5()
     {
-        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+        DoubleMatrix x = new DoubleMatrix(6, 2, true,
                 1, 4,
                 2, 3,
                 3, 1,
@@ -305,7 +303,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon6()
     {
-        DenseMatrix64F x = new DenseMatrix64F(19, 2, true,
+        DoubleMatrix x = new DoubleMatrix(19, 2, true,
             -13.602548516397329, 28.13049850582962,
             -13.602548516397329, 28.13049850582962,
             -13.602548516397329, 28.13049850582962,
@@ -328,11 +326,11 @@ public class ConvexPolygonTest
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
         assertTrue(p.isConvex());
-        for (int r=0;r<x.numRows;r++)
+        for (int r=0;r<x.rows();r++)
         {
             assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
+                    p.isInside(x.get(r, 0), x.get(r, 1)) ||
+                    p.isVertex(x.get(r, 0), x.get(r, 1))
             );
         }
     }
@@ -340,7 +338,7 @@ public class ConvexPolygonTest
     @Test
     public void testCreateConvexPolygon7()
     {
-        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+        DoubleMatrix x = new DoubleMatrix(7, 2, true,
                 2, 465,
                 1000, 15,
                 938, 245,
@@ -357,7 +355,7 @@ public class ConvexPolygonTest
     public void testGetOuterBoundary()
     {
         ConvexPolygon o = new ConvexPolygon();
-        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+        DoubleMatrix x = new DoubleMatrix(7, 2, true,
                 1, 2,
                 2, 1,
                 3, 2,
@@ -408,16 +406,16 @@ public class ConvexPolygonTest
     public void testGetOuterBoundary2()
     {
         ConvexPolygon o = new ConvexPolygon();
-        DenseMatrix64F x = new DenseMatrix64F(2, 2, true,
+        DoubleMatrix x = new DoubleMatrix(2, 2, true,
                 1, 1,
                 3, 2
         );
         ConvexPolygon p = ConvexPolygon.createConvexPolygon(x);
-        for (int r=0;r<x.numRows;r++)
+        for (int r=0;r<x.rows();r++)
         {
             assertTrue(
-                    p.isInside(x.data[2*r], x.data[2*r+1]) ||
-                    p.isVertex(x.data[2*r], x.data[2*r+1])
+                    p.isInside(x.get(r, 0), x.get(r, 1)) ||
+                    p.isVertex(x.get(r, 0), x.get(r, 1))
             );
         }
         p.getOuterBoundary(0, 0, o);
@@ -436,7 +434,7 @@ public class ConvexPolygonTest
     @Test
     public void testGetMinimumDistance()
     {
-        DenseMatrix64F x = new DenseMatrix64F(7, 2, true,
+        DoubleMatrix x = new DoubleMatrix(7, 2, true,
                 1, 2,
                 2, 1,
                 3, 2,

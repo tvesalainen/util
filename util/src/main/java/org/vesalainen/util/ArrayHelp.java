@@ -160,6 +160,93 @@ public final class ArrayHelp
             quickSort(arr, i, right, len, c, pivot, tmp);
         }
     }
+    /**
+     * Returns true if rows r1 and r2 equal
+     * @param a
+     * @param r1
+     * @param r2
+     * @return 
+     */
+    public static boolean rowsEqual(Object a, int r1, int r2)
+    {
+        return compareRows(a, r1, a, r2) == 0;
+    }
+    /**
+     * Returns true if array a1 row r1 equals a2 r2
+     * @param a1
+     * @param r1
+     * @param a2
+     * @param r2
+     * @return 
+     */
+    public static boolean rowsEqual(Object a1, int r1, Object a2, int r2)
+    {
+        return compareRows(a1, r1, a2, r2) == 0;
+    }
+    /**
+     * Compares rows r1 and r2 of array a
+     * @param a
+     * @param r1
+     * @param r2
+     * @return 
+     */
+    public static int compareRows(Object a, int r1, int r2)
+    {
+        return compareRows(a, r1, a, r2);
+    }
+    /**
+     * Compares array a1 row r1 to a2 r2
+     * @param a1
+     * @param r1
+     * @param a2
+     * @param r2
+     * @return 
+     */
+    public static int compareRows(Object a1, int r1, Object a2, int r2)
+    {
+        Class<?> c1 = a1.getClass();
+        if (!c1.isArray())
+        {
+            throw new IllegalArgumentException(a1+" not array");
+        }
+        Class<?> c2 = a2.getClass();
+        if (c1 != c2)
+        {
+            throw new IllegalArgumentException("incompatible arrays");
+        }
+        Class<?> componentType = c1.getComponentType();
+        String simpleName = componentType.getSimpleName();
+        switch (simpleName)
+        {
+            case "boolean":
+                    return Boolean.compare(Array.getBoolean(a1, r1), Array.getBoolean(a2, r2));
+            case "byte":
+                    return Byte.compare(Array.getByte(a1, r1), Array.getByte(a2, r2));
+            case "short":
+                    return Short.compare(Array.getShort(a1, r1), Array.getShort(a2, r2));
+            case "char":
+                    return Character.compare(Array.getChar(a1, r1), Array.getChar(a2, r2));
+            case "int":
+                    return Integer.compare(Array.getInt(a1, r1), Array.getInt(a2, r2));
+            case "long":
+                    return Long.compare(Array.getLong(a1, r1), Array.getLong(a2, r2));
+            case "float":
+                    return Float.compare(Array.getFloat(a1, r1), Array.getFloat(a2, r2));
+            case "double":
+                    return Double.compare(Array.getDouble(a1, r1), Array.getDouble(a2, r2));
+            default:
+                if (componentType.isAssignableFrom(Comparable.class))
+                {
+                    Comparable co1 = (Comparable)Array.get(a1, r1);
+                    Comparable co2 = (Comparable)Array.getDouble(a2, r2);
+                    return co1.compareTo(co2);
+                }
+                else
+                {
+                    throw new IllegalArgumentException("array types not comparable");
+                }
+        }
+    }
     public static class NaturalRowComparator implements RowComparator
     {
 
@@ -168,7 +255,7 @@ public final class ArrayHelp
         {
             for (int ii=0;ii<len;ii++)
             {
-                int compare = Double.compare(Array.getDouble(data, len*row+ii), Array.getDouble(pivot, ii));
+                int compare = compareRows(data, len*row+ii, pivot, ii);
                 if (compare != 0)
                 {
                     return compare;

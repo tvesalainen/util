@@ -23,8 +23,8 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Polygon;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
@@ -44,9 +44,9 @@ public class DoublePolygon implements Shape
         this(polygon.points);
     }    
 
-    public DoublePolygon(DenseMatrix64F points)
+    public DoublePolygon(DoubleMatrix points)
     {
-        this(points.data, points.numRows);
+        this(points.data(), points.rows());
     }
     public DoublePolygon(double[] d)
     {

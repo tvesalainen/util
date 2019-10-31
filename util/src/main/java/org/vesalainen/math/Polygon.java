@@ -17,7 +17,7 @@
 package org.vesalainen.math;
 
 import java.io.Serializable;
-import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  * 
@@ -27,19 +27,19 @@ public class Polygon implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    public final DenseMatrix64F points;
+    public final DoubleMatrix points;
     public final Rect bounds = new Rect();
 
     public Polygon()
     {
-        this(new DenseMatrix64F(0, 2));
+        this(new DoubleMatrix(0, 2));
     }
 
-    public Polygon(DenseMatrix64F points)
+    public Polygon(DoubleMatrix points)
     {
-        assert points.numCols == 2;
+        assert points.columns() == 2;
         this.points = points;
-        Matrices.removeEqualRows(points);
+        points.removeEqualRows();
         updateBounds();
     }
     protected void copy(Polygon oth)
@@ -50,11 +50,10 @@ public class Polygon implements Serializable
     protected final void updateBounds()
     {
         bounds.reset();
-        int len = points.numRows;
-        double[] d = points.data;
+        int len = points.rows();
         for (int ii=0;ii<len;ii++)
         {
-            bounds.update(d[2*ii], d[2*ii+1]);
+            bounds.update(points.get(ii, 0), points.get(ii, 1));
         }
     }
             
@@ -85,9 +84,9 @@ public class Polygon implements Serializable
      * @return 
      * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in Polygon Test W. Randolph Franklin (WRF)</a>
      */
-    public static boolean isRawHit(DenseMatrix64F points, double testx, double testy)
+    public static boolean isRawHit(DoubleMatrix points, double testx, double testy)
     {
-        return isRawHit(points.data, points.numRows, testx, testy);
+        return isRawHit(points.data(), points.rows(), testx, testy);
     }
     /**
      * Returns true if point is inside a polygon.
@@ -122,8 +121,8 @@ public class Polygon implements Serializable
      */
     boolean isVertex(double x, double y)
     {
-        int cnt = points.numRows;
-        double[] d = points.data;
+        int cnt = points.rows();
+        double[] d = points.data();
         for (int ii=0;ii<cnt;ii++)
         {
             if (x == d[2*ii] && y== d[2*ii+1])
@@ -145,7 +144,7 @@ public class Polygon implements Serializable
      */
     public boolean isConvex()
     {
-        return Polygon.isConvex(points.data, points.numRows);
+        return Polygon.isConvex(points.data(), points.rows());
     }
     /**
      * Returns true if polygon is convex.

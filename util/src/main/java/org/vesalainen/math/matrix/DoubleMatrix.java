@@ -16,7 +16,10 @@
  */
 package org.vesalainen.math.matrix;
 
+import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.Arrays;
+import static java.util.Locale.US;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -35,7 +38,7 @@ public class DoubleMatrix extends AbstractMatrix
 
     public DoubleMatrix(int rows, int cols)
     {
-        this(rows, new double[rows * cols]);
+        this(rows, cols, new double[rows * cols]);
     }
 
     public DoubleMatrix(double[][] m)
@@ -43,11 +46,35 @@ public class DoubleMatrix extends AbstractMatrix
         this(m.length, ArrayHelp.flatten(m));
     }
 
+    @Deprecated public DoubleMatrix(int rows, int cols, boolean rowMajor, double... d)
+    {
+        this(rows, cols, Arrays.copyOf(d, rows*cols));
+        if (!rowMajor)
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
     public DoubleMatrix(int rows, double[] d)
     {
-        super(rows, d);
-        supplier = (i, j) -> d[cols * i + j];
-        consumer = (i, j, v) -> d[cols * i + j] = v;
+        this(rows, d.length / rows, d);
+    }
+    public DoubleMatrix(int rows, int cols, double[] d)
+    {
+        super(rows, cols, d);
+        supplier = (i, j) -> Array.getDouble(array, cols * i + j);
+        consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
+    }
+
+    @Override
+    public void reshape(int rows, int cols, boolean save)
+    {
+        super.reshape(rows, cols, save);
+        supplier = (i, j) -> Array.getDouble(array, cols * i + j);
+        consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
+    }
+    public double[] data()
+    {
+        return (double[]) array;
     }
     /**
      * Return copy of matrix as 2D array.
@@ -62,7 +89,32 @@ public class DoubleMatrix extends AbstractMatrix
     {
         return new DoubleMatrix(rows, (double[]) copyOf(array, cls));
     }
-
+    /**
+     * Access as vector
+     * @param i
+     * @return 
+     */
+    public double data(int i)
+    {
+        if (!(rows == 1 || cols == 1))
+        {
+            throw new IllegalArgumentException();
+        }
+        return ((double[])array)[i];
+    }
+    /**
+     * Access as vector
+     * @param i
+     * @param v 
+     */
+    public void data(int i, double v)
+    {
+        if (!(rows == 1 || cols == 1))
+        {
+            throw new IllegalArgumentException();
+        }
+        ((double[])array)[i] = v;
+    }
     /**
      * Swaps row r1 and r2 possibly using tmp
      * @param r1
@@ -82,6 +134,39 @@ public class DoubleMatrix extends AbstractMatrix
     public double get(int i, int j)
     {
         return supplier.get(i, j);
+    }
+    public void zero()
+    {
+        set(0);
+    }
+    /**
+     * Set all elements to v
+     * @param v 
+     */
+    public void set(double v)
+    {
+        int m = rows;
+        int n = cols;
+        ItemConsumer ic = consumer;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                ic.set(i, j, v);
+            }
+        }
+    }
+    /**
+     * this = B
+     * @param B 
+     */
+    public void set(DoubleMatrix B)
+    {
+        if (rows != B.rows || cols != B.cols)
+        {
+            throw new IllegalArgumentException("cols/rows differ");
+        }
+        set(0, 0, B);
     }
     /**
      * Assign matrix A items starting at i,j
@@ -239,6 +324,20 @@ public class DoubleMatrix extends AbstractMatrix
     {
         consumer.set(i, j, supplier.get(i, j) * v);
     }
+    public static void divide(DoubleMatrix a, double v)
+    {
+        int m = a.rows;
+        int n = a.cols;
+        ItemConsumer ic = a.consumer;
+        ItemSupplier is = a.supplier;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                ic.set(i, j, is.get(i, j) / v);
+            }
+        }
+    }
     /**
      * Aij /= v
      * @param i
@@ -248,6 +347,68 @@ public class DoubleMatrix extends AbstractMatrix
     public void div(int i, int j, double v)
     {
         consumer.set(i, j, supplier.get(i, j) / v);
+    }
+    public static double elementSum(DoubleMatrix a)
+    {
+        return a.elementSum();
+    }
+    public double elementSum()
+    {
+        int m = rows;
+        int n = cols;
+        ItemSupplier is = supplier;
+        double sum = 0;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                sum += is.get(i, j);
+            }
+        }
+        return sum;
+    }
+    public static void add( double alpha , DoubleMatrix a , double beta , DoubleMatrix b , DoubleMatrix c )
+    {
+        if (!a.sameDimensions(b))
+        {
+            throw new IllegalArgumentException("dims differ");
+        }
+        int m = a.rows;
+        int n = a.cols;
+        ItemSupplier sa = a.supplier;
+        ItemSupplier sb = b.supplier;
+        ItemConsumer ic = c.consumer;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                ic.set(i, j, alpha*sa.get(i, j)+beta*sb.get(i, j));
+            }
+        }
+    }
+    public static double diffNorm(DoubleMatrix a, DoubleMatrix b)
+    {
+        if (!a.sameDimensions(b))
+        {
+            throw new IllegalArgumentException("dims differ");
+        }
+        int m = a.rows;
+        int n = a.cols;
+        double sum = 0;
+        ItemSupplier sa = a.supplier;
+        ItemSupplier sb = b.supplier;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                sum += Math.pow(sa.get(i, j)-sb.get(i, j), 2);
+            }
+        }
+        return Math.sqrt(sum);
+    }
+    public static void scale(double c, DoubleMatrix a)
+    {
+        a.scalarMultiply(c);
     }
     /**
      * Scalar multiplies each item with c
@@ -298,6 +459,39 @@ public class DoubleMatrix extends AbstractMatrix
     {
         return add(this, m);
     }
+    public static void multTransB(DoubleMatrix a, DoubleMatrix b, DoubleMatrix c)
+    {
+        if( a == c || b == c )
+        {
+            throw new IllegalArgumentException("a or b can be the same matrix as c");
+        }
+        if( a.cols != b.cols ) 
+        {
+            throw new IllegalArgumentException("The a and b matrices do not have compatible dimensions");
+        } 
+        if( a.rows != c.rows || b.rows != c.cols ) 
+        {
+            throw new IllegalArgumentException("The results matrix does not have the desired dimensions");
+        }
+        int m = a.rows;
+        int n = b.rows;
+        int p = b.cols;
+        ItemSupplier sa = a.supplier;
+        ItemSupplier sb = b.supplier;
+        ItemConsumer co = c.consumer;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                double sum = 0;
+                for (int k=0;k<p;k++)
+                {
+                    sum += sa.get(i, k)*sb.get(j, k);
+                }
+                co.set(i, j, sum);
+            }
+        }
+    }
     /**
      * Returns new DoubleMatrix which is transpose of this.
      * @return 
@@ -308,7 +502,7 @@ public class DoubleMatrix extends AbstractMatrix
         int m = rows();
         int n = columns();
         ItemSupplier s = supplier;
-        DoubleMatrix tr = getInstance(n, m);
+        DoubleMatrix tr = new DoubleMatrix(n, m);
         ItemConsumer c = tr.consumer;
         for (int i = 0; i < m; i++)
         {
@@ -371,13 +565,42 @@ public class DoubleMatrix extends AbstractMatrix
         return sum;
     }
     /**
+     * <p>
+     * Solves for x in the following equation:<br>
+     * <br>
+     * A*x = b
+     * </p>
+     *
+     * <p>
+     * If the system could not be solved then false is returned.
+     *
+     * @param a A matrix that is m by n. Not modified.
+     * @param b A matrix that is n by k. Not modified.
+     * @param x A matrix that is m by k. Modified.
+     *
+     * @return true if it could invert the matrix false if it could not.
+     */
+    public static boolean solve(DoubleMatrix a, DoubleMatrix b, DoubleMatrix x)
+    {
+        try
+        {
+            a.decompose();
+            a.solve(b, x);
+            return true;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return false;
+        }
+    }
+    /**
      * Solve linear equation Ax = b returning x
      * @param b
      * @return 
      */
     public DoubleMatrix solve(DoubleMatrix b)
     {
-        DoubleMatrix x = getInstance(b.rows(), b.columns());
+        DoubleMatrix x = new DoubleMatrix(b.rows(), b.columns());
         solve(b, x);
         return x;
     }
@@ -417,7 +640,7 @@ public class DoubleMatrix extends AbstractMatrix
     {
         A = clone();
         P = new int[rows() + 1];
-        lupDecompose(A, 0.001, P);
+        lupDecompose(A, 10e-10, P);
     }
     private static void lupDecompose(DoubleMatrix A, double Tol, int[] P)
     {
@@ -675,6 +898,19 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix add(DoubleMatrix m1, DoubleMatrix m2)
     {
+        DoubleMatrix mr = new DoubleMatrix(m1.rows, m1.cols);
+        add(m1, m2, mr);
+        return mr;
+    }
+    /**
+     * c = a + b
+     * @param m1
+     * @param m2
+     * @param mr
+     * @return 
+     */
+    public static void add(DoubleMatrix m1, DoubleMatrix m2, DoubleMatrix mr)
+    {
         if (m1.rows != m2.rows
                 || m1.cols != m2.cols)
         {
@@ -684,7 +920,6 @@ public class DoubleMatrix extends AbstractMatrix
         int n = m1.cols;
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
-        DoubleMatrix mr = DoubleMatrix.getInstance(m, n);
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {
@@ -693,7 +928,61 @@ public class DoubleMatrix extends AbstractMatrix
                 c.set(i, j, s1.get(i, j) + s2.get(i, j));
             }
         }
+    }
+    /**
+     * this = this - m2
+     * @param m2 
+     */
+    public static void subtractEquals(DoubleMatrix m1, DoubleMatrix m2)
+    {
+        subtract(m1, m2, m1);
+    }
+    /**
+     * Returns this - m2
+     * @param m2
+     * @return 
+     */
+    public DoubleMatrix subtract(DoubleMatrix m2)
+    {
+        return subtract(this, m2);
+    }
+    /**
+     * Returns new DoubleMatrix which is m1 added with m2
+     * @param m1
+     * @param m2
+     * @return 
+     */
+    public static DoubleMatrix subtract(DoubleMatrix m1, DoubleMatrix m2)
+    {
+        DoubleMatrix mr = new DoubleMatrix(m1.rows, m1.cols);
+        subtract(m1, m2, mr);
         return mr;
+    }
+    /**
+     * c = a - b
+     * @param m1
+     * @param m2
+     * @param mr 
+     */
+    public static void subtract(DoubleMatrix m1, DoubleMatrix m2, DoubleMatrix mr)
+    {
+        if (m1.rows != m2.rows
+                || m1.cols != m2.cols)
+        {
+            throw new IllegalArgumentException("Matrices not comfortable");
+        }
+        int m = m1.rows;
+        int n = m1.cols;
+        ItemSupplier s1 = m1.supplier;
+        ItemSupplier s2 = m2.supplier;
+        ItemConsumer c = mr.consumer;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                c.set(i, j, s1.get(i, j) - s2.get(i, j));
+            }
+        }
     }
     /**
      * Returns new DoubleMatrix which is this multiplied with m.
@@ -747,8 +1036,25 @@ public class DoubleMatrix extends AbstractMatrix
         return getInstance(n ,n, (i, j) -> i == j ? 1 : 0);
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        int m = rows;
+        int n = cols;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                sb.append(String.format(US, "%.3f", Array.getDouble(array, M.at(i, j)))).append(' ');
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
     @FunctionalInterface
-    public interface ItemSupplier
+    public interface ItemSupplier extends Serializable
     {
 
         /**
@@ -763,7 +1069,7 @@ public class DoubleMatrix extends AbstractMatrix
     }
 
     @FunctionalInterface
-    protected interface ItemConsumer
+    protected interface ItemConsumer extends Serializable
     {
 
         /**
@@ -775,5 +1081,132 @@ public class DoubleMatrix extends AbstractMatrix
          */
         void set(int i, int j, double v);
 
+    }
+    public boolean removeRow(double... row)
+    {
+        int idx = findRow(row);
+        if (idx != -1)
+        {
+            removeRowAt(idx);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Returns true if m contains row.
+     * @param row
+     * @return 
+     */
+    public boolean containsRow(double... row)
+    {
+        return findRow(row) != -1;
+    }
+    /**
+     * Returns found row number or -1.
+     * @param row
+     * @return 
+     */
+    public int findRow(double... row)
+    {
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        for (int r=0;r<rows;r++)
+        {
+            boolean eq=true;
+            for (int c=0;c<cols;c++)
+            {
+                if (get(r, c) != row[c])
+                {
+                    eq = false;
+                    break;
+                }
+            }
+            if (eq)
+            {
+                return r;
+            }
+        }
+        return -1;
+    }
+    public void setRow(int index, double... row)
+    {
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        System.arraycopy(row, 0, array, cols*index, row.length);
+    }
+
+    public void addRow(double... row)
+    {
+        int r = rows;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        reshape(rows+1, cols, true);
+        System.arraycopy(row, 0, array, cols*r, row.length);
+    }
+    public void insertRow(int index, double... row)
+    {
+        int r = rows;
+        if (row.length != cols)
+        {
+            throw new IllegalArgumentException("illegal column count");
+        }
+        reshape(rows+1, cols, true);
+        System.arraycopy(array, cols*index, array, cols*(index+1), cols*(r-index));
+        System.arraycopy(row, 0, array, cols*index, row.length);
+    }
+    public void removeRowAt(int index)
+    {
+        System.arraycopy(array, cols*(index+1), array, cols*index, cols*(rows-index-1));
+        reshape(rows-1, cols, true);
+    }
+    /**
+     * Removes equal subsequent rows and additionally last row if it is equal to first row.
+     * @param matrix 
+     */
+    public void removeEqualRows()
+    {
+        if (rows < 2)
+        {
+            return;
+        }
+        int left = rows-1;
+        int delta = 0;
+        for (int i=0;i<left;i++)
+        {
+            int j=i;
+            for (;j<left && eq(array, i, j+1, cols);j++);
+            if (i != j)
+            {
+                int cnt = j-i;
+                System.arraycopy(array, cols*j, array, cols*i, cols*(left-j+1));
+                left -= cnt;
+                delta += cnt;
+            }
+        }
+        if (eq(array, 0, rows-1, cols))
+        {
+            delta++;
+        }
+        if (delta > 0)
+        {
+            reshape(rows-delta, cols, true);
+        }
+    }
+    private boolean eq(Object d, int i1, int i2, int cols)
+    {
+        for (int ii=0;ii<cols;ii++)
+        {
+            if (!ArrayHelp.rowsEqual(d, cols*i1+ii, cols*i2+ii))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -2,9 +2,7 @@ package org.vesalainen.math;
 
 
 import java.io.Serializable;
-import org.ejml.data.DenseMatrix64F;
-import static org.ejml.ops.CommonOps.*;
-import static org.ejml.ops.SpecializedOps.*;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  * <p>
@@ -47,25 +45,25 @@ public class LevenbergMarquardt implements Serializable
     private JacobianFactory jacobianFactory;
 
     // the optimized parameters and associated costs
-    private DenseMatrix64F param;
+    private DoubleMatrix param;
     private double initialCost;
     private double finalCost;
 
     // used by matrix operations
-    private DenseMatrix64F d;
-    private DenseMatrix64F H;
-    private DenseMatrix64F negDelta;
-    private DenseMatrix64F tempParam;
-    private DenseMatrix64F A;
+    private DoubleMatrix d;
+    private DoubleMatrix H;
+    private DoubleMatrix negDelta;
+    private DoubleMatrix tempParam;
+    private DoubleMatrix A;
 
     // variables used by the numerical jacobian algorithm
-    private DenseMatrix64F temp0;
-    private DenseMatrix64F temp1;
+    private DoubleMatrix temp0;
+    private DoubleMatrix temp1;
     // used when computing d and H variables
-    private DenseMatrix64F tempDH;
+    private DoubleMatrix tempDH;
 
     // Where the numerical Jacobian is stored.
-    private DenseMatrix64F jacobian;
+    private DoubleMatrix jacobian;
 
     /**
      * Creates a new instance that uses the provided cost function.
@@ -91,20 +89,20 @@ public class LevenbergMarquardt implements Serializable
         int maxElements = 1;
         int numParam = 1;
 
-        this.temp0 = new DenseMatrix64F(maxElements,1);
-        this.temp1 = new DenseMatrix64F(maxElements,1);
-        this.tempDH = new DenseMatrix64F(maxElements,1);
-        this.jacobian = new DenseMatrix64F(numParam,maxElements);
+        this.temp0 = new DoubleMatrix(maxElements,1);
+        this.temp1 = new DoubleMatrix(maxElements,1);
+        this.tempDH = new DoubleMatrix(maxElements,1);
+        this.jacobian = new DoubleMatrix(numParam,maxElements);
 
         this.func = funcCost;
         this.jacobianFactory = jacobianFactory;
 
-        this.param = new DenseMatrix64F(numParam,1);
-        this.d = new DenseMatrix64F(numParam,1);
-        this.H = new DenseMatrix64F(numParam,numParam);
-        this.negDelta = new DenseMatrix64F(numParam,1);
-        this.tempParam = new DenseMatrix64F(numParam,1);
-        this.A = new DenseMatrix64F(numParam,numParam);
+        this.param = new DoubleMatrix(numParam,1);
+        this.d = new DoubleMatrix(numParam,1);
+        this.H = new DoubleMatrix(numParam,numParam);
+        this.negDelta = new DoubleMatrix(numParam,1);
+        this.tempParam = new DoubleMatrix(numParam,1);
+        this.A = new DoubleMatrix(numParam,numParam);
     }
 
 
@@ -116,7 +114,7 @@ public class LevenbergMarquardt implements Serializable
         return finalCost;
     }
 
-    public DenseMatrix64F getParameters() {
+    public DoubleMatrix getParameters() {
         return param;
     }
 
@@ -128,11 +126,11 @@ public class LevenbergMarquardt implements Serializable
      * @param Y The "observed" output of the function
      * @return true if it succeeded and false if it did not.
      */
-    public boolean optimize( DenseMatrix64F initParam ,
-                             DenseMatrix64F X ,
-                             DenseMatrix64F Y )
+    public boolean optimize( DoubleMatrix initParam ,
+                             DoubleMatrix X ,
+                             DoubleMatrix Y )
     {
-        if (X.numRows == 0)
+        if (X.rows() == 0)
         {
             return false;
         }
@@ -155,7 +153,7 @@ public class LevenbergMarquardt implements Serializable
      * Iterate until the difference between the costs is insignificant
      * or it iterates too many times
      */
-    private boolean adjustParam(DenseMatrix64F X, DenseMatrix64F Y,
+    private boolean adjustParam(DoubleMatrix X, DoubleMatrix Y,
                                 double prevCost) {
         // lambda adjusts how big of a step it takes
         double lambda = initialLambda;
@@ -172,11 +170,11 @@ public class LevenbergMarquardt implements Serializable
             for( int i = 0; i < iter2; i++ ) {
                 computeA(A,H,lambda);
 
-                if( !solve(A,d,negDelta) ) {
+                if( !DoubleMatrix.solve(A,d,negDelta) ) {
                     return false;
                 }
                 // compute the candidate parameters
-                subtract(param, negDelta, tempParam);
+                DoubleMatrix.subtract(param, negDelta, tempParam);
 
                 double cost = cost(tempParam,X,Y);
                 if( cost < prevCost ) {
@@ -203,7 +201,7 @@ public class LevenbergMarquardt implements Serializable
      * Performs sanity checks on the input data and reshapes internal matrices.  By reshaping
      * a matrix it will only declare new memory when needed.
      */
-    protected void configure( DenseMatrix64F initParam , DenseMatrix64F X , DenseMatrix64F Y )
+    protected void configure( DoubleMatrix initParam , DoubleMatrix X , DoubleMatrix Y )
     {
         if( Y.getNumRows() != X.getNumRows() ) {
             throw new IllegalArgumentException("Different vector lengths");
@@ -239,10 +237,10 @@ public class LevenbergMarquardt implements Serializable
      * Computes the d and H parameters.  Where d is the average error gradient and
      * H is an approximation of the hessian.
      */
-    private void computeDandH( DenseMatrix64F param , DenseMatrix64F x , DenseMatrix64F y )
+    private void computeDandH( DoubleMatrix param , DoubleMatrix x , DoubleMatrix y )
     {
         func.compute(param,x, tempDH);
-        subtractEquals(tempDH, y);
+        DoubleMatrix.subtractEquals(tempDH, y);
 
         if (jacobianFactory != null)
         {
@@ -266,8 +264,8 @@ public class LevenbergMarquardt implements Serializable
         }
 
         // compute the approximation of the hessian
-        multTransB(jacobian,jacobian,H);
-        scale(1.0/length,H);
+        DoubleMatrix.multTransB(jacobian,jacobian,H);
+        DoubleMatrix.scale(1.0/length,H);
     }
 
     /**
@@ -275,7 +273,7 @@ public class LevenbergMarquardt implements Serializable
      * <br>
      * where I is an identity matrix.
      */
-    private void computeA( DenseMatrix64F A , DenseMatrix64F H , double lambda )
+    private void computeA( DoubleMatrix A , DoubleMatrix H , double lambda )
     {
         final int numParam = param.getNumElements();
 
@@ -290,13 +288,13 @@ public class LevenbergMarquardt implements Serializable
      *
      * cost = (1/N) Sum (f(x;p) - y)^2
      */
-    public double cost( DenseMatrix64F param , DenseMatrix64F X , DenseMatrix64F Y)
+    public double cost( DoubleMatrix param , DoubleMatrix X , DoubleMatrix Y)
     {
         func.compute(param,X, temp0);
 
-        double error = diffNormF(temp0,Y);
+        double error = DoubleMatrix.diffNorm(temp0,Y);
 
-        return error*error / (double)X.numRows;
+        return error*error / (double)X.rows();
     }
 
     /**
@@ -306,9 +304,9 @@ public class LevenbergMarquardt implements Serializable
      * @param pt The point around which the Jacobian is to be computed.
      * @param deriv Where the jacobian will be stored
      */
-    protected void computeNumericalJacobian( DenseMatrix64F param ,
-                                             DenseMatrix64F pt ,
-                                             DenseMatrix64F deriv )
+    protected void computeNumericalJacobian( DoubleMatrix param ,
+                                             DoubleMatrix pt ,
+                                             DoubleMatrix deriv )
     {
         double invDelta = 1.0/DELTA;
 
@@ -316,15 +314,18 @@ public class LevenbergMarquardt implements Serializable
 
         // compute the jacobian by perturbing the parameters slightly
         // then seeing how it effects the results.
-        for( int i = 0; i < param.numRows; i++ ) {
-            param.data[i] += DELTA;
+        for( int i = 0; i < param.rows(); i++ ) {
+            param.add(i, 0, DELTA);
             func.compute(param,pt, temp1);
             // compute the difference between the two parameters and divide by the delta
-            add(invDelta,temp1,-invDelta,temp0,temp1);
+            DoubleMatrix.add(invDelta,temp1,-invDelta,temp0,temp1);
             // copy the results into the jacobian matrix
-            System.arraycopy(temp1.data,0,deriv.data,i*pt.numRows,pt.numRows);
+            for (int r=0;r<temp1.rows();r++)
+            {
+                deriv.set(i, r, temp1.get(r, 0));
+            }
 
-            param.data[i] -= DELTA;
+            param.sub(i, 0, DELTA);
         }
     }
     /**
@@ -363,13 +364,13 @@ public class LevenbergMarquardt implements Serializable
          * @param x the input points.
          * @param y the resulting output.
          */
-        public void compute( DenseMatrix64F param , DenseMatrix64F x , DenseMatrix64F y );
+        public void compute( DoubleMatrix param , DoubleMatrix x , DoubleMatrix y );
     }
     /**
      * Jacobian matrix creator
      */
     public interface JacobianFactory
     {
-        public void computeJacobian( DenseMatrix64F param , DenseMatrix64F x , DenseMatrix64F jacobian );
+        public void computeJacobian( DoubleMatrix param , DoubleMatrix x , DoubleMatrix jacobian );
     }
 }

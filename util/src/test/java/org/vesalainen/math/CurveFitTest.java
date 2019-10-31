@@ -17,11 +17,11 @@
 
 package org.vesalainen.math;
 
-import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
@@ -45,21 +45,21 @@ public class CurveFitTest
         double expB = 5;
         double expC = 1;
         double[] input = new double[] {-1, 0, 1, 2, 3};
-        DenseMatrix64F param = new DenseMatrix64F(3, 1, true, 1, 1, 1); 
-        DenseMatrix64F x = new DenseMatrix64F(5, 1, true, input);
-        DenseMatrix64F y = new DenseMatrix64F(x.numRows, 1);
+        DoubleMatrix param = new DoubleMatrix(3, 1, true, 1, 1, 1); 
+        DoubleMatrix x = new DoubleMatrix(5, 1, true, input);
+        DoubleMatrix y = new DoubleMatrix(x.rows(), 1);
         int index = 0;
         for (double xx : input)
         {
-            y.data[index++] = expA*xx*xx+expB*xx+expC;
+            y.set(index++, 0, expA*xx*xx+expB*xx+expC);
         }
         LevenbergMarquardt lm = new LevenbergMarquardt(new Cost());
         boolean ok = lm.optimize(param, x, y);
         assertTrue(ok);
-        DenseMatrix64F parameters = lm.getParameters();
-        assertEquals(expA, parameters.data[0], Epsilon);
-        assertEquals(expB, parameters.data[1], Epsilon);
-        assertEquals(expC, parameters.data[2], Epsilon);
+        DoubleMatrix parameters = lm.getParameters();
+        assertEquals(expA, parameters.get(0, 0), Epsilon);
+        assertEquals(expB, parameters.get(1, 0), Epsilon);
+        assertEquals(expC, parameters.get(2, 0), Epsilon);
 
     }
 
@@ -70,21 +70,21 @@ public class CurveFitTest
         double expB = 5;
         double expC = 1;
         double[] input = new double[] {-1, 0, 1, 2, 3};
-        DenseMatrix64F param = new DenseMatrix64F(3, 1, true, 1, 1, 1); 
-        DenseMatrix64F x = new DenseMatrix64F(5, 1, true, input);
-        DenseMatrix64F y = new DenseMatrix64F(x.numRows, 1);
+        DoubleMatrix param = new DoubleMatrix(3, 1, true, 1, 1, 1); 
+        DoubleMatrix x = new DoubleMatrix(5, 1, true, input);
+        DoubleMatrix y = new DoubleMatrix(x.rows(), 1);
         int index = 0;
         for (double xx : input)
         {
-            y.data[index++] = expA*xx*xx+expB*xx+expC;
+            y.set(index++, 0, expA*xx*xx+expB*xx+expC);
         }
         LevenbergMarquardt lm = new LevenbergMarquardt(new Cost(), new JF());
         boolean ok = lm.optimize(param, x, y);
         assertTrue(ok);
-        DenseMatrix64F parameters = lm.getParameters();
-        assertEquals(expA, parameters.data[0], Epsilon);
-        assertEquals(expB, parameters.data[1], Epsilon);
-        assertEquals(expC, parameters.data[2], Epsilon);
+        DoubleMatrix parameters = lm.getParameters();
+        assertEquals(expA, parameters.get(0, 0), Epsilon);
+        assertEquals(expB, parameters.get(1, 0), Epsilon);
+        assertEquals(expC, parameters.get(2, 0), Epsilon);
 
     }
 
@@ -92,15 +92,16 @@ public class CurveFitTest
     {
 
         @Override
-        public void compute(DenseMatrix64F param, DenseMatrix64F x, DenseMatrix64F y)
+        public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
         {
-            double a = param.data[0];
-            double b = param.data[1];
-            double c = param.data[2];
+            double a = param.get(0, 0);
+            double b = param.get(1, 0);
+            double c = param.get(2, 0);
             int index = 0;
-            for (double xx : x.data)
+            for (int r=0;r<x.rows();r++)
             {
-                y.data[index++] = a*xx*xx+b*xx+c;
+                double xx = x.data(r);
+                y.data(index++,  a*xx*xx+b*xx+c);
             }
         }
         
@@ -110,24 +111,24 @@ public class CurveFitTest
         private boolean done;
         
         @Override
-        public void computeJacobian(DenseMatrix64F param, DenseMatrix64F pt, DenseMatrix64F deriv)
+        public void computeJacobian(DoubleMatrix param, DoubleMatrix pt, DoubleMatrix deriv)
         {
             if (!done)
             {
                 // a deriv = x2
-                for (int col=0;col<pt.numRows;col++)
+                for (int col=0;col<pt.rows();col++)
                 {
                     double x = pt.get(col, 0);
                     deriv.set(0, col, x*x);
                 }
                 // b deriv = x
-                for (int col=0;col<pt.numRows;col++)
+                for (int col=0;col<pt.rows();col++)
                 {
                     double x = pt.get(col, 0);
                     deriv.set(1, col, x);
                 }
                 // c deriv = 1
-                for (int col=0;col<pt.numRows;col++)
+                for (int col=0;col<pt.rows();col++)
                 {
                     deriv.set(2, col, 1);
                 }

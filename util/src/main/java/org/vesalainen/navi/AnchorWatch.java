@@ -19,7 +19,6 @@ package org.vesalainen.navi;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.AbstractPoint;
 import org.vesalainen.math.Circle;
@@ -27,6 +26,7 @@ import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Point;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
@@ -37,8 +37,8 @@ public class AnchorWatch implements Serializable, LocationObserver
     private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
     private ConvexPolygon area;
-    private DenseMatrix64F points;
-    private DenseMatrix64F tempCenter;
+    private DoubleMatrix points;
+    private DoubleMatrix tempCenter;
     private Point center;
     private AbstractCircle estimated;
     private ConvexPolygon outer;
@@ -58,8 +58,8 @@ public class AnchorWatch implements Serializable, LocationObserver
 
     public final void reset()
     {
-        tempCenter = new DenseMatrix64F(2, 1);
-        points = new DenseMatrix64F(0, 2);
+        tempCenter = new DoubleMatrix(2, 1);
+        points = new DoubleMatrix(0, 2);
         area = new ConvexPolygon();
         outer = new ConvexPolygon();
         center = null;
@@ -132,7 +132,7 @@ public class AnchorWatch implements Serializable, LocationObserver
                 if (!Double.isNaN(radius))
                 {
                     fitter = new CircleFitter();
-                    center = new AbstractPoint(tempCenter.data[0], tempCenter.data[1]);
+                    center = new AbstractPoint(tempCenter.get(0, 0), tempCenter.get(0, 1));
                     estimated = new AbstractCircle(center, chainLength);
                     safeSector = new SafeSector(estimated);
                 }
@@ -238,7 +238,7 @@ public class AnchorWatch implements Serializable, LocationObserver
             watcher.area(area);
         }
     }
-    private void fireOuter(DenseMatrix64F path)
+    private void fireOuter(DoubleMatrix path)
     {
         for (Watcher watcher : watchers)
         {
@@ -277,7 +277,7 @@ public class AnchorWatch implements Serializable, LocationObserver
         void alarm(double distance);
         void location(double x, double y, long time, double accuracy, double speed);
         void area(ConvexPolygon area);
-        void outer(DenseMatrix64F path);
+        void outer(DoubleMatrix path);
         void estimated(Circle estimated);
         void safeSector(SafeSector safe);
         void suggestNextUpdateIn(double seconds, double meters);
@@ -286,9 +286,9 @@ public class AnchorWatch implements Serializable, LocationObserver
     {
         private double[] data;
 
-        public Center(DenseMatrix64F m)
+        public Center(DoubleMatrix m)
         {
-            data = m.data;
+            data = m.data();
         }
         
         @Override

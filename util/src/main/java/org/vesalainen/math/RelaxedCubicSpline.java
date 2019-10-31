@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -31,6 +32,11 @@ public class RelaxedCubicSpline extends AbstractCubicSpline
     protected RelaxedCubicSpline(Point2D... points)
     {
         this(convert(points));
+    }
+
+    public RelaxedCubicSpline(Collection<Point2D> points)
+    {
+        super(points);
     }
     
     public RelaxedCubicSpline(double... points)

@@ -19,14 +19,17 @@ package org.vesalainen.math.matrix;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Objects;
+import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.ArrayHelp.RowComparator;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
 public class AbstractMatrix<T> implements Cloneable, Serializable
 {
-    
+
     protected static final long serialVersionUID = 1L;
     protected int rows;
     protected int cols;
@@ -36,42 +39,108 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     protected AbstractMatrix(int rows, int cols, Class<T> cls)
     {
-        this(rows, Array.newInstance(cls, rows*cols));
+        this(rows, cols, Array.newInstance(cls, rows * cols));
     }
+
     protected AbstractMatrix(int rows, Object array)
+    {
+        this(rows, rows > 0 ? Array.getLength(array) / rows : 0, array);
+    }
+    protected AbstractMatrix(int rows, int cols, Object array)
     {
         if (!array.getClass().isArray())
         {
             throw new IllegalArgumentException("not array");
         }
         int length = Array.getLength(array);
-        if (length % rows != 0)
+        if (length != rows*cols)
         {
             throw new IllegalArgumentException("wrong number of items");
         }
         this.rows = rows;
-        this.cols = length/rows;
+        this.cols = cols;
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> cols * i + j;
     }
+    public void setReshape(AbstractMatrix m)
+    {
+        if (Array.getLength(array) < Array.getLength(m.array))
+        {
+            array = Array.newInstance(cls, m.elements());
+        }
+        System.arraycopy(m.array, 0, array, 0, m.elements());
 
+        this.rows = m.rows;
+        this.cols = m.cols;
+        this.M = (i, j) -> cols * i + j;
+    }
+    public void reshape(int rows, int cols)
+    {
+        reshape(rows, cols, false);
+    }
+    public void reshape(int rows, int cols, boolean save)
+    {
+        if (Array.getLength(array) < rows * cols)
+        {
+            Object d = Array.newInstance(cls, rows * cols);
+
+            if (save)
+            {
+                System.arraycopy(array, 0, d, 0, elements());
+            }
+
+            this.array = d;
+        }
+
+        this.rows = rows;
+        this.cols = cols;
+        this.M = (i, j) -> cols * i + j;
+    }
+    public void sort(RowComparator comp)
+    {
+        ArrayHelp.sort(array, cols, comp);
+    }
+    /**
+     * Copies row1 from a to row2 in b
+     * @param a
+     * @param row1
+     * @param b
+     * @param row2 
+     */
+    public static void copyRow(AbstractMatrix a, int row1, AbstractMatrix b, int row2)
+    {
+        if (a.cols != b.cols)
+        {
+            throw new IllegalArgumentException("cols differ");
+        }
+        int cls = a.cols;
+        System.arraycopy(a.array, row1*cls, b.array, row2*cls, cls);
+    }
+    public boolean sameDimensions(AbstractMatrix o)
+    {
+        return rows == o.rows && cols == o.cols;
+    }
     /**
      * Returns new DoubleMatrix initialized to zeroes.
+     *
      * @param rows
      * @param cols
-     * @return 
+     * @return
      */
     public static AbstractMatrix getInstance(int rows, int cols, Class<?> cls)
     {
-        return new AbstractMatrix(rows, Array.newInstance(cls, rows*cols));
+        return new AbstractMatrix(rows, Array.newInstance(cls, rows * cols));
     }
+
     /**
      * Returns new AbstractMatrix initialized to values.
-     * <p>E.g. 2x2 matrix has A00, A01, A10, A11
+     * <p>
+     * E.g. 2x2 matrix has A00, A01, A10, A11
+     *
      * @param rows Number of rows
      * @param values Values row by row
-     * @return 
+     * @return
      */
     public static AbstractMatrix getInstance(int rows, Object values, Class<?> cls)
     {
@@ -82,6 +151,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         return new AbstractMatrix(rows, copyOf(values, cls));
     }
+
     protected static Object copyOf(Object arr, Class<?> cls)
     {
         int length = Array.getLength(arr);
@@ -89,6 +159,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         System.arraycopy(arr, 0, na, 0, length);
         return na;
     }
+
     @Override
     public AbstractMatrix clone()
     {
@@ -102,8 +173,31 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
     }
 
+    @Deprecated
+    public int getNumRows()
+    {
+        return rows();
+    }
+
+    @Deprecated
+    public int getNumCols()
+    {
+        return columns();
+    }
+
+    @Deprecated
+    public int getNumElements()
+    {
+        return elements();
+    }
+
+    public int elements()
+    {
+        return rows * cols;
+    }
     /**
      * Returns number of rows
+     *
      * @return
      */
     public int rows()
@@ -113,6 +207,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     /**
      * Returns number of columns
+     *
      * @return
      */
     public int columns()
@@ -139,6 +234,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     /**
      * Returns true if matrix is square.
+     *
      * @return
      */
     public boolean isSquare()
@@ -148,6 +244,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     /**
      * Returns true if matrix has no rows or columns.
+     *
      * @return
      */
     public boolean isEmpty()
@@ -157,6 +254,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     /**
      * Swaps row r1 and r2 possibly using tmp
+     *
      * @param r1
      * @param r2
      * @param tmp double [columns]
@@ -168,8 +266,10 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         System.arraycopy(array, col * r2, array, col * r1, col);
         System.arraycopy(tmp, 0, array, col * r2, col);
     }
+
     /**
      * Returns new DoubleMatrix which is transpose of this.
+     *
      * @return
      */
     public AbstractMatrix transpose()
@@ -234,8 +334,9 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
     }
 
     @FunctionalInterface
-    protected interface Index
+    protected interface Index extends Serializable
     {
+
         int at(int i, int j);
-    }    
+    }
 }

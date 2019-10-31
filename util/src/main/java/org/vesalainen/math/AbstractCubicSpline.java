@@ -21,13 +21,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntConsumer;
 import static org.vesalainen.math.BezierCurve.CUBIC;
 import org.vesalainen.ui.AbstractShape;
 import org.vesalainen.util.ArrayHelp;
-import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -47,6 +47,11 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     protected boolean drawWithControlPoints;
 
     protected AbstractCubicSpline(Point2D... points)
+    {
+        this(convert(points));
+    }
+
+    protected AbstractCubicSpline(Collection<Point2D> points)
     {
         this(convert(points));
     }
@@ -273,6 +278,19 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
             return curve.evalY(x, deltaX);
         }
     }
+    protected static double[] convert(Collection<Point2D> points)
+    {
+        int len = points.size();
+        double[] cp = new double[len*2];
+        int index = 0;
+        for (Point2D point :  points)
+        {
+            cp[index++] = point.getX();
+            cp[index++] = point.getY();
+        }
+        return cp;
+    }
+
     protected static double[] convert(Point2D... points)
     {
         int len = points.length;

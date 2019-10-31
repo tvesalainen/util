@@ -29,11 +29,11 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ejml.data.DenseMatrix64F;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.ConvexPolygon;
+import org.vesalainen.math.matrix.DoubleMatrix;
 import org.vesalainen.navi.AnchorWatch.Watcher;
 import org.vesalainen.ui.Plotter;
 
@@ -153,7 +153,7 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void outer(DenseMatrix64F path)
+        public void outer(DoubleMatrix path)
         {
         }
 
@@ -194,20 +194,20 @@ public class AnchorWatchTest
         @Override
         public void area(ConvexPolygon area)
         {
-            for (int r=0;r<area.points.numRows;r++)
+            for (int r=0;r<area.points.rows();r++)
             {
-                System.err.println("area("+area.points.data[2*r]+", "+area.points.data[2*r+1]+")");
+                System.err.println("area("+area.points.get(r, 0)+", "+area.points.get(r, 1)+")");
             }
             plotter.setColor(Color.BLUE);
             plotter.drawPolygon(area);
         }
 
         @Override
-        public void outer(DenseMatrix64F path)
+        public void outer(DoubleMatrix path)
         {
-            for (int r=0;r<path.numRows;r++)
+            for (int r=0;r<path.rows();r++)
             {
-                System.err.println("outer("+path.data[2*r]+", "+path.data[2*r+1]+")");
+                System.err.println("outer("+path.get(r, 0)+", "+path.get(r, 1)+")");
             }
             plotter.setColor(Color.ORANGE);
             plotter.drawLines(path);

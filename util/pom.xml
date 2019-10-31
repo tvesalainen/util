@@ -24,6 +24,7 @@
         <dependency>
             <groupId>com.googlecode.efficient-java-matrix-library</groupId>
             <artifactId>equation</artifactId>   <!-- ARTIFACT is core or equation -->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

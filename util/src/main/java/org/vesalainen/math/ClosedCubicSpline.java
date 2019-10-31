@@ -16,6 +16,8 @@
  */
 package org.vesalainen.math;
 
+import java.awt.geom.Point2D;
+import java.util.Collection;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -26,6 +28,11 @@ public class ClosedCubicSpline extends AbstractCubicSpline
 {
     private static final double D1P6 = 1.0/6.0;
     private static final double D4P6 = 4.0/6.0;
+
+    public ClosedCubicSpline(Collection<Point2D> points)
+    {
+        super(points);
+    }
     
     public ClosedCubicSpline(double... points)
     {

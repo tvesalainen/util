@@ -17,9 +17,9 @@
 
 package org.vesalainen.math;
 
-import org.ejml.data.DenseMatrix64F;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
@@ -38,7 +38,7 @@ public class PolygonTest
     @Test
     public void testIsHit()
     {
-        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+        DoubleMatrix x = new DoubleMatrix(6, 2, true,
                 1, 1,
                 3, 3,
                 6, 1,
@@ -59,7 +59,7 @@ public class PolygonTest
     @Test
     public void testIsRawHit()
     {
-        DenseMatrix64F x = new DenseMatrix64F(6, 2, true,
+        DoubleMatrix x = new DoubleMatrix(6, 2, true,
                 1, 1,
                 3, 3,
                 6, 1,

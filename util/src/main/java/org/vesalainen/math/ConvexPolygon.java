@@ -17,7 +17,8 @@
 
 package org.vesalainen.math;
 
-import org.ejml.data.DenseMatrix64F;
+import org.vesalainen.math.matrix.DoubleMatrix;
+
 
 /**
  *
@@ -31,7 +32,7 @@ public class ConvexPolygon extends Polygon
     {
     }
 
-    public ConvexPolygon(DenseMatrix64F points)
+    public ConvexPolygon(DoubleMatrix points)
     {
         updateConvexPolygon(this, points);
     }
@@ -52,18 +53,18 @@ public class ConvexPolygon extends Polygon
     {
         return addPoint(points, x, y);
     }
-    public static boolean addPoint(DenseMatrix64F points, double x, double y)
+    public static boolean addPoint(DoubleMatrix points, double x, double y)
     {
-        if (Matrices.containsRow(points, x, y))
+        if (points.containsRow(x, y))
         {
             return false;
         }
-        double[] d = points.data;
-        switch (points.numRows)
+        double[] d = points.data();
+        switch (points.rows())
         {
         case 0:
         case 1:
-            Matrices.addRow(points, x, y);
+            points.addRow(x, y);
             return true;
         case 2:
             if (Vectors.areAligned(d[0], d[1], d[2], d[3], x, y))
@@ -74,11 +75,11 @@ public class ConvexPolygon extends Polygon
             {
                 if (Vectors.isClockwise(d[0], d[1], d[2], d[3], x, y))
                 {
-                    Matrices.insertRow(points, 1, x, y);
+                    points.insertRow(1, x, y);
                 }
                 else
                 {
-                    Matrices.addRow(points, x, y);
+                    points.addRow(x, y);
                 }
                 return true;
             }
@@ -95,8 +96,8 @@ public class ConvexPolygon extends Polygon
     public double getMinimumDistance(double x0, double y0)
     {
         double min = Double.MAX_VALUE;
-        int rows = points.numRows;
-        double[] d = points.data;
+        int rows = points.rows();
+        double[] d = points.data();
         double x1 = d[2 * (rows - 1)];
         double y1 = d[2 * (rows - 1) + 1];
         for (int r = 0; r < rows; r++)
@@ -149,76 +150,12 @@ public class ConvexPolygon extends Polygon
         outer.removePoint(x0, y0);
     }
     /**
-     * @deprecated 
-     * @param point
-     * @param outer 
-     */
-    public void getOuterBoundary(DenseMatrix64F point, DenseMatrix64F outer)
-    {
-        getOuterBoundary(point.data[0], point.data[1], outer);
-    }
-    /**
-     * @deprecated 
-     * @param x0
-     * @param y0
-     * @param outer 
-     */
-    public void getOuterBoundary(double x0, double y0, DenseMatrix64F outer)
-    {
-        int rows = points.numRows;
-        if (rows < 3 || isInside(x0, y0))
-        {
-            outer.setReshape(points);
-            return;
-        }
-        double[] d = points.data;
-        int left = 0;
-        int right = 0;
-        double x = d[0];
-        double y = d[1];
-        double dxLeft  = x-x0;
-        double dxRight  = dxLeft;
-        double dyLeft = y-y0;
-        double dyRight = dyLeft;
-        for (int r=1;r<rows;r++)
-        {
-            x = d[2*r];
-            y = d[2*r+1];
-            double dx  = x-x0;
-            double dy = y-y0;
-            if (Vectors.isCounterClockwise(dx, dy, dxLeft, dyLeft))
-            {
-                dxLeft = dx;
-                dyLeft = dy;
-                left = r;
-            }
-            if (Vectors.isClockwise(dx, dy, dxRight, dyRight))
-            {
-                dxRight = dx;
-                dyRight = dy;
-                right = r;
-            }
-        }
-        if (left > right)
-        {
-            int count = left-right+1;
-            outer.reshape(count, 2);
-            System.arraycopy(d, 2*right, outer.data, 0, 2*count);
-        }
-        else
-        {
-            outer.reshape(rows-(right-left)+1, 2);
-            System.arraycopy(d, 2*right, outer.data, 0, 2*(rows-right));
-            System.arraycopy(d, 0, outer.data, 2*(rows-right), 2*(left+1));
-        }
-    }
-    /**
      * Creates a minimum convex polygon that contains every point either as a 
      * boundary or inside.
      * @param points 2D Points as rows
      * @return 
      */
-    public static ConvexPolygon createConvexPolygon(DenseMatrix64F points)
+    public static ConvexPolygon createConvexPolygon(DoubleMatrix points)
     {
         return updateConvexPolygon(new ConvexPolygon(), points);
     }
@@ -228,7 +165,7 @@ public class ConvexPolygon extends Polygon
      * <p>Existing points are removed.
      * @param points 2D Points as rows
      */
-    public void updateConvexPolygon(DenseMatrix64F points)
+    public void updateConvexPolygon(DoubleMatrix points)
     {
         updateConvexPolygon(this, points);
     }
@@ -240,11 +177,11 @@ public class ConvexPolygon extends Polygon
      * @param points
      * @return 
      */
-    public static ConvexPolygon updateConvexPolygon(ConvexPolygon polygon, DenseMatrix64F points)
+    public static ConvexPolygon updateConvexPolygon(ConvexPolygon polygon, DoubleMatrix points)
     {
-        assert points.numCols == 2;
-        int rows = points.numRows;
-        double[] d = points.data;
+        assert points.columns() == 2;
+        int rows = points.rows();
+        double[] d = points.data();
         for (int row=0;row<rows;row++)
         {
             polygon.addPoint(d[2*row], d[2*row+1]);
@@ -254,13 +191,13 @@ public class ConvexPolygon extends Polygon
 
     public int getCount()
     {
-        return points.numRows;
+        return points.rows();
     }
     
     public boolean contains(double x, double y)
     {
-        int rows = points.numRows;
-        double[] d = points.data;
+        int rows = points.rows();
+        double[] d = points.data();
         for (int ii=0;ii<rows;ii++)
         {
             if (d[2*ii] == x && d[2*ii+1] == y)
@@ -271,9 +208,9 @@ public class ConvexPolygon extends Polygon
         return false;
     }
 
-    private static boolean addAligned(DenseMatrix64F m, double x, double y)
+    private static boolean addAligned(DoubleMatrix m, double x, double y)
     {
-        double[] d = m.data;
+        double[] d = m.data();
         if (d[0] != d[2])
         {
             if (x < d[0] && x < d[2])
@@ -340,10 +277,10 @@ public class ConvexPolygon extends Polygon
         return false;
     }
 
-    private static boolean add(DenseMatrix64F m, double x, double y)
+    private static boolean add(DoubleMatrix m, double x, double y)
     {
-        int len = m.numRows;
-        double[] d = m.data;
+        int len = m.rows();
+        double[] d = m.data();
         int ptr=0;
         for (int ii=0;ii<len;ii++)
         {
@@ -380,7 +317,7 @@ public class ConvexPolygon extends Polygon
         {
             if (((start+1)%len)==end)
             {
-                Matrices.insertRow(m, end, x, y);
+                m.insertRow(end, x, y);
             }
             else
             {
@@ -395,7 +332,7 @@ public class ConvexPolygon extends Polygon
                 }
                 if (c>1)
                 {
-                    Matrices.removeEqualRows(m);
+                    m.removeEqualRows();
                 }
             }
             return true;
@@ -408,7 +345,7 @@ public class ConvexPolygon extends Polygon
 
     private void removePoint(double x0, double y0)
     {
-        Matrices.removeRow(points, x0, y0);
+        points.removeRow(x0, y0);
     }
 
 }

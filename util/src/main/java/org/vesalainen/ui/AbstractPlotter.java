@@ -39,11 +39,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.IntBinaryOperator;
 import java.util.stream.Stream;
-import org.ejml.data.DenseMatrix64F;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
+import org.vesalainen.math.matrix.DoubleMatrix;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.MergeScale;
 import org.vesalainen.ui.scale.Scale;
@@ -371,11 +371,11 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         shapes.add(new Drawable(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
     }
 
-    public void drawPoint(DenseMatrix64F point)
+    public void drawPoint(DoubleMatrix point)
     {
-        assert point.numCols == 1;
-        assert point.numRows == 2;
-        double[] d = point.data;
+        assert point.columns() == 1;
+        assert point.rows() == 2;
+        double[] d = point.data();
         double x = d[0];
         double y = d[1];
         drawPoint(x, y);
@@ -430,7 +430,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
 
-    public void drawPolygon(DenseMatrix64F polygon)
+    public void drawPolygon(DoubleMatrix polygon)
     {
         shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
@@ -498,7 +498,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         drawLines(polygon.points);
     }
 
-    public void drawLines(DenseMatrix64F polygon)
+    public void drawLines(DoubleMatrix polygon)
     {
         shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
