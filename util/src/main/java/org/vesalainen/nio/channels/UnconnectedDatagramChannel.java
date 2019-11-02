@@ -25,6 +25,7 @@ import java.net.NetworkInterface;
 import java.net.ProtocolFamily;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.SocketOption;
 import java.net.StandardProtocolFamily;
 import static java.net.StandardSocketOptions.IP_MULTICAST_LOOP;
 import static java.net.StandardSocketOptions.SO_BROADCAST;
@@ -34,6 +35,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.GatheringByteChannel;
+import java.nio.channels.NetworkChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.vesalainen.util.logging.JavaLogging;
@@ -51,7 +54,7 @@ import org.vesalainen.util.logging.JavaLogging;
  * A DatagramChannel that binds to ports and sends to host/port.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class UnconnectedDatagramChannel extends SelectableChannel implements ByteChannel, GatheringByteChannel, ScatteringByteChannel, AutoCloseable, Closeable
+public class UnconnectedDatagramChannel extends SelectableChannel implements NetworkChannel, ByteChannel, GatheringByteChannel, ScatteringByteChannel, AutoCloseable, Closeable
 {
     private static final byte[] IPv4BroadcastAddress = new byte[] {(byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff};
 
@@ -351,6 +354,36 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Byt
     protected void implCloseChannel() throws IOException
     {
         channel.close();
+    }
+
+    @Override
+    public NetworkChannel bind(SocketAddress local) throws IOException
+    {
+        return channel.bind(local);
+    }
+
+    @Override
+    public SocketAddress getLocalAddress() throws IOException
+    {
+        return channel.getLocalAddress();
+    }
+
+    @Override
+    public <T> NetworkChannel setOption(SocketOption<T> name, T value) throws IOException
+    {
+        return channel.setOption(name, value);
+    }
+
+    @Override
+    public <T> T getOption(SocketOption<T> name) throws IOException
+    {
+        return channel.getOption(name);
+    }
+
+    @Override
+    public Set<SocketOption<?>> supportedOptions()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
