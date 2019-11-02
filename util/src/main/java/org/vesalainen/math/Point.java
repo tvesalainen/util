@@ -18,7 +18,8 @@
 package org.vesalainen.math;
 
 /**
- *
+ * DONT TRY TO REPLACE WITH Point2D. Point2D is not interface and it's poor
+ * choice to name subclass as Double will cause LOTS OF PROBLEMS!
  * @author Timo Vesalainen
  */
 public interface Point
