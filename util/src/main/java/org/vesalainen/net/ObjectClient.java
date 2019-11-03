@@ -22,10 +22,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.Channels;
+import java.nio.channels.NetworkChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.channels.WritableByteChannel;
 import org.vesalainen.net.ObjectServer.Request;
 import org.vesalainen.net.ObjectServer.Response;
 
@@ -33,45 +35,36 @@ import org.vesalainen.net.ObjectServer.Response;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ObjectClient implements AutoCloseable
+public class ObjectClient extends InetClient
 {
-
-    private SocketChannel sc;
     private OutputStream os;
     private ObjectOutputStream oos;
     private InputStream is;
     private ObjectInputStream ois;
 
-    private ObjectClient(SocketChannel sc, OutputStream os, ObjectOutputStream oos, InputStream is)
+    private ObjectClient(NetworkChannel sc, OutputStream os, InputStream is)
     {
-        this.sc = sc;
+        super(sc);
         this.os = os;
-        this.oos = oos;
         this.is = is;
     }
     
     public static ObjectClient open(String server, int port) throws IOException
     {
-        SocketChannel sc = SocketChannel.open(new InetSocketAddress(server, port));
+        ByteChannel sc = InetClient.openChannel(server, port);
         OutputStream os = Channels.newOutputStream(sc);
-        ObjectOutputStream oos = new ObjectOutputStream(os);
         InputStream is = Channels.newInputStream(sc);
-        return new ObjectClient(sc, os, oos, is);
-    }
-    @Override
-    public void close() throws IOException
-    {
-        ois.close();
-        is.close();
-        oos.close();
-        os.close();
-        sc.close();
+        return new ObjectClient((NetworkChannel) sc, os, is);
     }
     public <T> T get(String target) throws IOException
     {
         try
         {
             Request request = new Request(target);
+            if (oos == null)
+            {
+                oos = new ObjectOutputStream(os);
+            }
             oos.writeObject(request);
             if (ois == null)
             {
@@ -86,4 +79,13 @@ public class ObjectClient implements AutoCloseable
         }
     }
 
+    @Override
+    public void close() throws IOException
+    {
+        ois.close();
+        is.close();
+        oos.close();
+        os.close();
+        super.close();
+    }
 }
