@@ -23,6 +23,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
+import org.vesalainen.math.Circle;
+import org.vesalainen.math.Polygon;
+import org.vesalainen.math.Rect;
 
 
 /**
@@ -64,15 +67,15 @@ public class AbstractView
         this.keepAspectRatio = keepAspectRatio;
         this.transform = transform;
     }
-    public void update(Stream<Rectangle2D> shapes)
+    public void reset()
     {
-        if (screenBounds.isEmpty())
-        {
-            throw new IllegalStateException("not initialized");
-        }
         userBounds.clear();
         transformedUserBounds.clear();
         update(minUserBounds);
+    }
+    public void update(Stream<Rectangle2D> shapes)
+    {
+        reset();
         shapes.forEach(this::update);
     }
     public void calculate()
@@ -87,9 +90,29 @@ public class AbstractView
     {
         if (bounds.getWidth() > 0 || bounds.getHeight() > 0)
         {
-            updatePoint(bounds.getMaxX(), bounds.getMaxY());
             updatePoint(bounds.getMinX(), bounds.getMinY());
+            updatePoint(bounds.getMinX(), bounds.getMaxY());
+            updatePoint(bounds.getMaxX(), bounds.getMinY());
+            updatePoint(bounds.getMaxX(), bounds.getMaxY());
         }
+    }
+    public void updatePolygon(Polygon polygon)
+    {
+        Rect bounds = polygon.bounds;
+        updatePoint(bounds.xMin, bounds.yMin);
+        updatePoint(bounds.xMin, bounds.yMax);
+        updatePoint(bounds.xMax, bounds.yMin);
+        updatePoint(bounds.xMax, bounds.yMax);
+    }
+    public void updateCircle(Circle circle)
+    {
+        double x = circle.getX();
+        double y = circle.getY();
+        double r = circle.getRadius();
+        updatePoint(x-r, y-r);
+        updatePoint(x-r, y+r);
+        updatePoint(x+r, y-r);
+        updatePoint(x+r, y+r);
     }
     /**
      * Updates the limits if point is not inside visible screen.
