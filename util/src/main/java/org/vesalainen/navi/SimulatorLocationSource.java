@@ -18,6 +18,8 @@ package org.vesalainen.navi;
 
 import java.io.IOException;
 import java.util.Timer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,15 +40,22 @@ public class SimulatorLocationSource extends LocationSource
     }
 
     @Override
-    protected void start() throws IOException
+    protected void start()
     {
-        reset();    // simulator needs to reset
-        simulator = new AnchorageSimulator(timer);
-        simulator.simulate(this, period, isDaemon);
+        try
+        {
+            reset();    // simulator needs to reset
+            simulator = new AnchorageSimulator(timer);
+            simulator.simulate(this, period, isDaemon);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @Override
-    protected void stop() throws Exception
+    protected void stop()
     {
         reset();    // simulator needs to reset
         simulator.cancel();
