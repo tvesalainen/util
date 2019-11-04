@@ -24,7 +24,19 @@ import org.vesalainen.math.MoreMath;
  */
 public class Chain
 {
+    public final double w; // chain unit weight
+    private final double maxChainLength;
     
+    public Chain(double mm)
+    {
+        this(mm, Double.MAX_VALUE);
+    }
+    public Chain(double mm, double maxChainLength)
+    {
+        this.w = chainWeight(mm);
+        this.maxChainLength = maxChainLength;
+    }
+
     /**
      * Submerged weight per unit length N/M (w)
      * @param d In mm
@@ -34,22 +46,16 @@ public class Chain
     {
         return 0.1875 * d * d;
     }
-    public final double w; // chain unit weight
-
-    public Chain(double mm)
-    {
-        w = chainWeight(mm);
-    }
 
     /**
      * Returns chain length
-     * @param F Fairlead tension
+     * @param T Fairlead tension
      * @param d depth
      * @return
      */
-    public double chainLength(double F, double d)
+    public double chainLength(double T, double d)
     {
-        return Math.sqrt(d * (2 * F / w - d));
+        return Math.min(Math.sqrt(d * (2 * T / w - d)), maxChainLength);
     }
     /**
      * Horizontal scope (length in plan view from fairlead to touchdown point)
