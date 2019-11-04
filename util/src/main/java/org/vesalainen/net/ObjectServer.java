@@ -50,7 +50,13 @@ public class ObjectServer extends InetServer
     {
         super(port, ObjectServer.class, executor);
     }
-
+    /**
+     * Puts mapping from name to target.
+     * <p>Note! Target is synchronized while serialized to net.
+     * @param <T>
+     * @param name
+     * @param target 
+     */
     public <T> void put(String name, T target)
     {
         map.put(name, target);
@@ -76,7 +82,10 @@ public class ObjectServer extends InetServer
                 {
                     response = new Response(NOT_FOUND);
                 }
-                oos.writeObject(response);
+                synchronized(target)
+                {
+                    oos.writeObject(response);
+                }
             }
         }
         catch (EOFException ex)
