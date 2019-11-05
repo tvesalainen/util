@@ -48,7 +48,7 @@ import java.io.StreamTokenizer;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 /**<p>
  * 
@@ -213,7 +213,7 @@ public class TSAGeoMag
     /** A logger for this class. Every class MUST have this field, if you want to log from this class.
      *  The class name is the fully qualified class name of the class, such as java.lang.String. If you're not going
      *  to use log4j, then comment all references to the logger, and uncomment the System.***.println statements.*/
-    private static Logger logger = Logger.getLogger(TSAGeoMag.class);
+//    private static Logger logger = Logger.getLogger(TSAGeoMag.class);
     
     //variables for magnetic calculations ////////////////////////////////////
     //
@@ -518,8 +518,8 @@ public class TSAGeoMag
             str.nextToken();
             epoch = str.nval;
             defaultDate = epoch + 2.5;
-            logger.debug("TSAGeoMag Epoch is: " + epoch);
-            logger.debug("TSAGeoMag default date is: " + defaultDate);
+//            logger.debug("TSAGeoMag Epoch is: " + epoch);
+//            logger.debug("TSAGeoMag default date is: " + defaultDate);
             str.nextToken();
             //strModel = str.sval;
             str.nextToken();
@@ -568,7 +568,7 @@ public class TSAGeoMag
             		"The input file WMM.COF was not found in the same\n" +
             		"directory as the application.\n" +
             		"The magnetic field components are set to internal values.\n";
-            logger.warn(msg, e);
+//            logger.warn(msg, e);
             		
 /*            String message = new String(e.toString());
             		
@@ -590,7 +590,7 @@ public class TSAGeoMag
 			"reading the data.\n" +
 			"The magnetic field components are set to internal values.";
         	
-            logger.warn(msg, e);
+//            logger.warn(msg, e);
         	
 /*            String message = new String(e.toString());
             System.out.println("\nNOTICE      NOTICE      NOTICE      ");
@@ -864,7 +864,7 @@ public class TSAGeoMag
         ti = Math.sqrt((bh * bh)+(bz * bz));
         //	Calculate the declination.
         dec = (Math.atan2(by, bx) / dtr);
-        logger.debug( "Dec is: " + dec );
+//        logger.debug( "Dec is: " + dec );
         dip = (Math.atan2(bz, bh) / dtr);
         
         //	This is the variation for grid navigation.
