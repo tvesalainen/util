@@ -47,7 +47,7 @@ public abstract class LocationSource implements LocationObserver
     {
         observers.remove(observer);
     }
-    public static void activate(Object key) throws Exception
+    public static void activate(Object key)
     {
         LocationSource source = sources.get(key);
         if (source == null)
@@ -61,7 +61,7 @@ public abstract class LocationSource implements LocationObserver
         current = source;
         current.start();
     }
-    public static void deactivate() throws Exception
+    public static void deactivate()
     {
         if (current != null)
         {
@@ -69,8 +69,8 @@ public abstract class LocationSource implements LocationObserver
             current = null;
         }
     }
-    protected abstract void start() throws Exception;
-    protected abstract void stop() throws Exception;
+    protected abstract void start();
+    protected abstract void stop();
 
     @Override
     public void update(double longitude, double latitude, long time)

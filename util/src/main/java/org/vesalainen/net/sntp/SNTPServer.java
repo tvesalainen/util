@@ -36,7 +36,6 @@ import java.util.concurrent.ScheduledFuture;
 import static java.util.concurrent.TimeUnit.*;
 import java.util.function.Supplier;
 import static java.util.logging.Level.*;
-import static org.apache.commons.net.ntp.NtpV3Packet.*;
 import org.vesalainen.math.MoreMath;
 import static org.vesalainen.net.sntp.NtpV4Packet.Mode.*;
 import static org.vesalainen.net.sntp.ReferenceClock.*;
@@ -52,6 +51,16 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class SNTPServer extends JavaLogging implements Runnable
 {
+    private static final int PORT = 123;    // NTP port number                  |
+    private static final int VERSION = 4;    // NTP version number                   |
+    private static final double TOLERANCE = 15e-6;    // frequency tolerance PHI (s/s)    |
+    private static final int MINPOLL = 4;    // minimum poll exponent (16 s)     |
+    private static final int MAXPOLL = 17;    // maximum poll exponent (36 h)     |
+    private static final int MAXDISP = 16;    // maximum dispersion (16 s)        |
+    private static final double MINDISP = .005;    // minimum dispersion increment (s) |
+    private static final int MAXDIST = 1;    // distance threshold (1 s)         |
+    private static final int MAXSTRAT = 16;    // maximum stratum number     
+    
     private static final int SERVER_TIMEOUT_MINUTES = 10;
     private static final long SERVER_TIMEOUT = MILLISECONDS.convert(SERVER_TIMEOUT_MINUTES, MINUTES);
     private static final long B16 = 65536;
@@ -83,7 +92,7 @@ public class SNTPServer extends JavaLogging implements Runnable
     public SNTPServer(int poll, long rootDelay, ReferenceClock referenceClock, Clock clock, CachedScheduledThreadPool executor)
     {
         super(SNTPServer.class);
-        if (poll < NTP_MINPOLL || poll > NTP_MAXPOLL)
+        if (poll < MINPOLL || poll > MAXPOLL)
         {
             throw new IllegalArgumentException("poll out of range");
         }
