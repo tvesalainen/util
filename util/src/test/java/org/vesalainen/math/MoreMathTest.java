@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import java.awt.geom.Point2D;
 import static java.lang.Math.PI;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
@@ -34,6 +33,16 @@ public class MoreMathTest
     {
     }
 
+    @Test
+    public void testSum()
+    {
+        assertEquals(6, MoreMath.sum(1, 2, 3));
+    }
+    @Test
+    public void testPow()
+    {
+        assertEquals(16, MoreMath.pow(2, 4));
+    }
     @Test
     public void testLog()
     {
