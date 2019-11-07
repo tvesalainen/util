@@ -19,7 +19,6 @@ package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
 import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.math.matrix.DoubleUnaryMatrix;
@@ -33,6 +32,66 @@ public final class MoreMath
     public static final double EPSILON = 2.220446e-16;
     public static final double SQRT_EPSILON = Math.sqrt(2.220446e-16);
     private static final ThreadLocal<Point2D.Double> PNT1 = ThreadLocal.withInitial(Point2D.Double::new);
+    /**
+     * Returns sum of arguments throwing an exception if the result overflows an int.
+     * @param x
+     * @return 
+     */
+    public static int sum(int... x)
+    {
+        int s = 0;
+        int length = x.length;
+        for (int ii=0;ii<length;ii++)
+        {
+            s = Math.addExact(s, x[ii]);
+        }
+        return s;
+    }
+    /**
+     * Returns x^exp throwing an exception if the result overflows an int.
+     * @param x
+     * @param exp
+     * @return 
+     */
+    public static int pow(int x, int exp)
+    {
+        int s = 1;
+        for (int ii=0;ii<exp;ii++)
+        {
+            s = Math.multiplyExact(s, x);
+        }
+        return s;
+    }
+    /**
+     * Returns sum of arguments throwing an exception if the result overflows an long.
+     * @param x
+     * @return 
+     */
+    public static long sum(long... x)
+    {
+        long s = 0;
+        int length = x.length;
+        for (int ii=0;ii<length;ii++)
+        {
+            s = Math.addExact(s, x[ii]);
+        }
+        return s;
+    }
+    /**
+     * Returns x^exp throwing an exception if the result overflows an long.
+     * @param x
+     * @param exp
+     * @return 
+     */
+    public static long pow(long x, int exp)
+    {
+        long s = 1;
+        for (int ii=0;ii<exp;ii++)
+        {
+            s = Math.multiplyExact(s, x);
+        }
+        return s;
+    }
     /**
      * Returns logarithm with base b.
      * @param b
