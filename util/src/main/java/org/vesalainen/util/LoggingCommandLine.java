@@ -16,8 +16,8 @@
  */
 package org.vesalainen.util;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -58,7 +58,7 @@ public class LoggingCommandLine extends CmdArgs
     @Override
     public void command(String... args)
     {
-        addOption(File.class, "-lx", "logging config file", "xmlConfig", false);
+        addOption(Path.class, "-lx", "logging config file", "xmlConfig", false);
         addOption("-lp", "log pattern", "filelog", logPattern);
         addOption("-l", "log limit", "filelog", logLimit);
         addOption("-c", "log count", "filelog", logCount);
@@ -72,12 +72,12 @@ public class LoggingCommandLine extends CmdArgs
         
         super.command(args);
         
-        File configFile = getOption("-lx");
+        Path configFile = getOption("-lx");
         if (configFile != null)
         {
             try
             {
-                JavaLogging.xmlConfig(configFile);
+                JavaLogging.xmlConfig(configFile.toFile());
             }
             catch (IOException ex)
             {
