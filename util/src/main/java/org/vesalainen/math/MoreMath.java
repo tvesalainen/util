@@ -48,6 +48,21 @@ public final class MoreMath
         return s;
     }
     /**
+     * Returns long sum of arguments throwing an exception if the result overflows an int.
+     * @param x
+     * @return 
+     */
+    public static long longSum(int... x)
+    {
+        long s = 0;
+        int length = x.length;
+        for (int ii=0;ii<length;ii++)
+        {
+            s = Math.addExact(s, (long)x[ii]);
+        }
+        return s;
+    }
+    /**
      * Returns x^exp throwing an exception if the result overflows an int.
      * @param x
      * @param exp
@@ -55,6 +70,10 @@ public final class MoreMath
      */
     public static int pow(int x, int exp)
     {
+        if (exp < 0)
+        {
+            throw new UnsupportedOperationException("negative exp not supported");
+        }
         int s = 1;
         for (int ii=0;ii<exp;ii++)
         {
@@ -85,6 +104,10 @@ public final class MoreMath
      */
     public static long pow(long x, int exp)
     {
+        if (exp < 0)
+        {
+            throw new UnsupportedOperationException("negative exp not supported");
+        }
         long s = 1;
         for (int ii=0;ii<exp;ii++)
         {
