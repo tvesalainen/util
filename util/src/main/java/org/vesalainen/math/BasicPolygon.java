@@ -67,6 +67,30 @@ public class BasicPolygon implements Serializable, Polygon
             op.applyAsDouble(points.get(ii, 0), points.get(ii, 1));
         }
     }
+
+    @Override
+    public double getX(int index)
+    {
+        return points.get(index, 0);
+    }
+
+    @Override
+    public double getY(int index)
+    {
+        return points.get(index, 1);
+    }
+
+    @Override
+    public int count()
+    {
+        return points.rows();
+    }
+
+    @Override
+    public Rect bounds()
+    {
+        return bounds;
+    }
     
     @Override
     public boolean isInside(Point p)

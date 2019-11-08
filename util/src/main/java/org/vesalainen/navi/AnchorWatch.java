@@ -27,13 +27,14 @@ import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
+import org.vesalainen.math.Sector;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  *
  * @author Timo Vesalainen
  */
-public class AnchorWatch implements Serializable, LocationObserver
+public class AnchorWatch extends AbstractLocationObserver implements Serializable
 {
     private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
@@ -50,10 +51,8 @@ public class AnchorWatch implements Serializable, LocationObserver
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
     private SafeSector safeSector;
+    private SafeSector externalSafeSector;
     private LocalLongitude localLongitude;
-    private double lastLongitude = Double.NaN;  // internal
-    private double lastLatitude = Double.NaN;
-    private long lastTime = -1;
 
     public AnchorWatch()
     {
@@ -74,46 +73,17 @@ public class AnchorWatch implements Serializable, LocationObserver
         externalArea = null;
         externalOuter = null;
         externalEstimated = null;
-        lastLongitude = Double.NaN;  // internal
-        lastLatitude = Double.NaN;
-        lastTime = -1;
+        externalSafeSector = null;
         
     }
 
     @Override
-    public void update(double longitude, double latitude, long time)
-    {
-        update(longitude, latitude, time, Double.NaN);
-    }
-    @Override
-    public void update(double longitude, double latitude, long time, double accuracy)
-    {
-        checkLocalLongitude(longitude, latitude);
-        double internal = localLongitude.getInternal(longitude);
-        if (Double.isNaN(lastLongitude))
-        {
-            doUpdate(internal, latitude, time, accuracy, 0);
-        }
-        else
-        {
-            double distance = Math.hypot(internal-lastLongitude, latitude-lastLatitude);
-            double dTime = (time-lastTime)/1000.0;
-            double speed = toMeters(distance/dTime);
-            doUpdate(internal, latitude, time, accuracy, speed);
-        }
-        lastLongitude = internal;
-        lastLatitude = latitude;
-        lastTime = time;
-    }
-    @Override
     public void update(double longitude, double latitude, long time, double accuracy, double speed)
     {
+        fireLocation(longitude, latitude, time, accuracy, speed);
         checkLocalLongitude(longitude, latitude);
         double internal = localLongitude.getInternal(longitude);
         doUpdate(internal, latitude, time, accuracy, speed);
-        lastLongitude = internal;
-        lastLatitude = latitude;
-        lastTime = time;
     }
     private void doUpdate(double internal, double latitude, long time, double accuracy, double speed)
     {
@@ -122,10 +92,9 @@ public class AnchorWatch implements Serializable, LocationObserver
             double distance = Circles.distanceFromCenter(safeSector, internal, latitude);
             fireAlarm(toMeters(distance));
         }
-        fireLocation(internal, latitude, time, accuracy, speed);
         if (area.addPoint(internal, latitude))
         {
-            fireArea(area);
+            fireArea(externalArea);
             points.setReshape(area.points);
             if (fitter == null)
             {
@@ -136,7 +105,8 @@ public class AnchorWatch implements Serializable, LocationObserver
                     center = new AbstractPoint(tempCenter.get(0, 0), tempCenter.get(0, 1));
                     estimated = new AbstractCircle(center, chainLength);
                     externalEstimated = localLongitude.createExternal(estimated);
-                    safeSector = new SafeSector(estimated);
+                    safeSector = new BasicSafeSector(estimated);
+                    externalSafeSector = localLongitude.createExternal(safeSector);
                 }
             }
             if (fitter != null)
@@ -144,7 +114,7 @@ public class AnchorWatch implements Serializable, LocationObserver
                 if (!area.isInside(center))
                 {
                     area.getOuterBoundary(safeSector, outer);
-                    fireOuter(outer.points);
+                    fireOuter(externalOuter);
                     fitter.fit(safeSector, outer.points);
                 }
                 else
@@ -152,8 +122,8 @@ public class AnchorWatch implements Serializable, LocationObserver
                     fitter.fit(safeSector, area.points);
                 }
                 estimated.set(fitter);
-                fireEstimated(estimated);
-                fireSafeSector(safeSector);
+                fireEstimated(externalEstimated);
+                fireSafeSector(externalSafeSector);
             }
         }
         else
@@ -253,14 +223,14 @@ public class AnchorWatch implements Serializable, LocationObserver
             watcher.alarm(distance);
         }
     }
-    private void fireArea(ConvexPolygon area)
+    private void fireArea(Polygon area)
     {
         for (Watcher watcher : watchers)
         {
             watcher.area(area);
         }
     }
-    private void fireOuter(DoubleMatrix path)
+    private void fireOuter(Polygon path)
     {
         for (Watcher watcher : watchers)
         {
@@ -306,8 +276,8 @@ public class AnchorWatch implements Serializable, LocationObserver
     {
         void alarm(double distance);
         void location(double x, double y, long time, double accuracy, double speed);
-        void area(ConvexPolygon area);
-        void outer(DoubleMatrix path);
+        void area(Polygon area);
+        void outer(Polygon path);
         void estimated(Circle estimated);
         void safeSector(SafeSector safe);
         void suggestNextUpdateIn(double seconds, double meters);

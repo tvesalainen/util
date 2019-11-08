@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.ConvexPolygon;
+import org.vesalainen.math.Polygon;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import org.vesalainen.navi.AnchorWatch.Watcher;
 import org.vesalainen.ui.Plotter;
@@ -148,12 +149,12 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void area(ConvexPolygon area)
+        public void area(Polygon area)
         {
         }
 
         @Override
-        public void outer(DoubleMatrix path)
+        public void outer(Polygon path)
         {
         }
 
@@ -192,25 +193,25 @@ public class AnchorWatchTest
         }
 
         @Override
-        public void area(ConvexPolygon area)
+        public void area(Polygon area)
         {
-            for (int r=0;r<area.points.rows();r++)
+            for (int r=0;r<area.count();r++)
             {
-                System.err.println("area("+area.points.get(r, 0)+", "+area.points.get(r, 1)+")");
+                System.err.println("area("+area.getX(r)+", "+area.getY(r)+")");
             }
             plotter.setColor(Color.BLUE);
             plotter.drawPolygon(area);
         }
 
         @Override
-        public void outer(DoubleMatrix path)
+        public void outer(Polygon area)
         {
-            for (int r=0;r<path.rows();r++)
+            for (int r=0;r<area.count();r++)
             {
-                System.err.println("outer("+path.get(r, 0)+", "+path.get(r, 1)+")");
+                System.err.println("outer("+area.getX(r)+", "+area.getY(r)+")");
             }
             plotter.setColor(Color.ORANGE);
-            plotter.drawLines(path);
+            plotter.drawLines(area);
         }
 
         @Override

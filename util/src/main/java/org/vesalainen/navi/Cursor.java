@@ -14,34 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.math;
-
-import java.util.function.DoubleBinaryOperator;
+package org.vesalainen.navi;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Polygon
+public interface Cursor
 {
-    double getX(int index);
-    double getY(int index);
-    int count();
-    void forEach(DoubleBinaryOperator op);
-
-    default boolean isInside(Point p)
-    {
-        return isInside(p.getX(), p.getY());
-    }
 
     /**
-     * Returns true if point is inside a polygon.
-     * @param testx
-     * @param testy
+     * Updates cursors position
+     * <p>Note! Use returned cursor in future updates!
+     * @param x
+     * @param y
      * @return
-     * @see <a href="http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html">PNPOLY - Point Inclusion in BasicPolygon Test W. Randolph Franklin (WRF)</a>
      */
-    boolean isInside(double testx, double testy);
-    Rect bounds();
+    Cursor update(double x, double y);
+
+    /**
+     * Indicate finish of update.
+     * @param x
+     * @param y
+     */
+    void ready(double x, double y);
     
 }

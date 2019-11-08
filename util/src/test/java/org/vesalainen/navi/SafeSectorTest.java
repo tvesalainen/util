@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.vesalainen.math.AbstractCircle;
 import org.vesalainen.math.Circle;
-import org.vesalainen.navi.SafeSector.Cursor;
+import org.vesalainen.navi.Cursor;
 
 /**
  *
@@ -39,7 +39,7 @@ public class SafeSectorTest
     public void testCenterCursor()
     {
         AbstractCircle c1 = new AbstractCircle(0, 0, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         ms.set(0, 0);   // detach
         assertEquals(0, ms.getX(), Epsilon);
         assertEquals(0, ms.getY(), Epsilon);
@@ -68,7 +68,7 @@ public class SafeSectorTest
     public void testRadiusCursor()
     {
         AbstractCircle c1 = new AbstractCircle(0, 0, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         Cursor cursor = ms.getCursor(-4.9, 0.1, 0.5);
         assertNotNull(cursor);
         cursor = cursor.update(-4, 0);
@@ -88,7 +88,7 @@ public class SafeSectorTest
     public void testRightCursor()
     {
         AbstractCircle c1 = new AbstractCircle(10, 10, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         Cursor cursor = ms.getCursor(5, 10, 0.5);
         assertNotNull(cursor);
         cursor = cursor.update(5, 9.9);
@@ -116,7 +116,7 @@ public class SafeSectorTest
     public void testLeftCursor()
     {
         AbstractCircle c1 = new AbstractCircle(10, 10, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         Cursor cursor = ms.getCursor(5, 10, 0.5);
         assertNotNull(cursor);
         cursor = cursor.update(10+5*Math.cos(Math.toRadians(135)), 10+5*Math.sin(Math.toRadians(135)));
@@ -139,7 +139,7 @@ public class SafeSectorTest
     public void testInnerCursor()
     {
         AbstractCircle c1 = new AbstractCircle(0, 0, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         Cursor cursor = ms.getCursor(5, 0, 0.5);
         assertNotNull(cursor);
         cursor = cursor.update(0, 5);
@@ -165,7 +165,7 @@ public class SafeSectorTest
     public void testSetAngle()
     {
         AbstractCircle c1 = new AbstractCircle(0, 0, 5);
-        SafeSector ms = new SafeSector(c1);
+        BasicSafeSector ms = new BasicSafeSector(c1);
         ms.setRightAngle(Math.toRadians(90));
         ms.setLeftAngle(Math.toRadians(0));
         assertEquals(90, Math.toDegrees(ms.getRightAngle()), Epsilon);

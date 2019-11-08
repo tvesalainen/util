@@ -23,7 +23,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import org.vesalainen.math.BasicPolygon;
+import org.vesalainen.math.Polygon;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -39,9 +39,12 @@ public class DoublePolygon implements Shape
     {
     }
     
-    public DoublePolygon(BasicPolygon polygon)
+    public DoublePolygon(Polygon polygon)
     {
-        this(polygon.points);
+        for (int ii=0;ii<polygon.count();ii++)
+        {
+            add(polygon.getX(ii), polygon.getY(ii));
+        }
     }    
 
     public DoublePolygon(DoubleMatrix points)
