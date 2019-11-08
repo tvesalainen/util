@@ -24,7 +24,7 @@ import org.vesalainen.math.matrix.DoubleMatrix;
  *
  * @author Timo Vesalainen
  */
-public class ConvexPolygon extends Polygon
+public class ConvexPolygon extends BasicPolygon
 {
     private static final long serialVersionUID = 1L;
 

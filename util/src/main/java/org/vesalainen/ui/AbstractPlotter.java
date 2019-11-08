@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.Point;
-import org.vesalainen.math.Polygon;
+import org.vesalainen.math.BasicPolygon;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.MergeScale;
@@ -425,7 +425,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         }
         shapes.add(new DrawableMark(mark));
     }
-    public void drawPolygon(Polygon polygon)
+    public void drawPolygon(BasicPolygon polygon)
     {
         shapes.add(new Drawable(new DoublePolygon(polygon)));
     }
@@ -493,7 +493,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         shapes.add(new Drawable(new DoublePolygon(data)));
     }
 
-    public void drawLines(Polygon polygon)
+    public void drawLines(BasicPolygon polygon)
     {
         drawLines(polygon.points);
     }

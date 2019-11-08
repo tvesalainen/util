@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
 import org.vesalainen.math.Circle;
-import org.vesalainen.math.Polygon;
+import org.vesalainen.math.BasicPolygon;
 import org.vesalainen.math.Rect;
 
 
@@ -96,7 +96,7 @@ public class AbstractView
             updatePoint(bounds.getMaxX(), bounds.getMaxY());
         }
     }
-    public void updatePolygon(Polygon polygon)
+    public void updatePolygon(BasicPolygon polygon)
     {
         Rect bounds = polygon.bounds;
         updatePoint(bounds.xMin, bounds.yMin);

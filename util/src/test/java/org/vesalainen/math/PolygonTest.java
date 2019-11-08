@@ -33,7 +33,7 @@ public class PolygonTest
     }
 
     /**
-     * Test of isInside method, of class Polygon.
+     * Test of isInside method, of class BasicPolygon.
      */
     @Test
     public void testIsHit()
@@ -46,7 +46,7 @@ public class PolygonTest
                 1, 6,
                 1, 1
         );
-        Polygon p = new Polygon(x);
+        BasicPolygon p = new BasicPolygon(x);
         assertTrue(p.isInside(2, 3));
         assertTrue(p.isInside(5, 2));
         assertFalse(p.isInside(3, 2));
@@ -54,7 +54,7 @@ public class PolygonTest
     }
 
     /**
-     * Test of isRawHit method, of class Polygon.
+     * Test of isRawHit method, of class BasicPolygon.
      */
     @Test
     public void testIsRawHit()
@@ -67,10 +67,10 @@ public class PolygonTest
                 1, 6,
                 1, 1
         );
-        assertTrue(Polygon.isRawHit(x, 2, 3));
-        assertTrue(Polygon.isRawHit(x, 5, 2));
-        assertFalse(Polygon.isRawHit(x, 3, 2));
-        assertFalse(Polygon.isRawHit(x, 0, 0));
+        assertTrue(BasicPolygon.isRawHit(x, 2, 3));
+        assertTrue(BasicPolygon.isRawHit(x, 5, 2));
+        assertFalse(BasicPolygon.isRawHit(x, 3, 2));
+        assertFalse(BasicPolygon.isRawHit(x, 0, 0));
     }
 
 }
