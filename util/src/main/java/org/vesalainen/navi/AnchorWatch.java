@@ -26,6 +26,7 @@ import org.vesalainen.math.CircleFitter;
 import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Point;
+import org.vesalainen.math.Polygon;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -37,11 +38,14 @@ public class AnchorWatch implements Serializable, LocationObserver
     private static final long serialVersionUID = 1L;
     private static final double DegreeToMeters = 36.0 / 4000000.0;
     private ConvexPolygon area;
+    private Polygon externalArea;
     private DoubleMatrix points;
     private DoubleMatrix tempCenter;
     private Point center;
     private AbstractCircle estimated;
+    private Circle externalEstimated;
     private ConvexPolygon outer;
+    private Polygon externalOuter;
     private CircleFitter fitter;
     private final List<Watcher> watchers = new ArrayList<>();
     private double chainLength = 60 * DegreeToMeters;
@@ -67,6 +71,9 @@ public class AnchorWatch implements Serializable, LocationObserver
         fitter = null;
         safeSector = null;
         localLongitude = null;
+        externalArea = null;
+        externalOuter = null;
+        externalEstimated = null;
         lastLongitude = Double.NaN;  // internal
         lastLatitude = Double.NaN;
         lastTime = -1;
@@ -81,10 +88,7 @@ public class AnchorWatch implements Serializable, LocationObserver
     @Override
     public void update(double longitude, double latitude, long time, double accuracy)
     {
-        if (localLongitude == null)
-        {
-            localLongitude = LocalLongitude.getInstance(longitude, latitude);
-        }
+        checkLocalLongitude(longitude, latitude);
         double internal = localLongitude.getInternal(longitude);
         if (Double.isNaN(lastLongitude))
         {
@@ -104,10 +108,7 @@ public class AnchorWatch implements Serializable, LocationObserver
     @Override
     public void update(double longitude, double latitude, long time, double accuracy, double speed)
     {
-        if (localLongitude == null)
-        {
-            localLongitude = LocalLongitude.getInstance(longitude, latitude);
-        }
+        checkLocalLongitude(longitude, latitude);
         double internal = localLongitude.getInternal(longitude);
         doUpdate(internal, latitude, time, accuracy, speed);
         lastLongitude = internal;
@@ -134,6 +135,7 @@ public class AnchorWatch implements Serializable, LocationObserver
                     fitter = new CircleFitter();
                     center = new AbstractPoint(tempCenter.get(0, 0), tempCenter.get(0, 1));
                     estimated = new AbstractCircle(center, chainLength);
+                    externalEstimated = localLongitude.createExternal(estimated);
                     safeSector = new SafeSector(estimated);
                 }
             }
@@ -286,7 +288,15 @@ public class AnchorWatch implements Serializable, LocationObserver
             watcher.suggestNextUpdateIn(seconds, meters);
         }
     }
-
+    private void checkLocalLongitude(double longitude, double latitude)
+    {
+        if (localLongitude == null)
+        {
+            localLongitude = LocalLongitude.getInstance(longitude, latitude);
+            externalArea = localLongitude.createExternal(area);
+            externalOuter = localLongitude.createExternal(outer);
+        }
+    }
     /**
      * Anchor updates.
      * <p>Note! All coordinates are projected for geometry. Y-coordinate is the

@@ -27,7 +27,10 @@ public interface Polygon
 
     void forEach(DoubleBinaryOperator op);
 
-    boolean isInside(Point p);
+    default boolean isInside(Point p)
+    {
+        return isInside(p.getX(), p.getY());
+    }
 
     /**
      * Returns true if point is inside a polygon.

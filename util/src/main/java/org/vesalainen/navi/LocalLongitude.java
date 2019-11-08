@@ -18,6 +18,10 @@
 package org.vesalainen.navi;
 
 import java.io.Serializable;
+import java.util.function.DoubleBinaryOperator;
+import org.vesalainen.math.Circle;
+import org.vesalainen.math.Polygon;
+import org.vesalainen.math.Sector;
 
 /**
  * Provides support for efficient longitude operations in proximity distance.
@@ -77,6 +81,99 @@ public class LocalLongitude implements Serializable
         return longitude / departure;
     }
     
+    public Polygon createExternal(Polygon internal)
+    {
+        return new ExternalPolygon(internal);
+    }
+    public Circle createExternal(Circle internal)
+    {
+        return new ExternalCircle(internal);
+    }
+    private class ExternalSector extends ExternalCircle<Sector> implements Sector
+    {
+
+        public ExternalSector(Sector internal)
+        {
+            super(internal);
+        }
+
+        @Override
+        public double getAngle()
+        {
+            return internal.getAngle();
+        }
+
+        @Override
+        public double getLeftAngle()
+        {
+            return internal.getLeftAngle();
+        }
+
+        @Override
+        public double getRightAngle()
+        {
+            return internal.getRightAngle();
+        }
+
+        @Override
+        public boolean isCircle()
+        {
+            return internal.isCircle();
+        }
+        
+    }
+    private class ExternalCircle<C extends Circle> implements Circle, Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        protected C internal;
+
+        public ExternalCircle(C internal)
+        {
+            this.internal = internal;
+        }
+
+        @Override
+        public double getRadius()
+        {
+            return internal.getRadius();
+        }
+
+        @Override
+        public double getX()
+        {
+            return getExternal(internal.getX());
+        }
+
+        @Override
+        public double getY()
+        {
+            return internal.getY();
+        }
+        
+    }
+    private class ExternalPolygon implements Polygon, Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        private Polygon internal;
+
+        public ExternalPolygon(Polygon internal)
+        {
+            this.internal = internal;
+        }
+
+        @Override
+        public void forEach(DoubleBinaryOperator op)
+        {
+            internal.forEach((x,y)->op.applyAsDouble(getExternal(x), y));
+        }
+
+        @Override
+        public boolean isInside(double testx, double testy)
+        {
+            return isInside(getInternal(testx), testy);
+        }
+        
+    }
     private static class PacificLongitude extends LocalLongitude
     {
 
