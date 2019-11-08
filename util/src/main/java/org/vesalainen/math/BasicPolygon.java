@@ -19,6 +19,7 @@ package org.vesalainen.math;
 import java.io.Serializable;
 import java.util.function.DoubleBinaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * 
@@ -59,12 +60,12 @@ public class BasicPolygon implements Serializable, Polygon
     }
 
     @Override
-    public void forEach(DoubleBinaryOperator op)
+    public void forEach(DoubleBiConsumer op)
     {
         int rows = points.rows();
         for (int ii=0;ii<rows;ii++)
         {
-            op.applyAsDouble(points.get(ii, 0), points.get(ii, 1));
+            op.accept(points.get(ii, 0), points.get(ii, 1));
         }
     }
 

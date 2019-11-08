@@ -23,6 +23,7 @@ import org.vesalainen.math.Circle;
 import org.vesalainen.math.Polygon;
 import org.vesalainen.math.Rect;
 import org.vesalainen.math.Sector;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * Provides support for efficient longitude operations in proximity distance.
@@ -215,9 +216,9 @@ public class LocalLongitude implements Serializable
         }
 
         @Override
-        public void forEach(DoubleBinaryOperator op)
+        public void forEach(DoubleBiConsumer op)
         {
-            internal.forEach((x,y)->op.applyAsDouble(getExternal(x), y));
+            internal.forEach((x,y)->op.accept(getExternal(x), y));
         }
 
         @Override

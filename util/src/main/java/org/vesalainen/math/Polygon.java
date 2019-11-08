@@ -16,7 +16,7 @@
  */
 package org.vesalainen.math;
 
-import java.util.function.DoubleBinaryOperator;
+import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  *
@@ -27,7 +27,7 @@ public interface Polygon
     double getX(int index);
     double getY(int index);
     int count();
-    void forEach(DoubleBinaryOperator op);
+    void forEach(DoubleBiConsumer op);
 
     default boolean isInside(Point p)
     {
