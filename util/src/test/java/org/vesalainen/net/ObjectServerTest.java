@@ -17,12 +17,16 @@
 package org.vesalainen.net;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.io.IO;
+import org.vesalainen.navi.AnchorWatch;
+import org.vesalainen.ui.Plotter;
 
 /**
  *
@@ -35,6 +39,23 @@ public class ObjectServerTest
     {
     }
 
+    //@Test
+    public void test0() throws IOException, InterruptedException
+    {
+        try (ObjectClient oc = ObjectClient.open("pi2", 10111))
+        {
+            AnchorWatch aw = oc.get("anchorWatch");
+            aw.setChainLength(60);
+            IO.serialize(aw, Paths.get("c:\\temp\\anchorWatch.ser"));
+            Plotter plotter = new Plotter(1000, 1000);
+            System.err.println(aw.getArea());
+            System.err.println(aw.getCenter());
+            plotter.drawLines(aw.getArea());
+            plotter.drawCircle(aw.getEstimated());
+            plotter.drawCoordinates();
+            plotter.plot("anchorWatch.jpg");
+        }
+    }
     @Test
     public void test() throws IOException, InterruptedException
     {

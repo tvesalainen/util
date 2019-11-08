@@ -193,6 +193,26 @@ public class AnchorWatch implements Serializable, LocationObserver
         return area;
     }
 
+    public DoubleMatrix getPoints()
+    {
+        return points;
+    }
+
+    public AbstractCircle getEstimated()
+    {
+        return estimated;
+    }
+
+    public ConvexPolygon getOuter()
+    {
+        return outer;
+    }
+
+    public SafeSector getSafeSector()
+    {
+        return safeSector;
+    }
+
     public void setChainLength(int meters)
     {
         this.chainLength = meters * DegreeToMeters;

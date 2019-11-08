@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import java.io.Serializable;
+import java.util.function.DoubleBinaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -56,7 +57,16 @@ public class Polygon implements Serializable
             bounds.update(points.get(ii, 0), points.get(ii, 1));
         }
     }
-            
+
+    public void forEach(DoubleBinaryOperator op)
+    {
+        int rows = points.rows();
+        for (int ii=0;ii<rows;ii++)
+        {
+            op.applyAsDouble(points.get(ii, 0), points.get(ii, 1));
+        }
+    }
+    
     public boolean isInside(Point p)
     {
         return isInside(p.getX(), p.getY());
