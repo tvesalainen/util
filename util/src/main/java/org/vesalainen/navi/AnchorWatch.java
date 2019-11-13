@@ -27,7 +27,6 @@ import org.vesalainen.math.Circles;
 import org.vesalainen.math.ConvexPolygon;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.Polygon;
-import org.vesalainen.math.Sector;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
@@ -128,12 +127,18 @@ public class AnchorWatch extends AbstractLocationObserver implements Serializabl
         }
         else
         {
-            double minimumDistance = area.getMinimumDistance(internal, latitude);
-            if (!Double.isNaN(accuracy) && !Double.isInfinite(accuracy))
+            try
             {
-                minimumDistance = Math.max(0, minimumDistance-accuracy);
+                double minimumDistance = area.getMinimumDistance(internal, latitude);
+                if (!Double.isNaN(accuracy) && !Double.isInfinite(accuracy))
+                {
+                    minimumDistance = Math.max(0, minimumDistance-accuracy);
+                }
+                fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
             }
-            fireSuggestNextUpdateIn(minimumDistance/speed, minimumDistance);
+            catch (IllegalArgumentException ex)
+            {
+            }
         }
     }
 

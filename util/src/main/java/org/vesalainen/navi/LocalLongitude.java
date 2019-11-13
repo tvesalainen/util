@@ -176,6 +176,7 @@ public class LocalLongitude implements Serializable
         }
         
     }
+    private static final double DegreeToMeters = 36.0 / 4000000.0;
     private class ExternalCircle<C extends Circle> implements Circle, Serializable
     {
         private static final long serialVersionUID = 1L;
@@ -189,7 +190,7 @@ public class LocalLongitude implements Serializable
         @Override
         public double getRadius()
         {
-            return internal.getRadius();
+            return internal.getRadius()/DegreeToMeters;
         }
 
         @Override
