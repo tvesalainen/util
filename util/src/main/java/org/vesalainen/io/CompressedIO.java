@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.vesalainen.code.PropertySetter;
 import org.vesalainen.util.BitArray;
 
 /**
@@ -88,6 +89,42 @@ public abstract class CompressedIO implements AutoCloseable
                 return 8;
             default:
                 throw new IllegalArgumentException(type + " not allowed");
+        }
+    }
+    public void set(PropertySetter setter)
+    {
+        for (Property property : properties.values())
+        {
+            String name = property.name;
+            switch (property.type)
+            {
+                case "boolean":
+                    setter.set(name, getBoolean(name));
+                    break;
+                case "byte":
+                    setter.set(name, getByte(name));
+                    break;
+                case "char":
+                    setter.set(name, getChar(name));
+                    break;
+                case "short":
+                    setter.set(name, getShort(name));
+                    break;
+                case "int":
+                    setter.set(name, getInt(name));
+                    break;
+                case "float":
+                    setter.set(name, getFloat(name));
+                    break;
+                case "long":
+                    setter.set(name, getLong(name));
+                    break;
+                case "double":
+                    setter.set(name, getDouble(name));
+                    break;
+                default:
+                    throw new UnsupportedOperationException(property.type + " not supported");
+            }
         }
     }
     public Object get(String property)

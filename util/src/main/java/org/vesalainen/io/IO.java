@@ -16,12 +16,18 @@
  */
 package org.vesalainen.io;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -30,8 +36,52 @@ import java.nio.file.Path;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class IO
+public final class IO
 {
+    public static BufferedInputStream buffer(InputStream is)
+    {
+        if (is instanceof BufferedInputStream)
+        {
+            return (BufferedInputStream) is;
+        }
+        else
+        {
+            return new BufferedInputStream(is);
+        }
+    }
+    public static BufferedOutputStream buffer(OutputStream os)
+    {
+        if (os instanceof BufferedOutputStream)
+        {
+            return (BufferedOutputStream) os;
+        }
+        else
+        {
+            return new BufferedOutputStream(os);
+        }
+    }
+    public static BufferedReader buffer(Reader r)
+    {
+        if (r instanceof BufferedReader)
+        {
+            return (BufferedReader) r;
+        }
+        else
+        {
+            return new BufferedReader(r);
+        }
+    }
+    public static BufferedWriter buffer(Writer w)
+    {
+        if (w instanceof BufferedWriter)
+        {
+            return (BufferedWriter) w;
+        }
+        else
+        {
+            return new BufferedWriter(w);
+        }
+    }
     /**
      * Writes object to path
      * @param <T>
@@ -67,11 +117,11 @@ public class IO
             return (T) ois.readObject();
         }
     }
-    public static final int readFully(Reader reader, byte[] buffer) throws IOException
+    public static final int readFully(ReaderIntf reader, byte[] buffer) throws IOException
     {
         return readFully(reader, buffer, 0, buffer.length);
     }
-    public static final int readFully(Reader reader, byte[] buffer, int offset, int length) throws IOException
+    public static final int readFully(ReaderIntf reader, byte[] buffer, int offset, int length) throws IOException
     {
         int count = 0;
         while (length > 0)
@@ -95,7 +145,7 @@ public class IO
         return count;
     }
     @FunctionalInterface
-    public interface Reader
+    public interface ReaderIntf
     {
         int read(byte[] buffer, int offset, int length) throws IOException;
     }

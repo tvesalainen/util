@@ -16,16 +16,23 @@
  */
 package org.vesalainen.io;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.vesalainen.code.PropertySetter;
 import org.vesalainen.util.BitArray;
+import org.vesalainen.util.Transactional;
 
 /**
  *
@@ -72,6 +79,37 @@ public class CompressedInput extends CompressedIO
         bb1 = ByteBuffer.allocate(bytes).order(ByteOrder.BIG_ENDIAN);
         bitArray = new BitArray(bytes);
         bits = bitArray.getArray();
+    }
+    public void readAll(PropertySetter setter) throws IOException
+    {
+        float rc = read();
+        while (rc >= 0)
+        {
+            set(setter);
+            rc = read();
+        }
+    }
+    public <T extends PropertySetter & Transactional> void readTransactional(T setter) throws IOException
+    {
+        float rc = read();
+        while (rc >= 0)
+        {
+            setter.start(null);
+            set(setter);
+            setter.commit(null);
+            rc = read();
+        }
+    }
+    public static <T extends PropertySetter & Transactional> void readTransactional(Stream<Path> paths, T setter) throws IOException
+    {
+        Iterator<Path> iterator = paths.sorted().iterator();
+        while (iterator.hasNext())
+        {
+            Path path = iterator.next();
+            BufferedInputStream bis = IO.buffer(Files.newInputStream(path));
+            CompressedInput ci = new CompressedInput(bis);
+            ci.readTransactional(setter);
+        }
     }
     public float read() throws IOException
     {
