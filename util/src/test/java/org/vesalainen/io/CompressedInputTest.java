@@ -19,9 +19,11 @@ package org.vesalainen.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.code.AbstractPropertySetter;
 
 /**
  *
@@ -35,7 +37,7 @@ public class CompressedInputTest
     }
 
     @Test
-    public void testSomeMethod() throws IOException
+    public void test1() throws IOException
     {
         try (InputStream is = Files.newInputStream(Paths.get("src", "test", "resources",  "20180409122422.trc"));
             CompressedInput ci = new CompressedInput(is)
@@ -44,5 +46,21 @@ public class CompressedInputTest
             ci.dump(System.err);
         }
     }
-    
+    @Test
+    public void test2() throws IOException
+    {
+        Path dir = Paths.get("src", "test", "resources");
+        PS ps = new PS();
+        CompressedInput.readTransactional(Files.list(dir).filter((p)->p.getFileName().toString().endsWith(".trc")), ps);
+    }
+    private class PS extends AbstractPropertySetter
+    {
+
+        @Override
+        protected void setProperty(String property, Object arg)
+        {
+            System.err.println(property+"="+arg);
+        }
+        
+    }
 }
