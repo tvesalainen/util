@@ -28,10 +28,16 @@ import java.util.Collection;
 public interface Transactional
 {
     /**
+     * @deprecated Use begin
      * Start transaction that will end in commit or rollback methods.
      * @param reason
      */
-    default void start(String reason){}
+    default void start(String reason){begin(reason);}
+    /**
+     * Start transaction that will end in commit or rollback methods.
+     * @param reason
+     */
+    default void begin(String reason){}
     /**
      * Undo changes after start.
      * @param reason 
@@ -40,6 +46,7 @@ public interface Transactional
     /**
      * Confirm changes after start.
      * @param reason 
+     * @param updatedProperties 
      */
     default void commit(String reason, Collection<String> updatedProperties)
     {
