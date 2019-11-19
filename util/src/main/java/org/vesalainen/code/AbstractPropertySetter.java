@@ -113,7 +113,7 @@ public abstract class AbstractPropertySetter implements PropertySetter, Transact
     }
 
     @Override
-    public String[] getPrefixes()
+    public String[] getProperties()
     {
         return prefixes;
     }

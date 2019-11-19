@@ -28,6 +28,7 @@ import org.vesalainen.util.BitArray;
 
 /**
  *
+ * <p>MAximum number of fields is 65535
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class CompressedOutput extends CompressedIO
@@ -284,6 +285,10 @@ public class CompressedOutput extends CompressedIO
         if (ready)
         {
             throw new IllegalStateException("header written");
+        }
+        if (properties.size() > 0xfffe)
+        {
+            throw new IllegalArgumentException("too many properties");
         }
         Property prop = new Property(property, type, bytes, selfImportant);
         Property old = properties.put(property, prop);

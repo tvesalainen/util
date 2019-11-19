@@ -25,13 +25,17 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.vesalainen.code.PropertySetter;
 import org.vesalainen.util.BitArray;
+import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -41,6 +45,19 @@ import org.vesalainen.util.Transactional;
 public class CompressedInput extends CompressedIO
 {
     private InputStream in;
+    private Property[] offsets;
+    private final Set<String> modified = new HashSet<>();
+    private String filename;
+
+    public CompressedInput(Path path) throws IOException
+    {
+        this(path, null);
+    }
+    public CompressedInput(Path path, String source) throws IOException
+    {
+        this(IO.buffer(Files.newInputStream(path)), source);
+        filename = path.toString();
+    }
 
     public CompressedInput(InputStream in) throws IOException
     {
@@ -64,14 +81,14 @@ public class CompressedInput extends CompressedIO
             throw new IllegalArgumentException("file is not ´"+source);
         }
         source = src;
-        short fieldCount = dis.readShort();
+        int fieldCount = Short.toUnsignedInt(dis.readShort());
         for (int ii=0;ii<fieldCount;ii++)
         {
             String name = dis.readUTF();
             String type = dis.readUTF();
             Property prop = new Property(name, type, bytes);
-            bytes += prop.getSize();
             properties.put(name, prop);
+            bytes += prop.getSize();
         }
         long mostSigBits = dis.readLong();
         long leastSigBits = dis.readLong();
@@ -79,37 +96,67 @@ public class CompressedInput extends CompressedIO
         bb1 = ByteBuffer.allocate(bytes).order(ByteOrder.BIG_ENDIAN);
         bitArray = new BitArray(bytes);
         bits = bitArray.getArray();
+        // ofsets
+        offsets = new Property[bytes];
+        properties.values().forEach((property) ->
+        {
+            int offset = property.getOffset();
+            int size = property.getSize();
+            for (int ii=0;ii<size;ii++)
+            {
+                offsets[offset+ii] = property;
+            }
+        });
     }
     public void readAll(PropertySetter setter) throws IOException
+    {
+        readAll(setter, new HashSet<>(CollectionHelp.create(setter.getProperties())));
+    }
+    public void readAll(PropertySetter setter, Collection<String> needed) throws IOException
     {
         float rc = read();
         while (rc >= 0)
         {
-            set(setter);
+            setModified(setter, needed);
             rc = read();
         }
     }
     public <T extends PropertySetter & Transactional> void readTransactional(T setter) throws IOException
     {
+        readTransactional(setter, new HashSet<>(CollectionHelp.create(setter.getProperties())));
+    }
+    public <T extends PropertySetter & Transactional> void readTransactional(T setter, Collection<String> needed) throws IOException
+    {
         float rc = read();
         while (rc >= 0)
         {
-            setter.start(null);
-            set(setter);
-            setter.commit(null);
+            setter.begin(filename);
+            setModified(setter, needed);
+            setter.commit(filename, modified);
             rc = read();
         }
     }
     public static <T extends PropertySetter & Transactional> void readTransactional(Stream<Path> paths, T setter) throws IOException
     {
+        HashSet<String> needed = new HashSet<>(CollectionHelp.create(setter.getProperties()));
         Iterator<Path> iterator = paths.sorted().iterator();
         while (iterator.hasNext())
         {
             Path path = iterator.next();
-            BufferedInputStream bis = IO.buffer(Files.newInputStream(path));
-            CompressedInput ci = new CompressedInput(bis);
-            ci.readTransactional(setter);
+            CompressedInput ci = new CompressedInput(path);
+            ci.readTransactional(setter, needed);
         }
+    }
+    public void setModified(PropertySetter setter, Collection<String> needed)
+    {
+        modified.forEach((name) ->
+        {
+            if (needed.contains(name))
+            {
+                Property property = properties.get(name);
+                property.set(setter);
+            }
+        });
     }
     public float read() throws IOException
     {
@@ -118,12 +165,14 @@ public class CompressedInput extends CompressedIO
         {
             return -1;
         }
+        modified.clear();
         int cnt = 0;
         for (int ii=0;ii<bytes;ii++)
         {
             if (bitArray.isSet(ii))
             {
                 bb1.put(ii, (byte) in.read());
+                modified.add(offsets[ii].getName());
                 cnt++;
             }
         }

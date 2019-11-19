@@ -39,12 +39,8 @@ public class CompressedInputTest
     @Test
     public void test1() throws IOException
     {
-        try (InputStream is = Files.newInputStream(Paths.get("src", "test", "resources",  "20180409122422.trc"));
-            CompressedInput ci = new CompressedInput(is)
-                )
-        {
-            ci.dump(System.err);
-        }
+        CompressedInput ci = new CompressedInput(Paths.get("src", "test", "resources",  "20180409122422.trc"));
+        ci.dump(System.err);
     }
     @Test
     public void test2() throws IOException
@@ -55,6 +51,12 @@ public class CompressedInputTest
     }
     private class PS extends AbstractPropertySetter
     {
+
+        @Override
+        public String[] getProperties()
+        {
+            return new String[]{"latitude", "longitude" };
+        }
 
         @Override
         protected void setProperty(String property, Object arg)
