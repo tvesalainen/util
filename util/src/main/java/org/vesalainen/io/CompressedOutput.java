@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +41,16 @@ public class CompressedOutput extends CompressedIO
     private boolean ready;
     private int writeCount;
     private int writeBytes;
+
+    public CompressedOutput(Path path) throws IOException
+    {
+        this(path, null);
+    }
+    
+    public CompressedOutput(Path path, String source) throws IOException
+    {
+        this(IO.buffer(Files.newOutputStream(path)), source);
+    }
 
     public CompressedOutput(OutputStream out, String source)
     {
