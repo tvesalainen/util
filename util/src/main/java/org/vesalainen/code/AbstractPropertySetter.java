@@ -92,7 +92,7 @@ public abstract class AbstractPropertySetter implements PropertySetter, Transact
     }
 
     @Override
-    public void set(String property, Object arg)
+    public <T> void set(String property, T arg)
     {
         setProperty(property, arg);
     }
