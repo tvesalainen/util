@@ -68,18 +68,26 @@ public final class MoreMath
      * @param exp
      * @return 
      */
-    public static int pow(int x, int exp)
+    public static int power(int x, int exp)
     {
-        if (exp < 0)
+        if (exp == 0)
         {
-            throw new UnsupportedOperationException("negative exp not supported");
+            return 1;
         }
+        int e = Math.abs(exp);
         int s = 1;
-        for (int ii=0;ii<exp;ii++)
+        for (int ii=0;ii<e;ii++)
         {
             s = Math.multiplyExact(s, x);
         }
-        return s;
+        if (exp > 0)
+        {
+            return s;
+        }
+        else
+        {
+            return 1/s;
+        }
     }
     /**
      * Returns sum of arguments throwing an exception if the result overflows an long.
@@ -102,18 +110,26 @@ public final class MoreMath
      * @param exp
      * @return 
      */
-    public static long pow(long x, int exp)
+    public static long power(long x, int exp)
     {
-        if (exp < 0)
+        if (exp == 0)
         {
-            throw new UnsupportedOperationException("negative exp not supported");
+            return 1;
         }
+        int e = Math.abs(exp);
         long s = 1;
-        for (int ii=0;ii<exp;ii++)
+        for (int ii=0;ii<e;ii++)
         {
             s = Math.multiplyExact(s, x);
         }
-        return s;
+        if (exp > 0)
+        {
+            return s;
+        }
+        else
+        {
+            return 1/s;
+        }
     }
     /**
      * Returns logarithm with base b.
