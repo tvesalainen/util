@@ -126,8 +126,13 @@ public abstract class DBCParser extends AbstractParser
     {
         return size;
     }
-    @Rule(left="transmitter", value={"((node_name) | ('Vector__XXX'))"})
-    protected String transmitter(String node)
+    @Rule(left="transmitter", value={"node_name"})
+    protected String transmitter1(String node)
+    {
+        return node;
+    }
+    @Rule(left="transmitter", value={"'Vector__XXX'"})
+    protected String transmitter2(String node)
     {
         return node;
     }
@@ -223,9 +228,9 @@ public abstract class DBCParser extends AbstractParser
         return name;
     }
     @Rule(left="signal_extended_value_type_list", value={"'SIG_VALTYPE_' message_id signal_name signal_extended_value_type ';'"})
-    protected SignalExtendedValueTypeList signalExtendedValueTypeList(Integer id, String name, SignalExtendedValueType type)
+    protected void signalExtendedValueTypeList(Integer id, String name, SignalExtendedValueType type)
     {
-        return new SignalExtendedValueTypeList(id, name, type);
+        SignalExtendedValueTypeList signalExtendedValueTypeList = new SignalExtendedValueTypeList(id, name, type);
     }
     @Rule(left="signal_extended_value_type", value={"(('0') | ('1') | ('2') | ('3'))"})
     protected SignalExtendedValueType signalExtendedValueType(int type)
@@ -233,9 +238,8 @@ public abstract class DBCParser extends AbstractParser
         return SignalExtendedValueType.values()[type];
     }
     @Rule(left="message_transmitters", value={"(message_transmitter)*"})
-    protected List<MessageTransmitter> messageTransmitters(List<MessageTransmitter> list)
+    protected void messageTransmitters(List<MessageTransmitter> list)
     {
-        return list;
     }
     @Rule(left="message_transmitter", value={"'BO_TX_BU_' message_id ':' (transmitter)* ';'"})
     protected MessageTransmitter messageTransmitter(Integer id, List<String> transmitter)
@@ -253,9 +257,8 @@ public abstract class DBCParser extends AbstractParser
         
     }
     @Rule(left="environment_variables", value={"(environment_variable)*"})
-    protected List<EnvironmentVariable> environmentVariables(List<EnvironmentVariable> list)
+    protected void environmentVariables(List<EnvironmentVariable> list)
     {
-        return list;
     }
     @Rule(left="environment_variable", value={"'EV_' env_var_name ':' env_var_type '\\[' minimum '\\|' maximum '\\]' unit initial_value ev_id access_type stringList ';'"})
     protected EnvironmentVariable environmentVariable(String name, EnvVarType envVarType, Double min, Double max, String unit, Double initial, Integer evId, AccessType accessType, List<String> accessNodes)
@@ -314,9 +317,8 @@ public abstract class DBCParser extends AbstractParser
         
     }
     @Rule(left="signal_types", value={"(signal_type)*"})
-    protected List<SignalType> signalTypes(List<SignalType> list)
+    protected void signalTypes(List<SignalType> list)
     {
-        return list;
     }
     @Rule(left="signal_type", value={"'SGTYPE_' signal_type_name ':' signal_size '@' byte_order value_type '\\(' factor '\\,' offset '\\)' '\\[' minimum '\\|' maximum '\\]' unit default_value '\\,' value_table ';'"})
     protected SignalType signalType(String name, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double minimum, Double maximum, String unit, Double defValue, ValueTable valueTable)
@@ -339,9 +341,8 @@ public abstract class DBCParser extends AbstractParser
         return name;
     }
     @Rule(left="signal_type_refs", value={"(signal_type_ref)*"})
-    protected List<SignalTypeRef> signalTypeRefs(List<SignalTypeRef> list)
+    protected void signalTypeRefs(List<SignalTypeRef> list)
     {
-        return list;
     }
     @Rule(left="signal_type_ref", value={"'SGTYPE_' message_id signal_name ':' signal_type_name ';'"})
     protected SignalTypeRef signalTypeRef(Integer id, String name, String typeName)
@@ -349,9 +350,9 @@ public abstract class DBCParser extends AbstractParser
         return new SignalTypeRef(id, name, typeName);
     }
     @Rule(left="signal_groups", value={"'SIG_GROUP_' message_id signal_group_name repetitions ':' (signal_name)* ';'"})
-    protected SignalGroup signalGroups(Integer id, String name, Integer repetitions, List<String> names)
+    protected void signalGroups(Integer id, String name, Integer repetitions, List<String> names)
     {
-        return new SignalGroup(id, name, repetitions, names);
+        SignalGroup signalGroup = new SignalGroup(id, name, repetitions, names);
     }
     @Rule(left="signal_group_name", value={"C_identifier"})
     protected String signalGroupName(String name)
@@ -364,9 +365,8 @@ public abstract class DBCParser extends AbstractParser
         return repetitions;
     }
     @Rule(left="comments", value={"(comment)*"})
-    protected List<Comment> comments(List<Comment> list)
+    protected void comments(List<Comment> list)
     {
-        return list;
     }
     @Rule(left="comment", value={"'CM_' char_string ';'"})
     protected Comment comment(String comment)
@@ -394,9 +394,8 @@ public abstract class DBCParser extends AbstractParser
         return new Comment(var, comment);
     }
     @Rule(left="attribute_definitions", value={"(attribute_definition)*"})
-    protected List<AttributeDefinition> attributeDefinitions(List<AttributeDefinition> list)
+    protected void attributeDefinitions(List<AttributeDefinition> list)
     {
-        return list;
     }
     @Rule(left="attribute_definition", value={"'BA_DEF_' object_type attribute_name attribute_value_type ';'"})
     protected AttributeDefinition attributeDefinition(String name, ObjectType objectType, AttributeValueType type)
@@ -444,9 +443,8 @@ public abstract class DBCParser extends AbstractParser
         return new EnumAttributeValueType(types);
     }
     @Rule(left="attribute_defaults", value={"(attribute_default)*"})
-    protected List<AttributeValueForObject> attributeDefaults(List<AttributeValueForObject> values)
+    protected void attributeDefaults(List<AttributeValueForObject> values)
     {
-        return values;
     }
     @Rule(left="attribute_default", value={"'BA_DEF_DEF_' attribute_name attribute_value ';'"})
     protected AttributeValueForObject attributeDefault(String name, Object value)
@@ -474,9 +472,8 @@ public abstract class DBCParser extends AbstractParser
         return value;
     }
     @Rule(left="attribute_values", value={"(attribute_value_for_object)*"})
-    protected List<AttributeValueForObject> attributeValues(List<AttributeValueForObject> values)
+    protected void attributeValues(List<AttributeValueForObject> values)
     {
-        return values;
     }
     @Rule(left="attribute_value_for_object", value={"'BA_' attribute_name attribute_value ';'"})
     protected AttributeValueForObject attributeValueForObject(String name, Object value)
