@@ -16,11 +16,108 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.nio.ByteOrder;
+import java.util.List;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class Signal
 {
-    
+    private String name;
+    private MultiplexerIndicator multiplexerIndicator;
+    private int startBit;
+    private int size;
+    private ByteOrder byteOrder;
+    private ValueType valueType;
+    private double factor;
+    private double offset;
+    private double min;
+    private double max;
+    private String unit;
+    private List<String> receivers;
+    private String comment;
+
+    public Signal(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
+    {
+        this.name = name;
+        this.multiplexerIndicator = multiplexerIndicator;
+        this.startBit = startBit;
+        this.size = size;
+        this.byteOrder = byteOrder;
+        this.valueType = valueType;
+        this.factor = factor;
+        this.offset = offset;
+        this.min = min;
+        this.max = max;
+        this.unit = unit;
+        this.receivers = receivers;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public MultiplexerIndicator getMultiplexerIndicator()
+    {
+        return multiplexerIndicator;
+    }
+
+    public int getStartBit()
+    {
+        return startBit;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public ByteOrder getByteOrder()
+    {
+        return byteOrder;
+    }
+
+    public ValueType getValueType()
+    {
+        return valueType;
+    }
+
+    public double getFactor()
+    {
+        return factor;
+    }
+
+    public double getOffset()
+    {
+        return offset;
+    }
+
+    public double getMin()
+    {
+        return min;
+    }
+
+    public double getMax()
+    {
+        return max;
+    }
+
+    public String getUnit()
+    {
+        return unit;
+    }
+
+    public List<String> getReceivers()
+    {
+        return receivers;
+    }
+
+    void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+            
 }

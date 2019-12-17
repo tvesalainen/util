@@ -22,15 +22,15 @@ package org.vesalainen.can.dbc;
  */
 public class MultiplexerIndicator
 {
+    private int value;
 
-    MultiplexerIndicator(Integer value)
+    public MultiplexerIndicator()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    MultiplexerIndicator()
+    public MultiplexerIndicator(int value)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.value = value;
     }
     
 }

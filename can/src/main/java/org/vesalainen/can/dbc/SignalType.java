@@ -25,14 +25,10 @@ import java.nio.ByteOrder;
 public class SignalType
 {
 
-    SignalType(String name, Integer size, ByteOrder byteOrder, Integer valueType, Double factor, Double offset, Double minimum, Double maximum, String unit, Double defValue, ValueTable valueTable)
+    SignalType(String name, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double minimum, Double maximum, String unit, Double defValue, String valueTable)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    SignalType(String name, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double minimum, Double maximum, String unit, Double defValue, ValueTable valueTable)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
 }

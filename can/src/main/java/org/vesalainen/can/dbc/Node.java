@@ -20,15 +20,18 @@ package org.vesalainen.can.dbc;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ValueDescription
+public class Node
 {
-    private double value;
-    private String description;
-
-    public ValueDescription(double value, String description)
+    private String name;
+    private String comment;
+    public Node(String name)
     {
-        this.value = value;
-        this.description = description;
+        this.name = name;
+    }
+
+    void setComment(String comment)
+    {
+        this.comment = comment;
     }
     
 }

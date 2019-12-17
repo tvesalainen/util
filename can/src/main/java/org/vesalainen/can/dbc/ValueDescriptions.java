@@ -16,31 +16,28 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.List;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Comment
+public class ValueDescriptions
 {
+    private int id;
+    private String name;
+    private List<ValueDescription> valDesc;
 
-    Comment(String var, String comment)
+    public ValueDescriptions(int id, String name, List<ValueDescription> valDesc)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.id = id;
+        this.name = name;
+        this.valDesc = valDesc;
     }
 
-    Comment(int id, String signal, String comment)
+    public ValueDescriptions(String name, List<ValueDescription> valDesc)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.name = name;
+        this.valDesc = valDesc;
     }
-
-    Comment(int id, String comment)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    Comment(String comment)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

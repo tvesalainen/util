@@ -16,7 +16,9 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -24,10 +26,59 @@ import java.util.List;
  */
 public class Message
 {
+    private int id;
+    private String name;
+    private int size;
+    private String transmitter;
+    private Map<String,Signal> signals = new HashMap<>();
+    private String comment;
 
-    Message(Integer id, String name, Integer size, String transmitter, List<Signal> signals)
+    public Message(Integer id, String name, Integer size, String transmitter, List<Signal> signals)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.id = id;
+        this.name = name;
+        this.size = size;
+        this.transmitter = transmitter;
+        for (Signal signal : signals)
+        {
+            this.signals.put(signal.getName(), signal);
+        }
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public String getTransmitter()
+    {
+        return transmitter;
+    }
+
+    public Map<String,Signal> getSignals()
+    {
+        return signals;
+    }
+
+    void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+
+    void setSignalComment(String name, String comment)
+    {
+        Signal signal = signals.get(name);
+        signal.setComment(comment);
     }
     
 }

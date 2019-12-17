@@ -22,15 +22,21 @@ package org.vesalainen.can.dbc;
  */
 public class AttributeDefinition
 {
+    private ObjectType objectType;
+    private String name;
+    private AttributeValueType type;
 
-    AttributeDefinition(String name, AttributeValueType type)
+    public AttributeDefinition(ObjectType objectType, String name, AttributeValueType type)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.objectType = objectType;
+        this.name = name;
+        this.type = type;
     }
 
-    AttributeDefinition(String name, ObjectType objectType, AttributeValueType type)
+    public AttributeDefinition(String name, AttributeValueType type)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.name = name;
+        this.type = type;
     }
     
 }

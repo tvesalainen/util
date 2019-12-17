@@ -1,0 +1,98 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: VCL HSC BCM
+
+
+BO_ 2027 Pack_Error_Responses: 8 Vector__XXX
+ SG_ pid_fault_count : 24|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ pid_error_two : 48|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ pid_error_one : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ pid_response_max : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ pid_response_min : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 51 Pack_Cell_Broadcast: 8 Vector__XXX
+ SG_ cell_id : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ cell_checksum : 56|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ cell_open_volt : 47|16@0- (0.0001,0) [-6|6] "v" Vector__XXX
+ SG_ cell_internal_resist : 31|16@0- (1E-005,0) [0|0] "" Vector__XXX
+ SG_ cell_inst_volt : 15|16@0- (0.0001,0) [-6|6] "v" Vector__XXX
+
+BO_ 1619 Pack_Alert_Status: 8 Vector__XXX
+ SG_ is_charging_signal_status : 7|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ is_ready_signal_status : 6|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ always_on_signal_status : 5|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ multi_purpose_input_signal : 4|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ malfunction_indicator_active : 3|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ charge_safety_enabled : 2|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ charge_relay_enabled : 1|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ discharge_relay_enabled : 0|1@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ pack_12V : 8|16@1- (0.1,0) [0|80] "v" Vector__XXX
+
+BO_ 1618 Pack_Limits: 8 Vector__XXX
+ SG_ pack_min_cell_volt : 48|16@1- (1,0) [-6|6] "v" Vector__XXX
+ SG_ pack_max_cell_volt : 32|16@1- (0.001,0) [-6|6] "v" Vector__XXX
+ SG_ pack_dcl : 16|16@1- (1,0) [-2000|2000] "A" Vector__XXX
+ SG_ pack_ccl : 0|16@1- (1,0) [-2000|2000] "A" Vector__XXX
+
+BO_ 1617 Pack_Cell_Status: 8 Vector__XXX
+ SG_ pack_populated_cells : 56|8@1+ (1,0) [0|1000] "" Vector__XXX
+ SG_ pack_max_cell_number : 48|8@1+ (1,0) [0|2000] "" Vector__XXX
+ SG_ pack_avg_volt : 32|16@1- (0.001,0) [0|1000] "v" Vector__XXX
+ SG_ pack_low_cell_volt : 0|16@1- (0.001,0) [-6|6] "v" Vector__XXX
+ SG_ pack_high_cell_volt : 16|16@1- (0.001,0) [-6|6] "v" Vector__XXX
+
+BO_ 336 Pack_Critical_Data: 8 Vector__XXX
+ SG_ pack_low_temp : 56|8@1- (1,0) [-200|200] "C" Vector__XXX
+ SG_ pack_high_temp : 48|8@1- (1,0) [-200|200] "C" Vector__XXX
+ SG_ pack_ah : 32|16@1- (1,0) [0|800] "Ah" Vector__XXX
+ SG_ pack_vbat : 16|16@1+ (0.1,0) [0|5000] "v" Vector__XXX
+ SG_ pack_ibat : 0|16@1- (-1,0) [-1000|1000] "A" Vector__XXX
+
+BO_ 1616 Pack_Status: 8 Vector__XXX
+ SG_ pack_total_cycles : 48|16@1- (1,0) [0|1000] "" Vector__XXX
+ SG_ pack_open_vbat : 32|16@1+ (0.1,0) [0|2000] "v" Vector__XXX
+ SG_ pack_health : 24|8@1- (1,0) [0|100] "%" Vector__XXX
+ SG_ pack_resistance : 8|16@1+ (1,0) [0|5000] "mOhm" Vector__XXX
+ SG_ pack_soc : 0|8@1+ (0.5,0) [0|100] "%" Vector__XXX
+
+
+
+VAL_ 2027 pid_error_two 2810 "Low Cell Voltage Fault" 2752 "Current Sensor Fault" 2726 "High Voltage Isolation Fault" 2716 "Thermistor Fault" 2689 "Fan Monitor Fault" 2688 "Weak Cell Fault" 2591 "Internal Comm Fault" 2571 "Internal Logic Fault" 2570 "Internal Thermistor Fault" 2569 "Internal Memory Fault" 2568 "Charger Safety Relay Fault" 2567 "Dischrge Limit Enforcement Fault" 2566 "Charge Limit Enforcement Fault" 2565 "12V Power Supply Fault" 2564 "Open Wiring Fault" 2563 "Voltage Redundancy Fault" 2562 "Weak Pack Fault" 2561 "Pack Voltage Sensor Fault" 2560 "Internal Conversion Fault" 1376 "Power Supply Fault" 256 "CAN Comm Fault" ;
+VAL_ 2027 pid_error_one 2810 "Low Cell Voltage Fault" 2752 "Current Sensor Fault" 2726 "High Voltage Isolation Fault" 2716 "Thermistor Fault" 2689 "Fan Monitor Fault" 2688 "Weak Cell Fault" 2591 "Internal Comm Fault" 2571 "Internal Logic Fault" 2570 "Internal Thermistor Fault" 2569 "Internal Memory Fault" 2568 "Charger Safety Relay Fault" 2567 "Dischrge Limit Enforcement Fault" 2566 "Charge Limit Enforcement Fault" 2565 "12V Power Supply Fault" 2564 "Open Wiring Fault" 2563 "Voltage Redundancy Fault" 2562 "Weak Pack Fault" 2561 "Pack Voltage Sensor Fault" 2560 "Internal Conversion Fault" 1376 "Power Supply Fault" 256 "CAN Comm Fault" ;
+VAL_ 2027 pid_response_max 67 "pid code" ;
+VAL_ 2027 pid_response_min 67 "pid code" ;
+VAL_ 51 cell_id 48 "Cell ID" 47 "Cell ID" 46 "Cell ID " 45 "Cell ID " 44 "Cell ID" 43 "Cell ID" 42 "Cell ID" 41 "Cell ID" 40 "Cell ID" 39 "Cell ID" 38 "Cell ID" 37 "Cell ID" 36 "Cell ID" 35 "Cell ID" 34 "Cell ID" 33 "Cell ID" 32 "Cell ID" 31 "Cell ID" 30 "Cell ID" 29 "Cell ID" 28 "Cell ID" 27 "Cell ID" 26 "Cell ID" 25 "Cell ID" 24 "Cell ID" 23 "Cell ID" 22 "Cell ID" 21 "Cell ID" 20 "Cell ID" 19 "Cell ID" 18 "Cell ID" 17 "Cell ID" 16 "Cell ID" 15 "Cell ID" 14 "Cell ID" 13 "Cell ID" 12 "Cell ID" 11 "Cell ID" 10 "Cell ID" 9 "Cell ID" 8 "Cell ID" 7 "Cell ID" 6 "Cell ID" 5 "Cell ID" 4 "Cell ID" 3 "Cell ID" 2 "Cell ID" 1 "Cell ID" 0 "Cell ID" ;
+
