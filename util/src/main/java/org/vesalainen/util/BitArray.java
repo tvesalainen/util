@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class BitArray
+public class BitArray implements CharSequence
 {
     private int bits;
     private byte[] array;
@@ -296,6 +296,37 @@ public class BitArray
         {
             throw new IllegalArgumentException(index+" is out of range");
         }
+    }
+    
+    @Override
+    public int length()
+    {
+        return bits;
+    }
+
+    @Override
+    public char charAt(int index)
+    {
+        if (isSet(index))
+        {
+            return '1';
+        }
+        else
+        {
+            return '0';
+        }
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end)
+    {
+        return toString().subSequence(start, end);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new StringBuilder(this).toString();
     }
     
 }
