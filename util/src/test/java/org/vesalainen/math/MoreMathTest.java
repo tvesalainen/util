@@ -41,7 +41,7 @@ public class MoreMathTest
     @Test
     public void testPow()
     {
-        assertEquals(16, MoreMath.pow(2, 4));
+        assertEquals(16, MoreMath.power(2, 4));
     }
     @Test
     public void testLog()
