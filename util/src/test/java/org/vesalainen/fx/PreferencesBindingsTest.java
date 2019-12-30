@@ -16,7 +16,12 @@
  */
 package org.vesalainen.fx;
 
+import java.util.Locale.Category;
+import static java.util.Locale.Category.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.junit.After;
@@ -38,6 +43,22 @@ public class PreferencesBindingsTest
     }
     public PreferencesBindingsTest()
     {
+    }
+
+    @Test
+    public void test0()
+    {
+        SimpleStringProperty a = new SimpleStringProperty();
+        a.set("a");
+        SimpleStringProperty b = new SimpleStringProperty();
+        b.set("b");
+        Bindings.bindBidirectional(a, b);
+        assertEquals("b", a.get());
+        assertEquals("b", b.get());
+    }
+    @Test
+    public void test()
+    {
         StringBinding sp = bindings.createStringBinding("foo", "def");
         SimpleStringProperty ssp = new SimpleStringProperty();
         bindings.bindBiDirectional("foo", "def", ssp);
@@ -45,10 +66,14 @@ public class PreferencesBindingsTest
         assertEquals("bar", sp.getValue());
         assertEquals("bar", ssp.getValue());
     }
-
     @Test
-    public void test()
+    public void testEnum()
     {
-    }
-    
+        ObjectBinding<Category> enumBinding = bindings.createEnumBinding("enum", DISPLAY);
+        assertEquals(DISPLAY, enumBinding.get());
+        SimpleObjectProperty<Category> sop = new SimpleObjectProperty();
+        bindings.bindEnumBiDirectional("enum", DISPLAY, sop);
+        sop.set(FORMAT);
+        assertEquals(FORMAT, enumBinding.get());
+    }    
 }

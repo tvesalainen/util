@@ -16,14 +16,9 @@
  */
 package org.vesalainen.fx;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.DoubleBinding;
@@ -33,14 +28,6 @@ import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.util.StringConverter;
-import javafx.util.converter.BooleanStringConverter;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.FloatStringConverter;
-import javafx.util.converter.IntegerStringConverter;
-import javafx.util.converter.LongStringConverter;
 
 /**
  *
@@ -48,15 +35,8 @@ import javafx.util.converter.LongStringConverter;
  */
 public class PreferencesBindings
 {
-    private static final DoubleStringConverter DOUBLE_STRING_CONVERTER = new DoubleStringConverter();
-    private static final BooleanStringConverter BOOLEAN_STRING_CONVERTER = new BooleanStringConverter();
-    private static final FloatStringConverter FLOAT_STRING_CONVERTER = new FloatStringConverter();
-    private static final IntegerStringConverter INTEGER_STRING_CONVERTER = new IntegerStringConverter();
-    private static final LongStringConverter LONG_STRING_CONVERTER = new LongStringConverter();
-    
     private Preferences preferences;
-    private Map<String,PropertyImpl> properties = new HashMap<>();
-    private Map<ObservableValue<?>,String> observables = new WeakHashMap<>();
+    private Map<String,PreferenceBase<?>> properties = new HashMap<>();
 
     private PreferencesBindings(Preferences preferences)
     {
@@ -82,48 +62,127 @@ public class PreferencesBindings
 
     public StringBinding createStringBinding(String key, String def)
     {
-        return Bindings.createStringBinding(()->preferences.get(key, def), getProperty(key, def));
+        return Bindings.createStringBinding(()->preferences.get(key, def), getStringProperty(key, def));
     }
     public DoubleBinding createDoubleBinding(String key, double def)
     {
-        String sDef = DOUBLE_STRING_CONVERTER.toString(def);
-        return Bindings.createDoubleBinding(()->DOUBLE_STRING_CONVERTER.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        return Bindings.createDoubleBinding(()->preferences.getDouble(key, def), getDoubleProperty(key, def));
     }
     public BooleanBinding createBooleanBinding(String key, boolean def)
     {
-        String sDef = BOOLEAN_STRING_CONVERTER.toString(def);
-        return Bindings.createBooleanBinding(()->BOOLEAN_STRING_CONVERTER.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        return Bindings.createBooleanBinding(()->preferences.getBoolean(key, def), getBooleanProperty(key, def));
     }
     public FloatBinding createFloatBinding(String key, float def)
     {
-        String sDef = FLOAT_STRING_CONVERTER.toString(def);
-        return Bindings.createFloatBinding(()->FLOAT_STRING_CONVERTER.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        return Bindings.createFloatBinding(()->preferences.getFloat(key, def), getFloatProperty(key, def));
     }
     public IntegerBinding createIntegerBinding(String key, int def)
     {
-        String sDef = INTEGER_STRING_CONVERTER.toString(def);
-        return Bindings.createIntegerBinding(()->INTEGER_STRING_CONVERTER.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        return Bindings.createIntegerBinding(()->preferences.getInt(key, def), getIntegerProperty(key, def));
     }
     public LongBinding createLongBinding(String key, long def)
     {
-        String sDef = LONG_STRING_CONVERTER.toString(def);
-        return Bindings.createLongBinding(()->LONG_STRING_CONVERTER.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        return Bindings.createLongBinding(()->preferences.getLong(key, def), getLongProperty(key, def));
     }
-    public <T> ObjectBinding<T> createObjectBinding(String key, T def, StringConverter<T> converter)
+    public <E extends Enum<E>> ObjectBinding<E> createEnumBinding(String key, E def)
     {
-        String sDef = converter.toString(def);
-        return Bindings.createObjectBinding(()->converter.fromString(preferences.get(key, sDef)), getProperty(key, sDef));
+        Property<E> enumProperty = getEnumProperty(key, def);
+        return Bindings.createObjectBinding(()->enumProperty.getValue(), enumProperty);
     }
     public void bindBiDirectional(String key, String def, Property<String> property)
     {
-        Bindings.bindBidirectional(getProperty(key, def), property);
+        Bindings.bindBidirectional(property, getStringProperty(key, def));
     }
-    private Property<String> getProperty(String key, String def)
+    public void bindDoubleBiDirectional(String key, double def, Property<Double> property)
     {
-        PropertyImpl property = properties.get(key);
+        Bindings.bindBidirectional(property, getDoubleProperty(key, def));
+    }
+    public void bindBooleanBiDirectional(String key, boolean def, Property<Boolean> property)
+    {
+        Bindings.bindBidirectional(property, getBooleanProperty(key, def));
+    }
+    public void bindFloatBiDirectional(String key, float def, Property<Float> property)
+    {
+        Bindings.bindBidirectional(property, getFloatProperty(key, def));
+    }
+    public void bindIntegerBiDirectional(String key, int def, Property<Integer> property)
+    {
+        Bindings.bindBidirectional(property, getIntegerProperty(key, def));
+    }
+    public void bindLongBiDirectional(String key, long def, Property<Long> property)
+    {
+        Bindings.bindBidirectional(property, getLongProperty(key, def));
+    }
+    public <E extends Enum<E>> void bindEnumBiDirectional(String key, E def, Property<E> property)
+    {
+        Bindings.bindBidirectional(property, getEnumProperty(key, def));
+    }
+    private Property<String> getStringProperty(String key, String def)
+    {
+        StringPreference property = (StringPreference) properties.get(key);
         if (property == null)
         {
-            property = new PropertyImpl(key, def);
+            property = new StringPreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private Property<Boolean> getBooleanProperty(String key, Boolean def)
+    {
+        BooleanPreference property = (BooleanPreference) properties.get(key);
+        if (property == null)
+        {
+            property = new BooleanPreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private Property<Double> getDoubleProperty(String key, Double def)
+    {
+        DoublePreference property = (DoublePreference) properties.get(key);
+        if (property == null)
+        {
+            property = new DoublePreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private Property<Float> getFloatProperty(String key, Float def)
+    {
+        FloatPreference property = (FloatPreference) properties.get(key);
+        if (property == null)
+        {
+            property = new FloatPreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private Property<Integer> getIntegerProperty(String key, Integer def)
+    {
+        IntegerPreference property = (IntegerPreference) properties.get(key);
+        if (property == null)
+        {
+            property = new IntegerPreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private Property<Long> getLongProperty(String key, Long def)
+    {
+        LongPreference property = (LongPreference) properties.get(key);
+        if (property == null)
+        {
+            property = new LongPreference(preferences, key, def);
+            properties.put(key, property);
+        }
+        return property;
+    }
+    private <E extends Enum<E>> Property<E> getEnumProperty(String key, E def)
+    {
+        EnumPreference<E> property = (EnumPreference<E>) properties.get(key);
+        if (property == null)
+        {
+            property = new EnumPreference<>(preferences, key, def);
             properties.put(key, property);
         }
         return property;
@@ -131,114 +190,7 @@ public class PreferencesBindings
 
     public void clear()
     {
-        try
-        {
-            preferences.clear();
-        }
-        catch (BackingStoreException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
+        properties.values().forEach((p)->p.setValue(null));
     }
     
-    private class PropertyImpl implements Property<String>
-    {
-        private String key;
-        private String def;
-        private List<InvalidationListener> invalidationListeners = new ArrayList<>();
-
-        public PropertyImpl(String key, String def)
-        {
-            this.key = key;
-            this.def = def;
-        }
-        
-        @Override
-        public void bind(ObservableValue<? extends String> observable)
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void unbind()
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public boolean isBound()
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void bindBidirectional(Property<String> other)
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void unbindBidirectional(Property<String> other)
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Object getBean()
-        {
-            return null;
-        }
-
-        @Override
-        public String getName()
-        {
-            return key;
-        }
-
-        @Override
-        public void addListener(ChangeListener<? super String> listener)
-        {
-        }
-
-        @Override
-        public void removeListener(ChangeListener<? super String> listener)
-        {
-        }
-
-        @Override
-        public String getValue()
-        {
-            return preferences.get(key, def);
-        }
-
-        @Override
-        public void addListener(InvalidationListener listener)
-        {
-            invalidationListeners.add(listener);
-        }
-
-        @Override
-        public void removeListener(InvalidationListener listener)
-        {
-            invalidationListeners.remove(listener);
-        }
-
-        @Override
-        public void setValue(String value)
-        {
-            if (value != null)
-            {
-                preferences.put(key, value);
-            }
-            else
-            {
-                preferences.remove(key);
-            }
-            invalidationListeners.forEach((obs) ->
-            {
-                obs.invalidated(this);
-            });
-        }
-        
-    }
 }
