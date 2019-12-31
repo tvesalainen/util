@@ -27,155 +27,155 @@ public enum UnitType
     /**
      * m/s<sup>2</sup>
      */
-    MSS(UnitCategory.Acceleration, 1.0, "g"),
+    MSS(UnitCategory.ACCELERATION, 1.0, "g"),
     /**
      * <i>g</i>0 Standard acceleration
      */
-    GForceEarth(UnitCategory.Acceleration, 9.80665, "g"),
+    GFORCE_EARTH(UnitCategory.ACCELERATION, 9.80665, "g"),
     /**
-     * Pascal
+     * PASCAL
      */
-    Pascal(UnitCategory.Pressure, 1.0, "Pa"),
+    PASCAL(UnitCategory.PRESSURE, 1.0, "Pa"),
     /**
      * hPa 
      */
-    HPA(UnitCategory.Pressure, 100.0, "hPa"),
+    HPA(UnitCategory.PRESSURE, 100.0, "hPa"),
     /**
      * Bar
      */
-    BAR(UnitCategory.Pressure, 100000.0, "bar"),
+    BAR(UnitCategory.PRESSURE, 100000.0, "bar"),
     /**
      * Atmosphere
      */
-    ATM(UnitCategory.Pressure, 101325.0, "atm"),
+    ATM(UnitCategory.PRESSURE, 101325.0, "atm"),
     /**
-     * Degree 0 - 360
+     * DEGREE 0 - 360
      */
-    Degree(UnitCategory.PlaneAngle, 1.0, "\u00B0"),
+    DEGREE(UnitCategory.PLANE_ANGLE, 1.0, "\u00B0"),
     /**
-     * Degree -180 - 180
+     * DEGREE -180 - 180
      */
-    DegreeNeg(UnitCategory.PlaneAngle, "\u00B0", (double v)->{return v > 180 ? v-360 : v;}, (double v)->{return v < 0 ? 360+v : v;}),
+    DEGREE_NEG(UnitCategory.PLANE_ANGLE, "\u00B0", (double v)->{return v > 180 ? v-360 : v;}, (double v)->{return v < 0 ? 360+v : v;}),
     /**
      * Radians
      */
-    Radian(UnitCategory.PlaneAngle, Math.toDegrees(1), "Rad"),
+    RADIAN(UnitCategory.PLANE_ANGLE, Math.toDegrees(1), "Rad"),
     /**
-     * Celsius
+     * CELSIUS
      */
-    Celsius(UnitCategory.Temperature, 1.0, "\u00B0C"),
+    CELSIUS(UnitCategory.TEMPERATURE, 1.0, "\u00B0C"),
     /**
-     * Fahrenheit
+     * FAHRENHEIT
      */
-    Fahrenheit(UnitCategory.Temperature, "Fahrenheit", (double v)->{return v*1.8+32.0;}, (double v)->{return (v-32.0)/1.8;}),
+    FAHRENHEIT(UnitCategory.TEMPERATURE, "Fahrenheit", (double v)->{return v*1.8+32.0;}, (double v)->{return (v-32.0)/1.8;}),
     /**
-     * Kelvin
+     * KELVIN
      */
-    Kelvin(UnitCategory.Temperature, "Kelvin", (double v)->{return v+273.15;}, (double v)->{return v-273.15;}),
+    KELVIN(UnitCategory.TEMPERATURE, "Kelvin", (double v)->{return v+273.15;}, (double v)->{return v-273.15;}),
     /**
-     * Fathom
+     * FATHOM
      */
-    Fathom(UnitCategory.Length, 1.8288, "Fathom"),
+    FATHOM(UnitCategory.LENGTH, 1.8288, "Fathom"),
     /**
-     * Meter
+     * METER
      */
-    Meter(UnitCategory.Length, 1.0, "m"),
+    METER(UnitCategory.LENGTH, 1.0, "m"),
     /**
-     * Mile
+     * MILE
      */
-    Mile(UnitCategory.Length, 1609.34, "Mile"),
+    MILE(UnitCategory.LENGTH, 1609.34, "Mile"),
     /**
-     * Foot
+     * FOOT
      */
-    Foot(UnitCategory.Length, 0.3048, "Foot"),
+    FOOT(UnitCategory.LENGTH, 0.3048, "Foot"),
     /**
-     * Yard
+     * YARD
      */
-    Yard(UnitCategory.Length, 0.9144, "Yard"),
+    YARD(UnitCategory.LENGTH, 0.9144, "Yard"),
     /**
-     * Inch
+     * INCH
      */
-    Inch(UnitCategory.Length, 0.0254, "Inch"),
+    INCH(UnitCategory.LENGTH, 0.0254, "Inch"),
     /**
      * Kilometer
      */
-    KiloMeter(UnitCategory.Length, 1000.0, "Km"),
+    KILO_METER(UnitCategory.LENGTH, 1000.0, "Km"),
     /**
      * Nautical mile
      */
-    NM(UnitCategory.Length, 1852.0, "NM"),
+    NAUTICAL_MILE(UnitCategory.LENGTH, 1852.0, "NM"),
     /**
-     * Knot
+     * KNOT
      */
-    Knot(UnitCategory.Speed, 0.514444, "Knots"),
+    KNOT(UnitCategory.SPEED, 0.514444, "Knots"),
     /**
      * m/s
      */
-    MS(UnitCategory.Speed, 1.0, "m/s"),
+    METERS_PER_SECOND(UnitCategory.SPEED, 1.0, "m/s"),
     /**
      * Km/h
      */
-    KMH(UnitCategory.Speed, 0.277778, "Km/h"),
+    KILO_METERS_PER_HOUR(UnitCategory.SPEED, 0.277778, "Km/h"),
     /**
      * Miles/hour
      */
-    MH(UnitCategory.Speed, 0.44704, "Miles/h"),
+    MILES_PER_HOUR(UnitCategory.SPEED, 0.44704, "Miles/h"),
     /**
-     * Beaufort
+     * BEAUFORT
      */
-    Beaufort(UnitCategory.Speed, "B", (double v)->{return Math.round(Math.pow(v/0.837, 2.0/3.0));}, (double v)->{return 0.837*Math.pow(v, 3.0/2.0);}),
+    BEAUFORT(UnitCategory.SPEED, "B", (double v)->{return Math.round(Math.pow(v/0.837, 2.0/3.0));}, (double v)->{return 0.837*Math.pow(v, 3.0/2.0);}),
     /**
-     * Coordinate degrees
+     * COORDINATE degrees
      */
-    Deg(UnitCategory.Coordinate, 1, "˚"),
+    COORDINATE_DEGREES(UnitCategory.COORDINATE, 1, "˚"),
     /**
-     * Coordinate degrees and minutes
+     * COORDINATE degrees and minutes
      */
-    DegMin(UnitCategory.Coordinate, 1, ""),
+    COORDINATE_DEGREES_AND_MINUTES(UnitCategory.COORDINATE, 1, ""),
     /**
-     * Coordinate degrees, minutes and seconds
+     * COORDINATE degrees, minutes and seconds
      */
-    DegMinSec(UnitCategory.Coordinate, 1, ""),
+    COORDINATE_DEGREES_MINUTES_SECONDS(UnitCategory.COORDINATE, 1, ""),
     /**
-     * Volt
+     * VOLT
      */
-    Volt(UnitCategory.Voltage, 1, "V"),
+    VOLT(UnitCategory.VOLTAGE, 1, "V"),
     /**
-     * Kilo Volt
+     * Kilo VOLT
      */
-    KiloVolt(UnitCategory.Voltage, 1000, "KV"),
+    KILO_VOLT(UnitCategory.VOLTAGE, 1000, "KV"),
     /**
-     * Milli Volt
+     * Milli VOLT
      */
-    MilliVolt(UnitCategory.Voltage, 0.001, "mV"),
+    MILLI_VOLT(UnitCategory.VOLTAGE, 0.001, "mV"),
     /**
-     * Ampere
+     * AMPERE
      */
-    Ampere(UnitCategory.ElectricCurrent, 1, "A"),
+    AMPERE(UnitCategory.ELECTRIC_CURRENT, 1, "A"),
     /**
-     * Kilo Ampere
+     * Kilo AMPERE
      */
-    KiloAmpere(UnitCategory.ElectricCurrent, 1000, "KA"),
+    KILO_AMPERE(UnitCategory.ELECTRIC_CURRENT, 1000, "KA"),
     /**
-     * Milli Ampere
+     * Milli AMPERE
      */
-    MilliAmpere(UnitCategory.ElectricCurrent, 0.001, "mA"),
+    MILLI_AMPERE(UnitCategory.ELECTRIC_CURRENT, 0.001, "mA"),
     /**
-     * Watt
+     * WATT
      */
-    Watt(UnitCategory.ElectricPower, 1, "W"),
+    WATT(UnitCategory.ELECTRIC_POWER, 1, "W"),
     /**
-     * Kilo Watt
+     * Kilo WATT
      */
-    KiloWatt(UnitCategory.ElectricPower, 1000, "KW"),
+    KILO_WATT(UnitCategory.ELECTRIC_POWER, 1000, "KW"),
     /**
-     * Milli Watt
+     * Milli WATT
      */
-    MilliWatt(UnitCategory.ElectricPower, 0.001, "mW"),
+    MILLI_WATT(UnitCategory.ELECTRIC_POWER, 0.001, "mW"),
     /**
-     * Unitless
+     * UNITLESS
      */
-    Unitless(UnitCategory.Unknown, 1, "")
+    UNITLESS(UnitCategory.UNKNOWN, 1, "")
     ;
     private final UnitCategory category;
     private final String unit;

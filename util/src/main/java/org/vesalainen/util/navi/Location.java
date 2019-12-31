@@ -20,8 +20,8 @@ import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import org.vesalainen.math.Unit;
-import static org.vesalainen.math.UnitType.NM;
 import org.vesalainen.navi.Navis;
+import static org.vesalainen.math.UnitType.NAUTICAL_MILE;
 
 /**
  *
@@ -274,11 +274,11 @@ public class Location extends Point2D.Double
     }
     /**
      * First calculates center point and returns maximum distance from center
-     * in NM.
+ in NAUTICAL_MILE.
      * @param location
      * @return 
      */
-    @Unit(NM)
+    @Unit(NAUTICAL_MILE)
     public static double radius(Location... location)
     {
         Location center = center(location);

@@ -17,8 +17,8 @@
 package org.vesalainen.navi;
 
 import org.vesalainen.math.UnitType;
-import static org.vesalainen.math.UnitType.Meter;
-import static org.vesalainen.math.UnitType.NM;
+import static org.vesalainen.math.UnitType.METER;
+import static org.vesalainen.math.UnitType.NAUTICAL_MILE;
 
 /**
  *
@@ -110,7 +110,7 @@ public interface BoatPosition
         double meters = Math.hypot(bowDir, portDir);
         double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
         double bearing = Navis.normalizeAngle(angle+heading);
-        return latitude + Navis.deltaLatitude(UnitType.convert(meters, Meter, NM), bearing);
+        return latitude + Navis.deltaLatitude(UnitType.convert(meters, METER, NAUTICAL_MILE), bearing);
     }
     default double longitudeAt(double toPort, double toBow, double latitude, double longitude, double heading)
     {
@@ -119,7 +119,7 @@ public interface BoatPosition
         double meters = Math.hypot(bowDir, portDir);
         double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
         double bearing = Navis.normalizeAngle(angle+heading);
-        return longitude + Navis.deltaLongitude(latitude, UnitType.convert(meters, Meter, NM), bearing);
+        return longitude + Navis.deltaLongitude(latitude, UnitType.convert(meters, METER, NAUTICAL_MILE), bearing);
     }
     double getDimensionToStarboard();
 

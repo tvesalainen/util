@@ -18,9 +18,9 @@ package org.vesalainen.navi.cpa;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.vesalainen.math.UnitType.Meter;
-import static org.vesalainen.math.UnitType.NM;
 import org.vesalainen.navi.Navis;
+import static org.vesalainen.math.UnitType.METER;
+import static org.vesalainen.math.UnitType.NAUTICAL_MILE;
 
 /**
  *
@@ -129,6 +129,6 @@ public class VesselTest
     public void testExt()
     {
         double distance = Navis.distance(-7.759250, -134.156235, -7.759297, -134.156342);
-        double meter = NM.convertTo(distance, Meter);
+        double meter = NAUTICAL_MILE.convertTo(distance, METER);
     }
 }

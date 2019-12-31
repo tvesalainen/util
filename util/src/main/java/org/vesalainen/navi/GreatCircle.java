@@ -33,9 +33,9 @@ public class GreatCircle
      * @param lon1
      * @param lat2
      * @param lon2
-     * @return NM
+     * @return NAUTICAL_MILE
      */
-    @Unit(NM)
+    @Unit(NAUTICAL_MILE)
     public static final double distance(double lat1, double lon1, double lat2, double lon2)
     {
         double φ1 = Math.toRadians(lat1);
@@ -50,7 +50,7 @@ public class GreatCircle
           * Math.sin(Δλ/2) * Math.sin(Δλ/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return Meter.convertTo(R * c, NM);        
+        return METER.convertTo(R * c, NAUTICAL_MILE);        
     }
     /**
      * Returns GC initial bearing between (lat1, lon1) and (lat2, lon2)
@@ -58,9 +58,9 @@ public class GreatCircle
      * @param lon1
      * @param lat2
      * @param lon2
-     * @return Degree
+     * @return DEGREE
      */
-    @Unit(Degree)
+    @Unit(DEGREE)
     public static final double initialBearing(double lat1, double lon1, double lat2, double lon2)
     {
         double φ1 = Math.toRadians(lat1);

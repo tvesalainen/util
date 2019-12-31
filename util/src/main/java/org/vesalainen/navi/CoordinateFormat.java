@@ -127,13 +127,13 @@ public class CoordinateFormat
     {
         switch (unit)
         {
-            case Deg:
+            case COORDINATE_DEGREES:
                 deg(out, locale, coordinate, chars);
                 break;
-            case DegMin:
+            case COORDINATE_DEGREES_AND_MINUTES:
                 degmin(out, locale, coordinate, chars);
                 break;
-            case DegMinSec:
+            case COORDINATE_DEGREES_MINUTES_SECONDS:
                 degminsec(out, locale, coordinate, chars);
                 break;
             default:

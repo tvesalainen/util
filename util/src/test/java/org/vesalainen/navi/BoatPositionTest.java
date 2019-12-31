@@ -39,7 +39,7 @@ public class BoatPositionTest
         double lat = 60;
         double lon = 25;
         SimpleBoatPosition pt = new SimpleBoatPosition(4, 0, 12, 0);
-        double expLat = lat + Navis.deltaLatitude(UnitType.convert(6, Meter, NM), heading);
+        double expLat = lat + Navis.deltaLatitude(UnitType.convert(6, METER, NAUTICAL_MILE), heading);
         assertEquals(expLat, pt.centerLatitude(lat, lon, heading), 1e-10);
     }
     @Test
@@ -49,7 +49,7 @@ public class BoatPositionTest
         double lat = 0;
         double lon = 25;
         SimpleBoatPosition pt = new SimpleBoatPosition(4, 0, 12, 0);
-        double expLon = lon + Navis.deltaLongitude(lat, UnitType.convert(6, Meter, NM), heading);
+        double expLon = lon + Navis.deltaLongitude(lat, UnitType.convert(6, METER, NAUTICAL_MILE), heading);
         assertEquals(expLon, pt.centerLongitude(lat, lon, heading), 1e-10);
     }
     

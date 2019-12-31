@@ -22,20 +22,20 @@ package org.vesalainen.math;
  */
 public enum UnitCategory
 {
-    Coordinate,
-    Length,
-    Speed,
-    PlaneAngle,
-    Temperature,
-    Pressure,
-    Energy,
-    Frequency,
-    Mass,
-    Time,
-    Volume,
-    Acceleration,
-    Voltage,
-    ElectricCurrent,
-    ElectricPower,
-    Unknown
+    COORDINATE,
+    LENGTH,
+    SPEED,
+    PLANE_ANGLE,
+    TEMPERATURE,
+    PRESSURE,
+    ENERGY,
+    FREQUENCY,
+    MASS,
+    TIME,
+    VOLUME,
+    ACCELERATION,
+    VOLTAGE,
+    ELECTRIC_CURRENT,
+    ELECTRIC_POWER,
+    UNKNOWN
 }
