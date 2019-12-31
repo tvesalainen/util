@@ -37,5 +37,6 @@ public enum UnitCategory
     VOLTAGE,
     ELECTRIC_CURRENT,
     ELECTRIC_POWER,
+    RATE_OF_TURN,
     UNKNOWN
 }
