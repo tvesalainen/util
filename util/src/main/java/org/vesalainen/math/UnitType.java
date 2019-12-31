@@ -173,6 +173,10 @@ public enum UnitType
      */
     MILLI_WATT(UnitCategory.ELECTRIC_POWER, 0.001, "mW"),
     /**
+     * Degrees per Minute
+     */
+    DEGREES_PER_MINUTE(UnitCategory.RATE_OF_TURN, 60, "Deg/Min"),
+    /**
      * UNITLESS
      */
     UNITLESS(UnitCategory.UNKNOWN, 1, "")
