@@ -222,7 +222,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             {
                 transactional = (Transactional) setter;
             }
-            for (String property : setter.getPrefixes())
+            for (String property : setter.getProperties())
             {
                 Class<?> type = types.get(property);
                 if (type == null)
