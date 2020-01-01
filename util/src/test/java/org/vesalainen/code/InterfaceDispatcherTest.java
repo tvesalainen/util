@@ -115,20 +115,13 @@ public class InterfaceDispatcherTest
     }
     private static class S extends AbstractPropertySetter
     {
-        private String[] prefixes;
         private Map<String,Object> map = new HashMap<>();
 
         public S(String... prefixes)
         {
-            this.prefixes = prefixes;
+            super(prefixes);
         }
         
-        @Override
-        public String[] getPrefixes()
-        {
-            return prefixes;
-        }
-
         @Override
         public void setProperty(String property, Object arg)
         {
