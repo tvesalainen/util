@@ -71,6 +71,16 @@ public class CamelCase
         return stream(text).map((String s)->{return s.toLowerCase();}).collect(Collectors.joining(delim));
     }
     /**
+     * Return CAMEL_CASE if delim = '_'
+     * @param text
+     * @param delim
+     * @return 
+     */
+    public static final String delimitedUpper(String text, String delim)
+    {
+        return stream(text).map((String s)->{return s.toUpperCase();}).collect(Collectors.joining(delim));
+    }
+    /**
      * Returns Camel-Case if delim = '-'
      * @param text
      * @param delim
