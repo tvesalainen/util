@@ -33,6 +33,7 @@ public abstract class PreferenceBase<T> implements Property<T>
     protected final Preferences preferences;
     protected final String key;
     protected final T def;
+    private final List<ChangeListener<? super T>> listeners = new ArrayList<>();
     private final List<InvalidationListener> invalidationListeners = new ArrayList<>();
 
     public PreferenceBase(Preferences preferences, String key, T def)
@@ -93,11 +94,13 @@ public abstract class PreferenceBase<T> implements Property<T>
     @Override
     public void addListener(ChangeListener<? super T> listener)
     {
+        listeners.add(listener);
     }
 
     @Override
     public void removeListener(ChangeListener<? super T> listener)
     {
+        listeners.remove(listener);
     }
 
     @Override
