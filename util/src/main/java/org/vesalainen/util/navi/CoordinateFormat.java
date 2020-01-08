@@ -31,6 +31,7 @@ import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.ConvertUtilityException;
 
 /**
+ * @deprecated This class doesn't have test cases also zero padding is not working.
  * Parses and formats GPS coordinates. Positive latitude means north.
  * Positive longitude means east.
  *
