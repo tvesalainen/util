@@ -379,8 +379,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     /**
      * Returns SHA-1 digest which is updated with properties content.
-     * @return
-     * @throws NoSuchAlgorithmException 
+     * @return 
      * @see org.vesalainen.lang.Bytes
      */
     public byte[] getSha1()

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.io;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +28,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.vesalainen.code.PropertySetter;
@@ -48,6 +49,7 @@ public class CompressedInput extends CompressedIO
     private Property[] offsets;
     private final Set<String> modified = new HashSet<>();
     private String filename;
+    private Consumer<CompressedInput> preProcessor = (ci)->{};
 
     public CompressedInput(Path path) throws IOException
     {
@@ -69,6 +71,14 @@ public class CompressedInput extends CompressedIO
         super(source);
         this.in = in;
         header();
+    }
+    /**
+     * preProcessor is called after begin with current property values
+     * @param preProcessor 
+     */
+    public void setPreProcessor(Consumer<CompressedInput> preProcessor)
+    {
+        this.preProcessor = preProcessor;
     }
     
     private void header() throws IOException
@@ -130,6 +140,7 @@ public class CompressedInput extends CompressedIO
         float rc = read();
         while (rc >= 0)
         {
+            preProcessor.accept(this);
             setter.begin(filename);
             setModified(setter, needed);
             setter.commit(filename, modified);
@@ -138,12 +149,17 @@ public class CompressedInput extends CompressedIO
     }
     public static <T extends PropertySetter & Transactional> void readTransactional(Stream<Path> paths, T setter) throws IOException
     {
+        readTransactional(paths, setter, (m)->{});
+    }
+    public static <T extends PropertySetter & Transactional> void readTransactional(Stream<Path> paths, T setter, Consumer<CompressedInput> preProcessor) throws IOException
+    {
         HashSet<String> needed = new HashSet<>(CollectionHelp.create(setter.getProperties()));
         Iterator<Path> iterator = paths.sorted().iterator();
         while (iterator.hasNext())
         {
             Path path = iterator.next();
             CompressedInput ci = new CompressedInput(path);
+            ci.setPreProcessor(preProcessor);
             ci.readTransactional(setter, needed);
         }
     }
