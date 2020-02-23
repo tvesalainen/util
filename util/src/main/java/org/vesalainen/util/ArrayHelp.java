@@ -27,6 +27,115 @@ public final class ArrayHelp
 {
     public static final Object[] EMPTY = new Object[]{};
     /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final boolean[] concat(boolean[] array, boolean item)
+    {
+        boolean[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final byte[] concat(byte[] array, byte item)
+    {
+        byte[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final short[] concat(short[] array, short item)
+    {
+        short[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final char[] concat(char[] array, char item)
+    {
+        char[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final int[] concat(int[] array, int item)
+    {
+        int[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final long[] concat(long[] array, long item)
+    {
+        long[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final float[] concat(float[] array, float item)
+    {
+        float[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final double[] concat(double[] array, double item)
+    {
+        double[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
+     * Returns new array which contains given array and item.
+     * @param <T>
+     * @param array
+     * @param item
+     * @return 
+     */
+    public static final <T> T[] concat(T[] array, T item)
+    {
+        T[] copyOf = Arrays.copyOf(array, array.length+1);
+        copyOf[array.length] = item;
+        return copyOf;
+    }
+    /**
      * returns true if 2-dimensional points x-coordinates are ordered ascending.
      * @param array
      * @return 
