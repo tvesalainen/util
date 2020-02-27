@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.time.Clock;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -125,6 +126,19 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     public void refresh(T item, long timeout, TimeUnit unit)
     {
         add(item, timeout, unit);
+    }
+    /**
+     * Add/Refresh items with given timeout
+     * @param items
+     * @param timeout
+     * @param unit 
+     */
+    public void addAll(Collection<T> items, long timeout, TimeUnit unit)
+    {
+        items.forEach((t) ->
+        {
+            add(t, timeout, unit);
+        });
     }
     /**
      * Add/Refresh item with given timeout
@@ -265,6 +279,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
     {
         return new IteratorImpl();
     }
+
     private class IteratorImpl implements Iterator<T>
     {
         private Iterator<Entry<T, TTLEntry>> iterator = map.entrySet().iterator();
