@@ -22,12 +22,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntBinaryOperator;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
-import org.vesalainen.util.function.DoubleBiConsumer;
 
 /**
  * <p>This class is NOT thread-safe!
@@ -49,6 +48,7 @@ public abstract class AbstractDrawer implements Drawer
     protected double delta;
     private double deltax;
     private double deltay;
+    protected Shape fillShape;
     
     @Override
     public void setFont(Font font)
@@ -123,4 +123,77 @@ public abstract class AbstractDrawer implements Drawer
         }
         delta = Math.hypot(dx, dy);
     }
+
+    public void draw(Shape shape)
+    {
+        if (stroke != null && stroke.getLineWidth() > 1)
+        {
+            BasicStroke s = new BasicStroke((float) (stroke.getLineWidth() / scale), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), stroke.getDashArray(), stroke.getDashPhase());
+            fillShape = s.createStrokedShape(shape);
+            fill(fillShape);
+        }
+        else
+        {
+            drawIt(shape);
+        }
+    }
+
+    public void drawIt(Shape shape)
+    {
+        double[] arr = new double[6];
+        double fx = 0;
+        double fy = 0;
+        double lx = 0;
+        double ly = 0;
+        PathIterator pi = shape.getPathIterator(null);
+        beginPath();
+        while (!pi.isDone())
+        {
+            switch (pi.currentSegment(arr))
+            {
+                case PathIterator.SEG_MOVETO:
+                    moveTo(arr[0], arr[1]);
+                    //System.err.printf("MOVETO %.1f %.1f\n", arr[0], arr[1]);
+                    fx = lx = arr[0];
+                    fy = ly = arr[1];
+                    break;
+                case PathIterator.SEG_LINETO:
+                    drawLine(lx, ly, arr[0], arr[1]);
+                    //System.err.printf("LINETO %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1]);
+                    lx = arr[0];
+                    ly = arr[1];
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    drawQuad(lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    //System.err.printf("QUADTO %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3]);
+                    lx = arr[2];
+                    ly = arr[3];
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    drawCubic(lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    //System.err.printf("CUBICTO %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                    lx = arr[4];
+                    ly = arr[5];
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    //System.err.printf("CLOSE\n");
+                    closePath(lx, ly, fx, fy);
+                    lx = -1;
+                    ly = -1;
+                    break;
+            }
+            pi.next();
+        }
+    }
+
+    public void fill(Shape shape)
+    {
+        fillShape = shape;
+        fillBounds.clear();
+        drawIt(shape);
+        fill();
+    }
+
+    protected abstract void fill();
+
 }
