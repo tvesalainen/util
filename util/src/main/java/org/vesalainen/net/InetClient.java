@@ -46,7 +46,7 @@ public abstract class InetClient implements AutoCloseable
         return openChannel(server, port, 1024, true, false);
     }
     /**
-     * Opens either SocketCHannel or UnconnectedDatagramChannel depending on
+     * Opens either SocketChannel or UnconnectedDatagramChannel depending on
      * server.
      * @param <T>
      * @param server

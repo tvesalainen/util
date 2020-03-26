@@ -49,7 +49,6 @@ public class ImageDrawer extends AbstractDrawer
     private Rectangle bounds;
     private ImageAreaFiller filler;
     private Point2D fillPoint = new Point2D.Double();
-    private Shape fillShape;
     private IntBiPredicate isInside;
 
     public ImageDrawer(int width, int height)
@@ -83,81 +82,16 @@ public class ImageDrawer extends AbstractDrawer
     }
 
     @Override
-    public void draw(Shape shape)
+    public void beginPath()
     {
-        if (stroke != null && stroke.getLineWidth() > 1)
-        {
-            BasicStroke s = new BasicStroke(
-                    (float) (stroke.getLineWidth()/scale), 
-                    stroke.getEndCap(), 
-                    stroke.getLineJoin(), 
-                    stroke.getMiterLimit(), 
-                    stroke.getDashArray(), 
-                    stroke.getDashPhase()
-            );
-            fillShape = s.createStrokedShape(shape);
-            fill(fillShape);
-        }
-        else
-        {
-            drawIt(shape);
-        }
-    }
-    public void drawIt(Shape shape)
-    {
-        double[] arr = new double[6];
-        double fx = 0;
-        double fy = 0;
-        double lx = 0;
-        double ly = 0;
-        PathIterator pi = shape.getPathIterator(null);
-        while (!pi.isDone())
-        {
-            switch (pi.currentSegment(arr))
-            {
-                case SEG_MOVETO:
-                    moveTo(arr[0], arr[1]);
-                    //System.err.printf("MOVETO %.1f %.1f\n", arr[0], arr[1]);
-                    fx = lx = arr[0];
-                    fy = ly = arr[1];
-                    break;
-                case SEG_LINETO:
-                    drawLine(lx, ly, arr[0], arr[1]);
-                    //System.err.printf("LINETO %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1]);
-                    lx = arr[0];
-                    ly = arr[1];
-                    break;
-                case SEG_QUADTO:
-                    drawQuad(lx, ly, arr[0], arr[1], arr[2], arr[3]);
-                    //System.err.printf("QUADTO %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3]);
-                    lx = arr[2];
-                    ly = arr[3];
-                    break;
-                case SEG_CUBICTO:
-                    drawCubic(lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                    //System.err.printf("CUBICTO %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n", lx, ly, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                    lx = arr[4];
-                    ly = arr[5];
-                    break;
-                case SEG_CLOSE:
-                    //System.err.printf("CLOSE\n");
-                    closePath(lx, ly, fx, fy);
-                    lx = -1;
-                    ly = -1;
-                    break;
-            }
-            pi.next();
-        }
     }
 
     @Override
-    public void fill(Shape shape)
+    public void moveTo(double... cp)
     {
-        fillShape = shape;
-        fillBounds.clear();
-        drawIt(shape);
-        fill();
     }
+
+
 
     @Override
     public void drawLine(double... cp)
@@ -203,6 +137,7 @@ public class ImageDrawer extends AbstractDrawer
         curve.calc(1, this::drawPoint);
     }
     
+    @Override
     public void fill()
     {
         if (!fillBounds.isEmpty())

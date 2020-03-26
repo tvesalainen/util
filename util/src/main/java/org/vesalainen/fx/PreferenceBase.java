@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,13 +29,14 @@ import javafx.beans.value.ObservableValue;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class PreferenceBase<T> implements Property<T>
+public abstract class PreferenceBase<T> implements Property<T>, InvalidationListener
 {
     protected final Preferences preferences;
     protected final String key;
     protected final T def;
     private final List<ChangeListener<? super T>> listeners = new ArrayList<>();
     private final List<InvalidationListener> invalidationListeners = new ArrayList<>();
+    private ObservableValue<? extends T> observable;
 
     public PreferenceBase(Preferences preferences, String key, T def)
     {
@@ -42,29 +44,40 @@ public abstract class PreferenceBase<T> implements Property<T>
         this.key = key;
         this.def = def;
     }
-    protected void invalidate()
+    protected void invalidated()
+    {
+        invalidated(this);
+    }
+    @Override
+    public void invalidated(Observable observable)
     {
         invalidationListeners.forEach((obs) ->
         {
-            obs.invalidated(this);
+            obs.invalidated(observable);
         });
     }
+
     @Override
     public void bind(ObservableValue<? extends T> observable)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.observable = observable;
+        observable.addListener(this);
     }
 
     @Override
     public void unbind()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (observable != null)
+        {
+            observable.removeListener(this);
+            observable = null;
+        }
     }
 
     @Override
     public boolean isBound()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return observable != null;
     }
 
     @Override

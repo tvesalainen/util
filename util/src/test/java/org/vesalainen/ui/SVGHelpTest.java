@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2020 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,40 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.fx;
+package org.vesalainen.ui;
 
-import java.util.prefs.Preferences;
+import java.awt.Font;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DoublePreference extends PreferenceBase<Double>
+public class SVGHelpTest
 {
-
-    public DoublePreference(Preferences preferences, String key, Double def)
-    {
-        super(preferences, key, def);
-    }
     
-    @Override
-    public Double getValue()
+    public SVGHelpTest()
     {
-        return preferences.getDouble(key, def);
     }
 
-    @Override
-    public void setValue(Double value)
+    @Test
+    public void testText()
     {
-        if (value != null)
-        {
-            preferences.putDouble(key, value);
-        }
-        else
-        {
-            preferences.remove(key);
-        }
-        invalidated();
+        String path = SVGHelp.toPath(new Font("ariel", 0, 12), 0, 0, 10, "1", TextAlignment.START_X);
     }
     
 }

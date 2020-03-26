@@ -47,7 +47,7 @@ public class BooleanPreference extends PreferenceBase<Boolean>
         {
             preferences.remove(key);
         }
-        invalidate();
+        invalidated();
     }
     
 }

@@ -39,6 +39,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.IntBinaryOperator;
 import java.util.stream.Stream;
+import javafx.scene.canvas.GraphicsContext;
+import org.vesalainen.fx.FXDrawer;
 import org.vesalainen.math.Circle;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.Point;
@@ -55,7 +57,7 @@ import org.vesalainen.ui.scale.Scale;
  */
 public class AbstractPlotter extends AbstractView implements DrawContext
 {
-    protected FontRenderContext fontRenderContext = new FontRenderContext(null, false, true);
+    protected static final FontRenderContext fontRenderContext = new FontRenderContext(null, false, true);
     protected final List<Drawable> backgroundShapes = new ArrayList<>();
     protected final List<Drawable> fixedShapes = new ArrayList<>();
     protected final List<Drawable> shapes = new ArrayList<>();
@@ -312,6 +314,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
 
     public Shape text2Shape(double x, double y, String text, TextAlignment... alignments)
+    {
+        return text2Shape(font, margin, x, y, text, alignments);
+    }
+    public static Shape text2Shape(Font font, int margin, double x, double y, String text, TextAlignment... alignments)
     {
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
         Shape shape = glyphVector.getOutline();

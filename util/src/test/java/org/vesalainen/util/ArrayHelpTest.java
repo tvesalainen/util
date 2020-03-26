@@ -32,6 +32,14 @@ public class ArrayHelpTest
     }
 
     @Test
+    public void testConcat()
+    {
+        double[] array = new double[]{2, 3, 1, 2, 0, 5, 7, 8};
+        double[] concat = ArrayHelp.concat(array, 9);
+        assertTrue(concat.length == array.length+1);
+        assertEquals(9, concat[array.length], 1e-10);
+    }
+    @Test
     public void testSort1()
     {
         double[] array = new double[]{2, 3, 1, 2, 0, 5, 7, 8};

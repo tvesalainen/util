@@ -56,13 +56,40 @@ public final class Transforms
      */
     public static AffineTransform createScreenTransform(Rectangle2D userBounds, Rectangle2D screenBounds, boolean keepAspectRatio, AffineTransform transform)
     {
-        double width = screenBounds.getWidth();
-        double height = screenBounds.getHeight();
+        createScreenTransform(
+                userBounds, 
+                screenBounds, 
+                keepAspectRatio, 
+                (double mxx, double mxy, double tx, double myx, double myy, double ty)->
+                {
+                    transform.setTransform(mxx, mxy, tx, myx, myy, ty);
+                });
+        return transform;
+    }
+    public static void createScreenTransform(Rectangle2D userBounds, Rectangle2D screenBounds, boolean keepAspectRatio, Consumer2D transform)
+    {
+        createScreenTransform(
+                screenBounds.getWidth(),
+                screenBounds.getHeight(),
+                userBounds.getMinX(),
+                userBounds.getMinY(),
+                userBounds.getMaxX(),
+                userBounds.getMaxY(),
+                keepAspectRatio, 
+                transform
+        );
+    }
+    public static void createScreenTransform(
+            double width,
+            double height,
+            double xMin,
+            double yMin,
+            double xMax,
+            double yMax,
+            boolean keepAspectRatio, 
+            Consumer2D transform)
+    {
         double aspect = width / height;
-        double xMin = userBounds.getMinX();
-        double yMin = userBounds.getMinY();
-        double xMax = userBounds.getMaxX();
-        double yMax = userBounds.getMaxY();
         double xyWidth = xMax - xMin;
         double xyHeight = yMax - yMin;
         double scaleX;
@@ -92,8 +119,7 @@ public final class Transforms
             xOff = -scaleX*xMin;
             yOff = scaleY*yMin + height / 2.0 + scaleY*xyHeight / 2.0;
         }
-        transform.setTransform(scaleX, 0, 0, -scaleY, xOff, yOff);
-        return transform;
+        transform.accept(scaleX, 0, 0, -scaleY, xOff, yOff);
     }
     /**
      * Creates DoubleTransform for AffineTransform.
@@ -108,6 +134,7 @@ public final class Transforms
      * Creates Inverse DoubleTransform for AffineTransform. 
      * @param transform
      * @return 
+     * @throws java.awt.geom.NoninvertibleTransformException 
      */
     public static DoubleTransform affineInverseTransform(AffineTransform transform) throws NoninvertibleTransformException
     {
@@ -177,5 +204,14 @@ public final class Transforms
             super(transform.createInverse());
         }
         
+    }
+    @FunctionalInterface
+    public interface Consumer2D
+    {
+        void accept(double mxx, double mxy, double myx, double myy, double tx, double ty);
+        default void consume(double[] a)
+        {
+            accept(a[0], a[1], a[2], a[3], a[4], a[5]);
+        }
     }
 }

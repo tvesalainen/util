@@ -47,7 +47,7 @@ public class FloatPreference extends PreferenceBase<Float>
         {
             preferences.remove(key);
         }
-        invalidate();
+        invalidated();
     }
     
 }

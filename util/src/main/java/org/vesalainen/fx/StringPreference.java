@@ -47,7 +47,7 @@ public class StringPreference extends PreferenceBase<String>
         {
             preferences.remove(key);
         }
-        invalidate();
+        invalidated();
     }
     
 }

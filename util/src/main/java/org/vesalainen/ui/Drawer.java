@@ -28,7 +28,6 @@ import java.util.function.IntBinaryOperator;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <T> Write target
  */
 public interface Drawer
 {
@@ -62,7 +61,8 @@ public interface Drawer
      */
     void drawMark(Shape mark);
     void fill(Shape shape);
-    default void moveTo(double... cp){}
+    void beginPath();
+    void moveTo(double... cp);
     void drawLine(double... cp);
     void drawQuad(double... cp);
     void drawCubic(double... cp);

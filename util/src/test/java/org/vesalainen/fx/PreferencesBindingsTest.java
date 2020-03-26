@@ -19,14 +19,18 @@ package org.vesalainen.fx;
 import java.util.Locale.Category;
 import static java.util.Locale.Category.*;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.FloatBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.math.UnitType;
+import static org.vesalainen.math.UnitType.*;
 
 /**
  *

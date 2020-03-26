@@ -19,6 +19,7 @@ package org.vesalainen.fx;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.DoubleBinding;
@@ -28,6 +29,7 @@ import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.Property;
+import org.vesalainen.util.ArrayHelp;
 
 /**
  *
@@ -72,9 +74,9 @@ public class PreferencesBindings
     {
         return Bindings.createBooleanBinding(()->preferences.getBoolean(key, def), getBooleanProperty(key, def));
     }
-    public FloatBinding createFloatBinding(String key, float def)
+    public FloatBinding createFloatBinding(String key, float def, Observable... dependencies)
     {
-        return Bindings.createFloatBinding(()->preferences.getFloat(key, def), getFloatProperty(key, def));
+        return Bindings.createFloatBinding(()->preferences.getFloat(key, def), ArrayHelp.concat(dependencies, getFloatProperty(key, def)));
     }
     public IntegerBinding createIntegerBinding(String key, int def)
     {
@@ -116,6 +118,10 @@ public class PreferencesBindings
     public <E extends Enum<E>> void bindEnumBiDirectional(String key, E def, Property<E> property)
     {
         Bindings.bindBidirectional(property, getEnumProperty(key, def));
+    }
+    public <T> Property<T> getProperty(String key)
+    {
+        return (Property<T>) properties.get(key);
     }
     private Property<String> getStringProperty(String key, String def)
     {

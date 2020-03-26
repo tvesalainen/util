@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2020 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,38 +16,34 @@
  */
 package org.vesalainen.fx;
 
-import java.util.prefs.Preferences;
+import static java.awt.Color.WHITE;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import org.vesalainen.ui.AbstractPlotter;
 
 /**
- *
+ * @deprecated Not ready
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DoublePreference extends PreferenceBase<Double>
+public class CanvasPlotter extends AbstractPlotter
 {
 
-    public DoublePreference(Preferences preferences, String key, Double def)
-    {
-        super(preferences, key, def);
-    }
+    private final Canvas canvas;
     
-    @Override
-    public Double getValue()
+    public CanvasPlotter(Canvas canvas)
     {
-        return preferences.getDouble(key, def);
+        super((int)canvas.getWidth(), (int)canvas.getHeight(), WHITE);
+        this.canvas = canvas;
     }
-
-    @Override
-    public void setValue(Double value)
+    public void plot()
     {
-        if (value != null)
-        {
-            preferences.putDouble(key, value);
-        }
-        else
-        {
-            preferences.remove(key);
-        }
-        invalidated();
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, width, height);
+        FXDrawer drawer = new FXDrawer(gc);
+        plot(drawer);
     }
     
 }
