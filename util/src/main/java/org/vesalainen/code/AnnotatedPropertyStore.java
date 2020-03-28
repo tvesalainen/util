@@ -204,6 +204,15 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         return unmodifiableSetters;
     }
     /**
+     * Returns type of property
+     * @param property
+     * @return 
+     */
+    public Class<?> getType(String property)
+    {
+        return types.get(property);
+    }
+    /**
      * Copies listed properties
      * @param from
      * @param properties 
