@@ -92,6 +92,11 @@ public class PreferencesBindings
         Property<E> enumProperty = getEnumProperty(key, def);
         return Bindings.createObjectBinding(()->enumProperty.getValue(), enumProperty);
     }
+    public <T> ObjectBinding<T> createObjectBinding(String key, T def, StringConverter<T> converter)
+    {
+        Property<T> property = getObjectProperty(key, def, converter);
+        return Bindings.createObjectBinding(()->property.getValue(), property);
+    }
     public <T> void bindBiDirectional(String key, T def, Property<T> property, StringConverter<T> converter)
     {
         Bindings.bindBidirectional(property, getObjectProperty(key, def, converter));
