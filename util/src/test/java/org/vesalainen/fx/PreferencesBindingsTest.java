@@ -65,7 +65,7 @@ public class PreferencesBindingsTest
     {
         StringBinding sp = bindings.createStringBinding("foo", "def");
         SimpleStringProperty ssp = new SimpleStringProperty();
-        bindings.bindBiDirectional("foo", "def", ssp);
+        bindings.bindStringBiDirectional("foo", "def", ssp);
         ssp.setValue("bar");
         assertEquals("bar", sp.getValue());
         assertEquals("bar", ssp.getValue());
