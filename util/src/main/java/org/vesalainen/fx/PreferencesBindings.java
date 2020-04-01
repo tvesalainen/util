@@ -29,6 +29,7 @@ import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.Property;
+import javafx.util.StringConverter;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -91,7 +92,11 @@ public class PreferencesBindings
         Property<E> enumProperty = getEnumProperty(key, def);
         return Bindings.createObjectBinding(()->enumProperty.getValue(), enumProperty);
     }
-    public void bindBiDirectional(String key, String def, Property<String> property)
+    public <T> void bindBiDirectional(String key, T def, Property<T> property, StringConverter<T> converter)
+    {
+        Bindings.bindBidirectional(property, getObjectProperty(key, def, converter));
+    }
+    public void bindStringBiDirectional(String key, String def, Property<String> property)
     {
         Bindings.bindBidirectional(property, getStringProperty(key, def));
     }
@@ -122,6 +127,16 @@ public class PreferencesBindings
     public <T> Property<T> getProperty(String key)
     {
         return (Property<T>) properties.get(key);
+    }
+    private <T> Property<T> getObjectProperty(String key, T def, StringConverter<T> converter)
+    {
+        ObjectPreference property = (ObjectPreference) properties.get(key);
+        if (property == null)
+        {
+            property = new ObjectPreference(preferences, key, def, converter);
+            properties.put(key, property);
+        }
+        return property;
     }
     private Property<String> getStringProperty(String key, String def)
     {
