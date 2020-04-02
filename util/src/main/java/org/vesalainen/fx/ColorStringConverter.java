@@ -30,7 +30,7 @@ public class ColorStringConverter extends StringConverter<Color>
     @Override
     public String toString(Color color)
     {
-        return String.format(Locale.US, "%02X%02X%02X%02X", 
+        return String.format(Locale.US, "#%02X%02X%02X%02X", 
                 (int)(color.getRed()*255.0),
                 (int)(color.getGreen()*255.0),
                 (int)(color.getBlue()*255.0),
