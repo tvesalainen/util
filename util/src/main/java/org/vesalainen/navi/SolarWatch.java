@@ -40,26 +40,26 @@ public class SolarWatch implements Runnable
     public enum DayPhase {DAY, NIGHT, TWILIGHT};
     
     private final LongSupplier millis;
-    private final long periodMillis;
-    private ScheduledFuture<?> future;
+    private boolean running;
+    private LongSupplier updateSeconds;
     private final DoubleSupplier latitude;
     private final DoubleSupplier longitude;
     private DoubleSupplier twilightAngle;
-    private DayPhase phase;
+    private DayPhase phase = DAY;
     private final GregorianCalendar cal = new GregorianCalendar();
     private final CachedScheduledThreadPool executor;
     private final List<Consumer<DayPhase>> observers = new ArrayList<>();
 
     public SolarWatch(DoubleSupplier latitude, DoubleSupplier longitude, DoubleSupplier twilightAngle)
     {
-        this(System::currentTimeMillis, new CachedScheduledThreadPool(), 1, TimeUnit.MINUTES, latitude, longitude, twilightAngle);
+        this(System::currentTimeMillis, new CachedScheduledThreadPool(), ()->60, latitude, longitude, twilightAngle);
     }
 
-    public SolarWatch(LongSupplier millis, CachedScheduledThreadPool executor, long period, TimeUnit unit, DoubleSupplier latitude, DoubleSupplier longitude, DoubleSupplier twilightAngle)
+    public SolarWatch(LongSupplier millis, CachedScheduledThreadPool executor, LongSupplier updateSeconds, DoubleSupplier latitude, DoubleSupplier longitude, DoubleSupplier twilightAngle)
     {
         this.millis = millis;
         this.executor = executor;
-        this.periodMillis = MILLISECONDS.convert(period, unit);
+        this.updateSeconds = updateSeconds;
         this.latitude = latitude;
         this.longitude = longitude;
         this.twilightAngle = twilightAngle;
@@ -81,21 +81,20 @@ public class SolarWatch implements Runnable
     
     public void start()
     {
-        if (future != null)
+        if (running)
         {
             throw new IllegalStateException();
         }
-        this.phase = phase();
-        future = executor.iterateAtFixedRate(periodMillis, periodMillis, MILLISECONDS, this);
+        running = true;
+        run();
     }
     public void stop()
     {
-        if (future == null)
+        if (!running)
         {
             throw new IllegalStateException();
         }
-        future.cancel(true);
-        future = null;
+        running = false;
     }
     
     @Override
@@ -107,6 +106,7 @@ public class SolarWatch implements Runnable
             phase = newPhase;
             observers.forEach((o)->o.accept(phase));
         }
+        executor.schedule(this::run, updateSeconds.getAsLong(), SECONDS);
     }
     
     private DayPhase phase()
