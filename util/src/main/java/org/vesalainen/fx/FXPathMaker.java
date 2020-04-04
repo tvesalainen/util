@@ -40,7 +40,9 @@ public class FXPathMaker extends FunctionalPathMaker<Color>
                     gc.closePath();
                     gc.fill();
                 }, 
-                gc::setFill, (s)->Color.web(s));
+                gc::setFill, 
+                (s)->Color.web(s)
+        );
     }
 
 }
