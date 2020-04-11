@@ -95,15 +95,9 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     private final Set<Transactional> transactionTargets = new IdentityArraySet<>();
     private final MethodHandle transactionAdder;
     private boolean transaction;
-    private final Map<String,MethodHandle> handleSetters = new HashMap<>();
-    private final Map<String,MethodHandle> savers = new HashMap<>();
-    private final Map<String,MethodHandle> arrayGetters = new HashMap<>();
-    private final MapList<String,MethodHandle> setters = new HashMapList<>();
+    private final Map<String,Ctx> ctxMap = new HashMap<>();
     private final MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
-    private final Map<String,Class<?>> types = new HashMap<>();
     private final MapList<String,Transactional> transactionalProperties = new HashMapList<>();
-    private final Map<String,MethodHandle> versionSetters = new HashMap<>();
-    private final Map<String,MethodHandle> versionGetters = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final MethodHandle setVersion;
     
@@ -126,39 +120,36 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                 Class<?> type = field.getType();
                 if (type.isArray())
                 {
+                    Ctx c = new Ctx();
+                    ctxMap.put(property, c);
                     // handle
                     Field handleField = cls.getDeclaredField(property+"Handle");
                     MethodHandle mhhs = lookup.unreflectSetter(handleField);
-                    MethodHandle handleSetter = mhhs.bindTo(this);
-                    handleSetters.put(property, handleSetter);
+                    c.handleSetter = mhhs.bindTo(this);
                     // version
                     Field versionField = cls.getDeclaredField(property+"Version");
                     MethodHandle vfg = lookup.unreflectGetter(versionField);
-                    MethodHandle versionGetter = vfg.bindTo(this);
-                    versionGetters.put(property, versionGetter);
+                    c.versionGetter = vfg.bindTo(this);
                     // version toggle
                     MethodHandle mhvs = lookup.unreflectSetter(versionField);
                     MethodHandle mhvsb = mhvs.bindTo(this);
-                    MethodHandle mh1 = MethodHandles.foldArguments(setVersion, versionGetter);
-                    MethodHandle versionSetter = MethodHandles.foldArguments(mhvsb, mh1);
-                    versionSetters.put(property, versionSetter);
+                    MethodHandle mh1 = MethodHandles.foldArguments(setVersion, c.versionGetter);
+                    c.versionSetter = MethodHandles.foldArguments(mhvsb, mh1);
                     // array init
-                    types.put(property, type.getComponentType());
+                    c.type = type.getComponentType();
                     Object value = Array.newInstance(type.getComponentType(), 2);
                     MethodHandle mhas = lookup.unreflectSetter(field);
                     mhas.invoke(this, value);
                     // array setter
                     MethodHandle aes = MethodHandles.arrayElementSetter(type);
                     MethodHandle arraySetter = aes.bindTo(value);
-                    MethodHandle saver = MethodHandles.foldArguments(arraySetter, versionGetter);
-                    savers.put(property, saver);
+                    c.versionSaver = MethodHandles.foldArguments(arraySetter, c.versionGetter);
                     // array getter
                     MethodHandle aeg = MethodHandles.arrayElementGetter(type);
-                    MethodHandle arrayGetter = aeg.bindTo(value);
-                    arrayGetters.put(property, arrayGetter);
+                    c.arrayValueGetter = aeg.bindTo(value);
                 }
             }
-            for (String property : handleSetters.keySet())
+            for (String property : ctxMap.keySet())
             {
                 assignMethod(property, null);
             }
@@ -189,8 +180,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             Map<String, MethodHandle> map = aps.getSetters();
             for (String property : map.keySet())
             {
-                Class<?> type = types.get(property);
-                if (type == null)
+                Ctx c = ctxMap.get(property);
+                if (c == null)
                 {
                     if (reportMissingProperties)
                     {
@@ -205,7 +196,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                     }
                     MethodHandle mh = map.get(property);
                     MethodHandle bound = mh.bindTo(aps);
-                    setters.add(property, bound);
+                    c.setters.add(bound);
                     undoSetters.add(aps, bound);
                     compile(property);
                 }
@@ -237,8 +228,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             for (String property : setter.getProperties())
             {
-                Class<?> type = types.get(property);
-                if (type == null)
+                Ctx c = ctxMap.get(property);
+                if (c == null)
                 {
                     if (reportMissingProperties)
                     {
@@ -247,6 +238,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                 }
                 else
                 {
+                    Class<?> type = c.type;
                     if (transactional != null)
                     {
                         transactionalProperties.add(property, transactional);
@@ -264,7 +256,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                             mh = mh.asType(MethodType.methodType(void.class, setter.getClass(), String.class, type));
                         }
                         MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
-                        setters.add(property, bound);
+                        c.setters.add(bound);
                         undoSetters.add(setter, bound);
                         compile(property);
                     }
@@ -295,11 +287,12 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             {
                 for (String property : setter.getProperties())
                 {
+                    Ctx c = ctxMap.get(property);
                     if (transactional != null)
                     {
                         transactionalProperties.removeItem(property, transactional);
                     }
-                    List<MethodHandle> mhs = setters.get(property);
+                    List<MethodHandle> mhs = c.setters;
                     if (mhs != null && mhs.removeAll(list))
                     {
                         compile(property);
@@ -326,7 +319,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     {
         try
         {
-            List<MethodHandle> list = setters.get(property);
+            Ctx c = ctxMap.get(property);
+            List<MethodHandle> list = c.setters;
             MethodHandle setter = null;
             if (list != null)
             {
@@ -386,13 +380,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         {
             try
             {
-                MethodHandle versionSetter = versionSetters.get(property);
-                versionSetter.invoke(); // toggle version
-                MethodHandle versionGetter = versionGetters.get(property);
-                Object version = versionGetter.invoke();    // get version
-                MethodHandle ag = arrayGetters.get(property);
-                Object committedValue = ag.invoke(version); // get last committed value
-                for (MethodHandle setter : setters.get(property))
+                Ctx c = ctxMap.get(property);
+                c.versionSetter.invoke(); // toggle version
+                Object version = c.versionGetter.invoke();    // get version
+                Object committedValue = c.arrayValueGetter.invoke(version); // get last committed value
+                for (MethodHandle setter : c.setters)
                 {
                     setter.invoke(committedValue);  // rollback
                 }
@@ -451,10 +443,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
 
     private void assignMethod(String property, MethodHandle setter) throws Throwable
     {
-        MethodHandle methodSetter = handleSetters.get(property);
+        Ctx c = ctxMap.get(property);
         if (setter == null)
         {
-            Class<?> type = types.get(property);
+            Class<?> type = c.type;
             if (type.isPrimitive())
             {
                 setter = MethodHandles.lookup().findStatic(InterfaceDispatcher.class, "noOp", MethodType.methodType(void.class, type));
@@ -468,12 +460,22 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         if (transactionalProperties.containsKey(property))
         {
             setter = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
-            MethodHandle saver = savers.get(property);
-            setter = MethodHandles.foldArguments(setter, saver);
-            MethodHandle versionSetter = versionSetters.get(property);
-            setter = MethodHandles.foldArguments(setter, versionSetter);
+            setter = MethodHandles.foldArguments(setter, c.versionSaver);
+            setter = MethodHandles.foldArguments(setter, c.versionSetter);
         }
-        methodSetter.invokeExact(setter);
+        c.handleSetter.invokeExact(setter);
     }
 
+    private static class Ctx
+    {
+
+        private MethodHandle handleSetter;
+        private MethodHandle versionGetter;
+        private MethodHandle versionSetter;
+        private Class<?> type;
+        private MethodHandle versionSaver;
+        private MethodHandle arrayValueGetter;
+        private List<MethodHandle> setters = new ArrayList<>();
+        
+    }
 }
