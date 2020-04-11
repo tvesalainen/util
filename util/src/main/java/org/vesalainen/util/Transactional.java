@@ -17,6 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 /**
  * An interface for transactional changes
@@ -51,6 +52,10 @@ public interface Transactional
     default void commit(String reason, Collection<String> updatedProperties)
     {
         commit(reason);
+    }
+    default void commit(String reason, Collection<String> updatedProperties, Predicate<String> isModified)
+    {
+        commit(reason, updatedProperties);
     }
     /**
      * Confirm changes after start.
