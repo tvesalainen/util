@@ -90,7 +90,6 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         }
     }
 
-    protected int VERSION;
     protected final List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
     private final List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
     private final Set<Transactional> transactionTargets = new IdentityArraySet<>();
@@ -103,7 +102,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     private final MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
     private final Map<String,Class<?>> types = new HashMap<>();
     private final MapList<String,Transactional> transactionalProperties = new HashMapList<>();
+    private final Map<String,MethodHandle> versionSetters = new HashMap<>();
+    private final Map<String,MethodHandle> versionGetters = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
+    private final MethodHandle setVersion;
     
     public InterfaceDispatcher(Lookup lookup)
     {
@@ -112,10 +114,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         //Lookup lookup = MethodHandles.lookup();
         try
         {
-            Field versionField = InterfaceDispatcher.class.getDeclaredField("VERSION");
-            MethodHandle vfg = lookup.unreflectGetter(versionField);
-            MethodHandle versionFieldGetter = vfg.bindTo(this);
-            
+            setVersion = lookup.findStatic(InterfaceDispatcher.class, "version", MethodType.methodType(int.class, int.class));
+
             MethodHandle addObject = lookup.findVirtual(Collection.class, "add", MethodType.methodType(boolean.class, Object.class));
             MethodHandle addString = addObject.asType(MethodType.methodType(void.class, List.class, String.class));
             transactionAdder = addString.bindTo(TRANSACTION_PROPERTIES);  // List.add(String) void
@@ -123,29 +123,39 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             for (Field field : cls.getDeclaredFields())
             {
                 String property = field.getName();
-                if (!"VERSION".equals(property))
+                Class<?> type = field.getType();
+                if (type.isArray())
                 {
-                    Class<?> type = field.getType();
-                    if (type.isArray())
-                    {
-                        types.put(property, type.getComponentType());
-                        Object value = Array.newInstance(type.getComponentType(), 2);
-                        MethodHandle mhs = lookup.unreflectSetter(field);
-                        mhs.invoke(this, value);
-                        MethodHandle aes = MethodHandles.arrayElementSetter(type);
-                        MethodHandle bound = aes.bindTo(value);
-                        savers.put(property, MethodHandles.foldArguments(bound, versionFieldGetter));
-                        MethodHandle aeg = MethodHandles.arrayElementGetter(type);
-                        MethodHandle arrayGetter = aeg.bindTo(value);
-                        arrayGetters.put(property, arrayGetter);
-                    }
-                    else
-                    {
-                        property = property.substring(0, property.length()-6);
-                        MethodHandle mhs = lookup.unreflectSetter(field);
-                        MethodHandle setter = mhs.bindTo(this);
-                        handleSetters.put(property, setter);
-                    }
+                    // handle
+                    Field handleField = cls.getDeclaredField(property+"Handle");
+                    MethodHandle mhhs = lookup.unreflectSetter(handleField);
+                    MethodHandle handleSetter = mhhs.bindTo(this);
+                    handleSetters.put(property, handleSetter);
+                    // version
+                    Field versionField = cls.getDeclaredField(property+"Version");
+                    MethodHandle vfg = lookup.unreflectGetter(versionField);
+                    MethodHandle versionGetter = vfg.bindTo(this);
+                    versionGetters.put(property, versionGetter);
+                    // version toggle
+                    MethodHandle mhvs = lookup.unreflectSetter(versionField);
+                    MethodHandle mhvsb = mhvs.bindTo(this);
+                    MethodHandle mh1 = MethodHandles.foldArguments(setVersion, versionGetter);
+                    MethodHandle versionSetter = MethodHandles.foldArguments(mhvsb, mh1);
+                    versionSetters.put(property, versionSetter);
+                    // array init
+                    types.put(property, type.getComponentType());
+                    Object value = Array.newInstance(type.getComponentType(), 2);
+                    MethodHandle mhas = lookup.unreflectSetter(field);
+                    mhas.invoke(this, value);
+                    // array setter
+                    MethodHandle aes = MethodHandles.arrayElementSetter(type);
+                    MethodHandle arraySetter = aes.bindTo(value);
+                    MethodHandle saver = MethodHandles.foldArguments(arraySetter, versionGetter);
+                    savers.put(property, saver);
+                    // array getter
+                    MethodHandle aeg = MethodHandles.arrayElementGetter(type);
+                    MethodHandle arrayGetter = aeg.bindTo(value);
+                    arrayGetters.put(property, arrayGetter);
                 }
             }
             for (String property : handleSetters.keySet())
@@ -158,7 +168,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             throw new IllegalArgumentException(ex);
         }
     }
-    
+    protected static int version(int v)
+    {
+        return v == 0 ? 1 : 0;
+    }
     public void addObserver(AnnotatedPropertyStore aps)
     {
         addObserver(aps, true);
@@ -358,7 +371,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         transaction = true;
         TRANSACTION_PROPERTIES.clear();
         transactionTargets.clear();
-        VERSION = VERSION == 0 ? 1 : 0;
+        //VERSION = VERSION == 0 ? 1 : 0;
     }
 
     @Override
@@ -369,16 +382,19 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             throw new IllegalStateException("transaction not started: "+reason);
         }
         transaction = false;
-        VERSION = VERSION == 0 ? 1 : 0;
         TRANSACTION_PROPERTIES.forEach((String property)->
         {
             try
             {
+                MethodHandle versionSetter = versionSetters.get(property);
+                versionSetter.invoke(); // toggle version
+                MethodHandle versionGetter = versionGetters.get(property);
+                Object version = versionGetter.invoke();    // get version
                 MethodHandle ag = arrayGetters.get(property);
-                Object committedValue = ag.invoke(VERSION);
+                Object committedValue = ag.invoke(version); // get last committed value
                 for (MethodHandle setter : setters.get(property))
                 {
-                    setter.invoke(committedValue);
+                    setter.invoke(committedValue);  // rollback
                 }
             }
             catch (Throwable ex)
@@ -454,8 +470,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             setter = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
             MethodHandle saver = savers.get(property);
             setter = MethodHandles.foldArguments(setter, saver);
+            MethodHandle versionSetter = versionSetters.get(property);
+            setter = MethodHandles.foldArguments(setter, versionSetter);
         }
         methodSetter.invokeExact(setter);
     }
-    
+
 }

@@ -184,6 +184,11 @@ public class Processor extends AbstractProcessor
                 cp.print(" ");
                 cp.print(property);
                 cp.println(";");
+                
+                // version
+                cp.print("private int ");
+                cp.print(property);
+                cp.println("Version;");
             }
             cp.print("public ");
             cp.print(simplename);
