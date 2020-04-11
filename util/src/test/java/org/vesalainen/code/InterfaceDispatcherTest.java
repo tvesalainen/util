@@ -58,31 +58,59 @@ public class InterfaceDispatcherTest
         FS fs = FS.newInstance();
         APS2 aps = new APS2();
         fs.addObserver(aps);
+        
         fs.start("");
         fs.setB((byte)1);
         fs.setString("kukkuu");
         fs.commit("");
         assertEquals((byte)1, aps.getByte("b"));
         assertEquals("kukkuu", aps.getObject("string"));
+        
         fs.start("");
         fs.setB((byte)2);
         fs.setString("nukkuu");
         fs.rollback("");
         assertEquals((byte)1, aps.getByte("b"));
         assertEquals("kukkuu", aps.getObject("string"));
+        
         fs.start("");
         fs.setB((byte)2);
         fs.rollback("");
         assertEquals((byte)1, aps.getByte("b"));
+        
         fs.start("");
         fs.setB((byte)3);
         fs.commit("");
         assertEquals((byte)3, aps.getByte("b"));
         fs.removeObserver(aps);
+        
         fs.start("");
         fs.setB((byte)4);
         fs.commit("");
         assertEquals((byte)3, aps.getByte("b"));
+    }
+    @Test
+    public void testannotatedPropertyStore2()
+    {
+        FS fs = FS.newInstance();
+        APS2 aps = new APS2();
+        fs.addObserver(aps);
+        
+        fs.start("");
+        fs.setString("kukkuu");
+        fs.commit("");
+        assertEquals((byte)0, aps.getByte("b"));
+        assertEquals("kukkuu", aps.getObject("string"));
+        
+        fs.start("");
+        fs.setB((byte)2);
+        fs.commit("");
+        assertEquals((byte)2, aps.getByte("b"));
+        
+        fs.start("");
+        fs.setString("nukkuu");
+        fs.rollback("");
+        assertEquals("kukkuu", aps.getObject("string"));
     }
     @Test
     public void testTransactions()
@@ -110,7 +138,15 @@ public class InterfaceDispatcherTest
         fs.commit("");
         assertEquals((byte)3, s1.get("b"));
         fs.start("");
-        fs.setJ(123456L);
+        try
+        {
+            fs.setJ(123456L);
+            fail("should have thrown RuntimeException");
+        }
+        catch (RuntimeException ex)
+        {
+            
+        }
         fs.commit("");
     }
     private static class S extends AbstractPropertySetter

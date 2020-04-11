@@ -17,6 +17,8 @@
 package org.vesalainen.code;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
+import java.util.function.Predicate;
 import org.vesalainen.util.Transactional;
 
 /**
@@ -44,7 +46,12 @@ public class APS2 extends AnnotatedPropertyStore implements Transactional
     }
 
     @Override
-    public void commit(String reason)
+    public void commit(String reason, Collection<String> updatedProperties, Predicate<String> isModified)
     {
+        for (String p : updatedProperties)
+        {
+            System.err.println(p+" isModified "+isModified.test(p));
+        }
     }
+
 }
