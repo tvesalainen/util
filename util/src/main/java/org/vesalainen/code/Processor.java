@@ -154,7 +154,6 @@ public class Processor extends AbstractProcessor
 
             mp.println("package "+pgk+";");
             mp.println("import java.lang.invoke.MethodHandle;");
-            mp.println("import static java.util.logging.Level.SEVERE;");
             mp.println("import javax.annotation.Generated;");
 
             mp.println("@Generated(");
@@ -219,11 +218,9 @@ public class Processor extends AbstractProcessor
                 cm.println("catch (Throwable ex)");
                 cm.println("{");
                 CodePrinter cc = cm.createSub("}");
-                cc.print("log(SEVERE, ex, \"");
+                cc.print("throw new RuntimeException(\"");
                 cc.print(methodName);
-                cc.print("(%s)\", ");
-                cc.print(paramName);
-                cc.println(");");
+                cc.println("\", ex);");
                 cc.flush();
                 cm.flush();
             }

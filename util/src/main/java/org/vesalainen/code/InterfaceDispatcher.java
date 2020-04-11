@@ -30,9 +30,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.IdentityArraySet;
 import org.vesalainen.util.IdentityHashMapList;
@@ -120,6 +123,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                 Class<?> type = field.getType();
                 if (type.isArray())
                 {
+                    Class<?> componentType = type.getComponentType();
                     Ctx c = new Ctx();
                     ctxMap.put(property, c);
                     // handle
@@ -137,16 +141,31 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                     c.versionSetter = MethodHandles.foldArguments(mhvsb, mh1);
                     // array init
                     c.type = type.getComponentType();
-                    Object value = Array.newInstance(type.getComponentType(), 2);
+                    Object value = Array.newInstance(componentType, 2);
                     MethodHandle mhas = lookup.unreflectSetter(field);
                     mhas.invoke(this, value);
-                    // array setter
+                    // array getter
+                    MethodHandle mhag = lookup.unreflectGetter(field);
+                    c.arrayGetter = mhag.bindTo(this);
+                    // array value setter
                     MethodHandle aes = MethodHandles.arrayElementSetter(type);
                     MethodHandle arraySetter = aes.bindTo(value);
                     c.versionSaver = MethodHandles.foldArguments(arraySetter, c.versionGetter);
-                    // array getter
+                    // array value getter
                     MethodHandle aeg = MethodHandles.arrayElementGetter(type);
                     c.arrayValueGetter = aeg.bindTo(value);
+                    // isModified
+                    MethodHandle isModified;
+                    if (componentType.isPrimitive())
+                    {
+                        isModified = lookup.findStatic(InterfaceDispatcher.class, "isModified", MethodType.methodType(boolean.class, type));
+                    }
+                    else
+                    {
+                        isModified = lookup.findStatic(InterfaceDispatcher.class, "isModified", MethodType.methodType(boolean.class, Object[].class));
+                        isModified = isModified.asType(MethodType.methodType(boolean.class, type));
+                    }
+                    c.isModified = MethodHandles.foldArguments(isModified, c.arrayGetter);
                 }
             }
             for (String property : ctxMap.keySet())
@@ -162,6 +181,54 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     protected static int version(int v)
     {
         return v == 0 ? 1 : 0;
+    }
+    protected static boolean isModified(boolean[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(byte[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(char[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(short[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(int[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(long[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(float[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(double[] arr)
+    {
+        return arr[0] != arr[1];
+    }
+    protected static boolean isModified(Object[] arr)
+    {
+        return !Objects.equals(arr[0], arr[1]);
+    }
+    private boolean isModified(String property)
+    {
+        try
+        {
+            Ctx c = ctxMap.get(property);
+            return (boolean) c.isModified.invokeExact();
+        }
+        catch (Throwable ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
     public void addObserver(AnnotatedPropertyStore aps)
     {
@@ -432,7 +499,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         {
             try
             {
-                t.commit(reason, unmodifiableTransactionProperties);
+                t.commit(reason, unmodifiableTransactionProperties, this::isModified);
             }
             catch (Throwable ex)
             {
@@ -476,6 +543,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         private MethodHandle versionSaver;
         private MethodHandle arrayValueGetter;
         private List<MethodHandle> setters = new ArrayList<>();
+        private MethodHandle arrayGetter;
+        private MethodHandle isModified;
         
     }
 }
