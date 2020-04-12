@@ -62,10 +62,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     private static final String PREFIX = "#AnnotatedPropertyStore:";
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
     
-    private Map<String,Class<?>> types;
-    private Map<String,MethodHandle> setters;
-    private Map<String,MethodHandle> getters;
-    private Map<String,MethodHandle> copiers;
+    private Map<String,C> cMap;
     private String[] properties;
     private Map<String, MethodHandle> unmodifiableSetters;
 
@@ -95,10 +92,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         else
         {
             Set<Prop> props = new HashSet<>();
-            types = new HashMap<>();
-            setters = new HashMap<>();
-            getters = new HashMap<>();
-            copiers = new HashMap<>();
+            cMap = new HashMap<>();
             try
             {
                 for (Field field : cls.getDeclaredFields())
@@ -111,16 +105,18 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                         {
                             name = field.getName();
                         }
+                        C c = new C();
+                        cMap.put(name, c);
                         props.add(new Prop(property, name));
-                        types.put(name, field.getType());
+                        c.type = field.getType();
                         MethodHandle mhg = lookup.unreflectGetter(field);
                         MethodType mtg = MethodType.methodType(field.getType(), AnnotatedPropertyStore.class);
                         MethodHandle getter = mhg.asType(mtg);
-                        getters.put(name, getter);
+                        c.getter = getter;
                         MethodHandle mhs = lookup.unreflectSetter(field);
                         MethodType mts = MethodType.methodType(void.class, AnnotatedPropertyStore.class, field.getType());
                         MethodHandle setter = mhs.asType(mts);
-                        setters.put(name, setter);
+                        c.setter = setter;
                     }
                 }
                 for (Method method : cls.getDeclaredMethods())
@@ -133,6 +129,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                         {
                             name = BeanHelper.getProperty(method);
                         }
+                        C c = cMap.get(name);
+                        if (c == null)
+                        {
+                            c = new C();
+                            cMap.put(name, c);
+                        }
                         props.add(new Prop(property, name));
                         if (BeanHelper.isGetter(method))
                         {
@@ -144,8 +146,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                             }
                             MethodType mt = MethodType.methodType(method.getReturnType(), AnnotatedPropertyStore.class);
                             MethodHandle getter = mh.asType(mt);
-                            getters.put(name, getter);
-                            types.put(name, method.getReturnType());
+                            c.getter = getter;
+                            c.type = method.getReturnType();
                         }
                         else
                         {
@@ -159,8 +161,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                                 }
                                 MethodType mt = MethodType.methodType(void.class, AnnotatedPropertyStore.class, parameterTypes[0]);
                                 MethodHandle setter = mh.asType(mt);
-                                setters.put(name, setter);
-                                types.put(name, parameterTypes[0]);
+                                c.setter = setter;
+                                c.type = parameterTypes[0];
                             }
                             else
                             {
@@ -173,12 +175,11 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 properties = propertiesList.toArray(new String[propertiesList.size()]);
                 for (String property : properties)
                 {
-                    MethodHandle getter = getters.get(property);
-                    MethodHandle setter = setters.get(property);
-                    if (getter != null && setter != null)
+                    C c = cMap.get(property);
+                    if (c.getter != null && c.setter != null)
                     {
-                        MethodHandle copier = MethodHandles.collectArguments(setter, 1, getter);
-                        copiers.put(property, copier);
+                        MethodHandle copier = MethodHandles.collectArguments(c.setter, 1, c.getter);
+                        c.copier = copier;
                     }
                 }
                 INNERS.put(cls, new Inner(this));
@@ -188,7 +189,9 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 throw new IllegalArgumentException(ex);
             }
         }
-        unmodifiableSetters = Collections.unmodifiableMap(setters);
+        Map<String,MethodHandle> us = new HashMap<>();
+        cMap.forEach((p, c)->us.put(p, c.setter));
+        unmodifiableSetters = Collections.unmodifiableMap(us);
     }
     @Override
     public String[] getProperties()
@@ -210,7 +213,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
      */
     public Class<?> getType(String property)
     {
-        return types.get(property);
+        C c = cMap.get(property);
+        if (c == null)
+        {
+            return null;
+        }
+        return c.type;
     }
     /**
      * Copies listed properties
@@ -229,7 +237,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         }
         properties.forEach((property) ->
         {
-            MethodHandle copier = copiers.get(property);
+            C c = cMap.get(property);
+            MethodHandle copier = c.copier;
             if (copier != null)
             {
                 try
@@ -260,9 +269,9 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         {
             throw new IllegalArgumentException("can't copy from "+from);
         }
-        copiers.entrySet().forEach((entry) ->
+        cMap.entrySet().forEach((entry) ->
         {
-            MethodHandle copier = entry.getValue();
+            MethodHandle copier = entry.getValue().copier;
             try
             {
                 copier.invokeExact(this, from);
@@ -331,10 +340,10 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 {
                     value = unescape(split[1].trim());
                 }
-                Class<?> type = types.get(property);
-                if (type != null)
+                C c = cMap.get(property);
+                if (c != null)
                 {
-                    Object newValue = ConvertUtility.convert(type, value);
+                    Object newValue = ConvertUtility.convert(c.type, value);
                     set(property, newValue);
                 }
                 else
@@ -414,12 +423,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     {
         for (String property : properties)
         {
-            Class<?> type = types.get(property);
-            if (type == null)
+            C c = cMap.get(property);
+            if (c == null)
             {
                 throw new IllegalArgumentException(property+" don't exist");
             }
-            switch (type.getSimpleName())
+            switch (c.type.getSimpleName())
             {
                 case "boolean":
                     Bytes.set(getBoolean(property), digest::update);
@@ -490,12 +499,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final boolean getBoolean(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (boolean) mh.invokeExact(this);
+                return (boolean) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -511,12 +520,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final byte getByte(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (byte) mh.invokeExact(this);
+                return (byte) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -532,12 +541,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final char getChar(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (char) mh.invokeExact(this);
+                return (char) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -553,12 +562,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final short getShort(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (short) mh.invokeExact(this);
+                return (short) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -574,12 +583,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final int getInt(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (int) mh.invokeExact(this);
+                return (int) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -595,12 +604,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final long getLong(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (long) mh.invokeExact(this);
+                return (long) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -616,12 +625,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final float getFloat(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (float) mh.invokeExact(this);
+                return (float) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -637,12 +646,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final double getDouble(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (double) mh.invokeExact(this);
+                return (double) c.getter.invokeExact(this);
             }
             catch (Throwable ex)
             {
@@ -658,12 +667,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final <T> T getObject(String property)
     {
-        MethodHandle mh = getters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.getter != null)
         {
             try
             {
-                return (T) mh.invoke(this);
+                return (T) c.getter.invoke(this);
             }
             catch (Throwable ex)
             {
@@ -679,12 +688,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, boolean arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -700,12 +709,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, byte arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -721,12 +730,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, char arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -742,12 +751,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, short arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -763,12 +772,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, int arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -784,12 +793,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, long arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -805,12 +814,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, float arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -826,12 +835,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, double arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invokeExact(this, arg);
+                c.setter.invokeExact(this, arg);
             }
             catch (Throwable ex)
             {
@@ -847,12 +856,12 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public final void set(String property, Object arg)
     {
-        MethodHandle mh = setters.get(property);
-        if (mh != null)
+        C c = cMap.get(property);
+        if (c != null && c.setter != null)
         {
             try
             {
-                mh.invoke(this, arg);
+                c.setter.invoke(this, arg);
             }
             catch (Throwable ex)
             {
@@ -907,7 +916,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     private static class Inner
     {
-        private Map<String,Class<?>> types;
+        private Map<String,C> cMap;
         private Map<String,MethodHandle> setters;
         private Map<String,MethodHandle> getters;
         private Map<String,MethodHandle> copiers;
@@ -915,21 +924,24 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
 
         public Inner(AnnotatedPropertyStore aps)
         {
-            this.types = aps.types;
-            this.setters = aps.setters;
-            this.getters = aps.getters;
-            this.copiers = aps.copiers;
+            this.cMap = aps.cMap;
             this.properties = aps.properties;
         }
         
         private void populate(AnnotatedPropertyStore aps)
         {
-            aps.types = this.types;
-            aps.getters = this.getters;
-            aps.setters = this.setters;
-            aps.copiers = this.copiers;
+            aps.cMap = this.cMap;
             aps.properties = this.properties;
         }
+    }
+    private static class C
+    {
+
+        private Class<?> type;
+        private MethodHandle getter;
+        private MethodHandle setter;
+        private MethodHandle copier;
+        
     }
     private static class Prop implements Comparable<Prop>
     {
