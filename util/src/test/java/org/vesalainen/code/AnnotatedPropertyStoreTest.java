@@ -20,8 +20,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.code.APS.E;
 import static org.vesalainen.code.APS.E.B2;
 
 /**
@@ -112,5 +121,55 @@ public class AnnotatedPropertyStoreTest
         
         Files.deleteIfExists(tmp);
     }
+    @Test
+    public void testFunctional()
+    {
+        APS aps = new APS();
+        IntSupplier ints = aps.getIntSupplier("goo");
+        IntSupplier bytes = aps.getIntSupplier("byte");
+        IntSupplier chars = aps.getIntSupplier("char");
+        IntSupplier shorts = aps.getIntSupplier("short");
+        LongSupplier longs = aps.getLongSupplier("long");
+        DoubleSupplier floats = aps.getDoubleSupplier("bar");
+        DoubleSupplier doubles = aps.getDoubleSupplier("double");
+        Supplier<E> enums = aps.getSupplier("enum");
+        Supplier<String> strings = aps.getSupplier("string");
 
+        IntConsumer intc = aps.getIntConsumer("goo");
+        IntConsumer bytec = aps.getIntConsumer("byte");
+        IntConsumer charc = aps.getIntConsumer("char");
+        IntConsumer shortc = aps.getIntConsumer("short");
+        LongConsumer longc = aps.getLongConsumer("long");
+        DoubleConsumer floatc = aps.getDoubleConsumer("bar");
+        DoubleConsumer doublec = aps.getDoubleConsumer("double");
+        Consumer<E> enumc = aps.getConsumer("enum");
+        Consumer<String> stringc = aps.getConsumer("string");
+        
+        intc.accept(123);
+        assertEquals(123, ints.getAsInt());
+        
+        bytec.accept(123);
+        assertEquals(123, bytes.getAsInt());
+        
+        charc.accept('ä');
+        assertEquals('ä', chars.getAsInt());
+        
+        shortc.accept(123);
+        assertEquals(123, shorts.getAsInt());
+        
+        longc.accept(1234567890);
+        assertEquals(1234567890, longs.getAsLong());
+        
+        floatc.accept(1.23);
+        assertEquals(1.23, floats.getAsDouble(), 1e-7);
+        
+        doublec.accept(1.23);
+        assertEquals(1.23, doubles.getAsDouble(), 1e-10);
+        
+        enumc.accept(E.B2);
+        assertEquals(E.B2, enums.get());
+        
+        stringc.accept("qwerty");
+        assertEquals("qwerty", strings.get());
+    }
 }

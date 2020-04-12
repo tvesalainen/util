@@ -19,6 +19,9 @@ package org.vesalainen.code;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.invoke.CallSite;
+import java.lang.invoke.LambdaConversionException;
+import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -41,11 +44,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.lang.Bytes;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
+import org.vesalainen.util.function.BooleanConsumer;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -62,6 +78,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     private static final String PREFIX = "#AnnotatedPropertyStore:";
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
     
+    private final Lookup lookup;
     private Map<String,C> cMap;
     private String[] properties;
     private Map<String, MethodHandle> unmodifiableSetters;
@@ -83,6 +100,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public AnnotatedPropertyStore(Lookup lookup)
     {
         super(AnnotatedPropertyStore.class);
+        this.lookup = lookup;
         Class<? extends AnnotatedPropertyStore> cls = this.getClass();
         Inner inner = INNERS.get(cls);
         if (inner != null)
@@ -193,6 +211,348 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         cMap.forEach((p, c)->us.put(p, c.setter));
         unmodifiableSetters = Collections.unmodifiableMap(us);
     }
+    public BooleanSupplier getBooleanSupplier(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "boolean":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (boolean)c.getter.invokeExact(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    public IntSupplier getIntSupplier(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "int":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (int) c.getter.invokeExact(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "byte":
+                case "char":
+                case "short":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (int) c.getter.invoke(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    public DoubleSupplier getDoubleSupplier(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "double":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (double) c.getter.invokeExact(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "float":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (double) c.getter.invoke(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    public LongSupplier getLongSupplier(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "long":
+                    return ()->
+                    {
+                        try
+                        {
+                            return (long)c.getter.invokeExact(this);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    public <T> Supplier<T> getSupplier(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            return ()->
+            {
+                try
+                {
+                    return (T)c.getter.invoke(this);
+                }
+                catch (Throwable ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            };
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    public BooleanConsumer getBooleanConsumer(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "boolean":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    public IntConsumer getIntConsumer(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "int":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "byte":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invoke(this, (byte)v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "char":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invoke(this, (char)v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "short":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invoke(this, (short)v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    public DoubleConsumer getDoubleConsumer(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "double":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                case "float":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invoke(this, (float)v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    public LongConsumer getLongConsumer(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "long":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    public <T> Consumer<T> getConsumer(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            return (v)->
+            {
+                try
+                {
+                    c.setter.invoke(this, v);
+                }
+                catch (Throwable ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            };
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
     @Override
     public String[] getProperties()
     {
@@ -213,12 +573,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
      */
     public Class<?> getType(String property)
     {
-        C c = cMap.get(property);
-        if (c == null)
-        {
-            return null;
-        }
-        return c.type;
+        return c(property).type;
     }
     /**
      * Copies listed properties
@@ -237,7 +592,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         }
         properties.forEach((property) ->
         {
-            C c = cMap.get(property);
+            C c = c(property);
             MethodHandle copier = c.copier;
             if (copier != null)
             {
@@ -423,11 +778,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     {
         for (String property : properties)
         {
-            C c = cMap.get(property);
-            if (c == null)
-            {
-                throw new IllegalArgumentException(property+" don't exist");
-            }
+            C c = c(property);
             switch (c.type.getSimpleName())
             {
                 case "boolean":
@@ -913,6 +1264,16 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     @Override
     public void commit(String reason)
     {
+    }
+
+    private C c(String property)
+    {
+        C c = cMap.get(property);
+        if (c == null)
+        {
+            throw new IllegalArgumentException(property+" not found");
+        }
+        return c;
     }
     private static class Inner
     {
