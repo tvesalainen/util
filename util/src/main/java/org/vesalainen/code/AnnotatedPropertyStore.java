@@ -208,7 +208,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             }
         }
         Map<String,MethodHandle> us = new HashMap<>();
-        cMap.forEach((p, c)->us.put(p, c.setter));
+        cMap.forEach((p, c)->{if (c.setter != null) us.put(p, c.setter);});
         unmodifiableSetters = Collections.unmodifiableMap(us);
     }
     public BooleanSupplier getBooleanSupplier(String property)
