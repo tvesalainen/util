@@ -149,7 +149,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
      */
     public boolean add(T item, long ttl, TimeUnit unit)
     {
-        return add(item, ttl, millis.getAsLong() + unit.toMillis(ttl));
+        return add(item, unit.toMillis(ttl), millis.getAsLong() + unit.toMillis(ttl));
     }
     /**
      * Add/Refresh item with given expiry time
