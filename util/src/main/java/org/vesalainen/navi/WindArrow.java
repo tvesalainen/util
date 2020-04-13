@@ -16,8 +16,6 @@
  */
 package org.vesalainen.navi;
 
-import java.awt.Color;
-import static org.vesalainen.math.UnitType.*;
 import org.vesalainen.ui.path.FunctionalPathMaker;
 import org.vesalainen.ui.path.PathMaker;
 
@@ -33,12 +31,10 @@ public class WindArrow extends FunctionalPathMaker
         super(oth);
     }
 
-    public void draw(double speedInMeters)
+    public void draw(double knots)
     {
-        if (speedInMeters > 0)
+        if (knots > 0)
         {
-            double knots = METERS_PER_SECOND.convertTo(speedInMeters, KNOT);
-
             if (knots > 50)
             {
                 setFillColor("BLACK");
