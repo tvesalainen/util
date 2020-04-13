@@ -168,7 +168,7 @@ public class TimeToLiveSet<T> extends AbstractSet<T>
         {
             map.put(item, new TTLEntry(ttl, expires));
         }
-        return old != null;
+        return old == null;
     }
     @Override
     public void clear()
