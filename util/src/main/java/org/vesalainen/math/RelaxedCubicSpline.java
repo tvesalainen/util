@@ -38,7 +38,10 @@ public class RelaxedCubicSpline extends AbstractCubicSpline
     {
         super(points);
     }
-    
+    /**
+     * 
+     * @param points x1, y1, x2, y2, ...
+     */
     public RelaxedCubicSpline(double... points)
     {
         super(points);

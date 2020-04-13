@@ -55,11 +55,19 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     {
         this(convert(points));
     }
-
+    /**
+     * Creates AbstractCubicSpline
+     * @param points x1, y1, x2, y2, ...
+     */
     protected AbstractCubicSpline(double... points)
     {
         this(false, points);
     }
+    /**
+     * Creates AbstractCubicSpline
+     * @param closed Closed spline has connection from last point to first.
+     * @param points x1, y1, x2, y2, ...
+     */
     protected AbstractCubicSpline(boolean closed, double... points)
     {
         this.closed = closed;
@@ -67,7 +75,7 @@ public abstract class AbstractCubicSpline extends AbstractShape implements MathF
     }
     /**
      * Updates points
-     * @param points 
+     * @param points x1, y1, x2, y2, ...
      */
     private void update(double... points)
     {
