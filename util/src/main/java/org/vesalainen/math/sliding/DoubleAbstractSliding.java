@@ -17,6 +17,9 @@
 package org.vesalainen.math.sliding;
 
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
 import java.util.stream.DoubleStream;
 
 /**
@@ -80,4 +83,12 @@ public abstract class DoubleAbstractSliding extends AbstractSliding
         return Arrays.stream(toArray());
     }
 
+    public void forEach(DoubleConsumer act)
+    {
+        PrimitiveIterator.OfInt mi = modIterator();
+        while (mi.hasNext())
+        {
+            act.accept(ring[mi.nextInt()]);
+        }
+    }
 }

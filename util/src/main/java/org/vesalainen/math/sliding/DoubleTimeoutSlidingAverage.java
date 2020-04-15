@@ -18,6 +18,7 @@ package org.vesalainen.math.sliding;
 
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
 import java.util.function.LongSupplier;
 import java.util.stream.LongStream;
 
@@ -213,4 +214,13 @@ public class DoubleTimeoutSlidingAverage extends DoubleAbstractSlidingAverage im
         this.clock = clock;
     }
     
+    public void forEach(TimeValueConsumer act)
+    {
+        PrimitiveIterator.OfInt mi = modIterator();
+        while (mi.hasNext())
+        {
+            int ii = mi.nextInt();
+            act.accept(times[ii], ring[ii]);
+        }
+    }
 }
