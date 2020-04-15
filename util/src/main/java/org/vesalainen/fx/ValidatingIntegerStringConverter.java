@@ -23,7 +23,7 @@ package org.vesalainen.fx;
 public class ValidatingIntegerStringConverter extends ValidatingNumberStringConverter<Integer>
 {
 
-    public ValidatingIntegerStringConverter(double min, double max)
+    public ValidatingIntegerStringConverter(int min, int max)
     {
         super(min, max);
     }

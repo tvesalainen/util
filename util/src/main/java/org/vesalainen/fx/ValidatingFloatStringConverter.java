@@ -23,7 +23,7 @@ package org.vesalainen.fx;
 public class ValidatingFloatStringConverter extends ValidatingNumberStringConverter<Float>
 {
 
-    public ValidatingFloatStringConverter(double min, double max)
+    public ValidatingFloatStringConverter(float min, float max)
     {
         super(min, max);
     }

@@ -36,7 +36,14 @@ public abstract class ValidatingNumberStringConverter<T extends Number> extends 
     @Override
     public String toString(T value)
     {
-        return value.toString();
+        if (value != null)
+        {
+            return value.toString();
+        }
+        else
+        {
+            return "";
+        }
     }
 
     protected T check(T value)

@@ -23,7 +23,7 @@ package org.vesalainen.fx;
 public class ValidatingLongStringConverter extends ValidatingNumberStringConverter<Long>
 {
 
-    public ValidatingLongStringConverter(double min, double max)
+    public ValidatingLongStringConverter(long min, long max)
     {
         super(min, max);
     }
