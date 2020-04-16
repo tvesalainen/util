@@ -113,6 +113,15 @@ public abstract class DoubleAbstractSlidingAverage extends DoubleAbstractSliding
             readLock.unlock();
         }
     }
+    public double first()
+    {
+        if (count() < 1)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        return ring[beginMod()];
+    }
+
     @Override
     public double last()
     {
