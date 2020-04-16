@@ -567,6 +567,15 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         return unmodifiableSetters;
     }
     /**
+     * Returns true is property exists.
+     * @param property
+     * @return 
+     */
+    public boolean hasProperty(String property)
+    {
+        return cMap.containsKey(property);
+    }
+    /**
      * Returns type of property
      * @param property
      * @return 
