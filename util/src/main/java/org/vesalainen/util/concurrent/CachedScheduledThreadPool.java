@@ -524,7 +524,10 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         }
 
     }
-    private class CancelMeException extends RuntimeException
+    /**
+     * If CancelMeException is thrown from task it will be silently cancelled.
+     */
+    public static class CancelMeException extends RuntimeException
     {
         
     }
