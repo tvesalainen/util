@@ -40,17 +40,17 @@ public class ObjectPreference<T> extends PreferenceBase<T>
     }
 
     @Override
-    public void setValue(T value)
+    public void setValue(T def)
     {
-        if (value != null)
+        if (def != null)
         {
-            preferences.put(key, converter.toString(value));
+            preferences.put(key, converter.toString(def));
         }
         else
         {
             preferences.remove(key);
         }
-        invalidated();
+        fireValueChangedEvent();
     }
     
 }

@@ -47,7 +47,7 @@ public class DoublePreference extends PreferenceBase<Double>
         {
             preferences.remove(key);
         }
-        invalidated();
+        fireValueChangedEvent();
     }
     
 }

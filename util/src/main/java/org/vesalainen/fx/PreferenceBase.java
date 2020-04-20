@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2020 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,116 +16,24 @@
  */
 package org.vesalainen.fx;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.prefs.Preferences;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.beans.property.Property;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class PreferenceBase<T> implements Property<T>, InvalidationListener
+public class PreferenceBase<T> extends SimpleObjectProperty<T>
 {
-    protected final Preferences preferences;
-    protected final String key;
-    protected final T def;
-    private final List<ChangeListener<? super T>> listeners = new ArrayList<>();
-    private final List<InvalidationListener> invalidationListeners = new ArrayList<>();
-    private ObservableValue<? extends T> observable;
-
+    protected Preferences preferences;
+    protected String key;
+    protected T def;
     public PreferenceBase(Preferences preferences, String key, T def)
     {
+        super(preferences, key, def);
         this.preferences = preferences;
         this.key = key;
         this.def = def;
     }
-    protected void invalidated()
-    {
-        invalidated(this);
-    }
-    @Override
-    public void invalidated(Observable observable)
-    {
-        invalidationListeners.forEach((obs) ->
-        {
-            obs.invalidated(observable);
-        });
-    }
-
-    @Override
-    public void bind(ObservableValue<? extends T> observable)
-    {
-        this.observable = observable;
-        observable.addListener(this);
-    }
-
-    @Override
-    public void unbind()
-    {
-        if (observable != null)
-        {
-            observable.removeListener(this);
-            observable = null;
-        }
-    }
-
-    @Override
-    public boolean isBound()
-    {
-        return observable != null;
-    }
-
-    @Override
-    public void bindBidirectional(Property<T> other)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void unbindBidirectional(Property<T> other)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object getBean()
-    {
-        return null;
-    }
-
-    @Override
-    public String getName()
-    {
-        return key;
-    }
-
-    @Override
-    public void addListener(ChangeListener<? super T> listener)
-    {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(ChangeListener<? super T> listener)
-    {
-        listeners.remove(listener);
-    }
-
-    @Override
-    public void addListener(InvalidationListener listener)
-    {
-        invalidationListeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(InvalidationListener listener)
-    {
-        invalidationListeners.remove(listener);
-    }
-
+    
 }

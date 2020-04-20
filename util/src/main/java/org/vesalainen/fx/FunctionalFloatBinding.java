@@ -26,10 +26,12 @@ import javafx.beans.binding.FloatBinding;
  */
 public class FunctionalFloatBinding extends FloatBinding
 {
+    private final String property;
     private final DoubleSupplier value;
 
-    public FunctionalFloatBinding(DoubleSupplier value, Observable... dependencies)
+    public FunctionalFloatBinding(String property, DoubleSupplier value, Observable... dependencies)
     {
+        this.property = property;
         this.value = value;
         bind(dependencies);
     }
@@ -38,5 +40,10 @@ public class FunctionalFloatBinding extends FloatBinding
     protected float computeValue()
     {
         return (float) value.getAsDouble();
+    }
+    @Override
+    public String toString()
+    {
+        return property + ": "+super.toString();
     }
 }

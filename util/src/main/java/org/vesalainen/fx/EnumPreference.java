@@ -50,7 +50,7 @@ public class EnumPreference<E extends Enum<E>> extends PreferenceBase<E>
         {
             preferences.remove(key);
         }
-        invalidated();
+        fireValueChangedEvent();
     }
     
 }

@@ -26,10 +26,12 @@ import javafx.beans.binding.DoubleBinding;
  */
 public class FunctionalDoubleBinding extends DoubleBinding
 {
+    private final String property;
     private final DoubleSupplier value;
 
-    public FunctionalDoubleBinding(DoubleSupplier value, Observable... dependencies)
+    public FunctionalDoubleBinding(String property, DoubleSupplier value, Observable... dependencies)
     {
+        this.property = property;
         this.value = value;
         bind(dependencies);
     }
@@ -39,4 +41,10 @@ public class FunctionalDoubleBinding extends DoubleBinding
     {
         return value.getAsDouble();
     }
+    @Override
+    public String toString()
+    {
+        return property + ": "+super.toString();
+    }
+    
 }

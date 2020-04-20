@@ -26,10 +26,12 @@ import javafx.beans.binding.LongBinding;
  */
 public class FunctionalLongBinding extends LongBinding
 {
+    private final String property;
     private final LongSupplier value;
 
-    public FunctionalLongBinding(LongSupplier value, Observable... dependencies)
+    public FunctionalLongBinding(String property, LongSupplier value, Observable... dependencies)
     {
+        this.property = property;
         this.value = value;
         bind(dependencies);
     }
@@ -38,5 +40,10 @@ public class FunctionalLongBinding extends LongBinding
     protected long computeValue()
     {
         return value.getAsLong();
+    }
+    @Override
+    public String toString()
+    {
+        return property + ": "+super.toString();
     }
 }

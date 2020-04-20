@@ -47,7 +47,7 @@ public class IntegerPreference extends PreferenceBase<Integer>
         {
             preferences.remove(key);
         }
-        invalidated();
+        fireValueChangedEvent();
     }
     
 }

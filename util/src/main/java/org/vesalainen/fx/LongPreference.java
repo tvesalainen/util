@@ -47,7 +47,7 @@ public class LongPreference extends PreferenceBase<Long>
         {
             preferences.remove(key);
         }
-        invalidated();
+        fireValueChangedEvent();
     }
     
 }

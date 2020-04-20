@@ -26,10 +26,12 @@ import javafx.beans.binding.IntegerBinding;
  */
 public class FunctionalIntegerBinding extends IntegerBinding
 {
+    private final String property;
     private final IntSupplier value;
 
-    public FunctionalIntegerBinding(IntSupplier value, Observable... dependencies)
+    public FunctionalIntegerBinding(String property, IntSupplier value, Observable... dependencies)
     {
+        this.property = property;
         this.value = value;
         bind(dependencies);
     }
@@ -39,4 +41,11 @@ public class FunctionalIntegerBinding extends IntegerBinding
     {
         return value.getAsInt();
     }
+
+    @Override
+    public String toString()
+    {
+        return property + ": "+super.toString();
+    }
+    
 }
