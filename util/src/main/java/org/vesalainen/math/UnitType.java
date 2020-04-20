@@ -105,9 +105,9 @@ public enum UnitType
      */
     NAUTICAL_MILE(UnitCategory.LENGTH, 1852.0, "NM"),
     /**
-     * KNOTS
+     * KNOT
      */
-    KNOTS(UnitCategory.SPEED, 0.514444, "Knots"),
+    KNOT(UnitCategory.SPEED, 0.514444, "Knots"),
     /**
      * m/s
      */
