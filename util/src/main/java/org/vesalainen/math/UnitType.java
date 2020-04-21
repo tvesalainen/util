@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -24,6 +25,13 @@ import java.util.function.DoubleUnaryOperator;
  */
 public enum UnitType
 {
+    DURATION_DAYS(UnitCategory.DURATION, TimeUnit.SECONDS.toDays(1), "d"),
+    DURATION_HOURS(UnitCategory.DURATION, TimeUnit.SECONDS.toHours(1), "h"),
+    DURATION_MINUTES(UnitCategory.DURATION, TimeUnit.SECONDS.toMinutes(1), "m"),
+    DURATION_SECONDS(UnitCategory.DURATION, TimeUnit.SECONDS.toSeconds(1), "s"),
+    DURATION_MILLI_SECONDS(UnitCategory.DURATION, 1000, "ms"),
+    DURATION_MICRO_SECONDS(UnitCategory.DURATION, 1000000, "μs"),
+    DURATION_NANO_SECONDS(UnitCategory.DURATION, 1000000000, "ns"),
     /**
      * m/s<sup>2</sup>
      */
