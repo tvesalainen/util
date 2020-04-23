@@ -17,6 +17,12 @@
 
 package org.vesalainen.code;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
+
 /**
  *
  * @author Timo Vesalainen
@@ -32,4 +38,29 @@ public interface PropertyGetter
     float getFloat(String property);
     double getDouble(String property);
     <T> T getObject(String property);
+
+    default BooleanSupplier getBooleanSupplier(String property)
+    {
+        return ()->getBoolean(property);
+    }
+
+    default DoubleSupplier getDoubleSupplier(String property)
+    {
+        return ()->getDouble(property);
+    }
+
+    default IntSupplier getIntSupplier(String property)
+    {
+        return ()->getInt(property);
+    }
+
+    default LongSupplier getLongSupplier(String property)
+    {
+        return ()->getLong(property);
+    }
+
+    default <T> Supplier<T> getSupplier(String property)
+    {
+        return ()->getObject(property);
+    }
 }

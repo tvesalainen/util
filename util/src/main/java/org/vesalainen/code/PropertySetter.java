@@ -17,7 +17,12 @@
 
 package org.vesalainen.code;
 
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 import org.vesalainen.util.ArrayHelp;
+import org.vesalainen.util.function.BooleanConsumer;
 
 /**
  *
@@ -60,4 +65,29 @@ public interface PropertySetter
     default void set(String property, float arg){}
     default void set(String property, double arg){}
     default <T> void set(String property, T arg){}
+
+    default BooleanConsumer getBooleanConsumer(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default <T> Consumer<T> getConsumer(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default DoubleConsumer getDoubleConsumer(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default IntConsumer getIntConsumer(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default LongConsumer getLongConsumer(String property)
+    {
+        return (v)->set(property, v);
+    }
 }
