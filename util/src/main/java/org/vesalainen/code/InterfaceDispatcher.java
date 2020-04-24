@@ -281,7 +281,8 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         if (setter instanceof AnnotatedPropertyStore)
         {
             AnnotatedPropertyStore aps = (AnnotatedPropertyStore) setter;
-            addObserver(aps);
+            addObserver(aps, reportMissingProperties);
+            assert false;   // shouldn't come here????
         }
         lock.lock();
         try

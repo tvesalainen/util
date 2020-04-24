@@ -30,12 +30,12 @@ import javafx.beans.Observable;
 public class BasicObservable<B> implements Observable
 {
     private List<WeakReference<InvalidationListener>> observables = new ArrayList<>();
-    protected B preferences;
+    protected B bean;
     protected String key;
 
     public BasicObservable(B bean, String name)
     {
-        this.preferences = bean;
+        this.bean = bean;
         this.key = name;
     }
     
@@ -83,7 +83,7 @@ public class BasicObservable<B> implements Observable
 
     public Object getBean()
     {
-        return preferences;
+        return bean;
     }
 
     public String getName()
@@ -94,7 +94,7 @@ public class BasicObservable<B> implements Observable
     @Override
     public String toString()
     {
-        return "BasicObservable{" + preferences + ": " + key + '}';
+        return "BasicObservable{" + bean + ": " + key + '}';
     }
     
 }
