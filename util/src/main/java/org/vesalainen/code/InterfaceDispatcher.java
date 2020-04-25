@@ -16,16 +16,11 @@
  */
 package org.vesalainen.code;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +28,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import static java.util.logging.Level.SEVERE;
+import org.vesalainen.code.setter.Setter;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.IdentityArraySet;
 import org.vesalainen.util.IdentityHashMapList;
@@ -51,9 +48,9 @@ import org.vesalainen.util.logging.JavaLogging;
  * <p>Compiler will generate MyClassImpl which you can get from MyClass.getInstance(MyClass.class).
  * Calling any of those interface methods will have no effect before you
  * add observer.
- * <p>If observer implements Transactional frame set methods with transaction method.
- * start() setx(x) setY(y) commit(). You can call rollback() instead of commit()
- * which will restore properties to values after last commit.
+ * <p>If observer implements Transactional frame setObject methods with transaction method.
+ start() setx(x) setY(y) commit(). You can call rollback() instead of commit()
+ which will restore properties to values after last commit.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class InterfaceDispatcher extends JavaLogging implements Transactional
@@ -94,81 +91,47 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     protected final List<String> TRANSACTION_PROPERTIES = new ArrayList<>();
     private final List<String> unmodifiableTransactionProperties = Collections.unmodifiableList(TRANSACTION_PROPERTIES);
     private final Set<Transactional> transactionTargets = new IdentityArraySet<>();
-    private final MethodHandle transactionAdder;
     private boolean transaction;
     private final Map<String,Ctx> ctxMap = new HashMap<>();
-    private final MapList<Object,MethodHandle> undoSetters = new IdentityHashMapList<>();
+    private final MapList<Object,Setter> undoSetters = new IdentityHashMapList<>();
     private final MapList<String,Transactional> transactionalProperties = new HashMapList<>();
     private final ReentrantLock lock = new ReentrantLock();
-    private final MethodHandle setVersion;
     
-    public InterfaceDispatcher(Lookup lookup)
+    public InterfaceDispatcher()
     {
         super(InterfaceDispatcher.class);
+    }
+    protected void init()
+    {
         Class<? extends InterfaceDispatcher> cls = this.getClass();
         //Lookup lookup = MethodHandles.lookup();
         try
         {
-            setVersion = lookup.findStatic(InterfaceDispatcher.class, "version", MethodType.methodType(int.class, int.class));
-
-            MethodHandle addObject = lookup.findVirtual(Collection.class, "add", MethodType.methodType(boolean.class, Object.class));
-            MethodHandle addString = addObject.asType(MethodType.methodType(void.class, List.class, String.class));
-            transactionAdder = addString.bindTo(TRANSACTION_PROPERTIES);  // List.add(String) void
-
             for (Field field : cls.getDeclaredFields())
             {
                 String property = field.getName();
                 Class<?> type = field.getType();
                 if (type.isArray())
                 {
-                    Class<?> componentType = type.getComponentType();
                     Ctx c = new Ctx();
                     ctxMap.put(property, c);
-                    // handle
-                    Field handleField = cls.getDeclaredField(property+"Handle");
-                    MethodHandle mhhs = lookup.unreflectSetter(handleField);
-                    c.handleSetter = mhhs.bindTo(this);
-                    // version
-                    Field versionField = cls.getDeclaredField(property+"Version");
-                    MethodHandle vfg = lookup.unreflectGetter(versionField);
-                    c.versionGetter = vfg.bindTo(this);
-                    // version toggle
-                    MethodHandle mhvs = lookup.unreflectSetter(versionField);
-                    MethodHandle mhvsb = mhvs.bindTo(this);
-                    MethodHandle mh1 = MethodHandles.foldArguments(setVersion, c.versionGetter);
-                    c.versionSetter = MethodHandles.foldArguments(mhvsb, mh1);
-                    // array init
                     c.type = type.getComponentType();
-                    Object value = Array.newInstance(componentType, 2);
-                    MethodHandle mhas = lookup.unreflectSetter(field);
-                    mhas.invoke(this, value);
-                    // array getter
-                    MethodHandle mhag = lookup.unreflectGetter(field);
-                    c.arrayGetter = mhag.bindTo(this);
-                    // array value setter
-                    MethodHandle aes = MethodHandles.arrayElementSetter(type);
-                    MethodHandle arraySetter = aes.bindTo(value);
-                    c.versionSaver = MethodHandles.foldArguments(arraySetter, c.versionGetter);
-                    // array value getter
-                    MethodHandle aeg = MethodHandles.arrayElementGetter(type);
-                    c.arrayValueGetter = aeg.bindTo(value);
+                    // initial setter
+                    Field initialSetterField = cls.getDeclaredField(property+"InitSetter");
+                    initialSetterField.setAccessible(true);
+                    c.initialSetter = (Setter) initialSetterField.get(this);
+                    // setter
+                    c.setter = cls.getDeclaredField(property+"Setter");
+                    c.setter.setAccessible(true);
                     // isModified
-                    MethodHandle isModified;
-                    if (componentType.isPrimitive())
-                    {
-                        isModified = lookup.findStatic(InterfaceDispatcher.class, "isModified", MethodType.methodType(boolean.class, type));
-                    }
-                    else
-                    {
-                        isModified = lookup.findStatic(InterfaceDispatcher.class, "isModified", MethodType.methodType(boolean.class, Object[].class));
-                        isModified = isModified.asType(MethodType.methodType(boolean.class, type));
-                    }
-                    c.isModified = MethodHandles.foldArguments(isModified, c.arrayGetter);
+                    Field isModifiedField = cls.getDeclaredField(property+"IsModified");
+                    isModifiedField.setAccessible(true);
+                    c.isModified = (BooleanSupplier) isModifiedField.get(this);
+                    c.version = cls.getDeclaredField(property+"Version");
+                    c.version.setAccessible(true);
+                    c.array = cls.getDeclaredField(property);
+                    c.array.setAccessible(true);
                 }
-            }
-            for (String property : ctxMap.keySet())
-            {
-                assignMethod(property, null);
             }
         }
         catch (Throwable ex)
@@ -221,55 +184,11 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         try
         {
             Ctx c = ctxMap.get(property);
-            return (boolean) c.isModified.invokeExact();
+            return (boolean) c.isModified.getAsBoolean();
         }
         catch (Throwable ex)
         {
             throw new RuntimeException(ex);
-        }
-    }
-    public void addObserver(AnnotatedPropertyStore aps)
-    {
-        addObserver(aps, true);
-    }
-    public void addObserver(AnnotatedPropertyStore aps, boolean reportMissingProperties)
-    {
-        lock.lock();
-        try
-        {
-            Transactional transactional = null;
-            if (aps instanceof Transactional)
-            {
-                transactional = (Transactional) aps;
-            }
-            Map<String, MethodHandle> map = aps.getSetters();
-            for (String property : map.keySet())
-            {
-                Ctx c = ctxMap.get(property);
-                if (c == null)
-                {
-                    if (reportMissingProperties)
-                    {
-                        throw new IllegalArgumentException(property+" not found");
-                    }
-                }
-                else
-                {
-                    if (transactional != null)
-                    {
-                        transactionalProperties.add(property, transactional);
-                    }
-                    MethodHandle mh = map.get(property);
-                    MethodHandle bound = mh.bindTo(aps);
-                    c.setters.add(bound);
-                    undoSetters.add(aps, bound);
-                    compile(property);
-                }
-            }
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
     public void addObserver(PropertySetter setter)
@@ -278,12 +197,6 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
     }
     public void addObserver(PropertySetter setter, boolean reportMissingProperties)
     {
-        if (setter instanceof AnnotatedPropertyStore)
-        {
-            AnnotatedPropertyStore aps = (AnnotatedPropertyStore) setter;
-            addObserver(aps, reportMissingProperties);
-            assert false;   // shouldn't come here????
-        }
         lock.lock();
         try
         {
@@ -309,27 +222,10 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                     {
                         transactionalProperties.add(property, transactional);
                     }
-                    try
-                    {
-                        MethodHandle mh;
-                        if (type.isPrimitive())
-                        {
-                            mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, type));
-                        }
-                        else
-                        {
-                            mh = MethodHandles.lookup().findVirtual(setter.getClass(), "set", MethodType.methodType(void.class, String.class, Object.class));
-                            mh = mh.asType(MethodType.methodType(void.class, setter.getClass(), String.class, type));
-                        }
-                        MethodHandle bound = MethodHandles.insertArguments(mh, 0, setter, property);
-                        c.setters.add(bound);
-                        undoSetters.add(setter, bound);
-                        compile(property);
-                    }
-                    catch (NoSuchMethodException | IllegalAccessException ex)
-                    {
-                        throw new IllegalArgumentException(ex);
-                    }
+                    Setter s = setter.getSetter(property, type);
+                    c.setters.add(s);
+                    undoSetters.add(setter, s);
+                    compile(property);
                 }
             }
         }
@@ -348,7 +244,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         lock.lock();
         try
         {
-            List<MethodHandle> list = undoSetters.get(setter);
+            List<Setter> list = undoSetters.get(setter);
             if (!list.isEmpty())
             {
                 for (String property : setter.getProperties())
@@ -358,7 +254,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
                     {
                         transactionalProperties.removeItem(property, transactional);
                     }
-                    List<MethodHandle> mhs = c.setters;
+                    List<Setter> mhs = c.setters;
                     if (mhs != null && mhs.removeAll(list))
                     {
                         compile(property);
@@ -386,23 +282,20 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         try
         {
             Ctx c = ctxMap.get(property);
-            List<MethodHandle> list = c.setters;
-            MethodHandle setter = null;
+            List<Setter> list = c.setters;
+            Setter setter = c.initialSetter;
             if (list != null)
             {
-                for (MethodHandle mh : list)
+                for (Setter mh : list)
                 {
-                    if (setter == null)
-                    {
-                        setter = mh;
-                    }
-                    else
-                    {
-                        setter = MethodHandles.foldArguments(setter, mh);
-                    }
+                    setter = setter.andThen(mh);
                 }
             }
-            assignMethod(property, setter);
+            if (transactionalProperties.containsKey(property))
+            {
+                setter = setter.andThen(()->TRANSACTION_PROPERTIES.add(property));
+            }
+            c.setter.set(this, setter);
         }
         catch (Throwable ex)
         {
@@ -447,12 +340,14 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             try
             {
                 Ctx c = ctxMap.get(property);
-                c.versionSetter.invoke(); // toggle version
-                Object version = c.versionGetter.invoke();    // get version
-                Object committedValue = c.arrayValueGetter.invoke(version); // get last committed value
-                for (MethodHandle setter : c.setters)
+                int ver = c.version.getInt(this);
+                ver = ver == 0 ? 1 : 0;
+                c.version.setInt(this, ver);
+                Object array = c.array.get(this);
+                Object committedValue = Array.get(array, ver);
+                for (Setter setter : c.setters)
                 {
-                    setter.invoke(committedValue);  // rollback
+                    setter.setObject(committedValue);  // rollback
                 }
             }
             catch (Throwable ex)
@@ -507,43 +402,16 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
         });
     }
 
-    private void assignMethod(String property, MethodHandle setter) throws Throwable
-    {
-        Ctx c = ctxMap.get(property);
-        if (setter == null)
-        {
-            Class<?> type = c.type;
-            if (type.isPrimitive())
-            {
-                setter = MethodHandles.lookup().findStatic(InterfaceDispatcher.class, "noOp", MethodType.methodType(void.class, type));
-            }
-            else
-            {
-                setter = MethodHandles.lookup().findStatic(InterfaceDispatcher.class, "noOp", MethodType.methodType(void.class, Object.class));
-                setter = setter.asType(MethodType.methodType(void.class, type));
-            }
-        }
-        if (transactionalProperties.containsKey(property))
-        {
-            setter = MethodHandles.foldArguments(setter, transactionAdder.bindTo(property));
-            setter = MethodHandles.foldArguments(setter, c.versionSaver);
-            setter = MethodHandles.foldArguments(setter, c.versionSetter);
-        }
-        c.handleSetter.invokeExact(setter);
-    }
-
     private static class Ctx
     {
 
-        private MethodHandle handleSetter;
-        private MethodHandle versionGetter;
-        private MethodHandle versionSetter;
         private Class<?> type;
-        private MethodHandle versionSaver;
-        private MethodHandle arrayValueGetter;
-        private List<MethodHandle> setters = new ArrayList<>();
-        private MethodHandle arrayGetter;
-        private MethodHandle isModified;
+        private Setter initialSetter;
+        private List<Setter> setters = new ArrayList<>();
+        private BooleanSupplier isModified;
+        private Field version;
+        private Field array;
+        private Field setter;
         
     }
 }

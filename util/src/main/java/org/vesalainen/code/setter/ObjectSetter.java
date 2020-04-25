@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2020 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,25 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.code;
-
-import java.lang.invoke.MethodHandles;
+package org.vesalainen.code.setter;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@InterfaceDispatcherAnnotation
-public abstract class FS extends InterfaceDispatcher implements TrIntf
+@FunctionalInterface
+public interface ObjectSetter<T> extends Setter<ObjectSetter<T>>
 {
 
-    protected FS()
+    void set(T v);
+
+    @Override
+    public default void setObject(Object v)
     {
-        super();
+        set((T) v);
     }
-    
-    public static FS newInstance()
+
+    @Override
+    public default ObjectSetter<T> andThen(ObjectSetter<T> then)
     {
-        return newInstance(FS.class);
+        return (v) ->
+        {
+            set(v);
+            then.set(v);
+        };
     }
+
+    @Override
+    public default ObjectSetter<T> andThen(Runnable then)
+    {
+        return (v) ->
+        {
+            set(v);
+            then.run();
+        };
+    }
+
 }

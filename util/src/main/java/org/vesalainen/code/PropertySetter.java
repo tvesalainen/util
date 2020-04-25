@@ -17,12 +17,17 @@
 
 package org.vesalainen.code;
 
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
-import java.util.function.IntConsumer;
-import java.util.function.LongConsumer;
+import org.vesalainen.code.setter.BooleanSetter;
+import org.vesalainen.code.setter.ByteSetter;
+import org.vesalainen.code.setter.CharSetter;
+import org.vesalainen.code.setter.DoubleSetter;
+import org.vesalainen.code.setter.FloatSetter;
+import org.vesalainen.code.setter.IntSetter;
+import org.vesalainen.code.setter.LongSetter;
+import org.vesalainen.code.setter.ObjectSetter;
+import org.vesalainen.code.setter.Setter;
+import org.vesalainen.code.setter.ShortSetter;
 import org.vesalainen.util.ArrayHelp;
-import org.vesalainen.util.function.BooleanConsumer;
 
 /**
  *
@@ -66,28 +71,73 @@ public interface PropertySetter
     default void set(String property, double arg){}
     default <T> void set(String property, T arg){}
 
-    default BooleanConsumer getBooleanConsumer(String property)
+    default Setter getSetter(String property, Class<?> type)
+    {
+        switch (type.getSimpleName())
+        {
+            case "boolean":
+                return getBooleanSetter(property);
+            case "byte":
+                return getByteSetter(property);
+            case "char":
+                return getCharSetter(property);
+            case "short":
+                return getShortSetter(property);
+            case "int":
+                return getIntSetter(property);
+            case "long":
+                return getLongSetter(property);
+            case "float":
+                return getFloatSetter(property);
+            case "double":
+                return getDoubleSetter(property);
+            default:
+                return getObjectSetter(property);
+        }
+    }
+    default BooleanSetter getBooleanSetter(String property)
     {
         return (v)->set(property, v);
     }
 
-    default <T> Consumer<T> getConsumer(String property)
+    default ByteSetter getByteSetter(String property)
     {
         return (v)->set(property, v);
     }
 
-    default DoubleConsumer getDoubleConsumer(String property)
+    default CharSetter getCharSetter(String property)
     {
         return (v)->set(property, v);
     }
 
-    default IntConsumer getIntConsumer(String property)
+    default ShortSetter getShortSetter(String property)
     {
         return (v)->set(property, v);
     }
 
-    default LongConsumer getLongConsumer(String property)
+    default IntSetter getIntSetter(String property)
     {
         return (v)->set(property, v);
     }
+
+    default LongSetter getLongSetter(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default FloatSetter getFloatSetter(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default DoubleSetter getDoubleSetter(String property)
+    {
+        return (v)->set(property, v);
+    }
+
+    default <T> ObjectSetter<T> getObjectSetter(String property)
+    {
+        return (v)->set(property, v);
+    }
+
 }

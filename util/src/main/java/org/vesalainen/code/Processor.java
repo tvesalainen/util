@@ -155,6 +155,17 @@ public class Processor extends AbstractProcessor
             mp.println("package "+pgk+";");
             mp.println("import java.lang.invoke.MethodHandle;");
             mp.println("import javax.annotation.Generated;");
+            mp.println("import java.util.function.BooleanSupplier;");
+            mp.println("import java.util.Objects;");
+            mp.println("import org.vesalainen.code.setter.BooleanSetter;");
+            mp.println("import org.vesalainen.code.setter.ByteSetter;");
+            mp.println("import org.vesalainen.code.setter.CharSetter;");
+            mp.println("import org.vesalainen.code.setter.ShortSetter;");
+            mp.println("import org.vesalainen.code.setter.IntSetter;");
+            mp.println("import org.vesalainen.code.setter.LongSetter;");
+            mp.println("import org.vesalainen.code.setter.FloatSetter;");
+            mp.println("import org.vesalainen.code.setter.DoubleSetter;");
+            mp.println("import org.vesalainen.code.setter.ObjectSetter;");
 
             mp.println("@Generated(");
             mp.println("\tvalue=\""+Processor.class.getCanonicalName()+"\"");
@@ -172,29 +183,83 @@ public class Processor extends AbstractProcessor
                 TypeMirror tm = ve.asType();
                 TypeKind tk = tm.getKind();
                 String typename = getTypename(tk);
-                cp.print("private MethodHandle ");
-                cp.print(property);
-                cp.println("Handle;");
                 
+                // version
+                cp.print("protected int ");
+                cp.print(property);
+                cp.println("Version;");
                 // array
-                cp.print("private ");
+                cp.print("protected final ");
                 cp.print(tm.toString());
                 cp.print("[]");
                 cp.print(" ");
                 cp.print(property);
-                cp.println(";");
+                cp.print(" = new ");
+                cp.print(stripGenerics(tm.toString()));
+                cp.println("[2];");
                 
-                // version
-                cp.print("private int ");
+                // init
+                cp.print("protected final ");
+                cp.print(typename);
+                cp.print("Setter");
+                if ("Object".equals(typename))
+                {
+                    cp.print("<");
+                    cp.print(tm.toString());
+                    cp.print(">");
+                }
+                cp.print(" ");
                 cp.print(property);
-                cp.println("Version;");
+                cp.print("InitSetter = (v)->{");
+                cp.print(property);
+                cp.print("Version=");
+                cp.print(property);
+                cp.print("Version==0?1:0;");
+                cp.print(property);
+                cp.print("[");
+                cp.print(property);
+                cp.println("Version]=v;};");
+
+                // isModified
+                cp.print("protected BooleanSupplier ");
+                cp.print(property);
+                cp.print("IsModified = ()->");
+                if ("Object".equals(typename))
+                {
+                    cp.print("Objects.equals(");
+                    cp.print(property);
+                    cp.print("[0], ");
+                    cp.print(property);
+                    cp.print("[1]);");
+                }
+                else
+                {
+                    cp.print(property);
+                    cp.print("[0] == ");
+                    cp.print(property);
+                    cp.print("[1];");
+                }
+                // func
+                cp.print("protected ");
+                cp.print(typename);
+                cp.print("Setter");
+                if ("Object".equals(typename))
+                {
+                    cp.print("<");
+                    cp.print(tm.toString());
+                    cp.print(">");
+                }
+                cp.print(" ");
+                cp.print(property);
+                cp.println("Setter = (v)->{};");
+                
             }
             cp.print("public ");
             cp.print(simplename);
             cp.println("()");
             cp.println("{");
             CodePrinter cb = cp.createSub("}");
-            cb.println("super(java.lang.invoke.MethodHandles.lookup());");
+            cb.println("init();");
             cb.flush();
             for (ExecutableElement m : methods)
             {
@@ -206,22 +271,11 @@ public class Processor extends AbstractProcessor
                 String property = getProperty(m);
                 Name methodName = m.getSimpleName();
                 Name paramName = ve.getSimpleName();
-                cm.println("try");
-                cm.println("{");
-                CodePrinter cs = cm.createSub("}");
-                cs.print("this.");
-                cs.print(property);
-                cs.print("Handle.invokeExact(");
-                cs.print(paramName);
-                cs.println(");");
-                cs.flush();
-                cm.println("catch (Throwable ex)");
-                cm.println("{");
-                CodePrinter cc = cm.createSub("}");
-                cc.print("throw new RuntimeException(\"");
-                cc.print(methodName);
-                cc.println("\", ex);");
-                cc.flush();
+                cm.print("this.");
+                cm.print(property);
+                cm.print("Setter.set(");
+                cm.print(paramName);
+                cm.println(");");
                 cm.flush();
             }
             cp.flush();
@@ -846,6 +900,19 @@ public class Processor extends AbstractProcessor
                 return "("+tm.toString()+")";
             default:
                 return "";
+        }
+    }
+
+    private CharSequence stripGenerics(String type)
+    {
+        int idx = type.indexOf('<');
+        if (idx != -1)
+        {
+            return type.substring(0, idx);
+        }
+        else
+        {
+            return type;
         }
     }
 

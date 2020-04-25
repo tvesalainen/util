@@ -52,6 +52,15 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
+import org.vesalainen.code.setter.BooleanSetter;
+import org.vesalainen.code.setter.ByteSetter;
+import org.vesalainen.code.setter.CharSetter;
+import org.vesalainen.code.setter.DoubleSetter;
+import org.vesalainen.code.setter.FloatSetter;
+import org.vesalainen.code.setter.IntSetter;
+import org.vesalainen.code.setter.LongSetter;
+import org.vesalainen.code.setter.ObjectSetter;
+import org.vesalainen.code.setter.ShortSetter;
 import org.vesalainen.lang.Bytes;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
@@ -365,7 +374,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
-    public BooleanConsumer getBooleanConsumer(String property)
+    @Override
+    public BooleanSetter getBooleanSetter(String property)
     {
         C c = c(property);
         if (c.setter != null)
@@ -393,7 +403,95 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             throw new IllegalArgumentException(property+" doesn't have a setter");
         }
     }
-    public IntConsumer getIntConsumer(String property)
+    @Override
+    public ByteSetter getByteSetter(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "byte":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    @Override
+    public CharSetter getCharSetter(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "char":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    @Override
+    public ShortSetter getShortSetter(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "short":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    @Override
+    public IntSetter getIntSetter(String property)
     {
         C c = c(property);
         if (c.setter != null)
@@ -412,42 +510,6 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                             throw new RuntimeException(ex);
                         }
                     };
-                case "byte":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invoke(this, (byte)v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                case "char":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invoke(this, (char)v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                case "short":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invoke(this, (short)v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
                 default:
                     throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
             }
@@ -457,47 +519,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             throw new IllegalArgumentException(property+" doesn't have a setter");
         }
     }
-    public DoubleConsumer getDoubleConsumer(String property)
-    {
-        C c = c(property);
-        if (c.setter != null)
-        {
-            switch (c.type.getSimpleName())
-            {
-                case "double":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                case "float":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invoke(this, (float)v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
-        }
-        else
-        {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
-        }
-    }
-    public LongConsumer getLongConsumer(String property)
+    @Override
+    public LongSetter getLongSetter(String property)
     {
         C c = c(property);
         if (c.setter != null)
@@ -525,7 +548,65 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             throw new IllegalArgumentException(property+" doesn't have a setter");
         }
     }
-    public <T> Consumer<T> getConsumer(String property)
+    @Override
+    public FloatSetter getFloatSetter(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "float":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    public DoubleSetter getDoubleSetter(String property)
+    {
+        C c = c(property);
+        if (c.setter != null)
+        {
+            switch (c.type.getSimpleName())
+            {
+                case "double":
+                    return (v)->
+                    {
+                        try
+                        {
+                            c.setter.invokeExact(this, v);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+                default:
+                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a setter");
+        }
+    }
+    @Override
+    public <T> ObjectSetter<T> getObjectSetter(String property)
     {
         C c = c(property);
         if (c.setter != null)
