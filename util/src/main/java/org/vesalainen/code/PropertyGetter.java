@@ -17,11 +17,17 @@
 
 package org.vesalainen.code;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
+import org.vesalainen.code.getter.BooleanGetter;
+import org.vesalainen.code.getter.ByteGetter;
+import org.vesalainen.code.getter.CharGetter;
+import org.vesalainen.code.getter.DoubleGetter;
+import org.vesalainen.code.getter.FloatGetter;
+import org.vesalainen.code.getter.Getter;
+import org.vesalainen.code.getter.IntGetter;
+import org.vesalainen.code.getter.LongGetter;
+import org.vesalainen.code.getter.ObjectGetter;
+import org.vesalainen.code.getter.ShortGetter;
+import org.vesalainen.code.setter.Setter;
 
 /**
  *
@@ -39,27 +45,71 @@ public interface PropertyGetter
     double getDouble(String property);
     <T> T getObject(String property);
 
-    default BooleanSupplier getBooleanSupplier(String property)
+    default Getter getGetter(String property, Class<?> type)
+    {
+        switch (type.getSimpleName())
+        {
+            case "boolean":
+                return getBooleanGetter(property);
+            case "byte":
+                return getByteGetter(property);
+            case "char":
+                return getCharGetter(property);
+            case "short":
+                return getShortGetter(property);
+            case "int":
+                return getIntGetter(property);
+            case "long":
+                return getLongGetter(property);
+            case "float":
+                return getFloatGetter(property);
+            case "double":
+                return getDoubleGetter(property);
+            default:
+                return getObjectGetter(property);
+        }
+    }
+    default BooleanGetter getBooleanGetter(String property)
     {
         return ()->getBoolean(property);
     }
 
-    default DoubleSupplier getDoubleSupplier(String property)
+    default ByteGetter getByteGetter(String property)
     {
-        return ()->getDouble(property);
+        return ()->getByte(property);
     }
 
-    default IntSupplier getIntSupplier(String property)
+    default CharGetter getCharGetter(String property)
+    {
+        return ()->getChar(property);
+    }
+
+    default ShortGetter getShortGetter(String property)
+    {
+        return ()->getShort(property);
+    }
+
+    default IntGetter getIntGetter(String property)
     {
         return ()->getInt(property);
     }
 
-    default LongSupplier getLongSupplier(String property)
+    default LongGetter getLongGetter(String property)
     {
         return ()->getLong(property);
     }
 
-    default <T> Supplier<T> getSupplier(String property)
+    default FloatGetter getFloatGetter(String property)
+    {
+        return ()->getFloat(property);
+    }
+
+    default DoubleGetter getDoubleGetter(String property)
+    {
+        return ()->getDouble(property);
+    }
+
+    default <T> ObjectGetter<T> getObjectGetter(String property)
     {
         return ()->getObject(property);
     }

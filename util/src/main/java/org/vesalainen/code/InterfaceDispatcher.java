@@ -139,46 +139,6 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             throw new IllegalArgumentException(ex);
         }
     }
-    protected static int version(int v)
-    {
-        return v == 0 ? 1 : 0;
-    }
-    protected static boolean isModified(boolean[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(byte[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(char[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(short[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(int[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(long[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(float[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(double[] arr)
-    {
-        return arr[0] != arr[1];
-    }
-    protected static boolean isModified(Object[] arr)
-    {
-        return !Objects.equals(arr[0], arr[1]);
-    }
     private boolean isModified(String property)
     {
         try
@@ -352,7 +312,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             catch (Throwable ex)
             {
-                log(SEVERE, ex, "rollback restoring %s", property);
+                throw new RuntimeException("rollback restoring "+property, ex);
             }
             List<Transactional> list = transactionalProperties.get(property);
             if (list != null)
@@ -368,7 +328,7 @@ public class InterfaceDispatcher extends JavaLogging implements Transactional
             }
             catch (Throwable ex)
             {
-                log(SEVERE, ex, "rollback(%s)", reason);
+                throw new RuntimeException("\"rollback "+reason, ex);
             }
         });
     }

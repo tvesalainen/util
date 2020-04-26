@@ -42,15 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
-import java.util.function.LongConsumer;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.code.getter.BooleanGetter;
@@ -62,18 +53,26 @@ import org.vesalainen.code.getter.LongGetter;
 import org.vesalainen.code.getter.ObjectGetter;
 import org.vesalainen.code.getter.ShortGetter;
 import org.vesalainen.code.setter.BooleanSetter;
+import org.vesalainen.code.setter.BooleanSingleSetter;
 import org.vesalainen.code.setter.ByteSetter;
+import org.vesalainen.code.setter.ByteSingleSetter;
 import org.vesalainen.code.setter.CharSetter;
+import org.vesalainen.code.setter.CharSingleSetter;
 import org.vesalainen.code.setter.DoubleSetter;
+import org.vesalainen.code.setter.DoubleSingleSetter;
 import org.vesalainen.code.setter.FloatSetter;
+import org.vesalainen.code.setter.FloatSingleSetter;
 import org.vesalainen.code.setter.IntSetter;
+import org.vesalainen.code.setter.IntSingleSetter;
 import org.vesalainen.code.setter.LongSetter;
+import org.vesalainen.code.setter.LongSingleSetter;
 import org.vesalainen.code.setter.ObjectSetter;
+import org.vesalainen.code.setter.ObjectSingleSetter;
 import org.vesalainen.code.setter.ShortSetter;
+import org.vesalainen.code.setter.ShortSingleSetter;
 import org.vesalainen.lang.Bytes;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
-import org.vesalainen.util.function.BooleanConsumer;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -337,7 +336,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(BooleanSetter.class, c.setter.bindTo(this));
+            BooleanSingleSetter s = MethodHandleProxies.asInterfaceInstance(BooleanSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -350,7 +350,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(ByteSetter.class, c.setter.bindTo(this));
+            ByteSingleSetter s = MethodHandleProxies.asInterfaceInstance(ByteSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -363,7 +364,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(CharSetter.class, c.setter.bindTo(this));
+            CharSingleSetter s = MethodHandleProxies.asInterfaceInstance(CharSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -376,7 +378,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(ShortSetter.class, c.setter.bindTo(this));
+            ShortSingleSetter s = MethodHandleProxies.asInterfaceInstance(ShortSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -389,7 +392,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(IntSetter.class, c.setter.bindTo(this));
+            IntSingleSetter s = MethodHandleProxies.asInterfaceInstance(IntSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -402,7 +406,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(LongSetter.class, c.setter.bindTo(this));
+            LongSingleSetter s = MethodHandleProxies.asInterfaceInstance(LongSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -415,7 +420,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(FloatSetter.class, c.setter.bindTo(this));
+            FloatSingleSetter s = MethodHandleProxies.asInterfaceInstance(FloatSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -428,7 +434,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(DoubleSetter.class, c.setter.bindTo(this));
+            DoubleSingleSetter s = MethodHandleProxies.asInterfaceInstance(DoubleSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {
@@ -441,7 +448,8 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         C c = c(property);
         if (c.getter != null)
         {
-            return MethodHandleProxies.asInterfaceInstance(ObjectSetter.class, c.setter.bindTo(this));
+            ObjectSingleSetter s = MethodHandleProxies.asInterfaceInstance(ObjectSingleSetter.class, c.setter.bindTo(this));
+            return (v)->s.set(v);
         }
         else
         {

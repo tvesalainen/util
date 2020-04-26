@@ -32,6 +32,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.code.APS.E;
 import static org.vesalainen.code.APS.E.B2;
+import org.vesalainen.code.getter.DoubleGetter;
+import org.vesalainen.code.getter.IntGetter;
+import org.vesalainen.code.getter.LongGetter;
+import org.vesalainen.code.getter.ObjectGetter;
 import org.vesalainen.code.setter.ByteSetter;
 import org.vesalainen.code.setter.CharSetter;
 import org.vesalainen.code.setter.DoubleSetter;
@@ -133,15 +137,15 @@ public class AnnotatedPropertyStoreTest
     public void testFunctional()
     {
         APS aps = new APS();
-        IntSupplier ints = aps.getIntSupplier("goo");
-        IntSupplier bytes = aps.getIntSupplier("byte");
-        IntSupplier chars = aps.getIntSupplier("char");
-        IntSupplier shorts = aps.getIntSupplier("short");
-        LongSupplier longs = aps.getLongSupplier("long");
-        DoubleSupplier floats = aps.getDoubleSupplier("bar");
-        DoubleSupplier doubles = aps.getDoubleSupplier("double");
-        Supplier<E> enums = aps.getSupplier("enum");
-        Supplier<String> strings = aps.getSupplier("string");
+        IntGetter ints = aps.getIntGetter("goo");
+        IntGetter bytes = aps.getIntGetter("byte");
+        IntGetter chars = aps.getIntGetter("char");
+        IntGetter shorts = aps.getIntGetter("short");
+        LongGetter longs = aps.getLongGetter("long");
+        DoubleGetter floats = aps.getDoubleGetter("bar");
+        DoubleGetter doubles = aps.getDoubleGetter("double");
+        ObjectGetter<E> enums = aps.getObjectGetter("enum");
+        ObjectGetter<String> strings = aps.getObjectGetter("string");
 
         IntSetter intc = aps.getIntSetter("goo");
         ByteSetter bytec = aps.getByteSetter("byte");
@@ -154,30 +158,30 @@ public class AnnotatedPropertyStoreTest
         ObjectSetter<String> stringc = aps.getObjectSetter("string");
         
         intc.set(123);
-        assertEquals(123, ints.getAsInt());
+        assertEquals(123, ints.getInt());
         
         bytec.set((byte)123);
-        assertEquals(123, bytes.getAsInt());
+        assertEquals(123, bytes.getInt());
         
         charc.set('ä');
-        assertEquals('ä', chars.getAsInt());
+        assertEquals('ä', chars.getInt());
         
         shortc.set((short)123);
-        assertEquals(123, shorts.getAsInt());
+        assertEquals(123, shorts.getInt());
         
         longc.set(1234567890);
-        assertEquals(1234567890, longs.getAsLong());
+        assertEquals(1234567890, longs.getLong());
         
         floatc.set(1.23F);
-        assertEquals(1.23, floats.getAsDouble(), 1e-7);
+        assertEquals(1.23, floats.getDouble(), 1e-7);
         
         doublec.set(1.23);
-        assertEquals(1.23, doubles.getAsDouble(), 1e-10);
+        assertEquals(1.23, doubles.getDouble(), 1e-10);
         
         enumc.set(E.B2);
-        assertEquals(E.B2, enums.get());
+        assertEquals(E.B2, enums.getObject());
         
         stringc.set("qwerty");
-        assertEquals("qwerty", strings.get());
+        assertEquals("qwerty", strings.getObject());
     }
 }

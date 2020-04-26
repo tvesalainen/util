@@ -153,7 +153,6 @@ public class Processor extends AbstractProcessor
             String pgk = classname.substring(0, idx);
 
             mp.println("package "+pgk+";");
-            mp.println("import java.lang.invoke.MethodHandle;");
             mp.println("import javax.annotation.Generated;");
             mp.println("import java.util.function.BooleanSupplier;");
             mp.println("import java.util.Objects;");
@@ -185,11 +184,11 @@ public class Processor extends AbstractProcessor
                 String typename = getTypename(tk);
                 
                 // version
-                cp.print("protected int ");
+                cp.print("private int ");
                 cp.print(property);
                 cp.println("Version;");
                 // array
-                cp.print("protected final ");
+                cp.print("private final ");
                 cp.print(tm.toString());
                 cp.print("[]");
                 cp.print(" ");
@@ -199,7 +198,7 @@ public class Processor extends AbstractProcessor
                 cp.println("[2];");
                 
                 // init
-                cp.print("protected final ");
+                cp.print("private final ");
                 cp.print(typename);
                 cp.print("Setter");
                 if ("Object".equals(typename))
@@ -221,7 +220,7 @@ public class Processor extends AbstractProcessor
                 cp.println("Version]=v;};");
 
                 // isModified
-                cp.print("protected BooleanSupplier ");
+                cp.print("private BooleanSupplier ");
                 cp.print(property);
                 cp.print("IsModified = ()->");
                 if ("Object".equals(typename))
@@ -230,17 +229,17 @@ public class Processor extends AbstractProcessor
                     cp.print(property);
                     cp.print("[0], ");
                     cp.print(property);
-                    cp.print("[1]);");
+                    cp.println("[1]);");
                 }
                 else
                 {
                     cp.print(property);
                     cp.print("[0] == ");
                     cp.print(property);
-                    cp.print("[1];");
+                    cp.println("[1];");
                 }
                 // func
-                cp.print("protected ");
+                cp.print("private ");
                 cp.print(typename);
                 cp.print("Setter");
                 if ("Object".equals(typename))

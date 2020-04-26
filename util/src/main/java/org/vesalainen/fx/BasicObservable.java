@@ -32,6 +32,7 @@ public class BasicObservable<B> implements Observable
     private List<WeakReference<InvalidationListener>> observables = new ArrayList<>();
     protected B bean;
     protected String key;
+    protected boolean valid;
 
     public BasicObservable(B bean, String name)
     {
@@ -58,26 +59,37 @@ public class BasicObservable<B> implements Observable
             }
         }
     }
-    
+    /**
+     * Calls invalidate and set's valid again.
+     */
+    public void signal()
+    {
+        invalidate();
+        valid = true;
+    }
     public void invalidate()
     {
         fireInvalidate(this);
     }
     protected void fireInvalidate(Observable observable)
     {
-        Iterator<WeakReference<InvalidationListener>> iterator = observables.iterator();
-        while (iterator.hasNext())
+        if (valid)
         {
-            WeakReference<InvalidationListener> wref = iterator.next();
-            InvalidationListener il = wref.get();
-            if (il == null)
+            Iterator<WeakReference<InvalidationListener>> iterator = observables.iterator();
+            while (iterator.hasNext())
             {
-                iterator.remove();
+                WeakReference<InvalidationListener> wref = iterator.next();
+                InvalidationListener il = wref.get();
+                if (il == null)
+                {
+                    iterator.remove();
+                }
+                else
+                {
+                    il.invalidated(this);
+                }
             }
-            else
-            {
-                il.invalidated(this);
-            }
+            valid = false;
         }
     }
 

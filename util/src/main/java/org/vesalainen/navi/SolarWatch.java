@@ -24,11 +24,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.*;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.LongSupplier;
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;
 import net.e175.klaus.solarpositioning.DeltaT;
 import net.e175.klaus.solarpositioning.Grena3;
+import org.vesalainen.code.getter.DoubleGetter;
+import org.vesalainen.code.getter.LongGetter;
 import static org.vesalainen.navi.SolarWatch.DayPhase.*;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 /**
@@ -39,23 +39,23 @@ public class SolarWatch implements Runnable
 {
     public enum DayPhase {DAY, NIGHT, TWILIGHT};
     
-    private final LongSupplier millis;
+    private final LongGetter millis;
     private boolean running;
-    private LongSupplier updateSeconds;
-    private final DoubleSupplier latitude;
-    private final DoubleSupplier longitude;
-    private DoubleSupplier twilightAngle;
+    private LongGetter updateSeconds;
+    private final DoubleGetter latitude;
+    private final DoubleGetter longitude;
+    private DoubleGetter twilightAngle;
     private DayPhase phase = DAY;
     private final GregorianCalendar cal = new GregorianCalendar();
     private final CachedScheduledThreadPool executor;
     private final List<Consumer<DayPhase>> observers = new ArrayList<>();
 
-    public SolarWatch(DoubleSupplier latitude, DoubleSupplier longitude, DoubleSupplier twilightAngle)
+    public SolarWatch(DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
     {
         this(System::currentTimeMillis, new CachedScheduledThreadPool(), ()->60, latitude, longitude, twilightAngle);
     }
 
-    public SolarWatch(LongSupplier millis, CachedScheduledThreadPool executor, LongSupplier updateSeconds, DoubleSupplier latitude, DoubleSupplier longitude, DoubleSupplier twilightAngle)
+    public SolarWatch(LongGetter millis, CachedScheduledThreadPool executor, LongGetter updateSeconds, DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
     {
         this.millis = millis;
         this.executor = executor;
@@ -106,13 +106,13 @@ public class SolarWatch implements Runnable
             phase = newPhase;
             observers.forEach((o)->o.accept(phase));
         }
-        executor.schedule(this::run, updateSeconds.getAsLong(), SECONDS);
+        executor.schedule(this::run, updateSeconds.getLong(), SECONDS);
     }
     
     private DayPhase phase()
     {
-        cal.setTimeInMillis(millis.getAsLong());
-        AzimuthZenithAngle angle = Grena3.calculateSolarPosition(cal, latitude.getAsDouble(), longitude.getAsDouble(), DeltaT.estimate(cal));
+        cal.setTimeInMillis(millis.getLong());
+        AzimuthZenithAngle angle = Grena3.calculateSolarPosition(cal, latitude.getDouble(), longitude.getDouble(), DeltaT.estimate(cal));
         double zenith = angle.getZenithAngle();
         if (zenith < 90)
         {
@@ -120,7 +120,7 @@ public class SolarWatch implements Runnable
         }
         else
         {
-            if (zenith < 90 + twilightAngle.getAsDouble())
+            if (zenith < 90 + twilightAngle.getDouble())
             {
                 return TWILIGHT;
             }
