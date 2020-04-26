@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandleProxies;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
@@ -52,6 +53,14 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
+import org.vesalainen.code.getter.BooleanGetter;
+import org.vesalainen.code.getter.ByteGetter;
+import org.vesalainen.code.getter.CharGetter;
+import org.vesalainen.code.getter.DoubleGetter;
+import org.vesalainen.code.getter.IntGetter;
+import org.vesalainen.code.getter.LongGetter;
+import org.vesalainen.code.getter.ObjectGetter;
+import org.vesalainen.code.getter.ShortGetter;
 import org.vesalainen.code.setter.BooleanSetter;
 import org.vesalainen.code.setter.ByteSetter;
 import org.vesalainen.code.setter.CharSetter;
@@ -214,160 +223,108 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         cMap.forEach((p, c)->{if (c.setter != null) us.put(p, c.setter);});
         unmodifiableSetters = Collections.unmodifiableMap(us);
     }
-    public BooleanSupplier getBooleanSupplier(String property)
+    @Override
+    public BooleanGetter getBooleanGetter(String property)
     {
         C c = c(property);
         if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "boolean":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (boolean)c.getter.invokeExact(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(BooleanGetter.class, c.getter.bindTo(this));
         }
         else
         {
             throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
-    public IntSupplier getIntSupplier(String property)
+
+    @Override
+    public ByteGetter getByteGetter(String property)
     {
         C c = c(property);
         if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "int":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (int) c.getter.invokeExact(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                case "byte":
-                case "char":
-                case "short":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (int) c.getter.invoke(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(ByteGetter.class, c.getter.bindTo(this));
         }
         else
         {
             throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
-    public DoubleSupplier getDoubleSupplier(String property)
+    
+    @Override
+    public CharGetter getCharGetter(String property)
     {
         C c = c(property);
         if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "double":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (double) c.getter.invokeExact(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                case "float":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (double) c.getter.invoke(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(CharGetter.class, c.getter.bindTo(this));
         }
         else
         {
             throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
-    public LongSupplier getLongSupplier(String property)
+    
+    @Override
+    public ShortGetter getShortGetter(String property)
     {
         C c = c(property);
         if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "long":
-                    return ()->
-                    {
-                        try
-                        {
-                            return (long)c.getter.invokeExact(this);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(ShortGetter.class, c.getter.bindTo(this));
         }
         else
         {
             throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
-    public <T> Supplier<T> getSupplier(String property)
+    
+    @Override
+    public IntGetter getIntGetter(String property)
     {
         C c = c(property);
         if (c.getter != null)
         {
-            return ()->
-            {
-                try
-                {
-                    return (T)c.getter.invoke(this);
-                }
-                catch (Throwable ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-            };
+            return MethodHandleProxies.asInterfaceInstance(IntGetter.class, c.getter.bindTo(this));
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    @Override
+    public DoubleGetter getDoubleGetter(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            return MethodHandleProxies.asInterfaceInstance(DoubleGetter.class, c.getter.bindTo(this));
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    @Override
+    public LongGetter getLongGetter(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            return MethodHandleProxies.asInterfaceInstance(LongGetter.class, c.getter.bindTo(this));
+        }
+        else
+        {
+            throw new IllegalArgumentException(property+" doesn't have a getter");
+        }
+    }
+    @Override
+    public <T> ObjectGetter<T> getObjectGetter(String property)
+    {
+        C c = c(property);
+        if (c.getter != null)
+        {
+            return MethodHandleProxies.asInterfaceInstance(ObjectGetter.class, c.getter.bindTo(this));
         }
         else
         {
@@ -378,254 +335,117 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public BooleanSetter getBooleanSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "boolean":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(BooleanSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public ByteSetter getByteSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "byte":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(ByteSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public CharSetter getCharSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "char":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(CharSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public ShortSetter getShortSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "short":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(ShortSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public IntSetter getIntSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "int":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(IntSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public LongSetter getLongSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "long":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(LongSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public FloatSetter getFloatSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "float":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(FloatSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
+    @Override
     public DoubleSetter getDoubleSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            switch (c.type.getSimpleName())
-            {
-                case "double":
-                    return (v)->
-                    {
-                        try
-                        {
-                            c.setter.invokeExact(this, v);
-                        }
-                        catch (Throwable ex)
-                        {
-                            throw new RuntimeException(ex);
-                        }
-                    };
-                default:
-                    throw new UnsupportedOperationException(c.type.getSimpleName()+" not compatible");
-            }
+            return MethodHandleProxies.asInterfaceInstance(DoubleSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
     public <T> ObjectSetter<T> getObjectSetter(String property)
     {
         C c = c(property);
-        if (c.setter != null)
+        if (c.getter != null)
         {
-            return (v)->
-            {
-                try
-                {
-                    c.setter.invoke(this, v);
-                }
-                catch (Throwable ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-            };
+            return MethodHandleProxies.asInterfaceInstance(ObjectSetter.class, c.setter.bindTo(this));
         }
         else
         {
-            throw new IllegalArgumentException(property+" doesn't have a setter");
+            throw new IllegalArgumentException(property+" doesn't have a getter");
         }
     }
     @Override
