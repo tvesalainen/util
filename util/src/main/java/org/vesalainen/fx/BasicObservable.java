@@ -17,9 +17,9 @@
 package org.vesalainen.fx;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 
@@ -29,7 +29,7 @@ import javafx.beans.Observable;
  */
 public class BasicObservable<B> implements Observable
 {
-    private List<WeakReference<InvalidationListener>> observables = new ArrayList<>();
+    private List<WeakReference<InvalidationListener>> observables = new CopyOnWriteArrayList<>();
     protected B bean;
     protected String key;
     protected boolean valid;

@@ -17,9 +17,9 @@
 package org.vesalainen.fx;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableNumberValue;
 
@@ -29,7 +29,7 @@ import javafx.beans.value.ObservableNumberValue;
  */
 public abstract class BasicObservableNumber extends BasicObservable<Object> implements ObservableNumberValue
 {
-    private List<WeakReference<ChangeListener<? super Number>>> listeners = new ArrayList<>();
+    private List<WeakReference<ChangeListener<? super Number>>> listeners = new CopyOnWriteArrayList<>();
     
     public BasicObservableNumber(Object bean, String name)
     {
