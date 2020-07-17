@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- *
+ * @deprecated Copied to SimplePoint since this is not abstract!
  * @author Timo Vesalainen
  */
 public class AbstractPoint implements Point, Serializable
