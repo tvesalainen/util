@@ -386,6 +386,7 @@ public class LevenbergMarquardt implements Serializable
     /**
      * The function that is being optimized.
      */
+    @FunctionalInterface
     public interface Function
     {
 
@@ -403,6 +404,7 @@ public class LevenbergMarquardt implements Serializable
     /**
      * Jacobian matrix creator
      */
+    @FunctionalInterface
     public interface JacobianFactory
     {
 
