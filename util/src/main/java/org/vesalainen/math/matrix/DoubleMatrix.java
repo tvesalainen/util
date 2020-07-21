@@ -58,7 +58,7 @@ public class DoubleMatrix extends AbstractMatrix
     {
         this(rows, d.length / rows, d);
     }
-    public DoubleMatrix(int rows, int cols, double[] d)
+    public DoubleMatrix(int rows, int cols, double... d)
     {
         super(rows, cols, d);
         supplier = (i, j) -> Array.getDouble(array, cols * i + j);
