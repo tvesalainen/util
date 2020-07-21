@@ -1,13 +1,12 @@
 package org.vesalainen.math;
 
-
 import java.io.Serializable;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
  * <p>
- * This is a straight forward implementation of the Levenberg-Marquardt (LM) algorithm. LM is used to minimize
- * non-linear cost functions:<br>
+ * This is a straight forward implementation of the Levenberg-Marquardt (LM)
+ * algorithm. LM is used to minimize non-linear cost functions:<br>
  * <br>
  * S(P) = Sum{ i=1:m , [y<sub>i</sub> - f(x<sub>i</sub>,P)]<sup>2</sup>}<br>
  * <br>
@@ -15,25 +14,30 @@ import org.vesalainen.math.matrix.DoubleMatrix;
  * </p>
  *
  * <p>
- * In each iteration the parameters are updated using the following equations:<br>
+ * In each iteration the parameters are updated using the following
+ * equations:<br>
  * <br>
  * P<sub>i+1</sub> = (H + &lambda; I)<sup>-1</sup> d <br>
- * d =  (1/N) Sum{ i=1..N , (f(x<sub>i</sub>;P<sub>i</sub>) - y<sub>i</sub>) * jacobian(:,i) } <br>
- * H =  (1/N) Sum{ i=1..N , jacobian(:,i) * jacobian(:,i)<sup>T</sup> }
+ * d = (1/N) Sum{ i=1..N , (f(x<sub>i</sub>;P<sub>i</sub>) - y<sub>i</sub>) *
+ * jacobian(:,i) } <br>
+ * H = (1/N) Sum{ i=1..N , jacobian(:,i) * jacobian(:,i)<sup>T</sup> }
  * </p>
  * <p>
- * Whenever possible the allocation of new memory is avoided.  This is accomplished by reshaping matrices.
- * A matrix that is reshaped won't grow unless the new shape requires more memory than it has available.
+ * Whenever possible the allocation of new memory is avoided. This is
+ * accomplished by reshaping matrices. A matrix that is reshaped won't grow
+ * unless the new shape requires more memory than it has available.
  * </p>
+ *
  * @author Peter Abeles
  */
 public class LevenbergMarquardt implements Serializable
 {
+
     private static final long serialVersionUID = 1L;
     // how much the numerical jacobian calculation perturbs the parameters by.
     // In better implementation there are better ways to compute this delta.  See Numerical Recipes.
     private final static double DELTA = 1e-8;
-    
+
     private int iter1 = 25;
     private int iter2 = 5;
     private double maxDifference = 1e-8;
@@ -81,7 +85,7 @@ public class LevenbergMarquardt implements Serializable
      * @param funcCost Cost function that is being optimized.
      * @param jacobianFactory
      */
-    public LevenbergMarquardt( Function funcCost, JacobianFactory jacobianFactory )
+    public LevenbergMarquardt(Function funcCost, JacobianFactory jacobianFactory)
     {
         this.initialLambda = 1;
 
@@ -89,32 +93,34 @@ public class LevenbergMarquardt implements Serializable
         int maxElements = 1;
         int numParam = 1;
 
-        this.temp0 = new DoubleMatrix(maxElements,1);
-        this.temp1 = new DoubleMatrix(maxElements,1);
-        this.tempDH = new DoubleMatrix(maxElements,1);
-        this.jacobian = new DoubleMatrix(numParam,maxElements);
+        this.temp0 = new DoubleMatrix(maxElements, 1);
+        this.temp1 = new DoubleMatrix(maxElements, 1);
+        this.tempDH = new DoubleMatrix(maxElements, 1);
+        this.jacobian = new DoubleMatrix(numParam, maxElements);
 
         this.func = funcCost;
         this.jacobianFactory = jacobianFactory;
 
-        this.param = new DoubleMatrix(numParam,1);
-        this.d = new DoubleMatrix(numParam,1);
-        this.H = new DoubleMatrix(numParam,numParam);
-        this.negDelta = new DoubleMatrix(numParam,1);
-        this.tempParam = new DoubleMatrix(numParam,1);
-        this.A = new DoubleMatrix(numParam,numParam);
+        this.param = new DoubleMatrix(numParam, 1);
+        this.d = new DoubleMatrix(numParam, 1);
+        this.H = new DoubleMatrix(numParam, numParam);
+        this.negDelta = new DoubleMatrix(numParam, 1);
+        this.tempParam = new DoubleMatrix(numParam, 1);
+        this.A = new DoubleMatrix(numParam, numParam);
     }
 
-
-    public double getInitialCost() {
+    public double getInitialCost()
+    {
         return initialCost;
     }
 
-    public double getFinalCost() {
+    public double getFinalCost()
+    {
         return finalCost;
     }
 
-    public DoubleMatrix getParameters() {
+    public DoubleMatrix getParameters()
+    {
         return param;
     }
 
@@ -126,22 +132,23 @@ public class LevenbergMarquardt implements Serializable
      * @param Y The "observed" output of the function
      * @return true if it succeeded and false if it did not.
      */
-    public boolean optimize( DoubleMatrix initParam ,
-                             DoubleMatrix X ,
-                             DoubleMatrix Y )
+    public boolean optimize(DoubleMatrix initParam,
+            DoubleMatrix X,
+            DoubleMatrix Y)
     {
         if (X.rows() == 0)
         {
             return false;
         }
-        configure(initParam,X,Y);
+        configure(initParam, X, Y);
 
         // save the cost of the initial parameters so that it knows if it improves or not
-        initialCost = cost(param,X,Y);
+        initialCost = cost(param, X, Y);
 
         // iterate until the difference between the costs is insignificant
         // or it iterates too many times
-        if( !adjustParam(X, Y, initialCost) ) {
+        if (!adjustParam(X, Y, initialCost))
+        {
             finalCost = Double.NaN;
             return false;
         }
@@ -150,96 +157,108 @@ public class LevenbergMarquardt implements Serializable
     }
 
     /**
-     * Iterate until the difference between the costs is insignificant
-     * or it iterates too many times
+     * Iterate until the difference between the costs is insignificant or it
+     * iterates too many times
      */
     private boolean adjustParam(DoubleMatrix X, DoubleMatrix Y,
-                                double prevCost) {
+            double prevCost)
+    {
         // lambda adjusts how big of a step it takes
         double lambda = initialLambda;
         // the difference between the current and previous cost
         double difference = 1000;
 
-        for( int iter = 0; iter < iter1 && difference > maxDifference ; iter++ ) {
+        for (int iter = 0; iter < iter1 && difference > maxDifference; iter++)
+        {
             // compute some variables based on the gradient
-            computeDandH(param,X,Y);
+            computeDandH(param, X, Y);
 
             // try various step sizes and see if any of them improve the
             // results over what has already been done
             boolean foundBetter = false;
-            for( int i = 0; i < iter2; i++ ) {
-                computeA(A,H,lambda);
+            for (int i = 0; i < iter2; i++)
+            {
+                computeA(A, H, lambda);
 
-                if( !DoubleMatrix.solve(A,d,negDelta) ) {
+                if (!DoubleMatrix.solve(A, d, negDelta))
+                {
                     return false;
                 }
                 // compute the candidate parameters
                 DoubleMatrix.subtract(param, negDelta, tempParam);
 
-                double cost = cost(tempParam,X,Y);
-                if( cost < prevCost ) {
+                double cost = cost(tempParam, X, Y);
+                if (cost < prevCost)
+                {
                     // the candidate parameters produced better results so use it
                     foundBetter = true;
                     param.set(tempParam);
                     difference = prevCost - cost;
                     prevCost = cost;
                     lambda /= 10.0;
-                } else {
+                }
+                else
+                {
                     lambda *= 10.0;
                 }
             }
 
             // it reached a point where it can't improve so exit
-            if( !foundBetter )
+            if (!foundBetter)
+            {
                 break;
+            }
         }
         finalCost = prevCost;
         return true;
     }
 
     /**
-     * Performs sanity checks on the input data and reshapes internal matrices.  By reshaping
-     * a matrix it will only declare new memory when needed.
+     * Performs sanity checks on the input data and reshapes internal matrices.
+     * By reshaping a matrix it will only declare new memory when needed.
      */
-    protected void configure( DoubleMatrix initParam , DoubleMatrix X , DoubleMatrix Y )
+    protected void configure(DoubleMatrix initParam, DoubleMatrix X, DoubleMatrix Y)
     {
-        if( Y.getNumRows() != X.getNumRows() ) {
+        if (Y.getNumRows() != X.getNumRows())
+        {
             throw new IllegalArgumentException("Different vector lengths");
-        } else if( Y.getNumCols() != 1 /*|| X.getNumCols() != 1*/ ) {
+        }
+        else if (Y.getNumCols() != 1 /*|| X.getNumCols() != 1*/)
+        {
             throw new IllegalArgumentException("Inputs must be a column vector");
         }
 
         int numParam = initParam.getNumElements();
         int numPoints = Y.getNumRows();
 
-        if( param.getNumElements() != initParam.getNumElements() ) {
+        if (param.getNumElements() != initParam.getNumElements())
+        {
             // reshaping a matrix means that new memory is only declared when needed
-            this.param.reshape(numParam,1, false);
-            this.d.reshape(numParam,1, false);
-            this.H.reshape(numParam,numParam, false);
-            this.negDelta.reshape(numParam,1, false);
-            this.tempParam.reshape(numParam,1, false);
-            this.A.reshape(numParam,numParam, false);
+            this.param.reshape(numParam, 1, false);
+            this.d.reshape(numParam, 1, false);
+            this.H.reshape(numParam, numParam, false);
+            this.negDelta.reshape(numParam, 1, false);
+            this.tempParam.reshape(numParam, 1, false);
+            this.A.reshape(numParam, numParam, false);
         }
 
         param.set(initParam);
 
         // reshaping a matrix means that new memory is only declared when needed
-        temp0.reshape(numPoints,1, false);
-        temp1.reshape(numPoints,1, false);
-        tempDH.reshape(numPoints,1, false);
-        jacobian.reshape(numParam,numPoints, false);
-
+        temp0.reshape(numPoints, 1, false);
+        temp1.reshape(numPoints, 1, false);
+        tempDH.reshape(numPoints, 1, false);
+        jacobian.reshape(numParam, numPoints, false);
 
     }
 
     /**
-     * Computes the d and H parameters.  Where d is the average error gradient and
-     * H is an approximation of the hessian.
+     * Computes the d and H parameters. Where d is the average error gradient
+     * and H is an approximation of the hessian.
      */
-    private void computeDandH( DoubleMatrix param , DoubleMatrix x , DoubleMatrix y )
+    private void computeDandH(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
     {
-        func.compute(param,x, tempDH);
+        func.compute(param, x, tempDH);
         DoubleMatrix.subtractEquals(tempDH, y);
 
         if (jacobianFactory != null)
@@ -248,24 +267,26 @@ public class LevenbergMarquardt implements Serializable
         }
         else
         {
-            computeNumericalJacobian(param,x,jacobian);
+            computeNumericalJacobian(param, x, jacobian);
         }
 
         int numParam = param.getNumElements();
         int length = y.getNumElements();
 
         // d = average{ (f(x_i;p) - y_i) * jacobian(:,i) }
-        for( int i = 0; i < numParam; i++ ) {
+        for (int i = 0; i < numParam; i++)
+        {
             double total = 0;
-            for( int j = 0; j < length; j++ ) {
-                total += tempDH.get(j,0)*jacobian.get(i,j);
+            for (int j = 0; j < length; j++)
+            {
+                total += tempDH.get(j, 0) * jacobian.get(i, j);
             }
-            d.set(i,0,total/length);
+            d.set(i, 0, total / length);
         }
 
         // compute the approximation of the hessian
-        DoubleMatrix.multTransB(jacobian,jacobian,H);
-        DoubleMatrix.scale(1.0/length,H);
+        DoubleMatrix.multTransB(jacobian, jacobian, H);
+        DoubleMatrix.scale(1.0 / length, H);
     }
 
     /**
@@ -273,13 +294,14 @@ public class LevenbergMarquardt implements Serializable
      * <br>
      * where I is an identity matrix.
      */
-    private void computeA( DoubleMatrix A , DoubleMatrix H , double lambda )
+    private void computeA(DoubleMatrix A, DoubleMatrix H, double lambda)
     {
         final int numParam = param.getNumElements();
 
         A.set(H);
-        for( int i = 0; i < numParam; i++ ) {
-            A.set(i,i, A.get(i,i) + lambda);
+        for (int i = 0; i < numParam; i++)
+        {
+            A.set(i, i, A.get(i, i) + lambda);
         }
     }
 
@@ -288,39 +310,41 @@ public class LevenbergMarquardt implements Serializable
      *
      * cost = (1/N) Sum (f(x;p) - y)^2
      */
-    public double cost( DoubleMatrix param , DoubleMatrix X , DoubleMatrix Y)
+    public double cost(DoubleMatrix param, DoubleMatrix X, DoubleMatrix Y)
     {
-        func.compute(param,X, temp0);
+        func.compute(param, X, temp0);
 
-        double error = DoubleMatrix.diffNorm(temp0,Y);
+        double error = DoubleMatrix.diffNorm(temp0, Y);
 
-        return error*error / (double)X.rows();
+        return error * error / (double) X.rows();
     }
 
     /**
      * Computes a simple numerical Jacobian.
      *
-     * @param param The set of parameters that the Jacobian is to be computed at.
+     * @param param The set of parameters that the Jacobian is to be computed
+     * at.
      * @param pt The point around which the Jacobian is to be computed.
      * @param deriv Where the jacobian will be stored
      */
-    protected void computeNumericalJacobian( DoubleMatrix param ,
-                                             DoubleMatrix pt ,
-                                             DoubleMatrix deriv )
+    protected void computeNumericalJacobian(DoubleMatrix param,
+            DoubleMatrix pt,
+            DoubleMatrix deriv)
     {
-        double invDelta = 1.0/DELTA;
+        double invDelta = 1.0 / DELTA;
 
-        func.compute(param,pt, temp0);
+        func.compute(param, pt, temp0);
 
         // compute the jacobian by perturbing the parameters slightly
         // then seeing how it effects the results.
-        for( int i = 0; i < param.rows(); i++ ) {
+        for (int i = 0; i < param.rows(); i++)
+        {
             param.add(i, 0, DELTA);
-            func.compute(param,pt, temp1);
+            func.compute(param, pt, temp1);
             // compute the difference between the two parameters and divide by the delta
-            DoubleMatrix.add(invDelta,temp1,-invDelta,temp0,temp1);
+            DoubleMatrix.add(invDelta, temp1, -invDelta, temp0, temp1);
             // copy the results into the jacobian matrix
-            for (int r=0;r<temp1.rows();r++)
+            for (int r = 0; r < temp1.rows(); r++)
             {
                 deriv.set(i, r, temp1.get(r, 0));
             }
@@ -328,25 +352,31 @@ public class LevenbergMarquardt implements Serializable
             param.sub(i, 0, DELTA);
         }
     }
+
     /**
      * Sets the main loop count. Initially 25
-     * @param iter1 
+     *
+     * @param iter1
      */
     public void setIter1(int iter1)
     {
         this.iter1 = iter1;
     }
+
     /**
      * Sets the inner loop count. Initially 5
-     * @param iter2 
+     *
+     * @param iter2
      */
     public void setIter2(int iter2)
     {
         this.iter2 = iter2;
     }
+
     /**
      * Sets the max cost difference
-     * @param maxDifference 
+     *
+     * @param maxDifference
      */
     public void setMaxDifference(double maxDifference)
     {
@@ -356,21 +386,26 @@ public class LevenbergMarquardt implements Serializable
     /**
      * The function that is being optimized.
      */
-    public interface Function {
+    public interface Function
+    {
+
         /**
-         * Computes the output for each value in matrix x given the set of parameters.
+         * Computes the output for each value in matrix x given the set of
+         * parameters.
          *
          * @param param The parameter for the function.
          * @param x the input points.
          * @param y the resulting output.
          */
-        public void compute( DoubleMatrix param , DoubleMatrix x , DoubleMatrix y );
+        public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y);
     }
+
     /**
      * Jacobian matrix creator
      */
     public interface JacobianFactory
     {
-        public void computeJacobian( DoubleMatrix param , DoubleMatrix x , DoubleMatrix jacobian );
+
+        public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian);
     }
 }
