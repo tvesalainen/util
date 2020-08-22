@@ -359,7 +359,7 @@ public class SimplePoint implements Point, Serializable
     @Override
     public String toString()
     {
-        return "AbstractPoint{" + "x=" + x + ", y=" + y + '}';
+        return "Point{" + "x=" + x + ", y=" + y + '}';
     }
     
     private static class XComparator implements Comparator<Point>

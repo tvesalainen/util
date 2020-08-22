@@ -46,6 +46,7 @@ import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.Point;
 import org.vesalainen.math.BasicPolygon;
 import org.vesalainen.math.Polygon;
+import org.vesalainen.math.SimplePoint;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import static org.vesalainen.ui.Direction.*;
 import org.vesalainen.ui.scale.MergeScale;
@@ -450,6 +451,11 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         }
     }
 
+    public void lineToAngle(double degrees, double length)
+    {
+        double rad = Math.toRadians(degrees);
+        lineTo(Math.cos(rad)*length, Math.sin(rad)*length);
+    }
     public void lineTo(double x, double y)
     {
         if (Double.isNaN(lastX))
@@ -484,7 +490,17 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
-
+    public void drawLineTo(double x, double y, double degrees, double length)
+    {
+        drawLineTo(new SimplePoint(x, y), degrees, length);
+    }
+    public void drawLineTo(Point p1, double degrees, double length)
+    {
+        double x = p1.getX();
+        double y = p1.getY();
+        double rad = Math.toRadians(degrees);
+        drawLine(x, y, x+Math.cos(rad)*length, y+Math.sin(rad)*length);
+    }
     public void drawLine(double x1, double y1, double x2, double y2)
     {
         shapes.add(new Drawable(new Line2D.Double(x1, y1, x2, y2)));

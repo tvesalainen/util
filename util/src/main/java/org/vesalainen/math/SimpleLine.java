@@ -7,22 +7,26 @@
 package org.vesalainen.math;
 
 /**
- * @deprecated Use SimpleLine
  * Line implementation
  * 
  * <p>If line is vertical slope = infinity, a = constant x
  * @author  tkv
  */
-public class AbstractLine implements Line
+public class SimpleLine implements Line
 {
     protected double a;
     protected double slope;
+
+    public SimpleLine()
+    {
+    }
+    
     /**
      * Creates AbstractLine with slope and going through p
      * @param slope
      * @param p 
      */
-    public AbstractLine(double slope, Point p)
+    public SimpleLine(double slope, Point p)
     {
         this(slope, p.getX(), p.getY());
     }
@@ -32,7 +36,7 @@ public class AbstractLine implements Line
      * @param x
      * @param y 
      */
-    public AbstractLine(double slope, double x, double y)
+    public SimpleLine(double slope, double x, double y)
     {
         set(slope, x, y);
     }
@@ -42,7 +46,7 @@ public class AbstractLine implements Line
      * @param p1
      * @param p2 
      */
-    public AbstractLine(Point p1, Point p2)
+    public SimpleLine(Point p1, Point p2)
     {
         this(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
@@ -53,7 +57,7 @@ public class AbstractLine implements Line
      * @param x2
      * @param y2 
      */
-    public AbstractLine(double x1, double y1, double x2, double y2)
+    public SimpleLine(double x1, double y1, double x2, double y2)
     {
         set(x1, y1, x2, y2);
     }
@@ -251,7 +255,7 @@ public class AbstractLine implements Line
         {
             return false;
         }
-        final AbstractLine other = (AbstractLine) obj;
+        final SimpleLine other = (SimpleLine) obj;
         if (Double.doubleToLongBits(this.a) != Double.doubleToLongBits(other.a))
         {
             return false;

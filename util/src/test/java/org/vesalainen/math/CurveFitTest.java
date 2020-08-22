@@ -45,8 +45,8 @@ public class CurveFitTest
         double expB = 5;
         double expC = 1;
         double[] input = new double[] {-1, 0, 1, 2, 3};
-        DoubleMatrix param = new DoubleMatrix(3, 1, true, 1, 1, 1); 
-        DoubleMatrix x = new DoubleMatrix(5, 1, true, input);
+        DoubleMatrix param = new DoubleMatrix(3, 1, 1, 1, 1); 
+        DoubleMatrix x = new DoubleMatrix(5, 1, input);
         DoubleMatrix y = new DoubleMatrix(x.rows(), 1);
         int index = 0;
         for (double xx : input)
@@ -70,8 +70,8 @@ public class CurveFitTest
         double expB = 5;
         double expC = 1;
         double[] input = new double[] {-1, 0, 1, 2, 3};
-        DoubleMatrix param = new DoubleMatrix(3, 1, true, 1, 1, 1); 
-        DoubleMatrix x = new DoubleMatrix(5, 1, true, input);
+        DoubleMatrix param = new DoubleMatrix(3, 1, 1, 1, 1); 
+        DoubleMatrix x = new DoubleMatrix(5, 1, input);
         DoubleMatrix y = new DoubleMatrix(x.rows(), 1);
         int index = 0;
         for (double xx : input)
