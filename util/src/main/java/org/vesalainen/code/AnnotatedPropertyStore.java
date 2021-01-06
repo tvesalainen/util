@@ -515,6 +515,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 {
                     throw ex;
                 }
+                return;
             }
             MethodHandle copier = c.copier;
             if (copier != null)
@@ -605,7 +606,10 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public final void load(BufferedReader br, boolean reportMissingProperties) throws IOException
     {
         String line = br.readLine();
-        checkClass(line);
+        if (line != null)
+        {
+            checkClass(line);
+        }
         while (line != null)
         {
             line = line.trim();
