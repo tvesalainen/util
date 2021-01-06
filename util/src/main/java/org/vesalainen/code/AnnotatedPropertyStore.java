@@ -504,7 +504,18 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         }
         properties.forEach((property) ->
         {
-            C c = c(property);
+            C c = null;
+            try
+            {
+                c = c(property);
+            }
+            catch (IllegalArgumentException ex)
+            {
+                if (reportMissingProperties)
+                {
+                    throw ex;
+                }
+            }
             MethodHandle copier = c.copier;
             if (copier != null)
             {
