@@ -17,7 +17,9 @@
 package org.vesalainen.can.dbc;
 
 import java.nio.ByteOrder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,6 +40,7 @@ public class Signal
     private String unit;
     private List<String> receivers;
     private String comment;
+    private Map<String,Attribute> attributes = new HashMap<>();
 
     public Signal(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
@@ -118,6 +121,11 @@ public class Signal
     void setComment(String comment)
     {
         this.comment = comment;
+    }
+
+    void setAttribute(Attribute attribute)
+    {
+        attributes.put(attribute.getName(), attribute);
     }
             
 }

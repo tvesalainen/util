@@ -17,6 +17,7 @@
 package org.vesalainen.can.dbc;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,6 +30,8 @@ public class DBCFile
     private Map<String,Node> nodes = new HashMap<>();
     private Map<Integer,Message> messages = new HashMap<>();
     private String comment;
+    private Map<String,Attribute> attributes = new HashMap<>();
+    private Map<String,List<ValueDescription>> valueTables = new HashMap<>();
 
     void setVersion(String version)
     {
@@ -68,5 +71,55 @@ public class DBCFile
         Message message = messages.get(id);
         message.setSignalComment(signal, comment);
     }
-    
+
+    void addAttribute(String name, AttributeValueType type)
+    {
+        if (attributes.put(name, new Attribute(name, type)) != null)
+        {
+            throw new IllegalArgumentException("duplicate attribute "+name);
+        };
+    }
+
+    void setAttributeDefault(String name, Object value)
+    {
+        Attribute attribute = attributes.get(name);
+        attribute.setDefault(value);
+    }
+
+    void setAttributeValue(String name, Object value)
+    {
+        Attribute attribute = attributes.get(name);
+        attribute.setValue(value);
+    }
+
+    void setNodeAttributeValue(String name, String nodeName, Object value)
+    {
+        Attribute attribute = attributes.get(name);
+        attribute.setValue(value);
+        Node node = nodes.get(nodeName);
+        node.setAttribute(attribute);
+        
+    }
+
+    void setMessageAttributeValue(String name, int id, Object value)
+    {
+        Attribute attribute = attributes.get(name);
+        attribute.setValue(value);
+        Message message = messages.get(id);
+        message.setAttribute(attribute);
+    }
+
+    void setSignalAttributeValue(String name, int id, String signalName, Object value)
+    {
+        Attribute attribute = attributes.get(name);
+        attribute.setValue(value);
+        Message message = messages.get(id);
+        message.setSignalAttribute(signalName, attribute);
+    }
+
+    void addValueTable(String name, List<ValueDescription> valueDescriptions)
+    {
+        valueTables.put(name, valueDescriptions);
+    }
+
 }

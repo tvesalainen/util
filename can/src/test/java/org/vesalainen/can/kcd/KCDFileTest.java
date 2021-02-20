@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,34 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.kcd;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Node
+public class KCDFileTest
 {
-    private String name;
-    private String comment;
-    private Map<String,Attribute> attributes = new HashMap<>();
     
-    public Node(String name)
+    public KCDFileTest()
     {
-        this.name = name;
     }
 
-    void setComment(String comment)
+    @Test
+    public void testOrion_CANBUS() throws MalformedURLException
     {
-        this.comment = comment;
-    }
-
-    void setAttribute(Attribute attribute)
-    {
-        attributes.put(attribute.getName(), attribute);
+        KCDFile kcd = new KCDFile(Paths.get("src\\test\\resources\\Orion_CANBUS.kcd"));
     }
     
 }

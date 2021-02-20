@@ -32,6 +32,7 @@ public class Message
     private String transmitter;
     private Map<String,Signal> signals = new HashMap<>();
     private String comment;
+    private Map<String,Attribute> attributes = new HashMap<>();
 
     public Message(Integer id, String name, Integer size, String transmitter, List<Signal> signals)
     {
@@ -79,6 +80,17 @@ public class Message
     {
         Signal signal = signals.get(name);
         signal.setComment(comment);
+    }
+
+    void setAttribute(Attribute attribute)
+    {
+        attributes.put(attribute.getName(), attribute);
+    }
+
+    void setSignalAttribute(String signalName, Attribute attribute)
+    {
+        Signal signal = signals.get(signalName);
+        signal.setAttribute(attribute);
     }
     
 }

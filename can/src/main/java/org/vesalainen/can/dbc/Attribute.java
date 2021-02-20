@@ -16,18 +16,51 @@
  */
 package org.vesalainen.can.dbc;
 
-import java.util.List;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ValueTable
+public class Attribute
 {
+    private String name;
+    private AttributeValueType type;
+    private Object def;
+    private Object value;
 
-    ValueTable(String name, List<ValueDescription> valueDescriptions)
+    public Attribute(String name, AttributeValueType type)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.name = name;
+        this.type = type;
+    }
+    
+    void setDefault(Object value)
+    {
+        this.def = value;
+    }
+
+    void setValue(Object value)
+    {
+        this.value = value;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public AttributeValueType getType()
+    {
+        return type;
+    }
+
+    public Object getDef()
+    {
+        return def;
+    }
+
+    public Object getValue()
+    {
+        return value;
     }
     
 }

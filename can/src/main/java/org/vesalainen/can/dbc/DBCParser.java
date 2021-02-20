@@ -96,14 +96,14 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         dbcFile.addNode(name);
     }
     @Rule(left="value_tables", value={"(value_table)*"})
-    protected void valueTables(List<ValueTable> list)
+    protected void valueTables()
     {
         
     }
     @Rule(left="value_table", value={"VAL_TABLE_ value_table_name (value_description)* ';'"})
-    protected ValueTable valueTable(String name, List<ValueDescription> valueDescriptions)
+    protected void valueTable(String name, List<ValueDescription> valueDescriptions, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new ValueTable(name, valueDescriptions);
+        dbcFile.addValueTable(name, valueDescriptions);
     }
     @Rule(left="value_table_name", value={"C_identifier"})
     protected String valueTableName(String name)
@@ -111,9 +111,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return name;
     }
     @Rule(left="value_description", value={"double char_string"})
-    protected ValueDescription valueDescription(double v, String d)
+    protected ValueDescription valueDescription(double value, String description)
     {
-        return new ValueDescription(v, d);
+        return new ValueDescription(value, description);
     }
     @Rule(left="messages", value={"(message)*"})
     protected void messages()
@@ -139,7 +139,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return size;
     }
-    @Rule(left="transmitter", value={"node_name"})
+    @Rule(left="transmitter", value={"C_identifier"})
     protected String transmitter1(String node)
     {
         return node;
@@ -230,7 +230,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return name;
     }
-    @Rule(left="receiver", value={"node_name"})
+    @Rule(left="receiver", value={"C_identifier"})
     protected String receiver(String name)
     {
         return name;
@@ -304,7 +304,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         int i = type.charAt(17)-'0';
         return AccessType.values()[i];
     }
-    @Rule(left="access_node", value={"((node_name) | (VECTOR_XXX))"})
+    @Rule(left="access_node", value={"((C_identifier) | (VECTOR_XXX))"})
     protected String accessNode(String node)
     {
         return node;
@@ -386,7 +386,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         dbcFile.setComment(comment);
     }
-    @Rule(left="comment", value={"CM_ BU_ node_name char_string ';'"})
+    @Rule(left="comment", value={"CM_ BU_ C_identifier char_string ';'"})
     protected void comment(String name, String comment, @ParserContext("DBCFile") DBCFile dbcFile)
     {
         dbcFile.setNodeComment(name, comment);
@@ -406,18 +406,18 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
     }
     @Rule(left="attribute_definitions", value={"(attribute_definition)*"})
-    protected void attributeDefinitions(List<AttributeDefinition> list)
+    protected void attributeDefinitions()
     {
     }
     @Rule(left="attribute_definition", value={"BA_DEF_ object_type attribute_name attribute_value_type ';'"})
-    protected AttributeDefinition attributeDefinition(ObjectType objectType, String name, AttributeValueType type)
+    protected void attributeDefinition(ObjectType objectType, String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new AttributeDefinition(objectType, name, type);
+        dbcFile.addAttribute(name, type);
     }
     @Rule(left="attribute_definition", value={"BA_DEF_ attribute_name attribute_value_type ';'"})
-    protected AttributeDefinition attributeDefinition(String name, AttributeValueType type)
+    protected void attributeDefinition(String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new AttributeDefinition(name, type);
+        dbcFile.addAttribute(name, type);
     }
     @Terminal(left="object_type", expression="((BU_)|(BO_)|(SG_)|(EV_))")
     protected ObjectType objectType(String type)
@@ -449,19 +449,19 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return new StringAttributeValueType();
     }
-    @Rule(left="attribute_value_type", value={"ENUM identifierList"})
+    @Rule(left="attribute_value_type", value={"ENUM charStringList"})
     protected AttributeValueType attributeValueType(List<String> types)
     {
         return new EnumAttributeValueType(types);
     }
     @Rule(left="attribute_defaults", value={"(attribute_default)*"})
-    protected void attributeDefaults(List<AttributeValueForObject> values)
+    protected void attributeDefaults()
     {
     }
     @Rule(left="attribute_default", value={"BA_DEF_DEF_ attribute_name attribute_value ';'"})
-    protected AttributeValueForObject attributeDefault(String name, Object value)
+    protected void attributeDefault(String name, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new AttributeValue(name, value);
+        dbcFile.setAttributeDefault(name, value);
     }
     @Rule(left="attribute_value", value={"double"})
     protected Double attributeValue(double value)
@@ -474,31 +474,31 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return value;
     }
     @Rule(left="attribute_values", value={"(attribute_value_for_object)*"})
-    protected void attributeValues(List<AttributeValueForObject> values)
+    protected void attributeValues()
     {
     }
     @Rule(left="attribute_value_for_object", value={"BA_ attribute_name attribute_value ';'"})
-    protected AttributeValueForObject attributeValueForObject(String name, Object value)
+    protected void attributeValueForObject(String name, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new AttributeValue(name, value);
+        dbcFile.setAttributeValue(name, value);
     }
-    @Rule(left="attribute_value_for_object", value={"BA_ attribute_name BU_ node_name attribute_value ';'"})
-    protected AttributeValueForObject attributeValueForNetwork(String name, String node, Object value)
+    @Rule(left="attribute_value_for_object", value={"BA_ attribute_name BU_ C_identifier attribute_value ';'"})
+    protected void attributeValueForNode(String name, String node, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new NetworkAttributeValue(name, node, value);
+        dbcFile.setNodeAttributeValue(name, node, value);
     }
     @Rule(left="attribute_value_for_object", value={"BA_ attribute_name BO_ message_id attribute_value ';'"})
-    protected AttributeValueForObject attributeValueForMessage(String name, int id, Object value)
+    protected void attributeValueForMessage(String name, int id, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new MessageAttributeValue(name, id, value);
+        dbcFile.setMessageAttributeValue(name, id, value);
     }
     @Rule(left="attribute_value_for_object", value={"BA_ attribute_name SG_ message_id signal_name attribute_value ';'"})
-    protected AttributeValueForObject attributeValueForSignal(String name, int id, String signal, Object value)
+    protected void attributeValueForSignal(String name, int id, String signal, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new SignalAttributeValue(name, id, signal, value);
+        dbcFile.setSignalAttributeValue(name, id, signal, value);
     }
     @Rule(left="attribute_value_for_object", value={"BA_ attribute_name EV_ env_var_name attribute_value ';'"})
-    protected AttributeValueForObject attributeValueForEnvironment(String name, String envVar, Object value)
+    protected AttributeValueForObject attributeValueForEnvironment(String name, String envVar, Object value, @ParserContext("DBCFile") DBCFile dbcFile)
     {
         return new EnvironmentAttributeValue(name, envVar, value);
     }
@@ -515,7 +515,10 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
      * unsigned_integer: an unsigned integer
      */
     @Terminal(left="unsigned_integer", expression = "[0-9]+")
-    protected abstract int unsignedint(int value);
+    protected int unsignedint(long value)
+    {
+        return (int) value;
+    }
     /**
      * signed_integer: a signed integer
      */
@@ -529,7 +532,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     /**
      * char_string: an arbitrary string consisting of any printable characters except double hyphens ('"').
      */
-    @Terminal(expression = "\"[^\"]*\"")
+    @Terminal(expression = "\"([^\"]|\\\\\")*\"")
     protected String char_string(CharSequence seq)
     {
         return seq.subSequence(1, seq.length() - 1).toString();
@@ -552,6 +555,19 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     }
     @Rule("identifierList '\\,' C_identifier")
     protected List<String> identifierList(List<String> list, String item)
+    {
+        list.add(item);
+        return list;
+    }
+    @Rule("char_string")
+    protected List<String> charStringList(String item)
+    {
+        List<String> list = new ArrayList<>();
+        list.add(item);
+        return list;
+    }
+    @Rule("charStringList '\\,' char_string")
+    protected List<String> charStringList(List<String> list, String item)
     {
         list.add(item);
         return list;

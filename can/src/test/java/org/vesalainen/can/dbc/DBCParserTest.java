@@ -18,6 +18,7 @@ package org.vesalainen.can.dbc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -54,6 +55,24 @@ public class DBCParserTest
         {
             parser.parse(is, dbcFile);
         }
+    }
+    @Test
+    public void testCurtis() throws IOException
+    {
+        DBCFile dbcFile = new DBCFile();
+        DBCParser parser = DBCParser.getInstance();
+        try (InputStream is = DBCParser.class.getResourceAsStream("/curtis_ac1239_map.dbc"))
+        {
+            parser.parse(is, dbcFile);
+        }
+    }
+    //@Test
+    public void testJ1939() throws IOException
+    {
+        DBCFile dbcFile = new DBCFile();
+        DBCParser parser = DBCParser.getInstance();
+        URL url = new URL("https://hackage.haskell.org/package/ecu-0.0.8/src/src/j1939_utf8.dbc");
+        parser.parse(url, dbcFile);
     }
     
 }
