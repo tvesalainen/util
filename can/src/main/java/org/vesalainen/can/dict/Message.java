@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.dict;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,23 +71,23 @@ public class Message
         return signals;
     }
 
-    void setComment(String comment)
+    public void setComment(String comment)
     {
         this.comment = comment;
     }
 
-    void setSignalComment(String name, String comment)
+    public void setSignalComment(String name, String comment)
     {
         Signal signal = signals.get(name);
         signal.setComment(comment);
     }
 
-    void setAttribute(Attribute attribute)
+    public void setAttribute(Attribute attribute)
     {
         attributes.put(attribute.getName(), attribute);
     }
 
-    void setSignalAttribute(String signalName, Attribute attribute)
+    public void setSignalAttribute(String signalName, Attribute attribute)
     {
         Signal signal = signals.get(signalName);
         signal.setAttribute(attribute);

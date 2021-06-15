@@ -14,13 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.dict;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-class AttributeValueType
+public class MultiplexerIndicator
 {
+    private int value;
+
+    public MultiplexerIndicator()
+    {
+    }
+
+    public MultiplexerIndicator(int value)
+    {
+        this.value = value;
+    }
     
 }

@@ -16,6 +16,11 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.AttributeValueType;
+import org.vesalainen.can.dict.ValueType;
+import org.vesalainen.can.dict.MultiplexerIndicator;
+import org.vesalainen.can.dict.Message;
+import org.vesalainen.can.dict.Signal;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;

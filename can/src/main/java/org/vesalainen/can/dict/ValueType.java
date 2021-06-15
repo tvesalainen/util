@@ -14,53 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.dict;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Attribute
+public enum ValueType
 {
-    private String name;
-    private AttributeValueType type;
-    private Object def;
-    private Object value;
-
-    public Attribute(String name, AttributeValueType type)
-    {
-        this.name = name;
-        this.type = type;
-    }
-    
-    void setDefault(Object value)
-    {
-        this.def = value;
-    }
-
-    void setValue(Object value)
-    {
-        this.value = value;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public AttributeValueType getType()
-    {
-        return type;
-    }
-
-    public Object getDef()
-    {
-        return def;
-    }
-
-    public Object getValue()
-    {
-        return value;
-    }
-    
+    UNSIGNED,
+    SIGNED
 }

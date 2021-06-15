@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.Attribute;
 import java.util.HashMap;
 import java.util.Map;
 

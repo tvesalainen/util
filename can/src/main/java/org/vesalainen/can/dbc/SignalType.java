@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.ValueType;
 import java.nio.ByteOrder;
 
 /**
