@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Signal
+public class SignalClass
 {
     private String name;
     private MultiplexerIndicator multiplexerIndicator;
@@ -42,7 +42,7 @@ public class Signal
     private String comment;
     private Map<String,Attribute> attributes = new HashMap<>();
 
-    public Signal(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
+    public SignalClass(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
         this.name = name;
         this.multiplexerIndicator = multiplexerIndicator;

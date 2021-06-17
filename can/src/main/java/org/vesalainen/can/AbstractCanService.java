@@ -17,13 +17,21 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.vesalainen.can.dbc.DBCFile;
+import org.vesalainen.can.dbc.DBCParser;
+import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
@@ -35,6 +43,8 @@ import org.vesalainen.util.logging.JavaLogging;
 public abstract class AbstractCanService extends JavaLogging implements Runnable, AutoCloseable
 {
     protected Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
+    protected Map<Integer,MessageClass> canIdMap = new HashMap<>();
+    protected Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected CachedScheduledThreadPool executor;
     private Future<?> future;
 
@@ -87,6 +97,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
         else
         {
+            procMap.put(canId, NullMessage.NULL_MESSAGE);
             executor.submit((Runnable) ()->compile(canId));
         }
     }
@@ -95,8 +106,44 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
 
     protected abstract void readData(byte[] data, int offset);
     
-    protected abstract void compile(int canId);
+    protected void compile(int canId)
+    {
+        MessageClass msgCls = canIdMap.get(canId);
+        if (msgCls != null)
+        {
+            procMap.put(canId, compile(msgCls));
+        }
+        else
+        {
+            int pgn = PGN.pgn(canId);
+            msgCls = pgnMap.get(pgn);
+            if (msgCls != null)
+            {
+                procMap.put(canId, compile(msgCls));
+            }
+        }
+    }
     
+    protected AbstractMessage compile(MessageClass mc)
+    {
+        SignalMessage sm = new SignalMessage(mc.getSize());
+        mc.forEach((s)->
+        {
+            sm.addSignal(s.getStartBit(), s.getSize(), s.getByteOrder(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
+        });
+        return sm;
+    }
+    
+    public void addDBCFile(Path path)
+    {
+        DBCFile dbcFile = new DBCFile();
+        DBCParser parser = DBCParser.getInstance();
+        parser.parse(path, dbcFile);
+        dbcFile.forEach((mc)->
+        {
+            canIdMap.put(mc.getId(), mc);
+        });
+    }
     @Override
     public void close() throws Exception
     {
@@ -105,4 +152,5 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             stop();
         }
     }
+
 }

@@ -63,12 +63,6 @@ public class SocketCanService extends AbstractCanService
         }
     }
 
-    @Override
-    protected void compile(int canId)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     private void process()
     {
         int rawId = frame.getInt(0);

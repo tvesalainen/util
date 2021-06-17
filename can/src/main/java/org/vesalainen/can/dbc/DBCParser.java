@@ -19,8 +19,8 @@ package org.vesalainen.can.dbc;
 import org.vesalainen.can.dict.AttributeValueType;
 import org.vesalainen.can.dict.ValueType;
 import org.vesalainen.can.dict.MultiplexerIndicator;
-import org.vesalainen.can.dict.Message;
-import org.vesalainen.can.dict.Signal;
+import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.dict.SignalClass;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,9 +125,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
     }
     @Rule(left="message", value={"BO_ message_id message_name ':' message_size transmitter (signal)*"})
-    protected void message(int id, String name, int size, String transmitter, List<Signal> signals, @ParserContext("DBCFile") DBCFile dbcFile)
+    protected void message(int id, String name, int size, String transmitter, List<SignalClass> signals, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        dbcFile.addMessage(new Message(id, name, size, transmitter, signals));
+        dbcFile.addMessage(new MessageClass(id, name, size, transmitter, signals));
     }
     @Rule(left="message_id", value={"unsigned_integer"})
     protected int messageId(int id)
@@ -150,9 +150,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return node;
     }
     @Rule(left="signal", value={"SG_ signal_name multiplexer_indicator? ':' start_bit '\\|' signal_size '@' byte_order value_type '\\(' factor '\\,' offset '\\)' '\\[' minimum '\\|' maximum '\\]' unit identifierList"})
-    protected Signal signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
+    protected SignalClass signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
     {
-        return new Signal(name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
+        return new SignalClass(name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
     }
     @Rule(left="signal_name", value={"C_identifier"})
     protected String signalName(String name)

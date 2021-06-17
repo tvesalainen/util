@@ -18,10 +18,11 @@ package org.vesalainen.can.dbc;
 
 import org.vesalainen.can.dict.AttributeValueType;
 import org.vesalainen.can.dict.Attribute;
-import org.vesalainen.can.dict.Message;
+import org.vesalainen.can.dict.MessageClass;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  *
@@ -31,7 +32,7 @@ public class DBCFile
 {
     private String version;
     private Map<String,Node> nodes = new HashMap<>();
-    private Map<Integer,Message> messages = new HashMap<>();
+    private Map<Integer,MessageClass> messages = new HashMap<>();
     private String comment;
     private Map<String,Attribute> attributes = new HashMap<>();
     private Map<String,List<ValueDescription>> valueTables = new HashMap<>();
@@ -47,7 +48,7 @@ public class DBCFile
         nodes.put(name, node);
     }
 
-    void addMessage(Message message)
+    void addMessage(MessageClass message)
     {
         messages.put(message.getId(), message);
     }
@@ -65,13 +66,13 @@ public class DBCFile
 
     void setMessageComment(int id, String comment)
     {
-        Message message = messages.get(id);
+        MessageClass message = messages.get(id);
         message.setComment(comment);
     }
 
     void setSignalComment(int id, String signal, String comment)
     {
-        Message message = messages.get(id);
+        MessageClass message = messages.get(id);
         message.setSignalComment(signal, comment);
     }
 
@@ -108,7 +109,7 @@ public class DBCFile
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
-        Message message = messages.get(id);
+        MessageClass message = messages.get(id);
         message.setAttribute(attribute);
     }
 
@@ -116,13 +117,18 @@ public class DBCFile
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
-        Message message = messages.get(id);
+        MessageClass message = messages.get(id);
         message.setSignalAttribute(signalName, attribute);
     }
 
     void addValueTable(String name, List<ValueDescription> valueDescriptions)
     {
         valueTables.put(name, valueDescriptions);
+    }
+
+    public void forEach(Consumer<? super MessageClass> action)
+    {
+        messages.values().forEach(action);
     }
 
 }

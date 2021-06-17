@@ -41,7 +41,7 @@ public class DBCParserTest
     {
         DBCFile dbcFile = new DBCFile();
         DBCParser parser = DBCParser.getInstance();
-        try (InputStream is = DBCParser.class.getResourceAsStream("/orion_bms_map.dbc"))
+        try (InputStream is = DBCParser.class.getResourceAsStream("/Orion_CANBUS.dbc"))
         {
             parser.parse(is, dbcFile);
         }

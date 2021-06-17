@@ -17,6 +17,7 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -36,6 +37,7 @@ public class CanServiceT
     public void test() throws IOException, InterruptedException, ExecutionException
     {
         AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111);
+        canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.startAndWait();
     }
     

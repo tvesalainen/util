@@ -19,33 +19,38 @@ package org.vesalainen.can.dict;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Message
+public class MessageClass
 {
     private int id;
     private String name;
     private int size;
     private String transmitter;
-    private Map<String,Signal> signals = new HashMap<>();
+    private Map<String,SignalClass> signals = new HashMap<>();
     private String comment;
     private Map<String,Attribute> attributes = new HashMap<>();
 
-    public Message(Integer id, String name, Integer size, String transmitter, List<Signal> signals)
+    public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
     {
         this.id = id;
         this.name = name;
         this.size = size;
         this.transmitter = transmitter;
-        for (Signal signal : signals)
+        for (SignalClass signal : signals)
         {
             this.signals.put(signal.getName(), signal);
         }
     }
 
+    public void forEach(Consumer<? super SignalClass> action)
+    {
+        signals.values().forEach(action);
+    }
     public int getId()
     {
         return id;
@@ -66,7 +71,7 @@ public class Message
         return transmitter;
     }
 
-    public Map<String,Signal> getSignals()
+    public Map<String,SignalClass> getSignals()
     {
         return signals;
     }
@@ -78,7 +83,7 @@ public class Message
 
     public void setSignalComment(String name, String comment)
     {
-        Signal signal = signals.get(name);
+        SignalClass signal = signals.get(name);
         signal.setComment(comment);
     }
 
@@ -89,7 +94,7 @@ public class Message
 
     public void setSignalAttribute(String signalName, Attribute attribute)
     {
-        Signal signal = signals.get(signalName);
+        SignalClass signal = signals.get(signalName);
         signal.setAttribute(attribute);
     }
     

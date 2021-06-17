@@ -16,6 +16,13 @@
  */
 package org.vesalainen.can;
 
+import java.nio.ByteOrder;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.LongSupplier;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
@@ -24,17 +31,68 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  */
 public class SignalMessage extends AbstractMessage
 {
+    private byte[] buf;
+    private List<Runnable> signals = new ArrayList<>();
 
+    public SignalMessage(int len)
+    {
+        buf = new byte[len];
+    }
+    
+    public void addSignal(int bitOffset, int size, ByteOrder bo, double factor, double offset, DoubleConsumer act)
+    {
+        final LongSupplier ls1;
+        final LongSupplier ls2;
+        final DoubleSupplier ds3;
+        final DoubleSupplier ds4;
+        if (bitOffset % 8 == 0 && size % 8 == 0)
+        {
+            ls1 = ()->getLong8(bitOffset, size, buf);
+        }
+        else
+        {
+            ls1 = ()->getLong1(bitOffset, size, buf);
+        }
+        if (bo == LITTLE_ENDIAN)
+        {
+            ls2 = ()->changeEndian(ls1.getAsLong());
+        }
+        else
+        {
+            ls2 = ls1;
+        }
+        if (factor != 1.0)
+        {
+            ds3 = ()->factor*ls2.getAsLong();
+        }
+        else
+        {
+            ds3 = ()->ls2.getAsLong();
+        }
+        if (offset != 0.0)
+        {
+            ds4 = ()->ds3.getAsDouble()+offset;
+        }
+        else
+        {
+            ds4 = ds3;
+        }
+        signals.add(()->act.accept(ds4.getAsDouble()));
+    }
     @Override
     protected boolean update(AbstractCanService service)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        service.readData(buf, 0);
+        return true;
     }
 
     @Override
     protected void execute(CachedScheduledThreadPool executor)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (Runnable func : signals)
+        {
+            func.run();
+        }
     }
     
     public static long getLong8(int offset, int length, byte... buf)
