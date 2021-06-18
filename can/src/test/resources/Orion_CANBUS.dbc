@@ -54,7 +54,7 @@ BO_ 1713 MSGID_0X6B1: 8 BMS
 
 BO_ 854 MSGID_0X356: 6 BMS
  SG_ Pack_Summed_Voltage : 0|16@1+ (0.01,0) [0|0] "Volts"  Third_Party_Device
- SG_ Average_Current : 16|16@1- (1.5259021896696423E-6,0) [0|0] "Amps"  Third_Party_Device
+ SG_ Average_Current : 16|16@1- (-0.1,0) [0|0] "Amps"  Third_Party_Device
  SG_ High_Temperature : 32|16@1+ (0.1,0) [0|0] "Celsius"  Third_Party_Device
 
 BO_ 858 MSGID_0X35A: 8 BMS
@@ -75,18 +75,9 @@ BO_ 849 MSGID_0X351: 8 BMS
  SG_ Pack_DCL : 32|16@1+ (0.1,0) [0|0] "Amps"  Third_Party_Device
  SG_ Minimum_Pack_Voltage : 48|16@1+ (0.1,0) [0|0] "Volts"  Third_Party_Device
 
-BO_ 54 MSGID_0X36_CELLBCAST: 8 BMS
- SG_ CellId : 7|8@0+ (1,0) [0|0] "#" Third_Party_Device
- SG_ CellVoltage : 15|16@0+ (0.0001,0) [0|0] "Volts" Third_Party_Device
- SG_ CellResistance : 30|15@0+ (0.01,0) [0|0] "mOhms" Third_Party_Device
- SG_ CellOpenVoltage : 47|16@0+ (0.0001,0) [0|0] "Volts" Third_Party_Device
- SG_ Checksum : 63|8@0+ (1,0) [0|0] "" Third_Party_Device
- SG_ CellBalancing : 31|1@1+ (1,0) [0|0] "" Third_Party_Device
 CM_ BO_ 1712 "This ID Transmits at 8 ms.";
 CM_ BO_ 1713 "This ID Transmits at 104 ms.";
 CM_ BO_ 854 "This ID Transmits at 104 ms.";
 CM_ BO_ 858 "This ID Transmits at 104 ms.";
 CM_ BO_ 853 "This ID Transmits at 104 ms.";
 CM_ BO_ 849 "This ID Transmits at 104 ms.";
-CM_ BO_ 54 "This ID Transmits at 4 ms.";
-CM_ SG_ 54 Checksum "Value = (0x36 + 8 + byte0 + byte1 + ... + byte6) & 0xFF";

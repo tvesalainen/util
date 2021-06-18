@@ -55,5 +55,14 @@ public class SignalMessageTest
         assertEquals(0x1234, SignalMessage.changeEndian(0x3412));
         assertEquals(0xff, SignalMessage.changeEndian(0xff));
     }
-    
+    @Test
+    public void testSigned()
+    {
+        assertEquals(-1, SignalMessage.signed(0xff, 8));
+        assertEquals(1, SignalMessage.signed(0x1, 8));
+        assertEquals(-1, SignalMessage.signed(0xffff, 16));
+        assertEquals(1, SignalMessage.signed(0x1, 16));
+        assertEquals(-1, SignalMessage.signed(0xffffffff, 32));
+        assertEquals(1, SignalMessage.signed(1, 32));
+    }    
 }

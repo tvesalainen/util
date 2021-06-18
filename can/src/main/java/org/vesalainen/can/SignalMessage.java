@@ -17,12 +17,14 @@
 package org.vesalainen.can;
 
 import java.nio.ByteOrder;
-import static java.nio.ByteOrder.LITTLE_ENDIAN;
+import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
+import org.vesalainen.can.dict.ValueType;
+import static org.vesalainen.can.dict.ValueType.SIGNED;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
@@ -39,7 +41,7 @@ public class SignalMessage extends AbstractMessage
         buf = new byte[len];
     }
     
-    public void addSignal(int bitOffset, int size, ByteOrder bo, double factor, double offset, DoubleConsumer act)
+    public void addSignal(int bitOffset, int size, ByteOrder bo, ValueType valueType, double factor, double offset, DoubleConsumer act)
     {
         final LongSupplier ls1;
         final LongSupplier ls2;
@@ -47,15 +49,71 @@ public class SignalMessage extends AbstractMessage
         final DoubleSupplier ds4;
         if (bitOffset % 8 == 0 && size % 8 == 0)
         {
-            ls1 = ()->getLong8(bitOffset, size, buf);
+            int boff = bitOffset/8;
+            if (bo == BIG_ENDIAN)
+            {
+                switch (size)
+                {
+                    case 8:
+                        ls1 = ()->buf[boff] & 0xff;
+                        break;
+                    case 16:
+                        ls1 = ()->((buf[boff] & 0xff)<<8) + (buf[boff+1] & 0xff);
+                        break;
+                    case 32:
+                        ls1 = ()->((buf[boff] & 0xff)<<24) + ((buf[boff+1] & 0xff)<<16) + ((buf[boff+2] & 0xff)<<8) + (buf[boff+3] & 0xff);
+                        break;
+                    default:
+                        ls1 = ()->getLong8(bitOffset, size, buf);
+                        break;
+                }
+            }
+            else
+            {
+                switch (size)
+                {
+                    case 8:
+                        ls1 = ()->buf[boff] & 0xff;
+                        break;
+                    case 16:
+                        ls1 = ()->((buf[boff+1] & 0xff)<<8) + (buf[boff] & 0xff);
+                        break;
+                    case 32:
+                        ls1 = ()->((buf[boff+3] & 0xff)<<24) + ((buf[boff+2] & 0xff)<<16) + ((buf[boff+1] & 0xff)<<8) + (buf[boff] & 0xff);
+                        break;
+                    default:
+                        ls1 = ()->changeEndian(getLong8(bitOffset, size, buf));
+                        break;
+                }
+            }
         }
         else
         {
-            ls1 = ()->getLong1(bitOffset, size, buf);
+            if (bo == BIG_ENDIAN)
+            {
+                ls1 = ()->getLong1(bitOffset, size, buf);
+            }
+            else
+            {
+                ls1 = ()->changeEndian(getLong1(bitOffset, size, buf));
+            }
         }
-        if (bo == LITTLE_ENDIAN)
+        if (valueType == SIGNED)
         {
-            ls2 = ()->changeEndian(ls1.getAsLong());
+            switch (size)
+            {
+                case 8:
+                    ls2 = ()->(byte)ls1.getAsLong();
+                    break;
+                case 16:
+                    ls2 = ()->(short)ls1.getAsLong();
+                    break;
+                case 32:
+                    ls2 = ()->(int)ls1.getAsLong();
+                    break;
+                default:
+                    throw new UnsupportedOperationException(size+" bit len not supported");
+            }
         }
         else
         {
@@ -130,5 +188,19 @@ public class SignalMessage extends AbstractMessage
             l>>=8;
         }
         return res;
+    }
+    public static long signed(long l, int len)
+    {
+        switch (len)
+        {
+            case 8:
+                return (byte)l;
+            case 16:
+                return (short)l;
+            case 32:
+                return (int)l;
+            default:
+                throw new UnsupportedOperationException(len+" bit len not supported");
+        }
     }
 }

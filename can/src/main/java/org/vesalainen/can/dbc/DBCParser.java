@@ -22,6 +22,7 @@ import org.vesalainen.can.dict.MultiplexerIndicator;
 import org.vesalainen.can.dict.MessageClass;
 import org.vesalainen.can.dict.SignalClass;
 import java.nio.ByteOrder;
+import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.vesalainen.parser.GenClassFactory;
@@ -152,6 +153,10 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="signal", value={"SG_ signal_name multiplexer_indicator? ':' start_bit '\\|' signal_size '@' byte_order value_type '\\(' factor '\\,' offset '\\)' '\\[' minimum '\\|' maximum '\\]' unit identifierList"})
     protected SignalClass signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
     {
+        if (byteOrder == BIG_ENDIAN)
+        {
+            startBit = 8*(startBit/8)+7-startBit%8; 
+        }
         return new SignalClass(name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
     }
     @Rule(left="signal_name", value={"C_identifier"})
@@ -190,9 +195,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         switch (order)
         {
             case '0':
-                return ByteOrder.LITTLE_ENDIAN;
-            case '1':
                 return ByteOrder.BIG_ENDIAN;
+            case '1':
+                return ByteOrder.LITTLE_ENDIAN;
             default:
                 throw new UnsupportedOperationException(""+order);
         }

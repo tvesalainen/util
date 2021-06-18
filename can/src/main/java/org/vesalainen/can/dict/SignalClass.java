@@ -127,5 +127,11 @@ public class SignalClass
     {
         attributes.put(attribute.getName(), attribute);
     }
+
+    @Override
+    public String toString()
+    {
+        return "Signal{" + name + ", startBit=" + startBit + ", size=" + size + ", byteOrder=" + byteOrder + ", valueType=" + valueType + ", factor=" + factor + ", offset=" + offset + ", unit=" + unit + ", comment=" + comment + '}';
+    }
             
 }

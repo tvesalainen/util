@@ -97,5 +97,11 @@ public class MessageClass
         SignalClass signal = signals.get(signalName);
         signal.setAttribute(attribute);
     }
+
+    @Override
+    public String toString()
+    {
+        return "Message{" + Integer.toHexString(id) + ", name=" + name + ", size=" + size + ", comment=" + comment + '}';
+    }
     
 }

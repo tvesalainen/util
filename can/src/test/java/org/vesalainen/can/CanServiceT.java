@@ -19,8 +19,10 @@ package org.vesalainen.can;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -31,6 +33,7 @@ public class CanServiceT
     
     public CanServiceT()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINER);
     }
 
     @Test

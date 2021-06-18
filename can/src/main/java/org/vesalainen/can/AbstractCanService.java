@@ -127,9 +127,11 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected AbstractMessage compile(MessageClass mc)
     {
         SignalMessage sm = new SignalMessage(mc.getSize());
+        finer("compile(%s)", mc);
         mc.forEach((s)->
         {
-            sm.addSignal(s.getStartBit(), s.getSize(), s.getByteOrder(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
+            finer("add signal %s", s);
+            sm.addSignal(s.getStartBit(), s.getSize(), s.getByteOrder(), s.getValueType(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
         });
         return sm;
     }
