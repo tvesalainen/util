@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.vesalainen.can.canboat.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dict.MessageClass;
@@ -35,6 +39,7 @@ import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -145,6 +150,17 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         {
             canIdMap.put(mc.getId(), mc);
         });
+    }
+    public void addPGNDefinitions(Path path) throws IOException
+    {
+        try
+        {
+            PGNDefinitions pgns = new PGNDefinitions(path);
+        }
+        catch (ParserConfigurationException | SAXException ex)
+        {
+            throw new IOException(ex);
+        }
     }
     @Override
     public void close() throws Exception

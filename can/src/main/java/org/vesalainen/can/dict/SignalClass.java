@@ -41,6 +41,7 @@ public class SignalClass
     private List<String> receivers;
     private String comment;
     private Map<String,Attribute> attributes = new HashMap<>();
+    private List<ValueDescription> valueDescriptions;
 
     public SignalClass(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
@@ -118,20 +119,40 @@ public class SignalClass
         return receivers;
     }
 
-    void setComment(String comment)
+    public String getComment()
+    {
+        return comment;
+    }
+
+    public Map<String, Attribute> getAttributes()
+    {
+        return attributes;
+    }
+
+    public List<ValueDescription> getValueDescriptions()
+    {
+        return valueDescriptions;
+    }
+
+    public void setComment(String comment)
     {
         this.comment = comment;
     }
 
-    void setAttribute(Attribute attribute)
+    public void setAttribute(Attribute attribute)
     {
         attributes.put(attribute.getName(), attribute);
     }
 
+    public void setValueDescription(List<ValueDescription> valDesc)
+    {
+        valueDescriptions = valDesc;
+    }
+            
     @Override
     public String toString()
     {
         return "Signal{" + name + ", startBit=" + startBit + ", size=" + size + ", byteOrder=" + byteOrder + ", valueType=" + valueType + ", factor=" + factor + ", offset=" + offset + ", unit=" + unit + ", comment=" + comment + '}';
     }
-            
+
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.ValueDescription;
 import java.util.List;
 
 /**
@@ -40,4 +41,20 @@ public class ValueDescriptions
         this.name = name;
         this.valDesc = valDesc;
     }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public List<ValueDescription> getValDesc()
+    {
+        return valDesc;
+    }
+    
 }

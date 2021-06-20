@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.ValueDescription;
 import org.vesalainen.can.dict.AttributeValueType;
 import org.vesalainen.can.dict.ValueType;
 import org.vesalainen.can.dict.MultiplexerIndicator;
@@ -116,8 +117,8 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return name;
     }
-    @Rule(left="value_description", value={"double char_string"})
-    protected ValueDescription valueDescription(double value, String description)
+    @Rule(left="value_description", value={"unsigned_integer char_string"})
+    protected ValueDescription valueDescription(int value, String description)
     {
         return new ValueDescription(value, description);
     }
@@ -260,9 +261,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return new MessageTransmitter(id, transmitter);
     }
     @Rule(left="value_descriptions", value={"value_descriptions_for*"})
-    protected void valueDescriptions(List<ValueDescriptions> valDesc)
+    protected void valueDescriptions(List<ValueDescriptions> valDesc, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        
+        dbcFile.addValueDescriptions(valDesc);
     }
     @Rule(left="value_descriptions_for", value={"value_descriptions_for_signal"})
     protected ValueDescriptions valueDescriptionsFor1(ValueDescriptions valDesc)

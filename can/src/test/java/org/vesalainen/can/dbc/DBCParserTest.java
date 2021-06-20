@@ -46,7 +46,7 @@ public class DBCParserTest
             parser.parse(is, dbcFile);
         }
     }
-    //@Test
+    @Test
     public void testEx() throws IOException
     {
         DBCFile dbcFile = new DBCFile();
@@ -56,7 +56,7 @@ public class DBCParserTest
             parser.parse(is, dbcFile);
         }
     }
-    //@Test
+    @Test
     public void testCurtis() throws IOException
     {
         DBCFile dbcFile = new DBCFile();
@@ -66,7 +66,7 @@ public class DBCParserTest
             parser.parse(is, dbcFile);
         }
     }
-    //@Test
+    @Test
     public void testJ1939() throws IOException
     {
         DBCFile dbcFile = new DBCFile();

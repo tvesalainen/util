@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.can.dict.ValueDescription;
 import org.vesalainen.can.dict.AttributeValueType;
 import org.vesalainen.can.dict.Attribute;
 import org.vesalainen.can.dict.MessageClass;
@@ -129,6 +130,19 @@ public class DBCFile
     public void forEach(Consumer<? super MessageClass> action)
     {
         messages.values().forEach(action);
+    }
+
+    void addValueDescriptions(List<ValueDescriptions> valDesc)
+    {
+        for (ValueDescriptions vd : valDesc)
+        {
+            int id = vd.getId();
+            if (id != 0)
+            {
+                MessageClass message = messages.get(id);
+                message.setSignalValueDescription(vd.getName(), vd.getValDesc());
+            }
+        }
     }
 
 }

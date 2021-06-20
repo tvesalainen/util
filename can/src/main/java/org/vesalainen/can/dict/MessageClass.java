@@ -103,5 +103,11 @@ public class MessageClass
     {
         return "Message{" + Integer.toHexString(id) + ", name=" + name + ", size=" + size + ", comment=" + comment + '}';
     }
-    
+
+    public void setSignalValueDescription(String signalName, List<ValueDescription> valDesc)
+    {
+        SignalClass signal = signals.get(signalName);
+        signal.setValueDescription(valDesc);
+    }
+
 }
