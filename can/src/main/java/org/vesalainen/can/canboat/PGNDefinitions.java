@@ -21,10 +21,14 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.dict.PGNClass;
 import org.vesalainen.can.dict.SignalClass;
 import org.vesalainen.can.dict.ValueDescription;
 import org.vesalainen.can.dict.ValueType;
@@ -41,7 +45,8 @@ import org.xml.sax.SAXException;
  */
 public class PGNDefinitions
 {
-
+    private Map<Integer,PGNClass> pgnClasses = new HashMap<>();
+    
     public PGNDefinitions(Path path) throws ParserConfigurationException, SAXException, IOException
     {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -52,18 +57,27 @@ public class PGNDefinitions
         for (int nn = 0;nn<length;nn++)
         {
             Node item = pgns.item(nn);
-            parsePGN(item);
+            PGNClass pgnCls = parsePGN(item);
+            if (pgnCls != null)
+            {
+                pgnClasses.put(pgnCls.getId(), pgnCls);
+            }
         }
     }
 
-    private void parsePGN(Node item)
+    public Map<Integer, PGNClass> getPgnClasses()
     {
-        int pgn;
-        String id;
-        String description;
-        String type;
+        return pgnClasses;
+    }
+
+    private PGNClass parsePGN(Node item)
+    {
+        int pgn = 0;
+        String id = null;
+        String description = null;
+        String type = null;
         boolean complete;
-        int size;
+        int size = 0;
         int repeatingFields;
         Node fields = null;
         NodeList childNodes = item.getChildNodes();
@@ -99,13 +113,24 @@ public class PGNDefinitions
                 break;
             }
         }
-        NodeList fieldNodes = fields.getChildNodes();
-        int fldLen = fieldNodes.getLength();
-        for (int ff=0;ff<fldLen;ff++)
+        if (fields != null)
         {
-            Node fieldNode = fieldNodes.item(ff);
-            parseField(fieldNode);
+            List<SignalClass> signals = new ArrayList<>();
+            NodeList fieldNodes = fields.getChildNodes();
+            int fldLen = fieldNodes.getLength();
+            for (int ff=0;ff<fldLen;ff++)
+            {
+                Node fieldNode = fieldNodes.item(ff);
+                SignalClass sc = parseField(fieldNode);
+                if (sc != null)
+                {
+                    signals.add(sc);
+                }
+            }
+            PGNClass msg = new PGNClass(pgn, id, size, type, description, signals);
+            return msg;
         }
+        return null;
   }
 
     private SignalClass parseField(Node fieldNode)
@@ -156,7 +181,7 @@ public class PGNDefinitions
                     null, 
                     offset, 
                     length, 
-                    ByteOrder.BIG_ENDIAN, 
+                    ByteOrder.LITTLE_ENDIAN, 
                     signed ? SIGNED : UNSIGNED, 
                     resolution, 
                     Double.valueOf(0), 

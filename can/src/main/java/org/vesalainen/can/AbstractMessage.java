@@ -16,15 +16,25 @@
  */
 package org.vesalainen.can;
 
+import java.nio.ByteBuffer;
+import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractMessage
+public abstract class AbstractMessage extends JavaLogging
 {
     public static final NullMessage NULL_MESSAGE = new NullMessage();
+
+    protected AbstractMessage()
+    {
+        super(AbstractMessage.class);
+    }
+    
+    
     /**
      * Updates CanProcessor data. Returns true if needs to execute.
      * @param service
@@ -43,6 +53,8 @@ public abstract class AbstractMessage
         @Override
         protected boolean update(AbstractCanService service)
         {
+            ByteBuffer frame = service.getFrame();
+            warning("Unknown:\n%s", HexDump.startToHex(frame));
             return false;
         }
 

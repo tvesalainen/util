@@ -35,6 +35,7 @@ import org.vesalainen.can.canboat.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.dict.PGNClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -49,7 +50,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
 {
     protected Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
     protected Map<Integer,MessageClass> canIdMap = new HashMap<>();
-    protected Map<Integer,MessageClass> pgnMap = new HashMap<>();
+    protected Map<Integer,PGNClass> pgnMap = new HashMap<>();
     protected CachedScheduledThreadPool executor;
     private Future<?> future;
 
@@ -102,14 +103,16 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
         else
         {
-            procMap.put(canId, NullMessage.NULL_MESSAGE);
+            procMap.put(canId, AbstractMessage.NULL_MESSAGE);
             executor.submit((Runnable) ()->compile(canId));
         }
     }
 
-    protected abstract int getLength();
+    public abstract ByteBuffer getFrame();
+    
+    public abstract int getLength();
 
-    protected abstract void readData(byte[] data, int offset);
+    public abstract void readData(byte[] data, int offset);
     
     protected void compile(int canId)
     {
@@ -124,21 +127,43 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             msgCls = pgnMap.get(pgn);
             if (msgCls != null)
             {
-                procMap.put(canId, compile(msgCls));
+                procMap.put(canId, compilePGN((PGNClass) msgCls));
             }
         }
     }
     
     protected AbstractMessage compile(MessageClass mc)
     {
-        SignalMessage sm = new SignalMessage(mc.getSize());
+        SingleMessage sm = new SingleMessage(mc.getMinSize(), mc.getName());
         finer("compile(%s)", mc);
+        addSignals(mc, sm);
+        return sm;
+    }
+    protected AbstractMessage compilePGN(PGNClass mc)
+    {
+        SingleMessage sm;
+        switch (mc.getType())
+        {
+            case "Single":
+                sm = new SingleMessage(mc.getMinSize(), mc.getName());
+                break;
+            case "Fast":
+                sm = new FastMessage(mc.getMinSize(), mc.getName());
+                break;
+            default:
+                throw new UnsupportedOperationException(mc.getType()+"not supported");
+        }
+        finer("compile(%s)", mc);
+        addSignals(mc, sm);
+        return sm;
+    }
+    private void addSignals(MessageClass mc, SingleMessage sm)
+    {
         mc.forEach((s)->
         {
             finer("add signal %s", s);
-            sm.addSignal(s.getStartBit(), s.getSize(), s.getByteOrder(), s.getValueType(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
+            sm.addSignal(s.getName(), s.getStartBit(), s.getSize(), s.getByteOrder(), s.getValueType(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
         });
-        return sm;
     }
     
     public void addDBCFile(Path path)
@@ -156,6 +181,8 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         try
         {
             PGNDefinitions pgns = new PGNDefinitions(path);
+            Map<Integer, PGNClass> pgnClasses = pgns.getPgnClasses();
+            pgnMap.putAll(pgnClasses);
         }
         catch (ParserConfigurationException | SAXException ex)
         {

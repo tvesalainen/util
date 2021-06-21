@@ -85,15 +85,22 @@ public class SocketCanService extends AbstractCanService
     }
 
     @Override
-    protected int getLength()
+    public int getLength()
     {
         return frame.get(4);
     }
-    protected void readData(byte[] data, int offset)
+    @Override
+    public ByteBuffer getFrame()
+    {
+        return frame;
+    }
+    
+    @Override
+    public void readData(byte[] data, int offset)
     {
         int length = getLength();
         frame.position(8);
         frame.get(data, offset, length);
     }
-    
+
 }

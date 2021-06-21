@@ -24,10 +24,18 @@ import java.util.List;
  */
 public class PGNClass extends MessageClass
 {
+    private String type;
     
-    public PGNClass(Integer pgn, String name, Integer size, List<SignalClass> signals)
+    public PGNClass(Integer pgn, String name, Integer size, String type, String comment, List<SignalClass> signals)
     {
         super(pgn, name, size, null, signals);
+        this.type = type;
+        this.comment = comment;
+    }
+
+    public String getType()
+    {
+        return type;
     }
     
 }

@@ -16,32 +16,40 @@
  */
 package org.vesalainen.can;
 
+import static java.lang.Integer.min;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
+import static java.util.logging.Level.*;
 import org.vesalainen.can.dict.ValueType;
 import static org.vesalainen.can.dict.ValueType.SIGNED;
+import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SignalMessage extends AbstractMessage
+public class SingleMessage extends AbstractMessage
 {
-    private byte[] buf;
-    private List<Runnable> signals = new ArrayList<>();
+    protected byte[] buf;
+    protected String comment;
+    protected Map<String,Runnable> signals = new HashMap<>();
 
-    public SignalMessage(int len)
+    public SingleMessage(int len, String comment)
     {
-        buf = new byte[len];
+        this.buf = new byte[len];
+        this.comment = comment;
     }
     
-    public void addSignal(int bitOffset, int size, ByteOrder bo, ValueType valueType, double factor, double offset, DoubleConsumer act)
+    public void addSignal(String comment, int bitOffset, int size, ByteOrder bo, ValueType valueType, double factor, double offset, DoubleConsumer act)
     {
         final LongSupplier ls1;
         final LongSupplier ls2;
@@ -135,22 +143,40 @@ public class SignalMessage extends AbstractMessage
         {
             ds4 = ds3;
         }
-        signals.add(()->act.accept(ds4.getAsDouble()));
+        signals.put(comment, ()->act.accept(ds4.getAsDouble()));
     }
     @Override
     protected boolean update(AbstractCanService service)
     {
-        service.readData(buf, 0);
-        return true;
+        try
+        {
+            ByteBuffer frame = service.getFrame();
+            frame.position(8);
+            frame.get(buf, 0, min(buf.length, frame.remaining()));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            log(WARNING, ex, "execute %s", comment);
+        }
+        return false;
     }
 
     @Override
     protected void execute(CachedScheduledThreadPool executor)
     {
-        for (Runnable func : signals)
+        info("execute %s\n%s", comment, HexDump.toHex(buf));
+        signals.forEach((s, r)->
         {
-            func.run();
-        }
+            try
+            {
+                r.run();
+            }
+            catch (Exception ex)
+            {
+                log(WARNING, ex, "execute %s %s", comment, s);
+            }
+        });
     }
     
     public static long getLong8(int offset, int length, byte... buf)
@@ -181,6 +207,7 @@ public class SignalMessage extends AbstractMessage
      */
     public static long changeEndian(long l)
     {
+        assert false;   // TO DO
         long res = 0;
         while (l != 0)
         {
