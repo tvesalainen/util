@@ -16,7 +16,6 @@
  */
 package org.vesalainen.can;
 
-import java.nio.ByteOrder;
 import java.util.function.LongSupplier;
 
 /**
@@ -25,6 +24,15 @@ import java.util.function.LongSupplier;
  */
 public final class ArrayFuncs
 {
+    /**
+     * Returns LongSupplier which constructs long from byte array
+     * @param offset    In bits
+     * @param length    In bits
+     * @param bigEndian
+     * @param signed
+     * @param buf
+     * @return 
+     */
     public static final LongSupplier getLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
     {
         checkBits(offset, length, buf);
