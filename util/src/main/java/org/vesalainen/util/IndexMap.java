@@ -76,9 +76,16 @@ public class IndexMap<T>
         
         public IndexMap<T> build()
         {
-            T[] array = (T[]) Array.newInstance(cls, max-min+1);
-            map.forEach((i, t)->array[i-min] = t);
-            return new IndexMap<>(min, array);
+            if (!map.isEmpty())
+            {
+                T[] array = (T[]) Array.newInstance(cls, max-min+1);
+                map.forEach((i, t)->array[i-min] = t);
+                return new IndexMap<>(min, array);
+            }
+            else
+            {
+                return new IndexMap<>(0, (T[])ArrayHelp.EMPTY);
+            }
         }
     }
 }
