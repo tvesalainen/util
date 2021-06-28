@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
 /**
@@ -24,6 +25,245 @@ import java.util.function.LongSupplier;
  */
 public final class ArrayFuncs
 {
+    /**
+     * Returns IntSupplier which constructs long from byte array
+     * @param offset    In bits
+     * @param length    In bits
+     * @param bigEndian
+     * @param signed
+     * @param buf
+     * @return 
+     */
+    public static final IntSupplier getIntSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    {
+        checkBitsInt(offset, length, buf);
+        boolean aligned8 = (offset % 8) == 0 && (length % 8) == 0;
+        if (aligned8)
+        {
+            return getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
+        }
+        else
+        {
+            return getIntSupplierX(offset, length, bigEndian, signed, buf);
+        }
+        
+    }
+    static final IntSupplier getAlignedIntSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    {
+            int off = offset/8;
+            int len = length/8;
+            if (signed)
+            {
+                if (bigEndian)
+                {
+                    return getIntSignedBigEndian(off, len, buf);
+                }
+                else
+                {
+                    return getIntSignedLittleEndian(off, len, buf);
+                }
+            }
+            else
+            {
+                if (length > 63)
+                {
+                    throw new IllegalArgumentException("length > 63 for unsigned");
+                }
+                if (bigEndian)
+                {
+                    return getIntUnsignedBigEndian(off, len, buf);
+                }
+                else
+                {
+                    return getIntUnsignedLittleEndian(off, len, buf);
+                }
+            }
+    }
+    static IntSupplier getIntSupplierX(int offset, int length, boolean bigEndian, boolean signed, byte[] buf)
+    {
+        if (signed)
+        {
+            if (bigEndian)
+            {
+                return getIntSignedBigEndianX(offset, length, buf);
+            }
+            else
+            {
+                return getIntSignedLittleEndianX(offset, length, buf);
+            }
+        }
+        else
+        {
+            if (length > 63)
+            {
+                throw new IllegalArgumentException("length > 63 for unsigned");
+            }
+            if (bigEndian)
+            {
+                return getIntUnsignedBigEndianX(offset, length, buf);
+            }
+            else
+            {
+                return getIntUnsignedLittleEndianX(offset, length, buf);
+            }
+        }
+    }
+    static final IntSupplier getIntUnsignedLittleEndianX(int offset, int length, byte... buf)
+    {
+        return ()->
+        {
+            int res = 0;
+            for (int ii=0;ii<length;ii++)
+            {
+                int jj = offset+length-8+(ii%8)-8*(ii/8);
+                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+            }
+            return res;
+        };
+    }
+    static final IntSupplier getIntSignedLittleEndianX(int offset, int length, byte... buf)
+    {
+        return ()->
+        {
+            int jj = offset+length-8;
+            int res = (buf[jj/8]>>(7-jj%8) & 0x1) == 1 ? -1 : 0;
+            for (int ii=1;ii<length;ii++)
+            {
+                jj = offset+length-8+(ii%8)-8*(ii/8);
+                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+            }
+            return res;
+        };
+    }
+    static final IntSupplier getIntUnsignedBigEndianX(int offset, int length, byte... buf)
+    {
+        if (length > 31)
+        {
+            throw new IllegalArgumentException("length > 31 for unsigned");
+        }
+        return ()->
+        {
+            int res = 0;
+            for (int ii=0;ii<length;ii++)
+            {
+                int jj = ii+offset;
+                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+            }
+            return res;
+        };
+    }
+    static final IntSupplier getIntSignedBigEndianX(int offset, int length, byte... buf)
+    {
+        return ()->
+        {
+            int res = (buf[offset/8]>>(7-offset%8) & 0x1) == 1 ? -1 : 0;
+            for (int ii=1;ii<length;ii++)
+            {
+                int jj = ii+offset;
+                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+            }
+            return res;
+        };
+    }
+    static final IntSupplier getIntSignedBigEndian(int off, int len, byte[] buf)
+    {
+        switch (len)
+        {
+            case 1:
+                return ()->buf[off];
+            case 2:
+                return ()-> (buf[off]<<8) + 
+                            (buf[off+1] & 0xff);
+            case 3:
+                return ()-> (buf[off]<<16) + 
+                            ((buf[off+1] & 0xff)<<8) + 
+                            (buf[off+2] & 0xff);
+            case 4:
+                return ()-> (buf[off]<<24) + 
+                            ((buf[off+1] & 0xff)<<16) + 
+                            ((buf[off+2] & 0xff)<<8) + 
+                            (buf[off+3] & 0xff);
+            default:
+                throw new UnsupportedOperationException(len+" not supported");
+        }
+    }
+    static final IntSupplier getIntUnsignedBigEndian(int off, int len, byte[] buf)
+    {
+        switch (len)
+        {
+            case 1:
+                return ()->buf[off] & 0xff;
+            case 2:
+                return ()-> (((buf[off] & 0xff)<<8)) + 
+                            (buf[off+1] & 0xff);
+            case 3:
+                return ()-> ((buf[off] & 0xff)<<16) + 
+                            ((buf[off+1] & 0xff)<<8) + 
+                            (buf[off+2] & 0xff);
+            default:
+                throw new UnsupportedOperationException(len+" not supported");
+        }
+    }
+    static final IntSupplier getIntSignedLittleEndian(int off, int len, byte[] buf)
+    {
+        switch (len)
+        {
+            case 1:
+                return ()->buf[off];
+            case 2:
+                return ()-> (buf[off+1]<<8) + 
+                            (buf[off] & 0xff);
+            case 3:
+                return ()-> (buf[off+2]<<16) + 
+                            ((buf[off+1] & 0xff)<<8) + 
+                            (buf[off] & 0xff);
+            case 4:
+                return ()-> (buf[off+3]<<24) + 
+                            ((buf[off+2] & 0xff)<<16) + 
+                            ((buf[off+1] & 0xff)<<8) + 
+                            (buf[off] & 0xff);
+            default:
+                throw new UnsupportedOperationException(len+" not supported");
+        }
+    }
+    static final IntSupplier getIntUnsignedLittleEndian(int off, int len, byte[] buf)
+    {
+        switch (len)
+        {
+            case 1:
+                return ()->buf[off] & 0xff;
+            case 2:
+                return ()-> (((buf[off+1] & 0xff)<<8)) + 
+                            (buf[off] & 0xff);
+            case 3:
+                return ()-> ((buf[off+2] & 0xff)<<16) + 
+                            ((buf[off+1] & 0xff)<<8) + 
+                            (buf[off] & 0xff);
+            default:
+                throw new UnsupportedOperationException(len+" not supported");
+        }
+    }
+
+    private static void checkBitsInt(int offset, int length, byte[] buf)
+    {
+        if (offset < 0) 
+        {
+            throw new IllegalArgumentException("negative offset");
+        }
+        if (length < 0) 
+        {
+            throw new IllegalArgumentException("negative length");
+        }
+        if (length > 32) 
+        {
+            throw new IllegalArgumentException("length > 32");
+        }
+        if ((offset + length) / 8 > buf.length) 
+        {
+            throw new IllegalArgumentException("buffer overflow");
+        }
+    }
+    /*------------------------------------------------------------------------------*/
     /**
      * Returns LongSupplier which constructs long from byte array
      * @param offset    In bits
@@ -35,19 +275,19 @@ public final class ArrayFuncs
      */
     public static final LongSupplier getLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
     {
-        checkBits(offset, length, buf);
+        checkBitsLong(offset, length, buf);
         boolean aligned8 = (offset % 8) == 0 && (length % 8) == 0;
         if (aligned8)
         {
-            return getAlignedSupplier(offset, length, bigEndian, signed, buf);
+            return getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
         }
         else
         {
-            return getSupplier(offset, length, bigEndian, signed, buf);
+            return getLongSupplierX(offset, length, bigEndian, signed, buf);
         }
         
     }
-    static final LongSupplier getAlignedSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    static final LongSupplier getAlignedLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
     {
             int off = offset/8;
             int len = length/8;
@@ -78,7 +318,7 @@ public final class ArrayFuncs
                 }
             }
     }
-    static LongSupplier getSupplier(int offset, int length, boolean bigEndian, boolean signed, byte[] buf)
+    static LongSupplier getLongSupplierX(int offset, int length, boolean bigEndian, boolean signed, byte[] buf)
     {
         if (signed)
         {
@@ -355,17 +595,24 @@ public final class ArrayFuncs
         }
     }
 
-    private static void checkBits(int offset, int length, byte[] buf)
+    private static void checkBitsLong(int offset, int length, byte[] buf)
     {
-        if (
-                offset < 0 ||
-                length < 0 ||
-                length > 64 ||
-                (offset + length) / 8 >= buf.length
-                )
+        if (offset < 0) 
         {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("negative offset");
+        }
+        if (length < 0) 
+        {
+            throw new IllegalArgumentException("negative length");
+        }
+        if (length > 64) 
+        {
+            throw new IllegalArgumentException("length > 64");
+        }
+        if ((offset + length) / 8 > buf.length) 
+        {
+            throw new IllegalArgumentException("buffer overflow");
         }
     }
-
+    
 }

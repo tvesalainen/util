@@ -33,9 +33,9 @@ public class SocketCanService extends AbstractCanService
     private ByteChannel channel;
     private ByteBuffer frame;
 
-    protected SocketCanService(ByteChannel channel, CachedScheduledThreadPool executor)
+    protected SocketCanService(ByteChannel channel, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        super(executor);
+        super(executor, compiler);
         this.channel = channel;
         this.frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);  // Raspian Pi!!!
     }

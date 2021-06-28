@@ -20,6 +20,10 @@ import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.vesalainen.can.SignalType;
+import static org.vesalainen.can.SignalType.*;
+import static org.vesalainen.can.dict.ValueType.*;
+import org.vesalainen.util.IndexMap;
 
 /**
  *
@@ -37,11 +41,12 @@ public class SignalClass
     private double offset;
     private double min;
     private double max;
-    private String unit;
+    private String unit = "";
     private List<String> receivers;
     private String comment;
     private Map<String,Attribute> attributes = new HashMap<>();
-    private List<ValueDescription> valueDescriptions;
+    private IndexMap<String> lookupMap;
+    private String type;
 
     public SignalClass(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
@@ -59,6 +64,54 @@ public class SignalClass
         this.receivers = receivers;
     }
 
+    public SignalType getSignalType()
+    {
+        if (type != null)
+        {
+            switch (type)
+            {
+                case "Integer":
+                    assert getType(size, valueType == SIGNED, factor, offset) == INT;
+                    return INT;
+                default:
+                    throw new UnsupportedOperationException(type+" not supported");
+            }
+        }
+        else
+        {
+            return getType(size, valueType == SIGNED, factor, offset);
+        }
+    }
+    public static SignalType getType(int bits, boolean signed, double factor, double offset)
+    {
+        if (isInteger(factor, offset))
+        {
+            if (signed)
+            {
+                return bits <= 32 ? INT : LONG;
+            }
+            else
+            {
+                return bits <= 31 ? INT : LONG;
+            }
+        }
+        else
+        {
+            return DOUBLE;
+        }
+    }
+    public static boolean isInteger(double factor, double offset)
+    {
+        return Math.floor(factor) == factor && Math.floor(offset) == offset;
+    }
+    public String getDescription(int value)
+    {
+        if (lookupMap != null)
+        {
+            return lookupMap.get(value);
+        }
+        throw new IllegalArgumentException(name+" doesn't have lookup map");
+    }
     public String getName()
     {
         return name;
@@ -129,9 +182,14 @@ public class SignalClass
         return attributes;
     }
 
-    public List<ValueDescription> getValueDescriptions()
+    public String getType()
     {
-        return valueDescriptions;
+        return type;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type;
     }
 
     public void setComment(String comment)
@@ -146,7 +204,9 @@ public class SignalClass
 
     public void setValueDescription(List<ValueDescription> valDesc)
     {
-        valueDescriptions = valDesc;
+        IndexMap.Builder<String> builder = new IndexMap.Builder<>();
+        valDesc.forEach((vd)->builder.put(vd.getValue(), vd.getDescription()));
+        lookupMap = builder.build();
     }
             
     @Override

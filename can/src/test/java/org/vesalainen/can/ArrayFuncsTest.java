@@ -16,8 +16,7 @@
  */
 package org.vesalainen.can;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -51,20 +50,37 @@ public class ArrayFuncsTest
     }
 
     @Test
-    public void testAligned()
+    public void testAlignedInt()
     {
         for (int ll=8;ll<64;ll+=8)
         {
-            test(8, ll, true, true);
-            test(8, ll, true, false);
-            test(8, ll, false, true);
-            test(8, ll, false, false);
+            testInt(8, ll, true, true);
+            testInt(8, ll, true, false);
+            testInt(8, ll, false, true);
+            testInt(8, ll, false, false);
         }
     }
-    private void test(int offset, int length, boolean bigEndian, boolean signed)
+    private void testInt(int offset, int length, boolean bigEndian, boolean signed)
     {
-        LongSupplier lsb = ArrayFuncs.getSupplier(offset, length, bigEndian, signed, buf);
-        LongSupplier exp = ArrayFuncs.getAlignedSupplier(offset, length, bigEndian, signed, buf);
+        IntSupplier lsb = ArrayFuncs.getIntSupplierX(offset, length, bigEndian, signed, buf);
+        IntSupplier exp = ArrayFuncs.getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
+        assertEquals("o="+offset+" l="+length+" be="+bigEndian+" s="+signed, exp.getAsInt(), lsb.getAsInt());
+    }
+    @Test
+    public void testAlignedLong()
+    {
+        for (int ll=8;ll<64;ll+=8)
+        {
+            testLong(8, ll, true, true);
+            testLong(8, ll, true, false);
+            testLong(8, ll, false, true);
+            testLong(8, ll, false, false);
+        }
+    }
+    private void testLong(int offset, int length, boolean bigEndian, boolean signed)
+    {
+        LongSupplier lsb = ArrayFuncs.getLongSupplierX(offset, length, bigEndian, signed, buf);
+        LongSupplier exp = ArrayFuncs.getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
         assertEquals("o="+offset+" l="+length+" be="+bigEndian+" s="+signed, exp.getAsLong(), lsb.getAsLong());
     }
     @Test

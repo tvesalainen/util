@@ -79,12 +79,17 @@ public class MessageClass extends JavaLogging
             bitLimit = max(bitLimit, s.getStartBit()+s.getSize());
         }
         int calc = (int) Math.ceil(bitLimit/8.0);
-        info("min of %s size=%d calc=%d -> %d", name, size, calc, max(size, calc));
+        //info("min of %s size=%d calc=%d -> %d", name, size, calc, max(size, calc));
         return max(size, calc);
     }
     public String getTransmitter()
     {
         return transmitter;
+    }
+
+    public String getComment()
+    {
+        return comment;
     }
 
     public Map<String,SignalClass> getSignals()

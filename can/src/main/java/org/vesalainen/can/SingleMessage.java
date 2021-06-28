@@ -18,18 +18,17 @@ package org.vesalainen.can;
 
 import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import static java.nio.ByteOrder.*;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import static java.util.logging.Level.*;
-import org.vesalainen.can.dict.ValueType;
-import static org.vesalainen.can.dict.ValueType.SIGNED;
+import static org.vesalainen.can.SignalType.*;
+import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.dict.SignalClass;
+import static org.vesalainen.can.dict.ValueType.*;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
@@ -49,101 +48,35 @@ public class SingleMessage extends AbstractMessage
         this.comment = comment;
     }
     
-    public void addSignal(String comment, int bitOffset, int size, ByteOrder bo, ValueType valueType, double factor, double offset, DoubleConsumer act)
+    public void addSignal(MessageClass mc, SignalClass sc, SignalCompiler compiler)
     {
-        final LongSupplier ls1;
-        final LongSupplier ls2;
-        final DoubleSupplier ds3;
-        final DoubleSupplier ds4;
-        if (bitOffset % 8 == 0 && size % 8 == 0)
+        IntSupplier is;
+        LongSupplier ls;
+        DoubleSupplier ds;
+        Runnable rn;
+        switch (sc.getSignalType())
         {
-            int boff = bitOffset/8;
-            if (bo == BIG_ENDIAN)
-            {
-                switch (size)
-                {
-                    case 8:
-                        ls1 = ()->buf[boff] & 0xff;
-                        break;
-                    case 16:
-                        ls1 = ()->((buf[boff] & 0xff)<<8) + (buf[boff+1] & 0xff);
-                        break;
-                    case 32:
-                        ls1 = ()->((buf[boff] & 0xff)<<24) + ((buf[boff+1] & 0xff)<<16) + ((buf[boff+2] & 0xff)<<8) + (buf[boff+3] & 0xff);
-                        break;
-                    default:
-                        ls1 = ()->getLong8(bitOffset, size, buf);
-                        break;
-                }
-            }
-            else
-            {
-                switch (size)
-                {
-                    case 8:
-                        ls1 = ()->buf[boff] & 0xff;
-                        break;
-                    case 16:
-                        ls1 = ()->((buf[boff+1] & 0xff)<<8) + (buf[boff] & 0xff);
-                        break;
-                    case 32:
-                        ls1 = ()->((buf[boff+3] & 0xff)<<24) + ((buf[boff+2] & 0xff)<<16) + ((buf[boff+1] & 0xff)<<8) + (buf[boff] & 0xff);
-                        break;
-                    default:
-                        ls1 = ()->changeEndian(getLong8(bitOffset, size, buf));
-                        break;
-                }
-            }
+            case INT:
+                is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                rn = compiler.compile(mc, sc, is);
+                signals.put(sc.getName(), rn);
+                break;
+            case LONG:
+                ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                rn = compiler.compile(mc, sc, ls);
+                signals.put(sc.getName(), rn);
+                break;
+            case DOUBLE:
+                ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                double factor = sc.getFactor();
+                double offset = sc.getOffset();
+                ds = ()->factor*ls.getAsLong()+offset;
+                rn = compiler.compile(mc, sc, ds);
+                signals.put(sc.getName(), rn);
+                break;
+            default:
+                throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
         }
-        else
-        {
-            if (bo == BIG_ENDIAN)
-            {
-                ls1 = ()->getLong1(bitOffset, size, buf);
-            }
-            else
-            {
-                ls1 = ()->changeEndian(getLong1(bitOffset, size, buf));
-            }
-        }
-        if (valueType == SIGNED)
-        {
-            switch (size)
-            {
-                case 8:
-                    ls2 = ()->(byte)ls1.getAsLong();
-                    break;
-                case 16:
-                    ls2 = ()->(short)ls1.getAsLong();
-                    break;
-                case 32:
-                    ls2 = ()->(int)ls1.getAsLong();
-                    break;
-                default:
-                    throw new UnsupportedOperationException(size+" bit len not supported");
-            }
-        }
-        else
-        {
-            ls2 = ls1;
-        }
-        if (factor != 1.0)
-        {
-            ds3 = ()->factor*ls2.getAsLong();
-        }
-        else
-        {
-            ds3 = ()->ls2.getAsLong();
-        }
-        if (offset != 0.0)
-        {
-            ds4 = ()->ds3.getAsDouble()+offset;
-        }
-        else
-        {
-            ds4 = ds3;
-        }
-        signals.put(comment, ()->act.accept(ds4.getAsDouble()));
     }
     @Override
     protected boolean update(AbstractCanService service)
@@ -178,56 +111,6 @@ public class SingleMessage extends AbstractMessage
             }
         });
     }
+
     
-    public static long getLong8(int offset, int length, byte... buf)
-    {
-        int o = offset / 8;
-        int l = length / 8;
-        long res = 0;
-        for (int ii=0;ii<l;ii++)
-        {
-            res = (res<<8) + (buf[ii+o] & 0xff);
-        }
-        return res;
-    }
-    public static long getLong1(int offset, int length, byte... buf)
-    {
-        long res = 0;
-        for (int ii=0;ii<length;ii++)
-        {
-            int jj = ii+offset;
-            res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-        }
-        return res;
-    }
-    /**
-     * Change Big Endian to Little Endian and vice versa.
-     * @param l
-     * @return 
-     */
-    public static long changeEndian(long l)
-    {
-        assert false;   // TO DO
-        long res = 0;
-        while (l != 0)
-        {
-            res = (res<<8) + (l & 0xff);
-            l>>=8;
-        }
-        return res;
-    }
-    public static long signed(long l, int len)
-    {
-        switch (len)
-        {
-            case 8:
-                return (byte)l;
-            case 16:
-                return (short)l;
-            case 32:
-                return (int)l;
-            default:
-                throw new UnsupportedOperationException(len+" bit len not supported");
-        }
-    }
 }

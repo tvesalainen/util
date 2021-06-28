@@ -27,11 +27,9 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.vesalainen.can.dict.MessageClass;
 import org.vesalainen.can.dict.PGNClass;
 import org.vesalainen.can.dict.SignalClass;
 import org.vesalainen.can.dict.ValueDescription;
-import org.vesalainen.can.dict.ValueType;
 import static org.vesalainen.can.dict.ValueType.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -139,6 +137,7 @@ public class PGNDefinitions
         int length = 0;
         int offset = 0;
         String type = null;
+        String unit = "";
         boolean signed = false;
         double resolution = 1.0;
         Node lookupNode = null;
@@ -161,6 +160,9 @@ public class PGNDefinitions
                     break;
                 case "Type":
                     type = node.getTextContent();
+                    break;
+                case "Units":
+                    unit = node.getTextContent();
                     break;
                 case "Signed":
                     signed = Boolean.getBoolean(node.getTextContent());
@@ -187,8 +189,9 @@ public class PGNDefinitions
                     Double.valueOf(0), 
                     Double.valueOf(0), 
                     Double.valueOf(0), 
-                    "", 
+                    unit, 
                     Collections.EMPTY_LIST);
+            sc.setType(type);
             if (lookupNode != null)
             {
                 List<ValueDescription> valDesc = parseLookup(lookupNode);

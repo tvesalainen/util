@@ -19,9 +19,16 @@ package org.vesalainen.can;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntFunction;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.can.dict.MessageClass;
+import org.vesalainen.can.dict.SignalClass;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -39,10 +46,44 @@ public class CanServiceT
     @Test
     public void test() throws IOException, InterruptedException, ExecutionException
     {
-        AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111);
+        AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addPGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
         canSvc.startAndWait();
     }
     
+    private static class TestCompiler implements SignalCompiler
+    {
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier)
+        {
+            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsInt()+" "+sc.getUnit());
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
+        {
+            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsLong()+" "+sc.getUnit());
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier)
+        {
+            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsDouble()+" "+sc.getUnit());
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
+        {
+            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.get()+" "+sc.getUnit());
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
+        {
+            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+map.apply(supplier.getAsInt())+" "+sc.getUnit());
+        }
+
+    }
 }

@@ -54,7 +54,8 @@ public abstract class AbstractMessage extends JavaLogging
         protected boolean update(AbstractCanService service)
         {
             ByteBuffer frame = service.getFrame();
-            warning("Unknown:\n%s", HexDump.startToHex(frame));
+            int canId = frame.getInt(0);
+            warning("Unknown %d:\n%s", canId, HexDump.startToHex(frame));
             return false;
         }
 

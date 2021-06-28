@@ -17,19 +17,15 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
 import javax.xml.parsers.ParserConfigurationException;
 import org.vesalainen.can.canboat.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
@@ -48,26 +44,28 @@ import org.xml.sax.SAXException;
  */
 public abstract class AbstractCanService extends JavaLogging implements Runnable, AutoCloseable
 {
-    protected Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
-    protected Map<Integer,MessageClass> canIdMap = new HashMap<>();
-    protected Map<Integer,PGNClass> pgnMap = new HashMap<>();
-    protected CachedScheduledThreadPool executor;
+    protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
+    protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
+    protected final Map<Integer,PGNClass> pgnMap = new HashMap<>();
+    protected final CachedScheduledThreadPool executor;
+    protected final SignalCompiler compiler;
     private Future<?> future;
 
-    protected AbstractCanService(CachedScheduledThreadPool executor)
+    protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         super(AbstractCanService.class);
         this.executor = executor;
+        this.compiler = compiler;
     }
 
-    public static AbstractCanService openSocketCan2Udp(String host, int port) throws IOException
+    public static AbstractCanService openSocketCan2Udp(String host, int port, SignalCompiler compiler) throws IOException
     {
-        return openSocketCan2Udp(host, port, new CachedScheduledThreadPool());
+        return openSocketCan2Udp(host, port, new CachedScheduledThreadPool(), compiler);
     }
-    public static AbstractCanService openSocketCan2Udp(String host, int port, CachedScheduledThreadPool executor) throws IOException
+    public static AbstractCanService openSocketCan2Udp(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
         UnconnectedDatagramChannel udc = UnconnectedDatagramChannel.open(host, port, 16, true, false);
-        return new SocketCanService((ByteChannel)udc, executor);
+        return new SocketCanService((ByteChannel)udc, executor, compiler);
     }
     public void start()
     {
@@ -116,19 +114,28 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     
     protected void compile(int canId)
     {
-        MessageClass msgCls = canIdMap.get(canId);
-        if (msgCls != null)
+        try
         {
-            procMap.put(canId, compile(msgCls));
-        }
-        else
-        {
-            int pgn = PGN.pgn(canId);
-            msgCls = pgnMap.get(pgn);
+            MessageClass msgCls = canIdMap.get(canId);
             if (msgCls != null)
             {
-                procMap.put(canId, compilePGN((PGNClass) msgCls));
+                procMap.put(canId, compile(msgCls));
+                info("compiled canId %d", canId);
             }
+            else
+            {
+                int pgn = PGN.pgn(canId);
+                msgCls = pgnMap.get(pgn);
+                if (msgCls != null)
+                {
+                    procMap.put(canId, compilePGN((PGNClass) msgCls));
+                    info("compiled canId %d", canId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            log(SEVERE, ex, "%X", canId);
         }
     }
     
@@ -162,7 +169,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         mc.forEach((s)->
         {
             finer("add signal %s", s);
-            sm.addSignal(s.getName(), s.getStartBit(), s.getSize(), s.getByteOrder(), s.getValueType(), s.getFactor(), s.getFactor(), (d)->System.err.println(s.getName()+"="+d));
+            sm.addSignal(mc, s, compiler);
         });
     }
     
