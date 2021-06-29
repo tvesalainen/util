@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can;
 
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
@@ -113,9 +115,10 @@ public final class ArrayFuncs
         return ()->
         {
             int res = 0;
+            int start = offset+length-min(8, length);
             for (int ii=0;ii<length;ii++)
             {
-                int jj = offset+length-8+(ii%8)-8*(ii/8);
+                int jj = start+(ii%8)-8*(ii/8);
                 res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
             }
             return res;
@@ -125,11 +128,12 @@ public final class ArrayFuncs
     {
         return ()->
         {
-            int jj = offset+length-8;
+            int start = offset+length-min(8, length);
+            int jj = start;
             int res = (buf[jj/8]>>(7-jj%8) & 0x1) == 1 ? -1 : 0;
             for (int ii=1;ii<length;ii++)
             {
-                jj = offset+length-8+(ii%8)-8*(ii/8);
+                jj = start+(ii%8)-8*(ii/8);
                 res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
             }
             return res;
@@ -351,10 +355,11 @@ public final class ArrayFuncs
     {
         return ()->
         {
+            int start = offset+length-min(8, length);
             long res = 0;
             for (int ii=0;ii<length;ii++)
             {
-                int jj = offset+length-8+(ii%8)-8*(ii/8);
+                int jj = start+(ii%8)-8*(ii/8);
                 res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
             }
             return res;
@@ -364,11 +369,12 @@ public final class ArrayFuncs
     {
         return ()->
         {
-            int jj = offset+length-8;
+            int start = offset+length-min(8, length);
+            int jj = start;
             long res = (buf[jj/8]>>(7-jj%8) & 0x1) == 1 ? -1 : 0;
             for (int ii=1;ii<length;ii++)
             {
-                jj = offset+length-8+(ii%8)-8*(ii/8);
+                jj = start+(ii%8)-8*(ii/8);
                 res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
             }
             return res;
