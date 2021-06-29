@@ -98,7 +98,7 @@ public class PGNDefinitions
                 type = node.getTextContent();
                 break;
                 case "Complete":
-                complete = Boolean.getBoolean(node.getTextContent());
+                complete = Boolean.parseBoolean(node.getTextContent());
                 break;
                 case "Length":
                 size = Integer.parseUnsignedInt(node.getTextContent());
@@ -165,7 +165,7 @@ public class PGNDefinitions
                     unit = node.getTextContent();
                     break;
                 case "Signed":
-                    signed = Boolean.getBoolean(node.getTextContent());
+                    signed = Boolean.parseBoolean(node.getTextContent());
                     break;
                 case "Resolution":
                     resolution = Double.parseDouble(node.getTextContent());

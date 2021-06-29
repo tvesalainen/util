@@ -56,33 +56,45 @@ public class CanServiceT
     {
 
         @Override
+        public Runnable compileBegin(MessageClass mc)
+        {
+            return ()->System.err.print(mc.getName()+":");
+        }
+
+        @Override
         public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier)
         {
-            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsInt()+" "+sc.getUnit());
+            return ()->System.err.print(" "+sc.getName()+" = "+supplier.getAsInt()+" "+sc.getUnit());
         }
 
         @Override
         public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
         {
-            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsLong()+" "+sc.getUnit());
+            return ()->System.err.print(" "+sc.getName()+" = "+supplier.getAsLong()+" "+sc.getUnit());
         }
 
         @Override
         public Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier)
         {
-            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.getAsDouble()+" "+sc.getUnit());
+            return ()->System.err.print(" "+sc.getName()+" = "+supplier.getAsDouble()+" "+sc.getUnit());
         }
 
         @Override
         public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
         {
-            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+supplier.get()+" "+sc.getUnit());
+            return ()->System.err.print(" "+sc.getName()+" = "+supplier.get()+" "+sc.getUnit());
         }
 
         @Override
         public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
         {
-            return ()->System.err.println(mc.getName()+": "+sc.getName()+" = "+map.apply(supplier.getAsInt())+" "+sc.getUnit());
+            return ()->System.err.print(" "+sc.getName()+" = "+map.apply(supplier.getAsInt())+" "+sc.getUnit());
+        }
+
+        @Override
+        public Runnable compileEnd(MessageClass mc)
+        {
+            return ()->System.err.println();
         }
 
     }

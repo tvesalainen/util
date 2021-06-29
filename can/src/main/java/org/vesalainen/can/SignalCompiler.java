@@ -30,9 +30,16 @@ import org.vesalainen.can.dict.SignalClass;
  */
 public interface SignalCompiler
 {
+    Runnable compileBegin(MessageClass mc);
     Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier);
     Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier);
     Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier);
     Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier);
     Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map);
+    default Runnable compileBinary(MessageClass mc, SignalClass sc)
+    {
+        return null;
+    }
+    Runnable compileEnd(MessageClass mc);
+
 }

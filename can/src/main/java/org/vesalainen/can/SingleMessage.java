@@ -19,7 +19,9 @@ package org.vesalainen.can;
 import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
@@ -40,7 +42,7 @@ public class SingleMessage extends AbstractMessage
 {
     protected byte[] buf;
     protected String comment;
-    protected Map<String,Runnable> signals = new HashMap<>();
+    protected List<Runnable> signals = new ArrayList<>();
 
     public SingleMessage(int len, String comment)
     {
@@ -48,6 +50,14 @@ public class SingleMessage extends AbstractMessage
         this.comment = comment;
     }
     
+    public void addBegin(MessageClass mc, SignalCompiler compiler)
+    {
+        Runnable rn = compiler.compileBegin(mc);
+        if (rn != null)
+        {
+            signals.add(rn);
+        }
+    }
     public void addSignal(MessageClass mc, SignalClass sc, SignalCompiler compiler)
     {
         IntSupplier is;
@@ -59,12 +69,10 @@ public class SingleMessage extends AbstractMessage
             case INT:
                 is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                 rn = compiler.compile(mc, sc, is);
-                signals.put(sc.getName(), rn);
                 break;
             case LONG:
                 ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                 rn = compiler.compile(mc, sc, ls);
-                signals.put(sc.getName(), rn);
                 break;
             case DOUBLE:
                 ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
@@ -72,10 +80,28 @@ public class SingleMessage extends AbstractMessage
                 double offset = sc.getOffset();
                 ds = ()->factor*ls.getAsLong()+offset;
                 rn = compiler.compile(mc, sc, ds);
-                signals.put(sc.getName(), rn);
+                break;
+            case LOOKUP:
+                is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                rn = compiler.compile(mc, sc, is, sc.getMapper());
+                break;
+            case BINARY:
+                rn = compiler.compileBinary(mc, sc);
                 break;
             default:
                 throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
+        }
+        if (rn != null)
+        {
+            signals.add(rn);
+        }
+    }
+    public void addEnd(MessageClass mc, SignalCompiler compiler)
+    {
+        Runnable rn = compiler.compileEnd(mc);
+        if (rn != null)
+        {
+            signals.add(rn);
         }
     }
     @Override
@@ -99,7 +125,7 @@ public class SingleMessage extends AbstractMessage
     protected void execute(CachedScheduledThreadPool executor)
     {
         info("execute %s\n%s", comment, HexDump.toHex(buf));
-        signals.forEach((s, r)->
+        signals.forEach((r)->
         {
             try
             {
@@ -107,7 +133,7 @@ public class SingleMessage extends AbstractMessage
             }
             catch (Exception ex)
             {
-                log(WARNING, ex, "execute %s %s", comment, s);
+                log(WARNING, ex, "execute %s", comment);
             }
         });
     }

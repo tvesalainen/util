@@ -26,6 +26,6 @@ public enum SignalType
     LONG,
     DOUBLE,
     STRING,
-    LOOKUP
-    
+    LOOKUP,
+    BINARY
 }

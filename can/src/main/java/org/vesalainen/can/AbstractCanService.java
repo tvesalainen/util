@@ -166,11 +166,13 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     }
     private void addSignals(MessageClass mc, SingleMessage sm)
     {
+        sm.addBegin(mc, compiler);
         mc.forEach((s)->
         {
             finer("add signal %s", s);
             sm.addSignal(mc, s, compiler);
         });
+        sm.addEnd(mc, compiler);
     }
     
     public void addDBCFile(Path path)

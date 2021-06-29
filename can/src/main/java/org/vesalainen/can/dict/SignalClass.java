@@ -20,6 +20,7 @@ import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import org.vesalainen.can.SignalType;
 import static org.vesalainen.can.SignalType.*;
 import static org.vesalainen.can.dict.ValueType.*;
@@ -73,6 +74,17 @@ public class SignalClass
                 case "Integer":
                     assert getType(size, valueType == SIGNED, factor, offset) == INT;
                     return INT;
+                case "Latitude":
+                case "Longitude":
+                    return DOUBLE;
+                case "Lookup table":
+                    return LOOKUP;
+                case "Binary data":
+                    return BINARY;
+                case "Date":
+                    return INT;
+                case "Time":
+                    return DOUBLE;
                 default:
                     throw new UnsupportedOperationException(type+" not supported");
             }
@@ -81,6 +93,10 @@ public class SignalClass
         {
             return getType(size, valueType == SIGNED, factor, offset);
         }
+    }
+    public IntFunction getMapper()
+    {
+        return lookupMap::get;
     }
     public static SignalType getType(int bits, boolean signed, double factor, double offset)
     {

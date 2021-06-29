@@ -20,6 +20,7 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.util.HexUtil;
 
 /**
  *
@@ -50,9 +51,16 @@ public class ArrayFuncsTest
     }
 
     @Test
+    public void test0()
+    {
+        byte[] arr = HexUtil.fromString("0040008354408594");
+        IntSupplier is = ArrayFuncs.getIntSupplier(40, 3, false, false, arr);
+        assertEquals(2, is.getAsInt());
+    }
+    @Test
     public void testAlignedInt()
     {
-        for (int ll=8;ll<64;ll+=8)
+        for (int ll=8;ll<32;ll+=8)
         {
             testInt(8, ll, true, true);
             testInt(8, ll, true, false);
