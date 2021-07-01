@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import static java.lang.Integer.min;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import org.junit.Test;
@@ -28,39 +29,63 @@ import org.vesalainen.util.HexUtil;
  */
 public class ArrayFuncsTest
 {
-    private byte[] buf = new byte[]{
-        (byte)0xf1, 
-        (byte)0xf2, 
-        (byte)0xf3, 
-        (byte)0xf4, 
-        (byte)0xf5, 
-        (byte)0xf6, 
-        (byte)0xf7, 
-        (byte)0xf8,
-        (byte)0xf9, 
-        (byte)0xfa, 
-        (byte)0xfb, 
-        (byte)0xfc, 
-        (byte)0xfd, 
-        (byte)0xfe, 
-        (byte)0xff
+
+    private byte[] buf = new byte[]
+    {
+        (byte) 0xf1,
+        (byte) 0xf2,
+        (byte) 0xf3,
+        (byte) 0xf4,
+        (byte) 0xf5,
+        (byte) 0xf6,
+        (byte) 0xf7,
+        (byte) 0xf8,
+        (byte) 0xf9,
+        (byte) 0xfa,
+        (byte) 0xfb,
+        (byte) 0xfc,
+        (byte) 0xfd,
+        (byte) 0xfe,
+        (byte) 0xff
     };
-    
+
     public ArrayFuncsTest()
     {
     }
 
     @Test
-    public void test0()
+    public void testLE()
     {
-        byte[] arr = HexUtil.fromString("0040008354408594");
+        byte[] arr = ArrayFuncs.createLittleEndian(2, 16);
+    }
+    @Test
+    public void testAlloc()
+    {
+        assertEquals(2, ArrayFuncs.dim(8, 16));
+        assertEquals(3, ArrayFuncs.dim(7, 16));
+        assertEquals(1, ArrayFuncs.dim(0, 3));
+    }
+
+    @Test
+    public void testVesselHeading()
+    {
+        byte[] arr = HexUtil.fromString("b2b7dd0000110dfc");
+        IntSupplier is = ArrayFuncs.getIntSupplier(56, 2, false, false, arr);
+        assertEquals(0, is.getAsInt());
+    }
+
+    @Test
+    public void testWindData()
+    {
+        byte[] arr = HexUtil.fromString("4c 99 01 2e 96 fa ff ff".replace(" ", ""));
         IntSupplier is = ArrayFuncs.getIntSupplier(40, 3, false, false, arr);
         assertEquals(2, is.getAsInt());
     }
+
     @Test
     public void testAlignedInt()
     {
-        for (int ll=8;ll<32;ll+=8)
+        for (int ll = 8; ll < 32; ll += 8)
         {
             testInt(8, ll, true, true);
             testInt(8, ll, true, false);
@@ -68,16 +93,18 @@ public class ArrayFuncsTest
             testInt(8, ll, false, false);
         }
     }
+
     private void testInt(int offset, int length, boolean bigEndian, boolean signed)
     {
-        IntSupplier lsb = ArrayFuncs.getIntSupplierX(offset, length, bigEndian, signed, buf);
-        IntSupplier exp = ArrayFuncs.getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
-        assertEquals("o="+offset+" l="+length+" be="+bigEndian+" s="+signed, exp.getAsInt(), lsb.getAsInt());
+        IntSupplier lsb = ArrayFuncs.getIntSupplier(offset, length, bigEndian, signed, buf);
+        IntSupplier exp = ArrayFuncs0.getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
+        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsInt(), lsb.getAsInt());
     }
+
     @Test
     public void testAlignedLong()
     {
-        for (int ll=8;ll<64;ll+=8)
+        for (int ll = 8; ll < 64; ll += 8)
         {
             testLong(8, ll, true, true);
             testLong(8, ll, true, false);
@@ -85,81 +112,90 @@ public class ArrayFuncsTest
             testLong(8, ll, false, false);
         }
     }
+
     private void testLong(int offset, int length, boolean bigEndian, boolean signed)
     {
-        LongSupplier lsb = ArrayFuncs.getLongSupplierX(offset, length, bigEndian, signed, buf);
-        LongSupplier exp = ArrayFuncs.getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
-        assertEquals("o="+offset+" l="+length+" be="+bigEndian+" s="+signed, exp.getAsLong(), lsb.getAsLong());
+        LongSupplier lsb = ArrayFuncs.getLongSupplier(offset, length, bigEndian, signed, buf);
+        LongSupplier exp = ArrayFuncs0.getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
+        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsLong(), lsb.getAsLong());
     }
+
     @Test
     public void testLongUnsignedLittleEndianX()
     {
-        LongSupplier lubx = ArrayFuncs.getLongUnsignedLittleEndianX(8, 16, buf);
+        LongSupplier lubx = ArrayFuncs0.getLongUnsignedLittleEndianX(8, 16, buf);
         long exp = 0xf3f2;
         assertEquals(exp, lubx.getAsLong());
     }
+
     @Test
     public void testLongSignedLittleEndianX()
     {
-        LongSupplier lubx = ArrayFuncs.getLongSignedLittleEndianX(8, 16, buf);
-        long exp = (short)0xf3f2;
+        LongSupplier lubx = ArrayFuncs0.getLongSignedLittleEndianX(8, 16, buf);
+        long exp = (short) 0xf3f2;
         assertEquals(exp, lubx.getAsLong());
     }
+
     @Test
     public void testLongUnsignedBigEndianX()
     {
-        LongSupplier lubx = ArrayFuncs.getLongUnsignedBigEndianX(8, 16, buf);
+        LongSupplier lubx = ArrayFuncs0.getLongUnsignedBigEndianX(8, 16, buf);
         long exp = 0xf2f3;
         assertEquals(exp, lubx.getAsLong());
     }
+
     @Test
     public void testLongSignedBigEndianX()
     {
-        LongSupplier lsbx = ArrayFuncs.getLongSignedBigEndianX(8, 16, buf);
-        long exp = (short)0xf2f3;
+        LongSupplier lsbx = ArrayFuncs0.getLongSignedBigEndianX(8, 16, buf);
+        long exp = (short) 0xf2f3;
         assertEquals(exp, lsbx.getAsLong());
     }
+
     @Test
     public void testLongSignedBigEndian()
     {
-        for (int ll=1;ll<9;ll++)
+        for (int ll = 1; ll < 9; ll++)
         {
-            LongSupplier lsb = ArrayFuncs.getLongSignedBigEndian(0, ll, buf);
-            LongSupplier exp = ArrayFuncs.getLongSignedBigEndianX(0, 8*ll, buf);
-            assertEquals("ll="+ll, exp.getAsLong(), lsb.getAsLong());
+            LongSupplier lsb = ArrayFuncs0.getLongSignedBigEndian(0, ll, buf);
+            LongSupplier exp = ArrayFuncs0.getLongSignedBigEndianX(0, 8 * ll, buf);
+            assertEquals("ll=" + ll, exp.getAsLong(), lsb.getAsLong());
         }
     }
+
     @Test
     public void testLongUnsignedBigEndian()
     {
-        for (int ll=1;ll<8;ll++)
+        for (int ll = 1; ll < 8; ll++)
         {
-            LongSupplier lsb = ArrayFuncs.getLongUnsignedBigEndian(0, ll, buf);
-            LongSupplier exp = ArrayFuncs.getLongUnsignedBigEndianX(0, 8*ll, buf);
+            LongSupplier lsb = ArrayFuncs0.getLongUnsignedBigEndian(0, ll, buf);
+            LongSupplier exp = ArrayFuncs0.getLongUnsignedBigEndianX(0, 8 * ll, buf);
             System.err.println(Long.toHexString(lsb.getAsLong()));
             System.err.println(Long.toHexString(exp.getAsLong()));
-            assertEquals("ll="+ll, exp.getAsLong(), lsb.getAsLong());
+            assertEquals("ll=" + ll, exp.getAsLong(), lsb.getAsLong());
         }
     }
+
     @Test
     public void testLongSignedLittleEndian()
     {
-        for (int ll=1;ll<9;ll++)
+        for (int ll = 1; ll < 9; ll++)
         {
-            LongSupplier lsb = ArrayFuncs.getLongSignedLittleEndian(0, ll, buf);
-            LongSupplier exp = ArrayFuncs.getLongSignedLittleEndianX(0, 8*ll, buf);
-            assertEquals("ll="+ll, exp.getAsLong(), lsb.getAsLong());
+            LongSupplier lsb = ArrayFuncs0.getLongSignedLittleEndian(0, ll, buf);
+            LongSupplier exp = ArrayFuncs0.getLongSignedLittleEndianX(0, 8 * ll, buf);
+            assertEquals("ll=" + ll, exp.getAsLong(), lsb.getAsLong());
         }
     }
+
     @Test
     public void testLongUnsignedLittleEndian()
     {
-        for (int ll=1;ll<8;ll++)
+        for (int ll = 1; ll < 8; ll++)
         {
-            LongSupplier lsb = ArrayFuncs.getLongUnsignedLittleEndian(0, ll, buf);
-            LongSupplier exp = ArrayFuncs.getLongUnsignedLittleEndianX(0, 8*ll, buf);
-            assertEquals("ll="+ll, exp.getAsLong(), lsb.getAsLong());
+            LongSupplier lsb = ArrayFuncs0.getLongUnsignedLittleEndian(0, ll, buf);
+            LongSupplier exp = ArrayFuncs0.getLongUnsignedLittleEndianX(0, 8 * ll, buf);
+            assertEquals("ll=" + ll, exp.getAsLong(), lsb.getAsLong());
         }
     }
-    
+
 }

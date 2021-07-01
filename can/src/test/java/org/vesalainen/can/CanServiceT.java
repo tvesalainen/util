@@ -88,7 +88,13 @@ public class CanServiceT
         @Override
         public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
         {
-            return ()->System.err.print(" "+sc.getName()+" = "+map.apply(supplier.getAsInt())+" "+sc.getUnit());
+            return ()->
+                {
+                    int ii = supplier.getAsInt();
+                    String ss = map.apply(ii);
+                    ss = ss == null ? ii+"???" : ss;
+                    System.err.print(" "+sc.getName()+" = "+ss );
+                };
         }
 
         @Override

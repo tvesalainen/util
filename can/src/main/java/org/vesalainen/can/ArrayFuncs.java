@@ -39,215 +39,140 @@ public final class ArrayFuncs
     public static final IntSupplier getIntSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
     {
         checkBitsInt(offset, length, buf);
-        boolean aligned8 = (offset % 8) == 0 && (length % 8) == 0;
-        if (aligned8)
+        IntSupplier is;
+        if (bigEndian)
         {
-            return getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
+            byte[] arr = createBigEndian(offset, length);
+            is = getIntSupplier(arr, buf);
         }
         else
         {
-            return getIntSupplierX(offset, length, bigEndian, signed, buf);
+            byte[] arr = createLittleEndian(offset, length);
+            is = getIntSupplier(arr, buf);
         }
-        
-    }
-    static final IntSupplier getAlignedIntSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
-    {
-            int off = offset/8;
-            int len = length/8;
-            if (signed)
-            {
-                if (bigEndian)
-                {
-                    return getIntSignedBigEndian(off, len, buf);
-                }
-                else
-                {
-                    return getIntSignedLittleEndian(off, len, buf);
-                }
-            }
-            else
-            {
-                if (length > 63)
-                {
-                    throw new IllegalArgumentException("length > 63 for unsigned");
-                }
-                if (bigEndian)
-                {
-                    return getIntUnsignedBigEndian(off, len, buf);
-                }
-                else
-                {
-                    return getIntUnsignedLittleEndian(off, len, buf);
-                }
-            }
-    }
-    static IntSupplier getIntSupplierX(int offset, int length, boolean bigEndian, boolean signed, byte[] buf)
-    {
         if (signed)
         {
-            if (bigEndian)
-            {
-                return getIntSignedBigEndianX(offset, length, buf);
-            }
-            else
-            {
-                return getIntSignedLittleEndianX(offset, length, buf);
-            }
+            int shf = 32 - length;
+            IntSupplier is2 = is;
+            is = ()->(is2.getAsInt()<<shf)>>shf;
+        }
+        return is;
+    }
+    /**
+     * Returns LongSupplier which constructs long from byte array
+     * @param offset    In bits
+     * @param length    In bits
+     * @param bigEndian
+     * @param signed
+     * @param buf
+     * @return 
+     */
+    public static final LongSupplier getLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    {
+        checkBitsLong(offset, length, buf);
+        LongSupplier ls;
+        if (bigEndian)
+        {
+            byte[] arr = createBigEndian(offset, length);
+            ls = getLongSupplier(arr, buf);
         }
         else
         {
-            if (length > 63)
-            {
-                throw new IllegalArgumentException("length > 63 for unsigned");
-            }
-            if (bigEndian)
-            {
-                return getIntUnsignedBigEndianX(offset, length, buf);
-            }
-            else
-            {
-                return getIntUnsignedLittleEndianX(offset, length, buf);
-            }
+            byte[] arr = createLittleEndian(offset, length);
+            ls = getLongSupplier(arr, buf);
         }
+        if (signed)
+        {
+            int shf = 64 - length;
+            LongSupplier ls2 = ls;
+            ls = ()->(ls2.getAsLong()<<shf)>>shf;
+        }
+        return ls;
     }
-    static final IntSupplier getIntUnsignedLittleEndianX(int offset, int length, byte... buf)
+    public static final IntSupplier getIntSupplier(byte[] arr, byte... buf)
     {
         return ()->
         {
+            int len = arr.length/3;
             int res = 0;
-            int start = offset+length-min(8, length);
-            for (int ii=0;ii<length;ii++)
+            for (int ii=0;ii<len;ii++)
             {
-                int jj = start+(ii%8)-8*(ii/8);
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+                res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
             }
             return res;
         };
     }
-    static final IntSupplier getIntSignedLittleEndianX(int offset, int length, byte... buf)
+    public static final LongSupplier getLongSupplier(byte[] arr, byte... buf)
     {
         return ()->
         {
-            int start = offset+length-min(8, length);
-            int jj = start;
-            int res = (buf[jj/8]>>(7-jj%8) & 0x1) == 1 ? -1 : 0;
-            for (int ii=1;ii<length;ii++)
+            int len = arr.length/3;
+            long res = 0;
+            for (int ii=0;ii<len;ii++)
             {
-                jj = start+(ii%8)-8*(ii/8);
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
+                res |= (((long)buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
             }
             return res;
         };
     }
-    static final IntSupplier getIntUnsignedBigEndianX(int offset, int length, byte... buf)
+    static byte[] createBigEndian(int offset, int length)
     {
-        if (length > 31)
+        byte[] arr = new byte[dim(offset, length)*3];
+        int idx = 0;
+        byte shift = (byte) length;
+        int off = offset;
+        int len = length;
+        while (len > 0)
         {
-            throw new IllegalArgumentException("length > 31 for unsigned");
+            int bo = off % 8;
+            int bits = min(8 - bo, len);
+            int mb = 8 - bits;
+            shift -= bits;
+            byte mask = (byte) ((((0xff<<mb)&0xff)>>mb)<<bo);
+            arr[3*idx] = (byte) (off/8);
+            arr[3*idx+1] = mask;
+            arr[3*idx+2] = shift;
+            off += bits;
+            len -= bits;
+            idx++;
         }
-        return ()->
-        {
-            int res = 0;
-            for (int ii=0;ii<length;ii++)
-            {
-                int jj = ii+offset;
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
+        return arr;
     }
-    static final IntSupplier getIntSignedBigEndianX(int offset, int length, byte... buf)
+    static byte[] createLittleEndian(int offset, int length)
     {
-        return ()->
+        byte[] arr = new byte[dim(offset, length)*3];
+        int idx = 0;
+        byte shift = 0;
+        int off = offset;
+        int len = length;
+        while (len > 0)
         {
-            int res = (buf[offset/8]>>(7-offset%8) & 0x1) == 1 ? -1 : 0;
-            for (int ii=1;ii<length;ii++)
-            {
-                int jj = ii+offset;
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
-    }
-    static final IntSupplier getIntSignedBigEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off];
-            case 2:
-                return ()-> (buf[off]<<8) + 
-                            (buf[off+1] & 0xff);
-            case 3:
-                return ()-> (buf[off]<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off+2] & 0xff);
-            case 4:
-                return ()-> (buf[off]<<24) + 
-                            ((buf[off+1] & 0xff)<<16) + 
-                            ((buf[off+2] & 0xff)<<8) + 
-                            (buf[off+3] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
+            int bo = off % 8;
+            int bits = min(8 - bo, len);
+            int mb = 8 - bits;
+            byte mask = (byte) ((((0xff<<mb)&0xff)>>mb)<<bo);
+            arr[3*idx] = (byte) (off/8);
+            arr[3*idx+1] = mask;
+            arr[3*idx+2] = shift;
+            shift += bits;
+            off += bits;
+            len -= bits;
+            idx++;
         }
+        return arr;
     }
-    static final IntSupplier getIntUnsignedBigEndian(int off, int len, byte[] buf)
+    static int dim(int offset, int length)
     {
-        switch (len)
+        int d = 1;
+        int om = offset % 8;
+        length -= min(om == 0 ? 8 : om, length);
+        d += length / 8;
+        if ((length % 8) != 0)
         {
-            case 1:
-                return ()->buf[off] & 0xff;
-            case 2:
-                return ()-> (((buf[off] & 0xff)<<8)) + 
-                            (buf[off+1] & 0xff);
-            case 3:
-                return ()-> ((buf[off] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off+2] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
+            d++;
         }
+        return d;
     }
-    static final IntSupplier getIntSignedLittleEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off];
-            case 2:
-                return ()-> (buf[off+1]<<8) + 
-                            (buf[off] & 0xff);
-            case 3:
-                return ()-> (buf[off+2]<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            case 4:
-                return ()-> (buf[off+3]<<24) + 
-                            ((buf[off+2] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-    static final IntSupplier getIntUnsignedLittleEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off] & 0xff;
-            case 2:
-                return ()-> (((buf[off+1] & 0xff)<<8)) + 
-                            (buf[off] & 0xff);
-            case 3:
-                return ()-> ((buf[off+2] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-
     private static void checkBitsInt(int offset, int length, byte[] buf)
     {
         if (offset < 0) 
@@ -267,340 +192,6 @@ public final class ArrayFuncs
             throw new IllegalArgumentException("buffer overflow");
         }
     }
-    /*------------------------------------------------------------------------------*/
-    /**
-     * Returns LongSupplier which constructs long from byte array
-     * @param offset    In bits
-     * @param length    In bits
-     * @param bigEndian
-     * @param signed
-     * @param buf
-     * @return 
-     */
-    public static final LongSupplier getLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
-    {
-        checkBitsLong(offset, length, buf);
-        boolean aligned8 = (offset % 8) == 0 && (length % 8) == 0;
-        if (aligned8)
-        {
-            return getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
-        }
-        else
-        {
-            return getLongSupplierX(offset, length, bigEndian, signed, buf);
-        }
-        
-    }
-    static final LongSupplier getAlignedLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
-    {
-            int off = offset/8;
-            int len = length/8;
-            if (signed)
-            {
-                if (bigEndian)
-                {
-                    return getLongSignedBigEndian(off, len, buf);
-                }
-                else
-                {
-                    return getLongSignedLittleEndian(off, len, buf);
-                }
-            }
-            else
-            {
-                if (length > 63)
-                {
-                    throw new IllegalArgumentException("length > 63 for unsigned");
-                }
-                if (bigEndian)
-                {
-                    return getLongUnsignedBigEndian(off, len, buf);
-                }
-                else
-                {
-                    return getLongUnsignedLittleEndian(off, len, buf);
-                }
-            }
-    }
-    static LongSupplier getLongSupplierX(int offset, int length, boolean bigEndian, boolean signed, byte[] buf)
-    {
-        if (signed)
-        {
-            if (bigEndian)
-            {
-                return getLongSignedBigEndianX(offset, length, buf);
-            }
-            else
-            {
-                return getLongSignedLittleEndianX(offset, length, buf);
-            }
-        }
-        else
-        {
-            if (length > 63)
-            {
-                throw new IllegalArgumentException("length > 63 for unsigned");
-            }
-            if (bigEndian)
-            {
-                return getLongUnsignedBigEndianX(offset, length, buf);
-            }
-            else
-            {
-                return getLongUnsignedLittleEndianX(offset, length, buf);
-            }
-        }
-    }
-    static final LongSupplier getLongUnsignedLittleEndianX(int offset, int length, byte... buf)
-    {
-        return ()->
-        {
-            int start = offset+length-min(8, length);
-            long res = 0;
-            for (int ii=0;ii<length;ii++)
-            {
-                int jj = start+(ii%8)-8*(ii/8);
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
-    }
-    static final LongSupplier getLongSignedLittleEndianX(int offset, int length, byte... buf)
-    {
-        return ()->
-        {
-            int start = offset+length-min(8, length);
-            int jj = start;
-            long res = (buf[jj/8]>>(7-jj%8) & 0x1) == 1 ? -1 : 0;
-            for (int ii=1;ii<length;ii++)
-            {
-                jj = start+(ii%8)-8*(ii/8);
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
-    }
-    static final LongSupplier getLongUnsignedBigEndianX(int offset, int length, byte... buf)
-    {
-        if (length > 63)
-        {
-            throw new IllegalArgumentException("length > 63 for unsigned");
-        }
-        return ()->
-        {
-            long res = 0;
-            for (int ii=0;ii<length;ii++)
-            {
-                int jj = ii+offset;
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
-    }
-    static final LongSupplier getLongSignedBigEndianX(int offset, int length, byte... buf)
-    {
-        return ()->
-        {
-            long res = (buf[offset/8]>>(7-offset%8) & 0x1) == 1 ? -1 : 0;
-            for (int ii=1;ii<length;ii++)
-            {
-                int jj = ii+offset;
-                res = (res<<1) + (buf[jj/8]>>(7-jj%8) & 0x1);
-            }
-            return res;
-        };
-    }
-    static final LongSupplier getLongSignedBigEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off];
-            case 2:
-                return ()-> (buf[off]<<8) + 
-                            (buf[off+1] & 0xff);
-            case 3:
-                return ()-> (buf[off]<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off+2] & 0xff);
-            case 4:
-                return ()-> (buf[off]<<24) + 
-                            ((buf[off+1] & 0xff)<<16) + 
-                            ((buf[off+2] & 0xff)<<8) + 
-                            (buf[off+3] & 0xff);
-            case 5:
-                return ()-> ((long)buf[off]<<32) + 
-                            ((long)(buf[off+1] & 0xff)<<24) + 
-                            ((long)(buf[off+2] & 0xff)<<16) + 
-                            ((long)(buf[off+3] & 0xff)<<8) + 
-                            ((long)buf[off+4] & 0xff);
-            case 6:
-                return ()-> ((long)buf[off]<<40) + 
-                            (((long)buf[off+1] & 0xff)<<32) + 
-                            (((long)buf[off+2] & 0xff)<<24) + 
-                            (((long)buf[off+3] & 0xff)<<16) + 
-                            (((long)buf[off+4] & 0xff)<<8) + 
-                            ((long)buf[off+5] & 0xff);
-            case 7:
-                return ()-> ((long)buf[off]<<48) + 
-                            (((long)buf[off+1] & 0xff)<<40) + 
-                            (((long)buf[off+2] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+4] & 0xff)<<16) + 
-                            (((long)buf[off+5] & 0xff)<<8) + 
-                            ((long)buf[off+6] & 0xff);
-            case 8:
-                return ()-> ((long)buf[off]<<56) + 
-                            (((long)buf[off+1] & 0xff)<<48) + 
-                            (((long)buf[off+2] & 0xff)<<40) + 
-                            (((long)buf[off+3] & 0xff)<<32) + 
-                            (((long)buf[off+4] & 0xff)<<24) + 
-                            (((long)buf[off+5] & 0xff)<<16) + 
-                            (((long)buf[off+6] & 0xff)<<8) + 
-                            ((long)buf[off+7] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-    static final LongSupplier getLongUnsignedBigEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off] & 0xff;
-            case 2:
-                return ()-> (((buf[off] & 0xff)<<8)) + 
-                            (buf[off+1] & 0xff);
-            case 3:
-                return ()-> ((buf[off] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off+2] & 0xff);
-            case 4:
-                return ()-> (((long)buf[off] & 0xff)<<24) + 
-                            (((long)buf[off+1] & 0xff)<<16) + 
-                            (((long)buf[off+2] & 0xff)<<8) + 
-                            ((long)buf[off+3] & 0xff);
-            case 5:
-                return ()-> (((long)buf[off] & 0xff)<<32) + 
-                            ((long)(buf[off+1] & 0xff)<<24) + 
-                            ((long)(buf[off+2] & 0xff)<<16) + 
-                            ((long)(buf[off+3] & 0xff)<<8) + 
-                            ((long)buf[off+4] & 0xff);
-            case 6:
-                return ()-> (((long)buf[off] & 0xff)<<40) + 
-                            (((long)buf[off+1] & 0xff)<<32) + 
-                            (((long)buf[off+2] & 0xff)<<24) + 
-                            (((long)buf[off+3] & 0xff)<<16) + 
-                            (((long)buf[off+4] & 0xff)<<8) + 
-                            ((long)buf[off+5] & 0xff);
-            case 7:
-                return ()-> (((long)buf[off] & 0xff)<<48) + 
-                            (((long)buf[off+1] & 0xff)<<40) + 
-                            (((long)buf[off+2] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+4] & 0xff)<<16) + 
-                            (((long)buf[off+5] & 0xff)<<8) + 
-                            ((long)buf[off+6] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-    static final LongSupplier getLongSignedLittleEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off];
-            case 2:
-                return ()-> (buf[off+1]<<8) + 
-                            (buf[off] & 0xff);
-            case 3:
-                return ()-> (buf[off+2]<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            case 4:
-                return ()-> (buf[off+3]<<24) + 
-                            ((buf[off+2] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            case 5:
-                return ()-> ((long)buf[off+4]<<32) + 
-                            ((long)(buf[off+3] & 0xff)<<24) + 
-                            ((long)(buf[off+2] & 0xff)<<16) + 
-                            ((long)(buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 6:
-                return ()-> ((long)buf[off+5]<<40) + 
-                            (((long)buf[off+4] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 7:
-                return ()-> ((long)buf[off+6]<<48) + 
-                            (((long)buf[off+5] & 0xff)<<40) + 
-                            (((long)buf[off+4] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 8:
-                return ()-> ((long)buf[off+7]<<56) + 
-                            (((long)buf[off+6] & 0xff)<<48) + 
-                            (((long)buf[off+5] & 0xff)<<40) + 
-                            (((long)buf[off+4] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-    static final LongSupplier getLongUnsignedLittleEndian(int off, int len, byte[] buf)
-    {
-        switch (len)
-        {
-            case 1:
-                return ()->buf[off] & 0xff;
-            case 2:
-                return ()-> (((buf[off+1] & 0xff)<<8)) + 
-                            (buf[off] & 0xff);
-            case 3:
-                return ()-> ((buf[off+2] & 0xff)<<16) + 
-                            ((buf[off+1] & 0xff)<<8) + 
-                            (buf[off] & 0xff);
-            case 4:
-                return ()-> (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 5:
-                return ()-> (((long)buf[off+4] & 0xff)<<32) + 
-                            ((long)(buf[off+3] & 0xff)<<24) + 
-                            ((long)(buf[off+2] & 0xff)<<16) + 
-                            ((long)(buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 6:
-                return ()-> (((long)buf[off+5] & 0xff)<<40) + 
-                            (((long)buf[off+4] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            case 7:
-                return ()-> (((long)buf[off+6] & 0xff)<<48) + 
-                            (((long)buf[off+5] & 0xff)<<40) + 
-                            (((long)buf[off+4] & 0xff)<<32) + 
-                            (((long)buf[off+3] & 0xff)<<24) + 
-                            (((long)buf[off+2] & 0xff)<<16) + 
-                            (((long)buf[off+1] & 0xff)<<8) + 
-                            ((long)buf[off] & 0xff);
-            default:
-                throw new UnsupportedOperationException(len+" not supported");
-        }
-    }
-
     private static void checkBitsLong(int offset, int length, byte[] buf)
     {
         if (offset < 0) 
