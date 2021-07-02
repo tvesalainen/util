@@ -42,4 +42,6 @@ public interface SignalCompiler
     }
     Runnable compileEnd(MessageClass mc);
 
+    Runnable compileASCII(MessageClass mc, SignalClass sc, byte[] buf);
+
 }

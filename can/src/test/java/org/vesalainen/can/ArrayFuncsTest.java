@@ -59,6 +59,16 @@ public class ArrayFuncsTest
         byte[] arr = ArrayFuncs.createLittleEndian(2, 16);
     }
     @Test
+    public void testGNSSPositionData()
+    {
+        byte[] arr = HexUtil.fromString("4A7949B069932F0040AAC50EAA0AFB00005D9BF7983118000000000000000023FC0C45008A00120C0000010000000000000000");
+        IntSupplier is1 = ArrayFuncs.getIntSupplier(248, 4, false, false, arr);
+        assertEquals(3, is1.getAsInt());
+        IntSupplier is2 = ArrayFuncs.getIntSupplier(252, 4, false, false, arr);
+        assertEquals(2, is2.getAsInt());
+    }
+
+    @Test
     public void testAlloc()
     {
         assertEquals(2, ArrayFuncs.dim(8, 16));

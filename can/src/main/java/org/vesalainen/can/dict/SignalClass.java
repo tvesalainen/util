@@ -72,19 +72,25 @@ public class SignalClass
             switch (type)
             {
                 case "Integer":
-                    assert getType(size, valueType == SIGNED, factor, offset) == INT;
+                    //assert getType(size, valueType == SIGNED, factor, offset) == INT;
                     return INT;
                 case "Latitude":
                 case "Longitude":
+                case "Time":
+                case "Temperature":
+                case "Temperature (hires)":
+                case "Pressure":
+                case "Pressure (hires)":
                     return DOUBLE;
                 case "Lookup table":
                     return LOOKUP;
                 case "Binary data":
+                case "Manufacturer code":
                     return BINARY;
                 case "Date":
                     return INT;
-                case "Time":
-                    return DOUBLE;
+                case "ASCII text":
+                    return ASCII;
                 default:
                     throw new UnsupportedOperationException(type+" not supported");
             }

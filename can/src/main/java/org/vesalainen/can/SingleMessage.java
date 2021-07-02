@@ -20,9 +20,7 @@ import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
@@ -32,6 +30,7 @@ import org.vesalainen.can.dict.MessageClass;
 import org.vesalainen.can.dict.SignalClass;
 import static org.vesalainen.can.dict.ValueType.*;
 import org.vesalainen.util.HexDump;
+import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
@@ -88,6 +87,9 @@ public class SingleMessage extends AbstractMessage
             case BINARY:
                 rn = compiler.compileBinary(mc, sc);
                 break;
+            case ASCII:
+                rn = compiler.compileASCII(mc, sc, buf);
+                break;
             default:
                 throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
         }
@@ -124,7 +126,7 @@ public class SingleMessage extends AbstractMessage
     @Override
     protected void execute(CachedScheduledThreadPool executor)
     {
-        info("execute %s\n%s", comment, HexDump.toHex(buf));
+        info("execute %s\n%s", comment, HexUtil.toString(buf));
         signals.forEach((r)->
         {
             try

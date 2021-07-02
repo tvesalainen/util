@@ -129,13 +129,13 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 if (msgCls != null)
                 {
                     procMap.put(canId, compilePGN((PGNClass) msgCls));
-                    info("compiled canId %d", canId);
+                    info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
         }
         catch (Exception ex)
         {
-            log(SEVERE, ex, "%X", canId);
+            log(SEVERE, ex, "compiling %d", PGN.pgn(canId));
         }
     }
     
@@ -161,6 +161,10 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 throw new UnsupportedOperationException(mc.getType()+"not supported");
         }
         finer("compile(%s)", mc);
+        if (mc.getName().startsWith("ais"))
+        {
+            finer("ais(%s)", mc);
+        }
         addSignals(mc, sm);
         return sm;
     }

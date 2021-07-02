@@ -17,6 +17,7 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleSupplier;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.can.dict.MessageClass;
 import org.vesalainen.can.dict.SignalClass;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -49,6 +51,7 @@ public class CanServiceT
         AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addPGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
+        canSvc.compile(PGN.canId(129809));
         canSvc.startAndWait();
     }
     
@@ -95,6 +98,12 @@ public class CanServiceT
                     ss = ss == null ? ii+"???" : ss;
                     System.err.print(" "+sc.getName()+" = "+ss );
                 };
+        }
+
+        @Override
+        public Runnable compileASCII(MessageClass mc, SignalClass sc, byte[] buf)
+        {
+            return ()->new String(buf, sc.getStartBit()/8, sc.getSize()/8, US_ASCII);
         }
 
         @Override

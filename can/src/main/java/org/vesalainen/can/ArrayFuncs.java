@@ -97,7 +97,15 @@ public final class ArrayFuncs
             int res = 0;
             for (int ii=0;ii<len;ii++)
             {
-                res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
+                byte sh = arr[3*ii+2];
+                if (sh > 0)
+                {
+                    res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<sh;
+                }
+                else
+                {
+                    res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)>>>-sh;
+                }
             }
             return res;
         };
@@ -153,7 +161,7 @@ public final class ArrayFuncs
             byte mask = (byte) ((((0xff<<mb)&0xff)>>mb)<<bo);
             arr[3*idx] = (byte) (off/8);
             arr[3*idx+1] = mask;
-            arr[3*idx+2] = shift;
+            arr[3*idx+2] = (byte) (shift-bo);
             shift += bits;
             off += bits;
             len -= bits;
