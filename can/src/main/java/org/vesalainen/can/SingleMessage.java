@@ -19,11 +19,13 @@ package org.vesalainen.can;
 import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import static java.util.logging.Level.*;
 import static org.vesalainen.can.SignalType.*;
 import org.vesalainen.can.dict.MessageClass;
@@ -62,6 +64,7 @@ public class SingleMessage extends AbstractMessage
         IntSupplier is;
         LongSupplier ls;
         DoubleSupplier ds;
+        Supplier<String> ss;
         Runnable rn;
         switch (sc.getSignalType())
         {
@@ -88,7 +91,8 @@ public class SingleMessage extends AbstractMessage
                 rn = compiler.compileBinary(mc, sc);
                 break;
             case ASCII:
-                rn = compiler.compileASCII(mc, sc, buf);
+                ss = ()->new String(buf, sc.getStartBit()/8, sc.getSize()/8, US_ASCII);
+                rn = compiler.compileASCII(mc, sc, ss);
                 break;
             default:
                 throw new UnsupportedOperationException(sc.getSignalType()+" not supported");

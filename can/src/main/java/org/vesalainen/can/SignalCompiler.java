@@ -40,8 +40,7 @@ public interface SignalCompiler
     {
         return null;
     }
+    Runnable compileASCII(MessageClass mc, SignalClass sc, Supplier<String> ss);
     Runnable compileEnd(MessageClass mc);
-
-    Runnable compileASCII(MessageClass mc, SignalClass sc, byte[] buf);
 
 }

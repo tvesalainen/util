@@ -51,7 +51,6 @@ public class CanServiceT
         AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addPGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
-        canSvc.compile(PGN.canId(129809));
         canSvc.startAndWait();
     }
     
@@ -101,9 +100,12 @@ public class CanServiceT
         }
 
         @Override
-        public Runnable compileASCII(MessageClass mc, SignalClass sc, byte[] buf)
+        public Runnable compileASCII(MessageClass mc, SignalClass sc, Supplier<String> supplier)
         {
-            return ()->new String(buf, sc.getStartBit()/8, sc.getSize()/8, US_ASCII);
+            return ()->
+                {
+                    System.err.print(" "+sc.getName()+" = '"+supplier.get()+"'");
+                };
         }
 
         @Override
