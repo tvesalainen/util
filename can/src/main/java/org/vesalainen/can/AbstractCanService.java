@@ -119,7 +119,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             MessageClass msgCls = canIdMap.get(canId);
             if (msgCls != null)
             {
-                procMap.put(canId, compile(msgCls));
+                procMap.put(canId, compile(canId, msgCls));
                 info("compiled canId %d", canId);
             }
             else
@@ -128,7 +128,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 msgCls = pgnMap.get(pgn);
                 if (msgCls != null)
                 {
-                    procMap.put(canId, compilePGN((PGNClass) msgCls));
+                    procMap.put(canId, compilePGN(canId, (PGNClass) msgCls));
                     info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
@@ -139,23 +139,23 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
     }
     
-    protected AbstractMessage compile(MessageClass mc)
+    protected AbstractMessage compile(int canId, MessageClass mc)
     {
-        SingleMessage sm = new SingleMessage(mc.getMinSize(), mc.getName());
+        SingleMessage sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
         finer("compile(%s)", mc);
         addSignals(mc, sm);
         return sm;
     }
-    protected AbstractMessage compilePGN(PGNClass mc)
+    protected AbstractMessage compilePGN(int canId, PGNClass mc)
     {
         SingleMessage sm;
         switch (mc.getType())
         {
             case "Single":
-                sm = new SingleMessage(mc.getMinSize(), mc.getName());
+                sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
                 break;
             case "Fast":
-                sm = new FastMessage(mc.getMinSize(), mc.getName());
+                sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
                 break;
             default:
                 throw new UnsupportedOperationException(mc.getType()+"not supported");

@@ -31,6 +31,7 @@ import static org.vesalainen.can.SignalType.*;
 import org.vesalainen.can.dict.MessageClass;
 import org.vesalainen.can.dict.SignalClass;
 import static org.vesalainen.can.dict.ValueType.*;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -41,12 +42,18 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  */
 public class SingleMessage extends AbstractMessage
 {
+    protected final int pgn;
+    protected final int source;
+    protected final int priority;
     protected byte[] buf;
     protected String comment;
     protected List<Runnable> signals = new ArrayList<>();
 
-    public SingleMessage(int len, String comment)
+    public SingleMessage(int canId, int len, String comment)
     {
+        this.source = PGN.sourceAddress(canId);
+        this.priority = PGN.messagePriority(canId);
+        this.pgn = PGN.pgn(canId);
         this.buf = new byte[len];
         this.comment = comment;
     }
@@ -91,7 +98,7 @@ public class SingleMessage extends AbstractMessage
                 rn = compiler.compileBinary(mc, sc);
                 break;
             case ASCII:
-                ss = ()->new String(buf, sc.getStartBit()/8, sc.getSize()/8, US_ASCII);
+                ss = ArrayFuncs.getZeroTerminatingStringSupplier(sc.getStartBit()/8, sc.getSize()/8, buf);
                 rn = compiler.compileASCII(mc, sc, ss);
                 break;
             default:
@@ -130,7 +137,7 @@ public class SingleMessage extends AbstractMessage
     @Override
     protected void execute(CachedScheduledThreadPool executor)
     {
-        info("execute %s\n%s", comment, HexUtil.toString(buf));
+        info("execute pgn=%d src=%d %s\n%s", pgn, source, comment, HexUtil.toString(buf));
         signals.forEach((r)->
         {
             try

@@ -20,6 +20,8 @@ import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
+import org.vesalainen.util.CharSequences;
 
 /**
  *
@@ -27,6 +29,23 @@ import java.util.function.LongSupplier;
  */
 public final class ArrayFuncs
 {
+    public static final Supplier<String> getZeroTerminatingStringSupplier(int offset, int length, byte... buf)
+    {
+        checkBitsInt(offset, length, buf);
+        return ()->
+        {
+            CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
+            int idx = CharSequences.indexOf(seq, (char)0);
+            if (idx != -1)
+            {
+                return seq.subSequence(0, idx).toString();
+            }
+            else
+            {
+                return seq.toString();
+            }
+        };
+    }
     /**
      * Returns IntSupplier which constructs long from byte array
      * @param offset    In bits

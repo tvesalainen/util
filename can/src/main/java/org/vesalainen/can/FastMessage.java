@@ -30,9 +30,9 @@ public class FastMessage extends SingleMessage
     private int packetSeq;
     private int packetCount;
     
-    public FastMessage(int len, String comment)
+    public FastMessage(int canId, int len, String comment)
     {
-        super(len, comment);
+        super(canId, len, comment);
     }
 
     @Override
