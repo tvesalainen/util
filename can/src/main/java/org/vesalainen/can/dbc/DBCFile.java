@@ -24,18 +24,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.vesalainen.can.dict.DBCBase;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DBCFile
+public class DBCFile extends DBCBase
 {
     private String version;
     private Map<String,Node> nodes = new HashMap<>();
     private Map<Integer,MessageClass> messages = new HashMap<>();
-    private String comment;
-    private Map<String,Attribute> attributes = new HashMap<>();
     private Map<String,List<ValueDescription>> valueTables = new HashMap<>();
 
     void setVersion(String version)
@@ -52,11 +51,6 @@ public class DBCFile
     void addMessage(MessageClass message)
     {
         messages.put(message.getId(), message);
-    }
-
-    void setComment(String comment)
-    {
-        this.comment = comment;
     }
 
     void setNodeComment(String name, String comment)

@@ -60,7 +60,11 @@ public class Attribute
 
     public Object getValue()
     {
-        return value;
+        if (value != null)
+        {
+            return value;
+        }
+        return def;
     }
     
 }

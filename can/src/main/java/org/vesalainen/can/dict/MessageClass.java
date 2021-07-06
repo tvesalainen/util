@@ -20,27 +20,23 @@ import static java.lang.Integer.max;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import org.vesalainen.util.logging.JavaLogging;
+import org.vesalainen.util.logging.AttachedLogger;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MessageClass extends JavaLogging
+public class MessageClass extends DBCBase implements AttachedLogger
 {
     protected int id;
     protected String name;
     protected int size;
     protected String transmitter;
     protected Map<String,SignalClass> signals = new HashMap<>();
-    protected String comment;
-    protected Map<String,Attribute> attributes = new HashMap<>();
 
     public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
     {
-        super(MessageClass.class);
         this.id = id;
         this.name = name;
         this.size = size;
@@ -87,20 +83,12 @@ public class MessageClass extends JavaLogging
         return transmitter;
     }
 
-    public String getComment()
-    {
-        return comment;
-    }
 
     public Map<String,SignalClass> getSignals()
     {
         return signals;
     }
 
-    public void setComment(String comment)
-    {
-        this.comment = comment;
-    }
 
     public void setSignalComment(String name, String comment)
     {
@@ -108,10 +96,6 @@ public class MessageClass extends JavaLogging
         signal.setComment(comment);
     }
 
-    public void setAttribute(Attribute attribute)
-    {
-        attributes.put(attribute.getName(), attribute);
-    }
 
     public void setSignalAttribute(String signalName, Attribute attribute)
     {

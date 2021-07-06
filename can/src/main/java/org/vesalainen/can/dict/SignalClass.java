@@ -17,9 +17,7 @@
 package org.vesalainen.can.dict;
 
 import java.nio.ByteOrder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.IntFunction;
 import org.vesalainen.can.SignalType;
 import static org.vesalainen.can.SignalType.*;
@@ -30,7 +28,7 @@ import org.vesalainen.util.IndexMap;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SignalClass
+public class SignalClass extends DBCBase
 {
     private String name;
     private MultiplexerIndicator multiplexerIndicator;
@@ -44,10 +42,7 @@ public class SignalClass
     private double max;
     private String unit = "";
     private List<String> receivers;
-    private String comment;
-    private Map<String,Attribute> attributes = new HashMap<>();
     private IndexMap<String> lookupMap;
-    private String type;
 
     public SignalClass(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
@@ -67,6 +62,7 @@ public class SignalClass
 
     public SignalType getSignalType()
     {
+        String type = getType();
         if (type != null)
         {
             switch (type)
@@ -194,34 +190,14 @@ public class SignalClass
         return receivers;
     }
 
-    public String getComment()
-    {
-        return comment;
-    }
-
-    public Map<String, Attribute> getAttributes()
-    {
-        return attributes;
-    }
-
     public String getType()
     {
-        return type;
+        return getStringAttribute("Type");
     }
 
     public void setType(String type)
     {
-        this.type = type;
-    }
-
-    public void setComment(String comment)
-    {
-        this.comment = comment;
-    }
-
-    public void setAttribute(Attribute attribute)
-    {
-        attributes.put(attribute.getName(), attribute);
+        setAttribute("Type", type);
     }
 
     public void setValueDescription(List<ValueDescription> valDesc)

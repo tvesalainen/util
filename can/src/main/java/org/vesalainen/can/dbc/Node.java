@@ -19,30 +19,20 @@ package org.vesalainen.can.dbc;
 import org.vesalainen.can.dict.Attribute;
 import java.util.HashMap;
 import java.util.Map;
+import org.vesalainen.can.dict.DBCBase;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class Node
+public class Node extends DBCBase
 {
     private String name;
-    private String comment;
-    private Map<String,Attribute> attributes = new HashMap<>();
     
     public Node(String name)
     {
         this.name = name;
     }
 
-    void setComment(String comment)
-    {
-        this.comment = comment;
-    }
-
-    void setAttribute(Attribute attribute)
-    {
-        attributes.put(attribute.getName(), attribute);
-    }
     
 }
