@@ -21,6 +21,8 @@ import static java.lang.Integer.min;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
 
 /**
  * IndexMap maps array indexes to T items. It is effective if indexes are from
@@ -56,6 +58,18 @@ public class IndexMap<T>
         else
         {
             return array[idx];
+        }
+    }
+    public void forEach(ObjIntConsumer<T> act)
+    {
+        int len = array.length;
+        for (int ii=0;ii<len;ii++)
+        {
+            T item = array[ii];
+            if (item != null)
+            {
+                act.accept(item, len+offset);
+            }
         }
     }
     public static class Builder<T>
