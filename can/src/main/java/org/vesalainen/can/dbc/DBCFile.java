@@ -16,15 +16,12 @@
  */
 package org.vesalainen.can.dbc;
 
-import org.vesalainen.can.dict.ValueDescription;
-import org.vesalainen.can.dict.AttributeValueType;
-import org.vesalainen.can.dict.Attribute;
-import org.vesalainen.can.dict.MessageClass;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.vesalainen.can.dict.DBCBase;
+import java.util.stream.Collectors;
+import org.vesalainen.io.AppendablePrinter;
 
 /**
  *
@@ -32,11 +29,40 @@ import org.vesalainen.can.dict.DBCBase;
  */
 public class DBCFile extends DBCBase
 {
-    private String version;
+    private String version = "";
     private Map<String,Node> nodes = new HashMap<>();
     private Map<Integer,MessageClass> messages = new HashMap<>();
     private Map<String,List<ValueDescription>> valueTables = new HashMap<>();
 
+    public void print(Appendable out)
+    {
+        print(new AppendablePrinter(out));
+    }
+    void print(AppendablePrinter out)
+    {
+        out.format("VERSION \"%s\"\n", version);
+        out.println();
+        out.println();
+        out.println("NS_ :");
+        for (String s : new String[]{"NS_DESC", "CM", "BA_DEF", "BA_DEF", "BA", "VAL", "CAT_DEF", "CAT", "FILTER", "BA_DEF_DEF", "EV_DATA", "ENVVAR_DATA", "SGTYPE", "SGTYPE_VAL", "BA_DEF_SGTYPE", "BA_SGTYPE", "SIG_TYPE_REF", "VAL_TABLE", "SIG_GROUP", "SIG_VALTYPE", "SIGTYPE_VALTYPE", "BO_TX_BU", "BA_DEF_REL", "BA_REL", "BA_DEF_DEF_REL", "BU_SG_REL", "BU_EV_REL", "BU_BO_REL", "SG_MUL_VAL"})
+        {
+            out.println("\t"+s);
+        }
+        out.println();
+        out.println("BS_ :");
+        out.println();
+        out.println(nodes.keySet().stream().collect(Collectors.joining(" ", "BU_: ", "\n")));
+        out.println();
+        valueTables.forEach((n, l)->
+        {
+            out.format("VAL_TABLE_ %s", n);
+            l.forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
+            out.println();
+        });
+        out.println();
+        messages.forEach((i, m)->m.print(out));
+        out.println();
+    }
     void setVersion(String version)
     {
         this.version = version;

@@ -16,8 +16,6 @@
  */
 package org.vesalainen.can.dbc;
 
-import org.vesalainen.can.dict.AttributeValueType;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>

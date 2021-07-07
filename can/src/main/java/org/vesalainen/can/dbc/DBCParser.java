@@ -16,12 +16,6 @@
  */
 package org.vesalainen.can.dbc;
 
-import org.vesalainen.can.dict.ValueDescription;
-import org.vesalainen.can.dict.AttributeValueType;
-import org.vesalainen.can.dict.ValueType;
-import org.vesalainen.can.dict.MultiplexerIndicator;
-import org.vesalainen.can.dict.MessageClass;
-import org.vesalainen.can.dict.SignalClass;
 import java.nio.ByteOrder;
 import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
@@ -117,7 +111,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return name;
     }
-    @Rule(left="value_description", value={"unsigned_integer char_string"})
+    @Rule(left="value_description", value={"signed_integer char_string"})
     protected ValueDescription valueDescription(int value, String description)
     {
         return new ValueDescription(value, description);
@@ -154,10 +148,6 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="signal", value={"SG_ signal_name multiplexer_indicator? ':' start_bit '\\|' signal_size '@' byte_order value_type '\\(' factor '\\,' offset '\\)' '\\[' minimum '\\|' maximum '\\]' unit identifierList"})
     protected SignalClass signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
     {
-        if (byteOrder == BIG_ENDIAN)
-        {
-            startBit = 8*(startBit/8)+7-startBit%8; 
-        }
         return new SignalClass(name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
     }
     @Rule(left="signal_name", value={"C_identifier"})

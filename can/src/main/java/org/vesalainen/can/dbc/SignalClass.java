@@ -14,14 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dict;
+package org.vesalainen.can.dbc;
 
 import java.nio.ByteOrder;
+import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.util.List;
+import static java.util.Locale.US;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import org.vesalainen.can.SignalType;
 import static org.vesalainen.can.SignalType.*;
-import static org.vesalainen.can.dict.ValueType.*;
+import static org.vesalainen.can.dbc.ValueType.*;
+import org.vesalainen.io.AppendablePrinter;
 import org.vesalainen.util.IndexMap;
 
 /**
@@ -48,7 +52,7 @@ public class SignalClass extends DBCBase
     {
         this.name = name;
         this.multiplexerIndicator = multiplexerIndicator;
-        this.startBit = startBit;
+        this.startBit = normalizeStartBit(startBit, byteOrder);
         this.size = size;
         this.byteOrder = byteOrder;
         this.valueType = valueType;
@@ -58,8 +62,27 @@ public class SignalClass extends DBCBase
         this.max = max;
         this.unit = unit;
         this.receivers = receivers;
+        if (startBit != abnormalizeStartBit(this.startBit, byteOrder))
+        {
+            System.err.println();
+        }
     }
-
+    public static int normalizeStartBit(int startBit, ByteOrder byteOrder)
+    {
+        if (byteOrder == BIG_ENDIAN)
+        {
+            return 8*(startBit/8)+7-startBit%8; 
+        }
+        return startBit;
+    }
+    public static int abnormalizeStartBit(int startBit, ByteOrder byteOrder)
+    {
+        if (byteOrder == BIG_ENDIAN)
+        {
+            return startBit+7; 
+        }
+        return startBit;
+    }
     public SignalType getSignalType()
     {
         String type = getType();
@@ -211,6 +234,21 @@ public class SignalClass extends DBCBase
     public String toString()
     {
         return "Signal{" + name + ", startBit=" + startBit + ", size=" + size + ", byteOrder=" + byteOrder + ", valueType=" + valueType + ", factor=" + factor + ", offset=" + offset + ", unit=" + unit + ", comment=" + comment + '}';
+    }
+
+    void print(AppendablePrinter out)
+    {
+        out.format(US, " SG_ %s : %d|%d@%c%d (%f, %f) [%f|%f] \"%s\"", 
+                name,
+                abnormalizeStartBit(startBit, byteOrder),
+                size,
+                byteOrder == BIG_ENDIAN ? '0' : '1',
+                valueType == UNSIGNED ? '+' : '-',
+                factor,
+                offset,
+                min,
+                max);
+        out.println(receivers.stream().collect(Collectors.joining(" ")));
     }
 
 }

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.can.dbc;
 
-import org.vesalainen.can.dict.ValueDescription;
 import java.util.List;
 
 /**

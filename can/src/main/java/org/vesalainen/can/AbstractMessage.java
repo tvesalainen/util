@@ -55,7 +55,7 @@ public abstract class AbstractMessage extends JavaLogging
         {
             ByteBuffer frame = service.getFrame();
             int canId = frame.getInt(0);
-            warning("Unknown %d:\n%s", canId, HexDump.startToHex(frame));
+            //warning("Unknown %d:\n%s", canId, HexDump.startToHex(frame));
             return false;
         }
 

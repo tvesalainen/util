@@ -20,11 +20,7 @@ package org.vesalainen.can.dbc;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class HexAttributeValueType extends AttributeValueType
+public class AttributeValueType
 {
-
-    public HexAttributeValueType(Integer i1, Integer i2)
-    {
-    }
     
 }

@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.vesalainen.can.dict.MessageClass;
-import org.vesalainen.can.dict.SignalClass;
+import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.logging.JavaLogging;
 

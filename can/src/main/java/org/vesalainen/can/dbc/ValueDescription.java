@@ -14,14 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dict;
+package org.vesalainen.can.dbc;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public enum ValueType
+public class ValueDescription
 {
-    UNSIGNED,
-    SIGNED
+    private int value;
+    private String description;
+
+    public ValueDescription(int value, String description)
+    {
+        this.value = value;
+        this.description = description;
+    }
+
+    public int getValue()
+    {
+        return value;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+    
 }

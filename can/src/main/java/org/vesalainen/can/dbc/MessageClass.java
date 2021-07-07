@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dict;
+package org.vesalainen.can.dbc;
 
 import static java.lang.Integer.max;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.vesalainen.io.AppendablePrinter;
 import org.vesalainen.util.logging.AttachedLogger;
 
 /**
@@ -32,7 +33,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     protected int id;
     protected String name;
     protected int size;
-    protected String transmitter;
+    protected String transmitter = "";
     protected Map<String,SignalClass> signals = new HashMap<>();
 
     public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
@@ -113,6 +114,13 @@ public class MessageClass extends DBCBase implements AttachedLogger
     {
         SignalClass signal = signals.get(signalName);
         signal.setValueDescription(valDesc);
+    }
+
+    void print(AppendablePrinter out)
+    {
+        out.format("BO_ %d %s: %d %s\n", id, name, size, transmitter);
+        signals.values().forEach((s)->s.print(out));
+        out.println();
     }
 
 }

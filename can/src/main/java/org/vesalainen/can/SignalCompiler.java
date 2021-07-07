@@ -21,8 +21,8 @@ import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import org.vesalainen.can.dict.MessageClass;
-import org.vesalainen.can.dict.SignalClass;
+import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.SignalClass;
 
 /**
  *

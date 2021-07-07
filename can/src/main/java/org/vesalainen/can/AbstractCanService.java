@@ -30,8 +30,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.vesalainen.can.canboat.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
-import org.vesalainen.can.dict.MessageClass;
-import org.vesalainen.can.dict.PGNClass;
+import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.PGNClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -114,6 +114,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     
     protected void compile(int canId)
     {
+        if (canId != 166793744) return;
         try
         {
             MessageClass msgCls = canIdMap.get(canId);
