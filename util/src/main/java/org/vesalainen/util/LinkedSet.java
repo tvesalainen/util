@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NavigableSet;
 import java.util.SortedSet;
+import java.util.Spliterator;
 
 /**
  * A NavigableSet implementation using LinkedList as storage. Element order
@@ -85,6 +86,12 @@ public class LinkedSet<T> implements NavigableSet<T>, Serializable
     public Iterator<T> iterator()
     {
         return list.iterator();
+    }
+
+    @Override
+    public Spliterator<T> spliterator()
+    {
+        return list.spliterator();
     }
 
     @Override
