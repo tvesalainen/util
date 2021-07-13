@@ -49,6 +49,12 @@ public class SignalClassTest
         assertEquals(56, SignalClass.normalizeStartBit(63, ByteOrder.BIG_ENDIAN));
         assertEquals(63, SignalClass.abnormalizeStartBit(56, ByteOrder.BIG_ENDIAN));
         
+        assertEquals(20, SignalClass.normalizeStartBit(19, ByteOrder.BIG_ENDIAN));
+        assertEquals(19, SignalClass.abnormalizeStartBit(20, ByteOrder.BIG_ENDIAN));
+        
+        assertEquals(9, SignalClass.normalizeStartBit(14, ByteOrder.BIG_ENDIAN));
+        assertEquals(14, SignalClass.abnormalizeStartBit(9, ByteOrder.BIG_ENDIAN));
+        
     }
     
 }

@@ -18,6 +18,7 @@ package org.vesalainen.can.dbc;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.vesalainen.can.dbc.StringAttributeValueType;
 
 /**
@@ -27,7 +28,7 @@ import org.vesalainen.can.dbc.StringAttributeValueType;
 public class DBCBase
 {
     
-    protected String comment;
+    protected String comment = "";
     protected Map<String, Attribute> attributes = new HashMap<>();
 
     public DBCBase()
@@ -63,5 +64,41 @@ public class DBCBase
             return (String) attribute.getValue();
         }
         return null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 59 * hash + Objects.hashCode(this.comment);
+        hash = 59 * hash + Objects.hashCode(this.attributes);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final DBCBase other = (DBCBase) obj;
+        if (!Objects.equals(this.comment, other.comment))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.attributes, other.attributes))
+        {
+            return false;
+        }
+        return true;
     }
 }

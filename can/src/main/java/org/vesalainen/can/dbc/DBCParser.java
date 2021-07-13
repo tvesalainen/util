@@ -17,7 +17,6 @@
 package org.vesalainen.can.dbc;
 
 import java.nio.ByteOrder;
-import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.vesalainen.parser.GenClassFactory;

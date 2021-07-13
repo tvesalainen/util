@@ -17,6 +17,7 @@
 package org.vesalainen.can.dbc;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -54,6 +55,45 @@ public class ValueDescriptions
     public List<ValueDescription> getValDesc()
     {
         return valDesc;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 31 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final ValueDescriptions other = (ValueDescriptions) obj;
+        if (this.id != other.id)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.valDesc, other.valDesc))
+        {
+            return false;
+        }
+        return true;
     }
     
 }

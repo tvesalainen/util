@@ -20,8 +20,10 @@ import static java.lang.Integer.max;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import org.vesalainen.io.AppendablePrinter;
+import org.vesalainen.util.LinkedMap;
 import org.vesalainen.util.logging.AttachedLogger;
 
 /**
@@ -34,7 +36,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     protected String name;
     protected int size;
     protected String transmitter = "";
-    protected Map<String,SignalClass> signals = new HashMap<>();
+    protected Map<String,SignalClass> signals = new LinkedMap<>();
 
     public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
     {
@@ -121,6 +123,53 @@ public class MessageClass extends DBCBase implements AttachedLogger
         out.format("BO_ %d %s: %d %s\n", id, name, size, transmitter);
         signals.values().forEach((s)->s.print(out));
         out.println();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 31 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final MessageClass other = (MessageClass) obj;
+        if (this.id != other.id)
+        {
+            return false;
+        }
+        if (this.size != other.size)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.transmitter, other.transmitter))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.signals, other.signals))
+        {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -20,6 +20,7 @@ import java.nio.ByteOrder;
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.util.List;
 import static java.util.Locale.US;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import org.vesalainen.can.SignalType;
@@ -47,6 +48,7 @@ public class SignalClass extends DBCBase
     private String unit = "";
     private List<String> receivers;
     private IndexMap<String> lookupMap;
+    private List<ValueDescription> valueDescriptions;
 
     public SignalClass(String name, MultiplexerIndicator multiplexerIndicator, Integer startBit, Integer size, ByteOrder byteOrder, ValueType valueType, Double factor, Double offset, Double min, Double max, String unit, List<String> receivers)
     {
@@ -62,26 +64,22 @@ public class SignalClass extends DBCBase
         this.max = max;
         this.unit = unit;
         this.receivers = receivers;
-        if (startBit != abnormalizeStartBit(this.startBit, byteOrder))
-        {
-            System.err.println();
-        }
     }
-    public static int normalizeStartBit(int startBit, ByteOrder byteOrder)
+    public static int normalizeStartBit(int ab, ByteOrder byteOrder)
     {
         if (byteOrder == BIG_ENDIAN)
         {
-            return 8*(startBit/8)+7-startBit%8; 
+            return 8*(ab/8)+7-ab%8; 
         }
-        return startBit;
+        return ab;
     }
-    public static int abnormalizeStartBit(int startBit, ByteOrder byteOrder)
+    public static int abnormalizeStartBit(int no, ByteOrder byteOrder)
     {
         if (byteOrder == BIG_ENDIAN)
         {
-            return startBit+7; 
+            return 8*(no/8)+7-no%8; 
         }
-        return startBit;
+        return no;
     }
     public SignalType getSignalType()
     {
@@ -223,8 +221,14 @@ public class SignalClass extends DBCBase
         setAttribute("Type", type);
     }
 
+    public List<ValueDescription> getValueDescriptions()
+    {
+        return valueDescriptions;
+    }
+
     public void setValueDescription(List<ValueDescription> valDesc)
     {
+        this.valueDescriptions = valDesc;
         IndexMap.Builder<String> builder = new IndexMap.Builder<>();
         valDesc.forEach((vd)->builder.put(vd.getValue(), vd.getDescription()));
         lookupMap = builder.build();
@@ -238,17 +242,97 @@ public class SignalClass extends DBCBase
 
     void print(AppendablePrinter out)
     {
-        out.format(US, " SG_ %s : %d|%d@%c%d (%f, %f) [%f|%f] \"%s\"", 
+        out.format(US, " SG_ %s : %d|%d@%c%c (%s, %s) [%s|%s] \"%s\" %s\n", 
                 name,
                 abnormalizeStartBit(startBit, byteOrder),
                 size,
                 byteOrder == BIG_ENDIAN ? '0' : '1',
                 valueType == UNSIGNED ? '+' : '-',
-                factor,
-                offset,
-                min,
-                max);
-        out.println(receivers.stream().collect(Collectors.joining(" ")));
+                Double.toString(factor),
+                Double.toString(offset),
+                Double.toString(min),
+                Double.toString(max),
+                unit,
+                receivers.stream().collect(Collectors.joining(","))
+        );
     }
 
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 13 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final SignalClass other = (SignalClass) obj;
+        if (this.startBit != other.startBit)
+        {
+            return false;
+        }
+        if (this.size != other.size)
+        {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.factor) != Double.doubleToLongBits(other.factor))
+        {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.offset) != Double.doubleToLongBits(other.offset))
+        {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.min) != Double.doubleToLongBits(other.min))
+        {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.max) != Double.doubleToLongBits(other.max))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.unit, other.unit))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.multiplexerIndicator, other.multiplexerIndicator))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.byteOrder, other.byteOrder))
+        {
+            return false;
+        }
+        if (this.valueType != other.valueType)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.receivers, other.receivers))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.valueDescriptions, other.valueDescriptions))
+        {
+            return false;
+        }
+        return true;
+    }
 }

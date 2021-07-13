@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.Objects;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -39,6 +41,42 @@ public class ValueDescription
     public String getDescription()
     {
         return description;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 53 * hash + this.value;
+        hash = 53 * hash + Objects.hashCode(this.description);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final ValueDescription other = (ValueDescription) obj;
+        if (this.value != other.value)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description))
+        {
+            return false;
+        }
+        return true;
     }
     
 }

@@ -16,12 +16,13 @@
  */
 package org.vesalainen.can.dbc;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.vesalainen.io.AppendablePrinter;
+import org.vesalainen.util.LinkedMap;
 
 /**
  *
@@ -30,9 +31,9 @@ import org.vesalainen.io.AppendablePrinter;
 public class DBCFile extends DBCBase
 {
     private String version = "";
-    private Map<String,Node> nodes = new HashMap<>();
-    private Map<Integer,MessageClass> messages = new HashMap<>();
-    private Map<String,List<ValueDescription>> valueTables = new HashMap<>();
+    private Map<String,Node> nodes = new LinkedMap<>();
+    private Map<Integer,MessageClass> messages = new LinkedMap<>();
+    private Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
 
     public void print(Appendable out)
     {
@@ -44,7 +45,7 @@ public class DBCFile extends DBCBase
         out.println();
         out.println();
         out.println("NS_ :");
-        for (String s : new String[]{"NS_DESC", "CM", "BA_DEF", "BA_DEF", "BA", "VAL", "CAT_DEF", "CAT", "FILTER", "BA_DEF_DEF", "EV_DATA", "ENVVAR_DATA", "SGTYPE", "SGTYPE_VAL", "BA_DEF_SGTYPE", "BA_SGTYPE", "SIG_TYPE_REF", "VAL_TABLE", "SIG_GROUP", "SIG_VALTYPE", "SIGTYPE_VALTYPE", "BO_TX_BU", "BA_DEF_REL", "BA_REL", "BA_DEF_DEF_REL", "BU_SG_REL", "BU_EV_REL", "BU_BO_REL", "SG_MUL_VAL"})
+        for (String s : new String[]{"NS_DESC_", "CM_", "BA_DEF_", "BA_DEF_", "BA_", "VAL_", "CAT_DEF_", "CAT_", "FILTER", "BA_DEF_DEF_", "EV_DATA_", "ENVVAR_DATA_", "SGTYPE_", "SGTYPE_VAL_", "BA_DEF_SGTYPE_", "BA_SGTYPE_", "SIG_TYPE_REF_", "VAL_TABLE_", "SIG_GROUP_", "SIG_VALTYPE_", "SIGTYPE_VALTYPE_", "BO_TX_BU_", "BA_DEF_REL_", "BA_REL_", "BA_DEF_DEF_REL_", "BU_SG_REL_", "BU_EV_REL_", "BU_BO_REL_", "SG_MUL_VAL_"})
         {
             out.println("\t"+s);
         }
@@ -57,11 +58,52 @@ public class DBCFile extends DBCBase
         {
             out.format("VAL_TABLE_ %s", n);
             l.forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
-            out.println();
+            out.println(" ;");
         });
         out.println();
         messages.forEach((i, m)->m.print(out));
         out.println();
+        if (!comment.isEmpty())
+        {
+            out.format("CM_ \"%s\" ;\n", comment);
+            out.println();
+        }
+        nodes.values().forEach((n)->
+        {
+            if (!n.getComment().isEmpty())
+            {
+                out.format("CM_ BU_ %s \"%s\" ;\n", n.getName(), n.getComment());
+            }
+        });
+        out.println();
+        messages.forEach((i, m)->
+        {
+            if (!m.getComment().isEmpty())
+            {
+                out.format("CM_ BO_ %s \"%s\" ;\n", m.getId(), m.getComment());
+            }
+            m.forEach((s)->
+            {
+                if (!s.getComment().isEmpty())
+                {
+                    out.format("CM_ SG_ %s %s \"%s\" ;\n", m.getName(), s.getName(), s.getComment());
+                }
+            });
+        });
+        out.println();
+        messages.forEach((i, m)->
+        {
+            m.forEach((SignalClass s)->
+            {
+                List<ValueDescription> valueDescriptions = s.getValueDescriptions();
+                if (valueDescriptions != null)
+                {
+                    out.format("VAL_ %d %s ", m.getId(), s.getName());
+                    valueDescriptions.forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
+                    out.println(";");
+                }
+            });
+        });
     }
     void setVersion(String version)
     {
@@ -77,6 +119,14 @@ public class DBCFile extends DBCBase
     void addMessage(MessageClass message)
     {
         messages.put(message.getId(), message);
+        message.forEach((SignalClass s)->
+        {
+            List<ValueDescription> l = valueTables.get(s.getName());
+            if (l != null)
+            {
+                s.setValueDescription(l);
+            }
+        });
     }
 
     void setNodeComment(String name, String comment)
@@ -156,13 +206,62 @@ public class DBCFile extends DBCBase
     {
         for (ValueDescriptions vd : valDesc)
         {
+            String name = vd.getName();
+            List<ValueDescription> valueDescription = vd.getValDesc();
             int id = vd.getId();
             if (id != 0)
             {
                 MessageClass message = messages.get(id);
-                message.setSignalValueDescription(vd.getName(), vd.getValDesc());
+                message.setSignalValueDescription(name, valueDescription);
+            }
+            else
+            {
+                valueTables.put(name, valueDescription);
             }
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 5;
+        hash = 71 * hash + Objects.hashCode(this.version);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final DBCFile other = (DBCFile) obj;
+        if (!Objects.equals(this.version, other.version))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.nodes, other.nodes))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.messages, other.messages))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.valueTables, other.valueTables))
+        {
+            return false;
+        }
+        return true;
     }
 
 }

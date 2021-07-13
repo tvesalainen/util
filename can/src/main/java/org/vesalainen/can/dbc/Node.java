@@ -16,9 +16,6 @@
  */
 package org.vesalainen.can.dbc;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -30,6 +27,11 @@ public class Node extends DBCBase
     public Node(String name)
     {
         this.name = name;
+    }
+
+    public String getName()
+    {
+        return name;
     }
 
     
