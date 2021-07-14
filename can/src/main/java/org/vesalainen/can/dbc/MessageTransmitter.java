@@ -17,6 +17,7 @@
 package org.vesalainen.can.dbc;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -25,9 +26,59 @@ import java.util.List;
 public class MessageTransmitter
 {
 
-    MessageTransmitter(Integer id, List<String> transmitter)
+    private final Integer id;
+    private final List<String> transmitters;
+
+    MessageTransmitter(Integer id, List<String> transmitters)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.id = id;
+        this.transmitters = transmitters;
     }
+
+    public Integer getId()
+    {
+        return id;
+    }
+
+    public List<String> getTransmitters()
+    {
+        return transmitters;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final MessageTransmitter other = (MessageTransmitter) obj;
+        if (!Objects.equals(this.id, other.id))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.transmitters, other.transmitters))
+        {
+            return false;
+        }
+        return true;
+    }
+    
     
 }

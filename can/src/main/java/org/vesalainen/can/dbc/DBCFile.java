@@ -19,6 +19,7 @@ package org.vesalainen.can.dbc;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.vesalainen.io.AppendablePrinter;
@@ -34,6 +35,7 @@ public class DBCFile extends DBCBase
     private Map<String,Node> nodes = new LinkedMap<>();
     private Map<Integer,MessageClass> messages = new LinkedMap<>();
     private Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
+    private List<MessageTransmitter> messageTransmitters;
 
     public void print(Appendable out)
     {
@@ -63,6 +65,17 @@ public class DBCFile extends DBCBase
         out.println();
         messages.forEach((i, m)->m.print(out));
         out.println();
+        if (!messageTransmitters.isEmpty())
+        {
+            messageTransmitters.forEach((t)->
+            {
+                out.format("BO_TX_BU_ %d %s", 
+                        t.getId(),
+                        t.getTransmitters().stream().collect(Collectors.joining(",", " : ", ";\n"))
+                );
+            });
+            out.println();
+        }
         if (!comment.isEmpty())
         {
             out.format("CM_ \"%s\" ;\n", comment);
@@ -86,11 +99,18 @@ public class DBCFile extends DBCBase
             {
                 if (!s.getComment().isEmpty())
                 {
-                    out.format("CM_ SG_ %s %s \"%s\" ;\n", m.getName(), s.getName(), s.getComment());
+                    out.format("CM_ SG_ %d %s \"%s\" ;\n", m.getId(), s.getName(), s.getComment());
                 }
             });
         });
         out.println();
+        if (!attributes.isEmpty())
+        {
+            attributes.forEach((n, a)->a.printDefinition(out));
+            attributes.forEach((n, a)->a.printDefault(out));
+            attributes.forEach((n, a)->a.printValue(out));
+            out.println();
+        }
         messages.forEach((i, m)->
         {
             m.forEach((SignalClass s)->
@@ -221,6 +241,11 @@ public class DBCFile extends DBCBase
         }
     }
 
+    void setMessageTransmitters(List<MessageTransmitter> list)
+    {
+        this.messageTransmitters = list;
+    }
+
     @Override
     public int hashCode()
     {
@@ -261,7 +286,21 @@ public class DBCFile extends DBCBase
         {
             return false;
         }
+        if (!Objects.equals(this.messageTransmitters, other.messageTransmitters))
+        {
+            return false;
+        }
         return true;
+    }
+
+    void addAttribute(ObjectType objectType, String name, AttributeValueType type)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private BiConsumer<? super String, ? super Attribute> printDefinition(AppendablePrinter out)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

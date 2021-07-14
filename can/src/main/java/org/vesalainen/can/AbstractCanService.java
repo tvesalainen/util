@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
 import javax.xml.parsers.ParserConfigurationException;
-import org.vesalainen.can.canboat.PGNDefinitions;
+import org.vesalainen.can.dbc.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;

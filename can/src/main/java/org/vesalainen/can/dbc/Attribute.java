@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can.dbc;
 
+import org.vesalainen.io.AppendablePrinter;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -31,6 +33,20 @@ public class Attribute
     {
         this.name = name;
         this.type = type;
+    }
+    
+    void printDefinition(AppendablePrinter out)
+    {
+        out.format("BA_DEF_ \"%s\" %s;\n", name, type.getType());
+    }
+    void printDefault(AppendablePrinter out)
+    {
+        out.format("BA_DEF_DEF_ \"%s\" %s;\n", name, type.getDefault(def));
+    }
+
+    void printValue(AppendablePrinter out)
+    {
+        out.format("BA_ \"%s\" %s;\n", name, type.getValue(value));
     }
     
     public void setDefault(Object value)
@@ -66,5 +82,5 @@ public class Attribute
         }
         return def;
     }
-    
+
 }

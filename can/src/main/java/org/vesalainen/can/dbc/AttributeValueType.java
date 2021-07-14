@@ -20,7 +20,15 @@ package org.vesalainen.can.dbc;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AttributeValueType
+public abstract class AttributeValueType
 {
-    
+    abstract String getType();
+    protected String getDefault(Object def)
+    {
+        return def != null ? def.toString() : "0";
+    }
+    protected String getValue(Object value)
+    {
+        return value != null ? value.toString() : "0";
+    }
 }

@@ -23,8 +23,19 @@ package org.vesalainen.can.dbc;
 public class FloatAttributeValueType extends AttributeValueType
 {
 
+    private final Double min;
+    private final Double max;
+
     public FloatAttributeValueType(Double d1, Double d2)
     {
+        this.min = d1;
+        this.max = d2;
     }
-    
+
+    @Override
+    String getType()
+    {
+        return String.format("FLOAT %s %s", min, max);
+    }
+
 }

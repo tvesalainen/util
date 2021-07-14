@@ -26,5 +26,23 @@ public class StringAttributeValueType extends AttributeValueType
     public StringAttributeValueType()
     {
     }
+
+    @Override
+    String getType()
+    {
+        return "STRING";
+    }
+
+    @Override
+    protected String getValue(Object value)
+    {
+        return String.format("\"%s\"", value);
+    }
+
+    @Override
+    protected String getDefault(Object def)
+    {
+        return String.format("\"%s\"", def);
+    }
     
 }

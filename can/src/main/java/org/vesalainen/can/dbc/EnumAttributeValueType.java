@@ -17,6 +17,7 @@
 package org.vesalainen.can.dbc;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -25,8 +26,17 @@ import java.util.List;
 public class EnumAttributeValueType extends AttributeValueType
 {
 
+    private final List<String> types;
+
     public EnumAttributeValueType(List<String> types)
     {
+        this.types = types;
     }
-    
+
+    @Override
+    String getType()
+    {
+        return types.stream().collect(Collectors.joining(","));
+    }
+
 }

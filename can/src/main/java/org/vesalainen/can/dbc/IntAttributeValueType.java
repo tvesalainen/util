@@ -23,8 +23,19 @@ package org.vesalainen.can.dbc;
 public class IntAttributeValueType extends AttributeValueType
 {
 
+    private final Integer min;
+    private final Integer max;
+
     public IntAttributeValueType(Integer i1, Integer i2)
     {
+        this.min = i1;
+        this.max = i2;
+    }
+
+    @Override
+    String getType()
+    {
+        return String.format("INT %s %s", min, max);
     }
     
 }

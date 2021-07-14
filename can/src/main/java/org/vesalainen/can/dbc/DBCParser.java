@@ -55,7 +55,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         
     }
-    @Rule(left="new_symbol", value={"(NS_DESC_|CM_|BA_DEF_|BA_DEF_|BA_|VAL_|CAT_DEF_|CAT_|FILTER|BA_DEF_DEF_|EV_DATA_|ENVVAR_DATA_|SGTYPE_|SGTYPE_VAL_|BA_DEF_SGTYPE_|BA_SGTYPE_|SIG_TYPE_REF_|VAL_TABLE_|SIG_GROUP_|SIG_VALTYPE_|SIGTYPE_VALTYPE_|BO_TX_BU_|BA_DEF_REL_|BA_REL_|BA_DEF_DEF_REL_|BU_SG_REL_|BU_EV_REL_|BU_BO_REL_|SG_MUL_VAL_)"})
+    @Rule(left="new_symbol", value={"(NS_DESC_|CM_|BA_DEF_|BA_|VAL_|CAT_DEF_|CAT_|FILTER|BA_DEF_DEF_|EV_DATA_|ENVVAR_DATA_|SGTYPE_|SGTYPE_VAL_|BA_DEF_SGTYPE_|BA_SGTYPE_|SIG_TYPE_REF_|VAL_TABLE_|SIG_GROUP_|SIG_VALTYPE_|SIGTYPE_VALTYPE_|BO_TX_BU_|BA_DEF_REL_|BA_REL_|BA_DEF_DEF_REL_|BU_SG_REL_|BU_EV_REL_|BU_BO_REL_|SG_MUL_VAL_)"})
     protected void newSymbol()
     {
         
@@ -241,10 +241,11 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return SignalExtendedValueType.values()[type];
     }
     @Rule(left="message_transmitters", value={"(message_transmitter)*"})
-    protected void messageTransmitters(List<MessageTransmitter> list)
+    protected void messageTransmitters(List<MessageTransmitter> list, @ParserContext("DBCFile") DBCFile dbcFile)
     {
+        dbcFile.setMessageTransmitters(list);
     }
-    @Rule(left="message_transmitter", value={"BO_TX_BU_ message_id ':' (transmitter)* ';'"})
+    @Rule(left="message_transmitter", value={"BO_TX_BU_ message_id ':' identifierList ';'"})
     protected MessageTransmitter messageTransmitter(int id, List<String> transmitter)
     {
         return new MessageTransmitter(id, transmitter);
@@ -412,7 +413,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="attribute_definition", value={"BA_DEF_ object_type attribute_name attribute_value_type ';'"})
     protected void attributeDefinition(ObjectType objectType, String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        dbcFile.addAttribute(name, type);
+        dbcFile.addAttribute(objectType, name, type);
     }
     @Rule(left="attribute_definition", value={"BA_DEF_ attribute_name attribute_value_type ';'"})
     protected void attributeDefinition(String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
