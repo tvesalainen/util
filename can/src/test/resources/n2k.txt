@@ -1,0 +1,621 @@
+129044 - Datum
+Category: Navigation
+Local geodetic datum and datum offsets from a reference datum. T
+126208 - NMEA - Request group function
+Category: General & or Mandatory
+The Request / Command / Acknowledge Group type of function is defined by first field. The message will be a Request, Command, or Acknowledge Group Function.
+126464 - Receive/Transmit PGN's group function
+Category: General & or Mandatory
+The Transmit / Receive PGN List Group type of function is defined by first field. The message will be a Transmit or Receive PGN List group function.
+126992 - System Time
+Category: General & or Mandatory
+The purpose of this PGN is twofold: To provide a regular transmission of UTC time and date. To provide synchronism for measurement data
+126996 - Product Information
+Category: General & or Mandatory
+Provides product information onto the network that could be important for determining quality of data coming from this product.
+126998 - Configuration Information
+Category: General & or Mandatory
+Free-form alphanumeric fields describing the installation (e.g., starboard engine room location) of the device and installation notes (e.g., calibration data)
+127237 - Heading/Track Control
+Category: Steering
+Sends commands to, and receives data from, heading control systems. Allows for navigational (remote) control of a heading control system and direct rudder control.
+127245 - Rudder
+Category: Steering
+Rudder order command in direction or angle with current rudder angle reading.
+127250 - Vessel Heading
+Category: Steering
+Heading sensor value with a flag for True or Magnetic. If the sensor value is Magnetic, the deviation field can be used to produce a Magnetic heading, and the variation field can be used to correct the Magnetic heading to produce a True heading.
+127251 - Rate of Turn
+Category: Steering
+Rate of Turn is the rate of change of the Heading.
+127257 - Attitude
+Category: Steering
+This PGN provides a single transmission that describes the position of a vessel relative to both horizontal and vertical planes. This would typically be used for vessel stabilization, vessel control and onboard platform stabilization.
+127258 - Magnetic Variation
+Category: Steering
+Message for transmitting variation. The message contains a sequence number to allow synchronization of other messages such as Heading or Course over Ground. The quality of service and age of service are provided to enable recipients to determine an appropriate level of service if multiple transmissions exist.
+127488 - Engine Parameters, Rapid Update
+Category: Propulsion
+Provides data with a high update rate for a specific engine in a single frame message. The first field provides information as to which engine.
+127489 - Engine Parameters, Dynamic
+Category: Propulsion
+Used to provide real-time operational data and status relevant to a specific engine, indicated by the engine instance field. This message would normally be broadcasted periodically to provide information for instrumentation or control functions.
+127493 - Transmission Parameters, Dynamic
+Category: Propulsion
+Used to provide the operational state and internal operating parameters of a specific transmission, indicated by the transmission instance field. This message would normally be broadcasted periodically to provide information for instrumentation or control functions.
+127496 - Trip Parameters, Vessel
+Category: Propulsion
+Trip parameters relative to Vessel
+127497 - Trip Parameters, Engine
+Category: Propulsion
+Engine related trip information.
+127498 - Engine Parameters, Static
+Category: Propulsion
+Provides identification information and rated engine speed for the engine indicated by the engine instance field. Used primarily by display devices.
+127501 - Binary Switch Bank Status
+Category: Power
+Universal status report for multiple banks of two-state indicators.
+127502 - Switch Bank Control
+Category: Power
+Universal commands to multiple banks of two-state devices.
+127503 - AC Input Status
+Category: Power
+Any device with an AC Input may transmit this message
+127504 - AC Output Status
+Category: Power
+Any device with an AC Output may transmit this message.
+127505 - Fluid Level
+Category: General & or Mandatory
+Fluid Level contains an instance number, type of fluid, level of fluid, and tank capacity. For example the fluid instance may be the level of fuel in a tank or the level of water in the bilge. Used primarily by display or instrumentation devices.
+127506 - DC Detailed Status
+Category: Power
+Provides parametric data for a specific battery, indicated by the battery instance field. Used primarily by display or instrumentation devices, but may also be used by battery management controls
+127507 - Charger Status
+Category: Power
+Any device capable of charging a battery may transmit this message.
+127508 - Battery Status
+Category: Power
+Provides parametric data for a specific DC Source, indicated by the instance field. The type of DC Source can be identified from the DC Detailed Status PGN. Used primarily by display or instrumentation devices, but may also be used by power management
+127509 - Inverter Status
+Category: Power
+Any device capable of inverting a DC source to an SC output may transmit this message.
+127510 - Charger Configuration Status
+Category: Power
+Any device capable of charging a battery may transmit this message.
+127511 - Inverter Configuration Status
+Category: Power
+Any device capable of inverting DC to AC may transmit this message.
+127512 - AGS Configuration Status
+Category: Power
+Any device that is capable of starting/stopping a generator may transmit this message.
+127513 - Battery Configuration Status
+Category: Power
+Any device connected to a battery may transmit this message.
+127514 - AGS Status
+Category: Power
+Any device capable of starting/stopping a generator may transmit this message.
+128006 - Thruster Control Status
+Category: Propulsion
+This PGN is used to report the status of a thruster control.
+128007 - Thruster Information
+Category: Propulsion
+This PGN is used to provide information about thruster’s operating specifications and ratings.
+128008 - Thruster Motor Status
+Category: Propulsion
+This PGN is used to provide the motor status and data relevant to a specific thruster.
+12808 - DSC Call Information
+Category: AIS
+This PGN provides Digital Selective Calling (DSC) data according to ITU M.493-9 with optional expansion according to ITU M.821-1. DSC is a paging system that is used to automate distress alerts sent over terrestrial communication systems such as VHF, MF and HF marine radio systems. DSC provides a mechanism to report significantly more information regarding a distress call rather than just the distress itself. Products equipped with DSC will transmit and receive this information.
+128259 - Speed
+Category: Propulsion
+The purpose of this PGN is to provide a single transmission that describes the motion of a vessel.
+128267 - Water Depth
+Category: Navigation
+Water depth relative to the transducer and offset of the measuring transducer. Positive offset numbers provide the distance from the transducer to the waterline.
+128275 - Distance Log
+Category: Navigation
+This PGN provides the cumulative voyage distance traveled since the last reset. The distance is tagged with the time and date of the distance measurement
+128520 - Tracked Target Data
+Category: Navigation
+Message for reporting status and target data from tracking radar external devices.
+128776 - Windlass Control Status
+Category: Propulsion
+This PGN is used to report the status of anchor windlass controls and can be used with Command Group Function.
+128777 - Anchor Windlass Operating Status
+Category: AIS
+This PGN is used to provide the operating status and data relevant to a specific Anchor Windlass.
+128778 - Anchor Windlass Monitoring Status
+Category: Propulsion
+This PGN is used to provide the monitoring status and data relevant to a specific Anchor Windlass.
+129025 - Position, Rapid Update
+Category: Navigation
+This PGN provides latitude and longitude referenced to WGS84. Being defined as single frame message, as opposed to other PGNs that include latitude and longitude and are defined as fast or multi-packet, this PGN lends itself to being transmitted more frequently without using up excessive bandwidth on the bus for the benefit of receiving equipment that may require rapid position updates.
+129026 - COG & SOG, Rapid Update
+Category: Navigation
+This PGN is a single frame PGN that provides Course Over Ground (COG) and Speed Over Ground (SOG).
+129027 - Position Delta, High Precision Rapid Update
+Category: Navigation
+The "Position Delta, High Precision Rapid Update" Parameter Group is intended for applications where very high precision and very fast update rates are needed for position data. This PGN can provide delta position changes down to 1 millimeter with a delta time period accurate to 5 milliseconds.
+129028 - Altitude Delta, High Precision Rapid Update
+Category: Navigation
+The "Altitude Delta, High Precision Rapid Update" Parameter Group is intended for applications where very high precision and very fast update rates are needed for altitude and course over ground data. This PG can provide delta altitude changes down to 1 millimeter, a change in direction as small as 0.0057 degrees, and with a delta time period accurate to 5 milliseconds
+129029 - GNSS Position Data
+Category: Navigation
+This PGN conveys a comprehensive set of Global Navigation Satellite System (GNSS) parameters, including position information.
+129033 - Time & Date
+Category: Navigation
+This PGN has a single transmission that provides: UTC time, UTC Date and Local Offset
+129038 - AIS Class A Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Messages 1, 2, and 3 Position Reports, autonomous, assigned, and response to interrogation, respectively. An AIS device may generate this parameter group either upon receiving a VHF data link message 1,2 or 3, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information).
+129039 - AIS Class B Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 18 Standard Class B Equipment Position Report. An AIS device may generate this parameter group either upon receiving a VHF data link message 18, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information).
+129040 - AIS Class B Extended Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 19 Extended Class B Equipment Position Report containing position and static information. An AIS device may generate this parameter group either upon receiving a VHF data link message 19, or upon receipt of an ISO or NMEA request PGN.
+129045 - User Datum Settings
+Category: Navigation
+Transformation parameters for converting from WGS-84 to other Datums.
+129283 - Cross Track Error
+Category: Navigation
+This PGN provides the magnitude of position error perpendicular to the desired course.
+129284 - Navigation Data
+Category: Navigation
+This PGN provides essential navigation data for following a route.Transmissions will originate from products that can create and manage routes using waypoints. This information is intended for navigational repeaters.
+129285 - Navigation - Route/WP information
+Category: Navigation
+This PGN shall return Route and WP data ahead in the Active Route. It can be requested or may be transmitted without a request, typically at each Waypoint advance.
+129291 - Set & Drift, Rapid Update
+Category: Navigation
+The Set and Drift effect on the Vessel is the direction and the speed of a current.
+129301 - Time to/from Mark
+Category: Navigation
+Time to go to or elapsed from a generic mark, that may be non-fixed. The mark is not generally a specific geographic point but may vary continuously and is most often determined by calculation (the recommended turning or tacking point for sailing vessels, the wheel-over point for vessels making turns, a predicted collision point, etc.)
+129302 - Bearing and Distance between Two Marks
+Category: Navigation
+Bearing and distance from the origin mark to the destination mark, calculated at the origin mark, for any two arbitrary generic marks. The calculation type (Rhumb Line, Great Circle) is specified, as well as the bearing reference (Mag, True).
+129538 - GNSS Control Status
+Category: Navigation
+GNSS common satellite receiver parameter status
+129539 - GNSS DOPs
+Category: Navigation
+This PGN provides a single transmission containing GNSS status and dilution of precision components (DOP) that indicate the contribution of satellite geometry to the overall positioning error. There are three DOP parameters reported, horizontal (HDOP), Vertical (VDOP) and time (TDOP).
+129540 - GNSS Sats in View
+Category: Navigation
+GNSS information on current satellites in view tagged by sequence ID. Information includes PRN, elevation, azimuth, SNR, defines the number of satellites; defines the satellite number and the information.
+129541 - GPS Almanac Data
+Category: Navigation
+This PGN provides a single transmission that contains relevant almanac data for GPS products. The almanac contains satellite vehicle course orbital parameters. This information is not considered precise and is only valid for several months at a time. GPS products receive almanac data directly from the satellites. This information would either be transmitted to and from GPS products for update, or system interrogation.
+129542 - GNSS Pseudorange Noise Statistics
+Category: Navigation
+GNSS pseudorange measurement noise statistics can be translated in the position domain in order to give statistical measures of the quality of the position solution. Intended for use with a Receiver Autonomous Integrity Monitoring (RAIM) application
+129545 - GNSS RAIM Output
+Category: Navigation
+This PGN is used to provide the output from a GNSS Receiver's Receiver Autonomous Integrity Monitoring (RAIM) process. The Integrity field value is based upon the parameters set in PGN 130059 GNS RAIM Settings.
+129546 - GNSS RAIM Settings
+Category: Navigation
+This PGN is used to report the control parameters for a GNSS Receiver Autonomous Integrity Monitoring (RAIM) process.
+129547 - GNSS Pseudorange Error Statistics
+Category: Navigation
+This parameter group is used to support Receiver Autonomous Integrity Monitoring (RAIM). Pseudorange measurement error statistics can be translated in the position domain in order to give statistical measures of the quality of the position solution.
+129549 - DGNSS Corrections
+Category: Navigation
+This PGN provides a means to pass differential GNSS corrections between NMEA 2000 devices. Passing DGNSS data this way allows for more flexibility than traditional methods. One differential correction receiver could supply multiple GNSS receivers. Multiple differential correction receivers or data streams could be connected to a GNSS receiver allowing for network DGNSS approaches. This PGN can accommodate DGPS and DGLONASS corrections.
+129550 - GNSS Differential Correction Receiver Interface
+Category: Navigation
+GNSS common differential correction receiver parameter status.
+129551 - GNSS Differential Correction Receiver Signal
+Category: Navigation
+GNSS differential correction receiver status tagged by sequence ID. Status information includes frequency, SNR, and use as a correction source.
+129556 - GLONASS Almanac Data
+Category: Navigation
+This PGN provides a single transmission that contains relevant almanac data for Glonass products. The almanac contains satellite vehicle course orbital parameters. This information is not considered precise and is only valid for several months at a time. Glonass products receive almanac data directly from the satellites.This information would either be transmitted to and from Glonass products for update, or system interrogation.
+129792 - AIS DGNSS Broadcast Binary Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 17 GNSS Broadcast Binary Message containing DGNSS corrections from a base station. An AIS device may generate this parameter group either upon receiving a VHF data link message 17, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information).
+129793 - AIS UTC and Date Report
+Category: AIS
+This parameter group provides data from ITU-R M.1371 message 4 Base Station Report providing position, time, date, and current slot number of a base station, and 11 UTC and date response message providing current UTC and date if available. An AIS device may generate this parameter group either upon receiving a VHF data link message 4 or 11, or upon receipt of an ISO or NMEA request PGN.
+129794 - AIS Class A Static and Voyage Related Data
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 5 Ship Static and Voyage Related Data Message. An AIS device may generate this parameter group either upon receiving a VHF data link message 5, or upon receipt of an ISO or NMEA request PGN.
+129795 - AIS Addressed Binary Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 6 Addressed Binary Message supporting address communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 6, or upon receipt of an ISO or NMEA request PGN.
+129796 - AIS Acknowledge
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Messages 7 Binary Acknowledge Message and 13 Safety Related Acknowledge Message. Message 7 acknowledges receipt of message 6 while message 13 acknowledges receipt of message 14. An AIS device may generate this parameter group either upon receiving a VHF data link message 7 or 13, or upon receipt of an ISO or NMEA request PGN
+129797 - AIS Binary Broadcast Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 8 Binary Broadcast Message supporting broadcast communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 8, or upon receipt of an ISO or NMEA request PGN.
+129798 - AIS SAR Aircraft Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 9 SAR Aircraft Position Report Message for Airborne AIS units conducting Search and Rescue operations. An AIS device may generate this parameter group either upon receiving a VHF data link message 9, or upon receipt of an ISO or NMEA request
+129799 - Radio Frequency/Mode/Power
+Category: AIS
+This PGN provides status and control for a Radiotelephone, connected to a NMEA 2000 network. The Radiotelephone will transmit and receive status along with remote control and repeater products
+129800 - AIS UTC/Date Inquiry
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 10 UTC and Date Inquiry Message used to request current UTC and date. An AIS device may generate this parameter group either upon receiving a VHF data link message 10, or upon receipt of an ISO or NMEA request PGN.
+129801 - AIS Addressed Safety Related Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 12 Addressed Safety Related Message supporting addressed communication of safety related data. An AIS device may generate this parameter group either upon receiving a VHF data link message 12, or upon receipt of an ISO or NMEA request PGN.
+129802 - AIS Safety Related Broadcast Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 14 Safety Related Broadcast Message supporting broadcast communication of safety related data. An AIS device may generate this parameter group either upon receiving a VHF data link message 14, or upon receipt of an ISO or NMEA request PGN.
+129803 - AIS Interrogation
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 15 Interrogation Message used to request a specific ITU-R M.1371 message resulting in responses from one or more AIS mobile units. An AIS device may generate this parameter group either upon receiving a VHF data link message 15, or upon receipt of an ISO or NMEA request PGN.
+129804 - AIS Assignment Mode Command
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 16 Assigned Mode Command Message for assigning specific behavior by a competent authority. An AIS device may generate this parameter group either upon receiving a VHF data link message 16, or upon receipt of an ISO or NMEA request PGN.
+129805 - AIS Data Link Management Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 20 Data Link Management Message for reserving slots for base stations. An AIS device may generate this parameter group either upon receiving a VHF data link message 20, or upon receipt of an ISO or NMEA request PGN.
+129807 - AIS Class B Group Assignment
+Category: AIS
+The Group Assignment Command is transmitted by a base station when operating as a controlling unit for the AIS Stations.
+129809 - AIS Class B "CS" Static Report, Part A
+Category: AIS
+This parameter group is used by Class B "CS" shipborne mobile equipment each time Part A of ITU-R M.1372 Message 24 is received. This parameter group is the first of two parts, the second being transmitted in PGN 129810.
+129810 - AIS Class B
+Category: AIS
+This parameter group is used by Class B "CS" shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received. This parameter group is the second of two parts, the first being transmitted in PGN 129809.
+130052 - Loran-C TD Data
+Category: Navigation
+This provides Time Difference (TD) lines of position of Loran-C signals relative to a single Group Repetition Interval.
+130053 - Loran-C Range Data
+Category: Navigation
+This provides Propagation times (Ranges) of Loran-C signals relative to a single Group Repetition Interval.
+130054 - Loran-C Signal Data
+Category: Navigation
+SNR, ECD, and ASF values of Loran-C signals
+130064 - Route and WP Service - Database List
+Category: Navigation
+Complex request for this PGN should return a list of Databases in which a navigation Device organizes its Routes and WPs. A Database may contain one WP-List and multiple Routes.
+130065 - Route and WP Service - Route List
+Category: Navigation
+Complex request for this PGN should return a list of Routes in a Database.
+130066 - Route and WP Service - Route/WP-List Attributes
+Category: Navigation
+Complex request for this PGN should return the attributes of a Route or the WP-List.
+130067 - Route and WP Service - Route - WP Name & Position
+Category: Navigation
+Complex request of this PGN should return the Waypoints belonging to a Route.
+130068 - Route and WP Service - Route - WP Name
+Category: Navigation
+Complex request of this PGN should return the Waypoints belonging to a Route.
+130069 - Route and WP Service - XTE Limit & Navigation Method
+Category: Navigation
+Complex request of this PGN will return XTE Limit and/or Navigation Method specific to individual legs of a Route.
+130070 - Route and WP Service - WP Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Waypoints in a Route or a WP-List
+130071 - Route and WP Service - Route Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Routes.
+130072 - Route and WP Service - Database Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Databases in the navigation Device.
+130073 - Route and WP Service - Radius of Turn
+Category: Navigation
+Complex request of this PGN should return the Radius of Turn at specific Waypoints of a Route.
+130074 - Route and WP Service - WP List - WP Name & Position
+Category: Navigation
+Complex request of this PGN should return the Waypoints of a WP-List.
+130306 - Wind Data
+Category: Environmental
+Direction and speed of Wind. True wind can be referenced to the vessel or to the ground. The Apparent Wind is what is felt standing on the (moving) ship, I.e., the wind measured by the typical mast head instruments. The boat referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed though the water. The ground referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed over ground.
+130310 - Environmental Parameters
+Category: Environmental
+Local atmospheric environmental conditions
+130311 - Environmental Parameters
+Category: Environmental
+Environmental Conditions contains Temperature, Humidity, and Atmospheric Pressure. This is a rework of PGN # 130310 and should be used for new designs.
+130320 - Tide Station Data
+Category: Environmental
+Tide station measurement data including station location, numeric identifier, and name
+130321 - Salinity Station Data
+Category: Environmental
+Salinity station measurement data including station location, numeric identifier, and name.
+130322 - Current Station Data
+Category: Environmental
+Current station measurement data including station location, numeric identifier, and name.
+130323 - Meteorological Station Data
+Category: Environmental
+Meteorological station measurement data including station location, numeric identifier, and name.
+130324 - Moored Buoy Station Data
+Category: Environmental
+Moored buoy measurement data including station location and numeric identifier.
+130576 - Small Craft Status
+Category: General & or Mandatory
+Provides data on various small craft control surfaces and speed through the water. Used primarily by display or instrumentation
+130577 - Direction Data
+Category: General & or Mandatory
+The purpose of this PGN is to group three fundamental vectors related to vessel motion, speed and heading referenced to the water, speed and course referenced to ground and current speed and flow direction
+130578 - Vessel Speed Components
+Category: General & or Mandatory
+This PGN provides a single transmission that accurately describes the speed of a vessel by component vectors.
+59392 - ISO Acknowledgment
+Category: General & or Mandatory
+This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a “normal broadcast” message or the response to a specific command to indicate compliance or failure.
+59904 - ISO Request
+Category: General & or Mandatory
+As defined by ISO, this message has a data length of 3 bytes with no padding added to complete the single frame. The appropriate response to this message is based on the PGN being requested, and whether the receiver supports the requested PGN.
+60160 - ISO Transport Protocol, Data Transfer
+Category: General & or Mandatory
+ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message.
+60416 - ISO Transport Protocol, Connection Management - RTS group
+Category: General & or Mandatory
+ISO 11783 defines this group function PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN’s role in the transport process is determined by the group function value found in the first data byte of the PGN.
+60928 - ISO Address Claim
+Category: General & or Mandatory
+This network management message is used to claim network address, reply to devices requesting the claimed address, and to respond with device information (NAME) requested by the ISO Request or Complex Request Group Function This PGN contains several fields that are requestable, either independently or in any combination.
+65240 - ISO Commanded Address:
+Category: General & or Mandatory
+ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set.
+129039 - AIS Class B Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 18 Standard Class B Equipment Position Report. An AIS device may generate this parameter group either upon receiving a VHF data link message 18, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information).
+129040 - AIS Class B Extended Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 19 Extended Class B Equipment Position Report containing position and static information. An AIS device may generate this parameter group either upon receiving a VHF data link message 19, or upon receipt of an ISO or NMEA request PGN.
+129045 - User Datum Settings
+Category: Navigation
+Transformation parameters for converting from WGS-84 to other Datums.
+129283 - Cross Track Error
+Category: Navigation
+This PGN provides the magnitude of position error perpendicular to the desired course.
+129284 - Navigation Data
+Category: Navigation
+This PGN provides essential navigation data for following a route.Transmissions will originate from products that can create and manage routes using waypoints. This information is intended for navigational repeaters.
+129285 - Navigation - Route/WP information
+Category: Navigation
+This PGN shall return Route and WP data ahead in the Active Route. It can be requested or may be transmitted without a request, typically at each Waypoint advance.
+129291 - Set & Drift, Rapid Update
+Category: Navigation
+The Set and Drift effect on the Vessel is the direction and the speed of a current.
+129301 - Time to/from Mark
+Category: Navigation
+Time to go to or elapsed from a generic mark, that may be non-fixed. The mark is not generally a specific geographic point but may vary continuously and is most often determined by calculation (the recommended turning or tacking point for sailing vessels, the wheel-over point for vessels making turns, a predicted collision point, etc.)
+129302 - Bearing and Distance between Two Marks
+Category: Navigation
+Bearing and distance from the origin mark to the destination mark, calculated at the origin mark, for any two arbitrary generic marks. The calculation type (Rhumb Line, Great Circle) is specified, as well as the bearing reference (Mag, True).
+129538 - GNSS Control Status
+Category: Navigation
+GNSS common satellite receiver parameter status
+129539 - GNSS DOPs
+Category: Navigation
+This PGN provides a single transmission containing GNSS status and dilution of precision components (DOP) that indicate the contribution of satellite geometry to the overall positioning error. There are three DOP parameters reported, horizontal (HDOP), Vertical (VDOP) and time (TDOP).
+129540 - GNSS Sats in View
+Category: Navigation
+GNSS information on current satellites in view tagged by sequence ID. Information includes PRN, elevation, azimuth, SNR, defines the number of satellites; defines the satellite number and the information.
+129541 - GPS Almanac Data
+Category: Navigation
+This PGN provides a single transmission that contains relevant almanac data for GPS products. The almanac contains satellite vehicle course orbital parameters. This information is not considered precise and is only valid for several months at a time. GPS products receive almanac data directly from the satellites. This information would either be transmitted to and from GPS products for update, or system interrogation.
+129542 - GNSS Pseudorange Noise Statistics
+Category: Navigation
+GNSS pseudorange measurement noise statistics can be translated in the position domain in order to give statistical measures of the quality of the position solution. Intended for use with a Receiver Autonomous Integrity Monitoring (RAIM) application
+129545 - GNSS RAIM Output
+Category: Navigation
+This PGN is used to provide the output from a GNSS Receiver's Receiver Autonomous Integrity Monitoring (RAIM) process. The Integrity field value is based upon the parameters set in PGN 130059 GNS RAIM Settings.
+129546 - GNSS RAIM Settings
+Category: Navigation
+This PGN is used to report the control parameters for a GNSS Receiver Autonomous Integrity Monitoring (RAIM) process.
+129547 - GNSS Pseudorange Error Statistics
+Category: Navigation
+This parameter group is used to support Receiver Autonomous Integrity Monitoring (RAIM). Pseudorange measurement error statistics can be translated in the position domain in order to give statistical measures of the quality of the position solution.
+129549 - DGNSS Corrections
+Category: Navigation
+This PGN provides a means to pass differential GNSS corrections between NMEA 2000 devices. Passing DGNSS data this way allows for more flexibility than traditional methods. One differential correction receiver could supply multiple GNSS receivers. Multiple differential correction receivers or data streams could be connected to a GNSS receiver allowing for network DGNSS approaches. This PGN can accommodate DGPS and DGLONASS corrections.
+129550 - GNSS Differential Correction Receiver Interface
+Category: Navigation
+GNSS common differential correction receiver parameter status.
+129551 - GNSS Differential Correction Receiver Signal
+Category: Navigation
+GNSS differential correction receiver status tagged by sequence ID. Status information includes frequency, SNR, and use as a correction source.
+129556 - GLONASS Almanac Data
+Category: Navigation
+This PGN provides a single transmission that contains relevant almanac data for Glonass products. The almanac contains satellite vehicle course orbital parameters. This information is not considered precise and is only valid for several months at a time. Glonass products receive almanac data directly from the satellites.This information would either be transmitted to and from Glonass products for update, or system interrogation.
+129792 - AIS DGNSS Broadcast Binary Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 17 GNSS Broadcast Binary Message containing DGNSS corrections from a base station. An AIS device may generate this parameter group either upon receiving a VHF data link message 17, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information).
+129793 - AIS UTC and Date Report
+Category: AIS
+This parameter group provides data from ITU-R M.1371 message 4 Base Station Report providing position, time, date, and current slot number of a base station, and 11 UTC and date response message providing current UTC and date if available. An AIS device may generate this parameter group either upon receiving a VHF data link message 4 or 11, or upon receipt of an ISO or NMEA request PGN.
+129794 - AIS Class A Static and Voyage Related Data
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 5 Ship Static and Voyage Related Data Message. An AIS device may generate this parameter group either upon receiving a VHF data link message 5, or upon receipt of an ISO or NMEA request PGN.
+129795 - AIS Addressed Binary Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 6 Addressed Binary Message supporting address communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 6, or upon receipt of an ISO or NMEA request PGN.
+129796 - AIS Acknowledge
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Messages 7 Binary Acknowledge Message and 13 Safety Related Acknowledge Message. Message 7 acknowledges receipt of message 6 while message 13 acknowledges receipt of message 14. An AIS device may generate this parameter group either upon receiving a VHF data link message 7 or 13, or upon receipt of an ISO or NMEA request PGN
+129797 - AIS Binary Broadcast Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 8 Binary Broadcast Message supporting broadcast communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 8, or upon receipt of an ISO or NMEA request PGN.
+129798 - AIS SAR Aircraft Position Report
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 9 SAR Aircraft Position Report Message for Airborne AIS units conducting Search and Rescue operations. An AIS device may generate this parameter group either upon receiving a VHF data link message 9, or upon receipt of an ISO or NMEA request
+129799 - Radio Frequency/Mode/Power
+Category: AIS
+This PGN provides status and control for a Radiotelephone, connected to a NMEA 2000 network. The Radiotelephone will transmit and receive status along with remote control and repeater products
+129800 - AIS UTC/Date Inquiry
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 10 UTC and Date Inquiry Message used to request current UTC and date. An AIS device may generate this parameter group either upon receiving a VHF data link message 10, or upon receipt of an ISO or NMEA request PGN.
+129801 - AIS Addressed Safety Related Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 12 Addressed Safety Related Message supporting addressed communication of safety related data. An AIS device may generate this parameter group either upon receiving a VHF data link message 12, or upon receipt of an ISO or NMEA request PGN.
+129802 - AIS Safety Related Broadcast Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 14 Safety Related Broadcast Message supporting broadcast communication of safety related data. An AIS device may generate this parameter group either upon receiving a VHF data link message 14, or upon receipt of an ISO or NMEA request PGN.
+129803 - AIS Interrogation
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 15 Interrogation Message used to request a specific ITU-R M.1371 message resulting in responses from one or more AIS mobile units. An AIS device may generate this parameter group either upon receiving a VHF data link message 15, or upon receipt of an ISO or NMEA request PGN.
+129804 - AIS Assignment Mode Command
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 16 Assigned Mode Command Message for assigning specific behavior by a competent authority. An AIS device may generate this parameter group either upon receiving a VHF data link message 16, or upon receipt of an ISO or NMEA request PGN.
+129805 - AIS Data Link Management Message
+Category: AIS
+This parameter group provides data associated with the ITU-R M.1371 Message 20 Data Link Management Message for reserving slots for base stations. An AIS device may generate this parameter group either upon receiving a VHF data link message 20, or upon receipt of an ISO or NMEA request PGN.
+129807 - AIS Class B Group Assignment
+Category: AIS
+The Group Assignment Command is transmitted by a base station when operating as a controlling unit for the AIS Stations.
+129809 - AIS Class B "CS" Static Report, Part A
+Category: AIS
+This parameter group is used by Class B "CS" shipborne mobile equipment each time Part A of ITU-R M.1372 Message 24 is received. This parameter group is the first of two parts, the second being transmitted in PGN 129810.
+129810 - AIS Class B
+Category: AIS
+This parameter group is used by Class B "CS" shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received. This parameter group is the second of two parts, the first being transmitted in PGN 129809.
+130052 - Loran-C TD Data
+Category: Navigation
+This provides Time Difference (TD) lines of position of Loran-C signals relative to a single Group Repetition Interval.
+130053 - Loran-C Range Data
+Category: Navigation
+This provides Propagation times (Ranges) of Loran-C signals relative to a single Group Repetition Interval.
+130054 - Loran-C Signal Data
+Category: Navigation
+SNR, ECD, and ASF values of Loran-C signals
+130064 - Route and WP Service - Database List
+Category: Navigation
+Complex request for this PGN should return a list of Databases in which a navigation Device organizes its Routes and WPs. A Database may contain one WP-List and multiple Routes.
+130065 - Route and WP Service - Route List
+Category: Navigation
+Complex request for this PGN should return a list of Routes in a Database.
+130066 - Route and WP Service - Route/WP-List Attributes
+Category: Navigation
+Complex request for this PGN should return the attributes of a Route or the WP-List.
+130067 - Route and WP Service - Route - WP Name & Position
+Category: Navigation
+Complex request of this PGN should return the Waypoints belonging to a Route.
+130068 - Route and WP Service - Route - WP Name
+Category: Navigation
+Complex request of this PGN should return the Waypoints belonging to a Route.
+130069 - Route and WP Service - XTE Limit & Navigation Method
+Category: Navigation
+Complex request of this PGN will return XTE Limit and/or Navigation Method specific to individual legs of a Route.
+130070 - Route and WP Service - WP Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Waypoints in a Route or a WP-List
+130071 - Route and WP Service - Route Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Routes.
+130072 - Route and WP Service - Database Comment
+Category: Navigation
+Complex request of this PGN should return supplementary Comments attached to Databases in the navigation Device.
+130073 - Route and WP Service - Radius of Turn
+Category: Navigation
+Complex request of this PGN should return the Radius of Turn at specific Waypoints of a Route.
+130074 - Route and WP Service - WP List - WP Name & Position
+Category: Navigation
+Complex request of this PGN should return the Waypoints of a WP-List.
+130306 - Wind Data
+Category: Environmental
+Direction and speed of Wind. True wind can be referenced to the vessel or to the ground. The Apparent Wind is what is felt standing on the (moving) ship, I.e., the wind measured by the typical mast head instruments. The boat referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed though the water. The ground referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed over ground.
+130310 - Environmental Parameters
+Category: Environmental
+Local atmospheric environmental conditions
+130311 - Environmental Parameters
+Category: Environmental
+Environmental Conditions contains Temperature, Humidity, and Atmospheric Pressure. This is a rework of PGN # 130310 and should be used for new designs.
+130320 - Tide Station Data
+Category: Environmental
+Tide station measurement data including station location, numeric identifier, and name
+130321 - Salinity Station Data
+Category: Environmental
+Salinity station measurement data including station location, numeric identifier, and name.
+130322 - Current Station Data
+Category: Environmental
+Current station measurement data including station location, numeric identifier, and name.
+130323 - Meteorological Station Data
+Category: Environmental
+Meteorological station measurement data including station location, numeric identifier, and name.
+130324 - Moored Buoy Station Data
+Category: Environmental
+Moored buoy measurement data including station location and numeric identifier.
+130576 - Small Craft Status
+Category: General & or Mandatory
+Provides data on various small craft control surfaces and speed through the water. Used primarily by display or instrumentation
+130577 - Direction Data
+Category: General & or Mandatory
+The purpose of this PGN is to group three fundamental vectors related to vessel motion, speed and heading referenced to the water, speed and course referenced to ground and current speed and flow direction
+130578 - Vessel Speed Components
+Category: General & or Mandatory
+This PGN provides a single transmission that accurately describes the speed of a vessel by component vectors.
+59392 - ISO Acknowledgment
+Category: General & or Mandatory
+This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a “normal broadcast” message or the response to a specific command to indicate compliance or failure.
+59904 - ISO Request
+Category: General & or Mandatory
+As defined by ISO, this message has a data length of 3 bytes with no padding added to complete the single frame. The appropriate response to this message is based on the PGN being requested, and whether the receiver supports the requested PGN.
+60160 - ISO Transport Protocol, Data Transfer
+Category: General & or Mandatory
+ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message.
+60416 - ISO Transport Protocol, Connection Management - RTS group
+Category: General & or Mandatory
+ISO 11783 defines this group function PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN’s role in the transport process is determined by the group function value found in the first data byte of the PGN.
+60928 - ISO Address Claim
+Category: General & or Mandatory
+This network management message is used to claim network address, reply to devices requesting the claimed address, and to respond with device information (NAME) requested by the ISO Request or Complex Request Group Function This PGN contains several fields that are requestable, either independently or in any combination.
+65240 - ISO Commanded Address:
+Category: General & or Mandatory
+ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set.
+130073 - Route and WP Service - Radius of Turn
+Category: Navigation
+Complex request of this PGN should return the Radius of Turn at specific Waypoints of a Route.
+130074 - Route and WP Service - WP List - WP Name & Position
+Category: Navigation
+Complex request of this PGN should return the Waypoints of a WP-List.
+130306 - Wind Data
+Category: Environmental
+Direction and speed of Wind. True wind can be referenced to the vessel or to the ground. The Apparent Wind is what is felt standing on the (moving) ship, I.e., the wind measured by the typical mast head instruments. The boat referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed though the water. The ground referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed over ground.
+130310 - Environmental Parameters
+Category: Environmental
+Local atmospheric environmental conditions
+130311 - Environmental Parameters
+Category: Environmental
+Environmental Conditions contains Temperature, Humidity, and Atmospheric Pressure. This is a rework of PGN # 130310 and should be used for new designs.
+130320 - Tide Station Data
+Category: Environmental
+Tide station measurement data including station location, numeric identifier, and name
+130321 - Salinity Station Data
+Category: Environmental
+Salinity station measurement data including station location, numeric identifier, and name.
+130322 - Current Station Data
+Category: Environmental
+Current station measurement data including station location, numeric identifier, and name.
+130323 - Meteorological Station Data
+Category: Environmental
+Meteorological station measurement data including station location, numeric identifier, and name.
+130324 - Moored Buoy Station Data
+Category: Environmental
+Moored buoy measurement data including station location and numeric identifier.
+130576 - Small Craft Status
+Category: General & or Mandatory
+Provides data on various small craft control surfaces and speed through the water. Used primarily by display or instrumentation
+130577 - Direction Data
+Category: General & or Mandatory
+The purpose of this PGN is to group three fundamental vectors related to vessel motion, speed and heading referenced to the water, speed and course referenced to ground and current speed and flow direction
+130578 - Vessel Speed Components
+Category: General & or Mandatory
+This PGN provides a single transmission that accurately describes the speed of a vessel by component vectors.
+59392 - ISO Acknowledgment
+Category: General & or Mandatory
+This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a “normal broadcast” message or the response to a specific command to indicate compliance or failure.
+59904 - ISO Request
+Category: General & or Mandatory
+As defined by ISO, this message has a data length of 3 bytes with no padding added to complete the single frame. The appropriate response to this message is based on the PGN being requested, and whether the receiver supports the requested PGN.
+60160 - ISO Transport Protocol, Data Transfer
+Category: General & or Mandatory
+ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message.
+60416 - ISO Transport Protocol, Connection Management - RTS group
+Category: General & or Mandatory
+ISO 11783 defines this group function PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN’s role in the transport process is determined by the group function value found in the first data byte of the PGN.
+60928 - ISO Address Claim
+Category: General & or Mandatory
+This network management message is used to claim network address, reply to devices requesting the claimed address, and to respond with device information (NAME) requested by the ISO Request or Complex Request Group Function This PGN contains several fields that are requestable, either independently or in any combination.
+65240 - ISO Commanded Address:
+Category: General & or Mandatory
+ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set.

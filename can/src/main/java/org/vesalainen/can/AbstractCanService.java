@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
 import javax.xml.parsers.ParserConfigurationException;
-import org.vesalainen.can.dbc.PGNDefinitions;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
@@ -150,7 +149,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected AbstractMessage compilePGN(int canId, PGNClass mc)
     {
         SingleMessage sm;
-        switch (mc.getType())
+        switch (mc.getStringAttribute("MessageType"))
         {
             case "Single":
                 sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
@@ -159,7 +158,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
                 break;
             default:
-                throw new UnsupportedOperationException(mc.getType()+"not supported");
+                throw new UnsupportedOperationException(mc.getStringAttribute("MessageType")+"not supported");
         }
         finer("compile(%s)", mc);
         if (mc.getName().startsWith("ais"))
@@ -189,19 +188,6 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         {
             canIdMap.put(mc.getId(), mc);
         });
-    }
-    public void addPGNDefinitions(Path path) throws IOException
-    {
-        try
-        {
-            PGNDefinitions pgns = new PGNDefinitions(path);
-            Map<Integer, PGNClass> pgnClasses = pgns.getPgnClasses();
-            pgnMap.putAll(pgnClasses);
-        }
-        catch (ParserConfigurationException | SAXException ex)
-        {
-            throw new IOException(ex);
-        }
     }
     @Override
     public void close() throws Exception

@@ -83,7 +83,7 @@ public class SignalClass extends DBCBase
     }
     public SignalType getSignalType()
     {
-        String type = getType();
+        String type = getStringAttribute("SignalType");
         if (type != null)
         {
             switch (type)
@@ -209,16 +209,6 @@ public class SignalClass extends DBCBase
     public List<String> getReceivers()
     {
         return receivers;
-    }
-
-    public String getType()
-    {
-        return getStringAttribute("Type");
-    }
-
-    public void setType(String type)
-    {
-        setAttribute("Type", type);
     }
 
     public List<ValueDescription> getValueDescriptions()

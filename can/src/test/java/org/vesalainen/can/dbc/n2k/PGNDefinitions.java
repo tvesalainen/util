@@ -14,11 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.dbc.n2k;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,10 +28,15 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.junit.Test;
+import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.PGNClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.dbc.ValueDescription;
+import org.vesalainen.can.dbc.ValueDescriptions;
 import static org.vesalainen.can.dbc.ValueType.*;
+import org.vesalainen.can.j1939.PGN;
+import org.vesalainen.text.CamelCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -41,9 +47,9 @@ import org.xml.sax.SAXException;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PGNDefinitions
+public class PGNDefinitions extends DBCFile
 {
-    private Map<Integer,PGNClass> pgnClasses = new HashMap<>();
+    private List<ValueDescriptions> valueDescriptions = new ArrayList<>();
     
     public PGNDefinitions(Path path) throws ParserConfigurationException, SAXException, IOException
     {
@@ -58,14 +64,10 @@ public class PGNDefinitions
             PGNClass pgnCls = parsePGN(item);
             if (pgnCls != null)
             {
-                pgnClasses.put(pgnCls.getId(), pgnCls);
+                addMessage(pgnCls);
             }
         }
-    }
-
-    public Map<Integer, PGNClass> getPgnClasses()
-    {
-        return pgnClasses;
+        addValueDescriptions(valueDescriptions);
     }
 
     private PGNClass parsePGN(Node item)
@@ -111,7 +113,9 @@ public class PGNDefinitions
                 break;
             }
         }
-        if (fields != null)
+        int canId = PGN.canId(pgn);
+        N2KData.PGNInfo pgnInfo = N2KData.N2K.getPGNInfo(pgn);
+        if (fields != null && pgnInfo != null)
         {
             List<SignalClass> signals = new ArrayList<>();
             NodeList fieldNodes = fields.getChildNodes();
@@ -119,19 +123,21 @@ public class PGNDefinitions
             for (int ff=0;ff<fldLen;ff++)
             {
                 Node fieldNode = fieldNodes.item(ff);
-                SignalClass sc = parseField(fieldNode);
+                SignalClass sc = parseField(canId, fieldNode);
                 if (sc != null)
                 {
                     signals.add(sc);
                 }
             }
-            PGNClass msg = new PGNClass(pgn, id, size, type, description, signals);
+            PGNClass msg = new PGNClass(canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, type, pgnInfo.getDescription(), signals);
+            
+            //msg.setAttribute("MessageCategory", pgnInfo.getCategory());
             return msg;
         }
         return null;
   }
 
-    private SignalClass parseField(Node fieldNode)
+    private SignalClass parseField(int canId, Node fieldNode)
     {
         String name = null;
         int length = 0;
@@ -178,8 +184,9 @@ public class PGNDefinitions
         }
         if (name != null && len > 0)
         {
+            String nam = CamelCase.delimited(name, "_");
             SignalClass sc = new SignalClass(
-                    name, 
+                    nam, 
                     null, 
                     offset, 
                     length, 
@@ -191,11 +198,11 @@ public class PGNDefinitions
                     Double.valueOf(0), 
                     unit, 
                     Collections.EMPTY_LIST);
-            sc.setType(type);
+            sc.setAttribute("SignalType", type);
             if (lookupNode != null)
             {
                 List<ValueDescription> valDesc = parseLookup(lookupNode);
-                sc.setValueDescription(valDesc);
+                valueDescriptions.add(new ValueDescriptions(canId, nam, valDesc));
             }
             return sc;
         }
@@ -222,5 +229,5 @@ public class PGNDefinitions
         }
         return list;
     }
-    
+
 }

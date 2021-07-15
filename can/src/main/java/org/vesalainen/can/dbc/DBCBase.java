@@ -45,7 +45,7 @@ public class DBCBase
         this.comment = comment;
     }
 
-    public void setAttribute(String name, String value)
+    public final void setAttribute(String name, String value)
     {
         Attribute attribute = new Attribute(name, new StringAttributeValueType());
         attribute.setValue(value);

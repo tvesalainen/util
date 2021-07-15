@@ -16,10 +16,10 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.vesalainen.io.AppendablePrinter;
@@ -35,7 +35,7 @@ public class DBCFile extends DBCBase
     private Map<String,Node> nodes = new LinkedMap<>();
     private Map<Integer,MessageClass> messages = new LinkedMap<>();
     private Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
-    private List<MessageTransmitter> messageTransmitters;
+    private List<MessageTransmitter> messageTransmitters = Collections.EMPTY_LIST;
 
     public void print(Appendable out)
     {
@@ -125,18 +125,18 @@ public class DBCFile extends DBCBase
             });
         });
     }
-    void setVersion(String version)
+    public void setVersion(String version)
     {
         this.version = version;
     }
 
-    void addNode(String name)
+    public void addNode(String name)
     {
         Node node = new Node(name);
         nodes.put(name, node);
     }
 
-    void addMessage(MessageClass message)
+    public void addMessage(MessageClass message)
     {
         messages.put(message.getId(), message);
         message.forEach((SignalClass s)->
@@ -149,25 +149,25 @@ public class DBCFile extends DBCBase
         });
     }
 
-    void setNodeComment(String name, String comment)
+    public void setNodeComment(String name, String comment)
     {
         Node node = nodes.get(name);
         node.setComment(comment);
     }
 
-    void setMessageComment(int id, String comment)
+    public void setMessageComment(int id, String comment)
     {
         MessageClass message = messages.get(id);
         message.setComment(comment);
     }
 
-    void setSignalComment(int id, String signal, String comment)
+    public void setSignalComment(int id, String signal, String comment)
     {
         MessageClass message = messages.get(id);
         message.setSignalComment(signal, comment);
     }
 
-    void addAttribute(String name, AttributeValueType type)
+    public void addAttribute(String name, AttributeValueType type)
     {
         if (attributes.put(name, new Attribute(name, type)) != null)
         {
@@ -175,19 +175,24 @@ public class DBCFile extends DBCBase
         };
     }
 
-    void setAttributeDefault(String name, Object value)
+    public void addAttribute(ObjectType objectType, String name, AttributeValueType type)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setAttributeDefault(String name, Object value)
     {
         Attribute attribute = attributes.get(name);
         attribute.setDefault(value);
     }
 
-    void setAttributeValue(String name, Object value)
+    public void setAttributeValue(String name, Object value)
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
     }
 
-    void setNodeAttributeValue(String name, String nodeName, Object value)
+    public void setNodeAttributeValue(String name, String nodeName, Object value)
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
@@ -196,7 +201,7 @@ public class DBCFile extends DBCBase
         
     }
 
-    void setMessageAttributeValue(String name, int id, Object value)
+    public void setMessageAttributeValue(String name, int id, Object value)
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
@@ -204,7 +209,7 @@ public class DBCFile extends DBCBase
         message.setAttribute(attribute);
     }
 
-    void setSignalAttributeValue(String name, int id, String signalName, Object value)
+    public void setSignalAttributeValue(String name, int id, String signalName, Object value)
     {
         Attribute attribute = attributes.get(name);
         attribute.setValue(value);
@@ -212,7 +217,7 @@ public class DBCFile extends DBCBase
         message.setSignalAttribute(signalName, attribute);
     }
 
-    void addValueTable(String name, List<ValueDescription> valueDescriptions)
+    public void addValueTable(String name, List<ValueDescription> valueDescriptions)
     {
         valueTables.put(name, valueDescriptions);
     }
@@ -222,26 +227,30 @@ public class DBCFile extends DBCBase
         messages.values().forEach(action);
     }
 
-    void addValueDescriptions(List<ValueDescriptions> valDesc)
+    public void addValueDescriptions(List<ValueDescriptions> valDesc)
     {
         for (ValueDescriptions vd : valDesc)
         {
-            String name = vd.getName();
-            List<ValueDescription> valueDescription = vd.getValDesc();
-            int id = vd.getId();
-            if (id != 0)
-            {
-                MessageClass message = messages.get(id);
-                message.setSignalValueDescription(name, valueDescription);
-            }
-            else
-            {
-                valueTables.put(name, valueDescription);
-            }
+            addValueDescriptions(vd);
+        }
+    }
+    public void addValueDescriptions(ValueDescriptions vd)
+    {
+        String name = vd.getName();
+        List<ValueDescription> valueDescription = vd.getValDesc();
+        int id = vd.getId();
+        if (id != 0)
+        {
+            MessageClass message = messages.get(id);
+            message.setSignalValueDescription(name, valueDescription);
+        }
+        else
+        {
+            valueTables.put(name, valueDescription);
         }
     }
 
-    void setMessageTransmitters(List<MessageTransmitter> list)
+    public void setMessageTransmitters(List<MessageTransmitter> list)
     {
         this.messageTransmitters = list;
     }
@@ -291,16 +300,6 @@ public class DBCFile extends DBCBase
             return false;
         }
         return true;
-    }
-
-    void addAttribute(ObjectType objectType, String name, AttributeValueType type)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private BiConsumer<? super String, ? super Attribute> printDefinition(AppendablePrinter out)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

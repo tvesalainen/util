@@ -14,21 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.dbc;
+package org.vesalainen.can.dbc.n2k;
 
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Paths;
+import javax.xml.parsers.ParserConfigurationException;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PGNClass extends MessageClass
+public class PGNDefinitionsT
 {
-    public PGNClass(Integer pgn, String name, Integer size, String type, String comment, List<SignalClass> signals)
+    @Test
+    public void createN2KDBC() throws ParserConfigurationException, SAXException, IOException
     {
-        super(pgn, name, size, "", signals);
-        this.comment = comment;
-        setAttribute("MessageType", type);
+        PGNDefinitions pgnDef = new PGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
+        pgnDef.print(System.err);
     }
-
 }
