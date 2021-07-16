@@ -23,6 +23,7 @@ package org.vesalainen.can.dbc;
 public abstract class AttributeValueType
 {
     abstract String getType();
+    abstract Object convType(Object value);
     protected String getDefault(Object def)
     {
         return def != null ? def.toString() : "0";

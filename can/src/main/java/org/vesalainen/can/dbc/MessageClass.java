@@ -36,6 +36,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     protected int size;
     protected String transmitter = "";
     protected Map<String,SignalClass> signals = new LinkedMap<>();
+    private boolean multiplexed;
 
     public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
     {
@@ -45,6 +46,10 @@ public class MessageClass extends DBCBase implements AttachedLogger
         this.transmitter = transmitter;
         for (SignalClass signal : signals)
         {
+            if (signal.isMultiplexing())
+            {
+                this.multiplexed = true;
+            }
             this.signals.put(signal.getName(), signal);
         }
     }
@@ -53,6 +58,12 @@ public class MessageClass extends DBCBase implements AttachedLogger
     {
         signals.values().forEach(action);
     }
+
+    public boolean isMultiplexed()
+    {
+        return multiplexed;
+    }
+    
     public int getId()
     {
         return id;
@@ -99,10 +110,10 @@ public class MessageClass extends DBCBase implements AttachedLogger
     }
 
 
-    public void setSignalAttribute(String signalName, Attribute attribute)
+    public void setSignalAttribute(String signalName, String name, Object value)
     {
         SignalClass signal = signals.get(signalName);
-        signal.setAttribute(attribute);
+        signal.setValue(name, value);
     }
 
     @Override

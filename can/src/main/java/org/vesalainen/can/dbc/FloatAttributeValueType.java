@@ -38,4 +38,10 @@ public class FloatAttributeValueType extends AttributeValueType
         return String.format("FLOAT %s %s", min, max);
     }
 
+    @Override
+    Object convType(Object value)
+    {
+        return (Double)value;
+    }
+    
 }

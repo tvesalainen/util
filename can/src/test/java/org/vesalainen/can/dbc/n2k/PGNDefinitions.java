@@ -198,7 +198,7 @@ public class PGNDefinitions extends DBCFile
                     Double.valueOf(0), 
                     unit, 
                     Collections.EMPTY_LIST);
-            sc.setAttribute("SignalType", type);
+            sc.setValue("SignalType", type);
             if (lookupNode != null)
             {
                 List<ValueDescription> valDesc = parseLookup(lookupNode);

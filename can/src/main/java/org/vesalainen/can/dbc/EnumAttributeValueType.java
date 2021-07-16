@@ -39,4 +39,10 @@ public class EnumAttributeValueType extends AttributeValueType
         return types.stream().collect(Collectors.joining(","));
     }
 
+    @Override
+    Object convType(Object value)
+    {
+        return (String)value;
+    }
+
 }

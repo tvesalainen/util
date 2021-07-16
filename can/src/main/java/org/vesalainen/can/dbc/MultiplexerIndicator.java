@@ -22,7 +22,7 @@ package org.vesalainen.can.dbc;
  */
 public class MultiplexerIndicator
 {
-    private int value;
+    private int value = -1;
 
     public MultiplexerIndicator()
     {
@@ -31,6 +31,58 @@ public class MultiplexerIndicator
     public MultiplexerIndicator(int value)
     {
         this.value = value;
+    }
+    
+    public boolean isMultiplexor()
+    {
+        return value == -1;
+    }
+
+    public int getValue()
+    {
+        return value;
+    }
+
+    public void setValue(int value)
+    {
+        this.value = value;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 61 * hash + this.value;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final MultiplexerIndicator other = (MultiplexerIndicator) obj;
+        if (this.value != other.value)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return value == -1 ? "M" : "m"+value;
     }
     
 }

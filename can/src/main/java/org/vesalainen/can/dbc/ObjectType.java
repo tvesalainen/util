@@ -22,8 +22,9 @@ package org.vesalainen.can.dbc;
  */
 public enum ObjectType
 {
-    BU,
-    BO,
-    SG,
-    EV
+    GLOBAL,
+    BU_,
+    BO_,
+    SG_,
+    EV_
 }

@@ -16,7 +16,9 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +38,11 @@ public class DBCFile extends DBCBase
     private Map<Integer,MessageClass> messages = new LinkedMap<>();
     private Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
     private List<MessageTransmitter> messageTransmitters = Collections.EMPTY_LIST;
+    protected Map<String, Attribute> attributes = new HashMap<>();
+
+    public DBCFile()
+    {
+    }
 
     public void print(Appendable out)
     {
@@ -108,7 +115,35 @@ public class DBCFile extends DBCBase
         {
             attributes.forEach((n, a)->a.printDefinition(out));
             attributes.forEach((n, a)->a.printDefault(out));
-            attributes.forEach((n, a)->a.printValue(out));
+            values.forEach((n,v)->
+            {
+                Attribute at = attributes.get(n);
+                out.format("BA_ \"%s\" %s;\n", n, at.getValue(v));
+            });
+            nodes.forEach((s,nn)->
+            {
+                nn.getValues().forEach((n,v)->
+                {
+                    Attribute at = attributes.get(n);
+                    out.format("BA_ \"%s\" BU_ %s %s;\n", n, nn.getName(), at.getValue(v));
+                });
+            });
+            messages.forEach((i, m)->
+            {
+                m.getValues().forEach((n,v)->
+                {
+                    Attribute at = attributes.get(n);
+                    out.format("BA_ \"%s\" BO_ %s %s;\n", n, m.getName(), at.getValue(v));
+                });
+                m.forEach((SignalClass s)->
+                {
+                    s.getValues().forEach((n,v)->
+                    {
+                        Attribute at = attributes.get(n);
+                        out.format("BA_ \"%s\" SG_ %d %s %s;\n", n, m.getId(), s.getName(), at.getValue(v));
+                    });
+                });
+            });
             out.println();
         }
         messages.forEach((i, m)->
@@ -149,6 +184,16 @@ public class DBCFile extends DBCBase
         });
     }
 
+    public void setDefault(String name, Object def)
+    {
+        Attribute attr = attributes.get(name);
+        attr.setDef(def);
+    }
+    public Object getDefault(String name)
+    {
+        Attribute attr = attributes.get(name);
+        return attr.getDef();
+    }
     public void setNodeComment(String name, String comment)
     {
         Node node = nodes.get(name);
@@ -167,54 +212,51 @@ public class DBCFile extends DBCBase
         message.setSignalComment(signal, comment);
     }
 
-    public void addAttribute(String name, AttributeValueType type)
+    public void addAttributeDefinition(String name, AttributeValueType type)
     {
-        if (attributes.put(name, new Attribute(name, type)) != null)
+        addAttributeDefinition(ObjectType.GLOBAL, name, type);
+    }
+
+    public void addAttributeDefinition(ObjectType objectType, String name, AttributeValueType type)
+    {
+        if (attributes.put(name, new Attribute(objectType, name, type)) != null)
         {
             throw new IllegalArgumentException("duplicate attribute "+name);
         };
     }
 
-    public void addAttribute(ObjectType objectType, String name, AttributeValueType type)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     public void setAttributeDefault(String name, Object value)
     {
-        Attribute attribute = attributes.get(name);
-        attribute.setDefault(value);
+        value = checkAttributeType(name, value);
+        setDefault(name, value);
     }
 
     public void setAttributeValue(String name, Object value)
     {
-        Attribute attribute = attributes.get(name);
-        attribute.setValue(value);
+        value = checkAttributeType(name, value);
+        setValue(name, value);
     }
 
     public void setNodeAttributeValue(String name, String nodeName, Object value)
     {
-        Attribute attribute = attributes.get(name);
-        attribute.setValue(value);
+        value = checkAttributeType(name, value);
         Node node = nodes.get(nodeName);
-        node.setAttribute(attribute);
+        node.setValue(name, value);
         
     }
 
     public void setMessageAttributeValue(String name, int id, Object value)
     {
-        Attribute attribute = attributes.get(name);
-        attribute.setValue(value);
+        value = checkAttributeType(name, value);
         MessageClass message = messages.get(id);
-        message.setAttribute(attribute);
+        message.setValue(name, value);
     }
 
     public void setSignalAttributeValue(String name, int id, String signalName, Object value)
     {
-        Attribute attribute = attributes.get(name);
-        attribute.setValue(value);
+        value = checkAttributeType(name, value);
         MessageClass message = messages.get(id);
-        message.setSignalAttribute(signalName, attribute);
+        message.setSignalAttribute(signalName, name, value);
     }
 
     public void addValueTable(String name, List<ValueDescription> valueDescriptions)
@@ -300,6 +342,16 @@ public class DBCFile extends DBCBase
             return false;
         }
         return true;
+    }
+
+    private Object checkAttributeType(String name, Object value)
+    {
+        Attribute at = attributes.get(name);
+        if (at == null)
+        {
+            throw new IllegalArgumentException(name+" not found");
+        }
+        return at.getType().convType(value);
     }
 
 }

@@ -28,7 +28,7 @@ public class PGNClass extends MessageClass
     {
         super(pgn, name, size, "", signals);
         this.comment = comment;
-        setAttribute("MessageType", type);
+        setValue("MessageType", type);
     }
 
 }

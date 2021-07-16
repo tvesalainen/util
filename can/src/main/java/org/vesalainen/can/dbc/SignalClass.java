@@ -81,9 +81,13 @@ public class SignalClass extends DBCBase
         }
         return no;
     }
+    public boolean isMultiplexing()
+    {
+        return multiplexerIndicator != null;
+    }
     public SignalType getSignalType()
     {
-        String type = getStringAttribute("SignalType");
+        String type = (String) getValue("SignalType");
         if (type != null)
         {
             switch (type)
@@ -232,8 +236,9 @@ public class SignalClass extends DBCBase
 
     void print(AppendablePrinter out)
     {
-        out.format(US, " SG_ %s : %d|%d@%c%c (%s, %s) [%s|%s] \"%s\" %s\n", 
+        out.format(US, " SG_ %s %s: %d|%d@%c%c (%s, %s) [%s|%s] \"%s\" %s\n", 
                 name,
+                multiplexerIndicator != null ? multiplexerIndicator.toString() : "",
                 abnormalizeStartBit(startBit, byteOrder),
                 size,
                 byteOrder == BIG_ENDIAN ? '0' : '1',

@@ -19,7 +19,6 @@ package org.vesalainen.can.dbc;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.vesalainen.can.dbc.StringAttributeValueType;
 
 /**
  *
@@ -29,7 +28,7 @@ public class DBCBase
 {
     
     protected String comment = "";
-    protected Map<String, Attribute> attributes = new HashMap<>();
+    protected Map<String,Object> values = new HashMap<>();
 
     public DBCBase()
     {
@@ -45,33 +44,25 @@ public class DBCBase
         this.comment = comment;
     }
 
-    public final void setAttribute(String name, String value)
+    public void setValue(String name, Object value)
     {
-        Attribute attribute = new Attribute(name, new StringAttributeValueType());
-        attribute.setValue(value);
-        setAttribute(attribute);
+        values.put(name, value);
     }
-    public void setAttribute(Attribute attribute)
+    public Object getValue(String name)
     {
-        attributes.put(attribute.getName(), attribute);
-    }
-    
-    public String getStringAttribute(String name)
-    {
-        Attribute attribute = attributes.get(name);
-        if (attribute != null && (attribute.getType() instanceof StringAttributeValueType))
-        {
-            return (String) attribute.getValue();
-        }
-        return null;
+        return values.get(name);
     }
 
+    public Map<String, Object> getValues()
+    {
+        return values;
+    }
+    
     @Override
     public int hashCode()
     {
         int hash = 5;
         hash = 59 * hash + Objects.hashCode(this.comment);
-        hash = 59 * hash + Objects.hashCode(this.attributes);
         return hash;
     }
 
@@ -92,10 +83,6 @@ public class DBCBase
         }
         final DBCBase other = (DBCBase) obj;
         if (!Objects.equals(this.comment, other.comment))
-        {
-            return false;
-        }
-        if (!Objects.equals(this.attributes, other.attributes))
         {
             return false;
         }

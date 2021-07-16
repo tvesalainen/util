@@ -37,5 +37,11 @@ public class HexAttributeValueType extends AttributeValueType
     {
         return String.format("HEX %s %s", min, max);
     }
+
+    @Override
+    Object convType(Object value)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

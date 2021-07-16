@@ -24,17 +24,18 @@ import org.vesalainen.io.AppendablePrinter;
  */
 public class Attribute
 {
+    private ObjectType target;
     private String name;
     private AttributeValueType type;
     private Object def;
-    private Object value;
 
-    public Attribute(String name, AttributeValueType type)
+    public Attribute(ObjectType target, String name, AttributeValueType type)
     {
+        this.target = target;
         this.name = name;
         this.type = type;
     }
-    
+
     void printDefinition(AppendablePrinter out)
     {
         out.format("BA_DEF_ \"%s\" %s;\n", name, type.getType());
@@ -44,21 +45,14 @@ public class Attribute
         out.format("BA_DEF_DEF_ \"%s\" %s;\n", name, type.getDefault(def));
     }
 
-    void printValue(AppendablePrinter out)
+    void printValue(AppendablePrinter out, Object value)
     {
         out.format("BA_ \"%s\" %s;\n", name, type.getValue(value));
     }
-    
-    public void setDefault(Object value)
+    public String getValue(Object value)
     {
-        this.def = value;
+        return type.getValue(value);
     }
-
-    public void setValue(Object value)
-    {
-        this.value = value;
-    }
-
     public String getName()
     {
         return name;
@@ -69,18 +63,19 @@ public class Attribute
         return type;
     }
 
+    public ObjectType getTarget()
+    {
+        return target;
+    }
+
     public Object getDef()
     {
         return def;
     }
 
-    public Object getValue()
+    public void setDef(Object def)
     {
-        if (value != null)
-        {
-            return value;
-        }
-        return def;
+        this.def = def;
     }
 
 }

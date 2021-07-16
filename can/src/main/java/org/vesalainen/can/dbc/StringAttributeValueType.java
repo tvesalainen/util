@@ -44,5 +44,11 @@ public class StringAttributeValueType extends AttributeValueType
     {
         return String.format("\"%s\"", def);
     }
+
+    @Override
+    Object convType(Object value)
+    {
+        return (String)value;
+    }
     
 }

@@ -38,4 +38,10 @@ public class IntAttributeValueType extends AttributeValueType
         return String.format("INT %s %s", min, max);
     }
     
+    @Override
+    Object convType(Object value)
+    {
+        return (Integer)value;
+    }
+    
 }

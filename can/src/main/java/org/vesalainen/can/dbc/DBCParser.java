@@ -164,6 +164,11 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return new MultiplexerIndicator(value);
     }
+    @Rule(left="multiplexer_indicator", value={"'m' multiplexer_switch_value 'M'"})
+    protected MultiplexerIndicator multiplexerIndicator2(int value)
+    {
+        throw new UnsupportedOperationException("extended multiplexing not supported yet.");
+    }
     @Rule(left="multiplexer_switch_value", value={"unsigned_integer"})
     protected int multiplexerSwitchValue(int value)
     {
@@ -413,17 +418,17 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="attribute_definition", value={"BA_DEF_ object_type attribute_name attribute_value_type ';'"})
     protected void attributeDefinition(ObjectType objectType, String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        dbcFile.addAttribute(objectType, name, type);
+        dbcFile.addAttributeDefinition(objectType, name, type);
     }
     @Rule(left="attribute_definition", value={"BA_DEF_ attribute_name attribute_value_type ';'"})
     protected void attributeDefinition(String name, AttributeValueType type, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        dbcFile.addAttribute(name, type);
+        dbcFile.addAttributeDefinition(name, type);
     }
     @Terminal(left="object_type", expression="((BU_)|(BO_)|(SG_)|(EV_))")
     protected ObjectType objectType(String type)
     {
-        return ObjectType.valueOf(type.substring(0, 2));
+        return ObjectType.valueOf(type);
     }
     @Rule(left="attribute_name", value={"'\"' C_identifier '\"'"})
     protected String attributeName(String name)
