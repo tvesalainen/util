@@ -18,6 +18,7 @@ package org.vesalainen.can.dbc;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  *
@@ -26,18 +27,22 @@ import java.util.Objects;
 public class ValueDescriptions
 {
     private int id;
-    private String name;
+    private Supplier<String> name;
     private List<ValueDescription> valDesc;
 
     public ValueDescriptions(int id, String name, List<ValueDescription> valDesc)
     {
-        this.id = id;
-        this.name = name;
-        this.valDesc = valDesc;
+        this(id, ()->name, valDesc);
     }
 
     public ValueDescriptions(String name, List<ValueDescription> valDesc)
     {
+        this(0, ()->name, valDesc);
+    }
+
+    public ValueDescriptions(int id, Supplier<String> name, List<ValueDescription> valDesc)
+    {
+        this.id = id;
         this.name = name;
         this.valDesc = valDesc;
     }
@@ -49,7 +54,7 @@ public class ValueDescriptions
 
     public String getName()
     {
-        return name;
+        return name.get();
     }
 
     public List<ValueDescription> getValDesc()

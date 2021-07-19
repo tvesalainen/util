@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.Objects;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -41,7 +43,48 @@ public class IntAttributeValueType extends AttributeValueType
     @Override
     Object convType(Object value)
     {
-        return (Integer)value;
+        if (value instanceof Double)
+        {
+            Double d = (Double) value;
+            return d.longValue();
+        }
+        throw new IllegalArgumentException(value+" is not int");
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.min);
+        hash = 59 * hash + Objects.hashCode(this.max);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final IntAttributeValueType other = (IntAttributeValueType) obj;
+        if (!Objects.equals(this.min, other.min))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.max, other.max))
+        {
+            return false;
+        }
+        return true;
     }
     
 }

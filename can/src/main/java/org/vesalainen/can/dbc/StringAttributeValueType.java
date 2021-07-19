@@ -22,8 +22,9 @@ package org.vesalainen.can.dbc;
  */
 public class StringAttributeValueType extends AttributeValueType
 {
-
-    public StringAttributeValueType()
+    public static final StringAttributeValueType STRING_ATTRIBUTE_VALUE_TYPE = new StringAttributeValueType();
+    
+    private StringAttributeValueType()
     {
     }
 

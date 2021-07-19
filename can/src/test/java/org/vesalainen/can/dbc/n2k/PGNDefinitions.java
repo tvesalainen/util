@@ -17,19 +17,19 @@
 package org.vesalainen.can.dbc.n2k;
 
 import java.io.IOException;
+import static java.lang.Integer.max;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.junit.Test;
 import org.vesalainen.can.dbc.DBCFile;
+import org.vesalainen.can.dbc.MultiplexerIndicator;
 import org.vesalainen.can.dbc.PGNClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.dbc.ValueDescription;
@@ -37,6 +37,10 @@ import org.vesalainen.can.dbc.ValueDescriptions;
 import static org.vesalainen.can.dbc.ValueType.*;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.text.CamelCase;
+import org.vesalainen.util.CollectionHelp;
+import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.IntReference;
+import org.vesalainen.util.MapList;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -49,7 +53,9 @@ import org.xml.sax.SAXException;
  */
 public class PGNDefinitions extends DBCFile
 {
+    private MapList<Integer,PGNClass> msgMap = new HashMapList<>();
     private List<ValueDescriptions> valueDescriptions = new ArrayList<>();
+    private Map<SignalClass,Integer> matches = new IdentityHashMap<>();
     
     public PGNDefinitions(Path path) throws ParserConfigurationException, SAXException, IOException
     {
@@ -64,10 +70,25 @@ public class PGNDefinitions extends DBCFile
             PGNClass pgnCls = parsePGN(item);
             if (pgnCls != null)
             {
-                addMessage(pgnCls);
+                msgMap.add(pgnCls.getId(), pgnCls);
             }
         }
+        msgMap.forEach((canId, list)->
+        {
+            if (list.size() == 1)
+            {
+                addMessage(list.get(0));
+            }
+            else
+            {
+                addMultiplexingMessage(list);
+            }
+        });
         addValueDescriptions(valueDescriptions);
+        addAttribute("BusType", "CAN", "");
+        addAttribute("ProtocolType", "NMEA2000", "");
+        addAttribute("MessageType", "", "Single");
+        addAttribute("SignalType", "", "Integer");
     }
 
     private PGNClass parsePGN(Node item)
@@ -147,6 +168,7 @@ public class PGNDefinitions extends DBCFile
         boolean signed = false;
         double resolution = 1.0;
         Node lookupNode = null;
+        int match = -1;
         
         NodeList childNodes = fieldNode.getChildNodes();
         int len = childNodes.getLength();
@@ -179,6 +201,9 @@ public class PGNDefinitions extends DBCFile
                 case "EnumValues":
                     lookupNode = node;
                     break;
+                case "Match":
+                    match = Integer.parseUnsignedInt(node.getTextContent());
+                    break;
 
             }
         }
@@ -197,12 +222,19 @@ public class PGNDefinitions extends DBCFile
                     Double.valueOf(0), 
                     Double.valueOf(0), 
                     unit, 
-                    Collections.EMPTY_LIST);
-            sc.setValue("SignalType", type);
+                    CollectionHelp.create("Vector__XXX"));
+            if (type != null)
+            {
+                sc.setAttributeValue("SignalType", type);
+            }
             if (lookupNode != null)
             {
                 List<ValueDescription> valDesc = parseLookup(lookupNode);
-                valueDescriptions.add(new ValueDescriptions(canId, nam, valDesc));
+                valueDescriptions.add(new ValueDescriptions(canId, sc::getName, valDesc));
+            }
+            if (match != -1)
+            {
+                matches.put(sc, match);
             }
             return sc;
         }
@@ -228,6 +260,57 @@ public class PGNDefinitions extends DBCFile
             }
         }
         return list;
+    }
+
+    private void addMultiplexingMessage(List<PGNClass> list)
+    {
+        List<SignalClass> signals = new ArrayList<>();
+        IntReference match = new IntReference(-1);
+        IntReference canId = new IntReference(-1);
+        IntReference max = new IntReference(-1);
+        StringBuilder desc = new StringBuilder();
+        StringBuilder name = new StringBuilder();
+        StringBuilder type = new StringBuilder();
+        list.forEach((m)->
+        {
+            match.setValue(-1);
+            canId.setValue(m.getId());
+            if (name.length() == 0)
+            {
+                name.append(m.getName());
+            }
+            if (type.length() == 0)
+            {
+                type.append(m.getType());
+            }
+            if (desc.length() > 0)
+            {
+                desc.append('\n');
+            }
+            desc.append(m.getComment());
+            max.setValue(max(max.getValue(), m.getSize()));
+            m.forEach((s)->
+            {
+                if (match.getValue() == -1)
+                {
+                    Integer mtc = matches.get(s);
+                    match.setValue(mtc.intValue());
+                    if (signals.isEmpty())
+                    {
+                        s.setMultiplexerIndicator(new MultiplexerIndicator());
+                        signals.add(s);
+                    }
+                }
+                else
+                {
+                    s.setName("M"+match.getValue()+"_"+s.getName());
+                    s.setMultiplexerIndicator(new MultiplexerIndicator(match.getValue()));
+                    signals.add(s);
+                }
+            });
+        });
+        PGNClass pgnCls = new PGNClass(canId.getValue(), name.toString(), max.getValue(), type.toString(), desc.toString(), signals);
+        addMessage(pgnCls);
     }
 
 }

@@ -16,7 +16,6 @@
  */
 package org.vesalainen.can.dbc;
 
-import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -115,14 +114,14 @@ public class DBCFile extends DBCBase
         {
             attributes.forEach((n, a)->a.printDefinition(out));
             attributes.forEach((n, a)->a.printDefault(out));
-            values.forEach((n,v)->
+            attributeValues.forEach((n,v)->
             {
                 Attribute at = attributes.get(n);
                 out.format("BA_ \"%s\" %s;\n", n, at.getValue(v));
             });
             nodes.forEach((s,nn)->
             {
-                nn.getValues().forEach((n,v)->
+                nn.getAttributeValues().forEach((n,v)->
                 {
                     Attribute at = attributes.get(n);
                     out.format("BA_ \"%s\" BU_ %s %s;\n", n, nn.getName(), at.getValue(v));
@@ -130,14 +129,14 @@ public class DBCFile extends DBCBase
             });
             messages.forEach((i, m)->
             {
-                m.getValues().forEach((n,v)->
+                m.getAttributeValues().forEach((n,v)->
                 {
                     Attribute at = attributes.get(n);
-                    out.format("BA_ \"%s\" BO_ %s %s;\n", n, m.getName(), at.getValue(v));
+                    out.format("BA_ \"%s\" BO_ %d %s;\n", n, m.getId(), at.getValue(v));
                 });
                 m.forEach((SignalClass s)->
                 {
-                    s.getValues().forEach((n,v)->
+                    s.getAttributeValues().forEach((n,v)->
                     {
                         Attribute at = attributes.get(n);
                         out.format("BA_ \"%s\" SG_ %d %s %s;\n", n, m.getId(), s.getName(), at.getValue(v));
@@ -212,6 +211,12 @@ public class DBCFile extends DBCBase
         message.setSignalComment(signal, comment);
     }
 
+    public final void addAttribute(String name, String value, String def)
+    {
+        addAttributeDefinition(name, StringAttributeValueType.STRING_ATTRIBUTE_VALUE_TYPE);
+        setAttributeDefault(name, def);
+        setAttributeValue(name, value);
+    }
     public void addAttributeDefinition(String name, AttributeValueType type)
     {
         addAttributeDefinition(ObjectType.GLOBAL, name, type);
@@ -234,14 +239,14 @@ public class DBCFile extends DBCBase
     public void setAttributeValue(String name, Object value)
     {
         value = checkAttributeType(name, value);
-        setValue(name, value);
+        super.setAttributeValue(name, value);
     }
 
     public void setNodeAttributeValue(String name, String nodeName, Object value)
     {
         value = checkAttributeType(name, value);
         Node node = nodes.get(nodeName);
-        node.setValue(name, value);
+        node.setAttributeValue(name, value);
         
     }
 
@@ -249,7 +254,7 @@ public class DBCFile extends DBCBase
     {
         value = checkAttributeType(name, value);
         MessageClass message = messages.get(id);
-        message.setValue(name, value);
+        message.setAttributeValue(name, value);
     }
 
     public void setSignalAttributeValue(String name, int id, String signalName, Object value)
@@ -269,7 +274,7 @@ public class DBCFile extends DBCBase
         messages.values().forEach(action);
     }
 
-    public void addValueDescriptions(List<ValueDescriptions> valDesc)
+    public final void addValueDescriptions(List<ValueDescriptions> valDesc)
     {
         for (ValueDescriptions vd : valDesc)
         {
@@ -284,6 +289,10 @@ public class DBCFile extends DBCBase
         if (id != 0)
         {
             MessageClass message = messages.get(id);
+            if (message == null)
+            {
+                throw new IllegalArgumentException("no message for "+id);
+            }
             message.setSignalValueDescription(name, valueDescription);
         }
         else
@@ -320,6 +329,10 @@ public class DBCFile extends DBCBase
         {
             return false;
         }
+        if (!super.equals(obj))
+        {
+            return false;
+        }
         final DBCFile other = (DBCFile) obj;
         if (!Objects.equals(this.version, other.version))
         {
@@ -338,6 +351,10 @@ public class DBCFile extends DBCBase
             return false;
         }
         if (!Objects.equals(this.messageTransmitters, other.messageTransmitters))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.attributes, other.attributes))
         {
             return false;
         }

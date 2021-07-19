@@ -34,7 +34,7 @@ public class DBCFileTest
     }
 
     @Test
-    public void test1() throws IOException
+    public void testExample() throws IOException
     {
         DBCFile dbcFile1 = new DBCFile();
         DBCFile dbcFile2 = new DBCFile();
@@ -45,6 +45,7 @@ public class DBCFileTest
         }
         StringBuilder sb = new StringBuilder();
         dbcFile1.print(sb);
-        parser.parse(sb.toString(), dbcFile2);
+        parser.parse(sb, dbcFile2);
+        assertTrue(dbcFile1.equals(dbcFile2));
     }
 }

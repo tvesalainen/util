@@ -87,7 +87,7 @@ public class SignalClass extends DBCBase
     }
     public SignalType getSignalType()
     {
-        String type = (String) getValue("SignalType");
+        String type = (String) getAttributeValue("SignalType");
         if (type != null)
         {
             switch (type)
@@ -163,6 +163,16 @@ public class SignalClass extends DBCBase
     public MultiplexerIndicator getMultiplexerIndicator()
     {
         return multiplexerIndicator;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public void setMultiplexerIndicator(MultiplexerIndicator multiplexerIndicator)
+    {
+        this.multiplexerIndicator = multiplexerIndicator;
     }
 
     public int getStartBit()

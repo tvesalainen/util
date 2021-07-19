@@ -149,7 +149,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected AbstractMessage compilePGN(int canId, PGNClass mc)
     {
         SingleMessage sm;
-        switch ((String)mc.getValue("MessageType"))
+        switch ((String)mc.getAttributeValue("MessageType"))
         {
             case "Single":
                 sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
@@ -158,7 +158,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
                 break;
             default:
-                throw new UnsupportedOperationException(mc.getValue("MessageType")+"not supported");
+                throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+"not supported");
         }
         finer("compile(%s)", mc);
         if (mc.getName().startsWith("ais"))

@@ -28,7 +28,7 @@ public class DBCBase
 {
     
     protected String comment = "";
-    protected Map<String,Object> values = new HashMap<>();
+    protected Map<String,Object> attributeValues = new HashMap<>();
 
     public DBCBase()
     {
@@ -44,25 +44,26 @@ public class DBCBase
         this.comment = comment;
     }
 
-    public void setValue(String name, Object value)
+    public void setAttributeValue(String name, Object value)
     {
-        values.put(name, value);
+        attributeValues.put(name, value);
     }
-    public Object getValue(String name)
+    public Object getAttributeValue(String name)
     {
-        return values.get(name);
+        return attributeValues.get(name);
     }
 
-    public Map<String, Object> getValues()
+    public Map<String, Object> getAttributeValues()
     {
-        return values;
+        return attributeValues;
     }
-    
+
     @Override
     public int hashCode()
     {
         int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.comment);
+        hash = 29 * hash + Objects.hashCode(this.comment);
+        hash = 29 * hash + Objects.hashCode(this.attributeValues);
         return hash;
     }
 
@@ -86,6 +87,11 @@ public class DBCBase
         {
             return false;
         }
+        if (!Objects.equals(this.attributeValues, other.attributeValues))
+        {
+            return false;
+        }
         return true;
     }
+    
 }

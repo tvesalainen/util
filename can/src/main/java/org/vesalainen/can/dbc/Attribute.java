@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.Objects;
 import org.vesalainen.io.AppendablePrinter;
 
 /**
@@ -38,7 +39,15 @@ public class Attribute
 
     void printDefinition(AppendablePrinter out)
     {
-        out.format("BA_DEF_ \"%s\" %s;\n", name, type.getType());
+        switch (target)
+        {
+            case GLOBAL:
+                out.format("BA_DEF_ \"%s\" %s;\n", name, type.getType());
+                break;
+            default:
+                out.format("BA_DEF_ %s \"%s\" %s;\n", target, name, type.getType());
+                break;
+        }
     }
     void printDefault(AppendablePrinter out)
     {
@@ -76,6 +85,52 @@ public class Attribute
     public void setDef(Object def)
     {
         this.def = def;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.target);
+        hash = 37 * hash + Objects.hashCode(this.name);
+        hash = 37 * hash + Objects.hashCode(this.type);
+        hash = 37 * hash + Objects.hashCode(this.def);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final Attribute other = (Attribute) obj;
+        if (!Objects.equals(this.name, other.name))
+        {
+            return false;
+        }
+        if (this.target != other.target)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.type, other.type))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.def, other.def))
+        {
+            return false;
+        }
+        return true;
     }
 
 }

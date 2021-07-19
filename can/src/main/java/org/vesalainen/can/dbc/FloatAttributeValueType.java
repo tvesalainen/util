@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.Objects;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -42,6 +44,42 @@ public class FloatAttributeValueType extends AttributeValueType
     Object convType(Object value)
     {
         return (Double)value;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.min);
+        hash = 61 * hash + Objects.hashCode(this.max);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final FloatAttributeValueType other = (FloatAttributeValueType) obj;
+        if (!Objects.equals(this.min, other.min))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.max, other.max))
+        {
+            return false;
+        }
+        return true;
     }
     
 }

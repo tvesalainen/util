@@ -24,11 +24,14 @@ import java.util.List;
  */
 public class PGNClass extends MessageClass
 {
-    public PGNClass(Integer pgn, String name, Integer size, String type, String comment, List<SignalClass> signals)
+    public PGNClass(int canId, String name, Integer size, String type, String comment, List<SignalClass> signals)
     {
-        super(pgn, name, size, "", signals);
+        super(canId, name, size, "Vector__XXX", signals);
         this.comment = comment;
-        setValue("MessageType", type);
+        setAttributeValue("MessageType", type);
     }
-
+    public String getType()
+    {
+        return (String) getAttributeValue("MessageType");
+    }
 }

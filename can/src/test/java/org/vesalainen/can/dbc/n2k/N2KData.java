@@ -53,7 +53,7 @@ public class N2KData
                     String[] split = line.split(" - ", 2);
                     int pgn = Integer.parseInt(split[0]);
                     String name = split[1];
-                    pgnInfo = new PGNInfo(pgn, line);
+                    pgnInfo = new PGNInfo(pgn, "PGN"+line);
                     map.put(pgn, pgnInfo);
                 }
                 else
@@ -65,7 +65,7 @@ public class N2KData
                     }
                     else
                     {
-                        pgnInfo.addDescription(line);
+                        pgnInfo.addDescription(line.replace('"', '\''));
                     }
                 }
                 line = br.readLine();

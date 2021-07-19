@@ -34,7 +34,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     protected int id;
     protected String name;
     protected int size;
-    protected String transmitter = "";
+    protected String transmitter = "Vector__XXX";
     protected Map<String,SignalClass> signals = new LinkedMap<>();
     private boolean multiplexed;
 
@@ -113,7 +113,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     public void setSignalAttribute(String signalName, String name, Object value)
     {
         SignalClass signal = signals.get(signalName);
-        signal.setValue(name, value);
+        signal.setAttributeValue(name, value);
     }
 
     @Override

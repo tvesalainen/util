@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
+import org.vesalainen.can.dbc.DBCFile;
+import org.vesalainen.can.dbc.DBCParser;
 import org.xml.sax.SAXException;
 
 /**
@@ -32,6 +34,11 @@ public class PGNDefinitionsT
     public void createN2KDBC() throws ParserConfigurationException, SAXException, IOException
     {
         PGNDefinitions pgnDef = new PGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
+        StringBuilder sb = new StringBuilder();
+        pgnDef.print(sb);
+        DBCFile dbcFile2 = new DBCFile();
+        DBCParser parser = DBCParser.getInstance();
+        parser.parse(sb, dbcFile2);
         pgnDef.print(System.err);
     }
 }

@@ -453,7 +453,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="attribute_value_type", value={"STRING"})
     protected AttributeValueType attributeValueType()
     {
-        return new StringAttributeValueType();
+        return StringAttributeValueType.STRING_ATTRIBUTE_VALUE_TYPE;
     }
     @Rule(left="attribute_value_type", value={"ENUM charStringList"})
     protected AttributeValueType attributeValueType(List<String> types)
