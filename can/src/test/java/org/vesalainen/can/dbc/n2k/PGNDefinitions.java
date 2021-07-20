@@ -23,8 +23,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,8 +41,10 @@ import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.text.CamelCase;
 import org.vesalainen.util.CollectionHelp;
 import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.HashMapSet;
 import org.vesalainen.util.IntReference;
 import org.vesalainen.util.MapList;
+import org.vesalainen.util.MapSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -84,6 +88,7 @@ public class PGNDefinitions extends DBCFile
                 addMultiplexingMessage(list);
             }
         });
+        optimizeValueDescriptions();
         addValueDescriptions(valueDescriptions);
         addAttribute("BusType", "CAN", "");
         addAttribute("ProtocolType", "NMEA2000", "");
@@ -91,6 +96,28 @@ public class PGNDefinitions extends DBCFile
         addAttribute("SignalType", "", "Integer");
     }
 
+    private void optimizeValueDescriptions()
+    {
+        MapSet<String,List<ValueDescription>> ms = new HashMapSet<>();
+        valueDescriptions.forEach((vds)->ms.add(vds.getName(), vds.getValDesc()));
+        ms.forEach((String n,Set<List<ValueDescription>> sl)->
+        {
+            if (sl.size() == 1)
+            {
+                valueTables.put(n, sl.iterator().next());
+            }
+        });
+        Iterator<ValueDescriptions> it = valueDescriptions.iterator();
+        while (it.hasNext())
+        {
+            ValueDescriptions vds = it.next();
+            String name = vds.getName();
+            if (valueTables.containsKey(name))
+            {
+                it.remove();
+            }
+        }
+    }
     private PGNClass parsePGN(Node item)
     {
         int pgn = 0;

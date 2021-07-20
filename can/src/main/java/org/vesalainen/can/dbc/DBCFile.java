@@ -17,6 +17,7 @@
 package org.vesalainen.can.dbc;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +33,11 @@ import org.vesalainen.util.LinkedMap;
  */
 public class DBCFile extends DBCBase
 {
-    private String version = "";
-    private Map<String,Node> nodes = new LinkedMap<>();
-    private Map<Integer,MessageClass> messages = new LinkedMap<>();
-    private Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
-    private List<MessageTransmitter> messageTransmitters = Collections.EMPTY_LIST;
+    protected String version = "";
+    protected Map<String,Node> nodes = new LinkedMap<>();
+    protected Map<Integer,MessageClass> messages = new LinkedMap<>();
+    protected Map<String,List<ValueDescription>> valueTables = new LinkedMap<>();
+    protected List<MessageTransmitter> messageTransmitters = Collections.EMPTY_LIST;
     protected Map<String, Attribute> attributes = new HashMap<>();
 
     public DBCFile()
@@ -62,10 +63,11 @@ public class DBCFile extends DBCBase
         out.println();
         out.println(nodes.keySet().stream().collect(Collectors.joining(" ", "BU_: ", "\n")));
         out.println();
-        valueTables.forEach((n, l)->
+        Comparator<? super Map.Entry<String, List<ValueDescription>>> comparator = (e1, e2)->e1.getKey().compareTo(e2.getKey());
+        valueTables.entrySet().stream().sorted(comparator).forEach((e)->
         {
-            out.format("VAL_TABLE_ %s", n);
-            l.forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
+            out.format("VAL_TABLE_ %s", e.getKey());
+            e.getValue().forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
             out.println(" ;");
         });
         out.println();
