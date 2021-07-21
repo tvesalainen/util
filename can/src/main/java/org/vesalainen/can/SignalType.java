@@ -28,5 +28,9 @@ public enum SignalType
     STRING,
     LOOKUP,
     BINARY,
-    ASCII
+    ASCIIZ,
+    STRINGLZ,
+    STRINGLAU,
+    BITFIELD,
+    IEEE_FLOAT
 }

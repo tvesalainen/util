@@ -38,8 +38,9 @@ public class MessageClass extends DBCBase implements AttachedLogger
     protected Map<String,SignalClass> signals = new LinkedMap<>();
     private boolean multiplexed;
 
-    public MessageClass(Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
+    public MessageClass(DBCFile dbcFile, Integer id, String name, Integer size, String transmitter, List<SignalClass> signals)
     {
+        super(dbcFile);
         this.id = id;
         this.name = name;
         this.size = size;

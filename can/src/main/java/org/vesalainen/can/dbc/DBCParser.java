@@ -122,7 +122,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="message", value={"BO_ message_id message_name ':' message_size transmitter (signal)*"})
     protected void message(int id, String name, int size, String transmitter, List<SignalClass> signals, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        dbcFile.addMessage(new MessageClass(id, name, size, transmitter, signals));
+        dbcFile.addMessage(new MessageClass(dbcFile, id, name, size, transmitter, signals));
     }
     @Rule(left="message_id", value={"unsigned_integer"})
     protected int messageId(int id)
@@ -145,9 +145,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         return node;
     }
     @Rule(left="signal", value={"SG_ signal_name multiplexer_indicator? ':' start_bit '\\|' signal_size '@' byte_order value_type '\\(' factor '\\,' offset '\\)' '\\[' minimum '\\|' maximum '\\]' unit identifierList"})
-    protected SignalClass signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
+    protected SignalClass signal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        return new SignalClass(name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
+        return new SignalClass(dbcFile, name,  multiplexerIndicator, startBit, size, byteOrder, valueType, factor, offset, min, max, unit, receivers);
     }
     @Rule(left="signal_name", value={"C_identifier"})
     protected String signalName(String name)

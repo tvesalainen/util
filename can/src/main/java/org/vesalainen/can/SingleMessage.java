@@ -97,7 +97,7 @@ public class SingleMessage extends AbstractMessage
             case BINARY:
                 rn = compiler.compileBinary(mc, sc);
                 break;
-            case ASCII:
+            case ASCIIZ:
                 ss = ArrayFuncs.getZeroTerminatingStringSupplier(sc.getStartBit()/8, sc.getSize()/8, buf);
                 rn = compiler.compileASCII(mc, sc, ss);
                 break;

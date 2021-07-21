@@ -24,8 +24,9 @@ public class Node extends DBCBase
 {
     private String name;
     
-    public Node(String name)
+    public Node(DBCFile dbcFile, String name)
     {
+        super(dbcFile);
         this.name = name;
     }
 

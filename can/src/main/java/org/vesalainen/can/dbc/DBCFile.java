@@ -42,6 +42,10 @@ public class DBCFile extends DBCBase
 
     public DBCFile()
     {
+        super(null);
+        dbcFile = this;
+        addAttributeDefinition("ProtocolType", StringAttributeValueType.STRING_ATTRIBUTE_VALUE_TYPE);
+        setAttributeDefault("ProtocolType", "StandardDBC");
     }
 
     public void print(Appendable out)
@@ -166,9 +170,9 @@ public class DBCFile extends DBCBase
         this.version = version;
     }
 
-    public void addNode(String name)
+    public final void addNode(String name)
     {
-        Node node = new Node(name);
+        Node node = new Node(this, name);
         nodes.put(name, node);
     }
 
@@ -219,7 +223,7 @@ public class DBCFile extends DBCBase
         setAttributeDefault(name, def);
         setAttributeValue(name, value);
     }
-    public void addAttributeDefinition(String name, AttributeValueType type)
+    public final void addAttributeDefinition(String name, AttributeValueType type)
     {
         addAttributeDefinition(ObjectType.GLOBAL, name, type);
     }
@@ -232,19 +236,19 @@ public class DBCFile extends DBCBase
         };
     }
 
-    public void setAttributeDefault(String name, Object value)
+    public final void setAttributeDefault(String name, Object value)
     {
         value = checkAttributeType(name, value);
         setDefault(name, value);
     }
 
-    public void setAttributeValue(String name, Object value)
+    public final void setAttributeValue(String name, Object value)
     {
         value = checkAttributeType(name, value);
         super.setAttributeValue(name, value);
     }
 
-    public void setNodeAttributeValue(String name, String nodeName, Object value)
+    public final void setNodeAttributeValue(String name, String nodeName, Object value)
     {
         value = checkAttributeType(name, value);
         Node node = nodes.get(nodeName);
@@ -252,14 +256,14 @@ public class DBCFile extends DBCBase
         
     }
 
-    public void setMessageAttributeValue(String name, int id, Object value)
+    public final void setMessageAttributeValue(String name, int id, Object value)
     {
         value = checkAttributeType(name, value);
         MessageClass message = messages.get(id);
         message.setAttributeValue(name, value);
     }
 
-    public void setSignalAttributeValue(String name, int id, String signalName, Object value)
+    public final void setSignalAttributeValue(String name, int id, String signalName, Object value)
     {
         value = checkAttributeType(name, value);
         MessageClass message = messages.get(id);

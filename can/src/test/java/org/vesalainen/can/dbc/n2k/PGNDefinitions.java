@@ -21,7 +21,6 @@ import static java.lang.Integer.max;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,9 +29,9 @@ import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import static org.vesalainen.can.SignalType.*;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.MultiplexerIndicator;
-import org.vesalainen.can.dbc.PGNClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.dbc.ValueDescription;
 import org.vesalainen.can.dbc.ValueDescriptions;
@@ -50,6 +49,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import static org.vesalainen.can.SignalType.ASCIIZ;
+import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.ValueType;
+import static org.vesalainen.math.UnitType.*;
 
 /**
  *
@@ -57,12 +60,15 @@ import org.xml.sax.SAXException;
  */
 public class PGNDefinitions extends DBCFile
 {
-    private MapList<Integer,PGNClass> msgMap = new HashMapList<>();
+    private final static String RECEIVER = "MFD";
+    private MapList<Integer,MessageClass> msgMap = new HashMapList<>();
     private List<ValueDescriptions> valueDescriptions = new ArrayList<>();
     private Map<SignalClass,Integer> matches = new IdentityHashMap<>();
     
     public PGNDefinitions(Path path) throws ParserConfigurationException, SAXException, IOException
     {
+        setComment("This DBC is based on https://github.com/canboat/canboat");
+        addNode(RECEIVER);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = dbf.newDocumentBuilder();
         Document doc = builder.parse(path.toFile());
@@ -71,7 +77,7 @@ public class PGNDefinitions extends DBCFile
         for (int nn = 0;nn<length;nn++)
         {
             Node item = pgns.item(nn);
-            PGNClass pgnCls = parsePGN(item);
+            MessageClass pgnCls = parsePGN(item);
             if (pgnCls != null)
             {
                 msgMap.add(pgnCls.getId(), pgnCls);
@@ -91,7 +97,7 @@ public class PGNDefinitions extends DBCFile
         optimizeValueDescriptions();
         addValueDescriptions(valueDescriptions);
         addAttribute("BusType", "CAN", "");
-        addAttribute("ProtocolType", "NMEA2000", "");
+        addAttribute("ProtocolType", "N2K", "");
         addAttribute("MessageType", "", "Single");
         addAttribute("SignalType", "", "Integer");
     }
@@ -118,7 +124,7 @@ public class PGNDefinitions extends DBCFile
             }
         }
     }
-    private PGNClass parsePGN(Node item)
+    private MessageClass parsePGN(Node item)
     {
         int pgn = 0;
         String id = null;
@@ -177,8 +183,11 @@ public class PGNDefinitions extends DBCFile
                     signals.add(sc);
                 }
             }
-            PGNClass msg = new PGNClass(canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, type, pgnInfo.getDescription(), signals);
-            
+            String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
+            MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
+            msg.setAttributeValue("MessageType", type.toString());
+            msg.setComment(pgnInfo.getDescription());
+            addNode(transmitter);
             //msg.setAttribute("MessageCategory", pgnInfo.getCategory());
             return msg;
         }
@@ -237,7 +246,7 @@ public class PGNDefinitions extends DBCFile
         if (name != null && len > 0)
         {
             String nam = CamelCase.delimited(name, "_");
-            SignalClass sc = new SignalClass(
+            SignalClass sc = createSignal(
                     nam, 
                     null, 
                     offset, 
@@ -249,10 +258,10 @@ public class PGNDefinitions extends DBCFile
                     Double.valueOf(0), 
                     Double.valueOf(0), 
                     unit, 
-                    CollectionHelp.create("Vector__XXX"));
+                    CollectionHelp.create(RECEIVER));
             if (type != null)
             {
-                sc.setAttributeValue("SignalType", type);
+                setSignalType(sc, type);
             }
             if (lookupNode != null)
             {
@@ -266,6 +275,32 @@ public class PGNDefinitions extends DBCFile
             return sc;
         }
         return null;
+    }
+
+    private SignalClass createSignal(String name, MultiplexerIndicator multiplexerIndicator, int startBit, int size, ByteOrder byteOrder, ValueType valueType, double factor, double offset, double min, double max, String unit, List<String> receivers)
+    {
+        switch (unit)
+        {
+            case "Rad":
+                factor = RADIAN.convertTo(factor, DEGREE);
+                unit = "deg";
+                break;
+        }
+        SignalClass sc = new SignalClass(
+                this,
+                name, 
+                multiplexerIndicator, 
+                startBit, 
+                size, 
+                byteOrder, 
+                valueType, 
+                factor, 
+                offset, 
+                min, 
+                max, 
+                unit, 
+                receivers);
+            return sc;
     }
 
     private List<ValueDescription> parseLookup(Node lookupNode)
@@ -289,8 +324,9 @@ public class PGNDefinitions extends DBCFile
         return list;
     }
 
-    private void addMultiplexingMessage(List<PGNClass> list)
+    private void addMultiplexingMessage(List<MessageClass> list)
     {
+        MessageClass first = list.get(0);
         List<SignalClass> signals = new ArrayList<>();
         IntReference match = new IntReference(-1);
         IntReference canId = new IntReference(-1);
@@ -308,13 +344,12 @@ public class PGNDefinitions extends DBCFile
             }
             if (type.length() == 0)
             {
-                type.append(m.getType());
+                type.append(m.getAttributeValue("MessageType"));
             }
-            if (desc.length() > 0)
+            if (desc.length() == 0)
             {
-                desc.append('\n');
+                desc.append(m.getComment());
             }
-            desc.append(m.getComment());
             max.setValue(max(max.getValue(), m.getSize()));
             m.forEach((s)->
             {
@@ -336,8 +371,61 @@ public class PGNDefinitions extends DBCFile
                 }
             });
         });
-        PGNClass pgnCls = new PGNClass(canId.getValue(), name.toString(), max.getValue(), type.toString(), desc.toString(), signals);
+        MessageClass pgnCls = new MessageClass(this, canId.getValue(), name.toString(), max.getValue(), first.getTransmitter(), signals);
+        pgnCls.setAttributeValue("MessageType", type.toString());
+        pgnCls.setComment(desc.toString());
         addMessage(pgnCls);
+    }
+
+    private void setSignalType(SignalClass sc, String type)
+    {
+        String signalType;
+        switch (type)
+        {
+            case "Integer":
+                signalType = INT.toString();
+                break;
+            case "Latitude":
+            case "Longitude":
+            case "Time":
+            case "Temperature":
+            case "Temperature (hires)":
+            case "Pressure":
+            case "Pressure (hires)":
+                signalType = DOUBLE.toString();;
+                break;
+            case "Lookup table":
+                signalType = LOOKUP.toString();;
+                break;
+            case "Binary data":
+            case "Manufacturer code":
+                signalType = BINARY.toString();;
+                break;
+            case "Date":
+                signalType = INT.toString();;
+                break;
+            case "ASCII text":
+                signalType = ASCIIZ.toString();
+                break;
+            case "ASCII string starting with length byte and terminated by zero byte":
+                signalType = STRINGLZ.toString();
+                break;
+            case "ASCII or UNICODE string starting with length and control byte":
+                signalType = STRINGLAU.toString();
+                break;
+            case "String with start/stop byte":
+                signalType = STRING.toString();
+                break;
+            case "Bitfield":
+                signalType = BITFIELD.toString();
+                break;
+            case "IEEE Float":
+                signalType = IEEE_FLOAT.toString();
+                break;
+            default:
+                throw new UnsupportedOperationException(type+" not supported");
+        }
+        sc.setAttributeValue("SignalType", signalType);
     }
 
 }

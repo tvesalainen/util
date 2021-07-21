@@ -26,16 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
-import javax.xml.parsers.ParserConfigurationException;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
-import org.vesalainen.can.dbc.PGNClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -45,7 +42,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
 {
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
-    protected final Map<Integer,PGNClass> pgnMap = new HashMap<>();
+    protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final CachedScheduledThreadPool executor;
     protected final SignalCompiler compiler;
     private Future<?> future;
@@ -113,7 +110,6 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     
     protected void compile(int canId)
     {
-        if (canId != 166793744) return;
         try
         {
             MessageClass msgCls = canIdMap.get(canId);
@@ -128,7 +124,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 msgCls = pgnMap.get(pgn);
                 if (msgCls != null)
                 {
-                    procMap.put(canId, compilePGN(canId, (PGNClass) msgCls));
+                    procMap.put(canId, compilePGN(canId, (MessageClass) msgCls));
                     info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
@@ -146,7 +142,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         addSignals(mc, sm);
         return sm;
     }
-    protected AbstractMessage compilePGN(int canId, PGNClass mc)
+    protected AbstractMessage compilePGN(int canId, MessageClass mc)
     {
         SingleMessage sm;
         switch ((String)mc.getAttributeValue("MessageType"))
@@ -184,10 +180,25 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         DBCFile dbcFile = new DBCFile();
         DBCParser parser = DBCParser.getInstance();
         parser.parse(path, dbcFile);
-        dbcFile.forEach((mc)->
+        String protocolType = (String)dbcFile.getAttributeValue("ProtocolType");
+        switch (protocolType)
         {
-            canIdMap.put(mc.getId(), mc);
-        });
+            case "":
+            case "StandardDBC":
+                dbcFile.forEach((mc)->
+                {
+                    canIdMap.put(mc.getId(), mc);
+                });
+                break;
+            case "N2K":
+                dbcFile.forEach((mc)->
+                {
+                    pgnMap.put(mc.getId(), mc);
+                });
+                break;
+            default:
+                throw new UnsupportedOperationException(protocolType+" not supported");
+        }
     }
     @Override
     public void close() throws Exception

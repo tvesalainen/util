@@ -26,12 +26,13 @@ import java.util.Objects;
  */
 public class DBCBase
 {
-    
+    protected DBCFile dbcFile;
     protected String comment = "";
     protected Map<String,Object> attributeValues = new HashMap<>();
 
-    public DBCBase()
+    public DBCBase(DBCFile dbcFile)
     {
+        this.dbcFile = dbcFile;
     }
 
     public String getComment()
@@ -39,7 +40,7 @@ public class DBCBase
         return comment;
     }
 
-    public void setComment(String comment)
+    public final void setComment(String comment)
     {
         this.comment = comment;
     }
@@ -50,7 +51,12 @@ public class DBCBase
     }
     public Object getAttributeValue(String name)
     {
-        return attributeValues.get(name);
+        Object value = attributeValues.get(name);
+        if (value == null)
+        {
+            return dbcFile.getDefault(name);
+        }
+        return value;
     }
 
     public Map<String, Object> getAttributeValues()
