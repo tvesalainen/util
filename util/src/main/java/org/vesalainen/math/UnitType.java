@@ -181,9 +181,17 @@ public enum UnitType
      */
     MILLI_WATT(UnitCategory.ELECTRIC_POWER, 0.001, "mW"),
     /**
+     * Degrees per Second
+     */
+    DEGREES_PER_SECOND(UnitCategory.RATE_OF_TURN, 1, "Deg/Sec"),
+    /**
      * Degrees per Minute
      */
-    DEGREES_PER_MINUTE(UnitCategory.RATE_OF_TURN, 60, "Deg/Min"),
+    DEGREES_PER_MINUTE(UnitCategory.RATE_OF_TURN, 1.0/60.0, "Deg/Min"),
+    /**
+     * Radians per Second
+     */
+    RADIANS_PER_SECOND(UnitCategory.RATE_OF_TURN, 180, "Rad/Sec"),
     /**
      * UNITLESS
      */

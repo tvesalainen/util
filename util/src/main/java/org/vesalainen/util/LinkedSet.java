@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.Spliterator;
 
@@ -248,6 +249,37 @@ public class LinkedSet<T> implements NavigableSet<T>, Serializable
     public void clear()
     {
         list.clear();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 23 * hash + Objects.hashCode(this.list);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final LinkedSet<?> other = (LinkedSet<?>) obj;
+        if (!Objects.equals(this.list, other.list))
+        {
+            return false;
+        }
+        return true;
     }
     
 }

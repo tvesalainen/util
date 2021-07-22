@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math;
 
+import static java.lang.Math.PI;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -111,5 +112,12 @@ public class UnitTypeTest
     {
         assertEquals(1.852, UnitType.KNOT.convertTo(1, UnitType.KILO_METERS_PER_HOUR), 1e-3);
         assertEquals(3.3, UnitType.KILO_METERS_PER_HOUR.convertTo(6.1, UnitType.KNOT), 1e-1);
+    }
+    @Test
+    public void testRateOfTurn()
+    {
+        assertEquals(1, UnitType.DEGREES_PER_MINUTE.convertTo(60, UnitType.DEGREES_PER_SECOND), 1e-3);
+        assertEquals(1, UnitType.DEGREES_PER_SECOND.convertTo(180, UnitType.RADIANS_PER_SECOND), 1e-3);
+        assertEquals(180, UnitType.RADIANS_PER_SECOND.convertTo(1, UnitType.DEGREES_PER_SECOND), 1e-3);
     }
 }

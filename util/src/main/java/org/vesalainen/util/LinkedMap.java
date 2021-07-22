@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -287,6 +288,49 @@ public class LinkedMap<K,V> implements NavigableMap<K,V>, Serializable
         entrySet.clear();
         values.clear();
         map.clear();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.keySet);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final LinkedMap<?, ?> other = (LinkedMap<?, ?>) obj;
+        if (!Objects.equals(this.keySet, other.keySet))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.entrySet, other.entrySet))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.values, other.values))
+        {
+            return false;
+        }
+        if (!Objects.equals(this.map, other.map))
+        {
+            return false;
+        }
+        return true;
     }
     
 }
