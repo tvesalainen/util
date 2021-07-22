@@ -157,10 +157,6 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+"not supported");
         }
         finer("compile(%s)", mc);
-        if (mc.getName().startsWith("ais"))
-        {
-            finer("ais(%s)", mc);
-        }
         addSignals(mc, sm);
         return sm;
     }
@@ -181,6 +177,10 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         DBCParser parser = DBCParser.getInstance();
         parser.parse(path, dbcFile);
         String protocolType = (String)dbcFile.getAttributeValue("ProtocolType");
+        if (protocolType == null)
+        {
+            protocolType = "";
+        }
         switch (protocolType)
         {
             case "":
@@ -193,7 +193,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             case "N2K":
                 dbcFile.forEach((mc)->
                 {
-                    pgnMap.put(mc.getId(), mc);
+                    pgnMap.put(PGN.pgn(mc.getId()), mc);
                 });
                 break;
             default:

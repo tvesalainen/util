@@ -16,7 +16,10 @@
  */
 package org.vesalainen.can.dbc.n2k;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
@@ -39,6 +42,10 @@ public class PGNDefinitionsT
         DBCFile dbcFile2 = new DBCFile();
         DBCParser parser = DBCParser.getInstance();
         parser.parse(sb, dbcFile2);
-        pgnDef.print(System.err);
+        Path target = Paths.get("src", "main", "resources", "n2k.dbc");
+        try (BufferedWriter br = Files.newBufferedWriter(target))
+        {
+            pgnDef.print(br);
+        }
     }
 }

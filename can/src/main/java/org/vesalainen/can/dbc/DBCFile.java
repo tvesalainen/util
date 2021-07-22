@@ -44,8 +44,6 @@ public class DBCFile extends DBCBase
     {
         super(null);
         dbcFile = this;
-        addAttributeDefinition("ProtocolType", StringAttributeValueType.STRING_ATTRIBUTE_VALUE_TYPE);
-        setAttributeDefault("ProtocolType", "StandardDBC");
     }
 
     public void print(Appendable out)
@@ -197,6 +195,10 @@ public class DBCFile extends DBCBase
     public Object getDefault(String name)
     {
         Attribute attr = attributes.get(name);
+        if (attr == null)
+        {
+            return null;
+        }
         return attr.getDef();
     }
     public void setNodeComment(String name, String comment)

@@ -88,10 +88,15 @@ public class SignalClass extends DBCBase
     }
     public SignalType getSignalType()
     {
+        SignalType signalType = UNKNOWN;
         String type = (String) getAttributeValue("SignalType");
         if (type != null)
         {
-            return SignalType.valueOf(type);
+            signalType = SignalType.valueOf(type);
+        }
+        if (signalType != UNKNOWN)
+        {
+            return signalType;
         }
         else
         {

@@ -22,6 +22,7 @@ package org.vesalainen.can;
  */
 public enum SignalType
 {
+    UNKNOWN,
     INT,
     LONG,
     DOUBLE,

@@ -49,8 +49,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import static org.vesalainen.can.SignalType.ASCIIZ;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.StringAttributeValueType;
 import org.vesalainen.can.dbc.ValueType;
 import static org.vesalainen.math.UnitType.*;
 
@@ -99,7 +99,7 @@ public class PGNDefinitions extends DBCFile
         addAttribute("BusType", "CAN", "");
         addAttribute("ProtocolType", "N2K", "");
         addAttribute("MessageType", "", "Single");
-        addAttribute("SignalType", "", "Integer");
+        addAttribute("SignalType", "", UNKNOWN.toString());
     }
 
     private void optimizeValueDescriptions()
@@ -281,9 +281,13 @@ public class PGNDefinitions extends DBCFile
     {
         switch (unit)
         {
-            case "Rad":
+            case "rad":
                 factor = RADIAN.convertTo(factor, DEGREE);
                 unit = "deg";
+                break;
+            case "K":
+                offset = KELVIN.convertTo(0, CELSIUS);
+                unit = "C";
                 break;
         }
         SignalClass sc = new SignalClass(
