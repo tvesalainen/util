@@ -44,14 +44,19 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final CachedScheduledThreadPool executor;
-    protected final SignalCompiler compiler;
+    protected final MessageFactory messageFactory;
     private Future<?> future;
 
     protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
+        this(executor, new MessageFactory(compiler));
+    }
+
+    public AbstractCanService(CachedScheduledThreadPool executor, MessageFactory messageFactory)
+    {
         super(AbstractCanService.class);
         this.executor = executor;
-        this.compiler = compiler;
+        this.messageFactory = messageFactory;
     }
 
     public static AbstractCanService openSocketCan2Udp(String host, int port, SignalCompiler compiler) throws IOException
@@ -124,7 +129,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 msgCls = pgnMap.get(pgn);
                 if (msgCls != null)
                 {
-                    procMap.put(canId, compilePGN(canId, (MessageClass) msgCls));
+                    procMap.put(canId, compile(canId, (MessageClass) msgCls));
                     info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
@@ -137,40 +142,8 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     
     protected AbstractMessage compile(int canId, MessageClass mc)
     {
-        SingleMessage sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
-        finer("compile(%s)", mc);
-        addSignals(mc, sm);
-        return sm;
+        return messageFactory.createMessage(canId, mc);
     }
-    protected AbstractMessage compilePGN(int canId, MessageClass mc)
-    {
-        SingleMessage sm;
-        switch ((String)mc.getAttributeValue("MessageType"))
-        {
-            case "Single":
-                sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
-                break;
-            case "Fast":
-                sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
-                break;
-            default:
-                throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+"not supported");
-        }
-        finer("compile(%s)", mc);
-        addSignals(mc, sm);
-        return sm;
-    }
-    private void addSignals(MessageClass mc, SingleMessage sm)
-    {
-        sm.addBegin(mc, compiler);
-        mc.forEach((s)->
-        {
-            finer("add signal %s", s);
-            sm.addSignal(mc, s, compiler);
-        });
-        sm.addEnd(mc, compiler);
-    }
-    
     public void addDBCFile(Path path)
     {
         DBCFile dbcFile = new DBCFile();

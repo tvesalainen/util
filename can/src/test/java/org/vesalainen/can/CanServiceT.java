@@ -17,7 +17,6 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleSupplier;
@@ -27,10 +26,8 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
-import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**

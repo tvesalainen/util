@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
