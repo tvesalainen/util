@@ -21,14 +21,14 @@ import static java.lang.Integer.min;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 
 /**
- * IndexMap maps array indexes to T items. It is effective if indexes are from
- * a short range.
+ * IndexMap maps array indexes to T items.It is effective if indexes are from
+ a short range.
  * 
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
 public class IndexMap<T>
 {
