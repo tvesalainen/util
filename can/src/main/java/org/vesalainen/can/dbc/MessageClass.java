@@ -126,7 +126,10 @@ public class MessageClass extends DBCBase implements AttachedLogger
     public void setSignalValueDescription(String signalName, List<ValueDescription> valDesc)
     {
         SignalClass signal = signals.get(signalName);
-        signal.setValueDescription(valDesc);
+        if (signal != null)
+        {
+            signal.setValueDescription(valDesc);
+        }
     }
 
     void print(AppendablePrinter out)

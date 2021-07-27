@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import java.util.concurrent.Callable;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;

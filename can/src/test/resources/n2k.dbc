@@ -1,0 +1,267 @@
+VERSION ""
+
+
+NS_ :
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+    BO_TX_BU_
+    BA_DEF_REL_
+    BA_REL_
+    BA_DEF_DEF_REL_
+    BU_SG_REL_
+    BU_EV_REL_
+    BU_BO_REL_
+    SG_MUL_VAL_
+
+BS_: 
+BU_: MFD Steering Power Propulsion Ais Navigation Environmental General_Or_Mandatory 
+BO_ 16701694 Pgn65240_Iso_Commanded_Address: 9 General_Or_Mandatory
+
+BO_ 33427710 Pgn130576_Small_Craft_Status: 2 General_Or_Mandatory
+
+BO_ 33427966 Pgn130577_Direction_Data: 14 General_Or_Mandatory
+
+BO_ 33428222 Pgn130578_Vessel_Speed_Components: 12 General_Or_Mandatory
+
+BO_ 33297150 Pgn130066_Route_And_Wp_Service_Route_Wp_List_Attributes: 8 Navigation
+
+BO_ 33296638 Pgn130064_Route_And_Wp_Service_Database_List: 8 Navigation
+
+BO_ 33296894 Pgn130065_Route_And_Wp_Service_Route_List: 8 Navigation
+
+BO_ 33297406 Pgn130067_Route_And_Wp_Service_Route_Wp_Name_Position: 8 Navigation
+
+BO_ 33297662 Pgn130068_Route_And_Wp_Service_Route_Wp_Name: 8 Navigation
+
+BO_ 33297918 Pgn130069_Route_And_Wp_Service_Xte_Limit_Navigation_Method: 8 Navigation
+
+BO_ 33298174 Pgn130070_Route_And_Wp_Service_Wp_Comment: 8 Navigation
+
+BO_ 33298430 Pgn130071_Route_And_Wp_Service_Route_Comment: 8 Navigation
+
+BO_ 33298686 Pgn130072_Route_And_Wp_Service_Database_Comment: 8 Navigation
+
+BO_ 33299198 Pgn130074_Route_And_Wp_Service_Wp_List_Wp_Name_Position: 8 Navigation
+
+BO_ 33298942 Pgn130073_Route_And_Wp_Service_Radius_Of_Turn: 8 Navigation
+
+BO_ 33358590 Pgn130306_Wind_Data: 8 Environmental
+
+BO_ 33359614 Pgn130310_Environmental_Parameters: 8 Environmental
+
+BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
+
+BO_ 33362174 Pgn130320_Tide_Station_Data: 20 Environmental
+
+BO_ 33362430 Pgn130321_Salinity_Station_Data: 22 Environmental
+
+BO_ 33362686 Pgn130322_Current_Station_Data: 8 Environmental
+
+BO_ 33362942 Pgn130323_Meteorological_Station_Data: 30 Environmental
+
+BO_ 33363198 Pgn130324_Moored_Buoy_Station_Data: 8 Environmental
+
+BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
+
+BO_ 33161982 Pgn129538_Gnss_Control_Status: 13 Navigation
+
+BO_ 33162238 Pgn129539_Gnss_Dops: 8 Navigation
+
+BO_ 33162750 Pgn129541_Gps_Almanac_Data: 8 Navigation
+
+BO_ 33163006 Pgn129542_Gnss_Pseudorange_Noise_Statistics: 9 Navigation
+
+BO_ 33163774 Pgn129545_Gnss_Raim_Output: 9 Navigation
+
+BO_ 33164030 Pgn129546_Gnss_Raim_Settings: 8 Navigation
+
+BO_ 33164286 Pgn129547_Gnss_Pseudorange_Error_Statistics: 9 Navigation
+
+BO_ 33164798 Pgn129549_Dgnss_Corrections: 13 Navigation
+
+BO_ 33165054 Pgn129550_Gnss_Differential_Correction_Receiver_Interface: 8 Navigation
+
+BO_ 33166590 Pgn129556_Glonass_Almanac_Data: 8 Navigation
+
+BO_ 33165310 Pgn129551_Gnss_Differential_Correction_Receiver_Signal: 8 Navigation
+
+BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
+
+BO_ 33227006 Pgn129792_Ais_Dgnss_Broadcast_Binary_Message: 8 Ais
+
+BO_ 33227262 Pgn129793_Ais_Utc_And_Date_Report: 26 Ais
+
+BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 13 Ais
+
+BO_ 33228030 Pgn129796_Ais_Acknowledge: 12 Ais
+
+BO_ 33228286 Pgn129797_Ais_Binary_Broadcast_Message: 233 Ais
+
+BO_ 33228542 Pgn129798_Ais_Sar_Aircraft_Position_Report: 8 Ais
+
+BO_ 33228798 Pgn129799_Radio_Frequency_Mode_Power: 9 Ais
+
+BO_ 33229054 Pgn129800_Ais_Utc_Date_Inquiry: 8 Ais
+
+BO_ 33229566 Pgn129802_Ais_Safety_Related_Broadcast_Message: 8 Ais
+
+BO_ 33230078 Pgn129804_Ais_Assignment_Mode_Command: 23 Ais
+
+BO_ 33230846 Pgn129807_Ais_Class_B_Group_Assignment: 8 Ais
+
+BO_ 33231358 Pgn129809_Ais_Class_B_Cs_Static_Report_Part_A: 27 Ais
+
+BO_ 33231614 Pgn129810_Ais_Class_B: 34 Ais
+
+BO_ 33230334 Pgn129805_Ais_Data_Link_Management_Message: 8 Ais
+
+BO_ 33229822 Pgn129803_Ais_Interrogation: 8 Ais
+
+BO_ 33229310 Pgn129801_Ais_Addressed_Safety_Related_Message: 12 Ais
+
+BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
+
+BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
+
+BO_ 33030910 Pgn129026_Cog_Sog_Rapid_Update: 8 Navigation
+
+BO_ 33031166 Pgn129027_Position_Delta_High_Precision_Rapid_Update: 8 Navigation
+
+BO_ 33031422 Pgn129028_Altitude_Delta_High_Precision_Rapid_Update: 8 Navigation
+
+BO_ 33032702 Pgn129033_Time_Date: 8 Navigation
+
+BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
+
+BO_ 33034238 Pgn129039_Ais_Class_B_Position_Report: 26 Ais
+
+BO_ 33034494 Pgn129040_Ais_Class_B_Extended_Position_Report: 33 Ais
+
+BO_ 33035518 Pgn129044_Datum: 24 Navigation
+
+BO_ 33035774 Pgn129045_User_Datum_Settings: 37 Navigation
+
+BO_ 33096702 Pgn129283_Cross_Track_Error: 8 Navigation
+
+BO_ 33096958 Pgn129284_Navigation_Data: 34 Navigation
+
+BO_ 33097214 Pgn129285_Navigation_Route_Wp_Information: 233 Navigation
+
+BO_ 33098750 Pgn129291_Set_Drift_Rapid_Update: 8 Navigation
+
+BO_ 33101310 Pgn129301_Time_To_From_Mark: 10 Navigation
+
+BO_ 33101566 Pgn129302_Bearing_And_Distance_Between_Two_Marks: 8 Navigation
+
+BO_ 32901374 Pgn128520_Tracked_Target_Data: 27 Navigation
+
+BO_ 32966910 Pgn128776_Windlass_Control_Status: 7 Propulsion
+
+BO_ 32967166 Pgn128777_Anchor_Windlass_Operating_Status: 8 Ais
+
+BO_ 32967422 Pgn128778_Anchor_Windlass_Monitoring_Status: 8 Propulsion
+
+BO_ 32834558 Pgn128259_Speed: 8 Propulsion
+
+BO_ 32836606 Pgn128267_Water_Depth: 8 Navigation
+
+BO_ 32838654 Pgn128275_Distance_Log: 14 Navigation
+
+BO_ 32641022 Pgn127503_Ac_Input_Status: 56 Power
+
+BO_ 32639486 Pgn127497_Trip_Parameters_Engine: 9 Propulsion
+
+BO_ 32637182 Pgn127488_Engine_Parameters_Rapid_Update: 8 Propulsion
+
+BO_ 32637438 Pgn127489_Engine_Parameters_Dynamic: 26 Propulsion
+
+BO_ 32638462 Pgn127493_Transmission_Parameters_Dynamic: 8 Propulsion
+
+BO_ 32639230 Pgn127496_Trip_Parameters_Vessel: 10 Propulsion
+
+BO_ 32639742 Pgn127498_Engine_Parameters_Static: 52 Propulsion
+
+BO_ 32640510 Pgn127501_Binary_Switch_Bank_Status: 8 Power
+
+BO_ 32640766 Pgn127502_Switch_Bank_Control: 8 Power
+
+BO_ 32641278 Pgn127504_Ac_Output_Status: 56 Power
+
+BO_ 32641790 Pgn127506_Dc_Detailed_Status: 9 Power
+
+BO_ 32642302 Pgn127508_Battery_Status: 8 Power
+
+BO_ 32642814 Pgn127510_Charger_Configuration_Status: 13 Power
+
+BO_ 32643326 Pgn127512_Ags_Configuration_Status: 8 Power
+
+BO_ 32643838 Pgn127514_Ags_Status: 8 Power
+
+BO_ 32643582 Pgn127513_Battery_Configuration_Status: 10 Power
+
+BO_ 32643070 Pgn127511_Inverter_Configuration_Status: 8 Power
+
+BO_ 32642558 Pgn127509_Inverter_Status: 4 Power
+
+BO_ 32642046 Pgn127507_Charger_Status: 8 Power
+
+BO_ 32641534 Pgn127505_Fluid_Level: 8 General_Or_Mandatory
+
+BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
+
+BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
+
+BO_ 32511742 Pgn126998_Configuration_Information: 42 General_Or_Mandatory
+
+BO_ 32572926 Pgn127237_Heading_Track_Control: 21 Steering
+
+BO_ 32574974 Pgn127245_Rudder: 8 Steering
+
+BO_ 32576254 Pgn127250_Vessel_Heading: 8 Steering
+
+BO_ 32576510 Pgn127251_Rate_Of_Turn: 5 Steering
+
+BO_ 32578046 Pgn127257_Attitude: 7 Steering
+
+BO_ 32578302 Pgn127258_Magnetic_Variation: 6 Steering
+
+BO_ 15597822 Pgn60928_Iso_Address_Claim: 8 General_Or_Mandatory
+
+BO_ 32375038 Pgn126464_Receive_Transmit_Pgn_S_Group_Function: 8 General_Or_Mandatory
+
+BO_ 15466750 Pgn60416_Iso_Transport_Protocol_Connection_Management_Rts_Group: 8 General_Or_Mandatory
+
+BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 12 General_Or_Mandatory
+
+BO_ 15335678 Pgn59904_Iso_Request: 3 General_Or_Mandatory
+
+BO_ 15401214 Pgn60160_Iso_Transport_Protocol_Data_Transfer: 8 General_Or_Mandatory
+
+BO_ 15204606 Pgn59392_Iso_Acknowledgment: 8 General_Or_Mandatory
+   SG_ Pgn59392_Iso_AcknowledgmentSig99 : 0|8@1+ (1,0) [0.0|1.0] "qwerty" Vector__XXX
+
+BA_DEF_ BO_ "GenMsgBackgroundColor" STRING ;
+BA_DEF_ BO_ "GenMsgForegroundColor" STRING ;
+BA_DEF_ BO_ "matchingcriteria" INT 0 0;
+BA_DEF_DEF_ "GenMsgBackgroundColor" "#ffffff";
+BA_DEF_DEF_ "GenMsgForegroundColor" "#000000";
+BA_DEF_DEF_ "matchingcriteria" 0;
+CM_ SG_ 15204606 Pgn59392_Iso_AcknowledgmentSig99 "Testi";

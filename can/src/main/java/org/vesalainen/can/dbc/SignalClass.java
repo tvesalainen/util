@@ -22,6 +22,8 @@ import java.util.List;
 import static java.util.Locale.US;
 import java.util.Objects;
 import java.util.function.IntFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.can.SignalType;
 import static org.vesalainen.can.SignalType.*;
@@ -33,7 +35,7 @@ import org.vesalainen.util.IndexMap;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SignalClass extends DBCBase
+public class SignalClass extends DBCBase implements Cloneable
 {
     private String name;
     private MultiplexerIndicator multiplexerIndicator;
@@ -66,6 +68,20 @@ public class SignalClass extends DBCBase
         this.unit = unit;
         this.receivers = receivers;
     }
+
+    @Override
+    public SignalClass clone()
+    {
+        try
+        {
+            return (SignalClass) super.clone();
+        }
+        catch (CloneNotSupportedException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
     public static int normalizeStartBit(int ab, ByteOrder byteOrder)
     {
         if (byteOrder == BIG_ENDIAN)
@@ -157,6 +173,11 @@ public class SignalClass extends DBCBase
         this.multiplexerIndicator = multiplexerIndicator;
     }
 
+    public void setStartBit(int startBit)
+    {
+        this.startBit = startBit;
+    }
+
     public int getStartBit()
     {
         return startBit;
@@ -214,10 +235,13 @@ public class SignalClass extends DBCBase
 
     public void setValueDescription(List<ValueDescription> valDesc)
     {
-        this.valueDescriptions = valDesc;
-        IndexMap.Builder<String> builder = new IndexMap.Builder<>();
-        valDesc.forEach((vd)->builder.put(vd.getValue(), vd.getDescription()));
-        lookupMap = builder.build();
+        if (valDesc != null)
+        {
+            this.valueDescriptions = valDesc;
+            IndexMap.Builder<String> builder = new IndexMap.Builder<>();
+            valDesc.forEach((vd)->builder.put(vd.getValue(), vd.getDescription()));
+            lookupMap = builder.build();
+        }
     }
             
     @Override
@@ -228,7 +252,7 @@ public class SignalClass extends DBCBase
 
     void print(AppendablePrinter out)
     {
-        out.format(US, " SG_ %s %s: %d|%d@%c%c (%s, %s) [%s|%s] \"%s\" %s\n", 
+        out.format(US, " SG_ %s %s: %d|%d@%c%c (%s,%s) [%s|%s] \"%s\" %s\n", 
                 name,
                 multiplexerIndicator != null ? multiplexerIndicator.toString() : "",
                 abnormalizeStartBit(startBit, byteOrder),

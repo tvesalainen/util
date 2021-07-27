@@ -18,6 +18,8 @@ package org.vesalainen.can.dbc.n2k;
 
 import java.io.IOException;
 import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+import static java.lang.Math.pow;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,7 +52,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.vesalainen.can.dbc.MessageClass;
-import org.vesalainen.can.dbc.StringAttributeValueType;
 import org.vesalainen.can.dbc.ValueType;
 import static org.vesalainen.math.UnitType.*;
 
@@ -60,6 +61,7 @@ import static org.vesalainen.math.UnitType.*;
  */
 public class PGNDefinitions extends DBCFile
 {
+    private final static int MAX_FAST_SIZE = 223*8; // bits
     private final static String RECEIVER = "MFD";
     private MapList<Integer,MessageClass> msgMap = new HashMapList<>();
     private List<ValueDescriptions> valueDescriptions = new ArrayList<>();
@@ -67,7 +69,7 @@ public class PGNDefinitions extends DBCFile
     
     public PGNDefinitions(Path path) throws ParserConfigurationException, SAXException, IOException
     {
-        setComment("This DBC is based on https://github.com/canboat/canboat");
+        setComment("This DBC is based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn");
         addNode(RECEIVER);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = dbf.newDocumentBuilder();
@@ -94,7 +96,7 @@ public class PGNDefinitions extends DBCFile
                 addMultiplexingMessage(list);
             }
         });
-        optimizeValueDescriptions();
+        //optimizeValueDescriptions();
         addValueDescriptions(valueDescriptions);
         addAttribute("BusType", "CAN", "");
         addAttribute("ProtocolType", "N2K", "");
@@ -132,7 +134,7 @@ public class PGNDefinitions extends DBCFile
         String type = null;
         boolean complete;
         int size = 0;
-        int repeatingFields;
+        int repeatingFields = 0;
         Node fields = null;
         NodeList childNodes = item.getChildNodes();
         int length = childNodes.getLength();
@@ -182,6 +184,10 @@ public class PGNDefinitions extends DBCFile
                 {
                     signals.add(sc);
                 }
+            }
+            if (repeatingFields > 0)
+            {
+                handleRepeating(pgn, repeatingFields, signals);
             }
             String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
             MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
@@ -288,6 +294,10 @@ public class PGNDefinitions extends DBCFile
             case "K":
                 offset = KELVIN.convertTo(0, CELSIUS);
                 unit = "C";
+                break;
+            case "rad/s":
+                factor = RADIANS_PER_SECOND.convertTo(factor, DEGREES_PER_MINUTE);
+                unit = "deg/min";
                 break;
         }
         SignalClass sc = new SignalClass(
@@ -430,6 +440,54 @@ public class PGNDefinitions extends DBCFile
                 throw new UnsupportedOperationException(type+" not supported");
         }
         sc.setAttributeValue("SignalType", signalType);
+    }
+
+    private void handleRepeating(int pgn, int repeatingFields, List<SignalClass> signals)
+    {
+        switch (pgn)
+        {
+            case 129029:
+                handleMultiplexRepeating(repeatingFields, signals);
+                break;
+        }
+    }
+
+    private void handleMultiplexRepeating(int repeatingFields, List<SignalClass> signals)
+    {
+        List<SignalClass> repLst = new ArrayList<>();
+        for (int ii=0;ii<repeatingFields;ii++)
+        {
+            int idx = signals.size()-1;
+            repLst.add(0, signals.get(idx));
+            signals.remove(idx);
+        }
+        SignalClass mpx = signals.get(signals.size()-1);
+        mpx.setMultiplexerIndicator(new MultiplexerIndicator());
+        int start = mpx.getStartBit()+mpx.getSize();
+        int repSize = repLst.stream().mapToInt((s)->s.getSize()).sum();
+        int repCnt = (MAX_FAST_SIZE-start)/repSize;
+        int mpxMax = (int) pow(2, mpx.getSize());
+        int cnt = min(repCnt, mpxMax);
+        IntReference str = new IntReference(start);
+        for (int ii=1;ii<=cnt;ii++)
+        {
+            final int m=ii;
+            str.setValue(start);
+            for (int jj=1;jj<=ii;jj++)
+            {
+                final int ix = jj;
+                repLst.forEach((s)->
+                {
+                    SignalClass clone = s.clone();
+                    clone.setStartBit(str.getValue());
+                    str.add(clone.getSize());
+                    clone.setMultiplexerIndicator(new MultiplexerIndicator(m));
+                    clone.setName("M"+m+"_"+s.getName()+"_"+ix);
+                    clone.setValueDescription(s.getValueDescriptions());
+                    signals.add(clone);
+                });
+            }
+        }
     }
 
 }

@@ -17,23 +17,28 @@
 package org.vesalainen.can;
 
 import static java.lang.Integer.min;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import static java.util.logging.Level.*;
 import static org.vesalainen.can.SignalType.*;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.MultiplexerIndicator;
 import org.vesalainen.can.dbc.SignalClass;
 import static org.vesalainen.can.dbc.ValueType.*;
 import org.vesalainen.can.j1939.PGN;
-import org.vesalainen.util.HexDump;
+import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HexUtil;
+import org.vesalainen.util.IndexMap;
+import org.vesalainen.util.MapList;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
@@ -47,7 +52,7 @@ public class SingleMessage extends AbstractMessage
     protected final int priority;
     protected byte[] buf;
     protected String comment;
-    protected List<Runnable> signals = new ArrayList<>();
+    protected Runnable action;
 
     public SingleMessage(int canId, int len, String comment)
     {
@@ -56,66 +61,6 @@ public class SingleMessage extends AbstractMessage
         this.pgn = PGN.pgn(canId);
         this.buf = new byte[len];
         this.comment = comment;
-    }
-    
-    public void addBegin(MessageClass mc, SignalCompiler compiler)
-    {
-        Runnable rn = compiler.compileBegin(mc);
-        if (rn != null)
-        {
-            signals.add(rn);
-        }
-    }
-    public void addSignal(MessageClass mc, SignalClass sc, SignalCompiler compiler)
-    {
-        IntSupplier is;
-        LongSupplier ls;
-        DoubleSupplier ds;
-        Supplier<String> ss;
-        Runnable rn;
-        switch (sc.getSignalType())
-        {
-            case INT:
-                is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                rn = compiler.compile(mc, sc, is);
-                break;
-            case LONG:
-                ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                rn = compiler.compile(mc, sc, ls);
-                break;
-            case DOUBLE:
-                ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                double factor = sc.getFactor();
-                double offset = sc.getOffset();
-                ds = ()->factor*ls.getAsLong()+offset;
-                rn = compiler.compile(mc, sc, ds);
-                break;
-            case LOOKUP:
-                is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                rn = compiler.compile(mc, sc, is, sc.getMapper());
-                break;
-            case BINARY:
-                rn = compiler.compileBinary(mc, sc);
-                break;
-            case ASCIIZ:
-                ss = ArrayFuncs.getZeroTerminatingStringSupplier(sc.getStartBit()/8, sc.getSize()/8, buf);
-                rn = compiler.compileASCII(mc, sc, ss);
-                break;
-            default:
-                throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
-        }
-        if (rn != null)
-        {
-            signals.add(rn);
-        }
-    }
-    public void addEnd(MessageClass mc, SignalCompiler compiler)
-    {
-        Runnable rn = compiler.compileEnd(mc);
-        if (rn != null)
-        {
-            signals.add(rn);
-        }
     }
     @Override
     protected boolean update(AbstractCanService service)
@@ -138,18 +83,179 @@ public class SingleMessage extends AbstractMessage
     protected void execute(CachedScheduledThreadPool executor)
     {
         info("execute pgn=%d src=%d %s\n%s", pgn, source, comment, HexUtil.toString(buf));
-        signals.forEach((r)->
+        try
         {
-            try
-            {
-                r.run();
-            }
-            catch (Exception ex)
-            {
-                log(WARNING, ex, "execute %s", comment);
-            }
-        });
+            action.run();
+        }
+        catch (Exception ex)
+        {
+            log(WARNING, ex, "execute %s", comment);
+        }
     }
 
-    
+    void addSignals(MessageClass mc, SignalCompiler compiler)
+    {
+        ActionBuilder actionBuilder = new ActionBuilder(mc, compiler);
+        action = actionBuilder.build();
+    }
+    private class ActionBuilder
+    {
+        private MessageClass mc;
+        private SignalCompiler compiler;
+        private List<Runnable> signals = new ArrayList<>();
+        private MapList<Integer,Runnable> mpxMap = new HashMapList<>();
+        private Multiplexor multiplexor;
+
+        public ActionBuilder(MessageClass mc, SignalCompiler compiler)
+        {
+            this.mc = mc;
+            this.compiler = compiler;
+        }
+        
+        private Runnable build()
+        {
+            add(createBegin(mc, compiler));
+            mc.forEach((s)->
+            {
+                finer("add signal %s", s);
+                MultiplexerIndicator mpxI = s.getMultiplexerIndicator();
+                if (mpxI != null)
+                {
+                    if (mpxI.isMultiplexor())
+                    {
+                        createMultiplexor(s);
+                    }
+                    else
+                    {
+                        mpxMap.add(mpxI.getValue(), createSignal(mc, s, compiler));
+                    }
+                }
+                else
+                {
+                    add(createSignal(mc, s, compiler));
+                }
+            });
+            add(createEnd(mc, compiler));
+            if (multiplexor != null)
+            {
+                IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
+                mpxMap.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
+                IndexMap<Runnable> indexMap = mpxBuilder.build();
+                multiplexor.setMap(indexMap);
+            }
+            Runnable[] array = createArray(signals);
+            return ()->
+            {
+                for (Runnable c : array)
+                {
+                    c.run();
+                }
+            };
+        }
+
+        private void createMultiplexor(SignalClass sc)
+        {
+            IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+            multiplexor = new Multiplexor(is);
+            add(multiplexor);
+        }
+        private Runnable createBegin(MessageClass mc, SignalCompiler compiler)
+        {
+            return compiler.compileBegin(mc);
+        }
+        private Runnable createSignal(MessageClass mc, SignalClass sc, SignalCompiler compiler)
+        {
+            IntSupplier is;
+            LongSupplier ls;
+            DoubleSupplier ds;
+            Supplier<String> ss;
+            switch (sc.getSignalType())
+            {
+                case INT:
+                    is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    return compiler.compile(mc, sc, is);
+                case LONG:
+                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    return compiler.compile(mc, sc, ls);
+                case DOUBLE:
+                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    double factor = sc.getFactor();
+                    double offset = sc.getOffset();
+                    ds = ()->factor*ls.getAsLong()+offset;
+                    return compiler.compile(mc, sc, ds);
+                case LOOKUP:
+                    is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    IntFunction<String> f = sc.getMapper();
+                    if (f == null)
+                    {
+                        return compiler.compile(mc, sc, is);
+                    }
+                    return compiler.compile(mc, sc, is, f);
+                case BINARY:
+                    return compiler.compileBinary(mc, sc);
+                case ASCIIZ:
+                    ss = ArrayFuncs.getZeroTerminatingStringSupplier(sc.getStartBit()/8, sc.getSize()/8, buf);
+                    return compiler.compileASCII(mc, sc, ss);
+                default:
+                    throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
+            }
+        }
+        private Runnable createEnd(MessageClass mc, SignalCompiler compiler)
+        {
+            return compiler.compileEnd(mc);
+        }
+        private void add(Runnable act)
+        {
+            if (act != null)
+            {
+                signals.add(act);
+            }
+        }
+
+        private Runnable[] createArray(List<Runnable> list)
+        {
+            return list.toArray((Runnable[]) Array.newInstance(Runnable.class, list.size()));
+        }
+
+        private Runnable createAction(List<Runnable> l)
+        {
+            Runnable[] arr = createArray(l);
+            return ()->
+            {
+                for (Runnable r : arr)
+                {
+                    r.run();
+                };
+                
+            };
+        }
+
+    }
+    private class Multiplexor implements Runnable
+    {
+        private final IntSupplier supplier;
+        private IndexMap<Runnable> map;
+
+        private Multiplexor(IntSupplier supplier)
+        {
+            this.supplier = supplier;
+        }
+
+        private void setMap(IndexMap<Runnable> map)
+        {
+            this.map = map;
+        }
+        
+        @Override
+        public void run()
+        {
+            int index = supplier.getAsInt();
+            Runnable act = map.get(index);
+            if (act != null)
+            {
+                act.run();
+            }
+        }
+        
+    }
 }

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import java.util.Objects;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -36,7 +37,9 @@ public class MessageFactory extends JavaLogging
     public AbstractMessage createMessage(int canId, MessageClass mc)
     {
         SingleMessage sm;
-        switch ((String)mc.getAttributeValue("MessageType"))
+        String type = (String)mc.getAttributeValue("MessageType");
+        type = type != null ? type : "Single";
+        switch (type)
         {
             case "Single":
                 sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
@@ -48,18 +51,7 @@ public class MessageFactory extends JavaLogging
                 throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+"not supported");
         }
         finer("compile(%s)", mc);
-        addSignals(mc, sm);
+        sm.addSignals(mc, compiler);
         return sm;
     }
-    private void addSignals(MessageClass mc, SingleMessage sm)
-    {
-        sm.addBegin(mc, compiler);
-        mc.forEach((s)->
-        {
-            finer("add signal %s", s);
-            sm.addSignal(mc, s, compiler);
-        });
-        sm.addEnd(mc, compiler);
-    }
-    
 }
