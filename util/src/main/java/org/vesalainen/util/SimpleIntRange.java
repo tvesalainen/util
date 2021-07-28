@@ -22,6 +22,8 @@ package org.vesalainen.util;
  */
 public class SimpleIntRange implements IntRange
 {
+    public static final IntRange EMPTY_RANGE = new EmptyRange();
+    
     private static IntRange[] SINGLES = new IntRange[256];
     static
     {
@@ -70,5 +72,20 @@ public class SimpleIntRange implements IntRange
     {
         return to;
     }
-    
+    public static class EmptyRange implements IntRange
+    {
+
+        @Override
+        public int getFrom()
+        {
+            return 0;
+        }
+
+        @Override
+        public int getTo()
+        {
+            return 0;
+        }
+        
+    }
 }
