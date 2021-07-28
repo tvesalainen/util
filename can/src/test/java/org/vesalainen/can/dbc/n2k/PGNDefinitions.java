@@ -61,7 +61,6 @@ import static org.vesalainen.math.UnitType.*;
  */
 public class PGNDefinitions extends DBCFile
 {
-    private final static int MAX_FAST_SIZE = 223*8; // bits
     private final static String RECEIVER = "MFD";
     private MapList<Integer,MessageClass> msgMap = new HashMapList<>();
     private List<ValueDescriptions> valueDescriptions = new ArrayList<>();
@@ -101,6 +100,8 @@ public class PGNDefinitions extends DBCFile
         addAttribute("BusType", "CAN", "");
         addAttribute("ProtocolType", "N2K", "");
         addAttribute("MessageType", "", "Single");
+        addAttribute("RepeatStartBit", 0, 0);
+        addAttribute("RepeatSize", 0, 0);
         addAttribute("SignalType", "", UNKNOWN.toString());
     }
 
@@ -185,16 +186,15 @@ public class PGNDefinitions extends DBCFile
                     signals.add(sc);
                 }
             }
-            if (repeatingFields > 0)
-            {
-                handleRepeating(pgn, repeatingFields, signals);
-            }
             String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
             MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
             msg.setAttributeValue("MessageType", type.toString());
+            if (repeatingFields > 0)
+            {
+                handleRepeating(msg, repeatingFields, signals);
+            }
             msg.setComment(pgnInfo.getDescription());
             addNode(transmitter);
-            //msg.setAttribute("MessageCategory", pgnInfo.getCategory());
             return msg;
         }
         return null;
@@ -442,52 +442,20 @@ public class PGNDefinitions extends DBCFile
         sc.setAttributeValue("SignalType", signalType);
     }
 
-    private void handleRepeating(int pgn, int repeatingFields, List<SignalClass> signals)
-    {
-        switch (pgn)
-        {
-            case 129029:
-                handleMultiplexRepeating(repeatingFields, signals);
-                break;
-        }
-    }
-
-    private void handleMultiplexRepeating(int repeatingFields, List<SignalClass> signals)
+    private void handleRepeating(MessageClass msg, int repeatingFields, List<SignalClass> signals)
     {
         List<SignalClass> repLst = new ArrayList<>();
+        int repStart = Integer.MAX_VALUE;
         for (int ii=0;ii<repeatingFields;ii++)
         {
-            int idx = signals.size()-1;
-            repLst.add(0, signals.get(idx));
-            signals.remove(idx);
+            int idx = signals.size()-1-ii;
+            SignalClass sc = signals.get(idx);
+            repLst.add(0, sc);
+            repStart = min(repStart, sc.getStartBit());
         }
-        SignalClass mpx = signals.get(signals.size()-1);
-        mpx.setMultiplexerIndicator(new MultiplexerIndicator());
-        int start = mpx.getStartBit()+mpx.getSize();
         int repSize = repLst.stream().mapToInt((s)->s.getSize()).sum();
-        int repCnt = (MAX_FAST_SIZE-start)/repSize;
-        int mpxMax = (int) pow(2, mpx.getSize());
-        int cnt = min(repCnt, mpxMax);
-        IntReference str = new IntReference(start);
-        for (int ii=1;ii<=cnt;ii++)
-        {
-            final int m=ii;
-            str.setValue(start);
-            for (int jj=1;jj<=ii;jj++)
-            {
-                final int ix = jj;
-                repLst.forEach((s)->
-                {
-                    SignalClass clone = s.clone();
-                    clone.setStartBit(str.getValue());
-                    str.add(clone.getSize());
-                    clone.setMultiplexerIndicator(new MultiplexerIndicator(m));
-                    clone.setName("M"+m+"_"+s.getName()+"_"+ix);
-                    clone.setValueDescription(s.getValueDescriptions());
-                    signals.add(clone);
-                });
-            }
-        }
+        msg.setAttributeValue("RepeatStartBit", repStart);
+        msg.setAttributeValue("RepeatSize", repSize);
     }
 
 }

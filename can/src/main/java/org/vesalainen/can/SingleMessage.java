@@ -38,6 +38,8 @@ import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.IndexMap;
+import org.vesalainen.util.IntRange;
+import org.vesalainen.util.IntReference;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
@@ -62,6 +64,13 @@ public class SingleMessage extends AbstractMessage
         this.buf = new byte[len];
         this.comment = comment;
     }
+
+    @Override
+    public int getMaxSize()
+    {
+        return 8;
+    }
+    
     @Override
     protected boolean update(AbstractCanService service)
     {
@@ -95,25 +104,29 @@ public class SingleMessage extends AbstractMessage
 
     void addSignals(MessageClass mc, SignalCompiler compiler)
     {
-        ActionBuilder actionBuilder = new ActionBuilder(mc, compiler);
+        IntRange repeatRange = mc.getRepeatRange();
+        ActionBuilder actionBuilder = new ActionBuilder(mc, compiler, repeatRange);
         action = actionBuilder.build();
     }
     private class ActionBuilder
     {
         private MessageClass mc;
         private SignalCompiler compiler;
+        private IntRange repeatRange;
         private List<Runnable> signals = new ArrayList<>();
         private MapList<Integer,Runnable> mpxMap = new HashMapList<>();
         private Multiplexor multiplexor;
 
-        public ActionBuilder(MessageClass mc, SignalCompiler compiler)
+        public ActionBuilder(MessageClass mc, SignalCompiler compiler, IntRange repeatRange)
         {
             this.mc = mc;
             this.compiler = compiler;
+            this.repeatRange = repeatRange;
         }
         
         private Runnable build()
         {
+            List<SignalClass> repeatingSignals = new ArrayList<>();
             add(createBegin(mc, compiler));
             mc.forEach((s)->
             {
@@ -127,12 +140,23 @@ public class SingleMessage extends AbstractMessage
                     }
                     else
                     {
-                        mpxMap.add(mpxI.getValue(), createSignal(mc, s, compiler));
+                        Runnable act = createSignal(mc, s, compiler);
+                        if (act != null)
+                        {
+                            mpxMap.add(mpxI.getValue(), act);
+                        }
                     }
                 }
                 else
                 {
-                    add(createSignal(mc, s, compiler));
+                    if (repeatRange.accept(s.getStartBit()))
+                    {
+                        repeatingSignals.add(s);
+                    }
+                    else
+                    {
+                        add(createSignal(mc, s, compiler));
+                    }
                 }
             });
             add(createEnd(mc, compiler));

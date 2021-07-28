@@ -43,7 +43,12 @@ public class FloatAttributeValueType extends AttributeValueType
     @Override
     Object convType(Object value)
     {
-        return (Double)value;
+        if (value instanceof Number)
+        {
+            Number n = (Number) value;
+            return n.doubleValue();
+        }
+        throw new IllegalArgumentException(value+" is not float");
     }
 
     @Override

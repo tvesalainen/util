@@ -22,7 +22,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.vesalainen.io.AppendablePrinter;
+import org.vesalainen.util.IntRange;
 import org.vesalainen.util.LinkedMap;
+import org.vesalainen.util.SimpleIntRange;
 import org.vesalainen.util.logging.AttachedLogger;
 
 /**
@@ -60,6 +62,27 @@ public class MessageClass extends DBCBase implements AttachedLogger
         signals.values().forEach(action);
     }
 
+    public int getSignalCount()
+    {
+        return signals.size();
+    }
+    
+    public IntRange getRepeatRange()
+    {
+        Long s = (Long) getAttributeValue("RepeatSize");
+        int sz = (int) (s == null ? 0 : s);
+        if (sz > 0)
+        {
+            Long st = (Long) getAttributeValue("RepeatStartBit");
+            int start = (int) (st == null ? 0 : st);
+            return new SimpleIntRange(start, start+sz);
+        }
+        else
+        {
+            return SimpleIntRange.EMPTY_RANGE;
+        }
+    }
+    
     public boolean isMultiplexed()
     {
         return multiplexed;

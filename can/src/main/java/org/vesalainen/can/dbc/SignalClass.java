@@ -121,7 +121,11 @@ public class SignalClass extends DBCBase implements Cloneable
     }
     public IntFunction getMapper()
     {
-        return lookupMap::get;
+        if (lookupMap != null)
+        {
+            return lookupMap::get;
+        }
+        return null;
     }
     public static SignalType getType(int bits, boolean signed, double factor, double offset)
     {

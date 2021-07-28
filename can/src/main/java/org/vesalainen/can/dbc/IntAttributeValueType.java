@@ -43,10 +43,10 @@ public class IntAttributeValueType extends AttributeValueType
     @Override
     Object convType(Object value)
     {
-        if (value instanceof Double)
+        if (value instanceof Number)
         {
-            Double d = (Double) value;
-            return d.longValue();
+            Number n = (Number) value;
+            return n.longValue();
         }
         throw new IllegalArgumentException(value+" is not int");
     }

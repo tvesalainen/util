@@ -48,7 +48,7 @@ public class MessageFactory extends JavaLogging
                 sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
                 break;
             default:
-                throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+"not supported");
+                throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+" not supported");
         }
         finer("compile(%s)", mc);
         sm.addSignals(mc, compiler);

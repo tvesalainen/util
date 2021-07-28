@@ -26,6 +26,7 @@ import static java.util.logging.Level.WARNING;
  */
 public class FastMessage extends SingleMessage
 {
+    private final static int MAX_FAST_SIZE = 223*8; // bits
     private byte packetId;
     private int packetSeq;
     private int packetCount;
@@ -33,6 +34,12 @@ public class FastMessage extends SingleMessage
     public FastMessage(int canId, int len, String comment)
     {
         super(canId, len, comment);
+    }
+
+    @Override
+    public int getMaxSize()
+    {
+        return 223;
     }
 
     @Override

@@ -219,6 +219,12 @@ public class DBCFile extends DBCBase
         message.setSignalComment(signal, comment);
     }
 
+    public final void addAttribute(String name, int value, int def)
+    {
+        addAttributeDefinition(name, new IntAttributeValueType(0, 0));
+        setAttributeDefault(name, def);
+        setAttributeValue(name, value);
+    }
     public final void addAttribute(String name, String value, String def)
     {
         addAttributeDefinition(name, StringAttributeValueType.STRING_ATTRIBUTE_VALUE_TYPE);

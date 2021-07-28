@@ -34,7 +34,7 @@ public abstract class AbstractMessage extends JavaLogging
         super(AbstractMessage.class);
     }
     
-    
+    public abstract int getMaxSize();
     /**
      * Updates CanProcessor data. Returns true if needs to execute.
      * @param service
@@ -48,6 +48,12 @@ public abstract class AbstractMessage extends JavaLogging
 
         private NullMessage()
         {
+        }
+
+        @Override
+        public int getMaxSize()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override

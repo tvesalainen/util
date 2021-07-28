@@ -48,6 +48,7 @@ public class CanServiceT
         AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
+        //canSvc.compile(33162494);
         canSvc.startAndWait();
     }
     
