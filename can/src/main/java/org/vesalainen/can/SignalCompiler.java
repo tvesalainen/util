@@ -43,5 +43,7 @@ public interface SignalCompiler
     }
     Runnable compileASCII(MessageClass mc, SignalClass sc, Supplier<String> ss);
     Runnable compileEnd(MessageClass mc);
+    Runnable compileBeginRepeat(MessageClass mc);
+    Runnable compileEndRepeat(MessageClass mc);
 
 }

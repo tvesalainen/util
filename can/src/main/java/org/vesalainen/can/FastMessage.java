@@ -29,7 +29,7 @@ public class FastMessage extends SingleMessage
     private final static int MAX_FAST_SIZE = 223*8; // bits
     private byte packetId;
     private int packetSeq;
-    private int packetCount;
+    private int byteCount;
     
     public FastMessage(int canId, int len, String comment)
     {
@@ -37,7 +37,7 @@ public class FastMessage extends SingleMessage
     }
 
     @Override
-    public int getMaxSize()
+    public int getMaxBytes()
     {
         return 223;
     }
@@ -55,9 +55,10 @@ public class FastMessage extends SingleMessage
             {   // new message
                 packetId = id;
                 packetSeq = 0;
-                packetCount = frame.get(9) & 0xff;
+                byteCount = frame.get(9) & 0xff;
+                setCurrentBytes(byteCount);
                 frame.position(10);
-                info("new fast %s: %d cnt=%d buf=%d", comment, id, packetCount, buf.length);
+                info("new fast %s: %d cnt=%d buf=%d", comment, id, byteCount, buf.length);
             }
             else
             {
@@ -74,12 +75,12 @@ public class FastMessage extends SingleMessage
                 frame.position(9);
             }
             int off = seq == 0 ? 0 : 6 + (seq-1)*7;
-            int remaining = min(frame.remaining(), packetCount);
-            packetCount -= remaining;
-            info("seq=%d cnt=%d rem=%d", seq, packetCount, remaining);
+            int remaining = min(frame.remaining(), byteCount);
+            byteCount -= remaining;
+            info("seq=%d cnt=%d rem=%d", seq, byteCount, remaining);
             frame.get(buf, off, remaining);
             packetSeq = seq;
-            return packetCount == 0;
+            return byteCount == 0;
         }
         catch (Exception ex)
         {

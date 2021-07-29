@@ -17,7 +17,6 @@
 package org.vesalainen.can;
 
 import java.nio.ByteBuffer;
-import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -28,13 +27,35 @@ import org.vesalainen.util.logging.JavaLogging;
 public abstract class AbstractMessage extends JavaLogging
 {
     public static final NullMessage NULL_MESSAGE = new NullMessage();
+    
+    private int currentBytes;
 
     protected AbstractMessage()
     {
         super(AbstractMessage.class);
     }
+
+    public int getCurrentBytes()
+    {
+        return currentBytes;
+    }
+
+    public void setCurrentBytes(int currentBytes)
+    {
+        this.currentBytes = currentBytes;
+    }
     
-    public abstract int getMaxSize();
+    public int getCurrentBits()
+    {
+        return getCurrentBytes()*8;
+    }
+    
+    public abstract int getMaxBytes();
+    
+    public int getMaxBits()
+    {
+        return getMaxBytes()*8;
+    }
     /**
      * Updates CanProcessor data. Returns true if needs to execute.
      * @param service
@@ -51,7 +72,7 @@ public abstract class AbstractMessage extends JavaLogging
         }
 
         @Override
-        public int getMaxSize()
+        public int getMaxBytes()
         {
             throw new UnsupportedOperationException("Not supported yet.");
         }

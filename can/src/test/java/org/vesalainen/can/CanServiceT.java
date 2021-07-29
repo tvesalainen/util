@@ -112,5 +112,17 @@ public class CanServiceT
             return ()->System.err.println();
         }
 
+        @Override
+        public Runnable compileBeginRepeat(MessageClass mc)
+        {
+            return ()->System.err.print("\n(");
+        }
+
+        @Override
+        public Runnable compileEndRepeat(MessageClass mc)
+        {
+            return ()->System.err.print(")");
+        }
+
     }
 }

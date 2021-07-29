@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -39,7 +38,6 @@ import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.IndexMap;
 import org.vesalainen.util.IntRange;
-import org.vesalainen.util.IntReference;
 import org.vesalainen.util.MapList;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
@@ -55,6 +53,13 @@ public class SingleMessage extends AbstractMessage
     protected byte[] buf;
     protected String comment;
     protected Runnable action;
+    protected int maxRepeatCount;
+    protected Runnable[] repeatables;
+    protected int repeatSize;
+    protected int repeatStart;
+    protected int repeatCount;
+    protected Runnable startRepeat;
+    protected Runnable endRepeat;
 
     public SingleMessage(int canId, int len, String comment)
     {
@@ -66,9 +71,19 @@ public class SingleMessage extends AbstractMessage
     }
 
     @Override
-    public int getMaxSize()
+    public int getMaxBytes()
     {
         return 8;
+    }
+
+    @Override
+    public void setCurrentBytes(int currentBytes)
+    {
+        super.setCurrentBytes(currentBytes);
+        if (repeatSize > 0)
+        {
+            repeatCount = (getCurrentBits() - repeatStart) / repeatSize;
+        }
     }
     
     @Override
@@ -78,7 +93,9 @@ public class SingleMessage extends AbstractMessage
         {
             ByteBuffer frame = service.getFrame();
             frame.position(8);
-            frame.get(buf, 0, min(buf.length, frame.remaining()));
+            int remaining = frame.remaining();
+            setCurrentBytes(remaining);
+            frame.get(buf, 0, min(buf.length, remaining));
             return true;
         }
         catch (Exception ex)
@@ -127,7 +144,7 @@ public class SingleMessage extends AbstractMessage
         private Runnable build()
         {
             List<SignalClass> repeatingSignals = new ArrayList<>();
-            add(createBegin(mc, compiler));
+            add(createBegin(mc));
             mc.forEach((s)->
             {
                 finer("add signal %s", s);
@@ -140,7 +157,7 @@ public class SingleMessage extends AbstractMessage
                     }
                     else
                     {
-                        Runnable act = createSignal(mc, s, compiler);
+                        Runnable act = createSignal(mc, s);
                         if (act != null)
                         {
                             mpxMap.add(mpxI.getValue(), act);
@@ -155,11 +172,17 @@ public class SingleMessage extends AbstractMessage
                     }
                     else
                     {
-                        add(createSignal(mc, s, compiler));
+                        add(createSignal(mc, s));
                     }
                 }
             });
-            add(createEnd(mc, compiler));
+            if (!repeatingSignals.isEmpty())
+            {
+                add(createRepeatingSignals(mc, repeatingSignals));
+                startRepeat = compiler.compileBeginRepeat(mc);
+                endRepeat = compiler.compileEndRepeat(mc);
+            }
+            add(createEnd(mc));
             if (multiplexor != null)
             {
                 IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
@@ -167,7 +190,11 @@ public class SingleMessage extends AbstractMessage
                 IndexMap<Runnable> indexMap = mpxBuilder.build();
                 multiplexor.setMap(indexMap);
             }
-            Runnable[] array = createArray(signals);
+            return combineRunnables(signals);
+        }
+        private Runnable combineRunnables(List<Runnable> sigs)
+        {
+            Runnable[] array = createArray(sigs);
             return ()->
             {
                 for (Runnable c : array)
@@ -176,18 +203,59 @@ public class SingleMessage extends AbstractMessage
                 }
             };
         }
-
+        private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals)
+        {
+            List<Runnable> list = new ArrayList<>();
+            repeatSize = repeatRange.getSize();
+            repeatStart = repeatRange.getFrom();
+            maxRepeatCount = (getMaxBits() - repeatStart) / repeatSize;
+            if (maxRepeatCount < 2)
+            {
+                throw new UnsupportedOperationException("should not happen");
+            }
+            for (int ii=0;ii<maxRepeatCount;ii++)
+            {
+                list.add(createRepeat(mc, repeatingSignals, ii * repeatSize));
+            }
+            repeatables = createArray(list);
+            return ()->
+            {
+                for (int ii=0;ii<repeatCount;ii++)
+                {
+                    startRepeat.run();
+                    repeatables[ii].run();
+                    endRepeat.run();
+                }
+            };
+        }
+        private Runnable createRepeat(MessageClass mc, List<SignalClass> repeatingSignals, int off)
+        {
+            List<Runnable> list = new ArrayList<>();
+            repeatingSignals.forEach((s)->
+            {
+                Runnable r = createSignal(mc, s, off);
+                if (r != null)
+                {
+                    list.add(r);
+                }
+            });
+            return combineRunnables(list);
+        }
         private void createMultiplexor(SignalClass sc)
         {
             IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
             multiplexor = new Multiplexor(is);
             add(multiplexor);
         }
-        private Runnable createBegin(MessageClass mc, SignalCompiler compiler)
+        private Runnable createBegin(MessageClass mc)
         {
             return compiler.compileBegin(mc);
         }
-        private Runnable createSignal(MessageClass mc, SignalClass sc, SignalCompiler compiler)
+        private Runnable createSignal(MessageClass mc, SignalClass sc)
+        {
+            return createSignal(mc, sc, 0);
+        }
+        private Runnable createSignal(MessageClass mc, SignalClass sc, int off)
         {
             IntSupplier is;
             LongSupplier ls;
@@ -196,19 +264,19 @@ public class SingleMessage extends AbstractMessage
             switch (sc.getSignalType())
             {
                 case INT:
-                    is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     return compiler.compile(mc, sc, is);
                 case LONG:
-                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     return compiler.compile(mc, sc, ls);
                 case DOUBLE:
-                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     double factor = sc.getFactor();
                     double offset = sc.getOffset();
                     ds = ()->factor*ls.getAsLong()+offset;
                     return compiler.compile(mc, sc, ds);
                 case LOOKUP:
-                    is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     IntFunction<String> f = sc.getMapper();
                     if (f == null)
                     {
@@ -218,13 +286,13 @@ public class SingleMessage extends AbstractMessage
                 case BINARY:
                     return compiler.compileBinary(mc, sc);
                 case ASCIIZ:
-                    ss = ArrayFuncs.getZeroTerminatingStringSupplier(sc.getStartBit()/8, sc.getSize()/8, buf);
+                    ss = ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
                     return compiler.compileASCII(mc, sc, ss);
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }
         }
-        private Runnable createEnd(MessageClass mc, SignalCompiler compiler)
+        private Runnable createEnd(MessageClass mc)
         {
             return compiler.compileEnd(mc);
         }

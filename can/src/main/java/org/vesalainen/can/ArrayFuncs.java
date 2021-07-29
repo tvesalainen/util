@@ -119,11 +119,11 @@ public final class ArrayFuncs
                 byte sh = arr[3*ii+2];
                 if (sh > 0)
                 {
-                    res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<sh;
+                    res |= ((buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)<<sh;
                 }
                 else
                 {
-                    res |= ((buf[arr[3*ii]]&arr[3*ii+1])&0xff)>>>-sh;
+                    res |= ((buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)>>>-sh;
                 }
             }
             return res;
@@ -137,7 +137,7 @@ public final class ArrayFuncs
             long res = 0;
             for (int ii=0;ii<len;ii++)
             {
-                res |= (((long)buf[arr[3*ii]]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
+                res |= (((long)buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
             }
             return res;
         };
