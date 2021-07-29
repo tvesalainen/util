@@ -106,5 +106,12 @@ public interface IntRange extends Comparable<IntRange>
     {
         return other.accept(getFrom()) || other.accept(getTo()-1) || accept(other.getFrom()) || accept(other.getTo()-1);
     }
-    
+    /**
+     * Returns to - from.
+     * @return 
+     */
+    default int getSize()
+    {
+        return getTo() - getFrom();
+    }
 }
