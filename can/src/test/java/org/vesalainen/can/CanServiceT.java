@@ -80,12 +80,6 @@ public class CanServiceT
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
-        {
-            return ()->System.err.print(" "+sc.getName()+" = "+supplier.get()+" "+sc.getUnit());
-        }
-
-        @Override
         public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
         {
             return ()->
@@ -98,7 +92,7 @@ public class CanServiceT
         }
 
         @Override
-        public Runnable compileASCII(MessageClass mc, SignalClass sc, Supplier<String> supplier)
+        public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
         {
             return ()->
                 {

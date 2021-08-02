@@ -16,7 +16,6 @@
  */
 package org.vesalainen.can;
 
-import java.util.concurrent.Callable;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -31,19 +30,19 @@ import org.vesalainen.can.dbc.SignalClass;
  */
 public interface SignalCompiler
 {
-    Runnable compileBegin(MessageClass mc);
-    Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier);
-    Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier);
-    Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier);
-    Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier);
-    Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map);
-    default Runnable compileBinary(MessageClass mc, SignalClass sc)
+    default boolean needCompilation(int canId)
     {
-        return null;
+        return true;
     }
-    Runnable compileASCII(MessageClass mc, SignalClass sc, Supplier<String> ss);
-    Runnable compileEnd(MessageClass mc);
-    Runnable compileBeginRepeat(MessageClass mc);
-    Runnable compileEndRepeat(MessageClass mc);
+    default Runnable compileBegin(MessageClass mc) {return null;};
+    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier) {return null;};
+    default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier) {return null;};
+    default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier) {return null;};
+    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map) {return null;};
+    default Runnable compileBinary(MessageClass mc, SignalClass sc) {return null;}
+    default Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss) {return null;};
+    default Runnable compileEnd(MessageClass mc) {return null;};
+    default Runnable compileBeginRepeat(MessageClass mc) {return null;};
+    default Runnable compileEndRepeat(MessageClass mc) {return null;};
 
 }

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import org.vesalainen.can.dbc.DBCParser;
 
 /**
@@ -79,6 +80,10 @@ public class N2KData
     public PGNInfo getPGNInfo(int pgn)
     {
         return map.get(pgn);
+    }
+    public IntStream getPGNs()
+    {
+        return map.keySet().stream().mapToInt((i)->i);
     }
     public static class PGNInfo
     {

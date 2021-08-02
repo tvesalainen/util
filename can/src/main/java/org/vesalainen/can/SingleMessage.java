@@ -287,7 +287,7 @@ public class SingleMessage extends AbstractMessage
                     return compiler.compileBinary(mc, sc);
                 case ASCIIZ:
                     ss = ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
-                    return compiler.compileASCII(mc, sc, ss);
+                    return compiler.compile(mc, sc, ss);
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }

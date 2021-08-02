@@ -25,6 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
+import org.vesalainen.text.CamelCase;
 import org.xml.sax.SAXException;
 
 /**
@@ -33,7 +34,7 @@ import org.xml.sax.SAXException;
  */
 public class PGNDefinitionsT
 {
-    @Test
+    //@Test
     public void createN2KDBC() throws ParserConfigurationException, SAXException, IOException
     {
         PGNDefinitions pgnDef = new PGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
@@ -47,5 +48,22 @@ public class PGNDefinitionsT
         {
             pgnDef.print(br);
         }
+    }
+    @Test
+    public void createNMEAPGN()
+    {
+        N2KData n2kData = N2KData.N2K;
+        n2kData.getPGNs().forEach((pgn)->
+        {
+            N2KData.PGNInfo pgnInfo = n2kData.getPGNInfo(pgn);
+            String name = pgnInfo.getName();
+            name = CamelCase.delimitedUpper(name, "_");
+            int idx = name.indexOf('_');
+            name = name.substring(idx+1);
+            System.err.println("/**");
+            System.err.println("* "+pgnInfo.getDescription());
+            System.err.println("*/");
+            System.err.println(name+"("+pgn+"),");
+        });
     }
 }

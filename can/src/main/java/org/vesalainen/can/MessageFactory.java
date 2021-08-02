@@ -36,22 +36,29 @@ public class MessageFactory extends JavaLogging
     
     public AbstractMessage createMessage(int canId, MessageClass mc)
     {
-        SingleMessage sm;
-        String type = (String)mc.getAttributeValue("MessageType");
-        type = type != null ? type : "Single";
-        switch (type)
+        if (compiler.needCompilation(canId))
         {
-            case "Single":
-                sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
-                break;
-            case "Fast":
-                sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
-                break;
-            default:
-                throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+" not supported");
+            SingleMessage sm;
+            String type = (String)mc.getAttributeValue("MessageType");
+            type = type != null ? type : "Single";
+            switch (type)
+            {
+                case "Single":
+                    sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
+                    break;
+                case "Fast":
+                    sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
+                    break;
+                default:
+                    throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+" not supported");
+            }
+            finer("compile(%s)", mc);
+            sm.addSignals(mc, compiler);
+            return sm;
         }
-        finer("compile(%s)", mc);
-        sm.addSignals(mc, compiler);
-        return sm;
+        else
+        {
+            return AbstractMessage.NULL_MESSAGE;
+        }
     }
 }

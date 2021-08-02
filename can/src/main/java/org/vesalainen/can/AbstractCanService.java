@@ -144,7 +144,11 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     {
         return messageFactory.createMessage(canId, mc);
     }
-    public void addDBCFile(Path path)
+    public void addN2K()
+    {
+        addDBCFile(AbstractCanService.class.getResourceAsStream("/n2k.dbc"));
+    }
+    public <T> void addDBCFile(T path)
     {
         DBCFile dbcFile = new DBCFile();
         DBCParser parser = DBCParser.getInstance();
