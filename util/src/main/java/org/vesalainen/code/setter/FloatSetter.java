@@ -26,6 +26,11 @@ public interface FloatSetter extends Setter<FloatSetter>
 
     void set(float v);
 
+    public default void set(double d)
+    {
+        set((float) d);
+    }
+    
     @Override
     public default void setObject(Object v)
     {
