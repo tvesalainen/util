@@ -21,12 +21,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import org.vesalainen.can.dbc.DBCParser;
+import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.MapList;
 
 /**
  *
@@ -36,16 +40,54 @@ public class N2KData
 {
     public static final N2KData N2K = new N2KData();
     
-    private Map<Integer,PGNInfo> map = new HashMap<>();
+    private MapList<Integer,PGNInfo> map = new HashMapList<>();
     
     private N2KData()
+    {
+        n2kmsg();
+        n2k();
+    }
+    public PGNInfo getPGNInfo(int pgn, String name)
+    {
+        List<PGNInfo> list = map.get(pgn);
+        if (list != null)
+        {
+            if (list.isEmpty())
+            {
+                return null;
+            }
+            if (list.size() == 1)
+            {
+                return list.get(0);
+            }
+            else
+            {
+                for (int ii=0;ii<list.size();ii++)
+                {
+                    PGNInfo p = list.get(ii);
+                    if (p.name.toString().contains(name))
+                    {
+                        return p;
+                    }
+                }
+                throw new IllegalArgumentException(pgn+" "+name+" not found");
+            }
+        }
+        return null;
+    }
+    public IntStream getPGNs()
+    {
+        return map.keySet().stream().mapToInt((i)->i);
+    }
+
+    private void n2k()
     {
         try (   InputStream is = DBCParser.class.getResourceAsStream("/n2k.txt");
                 InputStreamReader isr = new InputStreamReader(is, US_ASCII);
                 BufferedReader br = new BufferedReader(isr)
                 )
         {
-            PGNInfo pgnInfo = null;
+            List<PGNInfo> pgnInfos = null;
             String line = br.readLine();
             while (line != null)
             {
@@ -54,19 +96,14 @@ public class N2KData
                     String[] split = line.split(" - ", 2);
                     int pgn = Integer.parseInt(split[0]);
                     String name = split[1];
-                    pgnInfo = new PGNInfo(pgn, "PGN"+line);
-                    map.put(pgn, pgnInfo);
+                    pgnInfos = map.get(pgn);
                 }
                 else
                 {
                     if (line.startsWith("Category: "))
                     {
                         String category = line.substring(10);
-                        pgnInfo.setCategory(category);
-                    }
-                    else
-                    {
-                        pgnInfo.addDescription(line.replace('"', '\''));
+                        pgnInfos.forEach((p)->p.setCategory(category));
                     }
                 }
                 line = br.readLine();
@@ -77,20 +114,64 @@ public class N2KData
             Logger.getLogger(N2KData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    public PGNInfo getPGNInfo(int pgn)
+    private void n2kmsg()
     {
-        return map.get(pgn);
-    }
-    public IntStream getPGNs()
-    {
-        return map.keySet().stream().mapToInt((i)->i);
+        try (   InputStream is = DBCParser.class.getResourceAsStream("/n2kmsg.txt");
+                InputStreamReader isr = new InputStreamReader(is, US_ASCII);
+                BufferedReader br = new BufferedReader(isr)
+                )
+        {
+            PGNInfo pgnInfo = null;
+            String line = br.readLine();
+            while (line != null)
+            {
+                if (Character.isDigit(line.charAt(0)))
+                {
+                    String[] split = line.split(" ", 2);
+                    int n = 0;
+                    try
+                    {
+                        n = Integer.parseInt(split[0]);
+                    }
+                    catch (NumberFormatException nfe)
+                    {
+                        n = -1;
+                    }
+                    if (n > 0)
+                    {
+                        if (n > 100)
+                        {
+                            pgnInfo = new PGNInfo(n, "Pgn"+line);
+                            map.add(n, pgnInfo);
+                        }
+                        else
+                        {
+                            pgnInfo.setField(n, split[1]);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!line.equals("Field # Field Description"))
+                    {
+                        pgnInfo.addDescription(line);
+                    }
+                }
+                line = br.readLine();
+            }
+        }
+        catch (IOException ex)
+        {
+            Logger.getLogger(N2KData.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     public static class PGNInfo
     {
         private int pgn;
         private String name;
-        private String category;
+        private String category = "Unknown";
         private StringBuilder description = new StringBuilder();
+        private List<String> fields = new ArrayList<>();
 
         public PGNInfo(int pgn, String name)
         {
@@ -129,7 +210,23 @@ public class N2KData
             {
                 description.append(' ');
             }
-            description.append(txt);
+            description.append(txt.replace('"', '\''));
+        }
+        public String getField(int order)
+        {
+            if (order < 1 || order > fields.size())
+            {
+                throw new IllegalArgumentException("order out of range");
+            }
+            return fields.get(order-1);
+        }
+        private void setField(int n, String field)
+        {
+            if (n != fields.size()+1)
+            {
+                throw new IllegalArgumentException("not in sequence");
+            }
+            fields.add(field);
         }
         
     }

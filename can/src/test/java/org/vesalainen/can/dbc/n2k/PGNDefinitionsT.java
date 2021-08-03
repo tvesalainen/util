@@ -34,13 +34,19 @@ import org.xml.sax.SAXException;
  */
 public class PGNDefinitionsT
 {
-    //@Test
+    @Test
+    public void test()
+    {
+        N2KData n2kData = N2KData.N2K;
+    }
+    @Test
     public void createN2KDBC() throws ParserConfigurationException, SAXException, IOException
     {
         PGNDefinitions pgnDef = new PGNDefinitions(Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\analyzer\\pgns.xml"));
         StringBuilder sb = new StringBuilder();
         pgnDef.print(sb);
         DBCFile dbcFile2 = new DBCFile();
+        System.err.print(sb);
         DBCParser parser = DBCParser.getInstance();
         parser.parse(sb, dbcFile2);
         Path target = Paths.get("src", "main", "resources", "n2k.dbc");
@@ -49,13 +55,13 @@ public class PGNDefinitionsT
             pgnDef.print(br);
         }
     }
-    @Test
+    //@Test
     public void createNMEAPGN()
     {
         N2KData n2kData = N2KData.N2K;
         n2kData.getPGNs().forEach((pgn)->
         {
-            N2KData.PGNInfo pgnInfo = n2kData.getPGNInfo(pgn);
+            N2KData.PGNInfo pgnInfo = n2kData.getPGNInfo(pgn, null);
             String name = pgnInfo.getName();
             name = CamelCase.delimitedUpper(name, "_");
             int idx = name.indexOf('_');

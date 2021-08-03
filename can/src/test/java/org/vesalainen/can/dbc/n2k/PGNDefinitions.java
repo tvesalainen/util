@@ -133,7 +133,7 @@ public class PGNDefinitions extends DBCFile
         String id = null;
         String description = null;
         String type = null;
-        boolean complete;
+        boolean complete = false;
         int size = 0;
         int repeatingFields = 0;
         Node fields = null;
@@ -150,7 +150,7 @@ public class PGNDefinitions extends DBCFile
                 case "Id":
                 id = node.getTextContent();
                 break;
-                case "description":
+                case "Description":
                 description = node.getTextContent();
                 break;
                 case "Type":
@@ -170,39 +170,43 @@ public class PGNDefinitions extends DBCFile
                 break;
             }
         }
-        int canId = PGN.canId(pgn);
-        N2KData.PGNInfo pgnInfo = N2KData.N2K.getPGNInfo(pgn);
-        if (fields != null && pgnInfo != null)
+        if (complete)
         {
-            List<SignalClass> signals = new ArrayList<>();
-            NodeList fieldNodes = fields.getChildNodes();
-            int fldLen = fieldNodes.getLength();
-            for (int ff=0;ff<fldLen;ff++)
+            int canId = PGN.canId(pgn);
+            N2KData.PGNInfo pgnInfo = N2KData.N2K.getPGNInfo(pgn, description);
+            if (fields != null && pgnInfo != null)
             {
-                Node fieldNode = fieldNodes.item(ff);
-                SignalClass sc = parseField(canId, fieldNode);
-                if (sc != null)
+                List<SignalClass> signals = new ArrayList<>();
+                NodeList fieldNodes = fields.getChildNodes();
+                int fldLen = fieldNodes.getLength();
+                for (int ff=0;ff<fldLen;ff++)
                 {
-                    signals.add(sc);
+                    Node fieldNode = fieldNodes.item(ff);
+                    SignalClass sc = parseField(canId, fieldNode, pgnInfo);
+                    if (sc != null)
+                    {
+                        signals.add(sc);
+                    }
                 }
+                String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
+                MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
+                msg.setAttributeValue("MessageType", type.toString());
+                if (repeatingFields > 0)
+                {
+                    handleRepeating(msg, repeatingFields, signals);
+                }
+                msg.setComment(pgnInfo.getDescription());
+                addNode(transmitter);
+                return msg;
             }
-            String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
-            MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
-            msg.setAttributeValue("MessageType", type.toString());
-            if (repeatingFields > 0)
-            {
-                handleRepeating(msg, repeatingFields, signals);
-            }
-            msg.setComment(pgnInfo.getDescription());
-            addNode(transmitter);
-            return msg;
         }
         return null;
   }
 
-    private SignalClass parseField(int canId, Node fieldNode)
+    private SignalClass parseField(int canId, Node fieldNode, N2KData.PGNInfo pgnInfo)
     {
         String name = null;
+        int order = 0;
         int length = 0;
         int offset = 0;
         String type = null;
@@ -221,6 +225,9 @@ public class PGNDefinitions extends DBCFile
             {
                 case "Name":
                     name = node.getTextContent();
+                    break;
+                case "Order":
+                    order = Integer.parseUnsignedInt(node.getTextContent());
                     break;
                 case "BitLength":
                     length = Integer.parseUnsignedInt(node.getTextContent());
@@ -251,6 +258,7 @@ public class PGNDefinitions extends DBCFile
         }
         if (name != null && len > 0)
         {
+            name = pgnInfo.getField(order);
             String nam = CamelCase.delimited(name, "_");
             SignalClass sc = createSignal(
                     nam, 
