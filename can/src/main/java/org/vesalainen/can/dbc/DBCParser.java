@@ -29,6 +29,8 @@ import org.vesalainen.parser.annotation.ReservedWords;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.AbstractParser;
+import org.vesalainen.util.IntRange;
+import org.vesalainen.util.SimpleIntRange;
 
 /**
  *
@@ -36,7 +38,7 @@ import org.vesalainen.parser.util.AbstractParser;
  */
 @GenClassname()
 @GrammarDef()
-@Rule(left="DBC_file", value={"version? new_symbols bit_timing nodes value_tables messages message_transmitters environment_variables environment_variables_data signal_types comments attribute_definitions attribute_defaults attribute_values value_descriptions signal_type_refs signal_groups"})
+@Rule(left="DBC_file", value={"version? new_symbols bit_timing nodes value_tables messages message_transmitters environment_variables environment_variables_data signal_types comments attribute_definitions attribute_defaults attribute_values value_descriptions signal_type_refs signal_groups extended_multiplexing"})
 @ReservedWords({"NS_DESC_", "SG_MUL_VAL_",  "STRING", "INT", "FLOAT", "HEX", "ENUM", "VERSION", "BS_", "BU_", "BO_", "SG_", "EV_", "NS_", "CM_", "BA_DEF_", "BA_", "VAL_", "CAT_DEF_", "CAT_", "FILTER", "BA_DEF_DEF_", "EV_DATA_", "ENVVAR_DATA_", "SGTYPE_", "SGTYPE_VAL_", "BA_DEF_SGTYPE_", "BA_SGTYPE_", "SIG_TYPE_REF_", "VAL_TABLE_", "SIG_GROUP_", "SIG_VALTYPE_", "SIGTYPE_VALTYPE_", "BO_TX_BU_", "BA_DEF_REL_", "BA_REL_", "BA_DEF_DEF_REL_", "BU_SG_REL_", "BU_EV_REL_", "BU_BO_REL_"})
 public abstract class DBCParser extends AbstractParser implements ParserInfo
 {
@@ -167,7 +169,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     @Rule(left="multiplexer_indicator", value={"'m' multiplexer_switch_value 'M'"})
     protected MultiplexerIndicator multiplexerIndicator2(int value)
     {
-        throw new UnsupportedOperationException("extended multiplexing not supported yet.");
+        return new MultiplexerIndicator(value, true);
     }
     @Rule(left="multiplexer_switch_value", value={"unsigned_integer"})
     protected int multiplexerSwitchValue(int value)
@@ -508,11 +510,39 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     {
         return new EnvironmentAttributeValue(name, envVar, value);
     }
+    @Rule(left="extended_multiplexing", value={"multiplexed_signal*"})
+    protected void extendedMultiplexing()
+    {
+        
+    }
+    @Rule(left="multiplexed_signal", value={"SG_MUL_VAL_ message_id signal_name signal_name multiplexor_value_ranges ';'"})
+    protected void multiplexedSignal(int id, String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges)
+    {
+        
+    }
+    @Rule(left="multiplexor_value_ranges", value={"multiplexor_value_range"})
+    protected List<IntRange>  multiplexorValueRanges(List<IntRange> multiplexorValueRanges)
+    {
+        return multiplexorValueRanges;
+    }
+    @Rule(left="multiplexor_value_range", value={"unsigned_integer '\\-' unsigned_integer"})
+    protected List<IntRange>  multiplexorValueRange(int from, int to)
+    {
+        List<IntRange> list = new ArrayList<>();
+        list.add(new SimpleIntRange(from, to+1));
+        return list;
+    }
+    @Rule(left="multiplexor_value_range", value={"multiplexor_value_range '\\,' unsigned_integer '\\-' unsigned_integer"})
+    protected List<IntRange>  multiplexorValueRange(List<IntRange> list, int from, int to)
+    {
+        list.add(new SimpleIntRange(from, to+1));
+        return list;
+    }
     public static DBCParser getInstance()
     {
         return (DBCParser) GenClassFactory.loadGenInstance(DBCParser.class);
     }
-    @ParseMethod(start="DBC_file", whiteSpace={"whiteSpace"})
+    @ParseMethod(start="DBC_file", whiteSpace={"whiteSpace"}, charSet="ISO-8859-1")
     public <T> void parse(T text, @ParserContext("DBCFile") DBCFile dbcFile)
     {
         throw new UnsupportedOperationException();
@@ -538,7 +568,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     /**
      * char_string: an arbitrary string consisting of any printable characters except double hyphens ('"').
      */
-    @Terminal(expression = "\"([^\"]|\\\\\")*\"")
+    @Terminal(expression = "\"[^\"]*\"")
     protected String char_string(CharSequence seq)
     {
         return seq.subSequence(1, seq.length() - 1).toString();
