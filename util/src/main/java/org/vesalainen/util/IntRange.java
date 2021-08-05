@@ -16,6 +16,13 @@
  */
 package org.vesalainen.util;
 
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import static java.util.Spliterator.*;
+import java.util.Spliterators;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
+
 
 /**
  *
@@ -113,5 +120,26 @@ public interface IntRange extends Comparable<IntRange>
     default int getSize()
     {
         return getTo() - getFrom();
+    }
+    /**
+     * Returns iterator of all items.
+     * @return 
+     */
+    PrimitiveIterator.OfInt iterator();
+    /**
+     * Returns spliterator of all items.
+     * @return 
+     */
+    default Spliterator.OfInt spliterator()
+    {
+        return Spliterators.spliterator(iterator(), getSize(), CONCURRENT|DISTINCT|ORDERED|SIZED|SORTED);
+    }
+    /**
+     * Returns IntStream of all items.
+     * @return 
+     */
+    default IntStream stream()
+    {
+        return StreamSupport.intStream(spliterator(), true);
     }
 }
