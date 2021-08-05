@@ -75,11 +75,6 @@ public class SimpleIntRange implements IntRange
         return to;
     }
 
-    @Override
-    public PrimitiveIterator.OfInt iterator()
-    {
-        return new Iter(this);
-    }
     public static class EmptyRange implements IntRange
     {
 
@@ -95,35 +90,6 @@ public class SimpleIntRange implements IntRange
             return 0;
         }
 
-        @Override
-        public PrimitiveIterator.OfInt iterator()
-        {
-            return new Iter(this);
-        }
-        
     }
 
-    private static class Iter implements PrimitiveIterator.OfInt
-    {
-        private int next;
-        private final int to;
-        
-        public Iter(IntRange r)
-        {
-            this.next = r.getFrom();
-            this.to = r.getTo();
-        }
-
-        @Override
-        public int nextInt()
-        {
-            return next++;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return next < to;
-        }
-    }
 }

@@ -122,24 +122,11 @@ public interface IntRange extends Comparable<IntRange>
         return getTo() - getFrom();
     }
     /**
-     * Returns iterator of all items.
-     * @return 
-     */
-    PrimitiveIterator.OfInt iterator();
-    /**
-     * Returns spliterator of all items.
-     * @return 
-     */
-    default Spliterator.OfInt spliterator()
-    {
-        return Spliterators.spliterator(iterator(), getSize(), CONCURRENT|DISTINCT|ORDERED|SIZED|SORTED);
-    }
-    /**
      * Returns IntStream of all items.
      * @return 
      */
     default IntStream stream()
     {
-        return StreamSupport.intStream(spliterator(), true);
+        return IntStream.range(getFrom(), getTo());
     }
 }
