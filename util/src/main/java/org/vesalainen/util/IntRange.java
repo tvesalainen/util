@@ -16,12 +16,7 @@
  */
 package org.vesalainen.util;
 
-import java.util.PrimitiveIterator;
-import java.util.Spliterator;
-import static java.util.Spliterator.*;
-import java.util.Spliterators;
 import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
 
 
 /**
