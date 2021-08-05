@@ -124,4 +124,12 @@ public interface IntRange extends Comparable<IntRange>
     {
         return IntStream.range(getFrom(), getTo());
     }
+    /**
+     * Returns getTo()-1
+     * @return 
+     */
+    default int getToInclusive()
+    {
+        return getTo()-1;
+    }
 }
