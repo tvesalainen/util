@@ -76,7 +76,7 @@ public class SimpleIntRange implements IntRange
     }
 
     @Override
-    String toString()
+    public String toString()
     {
         int t = to-1;
         return "["+from+'-'+t+']';
@@ -98,7 +98,7 @@ public class SimpleIntRange implements IntRange
         }
 
         @Override
-        String toString()
+        public String toString()
         {
             return "[]";
         }
