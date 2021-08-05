@@ -160,7 +160,7 @@ public class SingleMessage extends AbstractMessage
                         Runnable act = createSignal(mc, s);
                         if (act != null)
                         {
-                            mpxMap.add(mpxI.getValue(), act);
+                            mpxI.getValues().forEach((i)->mpxMap.add(i, act));
                         }
                     }
                 }

@@ -188,6 +188,10 @@ public class PGNDefinitions extends DBCFile
                         signals.add(sc);
                     }
                 }
+                switch (pgn)
+                {
+                    
+                }
                 String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
                 MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
                 msg.setAttributeValue("MessageType", type.toString());
@@ -258,7 +262,10 @@ public class PGNDefinitions extends DBCFile
         }
         if (name != null && len > 0)
         {
-            name = pgnInfo.getField(order);
+            if (pgnInfo.isFieldInRange(order))
+            {
+                name = pgnInfo.getField(order);
+            }
             String nam = CamelCase.delimited(name, "_");
             SignalClass sc = createSignal(
                     nam, 

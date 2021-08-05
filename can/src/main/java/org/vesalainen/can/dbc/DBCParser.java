@@ -516,9 +516,9 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
         
     }
     @Rule(left="multiplexed_signal", value={"SG_MUL_VAL_ message_id signal_name signal_name multiplexor_value_ranges ';'"})
-    protected void multiplexedSignal(int id, String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges)
+    protected void multiplexedSignal(int id, String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges, @ParserContext("DBCFile") DBCFile dbcFile)
     {
-        
+        dbcFile.addMultiplexedSignal(id, multiplexedSignalName, multiplexorSwitchName, multiplexorValueRanges);
     }
     @Rule(left="multiplexor_value_ranges", value={"multiplexor_value_range"})
     protected List<IntRange>  multiplexorValueRanges(List<IntRange> multiplexorValueRanges)

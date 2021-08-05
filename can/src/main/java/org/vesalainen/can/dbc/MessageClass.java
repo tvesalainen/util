@@ -155,6 +155,12 @@ public class MessageClass extends DBCBase implements AttachedLogger
         }
     }
 
+    public void addMultiplexedSignal(String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges)
+    {
+        SignalClass multiplexedSignal = signals.get(multiplexedSignalName);
+        SignalClass multiplexorSwitch = signals.get(multiplexorSwitchName);
+    }
+
     void print(AppendablePrinter out)
     {
         out.format("BO_ %d %s: %d %s\n", id, name, size, transmitter);

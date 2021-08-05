@@ -212,9 +212,13 @@ public class N2KData
             }
             description.append(txt.replace('"', '\''));
         }
+        public boolean isFieldInRange(int order)
+        {
+            return order >= 1 && order <= fields.size();
+        }
         public String getField(int order)
         {
-            if (order < 1 || order > fields.size())
+            if (!isFieldInRange(order))
             {
                 throw new IllegalArgumentException("order out of range");
             }

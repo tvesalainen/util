@@ -19,6 +19,8 @@ package org.vesalainen.can.dbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -37,6 +39,14 @@ public class DBCParserTest
     }
 
     @Test
+    public void testCSS_Electronics_OBD2_v1_0() throws IOException
+    {
+        Path path = Paths.get("C:\\Users\\tkv\\Downloads\\sample-data\\sample-data\\sample-data\\OBD2-DBC-MDF4\\OBD2-DBC-MDF4\\CSS-Electronics-OBD2-v1.0.dbc");
+        DBCFile dbcFile = new DBCFile();
+        DBCParser parser = DBCParser.getInstance();
+        parser.parse(path, dbcFile);
+    }
+    //@Test
     public void testOrion() throws IOException
     {
         DBCFile dbcFile = new DBCFile();
@@ -46,7 +56,7 @@ public class DBCParserTest
             parser.parse(is, dbcFile);
         }
     }
-    @Test
+    //@Test
     public void testEx() throws IOException
     {
         DBCFile dbcFile = new DBCFile();
@@ -56,7 +66,7 @@ public class DBCParserTest
             parser.parse(is, dbcFile);
         }
     }
-    @Test
+    //@Test
     public void testCurtis() throws IOException
     {
         DBCFile dbcFile = new DBCFile();

@@ -16,43 +16,78 @@
  */
 package org.vesalainen.can.dbc;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
+import org.vesalainen.util.CollectionHelp;
+import org.vesalainen.util.SimpleIntRange;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class MultiplexerIndicator
 {
-    private int value = -1;
+    private List<SimpleIntRange> ranges = new ArrayList<>();
+    private final boolean extended;
 
     public MultiplexerIndicator()
     {
+        this.extended = false;
     }
 
     public MultiplexerIndicator(int value)
     {
-        this.value = value;
-    }
-    
-    public boolean isMultiplexor()
-    {
-        return value == -1;
+        this(value, false);
     }
 
-    public int getValue()
+    public MultiplexerIndicator(int value, boolean extended)
     {
-        return value;
+        this.ranges.add((SimpleIntRange) SimpleIntRange.getInstance(value));
+        this.extended = extended;
+    }
+
+    public boolean isMultiplexor()
+    {
+        return !ranges.isEmpty() || extended;
+    }
+
+    public boolean isExtended()
+    {
+        return extended;
+    }
+
+    public IntStream getValues()
+    {
+        if (ranges.isEmpty())
+        {
+            return IntStream.empty();
+        }
+        IntStream is = ranges.get(0).stream();
+        for (int ii=1;ii<ranges.size();ii++)
+        {
+            is = IntStream.concat(is, ranges.get(ii).stream());
+        }
+        return is;
     }
 
     public void setValue(int value)
     {
-        this.value = value;
+        this.ranges.add((SimpleIntRange) SimpleIntRange.getInstance(value));
+    }
+
+    public void setRange(int from, int to)
+    {
+        this.ranges.add(new SimpleIntRange(from, to+1));
     }
 
     @Override
     public int hashCode()
     {
-        int hash = 3;
-        hash = 61 * hash + this.value;
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.ranges);
+        hash = 37 * hash + (this.extended ? 1 : 0);
         return hash;
     }
 
@@ -72,7 +107,11 @@ public class MultiplexerIndicator
             return false;
         }
         final MultiplexerIndicator other = (MultiplexerIndicator) obj;
-        if (this.value != other.value)
+        if (this.extended != other.extended)
+        {
+            return false;
+        }
+        if (!Objects.equals(this.ranges, other.ranges))
         {
             return false;
         }
@@ -82,7 +121,12 @@ public class MultiplexerIndicator
     @Override
     public String toString()
     {
-        return value == -1 ? "M" : "m"+value;
+        return ranges.isEmpty() ? "M" : extended ? "m"+value()+"M" : "m"+value();
+    }
+
+    private String value()
+    {
+        return getValues().findFirst().getAsInt()+"";
     }
     
 }

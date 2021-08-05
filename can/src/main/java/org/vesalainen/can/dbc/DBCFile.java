@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.vesalainen.io.AppendablePrinter;
+import org.vesalainen.util.IntRange;
 import org.vesalainen.util.LinkedMap;
 
 /**
@@ -217,6 +218,12 @@ public class DBCFile extends DBCBase
     {
         MessageClass message = messages.get(id);
         message.setSignalComment(signal, comment);
+    }
+
+    public void addMultiplexedSignal(int id, String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges)
+    {
+        MessageClass message = messages.get(id);
+        message.addMultiplexedSignal(multiplexedSignalName, multiplexorSwitchName, multiplexorValueRanges);
     }
 
     public final void addAttribute(String name, int value, int def)

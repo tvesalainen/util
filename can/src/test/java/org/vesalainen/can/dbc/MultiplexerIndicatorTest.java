@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,38 +16,37 @@
  */
 package org.vesalainen.can.dbc;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class EnumAttributeValueType extends AttributeValueType
+public class MultiplexerIndicatorTest
 {
-
-    private final List<String> types;
-
-    public EnumAttributeValueType(List<String> types)
+    
+    public MultiplexerIndicatorTest()
     {
-        this.types = types;
     }
 
-    @Override
-    String getType()
+    @Test
+    public void testToString1()
     {
-        return types.stream().collect(Collectors.joining(","));
+        MultiplexerIndicator mi = new MultiplexerIndicator();
+        assertEquals("M", mi.toString());
     }
-
-    @Override
-    Object convType(Object value)
+    @Test
+    public void testToString2()
     {
-        if (value instanceof Number)
-        {
-            Number n = (Number) value;
-            return n.intValue();
-        }
-        return value;
+        MultiplexerIndicator mi = new MultiplexerIndicator(0);
+        assertEquals("m0", mi.toString());
     }
-
+    @Test
+    public void testToString3()
+    {
+        MultiplexerIndicator mi = new MultiplexerIndicator(0, true);
+        assertEquals("m0M", mi.toString());
+    }
+    
 }
