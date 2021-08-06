@@ -1,0 +1,1489 @@
+VERSION ""
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_ :
+
+BU_: MFD Steering Power Propulsion Navigation Ais Unknown Environmental General_Or_Mandatory
+
+
+
+BO_ 16701694 Pgn065240_Iso_Commanded_Address: 9 General_Or_Mandatory
+ SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Function_Iso_Function : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 48|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ New_Source_Address : 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33428222 Pgn130578_Vessel_Speed_Components: 12 General_Or_Mandatory
+ SG_ Longitudinal_Speed_Water_Referenced : 0|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Transverse_Speed_Water_Referenced : 16|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Longitudinal_Speed_Ground_Referenced : 32|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Transverse_Speed_Ground_Referenced : 48|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Stern_Speed_Water_Referenced : 64|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Stern_Speed_Ground_Referenced : 80|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+
+BO_ 33358590 Pgn130306_Wind_Data: 8 Environmental
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Wind_Speed : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Wind_Direction : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Wind_Reference : 40|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserve : 43|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33359614 Pgn130310_Environmental_Parameters: 8 Environmental
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Water_Temp : 8|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Outside_Ambient_Air_Temp : 24|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Atmospheric_Pressure : 40|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temperature_Instance M : 8|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Humidity_Instance : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sea_Temperature m0 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Outside_Temperature m1 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Inside_Temperature m2 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Engine_Room_Temperature m3 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Main_Cabin_Temperature m4 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Live_Well_Temperature m5 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Bait_Well_Temperature m6 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Refridgeration_Temperature m7 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heating_System_Temperature m8 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Dew_Point_Temperature m9 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Apparent_Wind_Chill_Temperature m10 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Theoretical_Wind_Chill_Temperature m11 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heat_Index_Temperature m12 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Freezer_Temperature m13 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Exhaust_Gas_Temperature m14 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Humidity : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Atmospheric_Pressure : 48|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+
+BO_ 33360126 Pgn130312_Temperature: 8 Unknown
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temperature_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temperature_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Actual_Temperature : 24|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Set_Temperature : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+
+BO_ 33360382 Pgn130313_Humidity: 8 Unknown
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Humidity_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Humidity_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Actual_Humidity : 24|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Set_Humidity : 40|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+
+BO_ 33360638 Pgn130314_Actual_Pressure: 8 Unknown
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressure_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressure_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressure : 24|32@1- (0.1,0.0) [0.0|0.0] "dPa" MFD
+
+BO_ 33360894 Pgn130315_Set_Pressure: 8 Unknown
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressue_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressure_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pressure : 24|32@1+ (0.1,0.0) [0.0|0.0] "dPa" MFD
+
+BO_ 33362174 Pgn130320_Tide_Station_Data: 20 Environmental
+ SG_ Mode : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Tide_Tendency : 4|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Measurement_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Measurement_Time : 24|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Station_Location_Latitude : 56|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Station_Location_Longitude : 88|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Tide_Level : 120|16@1- (0.001,0.0) [0.0|0.0] "m" MFD
+ SG_ Tide_Level_Standard_Deviation : 136|16@1+ (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Station_Id_String : 152|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Station_Name_String : 168|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33162238 Pgn129539_Gnss_Dops: 8 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Set_Mode : 8|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Op_Mode : 11|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserve : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Hdop : 16|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+ SG_ Vdop : 32|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+ SG_ Tdop : 48|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+
+BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mode : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserve_Bits : 10|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Svs : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Prn_1 : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Elevation_1 : 32|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Azimuth_1 : 48|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Snr_1 : 64|16@1+ (0.01,0.0) [0.0|0.0] "dB" MFD
+ SG_ Range_Residuals_1 : 80|32@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Prn_Status_1 : 112|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 116|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Imo : 40|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Call_Sign : 72|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Name : 128|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ship_Cargo_Type : 288|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ship_Length : 296|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Ship_Beam : 312|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 328|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 344|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Estimated_Date_Of_Arrival : 360|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Estimated_Time_Of_Arrival : 376|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Draft : 408|16@1+ (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Destination : 424|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Version : 584|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Type_Of_Electronic_Positioning_Device : 586|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Terminal_Equipment_Dte : 590|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 591|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 592|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 13 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Number : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Destination_Id : 48|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Nmea_2000_Reserved : 80|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Retransmit_Flag : 86|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 87|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Bits_In_Binary_Data_Field : 88|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Binary_Data : 104|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33228030 Pgn129796_Ais_Acknowledge: 12 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Destination_Id_1 : 48|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_2000_Reserved : 80|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Number_For_Id_1 : 82|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Destination_Id_N : 88|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33228286 Pgn129797_Ais_Binary_Broadcast_Message: 233 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_2000_Reserved : 40|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Bits_In_Binary_Data_Field : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Binary_Data : 64|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33231358 Pgn129809_Ais_Class_B_Cs_Static_Data_Report_Part_A: 27 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Name : 40|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 200|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 205|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Id : 208|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Type_Of_Ship_And_Cargo : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Vendor_Id : 48|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Call_Sign : 104|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ship_Length : 160|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Ship_Beam : 176|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Reference_Point_Position_From_Starboard : 192|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Reference_Point_Position_Aft_Of_Bow : 208|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Mother_Ship_Mmsi : 224|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Nmea_2000_Reserved : 256|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 258|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 264|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 269|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Id : 272|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33032702 Pgn129033_Time_Date: 8 Navigation
+ SG_ Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Time : 16|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Local_Offset_Minutes : 48|16@1- (1.0,0.0) [0.0|0.0] "minutes" MFD
+
+BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
+ SG_ Latitude : 0|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Longitude : 32|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 33030910 Pgn129026_Cog_Sog_Rapid_Update: 8 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Cog_Reference : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Course_Over_Ground : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Speed_Over_Ground : 32|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Reserved_Bits : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Position_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Position_Time : 24|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Latitude : 56|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
+ SG_ Longitude : 120|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
+ SG_ Altitude : 184|64@1- (1.0E-6,0.0) [0.0|0.0] "m" MFD
+ SG_ Type_Of_System : 248|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Method_Gnss : 252|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Integrity : 256|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 258|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Svs : 264|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Hdop : 272|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+ SG_ Pdop : 288|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+ SG_ Geoidal_Separation : 304|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Number_Of_Reference_Stations : 336|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reference_Station_Type_1 : 344|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reference_Station_Id_1 : 348|12@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Age_Of_Dgnss_Corrections_1 : 360|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+
+BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Communication_State : 144|19@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 163|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Rate_Of_Turn : 184|16@1- (0.33749999999999997,0.0) [0.0|0.0] "deg/min" MFD
+ SG_ Navigational_Status : 200|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_For_Regional_Applications : 204|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 206|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Spare : 208|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 211|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Id : 216|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33034238 Pgn129039_Ais_Class_B_Position_Report: 26 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Communication_State : 144|19@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 163|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Reserved_For_Regional_Applications : 192|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Class_B_Unit_Flag : 194|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Class_B_Display_Flag : 195|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Class_B_Dsc_Flag : 196|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Class_B_Band_Flag : 197|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Class_B_Msg_22_Flag : 198|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mode_Flag : 199|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Communication_State_Selector_Flag : 200|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33034494 Pgn129040_Ais_Class_B_Extended_Position_Report: 33 Ais
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Reserved_For_Regional_Applications : 152|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ship_Cargo_Type : 160|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Nmea_2000_Reserved : 184|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Type_Of_Electronic_Positioning_Device : 188|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ship_Length : 192|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Ship_Beam : 208|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 224|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 240|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Name : 256|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Terminal_Equipment_Dte : 416|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mode_Flag : 417|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Spare : 418|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 422|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33035518 Pgn129044_Datum: 24 Navigation
+ SG_ Local_Datum : 0|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Delta_Latitude : 32|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Delta_Longitude : 64|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Delta_Altitude : 96|32@1- (1.0E-6,0.0) [0.0|0.0] "m" MFD
+ SG_ Reference_Datum : 128|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33035774 Pgn129045_User_Datum_Settings: 37 Navigation
+ SG_ Delta_X : 0|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Delta_Y : 32|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Delta_Z : 64|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Rotation_In_X : 96|32@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rotation_In_Y : 128|32@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rotation_In_Z : 160|32@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Scale : 192|32@1- (1.0,0.0) [0.0|0.0] "ppm" MFD
+ SG_ Ellipsoid_Semi_Major_Axis : 224|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Ellipsoid_Flattening_Inverse : 256|32@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Datum_Name : 288|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33096702 Pgn129283_Cross_Track_Error: 8 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Xte_Mode : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Navigation_Terminated : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Xte : 16|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Reserve : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33096958 Pgn129284_Navigation_Data: 34 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Distance_To_Destination_Waypoint : 8|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Course_Bearing_Ref : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Perpendicular_Crossed : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Arrival_Circle_Entered : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Calculation_Type : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Eta_Time : 48|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Eta_Date : 80|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Bearing_Origin_To_Destination_Waypoint : 96|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Bearing_Position_To_Destination_Waypoint : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Origin_Waypoint_Number : 128|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Destination_Waypoint_Number : 160|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Destination_Wpt_Latitude : 192|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Destination_Wpt_Longitude : 224|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Waypoint_Closing_Velocity : 256|16@1- (0.01,0.0) [0.0|0.0] "m/s" MFD
+
+BO_ 33097214 Pgn129285_Navigation_Route_Wp_Information: 233 Navigation
+ SG_ Start_Rps : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ N_Items : 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Database_Id : 32|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Route_Id : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Navigation_Direction_In_Route : 64|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Supplementary_Route_Wp_Data_Available : 66|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 68|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Route_Name : 72|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 2112|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Wpid : 2120|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Wp_Name : 2136|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Wp_Latitude : 4176|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Wp_Longitude : 4208|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 32834558 Pgn128259_Speed_Water_Referenced: 8 Propulsion
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Speed_Water_Referenced : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Speed_Ground_Referenced : 24|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Speed_Water_Referenced_Type : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Speed_Direction : 48|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 52|12@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32836606 Pgn128267_Water_Depth: 8 Navigation
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Water_Depth_Transducer : 8|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Offset : 40|16@1- (0.001,0.0) [0.0|0.0] "m" MFD
+ SG_ Reserved_Bits : 56|8@1+ (10.0,0.0) [0.0|0.0] "m" MFD
+
+BO_ 32838654 Pgn128275_Distance_Log: 14 Navigation
+ SG_ Measurement_Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Measurement_Time : 16|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Total_Cumulative_Distance : 48|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
+ SG_ Distance_Since_Last_Reset : 80|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
+
+BO_ 32639486 Pgn127497_Trip_Parameters_Engine: 9 Propulsion
+ SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Trip_Fuel_Used : 8|16@1+ (1.0,0.0) [0.0|0.0] "L" MFD
+ SG_ Fuel_Rate_Average : 24|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Fuel_Rate_Economy : 40|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Instantaneous_Fuel_Economy : 56|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+
+BO_ 32637182 Pgn127488_Engine_Parameters_Rapid_Update: 8 Propulsion
+ SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Speed : 8|16@1+ (0.25,0.0) [0.0|0.0] "rpm" MFD
+ SG_ Engine_Boost_Pressure : 24|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Engine_Tilt_Trim : 40|8@1- (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32637438 Pgn127489_Engine_Parameters_Dynamic: 26 Propulsion
+ SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Oil_Pressure : 8|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Engine_Oil_Temp : 24|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Engine_Temp : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Alternator_Potential : 56|16@1- (0.01,0.0) [0.0|0.0] "V" MFD
+ SG_ Fuel_Rate : 72|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Total_Engine_Hours : 88|32@1+ (1.0,0.0) [0.0|0.0] "s" MFD
+ SG_ Engine_Coolant_Pressure : 120|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Fuel_Pressure : 136|16@1+ (1.0,0.0) [0.0|0.0] "kPa" MFD
+ SG_ Not_Available : 152|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Discrete_Status_1 : 160|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Discrete_Status_2 : 176|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Percent_Engine_Load : 192|8@1- (1.0,0.0) [0.0|0.0] "%" MFD
+ SG_ Percent_Engine_Torque : 200|8@1- (1.0,0.0) [0.0|0.0] "%" MFD
+
+BO_ 32638462 Pgn127493_Transmission_Parameters_Dynamic: 8 Propulsion
+ SG_ Transmission_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Transmission_Gear : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Transmission_Oil_Pressure : 16|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Transmission_Oil_Temperature : 32|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Transmission_Discrete_Status : 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32639230 Pgn127496_Trip_Parameters_Vessel: 10 Propulsion
+ SG_ Time_To_Empty : 0|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
+ SG_ Distance_To_Empty : 32|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
+ SG_ Estimated_Fuel_Remaining : 64|16@1+ (1.0,0.0) [0.0|0.0] "L" MFD
+ SG_ Trip_Run_Time : 80|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
+
+BO_ 32639742 Pgn127498_Engine_Parameters_Static: 52 Propulsion
+ SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rated_Engine_Speed : 8|16@1+ (0.25,0.0) [0.0|0.0] "" MFD
+ SG_ Vin : 24|136@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Software_Id : 160|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32640510 Pgn127501_Binary_Switch_Bank_Status: 8 Power
+ SG_ Indicator_Bank_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_1 : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_2 : 10|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_3 : 12|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_4 : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_5 : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_6 : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_7 : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_8 : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_9 : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_10 : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_11 : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_12 : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_13 : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_14 : 34|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_15 : 36|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_16 : 38|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_17 : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_18 : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_19 : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_20 : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_21 : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_22 : 50|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_23 : 52|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_24 : 54|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_25 : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_26 : 58|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_27 : 60|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indic_28 : 62|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32640766 Pgn127502_Switch_Bank_Control: 8 Power
+ SG_ Switch_Bank_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_1 : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_2 : 10|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_3 : 12|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_4 : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_5 : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_6 : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_7 : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_8 : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_9 : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_10 : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_11 : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_12 : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_13 : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_14 : 34|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_15 : 36|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_16 : 38|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_17 : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_18 : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_19 : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_20 : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_21 : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_22 : 50|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_23 : 52|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_24 : 54|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_25 : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_26 : 58|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_27 : 60|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_28 : 62|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32641278 Pgn127504_Ac_Output_Status: 56 Power
+ SG_ Ac_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Lines : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Line : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Waveform : 18|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserve_Bits : 21|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Voltage : 24|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
+ SG_ Current : 40|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Frequency : 56|16@1+ (0.01,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Breaker_Size : 72|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Real_Power : 88|32@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Reactive_Power : 120|32@1+ (1.0,0.0) [0.0|0.0] "VAR" MFD
+ SG_ Power_Factor : 152|8@1+ (0.01,0.0) [0.0|0.0] "Cos Phi" MFD
+
+BO_ 32641790 Pgn127506_Dc_Detailed_Status: 9 Power
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Dc_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Dc_Type : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ State_Of_Charge : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ State_Of_Health : 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Remaining : 40|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ripple_Voltage : 56|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
+
+BO_ 32642302 Pgn127508_Battery_Status: 8 Power
+ SG_ Battery_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Battery_Voltage : 8|16@1- (0.01,0.0) [0.0|0.0] "V" MFD
+ SG_ Battery_Current : 24|16@1- (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Battery_Case_Temperature : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Sid : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32642558 Pgn127509_Inverter_Status: 4 Power
+ SG_ Inverter_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ac_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Dc_Instance : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Operating_State : 24|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Inverter_Enable_Disable : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32642046 Pgn127507_Charger_Status: 8 Power
+ SG_ Charger_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Battery_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Operating_State : 16|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Charge_Mode : 20|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Charger_Enable_Disable : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Equalization_Pending : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 28|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Equalization_Time_Remaining : 32|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32641534 Pgn127505_Fluid_Level: 8 General_Or_Mandatory
+ SG_ Fluid_Instance : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Fluid_Type : 4|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Fluid_Level : 8|16@1+ (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Tank_Capacity : 24|32@1+ (0.1,0.0) [0.0|0.0] "L" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32641022 Pgn127503_Ac_Input_Status: 56 Power
+ SG_ Ac_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Number_Of_Lines : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Line : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Acceptability : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserve_Bits : 20|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Voltage : 24|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
+ SG_ Current : 40|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Frequency : 56|16@1+ (0.01,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Breaker_Size : 72|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Real_Power : 88|32@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Reactive_Power : 120|32@1+ (1.0,0.0) [0.0|0.0] "VAR" MFD
+ SG_ Power_Factor : 152|8@1+ (0.01,0.0) [0.0|0.0] "Cos Phi" MFD
+
+BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 12|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Date : 16|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Time : 32|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+
+BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
+ SG_ Nmea_2000_Database_Version : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_Manufacturer_S_Product_Code : 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_S_Model_Id : 32|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_S_Software_Version_Code : 288|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_S_Model_Version : 544|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_S_Model_Serial_Code : 800|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_2000_Certification_Level : 1056|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Load_Equivalency : 1064|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32511742 Pgn126998_Configuration_Information: 42 General_Or_Mandatory
+ SG_ Installation_Description_Field_1 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Installation_Description_Field_2 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_Information_Field_3 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32572926 Pgn127237_Heading_Track_Control: 21 Steering
+ SG_ Rudder_Limit_Exceeded : 0|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Off_Heading_Limit_Exceeded : 2|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Off_Track_Limit_Exceeded : 4|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Override : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Steering_Mode : 8|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Turn_Mode : 11|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Heading_Reference : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 16|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Commanded_Rudder_Direction : 21|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Commanded_Rudder_Angle : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Heading_To_Steer_Course : 40|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Track : 56|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Rudder_Limit : 72|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Off_Heading_Limit : 88|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Radius_Of_Turn_Order : 104|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Rate_Of_Turn_Order : 120|16@1- (0.33749999999999997,0.0) [0.0|0.0] "deg/min" MFD
+ SG_ Off_Track_Limit : 136|16@1- (1.0,0.0) [0.0|0.0] "m" MFD
+ SG_ Vessel_Heading : 152|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 32574974 Pgn127245_Rudder: 8 Steering
+ SG_ Rudder_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Direction_Order : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 10|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Angle_Order : 16|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Position : 32|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 32576254 Pgn127250_Vessel_Heading: 8 Steering
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Heading_Sensor_Reading : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Deviation : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Variation : 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Heading_Sensor_Reference : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 58|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32576510 Pgn127251_Rate_Of_Turn: 5 Steering
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rate_Of_Turn : 8|32@1- (3.3749999999999996E-4,0.0) [0.0|0.0] "deg/min" MFD
+
+BO_ 32578046 Pgn127257_Attitude: 7 Steering
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Yaw : 8|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Pitch : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Roll : 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 32578302 Pgn127258_Magnetic_Variation: 6 Steering
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Variation_Source : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 12|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Age_Of_Service_Date : 16|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Variation : 32|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+
+BO_ 15597822 Pgn060928_Iso_Address_Claim: 8 General_Or_Mandatory
+ SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Function_Iso_Function : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 48|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32375038 Pgn126464_Pgn_List_Transmit_Reveived_Pgn_S_Group_Function: 8 General_Or_Mandatory
+ SG_ Transmitted_Pgn_Group_Function_Code : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ First_Pgn_Supported : 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 15466750 Pgn060416_Iso_Transport_Protocol_Connection_Management_Rts_Group_Function: 8 General_Or_Mandatory
+ SG_ Rts_Group_Function_Code M: 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M16_Total_Message_Size_Bytes m16: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M16_Total_Number_Of_Frames_To_Be_Transmitted m16: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M16_Reserved_Bits m16: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M16_Pgn_Of_Multi_Packet_Message m16: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M17_Number_Of_Frames_That_Can_Be_Sent m17: 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M17_Number_Of_Next_Frame_To_Be_Transmitted m17: 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M17_Reserved_Bits m17: 24|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M17_Pgn_Of_Multi_Packet_Message m17: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M19_Total_Message_Size_Bytes m19: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M19_Total_Number_Of_Frames_Received m19: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M19_Reserved_Bits m19: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M19_Pgn_Of_Multi_Packet_Message m19: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M32_Total_Message_Size_Bytes m32: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M32_Total_Number_Of_Frames_To_Be_Transmitted m32: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M32_Reserved_Bits m32: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M32_Pgn_Of_Multi_Packet_Message m32: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M255_Reason m255: 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M255_Reserved_Bits m255: 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M255_Pgn_Of_Multi_Packet_Message m255: 32|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 12 General_Or_Mandatory
+ SG_ Complex_Request_Group_Function_Code M: 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M0_Requested_Pgn m0: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M0_Transmission_Interval m0: 32|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
+ SG_ M0_Transmission_Interval_Offset m0: 64|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ M0_Number_Of_Pairs_Of_Request_Parameters_To_Follow m0: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M0_Field_Number_Of_First_Requested_Parameter m0: 88|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M0_Value_Of_First_Requested_Parameter m0: 96|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Commanded_Pgn m1: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Priority_Setting m1: 32|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Reserved_Bits m1: 36|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Number_Of_Pairs_Of_Commanded_Parameters_To_Follow m1: 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Field_Number_Of_First_Commanded_Parameter m1: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M1_Value_Of_First_Command_Parameter m1: 56|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M2_Requested_Or_Commanded_Pgn_Being_Acknowledged m2: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M2_Pgn_Error_Code m2: 32|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M2_Transmission_Interval_Priority_Error_Code m2: 36|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M2_Number_Of_Requested_Or_Commanded_Parameters m2: 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M2_First_Parameter_Error_Code m2: 48|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Pgn_Number m4: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Manufacturer_S_Code m4: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Reserve_Bits m4: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Industry_Group m4: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Unique_Id m4: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Commanded_Parameters_Fields m4: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Fields_To_Read m4: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Field_Number_Of_First_Commanded_Parameter m4: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Value_Of_First_Commanded_Parameter m4: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_9_Repeated m4: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_10_Repeated m4: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Pgn_Number m5: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Manufacturer_S_Code m5: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Reserve_Bits m5: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Industry_Group m5: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Unique_Id m5: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Commanded_Parameters_Fields m5: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Fields_To_Written m5: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Field_Number_Of_First_Commanded_Parameter m5: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Value_Of_First_Commanded_Parameter m5: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_9_Repeated m5: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_10_Repeated m5: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Pgn_Number m6: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Manufacturer_S_Code m6: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Reserve_Bits m6: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Industry_Group m6: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Unique_Id m6: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Commanded_Parameters_Fields m6: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Fields_To_Written m6: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Field_Number_Of_First_Commanded_Parameter m6: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Value_Of_First_Commanded_Parameter m6: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_9_Repeated m6: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_10_Repeated m6: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 15335678 Pgn059904_Iso_Request: 3 General_Or_Mandatory
+ SG_ Pgn_Being_Requested : 0|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 15401214 Pgn060160_Iso_Transport_Protocol_Data_Transfer: 8 General_Or_Mandatory
+ SG_ Sequence_Number_Of_Multi_Packet_Frame : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Multi_Packet_Packetized_Data : 8|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 15204606 Pgn059392_Iso_Acknowledgment: 8 General_Or_Mandatory
+ SG_ Control_Byte : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Group_Function_Value : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved_Bits : 16|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pgn_Of_Requested_Information : 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+
+CM_ "This DBC is based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn" ;
+
+
+CM_ BO_ 16701694 "ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set." ;
+CM_ BO_ 33428222 "This PGN provides a single transmission that accurately describes the speed of a vessel by component vectors." ;
+CM_ BO_ 33358590 "Direction and speed of Wind. True wind can be referenced to the vessel or to the ground. The Apparent Wind is what is felt standing on the (moving) ship, I.e., the wind measured by the typical mast head instruments. The boat referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed though the water. The ground referenced true wind is given by the vector sum of Apparent wind and vessel's heading and speed over ground." ;
+CM_ BO_ 33359614 "Local atmospheric environmental conditions" ;
+CM_ BO_ 33359870 "Environmental Conditions contains Temperature, Humidity, and Atmospheric Pressure. This is a rework of PGN # 130310 and should be used for new designs." ;
+CM_ BO_ 33360126 "Temperature as measured by a specific temperature source." ;
+CM_ BO_ 33360382 "Humidity as measured by a specific humidity source." ;
+CM_ BO_ 33360638 "Pressure as measured by a specific pressure source" ;
+CM_ BO_ 33360894 "This parameter group can be sent to a device that controls pressure to change its targeted pressure, or it can be sent out by the control device to indicate its current targeted pressure." ;
+CM_ BO_ 33362174 "Tide station measurement data including station location, numeric identifier, and name" ;
+CM_ BO_ 33162238 "This PGN provides a single transmission containing GNSS status and dilution of precision components (DOP) that indicate the contribution of satellite geometry to the overall positioning error. There are three DOP parameters reported, horizontal (HDOP), Vertical (VDOP) and time (TDOP)." ;
+CM_ BO_ 33162494 "GNSS information on current satellites in view tagged by sequence ID. Information includes PRN, elevation, azimuth, SNR, defines the number of satellites; defines the satellite number and the information." ;
+CM_ BO_ 33227518 "This parameter group provides data associated with the ITU-R M.1371 Message 5 Ship Static and Voyage Related Data Message. An AIS device may generate this parameter group either upon receiving a VHF data link message 5, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33227774 "This parameter group provides data associated with the ITU-R M.1371 Message 6 Addressed Binary Message supporting address communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 6, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33228030 "This parameter group provides data associated with the ITU-R M.1371 Messages 7 Binary Acknowledge Message and 13 Safety Related Acknowledge Message. Message 7 acknowledges receipt of message 6 while message 13 acknowledges receipt of message 14. An AIS device may generate this parameter group either upon receiving a VHF data link message 7 or 13, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33228286 "This parameter group provides data associated with the ITU-R M.1371 Message 8 Binary Broadcast Message supporting broadcast communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 8, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33231358 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part A of ITU-R M.1372 Message 24 is received." ;
+CM_ BO_ 33231614 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received." ;
+CM_ BO_ 33032702 "This parameter group has a single transmission that provides: UTC time, UTC Date and Local Offset Datum Local geodetic datum and datum offsets from a reference datum." ;
+CM_ BO_ 33030654 "This PGN provides latitude and longitude referenced to WGS84. Being defined as single frame message, as opposed to other PGNs that include latitude and longitude and are defined as fast or multi-packet, this PGN lends itself to being transmitted more frequently without using up excessive bandwidth on the bus for the benefit of receiving equipment that may require rapid position updates." ;
+CM_ BO_ 33030910 "This parameter group is a single frame parameter group that provides Course Over Ground (COG) and Speed Over Ground (SOG)." ;
+CM_ BO_ 33031678 "This parameter group conveys a comprehensive set of Global Navigation Satellite System (GNSS) parameters, including position information." ;
+CM_ BO_ 33033982 "This parameter group provides data associated with the ITU-R M.1371 Messages 1, 2, and 3 Position Reports, autonomous, assigned, and response to interrogation, respectively. An AIS device may generate this parameter group either upon receiving a VHF data link message 1,2 or 3, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information)." ;
+CM_ BO_ 33034238 "This parameter group provides data associated with the ITU-R M.1371 Message 18 Standard Class B Equipment Position Report. An AIS device may generate this parameter group either upon receiving a VHF data link message 18, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information)." ;
+CM_ BO_ 33034494 "This parameter group provides data associated with the ITU-R M.1371 Message 19 Extended Class B Equipment Position Report containing position and static information. An AIS device may generate this parameter group either upon receiving a VHF data link message 19, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33035518 "This parameter group is used to define the datum to which a position location output by the same device in other PGNs is referenced." ;
+CM_ BO_ 33035774 "Transformation parameters for converting from WGS-84 to other Datums." ;
+CM_ BO_ 33096702 "This parameter group provides the magnitude of position error perpendicular to the desired course." ;
+CM_ BO_ 33096958 "This parameter group provides essential navigation data for following a route. Transmissions will originate from products that can create and manage routes using waypoints. This information is intended for navigational repeaters." ;
+CM_ BO_ 33097214 "This parameter group returns Route and WP data ahead in the Active Route. It can be requested or may be transmitted without a request, typically at each Waypoint advance." ;
+CM_ BO_ 32834558 "This parameter group provides a single transmission that describes the motion of a vessel." ;
+CM_ BO_ 32836606 "Water depth relative to the transducer and offset of the measuring transducer. Positive offset numbers provide the distance from the transducer to the waterline." ;
+CM_ BO_ 32838654 "This PGN provides the cumulative voyage distance traveled since the last reset. The distance is tagged with the time and date of the distance measurement." ;
+CM_ BO_ 32639486 "Engine related trip information." ;
+CM_ BO_ 32637182 "Provides data with a high update rate for a specific engine in a single frame message. The first field provides information as to which engine." ;
+CM_ BO_ 32637438 "Used to provide real-time operational data and status relevant to a specific engine, indicated by the engine instance field. This message would normally be broadcasted periodically to provide information for instrumentation or control functions." ;
+CM_ BO_ 32638462 "Used to provide the operational state and internal operating parameters of a specific transmission, indicated by the transmission instance field. This message would normally be broadcasted periodically to provide information for instrumentation or control functions." ;
+CM_ BO_ 32639230 "Trip parameters relative to Vessel" ;
+CM_ BO_ 32639742 "Provides identification information and rated engine speed for the engine indicated by the engine instance field. Used primarily by display devices." ;
+CM_ BO_ 32640510 "Universal status report for multiple banks of two-state indicators." ;
+CM_ BO_ 32640766 "Universal commands to multiple banks of two-state devices." ;
+CM_ BO_ 32641278 "Any device with an AC Output may transmit this message." ;
+CM_ BO_ 32641790 "Provides parametric data for a specific battery, indicated by the battery instance field. Used primarily by display or instrumentation devices, but may also be used by battery management controls." ;
+CM_ BO_ 32642302 "Provides parametric data for a specific DC Source, indicated by the instance field. The type of DC Source can be identified from the DC Detailed Status PGN. Used primarily by display or instrumentation devices, but may also be used by power management." ;
+CM_ BO_ 32642558 "Any device capable of inverting a DC source to an SC output may transmit this message." ;
+CM_ BO_ 32642046 "Any device capable of charging a battery may transmit this message." ;
+CM_ BO_ 32641534 "Fluid Level contains an instance number, type of fluid, level of fluid, and tank capacity. For example the fluid instance may be the level of fuel in a tank or the level of water in the bilge. Used primarily by display or instrumentation devices." ;
+CM_ BO_ 32641022 "Any device with an AC Input may transmit this message" ;
+CM_ BO_ 32510206 "The purpose of this PGN is twofold: To provide a regular transmission of UTC time and date. To provide synchronism for measurement data." ;
+CM_ BO_ 32511230 "Provides product information onto the network that could be important for determining quality of data coming from this product." ;
+CM_ BO_ 32511742 "Free-form alphanumeric fields describing the installation (e.g., starboard engine room location) of the device and installation notes (e.g., calibration data)." ;
+CM_ BO_ 32572926 "Sends commands to, and receives data from, heading control systems. Allows for navigational (remote) control of a heading control system and direct rudder control." ;
+CM_ BO_ 32574974 "Rudder order command in direction or angle with current rudder angle reading." ;
+CM_ BO_ 32576254 "Heading sensor value with a flag for True or Magnetic. If the sensor value is Magnetic, the deviation field can be used to produce a Magnetic heading, and the variation field can be used to correct the Magnetic heading to produce a True heading." ;
+CM_ BO_ 32576510 "Rate of Turn is the rate of change of the Heading." ;
+CM_ BO_ 32578046 "This parameter group provides a single transmission that describes the position of a vessel relative to both horizontal and vertical planes. This would typically be used for vessel stabilization, vessel control and onboard platform stabilization." ;
+CM_ BO_ 32578302 "Message for transmitting variation. The message contains a sequence number to allow synchronization of other messages such as Heading or Course over Ground. The quality of service and age of service are provided to enable recipients to determine an appropriate level of service if multiple transmissions exist." ;
+CM_ BO_ 15597822 "This network management message is used to claim network address, reply to devices requesting the claimed address, and to respond with device information (NAME) requested by the ISO Request or Complex Request Group Function. This PGN contains several fields that are requestable, either independently or in any combination." ;
+CM_ BO_ 32375038 "The Transmit / Receive PGN List Group type of function is defined by first field. The message will be a Transmit or Receive PGN List group function." ;
+CM_ BO_ 15466750 "ISO 11783 defines this group function PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN���s role in the transport process is determined by the group function value found in the first data byte of the PGN." ;
+CM_ BO_ 32309502 "The Request / Command / Acknowledge Group type of function is defined by first field. The message will be a Request, Command, or Acknowledge Group Function." ;
+CM_ BO_ 15335678 "As defined by ISO, this message has a data length of 3 bytes with no padding added to complete the single frame. The appropriate response to this message is based on the PGN being requested, and whether the receiver supports the requested PGN." ;
+CM_ BO_ 15401214 "ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message." ;
+CM_ BO_ 15204606 "This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a ���normal broadcast��� message or the response to a specific command to indicate compliance or failure." ;
+
+BA_DEF_ "RepeatSize" INT 0 0;
+BA_DEF_ "BusType" STRING;
+BA_DEF_ "SignalType" STRING;
+BA_DEF_ "ProtocolType" STRING;
+BA_DEF_ "RepeatStartBit" INT 0 0;
+BA_DEF_ "MessageType" STRING;
+BA_DEF_DEF_ "RepeatSize" 0;
+BA_DEF_DEF_ "BusType" "";
+BA_DEF_DEF_ "SignalType" "UNKNOWN";
+BA_DEF_DEF_ "ProtocolType" "";
+BA_DEF_DEF_ "RepeatStartBit" 0;
+BA_DEF_DEF_ "MessageType" "Single";
+BA_ "RepeatSize" 0;
+BA_ "BusType" "CAN";
+BA_ "SignalType" "";
+BA_ "ProtocolType" "N2K";
+BA_ "RepeatStartBit" 0;
+BA_ "MessageType" "";
+BA_ "MessageType" BO_ 16701694 "ISO";
+BA_ "SignalType" SG_ 16701694 Unique_Number_Iso_Identity_Number "BINARY";
+BA_ "SignalType" SG_ 16701694 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 16701694 Device_Class "LOOKUP";
+BA_ "SignalType" SG_ 16701694 Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 16701694 Reserved_Iso_Self_Configurable "BINARY";
+BA_ "MessageType" BO_ 33428222 "Fast";
+BA_ "MessageType" BO_ 33358590 "Single";
+BA_ "SignalType" SG_ 33358590 Wind_Reference "LOOKUP";
+BA_ "SignalType" SG_ 33358590 Reserve "BINARY";
+BA_ "MessageType" BO_ 33359614 "Single";
+BA_ "SignalType" SG_ 33359614 Water_Temp "DOUBLE";
+BA_ "SignalType" SG_ 33359614 Outside_Ambient_Air_Temp "DOUBLE";
+BA_ "SignalType" SG_ 33359614 Atmospheric_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33359614 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 33359870 "Single";
+BA_ "SignalType" SG_ 33359870 Temperature_Instance "LOOKUP";
+BA_ "SignalType" SG_ 33359870 Humidity_Instance "LOOKUP";
+BA_ "SignalType" SG_ 33359870 Sea_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Outside_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Inside_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Engine_Room_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870  Main_Cabin_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Live_Well_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Bait_Well_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Refridgeration_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Heating_System_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Dew_Point_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Apparent_Wind_Chill_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Theoretical_Wind_Chill_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Heat_Index_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Freezer_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Exhaust_Gas_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Atmospheric_Pressure "DOUBLE";
+BA_ "MessageType" BO_ 33360126 "Single";
+BA_ "SignalType" SG_ 33360126 Temperature_Source "LOOKUP";
+BA_ "SignalType" SG_ 33360126 Actual_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33360126 Set_Temperature "DOUBLE";
+BA_ "MessageType" BO_ 33360382 "Single";
+BA_ "SignalType" SG_ 33360382 Humidity_Source "LOOKUP";
+BA_ "MessageType" BO_ 33360638 "Single";
+BA_ "SignalType" SG_ 33360638 Pressure_Source "LOOKUP";
+BA_ "SignalType" SG_ 33360638 Pressure "DOUBLE";
+BA_ "MessageType" BO_ 33360894 "Single";
+BA_ "SignalType" SG_ 33360894 Pressure_Source "LOOKUP";
+BA_ "SignalType" SG_ 33360894 Pressure "DOUBLE";
+BA_ "MessageType" BO_ 33362174 "Fast";
+BA_ "SignalType" SG_ 33362174 Mode "LOOKUP";
+BA_ "SignalType" SG_ 33362174 Tide_Tendency "LOOKUP";
+BA_ "SignalType" SG_ 33362174 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 33362174 Measurement_Date "INT";
+BA_ "SignalType" SG_ 33362174 Measurement_Time "DOUBLE";
+BA_ "SignalType" SG_ 33362174 Station_Location_Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33362174 Station_Location_Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33362174 Station_Id_String "STRING";
+BA_ "SignalType" SG_ 33362174 Station_Name_String "STRING";
+BA_ "MessageType" BO_ 33162238 "Single";
+BA_ "SignalType" SG_ 33162238 Set_Mode "LOOKUP";
+BA_ "SignalType" SG_ 33162238 Op_Mode "LOOKUP";
+BA_ "SignalType" SG_ 33162238 Reserve "BINARY";
+BA_ "RepeatSize" BO_ 33162494 96;
+BA_ "RepeatStartBit" BO_ 33162494 24;
+BA_ "MessageType" BO_ 33162494 "Fast";
+BA_ "SignalType" SG_ 33162494 Mode "LOOKUP";
+BA_ "SignalType" SG_ 33162494 Reserve_Bits "BINARY";
+BA_ "SignalType" SG_ 33162494 Prn_Status_1 "LOOKUP";
+BA_ "SignalType" SG_ 33162494 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 33227518 "Fast";
+BA_ "SignalType" SG_ 33227518 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33227518 User_Id "INT";
+BA_ "SignalType" SG_ 33227518 Imo "INT";
+BA_ "SignalType" SG_ 33227518 Call_Sign "ASCIIZ";
+BA_ "SignalType" SG_ 33227518 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33227518 Ship_Cargo_Type "LOOKUP";
+BA_ "SignalType" SG_ 33227518 Estimated_Date_Of_Arrival "INT";
+BA_ "SignalType" SG_ 33227518 Estimated_Time_Of_Arrival "DOUBLE";
+BA_ "SignalType" SG_ 33227518 Destination "ASCIIZ";
+BA_ "SignalType" SG_ 33227518 Ais_Version "LOOKUP";
+BA_ "SignalType" SG_ 33227518 Type_Of_Electronic_Positioning_Device "LOOKUP";
+BA_ "SignalType" SG_ 33227518 Data_Terminal_Equipment_Dte "LOOKUP";
+BA_ "SignalType" SG_ 33227518 Spare "BINARY";
+BA_ "SignalType" SG_ 33227518 Ais_Transceiver_Information "LOOKUP";
+BA_ "MessageType" BO_ 33227774 "Fast";
+BA_ "SignalType" SG_ 33227774 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33227774 Source_Id "INT";
+BA_ "SignalType" SG_ 33227774 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33227774 Destination_Id "INT";
+BA_ "SignalType" SG_ 33227774 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33227774 Spare "BINARY";
+BA_ "SignalType" SG_ 33227774 Number_Of_Bits_In_Binary_Data_Field "INT";
+BA_ "SignalType" SG_ 33227774 Binary_Data "BINARY";
+BA_ "MessageType" BO_ 33228030 "Fast";
+BA_ "SignalType" SG_ 33228030 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33228030 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33228030 Spare "BINARY";
+BA_ "SignalType" SG_ 33228030 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33228030 Sequence_Number_For_Id_1 "BINARY";
+BA_ "SignalType" SG_ 33228030 Destination_Id_N "BINARY";
+BA_ "MessageType" BO_ 33228286 "Fast";
+BA_ "SignalType" SG_ 33228286 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33228286 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33228286 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33228286 Spare "BINARY";
+BA_ "SignalType" SG_ 33228286 Binary_Data "BINARY";
+BA_ "MessageType" BO_ 33231358 "Fast";
+BA_ "SignalType" SG_ 33231358 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33231358 User_Id "INT";
+BA_ "SignalType" SG_ 33231358 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33231358 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33231358 Reserved "BINARY";
+BA_ "SignalType" SG_ 33231358 Sequence_Id "INT";
+BA_ "MessageType" BO_ 33231614 "Fast";
+BA_ "SignalType" SG_ 33231614 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33231614 User_Id "INT";
+BA_ "SignalType" SG_ 33231614 Type_Of_Ship_And_Cargo "LOOKUP";
+BA_ "SignalType" SG_ 33231614 Vendor_Id "ASCIIZ";
+BA_ "SignalType" SG_ 33231614 Call_Sign "ASCIIZ";
+BA_ "SignalType" SG_ 33231614 Mother_Ship_Mmsi "INT";
+BA_ "SignalType" SG_ 33231614 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33231614 Spare "INT";
+BA_ "SignalType" SG_ 33231614 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33231614 Reserved "BINARY";
+BA_ "SignalType" SG_ 33231614 Sequence_Id "INT";
+BA_ "MessageType" BO_ 33032702 "Single";
+BA_ "SignalType" SG_ 33032702 Date "INT";
+BA_ "SignalType" SG_ 33032702 Time "DOUBLE";
+BA_ "SignalType" SG_ 33032702 Local_Offset_Minutes "INT";
+BA_ "MessageType" BO_ 33030654 "Single";
+BA_ "SignalType" SG_ 33030654 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33030654 Longitude "DOUBLE";
+BA_ "MessageType" BO_ 33030910 "Single";
+BA_ "SignalType" SG_ 33030910 Cog_Reference "LOOKUP";
+BA_ "SignalType" SG_ 33030910 Reserved_Bits "BINARY";
+BA_ "RepeatSize" BO_ 33031678 32;
+BA_ "RepeatStartBit" BO_ 33031678 344;
+BA_ "MessageType" BO_ 33031678 "Fast";
+BA_ "SignalType" SG_ 33031678 Position_Date "INT";
+BA_ "SignalType" SG_ 33031678 Position_Time "DOUBLE";
+BA_ "SignalType" SG_ 33031678 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33031678 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33031678 Type_Of_System "LOOKUP";
+BA_ "SignalType" SG_ 33031678 Method_Gnss "LOOKUP";
+BA_ "SignalType" SG_ 33031678 Integrity "LOOKUP";
+BA_ "SignalType" SG_ 33031678 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 33031678 Reference_Station_Type_1 "LOOKUP";
+BA_ "MessageType" BO_ 33033982 "Fast";
+BA_ "SignalType" SG_ 33033982 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33033982 User_Id "INT";
+BA_ "SignalType" SG_ 33033982 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33033982 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33033982 Position_Accuracy "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Raim_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Time_Stamp "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Communication_State "BINARY";
+BA_ "SignalType" SG_ 33033982 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Navigational_Status "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Reserved_For_Regional_Applications "LOOKUP";
+BA_ "SignalType" SG_ 33033982 Spare "BINARY";
+BA_ "SignalType" SG_ 33033982 Ais_Spare "BINARY";
+BA_ "SignalType" SG_ 33033982 Reserved "BINARY";
+BA_ "SignalType" SG_ 33033982 Sequence_Id "INT";
+BA_ "MessageType" BO_ 33034238 "Fast";
+BA_ "SignalType" SG_ 33034238 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33034238 User_Id "INT";
+BA_ "SignalType" SG_ 33034238 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33034238 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33034238 Position_Accuracy "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Raim_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Time_Stamp "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Communication_State "BINARY";
+BA_ "SignalType" SG_ 33034238 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Class_B_Unit_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Class_B_Display_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Class_B_Dsc_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Class_B_Band_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Class_B_Msg_22_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Mode_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034238 Communication_State_Selector_Flag "LOOKUP";
+BA_ "MessageType" BO_ 33034494 "Fast";
+BA_ "SignalType" SG_ 33034494 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33034494 User_Id "INT";
+BA_ "SignalType" SG_ 33034494 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33034494 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33034494 Position_Accuracy "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Raim_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Time_Stamp "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Ship_Cargo_Type "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33034494 Type_Of_Electronic_Positioning_Device "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33034494 Data_Terminal_Equipment_Dte "LOOKUP";
+BA_ "SignalType" SG_ 33034494 Spare "BINARY";
+BA_ "SignalType" SG_ 33034494 Ais_Transceiver_Information "LOOKUP";
+BA_ "MessageType" BO_ 33035518 "Fast";
+BA_ "SignalType" SG_ 33035518 Local_Datum "ASCIIZ";
+BA_ "SignalType" SG_ 33035518 Delta_Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33035518 Delta_Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33035518 Reference_Datum "ASCIIZ";
+BA_ "MessageType" BO_ 33035774 "Fast";
+BA_ "SignalType" SG_ 33035774 Rotation_In_X "IEEE_FLOAT";
+BA_ "SignalType" SG_ 33035774 Rotation_In_Y "IEEE_FLOAT";
+BA_ "SignalType" SG_ 33035774 Rotation_In_Z "IEEE_FLOAT";
+BA_ "SignalType" SG_ 33035774 Scale "IEEE_FLOAT";
+BA_ "SignalType" SG_ 33035774 Ellipsoid_Flattening_Inverse "IEEE_FLOAT";
+BA_ "SignalType" SG_ 33035774 Datum_Name "ASCIIZ";
+BA_ "MessageType" BO_ 33096702 "Single";
+BA_ "SignalType" SG_ 33096702 Xte_Mode "LOOKUP";
+BA_ "SignalType" SG_ 33096702 Navigation_Terminated "LOOKUP";
+BA_ "SignalType" SG_ 33096702 Reserve "BINARY";
+BA_ "MessageType" BO_ 33096958 "Fast";
+BA_ "SignalType" SG_ 33096958 Course_Bearing_Ref "LOOKUP";
+BA_ "SignalType" SG_ 33096958 Perpendicular_Crossed "LOOKUP";
+BA_ "SignalType" SG_ 33096958 Arrival_Circle_Entered "LOOKUP";
+BA_ "SignalType" SG_ 33096958 Calculation_Type "LOOKUP";
+BA_ "SignalType" SG_ 33096958 Eta_Time "DOUBLE";
+BA_ "SignalType" SG_ 33096958 Eta_Date "INT";
+BA_ "SignalType" SG_ 33096958 Destination_Wpt_Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33096958 Destination_Wpt_Longitude "DOUBLE";
+BA_ "RepeatSize" BO_ 33097214 2120;
+BA_ "RepeatStartBit" BO_ 33097214 2120;
+BA_ "MessageType" BO_ 33097214 "Fast";
+BA_ "SignalType" SG_ 33097214 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 33097214 Route_Name "STRING";
+BA_ "SignalType" SG_ 33097214 Reserved "BINARY";
+BA_ "SignalType" SG_ 33097214 Wp_Name "STRING";
+BA_ "SignalType" SG_ 33097214 Wp_Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33097214 Wp_Longitude "DOUBLE";
+BA_ "MessageType" BO_ 32834558 "Single";
+BA_ "SignalType" SG_ 32834558 Speed_Water_Referenced_Type "LOOKUP";
+BA_ "SignalType" SG_ 32834558 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32836606 "Single";
+BA_ "MessageType" BO_ 32838654 "Fast";
+BA_ "SignalType" SG_ 32838654 Measurement_Date "INT";
+BA_ "SignalType" SG_ 32838654 Measurement_Time "DOUBLE";
+BA_ "MessageType" BO_ 32639486 "Fast";
+BA_ "SignalType" SG_ 32639486 Engine_Instance "LOOKUP";
+BA_ "MessageType" BO_ 32637182 "Single";
+BA_ "SignalType" SG_ 32637182 Engine_Instance "LOOKUP";
+BA_ "SignalType" SG_ 32637182 Engine_Boost_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 32637182 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32637438 "Fast";
+BA_ "SignalType" SG_ 32637438 Engine_Instance "LOOKUP";
+BA_ "SignalType" SG_ 32637438 Engine_Oil_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 32637438 Engine_Oil_Temp "DOUBLE";
+BA_ "SignalType" SG_ 32637438 Engine_Temp "DOUBLE";
+BA_ "SignalType" SG_ 32637438 Engine_Coolant_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 32637438 Not_Available "BINARY";
+BA_ "SignalType" SG_ 32637438 Engine_Discrete_Status_1 "BITFIELD";
+BA_ "SignalType" SG_ 32637438 Engine_Discrete_Status_2 "BITFIELD";
+BA_ "SignalType" SG_ 32637438 Percent_Engine_Load "INT";
+BA_ "SignalType" SG_ 32637438 Percent_Engine_Torque "INT";
+BA_ "MessageType" BO_ 32638462 "Single";
+BA_ "SignalType" SG_ 32638462 Transmission_Instance "LOOKUP";
+BA_ "SignalType" SG_ 32638462 Transmission_Gear "LOOKUP";
+BA_ "SignalType" SG_ 32638462 Transmission_Oil_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 32638462 Transmission_Oil_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 32638462 Transmission_Discrete_Status "INT";
+BA_ "SignalType" SG_ 32638462 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32639230 "Fast";
+BA_ "MessageType" BO_ 32639742 "Fast";
+BA_ "SignalType" SG_ 32639742 Engine_Instance "LOOKUP";
+BA_ "SignalType" SG_ 32639742 Vin "ASCIIZ";
+BA_ "SignalType" SG_ 32639742 Software_Id "ASCIIZ";
+BA_ "MessageType" BO_ 32640510 "Single";
+BA_ "SignalType" SG_ 32640510 Indic_1 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_2 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_3 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_4 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_5 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_6 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_7 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_8 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_9 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_10 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_11 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_12 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_13 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_14 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_15 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_16 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_17 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_18 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_19 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_20 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_21 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_22 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_23 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_24 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_25 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_26 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_27 "LOOKUP";
+BA_ "SignalType" SG_ 32640510 Indic_28 "LOOKUP";
+BA_ "MessageType" BO_ 32640766 "Single";
+BA_ "SignalType" SG_ 32640766 Switch_1 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_2 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_3 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_4 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_5 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_6 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_7 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_8 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_9 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_10 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_11 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_12 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_13 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_14 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_15 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_16 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_17 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_18 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_19 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_20 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_21 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_22 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_23 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_24 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_25 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_26 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_27 "LOOKUP";
+BA_ "SignalType" SG_ 32640766 Switch_28 "LOOKUP";
+BA_ "RepeatSize" BO_ 32641278 144;
+BA_ "RepeatStartBit" BO_ 32641278 16;
+BA_ "MessageType" BO_ 32641278 "Single";
+BA_ "SignalType" SG_ 32641278 Line "LOOKUP";
+BA_ "SignalType" SG_ 32641278 Waveform "LOOKUP";
+BA_ "SignalType" SG_ 32641278 Reserve_Bits "BINARY";
+BA_ "SignalType" SG_ 32641278 Real_Power "INT";
+BA_ "SignalType" SG_ 32641278 Reactive_Power "INT";
+BA_ "MessageType" BO_ 32641790 "Single";
+BA_ "SignalType" SG_ 32641790 Dc_Type "LOOKUP";
+BA_ "MessageType" BO_ 32642302 "Single";
+BA_ "SignalType" SG_ 32642302 Battery_Case_Temperature "DOUBLE";
+BA_ "MessageType" BO_ 32642558 "Single";
+BA_ "SignalType" SG_ 32642558 Operating_State "LOOKUP";
+BA_ "SignalType" SG_ 32642558 Inverter_Enable_Disable "LOOKUP";
+BA_ "MessageType" BO_ 32642046 "Single";
+BA_ "SignalType" SG_ 32642046 Operating_State "LOOKUP";
+BA_ "SignalType" SG_ 32642046 Charge_Mode "LOOKUP";
+BA_ "SignalType" SG_ 32642046 Charger_Enable_Disable "LOOKUP";
+BA_ "SignalType" SG_ 32642046 Equalization_Pending "LOOKUP";
+BA_ "SignalType" SG_ 32642046 Reserved "BINARY";
+BA_ "MessageType" BO_ 32641534 "Single";
+BA_ "SignalType" SG_ 32641534 Fluid_Type "LOOKUP";
+BA_ "SignalType" SG_ 32641534 Reserved_Bits "BINARY";
+BA_ "RepeatSize" BO_ 32641022 144;
+BA_ "RepeatStartBit" BO_ 32641022 16;
+BA_ "MessageType" BO_ 32641022 "Fast";
+BA_ "SignalType" SG_ 32641022 Line "LOOKUP";
+BA_ "SignalType" SG_ 32641022 Acceptability "LOOKUP";
+BA_ "SignalType" SG_ 32641022 Reserve_Bits "BINARY";
+BA_ "SignalType" SG_ 32641022 Real_Power "INT";
+BA_ "SignalType" SG_ 32641022 Reactive_Power "INT";
+BA_ "MessageType" BO_ 32510206 "Single";
+BA_ "SignalType" SG_ 32510206 Source "LOOKUP";
+BA_ "SignalType" SG_ 32510206 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32510206 Date "INT";
+BA_ "SignalType" SG_ 32510206 Time "DOUBLE";
+BA_ "MessageType" BO_ 32511230 "Fast";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Id "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Software_Version_Code "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Version "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Serial_Code "ASCIIZ";
+BA_ "MessageType" BO_ 32511742 "Fast";
+BA_ "SignalType" SG_ 32511742 Installation_Description_Field_1 "STRINGLAU";
+BA_ "SignalType" SG_ 32511742 Installation_Description_Field_2 "STRINGLAU";
+BA_ "SignalType" SG_ 32511742 Manufacturer_Information_Field_3 "STRINGLAU";
+BA_ "MessageType" BO_ 32572926 "Fast";
+BA_ "SignalType" SG_ 32572926 Rudder_Limit_Exceeded "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Off_Heading_Limit_Exceeded "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Off_Track_Limit_Exceeded "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Override "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Steering_Mode "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Turn_Mode "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Heading_Reference "LOOKUP";
+BA_ "SignalType" SG_ 32572926 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32572926 Commanded_Rudder_Direction "LOOKUP";
+BA_ "MessageType" BO_ 32574974 "Single";
+BA_ "SignalType" SG_ 32574974 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32576254 "Single";
+BA_ "SignalType" SG_ 32576254 Heading_Sensor_Reference "LOOKUP";
+BA_ "SignalType" SG_ 32576254 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32576510 "Single";
+BA_ "MessageType" BO_ 32578046 "Single";
+BA_ "MessageType" BO_ 32578302 "Single";
+BA_ "SignalType" SG_ 32578302 Variation_Source "LOOKUP";
+BA_ "SignalType" SG_ 32578302 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32578302 Age_Of_Service_Date "INT";
+BA_ "MessageType" BO_ 15597822 "Single";
+BA_ "SignalType" SG_ 15597822 Unique_Number_Iso_Identity_Number "BINARY";
+BA_ "SignalType" SG_ 15597822 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 15597822 Reserved "BINARY";
+BA_ "SignalType" SG_ 15597822 Device_Class "LOOKUP";
+BA_ "SignalType" SG_ 15597822 Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 15597822 Reserved_Iso_Self_Configurable "BINARY";
+BA_ "RepeatSize" BO_ 32375038 24;
+BA_ "RepeatStartBit" BO_ 32375038 8;
+BA_ "MessageType" BO_ 32375038 "Fast";
+BA_ "SignalType" SG_ 32375038 Transmitted_Pgn_Group_Function_Code "LOOKUP";
+BA_ "SignalType" SG_ 32375038 First_Pgn_Supported "INT";
+BA_ "MessageType" BO_ 15466750 "Single";
+BA_ "SignalType" SG_ 15466750 M16_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M17_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M17_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M19_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M19_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M32_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M32_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M255_Reason "BINARY";
+BA_ "SignalType" SG_ 15466750 M255_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M255_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "MessageType" BO_ 32309502 "Fast";
+BA_ "SignalType" SG_ 32309502 Complex_Request_Group_Function_Code "INT";
+BA_ "SignalType" SG_ 32309502 M0_Requested_Pgn "INT";
+BA_ "SignalType" SG_ 32309502 M0_Field_Number_Of_First_Requested_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M1_Commanded_Pgn "INT";
+BA_ "SignalType" SG_ 32309502 M1_Priority_Setting "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M1_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32309502 M1_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M2_Requested_Or_Commanded_Pgn_Being_Acknowledged "INT";
+BA_ "SignalType" SG_ 32309502 M2_Pgn_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M2_Transmission_Interval_Priority_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M2_First_Parameter_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M4_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M4_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M4_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M4_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M4_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M4_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "SignalType" SG_ 32309502 M5_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M5_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M5_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M5_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M5_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M5_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "SignalType" SG_ 32309502 M6_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M6_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M6_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M6_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M6_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M6_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "MessageType" BO_ 15335678 "Single";
+BA_ "SignalType" SG_ 15335678 Pgn_Being_Requested "INT";
+BA_ "RepeatSize" BO_ 15401214 56;
+BA_ "RepeatStartBit" BO_ 15401214 8;
+BA_ "MessageType" BO_ 15401214 "Single";
+BA_ "MessageType" BO_ 15204606 "Single";
+BA_ "SignalType" SG_ 15204606 Control_Byte "LOOKUP";
+BA_ "SignalType" SG_ 15204606 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15204606 Pgn_Of_Requested_Information "INT";
+
+VAL_ 16701694 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
+VAL_ 16701694 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 33358590 Wind_Reference  0 "True (ground referenced to North)" 1 "Magnetic (ground referenced to Magnetic North)" 2 "Apparent" 3 "True (boat referenced)" 4 "True (water referenced)";
+VAL_ 33359870 Temperature_Instance  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
+VAL_ 33359870 Humidity_Instance  0 "Inside" 1 "Outside";
+VAL_ 33360126 Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
+VAL_ 33360382 Humidity_Source  0 "Inside" 1 "Outside";
+VAL_ 33360638 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
+VAL_ 33360894 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
+VAL_ 33362174 Mode  0 "Autonomous" 1 "Differential enhanced" 2 "Estimated" 3 "Simulator" 4 "Manual";
+VAL_ 33362174 Tide_Tendency  0 "Falling" 1 "Rising";
+VAL_ 33162238 Set_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
+VAL_ 33162238 Op_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
+VAL_ 33162494 Mode  3 "Range residuals used to calculate position";
+VAL_ 33162494 Prn_Status_1  0 "Not tracked" 1 "Tracked" 2 "Used" 3 "Not tracked+Diff" 4 "Tracked+Diff" 5 "Used+Diff";
+VAL_ 33227518 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33227518 Ship_Cargo_Type  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
+VAL_ 33227518 Ais_Version  0 "ITU-R M.1371-1" 1 "ITU-R M.1371-3";
+VAL_ 33227518 Type_Of_Electronic_Positioning_Device  0 "undefined" 1 "GPS" 2 "GLONASS" 3 "GPS+GLONASS" 4 "Loran-C" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
+VAL_ 33227518 Data_Terminal_Equipment_Dte  0 "available" 1 "not available";
+VAL_ 33227518 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33227774 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33227774 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33228030 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33228030 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33228286 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33228286 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33231358 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33231358 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33231614 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33231614 Type_Of_Ship_And_Cargo  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
+VAL_ 33231614 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33030910 Cog_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
+VAL_ 33031678 Type_Of_System  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
+VAL_ 33031678 Method_Gnss  0 "no GNSS" 1 "GNSS fix" 2 "DGNSS fix" 3 "Precise GNSS" 4 "RTK Fixed Integer" 5 "RTK float" 6 "Estimated (DR) mode" 7 "Manual Input" 8 "Simulate mode";
+VAL_ 33031678 Integrity  0 "No integrity checking" 1 "Safe" 2 "Caution";
+VAL_ 33031678 Reference_Station_Type_1  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
+VAL_ 33033982 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33033982 Position_Accuracy  0 "Low" 1 "High";
+VAL_ 33033982 Raim_Flag  0 "not in use" 1 "in use";
+VAL_ 33033982 Time_Stamp  60 "Not available" 61 "Manual input mode" 62 "Dead reckoning mode" 63 "Positioning system is inoperative";
+VAL_ 33033982 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33033982 Navigational_Status  0 "Under way using engine" 1 "At anchor" 2 "Not under command" 3 "Restricted manoeuverability" 4 "Constrained by her draught" 5 "Moored" 6 "Aground" 7 "Engaged in Fishing" 8 "Under way sailing" 9 "Hazardous material - High Speed" 10 "Hazardous material - Wing in Ground" 14 "AIS-SART";
+VAL_ 33033982 Reserved_For_Regional_Applications  0 "Not available" 1 "Not engaged in special maneuver" 2 "Engaged in special maneuver" 3 "Reserverd";
+VAL_ 33034238 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33034238 Position_Accuracy  0 "Low" 1 "High";
+VAL_ 33034238 Raim_Flag  0 "not in use" 1 "in use";
+VAL_ 33034238 Time_Stamp  60 "Not available" 61 "Manual input mode" 62 "Dead reckoning mode" 63 "Positioning system is inoperative";
+VAL_ 33034238 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33034238 Class_B_Unit_Flag  0 "SOTDMA" 1 "CS";
+VAL_ 33034238 Class_B_Display_Flag  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33034238 Class_B_Dsc_Flag  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33034238 Class_B_Band_Flag  0 "top 525 kHz of marine band" 1 "entire marine band";
+VAL_ 33034238 Class_B_Msg_22_Flag  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33034238 Mode_Flag  0 "Autonomous" 1 "Assigned";
+VAL_ 33034238 Communication_State_Selector_Flag  0 "SOTDMA" 1 "ITDMA";
+VAL_ 33034494 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33034494 Position_Accuracy  0 "Low" 1 "High";
+VAL_ 33034494 Raim_Flag  0 "not in use" 1 "in use";
+VAL_ 33034494 Time_Stamp  60 "Not available" 61 "Manual input mode" 62 "Dead reckoning mode" 63 "Positioning system is inoperative";
+VAL_ 33034494 Ship_Cargo_Type  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
+VAL_ 33034494 Type_Of_Electronic_Positioning_Device  0 "undefined" 1 "GPS" 2 "GLONASS" 3 "GPS+GLONASS" 4 "Loran-C" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
+VAL_ 33034494 Data_Terminal_Equipment_Dte  0 "Available" 1 "Not available";
+VAL_ 33034494 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 33096702 Xte_Mode  0 "Autonomous" 1 "Differential enhanced" 2 "Estimated" 3 "Simulator" 4 "Manual";
+VAL_ 33096702 Navigation_Terminated  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33096958 Course_Bearing_Ref  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
+VAL_ 33096958 Perpendicular_Crossed  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33096958 Arrival_Circle_Entered  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33096958 Calculation_Type  0 "Great Circle" 1 "Rhumb Line";
+VAL_ 32834558 Speed_Water_Referenced_Type  0 "Paddle wheel" 1 "Pitot tube" 2 "Doppler" 3 "Correlation (ultra sound)" 4 "Electro Magnetic";
+VAL_ 32639486 Engine_Instance  0 "Single Engine or Dual Engine Port" 1 "Dual Engine Starboard";
+VAL_ 32637182 Engine_Instance  0 "Single Engine or Dual Engine Port" 1 "Dual Engine Starboard";
+VAL_ 32637438 Engine_Instance  0 "Single Engine or Dual Engine Port" 1 "Dual Engine Starboard";
+VAL_ 32638462 Transmission_Instance  0 "Single Engine or Dual Engine Port" 1 "Dual Engine Starboard";
+VAL_ 32638462 Transmission_Gear  0 "Forward" 1 "Neutral" 2 "Reverse";
+VAL_ 32639742 Engine_Instance  0 "Single Engine or Dual Engine Port" 1 "Dual Engine Starboard";
+VAL_ 32640510 Indic_1  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_2  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_3  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_4  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_5  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_6  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_7  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_8  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_9  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_10  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_11  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_12  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_13  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_14  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_15  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_16  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_17  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_18  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_19  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_20  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_21  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_22  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_23  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_24  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_25  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_26  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_27  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640510 Indic_28  0 "Off" 1 "On" 2 "Failed";
+VAL_ 32640766 Switch_1  0 "Off" 1 "On";
+VAL_ 32640766 Switch_2  0 "Off" 1 "On";
+VAL_ 32640766 Switch_3  0 "Off" 1 "On";
+VAL_ 32640766 Switch_4  0 "Off" 1 "On";
+VAL_ 32640766 Switch_5  0 "Off" 1 "On";
+VAL_ 32640766 Switch_6  0 "Off" 1 "On";
+VAL_ 32640766 Switch_7  0 "Off" 1 "On";
+VAL_ 32640766 Switch_8  0 "Off" 1 "On";
+VAL_ 32640766 Switch_9  0 "Off" 1 "On";
+VAL_ 32640766 Switch_10  0 "Off" 1 "On";
+VAL_ 32640766 Switch_11  0 "Off" 1 "On";
+VAL_ 32640766 Switch_12  0 "Off" 1 "On";
+VAL_ 32640766 Switch_13  0 "Off" 1 "On";
+VAL_ 32640766 Switch_14  0 "Off" 1 "On";
+VAL_ 32640766 Switch_15  0 "Off" 1 "On";
+VAL_ 32640766 Switch_16  0 "Off" 1 "On";
+VAL_ 32640766 Switch_17  0 "Off" 1 "On";
+VAL_ 32640766 Switch_18  0 "Off" 1 "On";
+VAL_ 32640766 Switch_19  0 "Off" 1 "On";
+VAL_ 32640766 Switch_20  0 "Off" 1 "On";
+VAL_ 32640766 Switch_21  0 "Off" 1 "On";
+VAL_ 32640766 Switch_22  0 "Off" 1 "On";
+VAL_ 32640766 Switch_23  0 "Off" 1 "On";
+VAL_ 32640766 Switch_24  0 "Off" 1 "On";
+VAL_ 32640766 Switch_25  0 "Off" 1 "On";
+VAL_ 32640766 Switch_26  0 "Off" 1 "On";
+VAL_ 32640766 Switch_27  0 "Off" 1 "On";
+VAL_ 32640766 Switch_28  0 "Off" 1 "On";
+VAL_ 32641278 Line  0 "Line 1" 1 "Line 2" 2 "Line 3";
+VAL_ 32641278 Waveform  0 "Sine Wave" 1 "Modified Sine Wave";
+VAL_ 32641790 Dc_Type  0 "Battery" 1 "Alternator" 2 "Convertor" 3 "Solar Cell" 4 "Wind Generator";
+VAL_ 32642558 Operating_State  0 "Standby" 1 "On";
+VAL_ 32642558 Inverter_Enable_Disable  0 "Standby" 1 "On";
+VAL_ 32642046 Operating_State  0 "Not charging" 1 "Bulk" 2 "Absorption" 3 "Overcharge" 4 "Equalise" 5 "Float" 6 "No Float" 7 "Constant VI" 8 "Disabled" 9 "Fault";
+VAL_ 32642046 Charge_Mode  0 "Standalone mode" 1 "Primary mode" 2 "Secondary mode" 3 "Echo mode";
+VAL_ 32642046 Charger_Enable_Disable  0 "Off" 1 "On";
+VAL_ 32642046 Equalization_Pending  0 "Off" 1 "On";
+VAL_ 32641534 Fluid_Type  0 "Fuel" 1 "Water" 2 "Gray water" 3 "Live well" 4 "Oil" 5 "Black water";
+VAL_ 32641022 Line  0 "Line 1" 1 "Line 2" 2 "Line 3" 3 "Reserved";
+VAL_ 32641022 Acceptability  0 "Bad Level" 1 "Bad Frequency" 2 "Being Qualified" 3 "Good";
+VAL_ 32510206 Source  0 "GPS" 1 "GLONASS" 2 "Radio Station" 3 "Local Cesium clock" 4 "Local Rubidium clock" 5 "Local Crystal clock";
+VAL_ 32572926 Rudder_Limit_Exceeded  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32572926 Off_Heading_Limit_Exceeded  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32572926 Off_Track_Limit_Exceeded  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32572926 Override  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32572926 Steering_Mode  0 "Main Steering" 1 "Non-Follow-up Device" 10 "Follow-up Device" 11 "Heading Control Standalone" 100 "Heading Control" 101 "Track Control";
+VAL_ 32572926 Turn_Mode  0 "Rudder Limit controlled" 1 "turn rate controlled" 10 "radius controlled";
+VAL_ 32572926 Heading_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
+VAL_ 32572926 Commanded_Rudder_Direction  0 "No Order" 1 "Move to starboard" 10 "Move to port";
+VAL_ 32576254 Heading_Sensor_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
+VAL_ 32578302 Variation_Source  0 "Manual" 1 "Automatic Chart" 2 "Automatic Table" 3 "Automatic Calculation" 4 "WMM 2000" 5 "WMM 2005" 6 "WMM 2010" 7 "WMM 2015" 8 "WMM 2020";
+VAL_ 15597822 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
+VAL_ 15597822 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32375038 Transmitted_Pgn_Group_Function_Code  0 "Transmit PGN list" 1 "Receive PGN list";
+VAL_ 32309502 M1_Priority_Setting  8 "Leave priority unchanged" 9 "Reset to default";
+VAL_ 32309502 M2_Pgn_Error_Code  0 "Acknowledge" 1 "PGN not supported" 2 "PGN not available" 3 "Access denied" 4 "Not supported" 5 "Tag not supported" 6 "Read or Write not supported";
+VAL_ 32309502 M2_Transmission_Interval_Priority_Error_Code  0 "Acknowledge" 1 "Transmit Interval/Priority not supported" 2 "Transmit Interval to low" 3 "Access denied" 4 "Not supported";
+VAL_ 32309502 M2_First_Parameter_Error_Code  0 "Acknowledge" 1 "Invalid parameter field" 2 "Temporary error" 3 "Parameter out of range" 4 "Access denied" 5 "Not supported" 6 "Read or Write not supported";
+VAL_ 32309502 M4_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32309502 M5_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32309502 M6_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 15204606 Control_Byte  0 "ACK" 1 "NAK" 2 "Access Denied" 3 "Address Busy";
