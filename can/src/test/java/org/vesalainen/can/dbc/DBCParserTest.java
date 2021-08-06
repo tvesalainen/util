@@ -39,50 +39,26 @@ public class DBCParserTest
     }
 
     @Test
-    public void testCSS_Electronics_OBD2_v1_0() throws IOException
+    public void test() throws IOException
     {
-        Path path = Paths.get("C:\\Users\\tkv\\Downloads\\sample-data\\sample-data\\sample-data\\OBD2-DBC-MDF4\\OBD2-DBC-MDF4\\CSS-Electronics-OBD2-v1.0.dbc");
-        DBCFile dbcFile = new DBCFile();
-        DBCParser parser = DBCParser.getInstance();
-        parser.parse(path, dbcFile);
+        test("/CSS-Electronics-OBD2-v1.0.dbc");
+        test("/Orion_CANBUS.dbc");
+        test("/example.dbc");
+        test("/curtis_ac1239_map.dbc");
+        test("/j1939_utf8.dbc");
     }
-    //@Test
-    public void testOrion() throws IOException
+    public void test(String file) throws IOException
     {
         DBCFile dbcFile = new DBCFile();
         DBCParser parser = DBCParser.getInstance();
-        try (InputStream is = DBCParser.class.getResourceAsStream("/Orion_CANBUS.dbc"))
+        try (InputStream is = DBCParser.class.getResourceAsStream(file))
         {
             parser.parse(is, dbcFile);
         }
-    }
-    //@Test
-    public void testEx() throws IOException
-    {
-        DBCFile dbcFile = new DBCFile();
-        DBCParser parser = DBCParser.getInstance();
-        try (InputStream is = DBCParser.class.getResourceAsStream("/example.dbc"))
-        {
-            parser.parse(is, dbcFile);
-        }
-    }
-    //@Test
-    public void testCurtis() throws IOException
-    {
-        DBCFile dbcFile = new DBCFile();
-        DBCParser parser = DBCParser.getInstance();
-        try (InputStream is = DBCParser.class.getResourceAsStream("/curtis_ac1239_map.dbc"))
-        {
-            parser.parse(is, dbcFile);
-        }
-    }
-    //@Test TODO ENUM
-    public void testJ1939() throws IOException
-    {
-        DBCFile dbcFile = new DBCFile();
-        DBCParser parser = DBCParser.getInstance();
-        URL url = new URL("https://hackage.haskell.org/package/ecu-0.0.8/src/src/j1939_utf8.dbc");
-        parser.parse(url, dbcFile);
+        StringBuilder sb = new StringBuilder();
+        dbcFile.print(sb);
+        DBCFile dbcFile2 = new DBCFile();
+        parser.parse(sb, dbcFile2);
     }
     
 }

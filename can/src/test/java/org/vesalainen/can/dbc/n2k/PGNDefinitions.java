@@ -19,7 +19,6 @@ package org.vesalainen.can.dbc.n2k;
 import java.io.IOException;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
-import static java.lang.Math.pow;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.ArrayList;

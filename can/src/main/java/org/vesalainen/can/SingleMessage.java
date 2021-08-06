@@ -21,7 +21,9 @@ import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import static java.nio.ByteOrder.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -131,8 +133,9 @@ public class SingleMessage extends AbstractMessage
         private SignalCompiler compiler;
         private IntRange repeatRange;
         private List<Runnable> signals = new ArrayList<>();
-        private MapList<Integer,Runnable> mpxMap = new HashMapList<>();
-        private Multiplexor multiplexor;
+        private Map<SignalClass,MapList<Integer,Runnable>> mpxMap = new HashMap<>();
+        private Multiplexor rootMultiplexor;
+        private Map<SignalClass,Multiplexor> extendedMultiplexors = new HashMap<>();
 
         public ActionBuilder(MessageClass mc, SignalCompiler compiler, IntRange repeatRange)
         {
@@ -144,51 +147,83 @@ public class SingleMessage extends AbstractMessage
         private Runnable build()
         {
             List<SignalClass> repeatingSignals = new ArrayList<>();
-            add(createBegin(mc));
-            mc.forEach((s)->
+            addAction(createBegin(mc));
+            mc.forEach((sc)->
             {
-                finer("add signal %s", s);
-                MultiplexerIndicator mpxI = s.getMultiplexerIndicator();
-                if (mpxI != null)
+                finer("add signal %s", sc);
+                MultiplexerIndicator multiplexerIndicator = sc.getMultiplexerIndicator();
+                if (multiplexerIndicator != null)
                 {
-                    if (mpxI.isMultiplexor())
+                    if (multiplexerIndicator.isMultiplexor())
                     {
-                        createMultiplexor(s);
+                        IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                        if (multiplexerIndicator.isExtended())
+                        {
+                            Multiplexor multiplexor = new Multiplexor(is);
+                            extendedMultiplexors.put(sc, multiplexor);
+                        }
+                        else
+                        {
+                            rootMultiplexor = new Multiplexor(is);
+                            addAction(rootMultiplexor);
+                        }
                     }
                     else
                     {
-                        Runnable act = createSignal(mc, s);
+                        Runnable act = createSignal(mc, sc);
                         if (act != null)
                         {
-                            mpxI.getValues().forEach((i)->mpxMap.add(i, act));
+                            SignalClass multiplexor = multiplexerIndicator.getMultiplexor();
+                            MapList<Integer, Runnable> ml = mpxMap.get(multiplexor);
+                            if (ml == null)
+                            {
+                                ml = new HashMapList<>();
+                                mpxMap.put(multiplexor, ml);
+                            }
+                            multiplexerIndicator.getValues().forEach((i)->ml.add(i, act));
                         }
                     }
                 }
                 else
                 {
-                    if (repeatRange.accept(s.getStartBit()))
+                    if (repeatRange.accept(sc.getStartBit()))
                     {
-                        repeatingSignals.add(s);
+                        repeatingSignals.add(sc);
                     }
                     else
                     {
-                        add(createSignal(mc, s));
+                        addAction(createSignal(mc, sc));
                     }
                 }
             });
             if (!repeatingSignals.isEmpty())
             {
-                add(createRepeatingSignals(mc, repeatingSignals));
+                addAction(createRepeatingSignals(mc, repeatingSignals));
                 startRepeat = compiler.compileBeginRepeat(mc);
                 endRepeat = compiler.compileEndRepeat(mc);
             }
-            add(createEnd(mc));
-            if (multiplexor != null)
+            addAction(createEnd(mc));
+            if (rootMultiplexor != null)
             {
-                IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
-                mpxMap.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
-                IndexMap<Runnable> indexMap = mpxBuilder.build();
-                multiplexor.setMap(indexMap);
+                mpxMap.forEach((sc,map)->
+                {
+                    Multiplexor em = extendedMultiplexors.get(sc);
+                    if (em != null)
+                    {
+                        map.forEach((i, l)->l.add(i, em));
+                    }
+                    IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
+                    map.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
+                    IndexMap<Runnable> indexMap = mpxBuilder.build();
+                    if (em != null)
+                    {
+                        em.setMap(indexMap);
+                    }
+                    else
+                    {
+                        rootMultiplexor.setMap(indexMap);
+                    }
+                });
             }
             return combineRunnables(signals);
         }
@@ -241,12 +276,6 @@ public class SingleMessage extends AbstractMessage
             });
             return combineRunnables(list);
         }
-        private void createMultiplexor(SignalClass sc)
-        {
-            IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-            multiplexor = new Multiplexor(is);
-            add(multiplexor);
-        }
         private Runnable createBegin(MessageClass mc)
         {
             return compiler.compileBegin(mc);
@@ -296,7 +325,7 @@ public class SingleMessage extends AbstractMessage
         {
             return compiler.compileEnd(mc);
         }
-        private void add(Runnable act)
+        private void addAction(Runnable act)
         {
             if (act != null)
             {

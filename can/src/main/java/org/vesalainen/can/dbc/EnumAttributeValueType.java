@@ -36,7 +36,13 @@ public class EnumAttributeValueType extends AttributeValueType
     @Override
     String getType()
     {
-        return types.stream().collect(Collectors.joining(","));
+        return "ENUM "+types.stream().map((v)->"\""+v+"\"").collect(Collectors.joining(","));
+    }
+
+    @Override
+    protected String getDefault(Object def)
+    {
+        return "\""+def+"\"";
     }
 
     @Override

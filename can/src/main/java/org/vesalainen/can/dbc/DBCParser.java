@@ -568,7 +568,7 @@ public abstract class DBCParser extends AbstractParser implements ParserInfo
     /**
      * char_string: an arbitrary string consisting of any printable characters except double hyphens ('"').
      */
-    @Terminal(expression = "\"[^\"]*\"")
+    @Terminal(expression = "\"([^\"]|\\\\\")*\"")
     protected String char_string(CharSequence seq)
     {
         return seq.subSequence(1, seq.length() - 1).toString();

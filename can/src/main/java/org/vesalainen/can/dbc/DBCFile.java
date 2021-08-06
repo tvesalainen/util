@@ -81,7 +81,7 @@ public class DBCFile extends DBCBase
             messageTransmitters.forEach((t)->
             {
                 out.format("BO_TX_BU_ %d %s", 
-                        t.getId(),
+                        Integer.toUnsignedLong(t.getId()),
                         t.getTransmitters().stream().collect(Collectors.joining(",", " : ", ";\n"))
                 );
             });
@@ -104,13 +104,13 @@ public class DBCFile extends DBCBase
         {
             if (!m.getComment().isEmpty())
             {
-                out.format("CM_ BO_ %s \"%s\" ;\n", m.getId(), m.getComment());
+                out.format("CM_ BO_ %s \"%s\" ;\n", m.getPrintId(), m.getComment());
             }
             m.forEach((s)->
             {
                 if (!s.getComment().isEmpty())
                 {
-                    out.format("CM_ SG_ %d %s \"%s\" ;\n", m.getId(), s.getName(), s.getComment());
+                    out.format("CM_ SG_ %d %s \"%s\" ;\n", m.getPrintId(), s.getName(), s.getComment());
                 }
             });
         });
@@ -137,14 +137,14 @@ public class DBCFile extends DBCBase
                 m.getAttributeValues().forEach((n,v)->
                 {
                     Attribute at = attributes.get(n);
-                    out.format("BA_ \"%s\" BO_ %d %s;\n", n, m.getId(), at.getValue(v));
+                    out.format("BA_ \"%s\" BO_ %d %s;\n", n, m.getPrintId(), at.getValue(v));
                 });
                 m.forEach((SignalClass s)->
                 {
                     s.getAttributeValues().forEach((n,v)->
                     {
                         Attribute at = attributes.get(n);
-                        out.format("BA_ \"%s\" SG_ %d %s %s;\n", n, m.getId(), s.getName(), at.getValue(v));
+                        out.format("BA_ \"%s\" SG_ %d %s %s;\n", n, m.getPrintId(), s.getName(), at.getValue(v));
                     });
                 });
             });
@@ -157,9 +157,29 @@ public class DBCFile extends DBCBase
                 List<ValueDescription> valueDescriptions = s.getValueDescriptions();
                 if (valueDescriptions != null)
                 {
-                    out.format("VAL_ %d %s ", m.getId(), s.getName());
+                    out.format("VAL_ %d %s ", m.getPrintId(), s.getName());
                     valueDescriptions.forEach((vd)->out.format(" %d \"%s\"", vd.getValue(), vd.getDescription()));
                     out.println(";");
+                }
+            });
+        });
+        messages.forEach((i, m)->
+        {
+            m.forEach((SignalClass s)->
+            {
+                MultiplexerIndicator multiplexerIndicator = s.getMultiplexerIndicator();
+                if (multiplexerIndicator != null)
+                {
+                    SignalClass multiplexor = multiplexerIndicator.getMultiplexor();
+                    if (multiplexor != null)
+                    {
+                        out.format("SG_MUL_VAL_%d %s %s %s ;\n",
+                                m.getPrintId(),
+                                s.getName(),
+                                multiplexor.getName(),
+                                multiplexerIndicator.getRanges().stream().map((r)->r.getFrom()+"-"+r.getToInclusive()).collect(Collectors.joining(", ", "", ""))
+                                );
+                    }
                 }
             });
         });

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
-import org.vesalainen.util.CollectionHelp;
+import org.vesalainen.util.IntRange;
 import org.vesalainen.util.SimpleIntRange;
 
 /**
@@ -29,8 +29,9 @@ import org.vesalainen.util.SimpleIntRange;
  */
 public class MultiplexerIndicator
 {
-    private List<SimpleIntRange> ranges = new ArrayList<>();
+    private List<IntRange> ranges = new ArrayList<>();
     private final boolean extended;
+    private SignalClass multiplexor;
 
     public MultiplexerIndicator()
     {
@@ -46,6 +47,16 @@ public class MultiplexerIndicator
     {
         this.ranges.add((SimpleIntRange) SimpleIntRange.getInstance(value));
         this.extended = extended;
+    }
+
+    public SignalClass getMultiplexor()
+    {
+        return multiplexor;
+    }
+
+    public List<IntRange> getRanges()
+    {
+        return ranges;
     }
 
     public boolean isMultiplexor()
@@ -127,6 +138,12 @@ public class MultiplexerIndicator
     private String value()
     {
         return getValues().findFirst().getAsInt()+"";
+    }
+
+    void setMultiplexor(SignalClass multiplexorSwitch, List<IntRange> multiplexorValueRanges)
+    {
+        this.multiplexor = multiplexorSwitch;
+        this.ranges = multiplexorValueRanges;
     }
     
 }

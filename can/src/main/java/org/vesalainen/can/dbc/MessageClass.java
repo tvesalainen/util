@@ -93,6 +93,11 @@ public class MessageClass extends DBCBase implements AttachedLogger
         return id;
     }
 
+    public long getPrintId()
+    {
+        return Integer.toUnsignedLong(id);
+    }
+    
     public String getName()
     {
         return name;
@@ -126,17 +131,25 @@ public class MessageClass extends DBCBase implements AttachedLogger
         return signals;
     }
 
-
+    public SignalClass getSignal(String signalName)
+    {
+        SignalClass signal = signals.get(signalName);
+        if (signal == null)
+        {
+            throw new IllegalArgumentException(signalName+" signal not found");
+        }
+        return signal;
+    }
     public void setSignalComment(String name, String comment)
     {
-        SignalClass signal = signals.get(name);
+        SignalClass signal = getSignal(name);
         signal.setComment(comment);
     }
 
 
     public void setSignalAttribute(String signalName, String name, Object value)
     {
-        SignalClass signal = signals.get(signalName);
+        SignalClass signal = getSignal(signalName);
         signal.setAttributeValue(name, value);
     }
 
@@ -148,22 +161,21 @@ public class MessageClass extends DBCBase implements AttachedLogger
 
     public void setSignalValueDescription(String signalName, List<ValueDescription> valDesc)
     {
-        SignalClass signal = signals.get(signalName);
-        if (signal != null)
-        {
-            signal.setValueDescription(valDesc);
-        }
+        SignalClass signal = getSignal(signalName);
+        signal.setValueDescription(valDesc);
     }
 
     public void addMultiplexedSignal(String multiplexedSignalName, String multiplexorSwitchName, List<IntRange> multiplexorValueRanges)
     {
-        SignalClass multiplexedSignal = signals.get(multiplexedSignalName);
-        SignalClass multiplexorSwitch = signals.get(multiplexorSwitchName);
+        SignalClass multiplexedSignal = getSignal(multiplexedSignalName);
+        SignalClass multiplexorSwitch = getSignal(multiplexorSwitchName);
+        MultiplexerIndicator multiplexerIndicator = multiplexedSignal.getMultiplexerIndicator();
+        multiplexerIndicator.setMultiplexor(multiplexorSwitch, multiplexorValueRanges);
     }
 
     void print(AppendablePrinter out)
     {
-        out.format("BO_ %d %s: %d %s\n", id, name, size, transmitter);
+        out.format("BO_ %d %s: %d %s\n", Integer.toUnsignedLong(id), name, size, transmitter);
         signals.values().forEach((s)->s.print(out));
         out.println();
     }

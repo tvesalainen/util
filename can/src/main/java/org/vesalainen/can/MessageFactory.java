@@ -16,7 +16,6 @@
  */
 package org.vesalainen.can;
 
-import java.util.Objects;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.util.logging.JavaLogging;
 
