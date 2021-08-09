@@ -61,9 +61,17 @@ BO_ 33428222 Pgn130578_Vessel_Speed_Components: 12 General_Or_Mandatory
 
 BO_ 33358590 Pgn130306_Wind_Data: 8 Environmental
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Wind_Speed : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Wind_Direction : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Wind_Reference : 40|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ True_Wind_Speed_Over_Ground m0 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ True_Wind_Direction_Over_Ground m0 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Magnetic_Wind_Speed_Over_Ground m1 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Magnetic_Wind_Direction_Over_Ground m1 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Apparent_Wind_Speed m2 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Apparent_Wind_Direction m2 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ True_Boat_Referenced_Wind_Speed m3 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ True_Boat_Referenced_Wind_Direction m3 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ True_Water_Referenced_Wind_Speed m4 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ True_Water_Referenced_Wind_Direction m4 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Wind_Reference M : 40|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Reserve : 43|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
 
 BO_ 33359614 Pgn130310_Environmental_Parameters: 8 Environmental
@@ -878,7 +886,6 @@ BA_ "SignalType" SG_ 16701694 Industry_Group "LOOKUP";
 BA_ "SignalType" SG_ 16701694 Reserved_Iso_Self_Configurable "BINARY";
 BA_ "MessageType" BO_ 33428222 "Fast";
 BA_ "MessageType" BO_ 33358590 "Single";
-BA_ "SignalType" SG_ 33358590 Wind_Reference "LOOKUP";
 BA_ "SignalType" SG_ 33358590 Reserve "BINARY";
 BA_ "MessageType" BO_ 33359614 "Single";
 BA_ "SignalType" SG_ 33359614 Water_Temp "DOUBLE";
@@ -1323,7 +1330,6 @@ BA_ "SignalType" SG_ 15204606 Pgn_Of_Requested_Information "INT";
 
 VAL_ 16701694 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
 VAL_ 16701694 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
-VAL_ 33358590 Wind_Reference  0 "True (ground referenced to North)" 1 "Magnetic (ground referenced to Magnetic North)" 2 "Apparent" 3 "True (boat referenced)" 4 "True (water referenced)";
 VAL_ 33360126 Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
 VAL_ 33360382 Humidity_Source  0 "Inside" 1 "Outside";
 VAL_ 33360638 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
