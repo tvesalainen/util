@@ -664,10 +664,13 @@ BO_ 32574974 Pgn127245_Rudder: 8 Steering
 
 BO_ 32576254 Pgn127250_Vessel_Heading: 8 Steering
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Heading_Sensor_Reading : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ True_Heading m0 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Magnetic_Heading m1 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Error_Heading m2 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Null_Heading m3 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
  SG_ Deviation : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
  SG_ Variation : 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Heading_Sensor_Reference : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Heading_Sensor_Reference M : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Reserved_Bits : 58|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
 
 BO_ 32576510 Pgn127251_Rate_Of_Turn: 5 Steering
@@ -1257,7 +1260,6 @@ BA_ "SignalType" SG_ 32572926 Commanded_Rudder_Direction "LOOKUP";
 BA_ "MessageType" BO_ 32574974 "Single";
 BA_ "SignalType" SG_ 32574974 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 32576254 "Single";
-BA_ "SignalType" SG_ 32576254 Heading_Sensor_Reference "LOOKUP";
 BA_ "SignalType" SG_ 32576254 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 32576510 "Single";
 BA_ "MessageType" BO_ 32578046 "Single";
@@ -1479,7 +1481,6 @@ VAL_ 32572926 Steering_Mode  0 "Main Steering" 1 "Non-Follow-up Device" 10 "Foll
 VAL_ 32572926 Turn_Mode  0 "Rudder Limit controlled" 1 "turn rate controlled" 10 "radius controlled";
 VAL_ 32572926 Heading_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
 VAL_ 32572926 Commanded_Rudder_Direction  0 "No Order" 1 "Move to starboard" 10 "Move to port";
-VAL_ 32576254 Heading_Sensor_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
 VAL_ 32578302 Variation_Source  0 "Manual" 1 "Automatic Chart" 2 "Automatic Table" 3 "Automatic Calculation" 4 "WMM 2000" 5 "WMM 2005" 6 "WMM 2010" 7 "WMM 2015" 8 "WMM 2020";
 VAL_ 15597822 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
 VAL_ 15597822 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
