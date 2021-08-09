@@ -76,7 +76,7 @@ BO_ 33359614 Pgn130310_Environmental_Parameters: 8 Environmental
 BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Temperature_Instance M : 8|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Humidity_Instance : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Humidity_Instance m0M : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Sea_Temperature m0 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
  SG_ Outside_Temperature m1 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
  SG_ Inside_Temperature m2 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
@@ -92,7 +92,8 @@ BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
  SG_ Heat_Index_Temperature m12 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
  SG_ Freezer_Temperature m13 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
  SG_ Exhaust_Gas_Temperature m14 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Humidity : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Inside_Humidity m0 : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Outside_Humidity m1 : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
  SG_ Atmospheric_Pressure : 48|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
 
 BO_ 33360126 Pgn130312_Temperature: 8 Unknown
@@ -885,13 +886,11 @@ BA_ "SignalType" SG_ 33359614 Outside_Ambient_Air_Temp "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Atmospheric_Pressure "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 33359870 "Single";
-BA_ "SignalType" SG_ 33359870 Temperature_Instance "LOOKUP";
-BA_ "SignalType" SG_ 33359870 Humidity_Instance "LOOKUP";
 BA_ "SignalType" SG_ 33359870 Sea_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Outside_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Inside_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Engine_Room_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870  Main_Cabin_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Main_Cabin_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Live_Well_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Bait_Well_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Refridgeration_Temperature "DOUBLE";
@@ -903,6 +902,8 @@ BA_ "SignalType" SG_ 33359870 Heat_Index_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Freezer_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Exhaust_Gas_Temperature "DOUBLE";
 BA_ "SignalType" SG_ 33359870 Atmospheric_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Inside_Humidity "DOUBLE";
+BA_ "SignalType" SG_ 33359870 Outside_Humidity "DOUBLE";
 BA_ "MessageType" BO_ 33360126 "Single";
 BA_ "SignalType" SG_ 33360126 Temperature_Source "LOOKUP";
 BA_ "SignalType" SG_ 33360126 Actual_Temperature "DOUBLE";
@@ -1323,8 +1324,6 @@ BA_ "SignalType" SG_ 15204606 Pgn_Of_Requested_Information "INT";
 VAL_ 16701694 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
 VAL_ 16701694 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
 VAL_ 33358590 Wind_Reference  0 "True (ground referenced to North)" 1 "Magnetic (ground referenced to Magnetic North)" 2 "Apparent" 3 "True (boat referenced)" 4 "True (water referenced)";
-VAL_ 33359870 Temperature_Instance  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
-VAL_ 33359870 Humidity_Instance  0 "Inside" 1 "Outside";
 VAL_ 33360126 Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
 VAL_ 33360382 Humidity_Source  0 "Inside" 1 "Outside";
 VAL_ 33360638 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
@@ -1487,3 +1486,22 @@ VAL_ 32309502 M4_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Const
 VAL_ 32309502 M5_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
 VAL_ 32309502 M6_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
 VAL_ 15204606 Control_Byte  0 "ACK" 1 "NAK" 2 "Access Denied" 3 "Address Busy";
+
+SG_MUL_VAL_ 33359870 Sea_Temperature Temperature_Instance 0-0;
+SG_MUL_VAL_ 33359870 Outside_Temperature Temperature_Instance 1-1;
+SG_MUL_VAL_ 33359870 Inside_Temperature Temperature_Instance 2-2;
+SG_MUL_VAL_ 33359870 Engine_Room_Temperature Temperature_Instance 3-3;
+SG_MUL_VAL_ 33359870 Main_Cabin_Temperature Temperature_Instance 4-4;
+SG_MUL_VAL_ 33359870 Live_Well_Temperature Temperature_Instance 5-5;
+SG_MUL_VAL_ 33359870 Bait_Well_Temperature Temperature_Instance 6-6;
+SG_MUL_VAL_ 33359870 Refridgeration_Temperature Temperature_Instance 7-7;
+SG_MUL_VAL_ 33359870 Heating_System_Temperature Temperature_Instance 8-8;
+SG_MUL_VAL_ 33359870 Dew_Point_Temperature Temperature_Instance 9-9;
+SG_MUL_VAL_ 33359870 Apparent_Wind_Chill_Temperature Temperature_Instance 10-10;
+SG_MUL_VAL_ 33359870 Theoretical_Wind_Chill_Temperature Temperature_Instance 11-11;
+SG_MUL_VAL_ 33359870 Heat_Index_Temperature Temperature_Instance 12-12;
+SG_MUL_VAL_ 33359870 Freezer_Temperature Temperature_Instance 13-13;
+SG_MUL_VAL_ 33359870 Exhaust_Gas_Temperature Temperature_Instance 14-14;
+SG_MUL_VAL_ 33359870 Inside_Humidity Humidity_Instance 0-0;
+SG_MUL_VAL_ 33359870 Outside_Humidity Humidity_Instance 1-1;
+SG_MUL_VAL_ 33359870 Humidity_Instance Temperature_Instance 0-63;
