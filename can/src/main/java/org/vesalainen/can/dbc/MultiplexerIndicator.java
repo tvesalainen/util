@@ -61,7 +61,7 @@ public class MultiplexerIndicator
 
     public boolean isMultiplexor()
     {
-        return !ranges.isEmpty() || extended;
+        return ranges.isEmpty() || extended;
     }
 
     public boolean isExtended()

@@ -134,8 +134,8 @@ public class SingleMessage extends AbstractMessage
         private IntRange repeatRange;
         private List<Runnable> signals = new ArrayList<>();
         private Map<SignalClass,MapList<Integer,Runnable>> mpxMap = new HashMap<>();
-        private Multiplexor rootMultiplexor;
-        private Map<SignalClass,Multiplexor> extendedMultiplexors = new HashMap<>();
+        private RtMultiplexor rootMultiplexor;
+        private Map<SignalClass,RtMultiplexor> extendedMultiplexors = new HashMap<>();
 
         public ActionBuilder(MessageClass mc, SignalCompiler compiler, IntRange repeatRange)
         {
@@ -159,12 +159,12 @@ public class SingleMessage extends AbstractMessage
                         IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                         if (multiplexerIndicator.isExtended())
                         {
-                            Multiplexor multiplexor = new Multiplexor(is);
+                            RtMultiplexor multiplexor = new RtMultiplexor(is);
                             extendedMultiplexors.put(sc, multiplexor);
                         }
                         else
                         {
-                            rootMultiplexor = new Multiplexor(is);
+                            rootMultiplexor = new RtMultiplexor(is);
                             addAction(rootMultiplexor);
                         }
                     }
@@ -174,12 +174,7 @@ public class SingleMessage extends AbstractMessage
                         if (act != null)
                         {
                             SignalClass multiplexor = multiplexerIndicator.getMultiplexor();
-                            MapList<Integer, Runnable> ml = mpxMap.get(multiplexor);
-                            if (ml == null)
-                            {
-                                ml = new HashMapList<>();
-                                mpxMap.put(multiplexor, ml);
-                            }
+                            MapList<Integer, Runnable> ml = getMpx(multiplexor);
                             multiplexerIndicator.getValues().forEach((i)->ml.add(i, act));
                         }
                     }
@@ -207,7 +202,7 @@ public class SingleMessage extends AbstractMessage
             {
                 mpxMap.forEach((sc,map)->
                 {
-                    Multiplexor em = extendedMultiplexors.get(sc);
+                    RtMultiplexor em = extendedMultiplexors.get(sc);
                     if (em != null)
                     {
                         map.forEach((i, l)->l.add(i, em));
@@ -351,13 +346,24 @@ public class SingleMessage extends AbstractMessage
             };
         }
 
+        private MapList<Integer, Runnable> getMpx(SignalClass multiplexor)
+        {
+            MapList<Integer, Runnable> ml = mpxMap.get(multiplexor);
+            if (ml == null)
+            {
+                ml = new HashMapList<>();
+                mpxMap.put(multiplexor, ml);
+            }
+            return ml;
+        }
+
     }
-    private class Multiplexor implements Runnable
+    private class RtMultiplexor implements Runnable
     {
         private final IntSupplier supplier;
         private IndexMap<Runnable> map;
 
-        private Multiplexor(IntSupplier supplier)
+        private RtMultiplexor(IntSupplier supplier)
         {
             this.supplier = supplier;
         }
