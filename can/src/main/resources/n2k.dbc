@@ -259,8 +259,11 @@ BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
 
 BO_ 33030910 Pgn129026_Cog_Sog_Rapid_Update: 8 Navigation
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Cog_Reference : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Course_Over_Ground : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Cog_Reference M : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ True_Course_Over_Ground m0 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Magnetic_Course_Over_Ground m1 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Error_Course_Over_Ground m2 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Null_Course_Over_Ground m3 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
  SG_ Speed_Over_Ground : 32|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
  SG_ Reserved_Bits : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
 
@@ -1011,7 +1014,6 @@ BA_ "MessageType" BO_ 33030654 "Single";
 BA_ "SignalType" SG_ 33030654 Latitude "DOUBLE";
 BA_ "SignalType" SG_ 33030654 Longitude "DOUBLE";
 BA_ "MessageType" BO_ 33030910 "Single";
-BA_ "SignalType" SG_ 33030910 Cog_Reference "LOOKUP";
 BA_ "SignalType" SG_ 33030910 Reserved_Bits "BINARY";
 BA_ "RepeatSize" BO_ 33031678 32;
 BA_ "RepeatStartBit" BO_ 33031678 344;
@@ -1359,7 +1361,6 @@ VAL_ 33231358 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channe
 VAL_ 33231614 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
 VAL_ 33231614 Type_Of_Ship_And_Cargo  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
 VAL_ 33231614 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
-VAL_ 33030910 Cog_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
 VAL_ 33031678 Type_Of_System  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
 VAL_ 33031678 Method_Gnss  0 "no GNSS" 1 "GNSS fix" 2 "DGNSS fix" 3 "Precise GNSS" 4 "RTK Fixed Integer" 5 "RTK float" 6 "Estimated (DR) mode" 7 "Manual Input" 8 "Simulate mode";
 VAL_ 33031678 Integrity  0 "No integrity checking" 1 "Safe" 2 "Caution";
