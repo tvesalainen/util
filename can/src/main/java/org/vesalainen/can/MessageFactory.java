@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import java.util.concurrent.Executor;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -25,15 +26,31 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class MessageFactory extends JavaLogging
 {
-    protected final SignalCompiler compiler;
+    private final Executor executor;
+    private final SignalCompiler compiler;
 
-    public MessageFactory(SignalCompiler compiler)
+    public MessageFactory(Executor executor, SignalCompiler compiler)
     {
         super(MessageFactory.class);
+        this.executor = executor;
         this.compiler = compiler;
     }
     
     public AbstractMessage createMessage(int canId, MessageClass mc)
+    {
+        if (compiler.needCompilation(canId))
+        {
+            SingleMessage sm = new SingleMessage(executor, mc, canId, mc.getMinSize(), mc.getName());
+            finer("compile(%s)", mc);
+            sm.addSignals(compiler);
+            return sm;
+        }
+        else
+        {
+            return AbstractMessage.getNullMessage(executor, canId);
+        }
+    }
+    public AbstractMessage createPgnMessage(int canId, MessageClass mc)
     {
         if (compiler.needCompilation(canId))
         {
@@ -43,21 +60,21 @@ public class MessageFactory extends JavaLogging
             switch (type)
             {
                 case "Single":
-                    sm = new SingleMessage(canId, mc.getMinSize(), mc.getName());
+                    sm = new PgnMessage(executor, mc, canId, mc.getMinSize(), mc.getName());
                     break;
                 case "Fast":
-                    sm = new FastMessage(canId, mc.getMinSize(), mc.getName());
+                    sm = new FastMessage(executor, mc, canId, mc.getMinSize(), mc.getName());
                     break;
                 default:
                     throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+" not supported");
             }
             finer("compile(%s)", mc);
-            sm.addSignals(mc, compiler);
+            sm.addSignals(compiler);
             return sm;
         }
         else
         {
-            return AbstractMessage.NULL_MESSAGE;
+            return AbstractMessage.getNullMessage(executor, canId);
         }
     }
 }

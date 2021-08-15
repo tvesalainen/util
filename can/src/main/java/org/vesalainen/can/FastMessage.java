@@ -18,22 +18,24 @@ package org.vesalainen.can;
 
 import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executor;
 import static java.util.logging.Level.WARNING;
+import org.vesalainen.can.dbc.MessageClass;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class FastMessage extends SingleMessage
+public class FastMessage extends PgnMessage
 {
     private final static int MAX_FAST_SIZE = 223*8; // bits
     private byte packetId;
     private int packetSeq;
     private int byteCount;
     
-    public FastMessage(int canId, int len, String comment)
+    public FastMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
     {
-        super(canId, len, comment);
+        super(executor, messageClass, canId, len, comment);
     }
 
     @Override

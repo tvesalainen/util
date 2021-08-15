@@ -48,7 +48,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
 
     protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        this(executor, new MessageFactory(compiler));
+        this(executor, new MessageFactory(executor, compiler));
     }
 
     public AbstractCanService(CachedScheduledThreadPool executor, MessageFactory messageFactory)
@@ -96,12 +96,12 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         {
             if (proc.update(this))
             {
-                proc.execute(executor);
+                proc.execute();
             }
         }
         else
         {
-            procMap.put(canId, AbstractMessage.NULL_MESSAGE);
+            procMap.put(canId, AbstractMessage.getNullMessage(executor, canId));
             executor.submit((Runnable) ()->compile(canId));
         }
     }
@@ -128,7 +128,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 msgCls = pgnMap.get(pgn);
                 if (msgCls != null)
                 {
-                    procMap.put(canId, compile(canId, (MessageClass) msgCls));
+                    procMap.put(canId, compilePgn(canId, (MessageClass) msgCls));
                     info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
@@ -142,6 +142,10 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected AbstractMessage compile(int canId, MessageClass mc)
     {
         return messageFactory.createMessage(canId, mc);
+    }
+    protected AbstractMessage compilePgn(int canId, MessageClass mc)
+    {
+        return messageFactory.createPgnMessage(canId, mc);
     }
     public void addN2K()
     {
