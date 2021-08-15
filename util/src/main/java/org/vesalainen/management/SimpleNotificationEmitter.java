@@ -48,6 +48,8 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
     private MBeanNotificationInfo[] infos;
     private Executor executor;
     private AtomicLong sequenceNumber = new AtomicLong();
+    private Runnable attach;
+    private Runnable detach;
     /**
      * Creates NotificationEmitterImpl with gives infos
      * @param infos 
@@ -69,6 +71,23 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
         this.infos = infos;
     }
     /**
+     * Set action that is called when first notification listener enters
+     * @param attach 
+     */
+    public void setAttach(Runnable attach)
+    {
+        this.attach = attach;
+    }
+    /**
+     * Set action that is called when last notification listener leaves
+     * @param detach 
+     */
+    public void setDetach(Runnable detach)
+    {
+        this.detach = detach;
+    }
+    
+    /**
      * Send notification. supplier is called only if there are listeners
      * @param textSupplier
      * @param userDataSupplier
@@ -89,7 +108,7 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
      */
     public synchronized void sendNotification(String text, U userData, long timestamp)
     {
-        map.allValues()
+        map.valueSet()
                 .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(text, userData, timestamp)));
     }
     @Override
@@ -109,6 +128,10 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
         {
             throw new IllegalArgumentException();
         }
+        if (map.isEmpty() && attach != null)
+        {
+            attach.run();
+        }
         ListenerWrapper wrap = new ListenerWrapper(listener, filter, handback);
         map.add(listener, wrap);
     }
@@ -119,6 +142,10 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
         if (map.remove(listener) == null)
         {
             throw new ListenerNotFoundException();
+        }
+        if (map.isEmpty() && detach != null)
+        {
+            detach.run();
         }
     }
 
