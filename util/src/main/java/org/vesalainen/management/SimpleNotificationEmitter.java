@@ -119,6 +119,10 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
         {
             throw new ListenerNotFoundException();
         }
+        if (map.isEmpty() && detach != null)
+        {
+            detach.run();
+        }
     }
 
     @Override
