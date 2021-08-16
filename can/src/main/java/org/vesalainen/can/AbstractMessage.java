@@ -29,7 +29,10 @@ import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanRegistrationException;
@@ -43,8 +46,10 @@ import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.MultiplexerIndicator;
 import org.vesalainen.can.dbc.SignalClass;
 import static org.vesalainen.can.dbc.ValueType.SIGNED;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.management.SimpleNotificationEmitter;
 import org.vesalainen.util.HashMapList;
+import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.IndexMap;
 import org.vesalainen.util.IntRange;
 import org.vesalainen.util.MapList;
@@ -59,7 +64,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected final MessageClass messageClass;
     protected final int canId;
     protected byte[] buf;
-    protected String comment;
+    protected String name;
     protected Runnable action;
     protected Runnable jmxAction;
     protected int maxRepeatCount;
@@ -82,7 +87,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         this.canId = canId;
     }
 
-    private void initJmx()
+    void registerMBean()
     {
         try
         {
@@ -101,6 +106,20 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             ManagementFactory.getPlatformMBeanServer().registerMBean(this, objectName);
         }
         catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    void unregisterMBean()
+    {
+        try
+        {
+            ManagementFactory.getPlatformMBeanServer().unregisterMBean(objectName);
+            objectName = null;
+            emitter = null;
+            detach();
+        }
+        catch (InstanceNotFoundException | MBeanRegistrationException ex)
         {
             throw new RuntimeException(ex);
         }
@@ -135,10 +154,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     @Override
     public MBeanNotificationInfo[] getNotificationInfo()
     {
-        if (objectName == null)
-        {
-            initJmx();
-        }
         return emitter.getNotificationInfo();
     }
     
@@ -151,7 +166,25 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     @Override
     public String getComment()
     {
-        return comment;
+        return name;
+    }
+
+    @Override
+    public int getPgn()
+    {
+        return PGN.pgn(canId);
+    }
+
+    @Override
+    public int getSource()
+    {
+        return PGN.sourceAddress(canId);
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return PGN.messagePriority(canId);
     }
 
     public int getRepeatSize()
@@ -204,6 +237,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     {
         if (jmxAction != null)
         {
+            emitter.sendNotification(()->HexUtil.toString(buf), ()->null, System::currentTimeMillis);
             jmxAction.run();
         }
     }
@@ -520,7 +554,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return ()->emitter.sendNotification(name+"="+supplier.getAsInt()+unit, "", System.currentTimeMillis());
+            Supplier<String> text = ()->name+"="+supplier.getAsInt()+unit;
+            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
         }
 
         @Override
@@ -528,7 +563,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return ()->emitter.sendNotification(name+"="+supplier.getAsLong()+unit, "", System.currentTimeMillis());
+            Supplier<String> text = ()->name+"="+supplier.getAsLong()+unit;
+            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
         }
 
         @Override
@@ -536,7 +572,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return ()->emitter.sendNotification(name+"="+supplier.getAsDouble()+unit, "", System.currentTimeMillis());
+            Supplier<String> text = ()->name+"="+supplier.getAsDouble()+unit;
+            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
         }
 
         @Override
@@ -544,7 +581,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return ()->emitter.sendNotification(name+"="+map.apply(supplier.getAsInt())+unit, "", System.currentTimeMillis());
+            Supplier<String> text = ()->name+"="+map.apply(supplier.getAsInt())+unit;
+            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
         }
 
         @Override
@@ -552,7 +590,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return ()->emitter.sendNotification(name+"="+ss.get()+unit, "", System.currentTimeMillis());
+            Supplier<String> text = ()->name+"="+ss.get()+unit;
+            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
         }
 
     }

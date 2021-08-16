@@ -16,36 +16,30 @@
  */
 package org.vesalainen.can;
 
+import java.util.Hashtable;
 import java.util.concurrent.Executor;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.j1939.PGN;
-import org.vesalainen.can.j1939.pgnMXBean;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PgnMessage extends SingleMessage implements pgnMXBean
+public class PgnMessage extends SingleMessage
 {
-    protected final int pgn;
-    protected final int source;
-    protected final int priority;
     
     public PgnMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
     {
         super(executor, messageClass, canId, len, comment);
-        this.source = PGN.sourceAddress(canId);
-        this.priority = PGN.messagePriority(canId);
-        this.pgn = PGN.pgn(canId);
     }
     @Override
     protected ObjectName getObjectName()
     {
             try
             {
-                return new ObjectName("org.vesalainen.can:type="+comment);
+                return new ObjectName("org.vesalainen.can:s="+getSource()+",n="+name);
             }
             catch (MalformedObjectNameException ex)
             {
@@ -53,23 +47,5 @@ public class PgnMessage extends SingleMessage implements pgnMXBean
             }
     }
 
-    @Override
-    public int getPgn()
-    {
-        return pgn;
-    }
-
-    @Override
-    public int getSource()
-    {
-        return source;
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return priority;
-    }
-    
     
 }

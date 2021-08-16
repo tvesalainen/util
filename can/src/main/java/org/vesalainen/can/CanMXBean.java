@@ -24,4 +24,7 @@ public interface CanMXBean
 {
     int getCanId();
     String getComment();
+    int getPgn();
+    int getSource();
+    int getPriority();
 }

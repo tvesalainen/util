@@ -60,7 +60,7 @@ public class FastMessage extends PgnMessage
                 byteCount = frame.get(9) & 0xff;
                 setCurrentBytes(byteCount);
                 frame.position(10);
-                info("new fast %s: %d cnt=%d buf=%d", comment, id, byteCount, buf.length);
+                info("new fast %s: %d cnt=%d buf=%d", name, id, byteCount, buf.length);
             }
             else
             {
@@ -86,7 +86,7 @@ public class FastMessage extends PgnMessage
         }
         catch (Exception ex)
         {
-            log(WARNING, ex, "update %s", comment);
+            log(WARNING, ex, "update %s", name);
         }
         return false;
     }

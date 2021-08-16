@@ -36,7 +36,7 @@ public class SingleMessage extends AbstractMessage
     {
         super(executor, messageClass, canId);
         this.buf = new byte[len];
-        this.comment = comment;
+        this.name = comment;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class SingleMessage extends AbstractMessage
         }
         catch (Exception ex)
         {
-            log(WARNING, ex, "execute %s", comment);
+            log(WARNING, ex, "execute %s", name);
         }
         return false;
     }
@@ -83,7 +83,7 @@ public class SingleMessage extends AbstractMessage
     @Override
     protected void execute()
     {
-        //info("execute pgn=%d src=%d %s\n%s", pgn, source, comment, HexUtil.toString(buf));
+        //info("execute pgn=%d src=%d %s\n%s", pgn, source, name, HexUtil.toString(buf));
         try
         {
             action.run();
@@ -91,7 +91,7 @@ public class SingleMessage extends AbstractMessage
         }
         catch (Exception ex)
         {
-            log(WARNING, ex, "execute %s", comment);
+            log(WARNING, ex, "execute %s", name);
         }
     }
 

@@ -101,7 +101,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
         else
         {
-            procMap.put(canId, AbstractMessage.getNullMessage(executor, canId));
+            addProc(canId, AbstractMessage.getNullMessage(executor, canId));
             executor.submit((Runnable) ()->compile(canId));
         }
     }
@@ -119,7 +119,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             MessageClass msgCls = canIdMap.get(canId);
             if (msgCls != null)
             {
-                procMap.put(canId, compile(canId, msgCls));
+                addProc(canId, compile(canId, msgCls));
                 info("compiled canId %d", canId);
             }
             else
@@ -128,7 +128,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                 msgCls = pgnMap.get(pgn);
                 if (msgCls != null)
                 {
-                    procMap.put(canId, compilePgn(canId, (MessageClass) msgCls));
+                    addProc(canId, compilePgn(canId, (MessageClass) msgCls));
                     info("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
@@ -139,6 +139,16 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
     }
     
+    private void addProc(int canId, AbstractMessage msg)
+    {
+        msg.registerMBean();
+        AbstractMessage old = procMap.put(canId, msg);
+        if (old != null)
+        {
+            old.unregisterMBean();
+        }
+    }
+
     protected AbstractMessage compile(int canId, MessageClass mc)
     {
         return messageFactory.createMessage(canId, mc);
