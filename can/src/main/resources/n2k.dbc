@@ -39,763 +39,763 @@ BU_: MFD Steering Power Propulsion Navigation Ais Unknown Environmental General_
 
 
 BO_ 16701694 Pgn065240_Iso_Commanded_Address: 9 General_Or_Mandatory
- SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_Code : 21|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Function_Iso_Function : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 48|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Class : 49|7@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Industry_Group : 60|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ New_Source_Address : 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function_Iso_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 48|1@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
+ SG_ New_Source_Address : 64|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 33428222 Pgn130578_Vessel_Speed_Components: 12 General_Or_Mandatory
- SG_ Longitudinal_Speed_Water_Referenced : 0|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
- SG_ Transverse_Speed_Water_Referenced : 16|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
- SG_ Longitudinal_Speed_Ground_Referenced : 32|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
- SG_ Transverse_Speed_Ground_Referenced : 48|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
- SG_ Stern_Speed_Water_Referenced : 64|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
- SG_ Stern_Speed_Ground_Referenced : 80|16@1- (0.001,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Longitudinal_Speed_Water_Referenced : 0|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Transverse_Speed_Water_Referenced : 16|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Longitudinal_Speed_Ground_Referenced : 32|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Transverse_Speed_Ground_Referenced : 48|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Stern_Speed_Water_Referenced : 64|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Stern_Speed_Ground_Referenced : 80|16@1- (0.001,0) [0|0] "m/s" MFD
 
 BO_ 33358590 Pgn130306_Wind_Data: 8 Environmental
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Wind_Speed_Over_Ground m0 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ True_Wind_Direction_Over_Ground m0 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Magnetic_Wind_Speed_Over_Ground m1 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Magnetic_Wind_Direction_Over_Ground m1 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Apparent_Wind_Speed m2 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Apparent_Wind_Direction m2 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ True_Boat_Referenced_Wind_Speed m3 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ True_Boat_Referenced_Wind_Direction m3 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ True_Water_Referenced_Wind_Speed m4 : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ True_Water_Referenced_Wind_Direction m4 : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Wind_Reference M : 40|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserve : 43|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ True_Wind_Speed_Over_Ground m0 : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ True_Wind_Direction_Over_Ground m0 : 24|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Magnetic_Wind_Speed_Over_Ground m1 : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Magnetic_Wind_Direction_Over_Ground m1 : 24|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Apparent_Wind_Speed m2 : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Apparent_Wind_Direction m2 : 24|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ True_Boat_Referenced_Wind_Speed m3 : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ True_Boat_Referenced_Wind_Direction m3 : 24|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ True_Water_Referenced_Wind_Speed m4 : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ True_Water_Referenced_Wind_Direction m4 : 24|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Wind_Reference M : 40|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserve : 43|21@1+ (1,0) [0|0] "" MFD
 
 BO_ 33359614 Pgn130310_Environmental_Parameters: 8 Environmental
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Water_Temp : 8|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Outside_Ambient_Air_Temp : 24|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Atmospheric_Pressure : 40|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
- SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Water_Temp : 8|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Outside_Ambient_Air_Temp : 24|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Atmospheric_Pressure : 40|16@1+ (1,0) [0|0] "hPa" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Temperature_Instance M : 8|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Humidity_Instance m0M : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sea_Temperature m0 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Outside_Temperature m1 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Inside_Temperature m2 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Engine_Room_Temperature m3 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Main_Cabin_Temperature m4 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Live_Well_Temperature m5 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Bait_Well_Temperature m6 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Refridgeration_Temperature m7 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Heating_System_Temperature m8 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Dew_Point_Temperature m9 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Apparent_Wind_Chill_Temperature m10 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Theoretical_Wind_Chill_Temperature m11 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Heat_Index_Temperature m12 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Freezer_Temperature m13 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Exhaust_Gas_Temperature m14 : 16|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Inside_Humidity m0 : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
- SG_ Outside_Humidity m1 : 32|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
- SG_ Atmospheric_Pressure : 48|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Temperature_Instance M : 8|6@1+ (1,0) [0|0] "" MFD
+ SG_ Humidity_Instance m0M : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Sea_Temperature m0 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Outside_Temperature m1 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Inside_Temperature m2 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Engine_Room_Temperature m3 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Main_Cabin_Temperature m4 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Live_Well_Temperature m5 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Bait_Well_Temperature m6 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Refridgeration_Temperature m7 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Heating_System_Temperature m8 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Dew_Point_Temperature m9 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Apparent_Wind_Chill_Temperature m10 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Theoretical_Wind_Chill_Temperature m11 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Heat_Index_Temperature m12 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Freezer_Temperature m13 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Exhaust_Gas_Temperature m14 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Inside_Humidity m0 : 32|16@1- (0.004,0) [0|0] "%" MFD
+ SG_ Outside_Humidity m1 : 32|16@1- (0.004,0) [0|0] "%" MFD
+ SG_ Atmospheric_Pressure : 48|16@1+ (1,0) [0|0] "hPa" MFD
 
 BO_ 33360126 Pgn130312_Temperature: 8 Unknown
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Temperature_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Temperature_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Actual_Temperature : 24|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Set_Temperature : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Temperature_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Temperature_Source : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Actual_Temperature : 24|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Set_Temperature : 40|16@1+ (0.01,-273.15) [0|0] "C" MFD
 
 BO_ 33360382 Pgn130313_Humidity: 8 Unknown
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Humidity_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Humidity_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Actual_Humidity : 24|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
- SG_ Set_Humidity : 40|16@1- (0.004,0.0) [0.0|0.0] "%" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Humidity_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Humidity_Source : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Actual_Humidity : 24|16@1- (0.004,0) [0|0] "%" MFD
+ SG_ Set_Humidity : 40|16@1- (0.004,0) [0|0] "%" MFD
 
 BO_ 33360638 Pgn130314_Actual_Pressure: 8 Unknown
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressure_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressure_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressure : 24|32@1- (0.1,0.0) [0.0|0.0] "dPa" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressure_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressure_Source : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressure : 24|32@1- (0.1,0) [0|0] "dPa" MFD
 
 BO_ 33360894 Pgn130315_Set_Pressure: 8 Unknown
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressue_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressure_Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pressure : 24|32@1+ (0.1,0.0) [0.0|0.0] "dPa" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressue_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressure_Source : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Pressure : 24|32@1+ (0.1,0) [0|0] "dPa" MFD
 
 BO_ 33362174 Pgn130320_Tide_Station_Data: 20 Environmental
- SG_ Mode : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Tide_Tendency : 4|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Measurement_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Measurement_Time : 24|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Station_Location_Latitude : 56|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Station_Location_Longitude : 88|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Tide_Level : 120|16@1- (0.001,0.0) [0.0|0.0] "m" MFD
- SG_ Tide_Level_Standard_Deviation : 136|16@1+ (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Station_Id_String : 152|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Station_Name_String : 168|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mode : 0|4@1+ (1,0) [0|0] "" MFD
+ SG_ Tide_Tendency : 4|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Measurement_Date : 8|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Measurement_Time : 24|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Station_Location_Latitude : 56|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Station_Location_Longitude : 88|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Tide_Level : 120|16@1- (0.001,0) [0|0] "m" MFD
+ SG_ Tide_Level_Standard_Deviation : 136|16@1+ (0.01,0) [0|0] "m" MFD
+ SG_ Station_Id_String : 152|16@1+ (1,0) [0|0] "" MFD
+ SG_ Station_Name_String : 168|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 33162238 Pgn129539_Gnss_Dops: 8 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Set_Mode : 8|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Op_Mode : 11|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserve : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Hdop : 16|16@1- (0.01,0.0) [0.0|0.0] "" MFD
- SG_ Vdop : 32|16@1- (0.01,0.0) [0.0|0.0] "" MFD
- SG_ Tdop : 48|16@1- (0.01,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Set_Mode : 8|3@1+ (1,0) [0|0] "" MFD
+ SG_ Op_Mode : 11|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserve : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Hdop : 16|16@1- (0.01,0) [0|0] "" MFD
+ SG_ Vdop : 32|16@1- (0.01,0) [0|0] "" MFD
+ SG_ Tdop : 48|16@1- (0.01,0) [0|0] "" MFD
 
 BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Mode : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserve_Bits : 10|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Svs : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Prn_1 : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Elevation_1 : 32|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Azimuth_1 : 48|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Snr_1 : 64|16@1+ (0.01,0.0) [0.0|0.0] "dB" MFD
- SG_ Range_Residuals_1 : 80|32@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Prn_Status_1 : 112|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 116|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Mode : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserve_Bits : 10|6@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Svs : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Prn_1 : 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ Elevation_1 : 32|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Azimuth_1 : 48|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Snr_1 : 64|16@1+ (0.01,0) [0|0] "dB" MFD
+ SG_ Range_Residuals_1 : 80|32@1- (1,0) [0|0] "" MFD
+ SG_ Prn_Status_1 : 112|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 116|4@1+ (1,0) [0|0] "" MFD
 
 BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Imo : 40|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Call_Sign : 72|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Name : 128|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ship_Cargo_Type : 288|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ship_Length : 296|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Ship_Beam : 312|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Position_Reference_Point_From_Starboard : 328|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 344|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Estimated_Date_Of_Arrival : 360|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Estimated_Time_Of_Arrival : 376|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Draft : 408|16@1+ (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Destination : 424|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Version : 584|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Type_Of_Electronic_Positioning_Device : 586|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Data_Terminal_Equipment_Dte : 590|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 591|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 592|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Imo : 40|32@1+ (1,0) [0|0] "" MFD
+ SG_ Call_Sign : 72|56@1+ (1,0) [0|0] "" MFD
+ SG_ Name : 128|160@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Cargo_Type : 288|8@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Length : 296|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Ship_Beam : 312|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 328|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 344|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Estimated_Date_Of_Arrival : 360|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Estimated_Time_Of_Arrival : 376|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Draft : 408|16@1+ (0.01,0) [0|0] "m" MFD
+ SG_ Destination : 424|160@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Version : 584|2@1+ (1,0) [0|0] "" MFD
+ SG_ Type_Of_Electronic_Positioning_Device : 586|4@1+ (1,0) [0|0] "" MFD
+ SG_ Data_Terminal_Equipment_Dte : 590|1@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 591|1@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 592|5@1+ (1,0) [0|0] "" MFD
 
 BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 13 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sequence_Number : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Destination_Id : 48|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Nmea_2000_Reserved : 80|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Retransmit_Flag : 86|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 87|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Bits_In_Binary_Data_Field : 88|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Binary_Data : 104|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1,0) [0|0] "" MFD
+ SG_ Sequence_Number : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Destination_Id : 48|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Nmea_2000_Reserved : 80|6@1+ (1,0) [0|0] "" MFD
+ SG_ Retransmit_Flag : 86|1@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 87|1@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Bits_In_Binary_Data_Field : 88|16@1+ (1,0) [0|0] "" MFD
+ SG_ Binary_Data : 104|64@1+ (1,0) [0|0] "" MFD
 
 BO_ 33228030 Pgn129796_Ais_Acknowledge: 12 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Destination_Id_1 : 48|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Nmea_2000_Reserved : 80|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sequence_Number_For_Id_1 : 82|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Destination_Id_N : 88|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Destination_Id_1 : 48|32@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_2000_Reserved : 80|2@1+ (1,0) [0|0] "" MFD
+ SG_ Sequence_Number_For_Id_1 : 82|6@1+ (1,0) [0|0] "" MFD
+ SG_ Destination_Id_N : 88|2@1+ (1,0) [0|0] "" MFD
 
 BO_ 33228286 Pgn129797_Ais_Binary_Broadcast_Message: 233 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Source_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Nmea_2000_Reserved : 40|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 41|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Bits_In_Binary_Data_Field : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Binary_Data : 64|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_2000_Reserved : 40|1@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Bits_In_Binary_Data_Field : 48|16@1+ (1,0) [0|0] "" MFD
+ SG_ Binary_Data : 64|2040@1+ (1,0) [0|0] "" MFD
 
 BO_ 33231358 Pgn129809_Ais_Class_B_Cs_Static_Data_Report_Part_A: 27 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Name : 40|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 200|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 205|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sequence_Id : 208|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Name : 40|160@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 200|5@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 205|3@1+ (1,0) [0|0] "" MFD
+ SG_ Sequence_Id : 208|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Type_Of_Ship_And_Cargo : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Vendor_Id : 48|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Call_Sign : 104|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ship_Length : 160|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Ship_Beam : 176|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Reference_Point_Position_From_Starboard : 192|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Reference_Point_Position_Aft_Of_Bow : 208|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Mother_Ship_Mmsi : 224|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Nmea_2000_Reserved : 256|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 258|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 264|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 269|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sequence_Id : 272|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Type_Of_Ship_And_Cargo : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Vendor_Id : 48|56@1+ (1,0) [0|0] "" MFD
+ SG_ Call_Sign : 104|56@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Length : 160|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Ship_Beam : 176|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Reference_Point_Position_From_Starboard : 192|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Reference_Point_Position_Aft_Of_Bow : 208|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Mother_Ship_Mmsi : 224|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Nmea_2000_Reserved : 256|2@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 258|6@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 264|5@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 269|3@1+ (1,0) [0|0] "" MFD
+ SG_ Sequence_Id : 272|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 33032702 Pgn129033_Time_Date: 8 Navigation
- SG_ Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Time : 16|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Local_Offset_Minutes : 48|16@1- (1.0,0.0) [0.0|0.0] "minutes" MFD
+ SG_ Date : 0|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Time : 16|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Local_Offset_Minutes : 48|16@1- (1,0) [0|0] "minutes" MFD
 
 BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
- SG_ Latitude : 0|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Longitude : 32|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Latitude : 0|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Longitude : 32|32@1- (1.0E-7,0) [0|0] "deg" MFD
 
 BO_ 33030910 Pgn129026_Cog_Sog_Rapid_Update: 8 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Cog_Reference M : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Course_Over_Ground m0 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Magnetic_Course_Over_Ground m1 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Error_Course_Over_Ground m2 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Null_Course_Over_Ground m3 : 16|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Speed_Over_Ground : 32|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Reserved_Bits : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Cog_Reference M : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ True_Course_Over_Ground m0 : 16|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Magnetic_Course_Over_Ground m1 : 16|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Error_Course_Over_Ground m2 : 16|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Null_Course_Over_Ground m3 : 16|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Speed_Over_Ground : 32|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Reserved_Bits : 48|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Position_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Position_Time : 24|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Latitude : 56|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
- SG_ Longitude : 120|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
- SG_ Altitude : 184|64@1- (1.0E-6,0.0) [0.0|0.0] "m" MFD
- SG_ Type_Of_System : 248|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Method_Gnss : 252|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Integrity : 256|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 258|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Svs : 264|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Hdop : 272|16@1- (0.01,0.0) [0.0|0.0] "" MFD
- SG_ Pdop : 288|16@1- (0.01,0.0) [0.0|0.0] "" MFD
- SG_ Geoidal_Separation : 304|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Number_Of_Reference_Stations : 336|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reference_Station_Type_1 : 344|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reference_Station_Id_1 : 348|12@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Age_Of_Dgnss_Corrections_1 : 360|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Position_Date : 8|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Position_Time : 24|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Latitude : 56|64@1- (1.0E-16,0) [0|0] "deg" MFD
+ SG_ Longitude : 120|64@1- (1.0E-16,0) [0|0] "deg" MFD
+ SG_ Altitude : 184|64@1- (1.0E-6,0) [0|0] "m" MFD
+ SG_ Type_Of_System : 248|4@1+ (1,0) [0|0] "" MFD
+ SG_ Method_Gnss : 252|4@1+ (1,0) [0|0] "" MFD
+ SG_ Integrity : 256|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 258|6@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Svs : 264|8@1+ (1,0) [0|0] "" MFD
+ SG_ Hdop : 272|16@1- (0.01,0) [0|0] "" MFD
+ SG_ Pdop : 288|16@1- (0.01,0) [0|0] "" MFD
+ SG_ Geoidal_Separation : 304|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Number_Of_Reference_Stations : 336|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reference_Station_Type_1 : 344|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reference_Station_Id_1 : 348|12@1+ (1,0) [0|0] "" MFD
+ SG_ Age_Of_Dgnss_Corrections_1 : 360|16@1+ (0.01,0) [0|0] "s" MFD
 
 BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Communication_State : 144|19@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 163|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Rate_Of_Turn : 184|16@1- (0.33749999999999997,0.0) [0.0|0.0] "deg/min" MFD
- SG_ Navigational_Status : 200|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_For_Regional_Applications : 204|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 206|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Spare : 208|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 211|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Sequence_Id : 216|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1,0) [0|0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1,0) [0|0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1,0) [0|0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Communication_State : 144|19@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 163|5@1+ (1,0) [0|0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Rate_Of_Turn : 184|16@1- (0.33749999999999997,0) [0|0] "deg/min" MFD
+ SG_ Navigational_Status : 200|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_For_Regional_Applications : 204|2@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 206|2@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Spare : 208|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 211|5@1+ (1,0) [0|0] "" MFD
+ SG_ Sequence_Id : 216|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 33034238 Pgn129039_Ais_Class_B_Position_Report: 26 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Communication_State : 144|19@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 163|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Reserved_For_Regional_Applications : 192|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Class_B_Unit_Flag : 194|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Class_B_Display_Flag : 195|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Class_B_Dsc_Flag : 196|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Class_B_Band_Flag : 197|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Class_B_Msg_22_Flag : 198|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Mode_Flag : 199|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Communication_State_Selector_Flag : 200|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1,0) [0|0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1,0) [0|0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1,0) [0|0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Communication_State : 144|19@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 163|5@1+ (1,0) [0|0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Reserved_For_Regional_Applications : 192|2@1+ (1,0) [0|0] "" MFD
+ SG_ Class_B_Unit_Flag : 194|1@1+ (1,0) [0|0] "" MFD
+ SG_ Class_B_Display_Flag : 195|1@1+ (1,0) [0|0] "" MFD
+ SG_ Class_B_Dsc_Flag : 196|1@1+ (1,0) [0|0] "" MFD
+ SG_ Class_B_Band_Flag : 197|1@1+ (1,0) [0|0] "" MFD
+ SG_ Class_B_Msg_22_Flag : 198|1@1+ (1,0) [0|0] "" MFD
+ SG_ Mode_Flag : 199|1@1+ (1,0) [0|0] "" MFD
+ SG_ Communication_State_Selector_Flag : 200|1@1+ (1,0) [0|0] "" MFD
 
 BO_ 33034494 Pgn129040_Ais_Class_B_Extended_Position_Report: 33 Ais
- SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
- SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Cog : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Sog : 128|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Reserved_For_Regional_Applications : 152|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ship_Cargo_Type : 160|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Heading : 168|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Nmea_2000_Reserved : 184|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Type_Of_Electronic_Positioning_Device : 188|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ship_Length : 192|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Ship_Beam : 208|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Position_Reference_Point_From_Starboard : 224|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 240|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
- SG_ Name : 256|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Data_Terminal_Equipment_Dte : 416|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Mode_Flag : 417|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Spare : 418|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ais_Transceiver_Information : 422|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1,0) [0|0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1,0) [0|0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1,0) [0|0] "" MFD
+ SG_ Cog : 112|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Sog : 128|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Reserved_For_Regional_Applications : 152|4@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Cargo_Type : 160|8@1+ (1,0) [0|0] "" MFD
+ SG_ True_Heading : 168|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Nmea_2000_Reserved : 184|4@1+ (1,0) [0|0] "" MFD
+ SG_ Type_Of_Electronic_Positioning_Device : 188|4@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Length : 192|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Ship_Beam : 208|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 224|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 240|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Name : 256|160@1+ (1,0) [0|0] "" MFD
+ SG_ Data_Terminal_Equipment_Dte : 416|1@1+ (1,0) [0|0] "" MFD
+ SG_ Mode_Flag : 417|1@1+ (1,0) [0|0] "" MFD
+ SG_ Spare : 418|4@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 422|5@1+ (1,0) [0|0] "" MFD
 
 BO_ 33035518 Pgn129044_Datum: 24 Navigation
- SG_ Local_Datum : 0|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Delta_Latitude : 32|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Delta_Longitude : 64|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Delta_Altitude : 96|32@1- (1.0E-6,0.0) [0.0|0.0] "m" MFD
- SG_ Reference_Datum : 128|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Local_Datum : 0|32@1+ (1,0) [0|0] "" MFD
+ SG_ Delta_Latitude : 32|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Delta_Longitude : 64|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Delta_Altitude : 96|32@1- (1.0E-6,0) [0|0] "m" MFD
+ SG_ Reference_Datum : 128|32@1+ (1,0) [0|0] "" MFD
 
 BO_ 33035774 Pgn129045_User_Datum_Settings: 37 Navigation
- SG_ Delta_X : 0|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Delta_Y : 32|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Delta_Z : 64|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Rotation_In_X : 96|32@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Rotation_In_Y : 128|32@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Rotation_In_Z : 160|32@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Scale : 192|32@1- (1.0,0.0) [0.0|0.0] "ppm" MFD
- SG_ Ellipsoid_Semi_Major_Axis : 224|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Ellipsoid_Flattening_Inverse : 256|32@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Datum_Name : 288|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Delta_X : 0|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Delta_Y : 32|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Delta_Z : 64|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Rotation_In_X : 96|32@1- (1,0) [0|0] "" MFD
+ SG_ Rotation_In_Y : 128|32@1- (1,0) [0|0] "" MFD
+ SG_ Rotation_In_Z : 160|32@1- (1,0) [0|0] "" MFD
+ SG_ Scale : 192|32@1- (1,0) [0|0] "ppm" MFD
+ SG_ Ellipsoid_Semi_Major_Axis : 224|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Ellipsoid_Flattening_Inverse : 256|32@1- (1,0) [0|0] "" MFD
+ SG_ Datum_Name : 288|32@1+ (1,0) [0|0] "" MFD
 
 BO_ 33096702 Pgn129283_Cross_Track_Error: 8 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Xte_Mode : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Navigation_Terminated : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Xte : 16|32@1- (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Reserve : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Xte_Mode : 8|4@1+ (1,0) [0|0] "" MFD
+ SG_ Navigation_Terminated : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Xte : 16|32@1- (0.01,0) [0|0] "m" MFD
+ SG_ Reserve : 48|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 33096958 Pgn129284_Navigation_Data: 34 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Distance_To_Destination_Waypoint : 8|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Course_Bearing_Ref : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Perpendicular_Crossed : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Arrival_Circle_Entered : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Calculation_Type : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Eta_Time : 48|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Eta_Date : 80|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Bearing_Origin_To_Destination_Waypoint : 96|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Bearing_Position_To_Destination_Waypoint : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Origin_Waypoint_Number : 128|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Destination_Waypoint_Number : 160|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Destination_Wpt_Latitude : 192|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Destination_Wpt_Longitude : 224|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Waypoint_Closing_Velocity : 256|16@1- (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Distance_To_Destination_Waypoint : 8|32@1+ (0.01,0) [0|0] "m" MFD
+ SG_ Course_Bearing_Ref : 40|2@1+ (1,0) [0|0] "" MFD
+ SG_ Perpendicular_Crossed : 42|2@1+ (1,0) [0|0] "" MFD
+ SG_ Arrival_Circle_Entered : 44|2@1+ (1,0) [0|0] "" MFD
+ SG_ Calculation_Type : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Eta_Time : 48|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Eta_Date : 80|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Bearing_Origin_To_Destination_Waypoint : 96|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Bearing_Position_To_Destination_Waypoint : 112|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Origin_Waypoint_Number : 128|32@1+ (1,0) [0|0] "" MFD
+ SG_ Destination_Waypoint_Number : 160|32@1+ (1,0) [0|0] "" MFD
+ SG_ Destination_Wpt_Latitude : 192|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Destination_Wpt_Longitude : 224|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Waypoint_Closing_Velocity : 256|16@1- (0.01,0) [0|0] "m/s" MFD
 
 BO_ 33097214 Pgn129285_Navigation_Route_Wp_Information: 233 Navigation
- SG_ Start_Rps : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ N_Items : 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Database_Id : 32|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Route_Id : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Navigation_Direction_In_Route : 64|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Supplementary_Route_Wp_Data_Available : 66|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 68|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Route_Name : 72|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 2112|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Wpid : 2120|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Wp_Name : 2136|2040@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Wp_Latitude : 4176|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
- SG_ Wp_Longitude : 4208|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Start_Rps : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ N_Items : 16|16@1+ (1,0) [0|0] "" MFD
+ SG_ Database_Id : 32|16@1+ (1,0) [0|0] "" MFD
+ SG_ Route_Id : 48|16@1+ (1,0) [0|0] "" MFD
+ SG_ Navigation_Direction_In_Route : 64|2@1+ (1,0) [0|0] "" MFD
+ SG_ Supplementary_Route_Wp_Data_Available : 66|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 68|4@1+ (1,0) [0|0] "" MFD
+ SG_ Route_Name : 72|2040@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 2112|8@1+ (1,0) [0|0] "" MFD
+ SG_ Wpid : 2120|16@1+ (1,0) [0|0] "" MFD
+ SG_ Wp_Name : 2136|2040@1+ (1,0) [0|0] "" MFD
+ SG_ Wp_Latitude : 4176|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Wp_Longitude : 4208|32@1- (1.0E-7,0) [0|0] "deg" MFD
 
 BO_ 32834558 Pgn128259_Speed_Water_Referenced: 8 Propulsion
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Speed_Water_Referenced : 8|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Speed_Ground_Referenced : 24|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
- SG_ Speed_Water_Referenced_Type : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Speed_Direction : 48|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 52|12@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Speed_Water_Referenced : 8|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Speed_Ground_Referenced : 24|16@1+ (0.01,0) [0|0] "m/s" MFD
+ SG_ Speed_Water_Referenced_Type : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Speed_Direction : 48|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 52|12@1+ (1,0) [0|0] "" MFD
 
 BO_ 32836606 Pgn128267_Water_Depth: 8 Navigation
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Water_Depth_Transducer : 8|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Offset : 40|16@1- (0.001,0.0) [0.0|0.0] "m" MFD
- SG_ Reserved_Bits : 56|8@1+ (10.0,0.0) [0.0|0.0] "m" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Water_Depth_Transducer : 8|32@1+ (0.01,0) [0|0] "m" MFD
+ SG_ Offset : 40|16@1- (0.001,0) [0|0] "m" MFD
+ SG_ Reserved_Bits : 56|8@1+ (10.0,0) [0|0] "m" MFD
 
 BO_ 32838654 Pgn128275_Distance_Log: 14 Navigation
- SG_ Measurement_Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Measurement_Time : 16|32@1+ (100,0.0) [0.0|0.0] "us" MFD
- SG_ Total_Cumulative_Distance : 48|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
- SG_ Distance_Since_Last_Reset : 80|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
+ SG_ Measurement_Date : 0|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Measurement_Time : 16|32@1+ (100,0) [0|0] "us" MFD
+ SG_ Total_Cumulative_Distance : 48|32@1+ (1,0) [0|0] "m" MFD
+ SG_ Distance_Since_Last_Reset : 80|32@1+ (1,0) [0|0] "m" MFD
 
 BO_ 32639486 Pgn127497_Trip_Parameters_Engine: 9 Propulsion
- SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Trip_Fuel_Used : 8|16@1+ (1.0,0.0) [0.0|0.0] "L" MFD
- SG_ Fuel_Rate_Average : 24|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
- SG_ Fuel_Rate_Economy : 40|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
- SG_ Instantaneous_Fuel_Economy : 56|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Engine_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Trip_Fuel_Used : 8|16@1+ (1,0) [0|0] "L" MFD
+ SG_ Fuel_Rate_Average : 24|16@1- (0.1,0) [0|0] "L/h" MFD
+ SG_ Fuel_Rate_Economy : 40|16@1- (0.1,0) [0|0] "L/h" MFD
+ SG_ Instantaneous_Fuel_Economy : 56|16@1- (0.1,0) [0|0] "L/h" MFD
 
 BO_ 32637182 Pgn127488_Engine_Parameters_Rapid_Update: 8 Propulsion
- SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Engine_Speed : 8|16@1+ (0.25,0.0) [0.0|0.0] "rpm" MFD
- SG_ Engine_Boost_Pressure : 24|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
- SG_ Engine_Tilt_Trim : 40|8@1- (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Engine_Speed : 8|16@1+ (0.25,0) [0|0] "rpm" MFD
+ SG_ Engine_Boost_Pressure : 24|16@1+ (1,0) [0|0] "hPa" MFD
+ SG_ Engine_Tilt_Trim : 40|8@1- (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 48|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 32637438 Pgn127489_Engine_Parameters_Dynamic: 26 Propulsion
- SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Engine_Oil_Pressure : 8|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
- SG_ Engine_Oil_Temp : 24|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
- SG_ Engine_Temp : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Alternator_Potential : 56|16@1- (0.01,0.0) [0.0|0.0] "V" MFD
- SG_ Fuel_Rate : 72|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
- SG_ Total_Engine_Hours : 88|32@1+ (1.0,0.0) [0.0|0.0] "s" MFD
- SG_ Engine_Coolant_Pressure : 120|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
- SG_ Fuel_Pressure : 136|16@1+ (1.0,0.0) [0.0|0.0] "kPa" MFD
- SG_ Not_Available : 152|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Engine_Discrete_Status_1 : 160|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Engine_Discrete_Status_2 : 176|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Percent_Engine_Load : 192|8@1- (1.0,0.0) [0.0|0.0] "%" MFD
- SG_ Percent_Engine_Torque : 200|8@1- (1.0,0.0) [0.0|0.0] "%" MFD
+ SG_ Engine_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Engine_Oil_Pressure : 8|16@1+ (1,0) [0|0] "hPa" MFD
+ SG_ Engine_Oil_Temp : 24|16@1+ (0.1,-273.15) [0|0] "C" MFD
+ SG_ Engine_Temp : 40|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Alternator_Potential : 56|16@1- (0.01,0) [0|0] "V" MFD
+ SG_ Fuel_Rate : 72|16@1- (0.1,0) [0|0] "L/h" MFD
+ SG_ Total_Engine_Hours : 88|32@1+ (1,0) [0|0] "s" MFD
+ SG_ Engine_Coolant_Pressure : 120|16@1+ (1,0) [0|0] "hPa" MFD
+ SG_ Fuel_Pressure : 136|16@1+ (1,0) [0|0] "kPa" MFD
+ SG_ Not_Available : 152|8@1+ (1,0) [0|0] "" MFD
+ SG_ Engine_Discrete_Status_1 : 160|16@1+ (1,0) [0|0] "" MFD
+ SG_ Engine_Discrete_Status_2 : 176|16@1+ (1,0) [0|0] "" MFD
+ SG_ Percent_Engine_Load : 192|8@1- (1,0) [0|0] "%" MFD
+ SG_ Percent_Engine_Torque : 200|8@1- (1,0) [0|0] "%" MFD
 
 BO_ 32638462 Pgn127493_Transmission_Parameters_Dynamic: 8 Propulsion
- SG_ Transmission_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Transmission_Gear : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Transmission_Oil_Pressure : 16|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
- SG_ Transmission_Oil_Temperature : 32|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
- SG_ Transmission_Discrete_Status : 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Transmission_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Transmission_Gear : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ Transmission_Oil_Pressure : 16|16@1+ (1,0) [0|0] "hPa" MFD
+ SG_ Transmission_Oil_Temperature : 32|16@1+ (0.1,-273.15) [0|0] "C" MFD
+ SG_ Transmission_Discrete_Status : 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 32639230 Pgn127496_Trip_Parameters_Vessel: 10 Propulsion
- SG_ Time_To_Empty : 0|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
- SG_ Distance_To_Empty : 32|32@1+ (0.01,0.0) [0.0|0.0] "m" MFD
- SG_ Estimated_Fuel_Remaining : 64|16@1+ (1.0,0.0) [0.0|0.0] "L" MFD
- SG_ Trip_Run_Time : 80|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
+ SG_ Time_To_Empty : 0|32@1+ (0.001,0) [0|0] "s" MFD
+ SG_ Distance_To_Empty : 32|32@1+ (0.01,0) [0|0] "m" MFD
+ SG_ Estimated_Fuel_Remaining : 64|16@1+ (1,0) [0|0] "L" MFD
+ SG_ Trip_Run_Time : 80|32@1+ (0.001,0) [0|0] "s" MFD
 
 BO_ 32639742 Pgn127498_Engine_Parameters_Static: 52 Propulsion
- SG_ Engine_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Rated_Engine_Speed : 8|16@1+ (0.25,0.0) [0.0|0.0] "" MFD
- SG_ Vin : 24|136@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Software_Id : 160|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Engine_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Rated_Engine_Speed : 8|16@1+ (0.25,0) [0|0] "" MFD
+ SG_ Vin : 24|136@1+ (1,0) [0|0] "" MFD
+ SG_ Software_Id : 160|256@1+ (1,0) [0|0] "" MFD
 
 BO_ 32640510 Pgn127501_Binary_Switch_Bank_Status: 8 Power
- SG_ Indicator_Bank_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_1 : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_2 : 10|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_3 : 12|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_4 : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_5 : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_6 : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_7 : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_8 : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_9 : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_10 : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_11 : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_12 : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_13 : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_14 : 34|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_15 : 36|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_16 : 38|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_17 : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_18 : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_19 : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_20 : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_21 : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_22 : 50|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_23 : 52|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_24 : 54|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_25 : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_26 : 58|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_27 : 60|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Indic_28 : 62|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indicator_Bank_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_1 : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_2 : 10|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_3 : 12|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_4 : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_5 : 16|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_6 : 18|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_7 : 20|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_8 : 22|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_9 : 24|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_10 : 26|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_11 : 28|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_12 : 30|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_13 : 32|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_14 : 34|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_15 : 36|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_16 : 38|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_17 : 40|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_18 : 42|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_19 : 44|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_20 : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_21 : 48|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_22 : 50|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_23 : 52|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_24 : 54|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_25 : 56|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_26 : 58|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_27 : 60|2@1+ (1,0) [0|0] "" MFD
+ SG_ Indic_28 : 62|2@1+ (1,0) [0|0] "" MFD
 
 BO_ 32640766 Pgn127502_Switch_Bank_Control: 8 Power
- SG_ Switch_Bank_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_1 : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_2 : 10|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_3 : 12|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_4 : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_5 : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_6 : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_7 : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_8 : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_9 : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_10 : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_11 : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_12 : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_13 : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_14 : 34|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_15 : 36|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_16 : 38|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_17 : 40|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_18 : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_19 : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_20 : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_21 : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_22 : 50|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_23 : 52|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_24 : 54|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_25 : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_26 : 58|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_27 : 60|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Switch_28 : 62|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_Bank_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_1 : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_2 : 10|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_3 : 12|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_4 : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_5 : 16|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_6 : 18|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_7 : 20|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_8 : 22|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_9 : 24|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_10 : 26|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_11 : 28|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_12 : 30|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_13 : 32|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_14 : 34|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_15 : 36|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_16 : 38|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_17 : 40|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_18 : 42|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_19 : 44|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_20 : 46|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_21 : 48|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_22 : 50|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_23 : 52|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_24 : 54|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_25 : 56|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_26 : 58|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_27 : 60|2@1+ (1,0) [0|0] "" MFD
+ SG_ Switch_28 : 62|2@1+ (1,0) [0|0] "" MFD
 
 BO_ 32641278 Pgn127504_Ac_Output_Status: 56 Power
- SG_ Ac_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Lines : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Line : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Waveform : 18|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserve_Bits : 21|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Voltage : 24|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
- SG_ Current : 40|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
- SG_ Frequency : 56|16@1+ (0.01,0.0) [0.0|0.0] "Hz" MFD
- SG_ Breaker_Size : 72|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
- SG_ Real_Power : 88|32@1+ (1.0,0.0) [0.0|0.0] "W" MFD
- SG_ Reactive_Power : 120|32@1+ (1.0,0.0) [0.0|0.0] "VAR" MFD
- SG_ Power_Factor : 152|8@1+ (0.01,0.0) [0.0|0.0] "Cos Phi" MFD
+ SG_ Ac_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Lines : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Line : 16|2@1+ (1,0) [0|0] "" MFD
+ SG_ Waveform : 18|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserve_Bits : 21|3@1+ (1,0) [0|0] "" MFD
+ SG_ Voltage : 24|16@1+ (0.01,0) [0|0] "V" MFD
+ SG_ Current : 40|16@1+ (0.1,0) [0|0] "A" MFD
+ SG_ Frequency : 56|16@1+ (0.01,0) [0|0] "Hz" MFD
+ SG_ Breaker_Size : 72|16@1+ (0.1,0) [0|0] "A" MFD
+ SG_ Real_Power : 88|32@1+ (1,0) [0|0] "W" MFD
+ SG_ Reactive_Power : 120|32@1+ (1,0) [0|0] "VAR" MFD
+ SG_ Power_Factor : 152|8@1+ (0.01,0) [0|0] "Cos Phi" MFD
 
 BO_ 32641790 Pgn127506_Dc_Detailed_Status: 9 Power
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Dc_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Dc_Type : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ State_Of_Charge : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ State_Of_Health : 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Time_Remaining : 40|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ripple_Voltage : 56|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Dc_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Dc_Type : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ State_Of_Charge : 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ State_Of_Health : 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ Time_Remaining : 40|16@1+ (1,0) [0|0] "" MFD
+ SG_ Ripple_Voltage : 56|16@1+ (0.01,0) [0|0] "V" MFD
 
 BO_ 32642302 Pgn127508_Battery_Status: 8 Power
- SG_ Battery_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Battery_Voltage : 8|16@1- (0.01,0.0) [0.0|0.0] "V" MFD
- SG_ Battery_Current : 24|16@1- (0.1,0.0) [0.0|0.0] "A" MFD
- SG_ Battery_Case_Temperature : 40|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
- SG_ Sid : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Battery_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Battery_Voltage : 8|16@1- (0.01,0) [0|0] "V" MFD
+ SG_ Battery_Current : 24|16@1- (0.1,0) [0|0] "A" MFD
+ SG_ Battery_Case_Temperature : 40|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Sid : 56|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 32642558 Pgn127509_Inverter_Status: 4 Power
- SG_ Inverter_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Ac_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Dc_Instance : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Operating_State : 24|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Inverter_Enable_Disable : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Inverter_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Ac_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Dc_Instance : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Operating_State : 24|4@1+ (1,0) [0|0] "" MFD
+ SG_ Inverter_Enable_Disable : 28|2@1+ (1,0) [0|0] "" MFD
 
 BO_ 32642046 Pgn127507_Charger_Status: 8 Power
- SG_ Charger_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Battery_Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Operating_State : 16|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Charge_Mode : 20|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Charger_Enable_Disable : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Equalization_Pending : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 28|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Equalization_Time_Remaining : 32|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Charger_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Battery_Instance : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Operating_State : 16|4@1+ (1,0) [0|0] "" MFD
+ SG_ Charge_Mode : 20|4@1+ (1,0) [0|0] "" MFD
+ SG_ Charger_Enable_Disable : 24|2@1+ (1,0) [0|0] "" MFD
+ SG_ Equalization_Pending : 26|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 28|4@1+ (1,0) [0|0] "" MFD
+ SG_ Equalization_Time_Remaining : 32|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 32641534 Pgn127505_Fluid_Level: 8 General_Or_Mandatory
- SG_ Fluid_Instance : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Fluid_Type : 4|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Fluid_Level : 8|16@1+ (0.004,0.0) [0.0|0.0] "%" MFD
- SG_ Tank_Capacity : 24|32@1+ (0.1,0.0) [0.0|0.0] "L" MFD
- SG_ Reserved_Bits : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Fluid_Instance : 0|4@1+ (1,0) [0|0] "" MFD
+ SG_ Fluid_Type : 4|4@1+ (1,0) [0|0] "" MFD
+ SG_ Fluid_Level : 8|16@1+ (0.004,0) [0|0] "%" MFD
+ SG_ Tank_Capacity : 24|32@1+ (0.1,0) [0|0] "L" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 32641022 Pgn127503_Ac_Input_Status: 56 Power
- SG_ Ac_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Number_Of_Lines : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Line : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Acceptability : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserve_Bits : 20|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Voltage : 24|16@1+ (0.01,0.0) [0.0|0.0] "V" MFD
- SG_ Current : 40|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
- SG_ Frequency : 56|16@1+ (0.01,0.0) [0.0|0.0] "Hz" MFD
- SG_ Breaker_Size : 72|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
- SG_ Real_Power : 88|32@1+ (1.0,0.0) [0.0|0.0] "W" MFD
- SG_ Reactive_Power : 120|32@1+ (1.0,0.0) [0.0|0.0] "VAR" MFD
- SG_ Power_Factor : 152|8@1+ (0.01,0.0) [0.0|0.0] "Cos Phi" MFD
+ SG_ Ac_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Number_Of_Lines : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Line : 16|2@1+ (1,0) [0|0] "" MFD
+ SG_ Acceptability : 18|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserve_Bits : 20|4@1+ (1,0) [0|0] "" MFD
+ SG_ Voltage : 24|16@1+ (0.01,0) [0|0] "V" MFD
+ SG_ Current : 40|16@1+ (0.1,0) [0|0] "A" MFD
+ SG_ Frequency : 56|16@1+ (0.01,0) [0|0] "Hz" MFD
+ SG_ Breaker_Size : 72|16@1+ (0.1,0) [0|0] "A" MFD
+ SG_ Real_Power : 88|32@1+ (1,0) [0|0] "W" MFD
+ SG_ Reactive_Power : 120|32@1+ (1,0) [0|0] "VAR" MFD
+ SG_ Power_Factor : 152|8@1+ (0.01,0) [0|0] "Cos Phi" MFD
 
 BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Source : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 12|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Date : 16|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Time : 32|32@1+ (100,0.0) [0.0|0.0] "us" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Source : 8|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 12|4@1+ (1,0) [0|0] "" MFD
+ SG_ Date : 16|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Time : 32|32@1+ (100,0) [0|0] "us" MFD
 
 BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
- SG_ Nmea_2000_Database_Version : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Nmea_Manufacturer_S_Product_Code : 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_S_Model_Id : 32|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_S_Software_Version_Code : 288|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_S_Model_Version : 544|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_S_Model_Serial_Code : 800|256@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Nmea_2000_Certification_Level : 1056|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Load_Equivalency : 1064|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_2000_Database_Version : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_Manufacturer_S_Product_Code : 16|16@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Id : 32|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Software_Version_Code : 288|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Version : 544|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Serial_Code : 800|256@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_2000_Certification_Level : 1056|8@1+ (1,0) [0|0] "" MFD
+ SG_ Load_Equivalency : 1064|8@1+ (1,0) [0|0] "" MFD
 
 BO_ 32511742 Pgn126998_Configuration_Information: 42 General_Or_Mandatory
- SG_ Installation_Description_Field_1 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Installation_Description_Field_2 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_Information_Field_3 : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Installation_Description_Field_1 : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Installation_Description_Field_2 : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Information_Field_3 : 0|16@1+ (1,0) [0|0] "" MFD
 
 BO_ 32572926 Pgn127237_Heading_Track_Control: 21 Steering
- SG_ Rudder_Limit_Exceeded : 0|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Off_Heading_Limit_Exceeded : 2|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Off_Track_Limit_Exceeded : 4|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Override : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Steering_Mode : 8|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Turn_Mode : 11|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Heading_Reference : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 16|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Commanded_Rudder_Direction : 21|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Commanded_Rudder_Angle : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Heading_To_Steer_Course : 40|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Track : 56|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Rudder_Limit : 72|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Off_Heading_Limit : 88|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Radius_Of_Turn_Order : 104|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Rate_Of_Turn_Order : 120|16@1- (0.33749999999999997,0.0) [0.0|0.0] "deg/min" MFD
- SG_ Off_Track_Limit : 136|16@1- (1.0,0.0) [0.0|0.0] "m" MFD
- SG_ Vessel_Heading : 152|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Rudder_Limit_Exceeded : 0|2@1+ (1,0) [0|0] "" MFD
+ SG_ Off_Heading_Limit_Exceeded : 2|2@1+ (1,0) [0|0] "" MFD
+ SG_ Off_Track_Limit_Exceeded : 4|2@1+ (1,0) [0|0] "" MFD
+ SG_ Override : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Steering_Mode : 8|3@1+ (1,0) [0|0] "" MFD
+ SG_ Turn_Mode : 11|3@1+ (1,0) [0|0] "" MFD
+ SG_ Heading_Reference : 14|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 16|5@1+ (1,0) [0|0] "" MFD
+ SG_ Commanded_Rudder_Direction : 21|3@1+ (1,0) [0|0] "" MFD
+ SG_ Commanded_Rudder_Angle : 24|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Heading_To_Steer_Course : 40|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Track : 56|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Rudder_Limit : 72|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Off_Heading_Limit : 88|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Radius_Of_Turn_Order : 104|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Rate_Of_Turn_Order : 120|16@1- (0.33749999999999997,0) [0|0] "deg/min" MFD
+ SG_ Off_Track_Limit : 136|16@1- (1,0) [0|0] "m" MFD
+ SG_ Vessel_Heading : 152|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
 
 BO_ 32574974 Pgn127245_Rudder: 8 Steering
- SG_ Rudder_Instance : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Direction_Order : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 10|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Angle_Order : 16|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Position : 32|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Rudder_Instance : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Direction_Order : 8|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 10|6@1+ (1,0) [0|0] "" MFD
+ SG_ Angle_Order : 16|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Position : 32|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
 
 BO_ 32576254 Pgn127250_Vessel_Heading: 8 Steering
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ True_Heading m0 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Magnetic_Heading m1 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Error_Heading m2 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Null_Heading m3 : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Deviation : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Variation : 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Heading_Sensor_Reference M : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 58|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ True_Heading m0 : 8|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Magnetic_Heading m1 : 8|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Error_Heading m2 : 8|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Null_Heading m3 : 8|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Deviation : 24|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Variation : 40|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Heading_Sensor_Reference M : 56|2@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 58|6@1+ (1,0) [0|0] "" MFD
 
 BO_ 32576510 Pgn127251_Rate_Of_Turn: 5 Steering
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Rate_Of_Turn : 8|32@1- (3.3749999999999996E-4,0.0) [0.0|0.0] "deg/min" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Rate_Of_Turn : 8|32@1- (3.3749999999999996E-4,0) [0|0] "deg/min" MFD
 
 BO_ 32578046 Pgn127257_Attitude: 7 Steering
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Yaw : 8|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Pitch : 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
- SG_ Roll : 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Yaw : 8|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Pitch : 24|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Roll : 40|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
 
 BO_ 32578302 Pgn127258_Magnetic_Variation: 6 Steering
- SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Variation_Source : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 12|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Age_Of_Service_Date : 16|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Variation : 32|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Variation_Source : 8|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 12|4@1+ (1,0) [0|0] "" MFD
+ SG_ Age_Of_Service_Date : 16|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Variation : 32|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
 
 BO_ 15597822 Pgn060928_Iso_Address_Claim: 8 General_Or_Mandatory
- SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Manufacturer_Code : 21|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Function_Iso_Function : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved : 48|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Device_Class : 49|7@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Industry_Group : 60|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function_Iso_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 48|1@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
 
 BO_ 32375038 Pgn126464_Pgn_List_Transmit_Reveived_Pgn_S_Group_Function: 8 General_Or_Mandatory
- SG_ Transmitted_Pgn_Group_Function_Code : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ First_Pgn_Supported : 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Transmitted_Pgn_Group_Function_Code : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ First_Pgn_Supported : 8|24@1+ (1,0) [0|0] "" MFD
 
 BO_ 15466750 Pgn060416_Iso_Transport_Protocol_Connection_Management_Rts_Group_Function: 8 General_Or_Mandatory
- SG_ Rts_Group_Function_Code M: 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M16_Total_Message_Size_Bytes m16: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M16_Total_Number_Of_Frames_To_Be_Transmitted m16: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M16_Reserved_Bits m16: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M16_Pgn_Of_Multi_Packet_Message m16: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M17_Number_Of_Frames_That_Can_Be_Sent m17: 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M17_Number_Of_Next_Frame_To_Be_Transmitted m17: 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M17_Reserved_Bits m17: 24|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M17_Pgn_Of_Multi_Packet_Message m17: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M19_Total_Message_Size_Bytes m19: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M19_Total_Number_Of_Frames_Received m19: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M19_Reserved_Bits m19: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M19_Pgn_Of_Multi_Packet_Message m19: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M32_Total_Message_Size_Bytes m32: 8|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M32_Total_Number_Of_Frames_To_Be_Transmitted m32: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M32_Reserved_Bits m32: 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M32_Pgn_Of_Multi_Packet_Message m32: 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M255_Reason m255: 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M255_Reserved_Bits m255: 16|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M255_Pgn_Of_Multi_Packet_Message m255: 32|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rts_Group_Function_Code M: 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Total_Message_Size_Bytes m16: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Total_Number_Of_Frames_To_Be_Transmitted m16: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Reserved_Bits m16: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Pgn_Of_Multi_Packet_Message m16: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Number_Of_Frames_That_Can_Be_Sent m17: 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Number_Of_Next_Frame_To_Be_Transmitted m17: 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Reserved_Bits m17: 24|16@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Pgn_Of_Multi_Packet_Message m17: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Total_Message_Size_Bytes m19: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Total_Number_Of_Frames_Received m19: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Reserved_Bits m19: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Pgn_Of_Multi_Packet_Message m19: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Total_Message_Size_Bytes m32: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Total_Number_Of_Frames_To_Be_Transmitted m32: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Reserved_Bits m32: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Pgn_Of_Multi_Packet_Message m32: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Reason m255: 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Reserved_Bits m255: 16|16@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Pgn_Of_Multi_Packet_Message m255: 32|24@1+ (1,0) [0|0] "" MFD
 
 BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 12 General_Or_Mandatory
- SG_ Complex_Request_Group_Function_Code M: 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M0_Requested_Pgn m0: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M0_Transmission_Interval m0: 32|32@1+ (0.001,0.0) [0.0|0.0] "s" MFD
- SG_ M0_Transmission_Interval_Offset m0: 64|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
- SG_ M0_Number_Of_Pairs_Of_Request_Parameters_To_Follow m0: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M0_Field_Number_Of_First_Requested_Parameter m0: 88|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M0_Value_Of_First_Requested_Parameter m0: 96|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Commanded_Pgn m1: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Priority_Setting m1: 32|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Reserved_Bits m1: 36|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Number_Of_Pairs_Of_Commanded_Parameters_To_Follow m1: 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Field_Number_Of_First_Commanded_Parameter m1: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M1_Value_Of_First_Command_Parameter m1: 56|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M2_Requested_Or_Commanded_Pgn_Being_Acknowledged m2: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M2_Pgn_Error_Code m2: 32|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M2_Transmission_Interval_Priority_Error_Code m2: 36|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M2_Number_Of_Requested_Or_Commanded_Parameters m2: 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M2_First_Parameter_Error_Code m2: 48|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Pgn_Number m4: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Manufacturer_S_Code m4: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Reserve_Bits m4: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Industry_Group m4: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Unique_Id m4: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Number_Of_Pairs_Of_Commanded_Parameters_Fields m4: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Number_Of_Pairs_Of_Fields_To_Read m4: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Field_Number_Of_First_Commanded_Parameter m4: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Value_Of_First_Commanded_Parameter m4: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Variable_Number_Of_Fields_Field_9_Repeated m4: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M4_Variable_Number_Of_Fields_Field_10_Repeated m4: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Pgn_Number m5: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Manufacturer_S_Code m5: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Reserve_Bits m5: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Industry_Group m5: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Unique_Id m5: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Number_Of_Pairs_Of_Commanded_Parameters_Fields m5: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Number_Of_Pairs_Of_Fields_To_Written m5: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Field_Number_Of_First_Commanded_Parameter m5: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Value_Of_First_Commanded_Parameter m5: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Variable_Number_Of_Fields_Field_9_Repeated m5: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M5_Variable_Number_Of_Fields_Field_10_Repeated m5: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Pgn_Number m6: 8|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Manufacturer_S_Code m6: 32|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Reserve_Bits m6: 43|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Industry_Group m6: 45|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Unique_Id m6: 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Number_Of_Pairs_Of_Commanded_Parameters_Fields m6: 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Number_Of_Pairs_Of_Fields_To_Written m6: 64|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Field_Number_Of_First_Commanded_Parameter m6: 72|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Value_Of_First_Commanded_Parameter m6: 80|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Variable_Number_Of_Fields_Field_9_Repeated m6: 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ M6_Variable_Number_Of_Fields_Field_10_Repeated m6: 88|0@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Complex_Request_Group_Function_Code M: 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Requested_Pgn m0: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Transmission_Interval m0: 32|32@1+ (0.001,0) [0|0] "s" MFD
+ SG_ M0_Transmission_Interval_Offset m0: 64|16@1+ (0.01,0) [0|0] "s" MFD
+ SG_ M0_Number_Of_Pairs_Of_Request_Parameters_To_Follow m0: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Field_Number_Of_First_Requested_Parameter m0: 88|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Value_Of_First_Requested_Parameter m0: 96|0@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Commanded_Pgn m1: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Priority_Setting m1: 32|4@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Reserved_Bits m1: 36|4@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Number_Of_Pairs_Of_Commanded_Parameters_To_Follow m1: 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Field_Number_Of_First_Commanded_Parameter m1: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Value_Of_First_Command_Parameter m1: 56|0@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Requested_Or_Commanded_Pgn_Being_Acknowledged m2: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Pgn_Error_Code m2: 32|4@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Transmission_Interval_Priority_Error_Code m2: 36|4@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Number_Of_Requested_Or_Commanded_Parameters m2: 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ M2_First_Parameter_Error_Code m2: 48|4@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Pgn_Number m4: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Manufacturer_S_Code m4: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Reserve_Bits m4: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M4_Industry_Group m4: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Unique_Id m4: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Commanded_Parameters_Fields m4: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Fields_To_Read m4: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Field_Number_Of_First_Commanded_Parameter m4: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Value_Of_First_Commanded_Parameter m4: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_9_Repeated m4: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_10_Repeated m4: 88|0@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Pgn_Number m5: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Manufacturer_S_Code m5: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Reserve_Bits m5: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M5_Industry_Group m5: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Unique_Id m5: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Commanded_Parameters_Fields m5: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Fields_To_Written m5: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Field_Number_Of_First_Commanded_Parameter m5: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Value_Of_First_Commanded_Parameter m5: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_9_Repeated m5: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_10_Repeated m5: 88|0@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Pgn_Number m6: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Manufacturer_S_Code m6: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Reserve_Bits m6: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M6_Industry_Group m6: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Unique_Id m6: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Commanded_Parameters_Fields m6: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Fields_To_Written m6: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Field_Number_Of_First_Commanded_Parameter m6: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Value_Of_First_Commanded_Parameter m6: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_9_Repeated m6: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_10_Repeated m6: 88|0@1+ (1,0) [0|0] "" MFD
 
 BO_ 15335678 Pgn059904_Iso_Request: 3 General_Or_Mandatory
- SG_ Pgn_Being_Requested : 0|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pgn_Being_Requested : 0|24@1+ (1,0) [0|0] "" MFD
 
 BO_ 15401214 Pgn060160_Iso_Transport_Protocol_Data_Transfer: 8 General_Or_Mandatory
- SG_ Sequence_Number_Of_Multi_Packet_Frame : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Multi_Packet_Packetized_Data : 8|56@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sequence_Number_Of_Multi_Packet_Frame : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Multi_Packet_Packetized_Data : 8|56@1+ (1,0) [0|0] "" MFD
 
 BO_ 15204606 Pgn059392_Iso_Acknowledgment: 8 General_Or_Mandatory
- SG_ Control_Byte : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Group_Function_Value : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Reserved_Bits : 16|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Pgn_Of_Requested_Information : 40|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Control_Byte : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Group_Function_Value : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 16|24@1+ (1,0) [0|0] "" MFD
+ SG_ Pgn_Of_Requested_Information : 40|24@1+ (1,0) [0|0] "" MFD
 
 
 CM_ "This DBC is based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn" ;
