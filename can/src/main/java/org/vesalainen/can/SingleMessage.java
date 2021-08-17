@@ -57,7 +57,7 @@ public class SingleMessage extends AbstractMessage
     @Override
     protected ObjectName getObjectName() throws MalformedObjectNameException
     {
-        return new ObjectName("org.vesalainen.can:type="+canId);
+        return new ObjectName("org.vesalainen.can:type=std,canId="+canId);
     }
     
     @Override

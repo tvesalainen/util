@@ -39,7 +39,7 @@ public class PgnMessage extends SingleMessage
     {
             try
             {
-                return new ObjectName("org.vesalainen.can:s="+getSource()+",n="+name);
+                return new ObjectName("org.vesalainen.can:type=j1939,source="+getSource()+",name="+name);
             }
             catch (MalformedObjectNameException ex)
             {

@@ -52,7 +52,7 @@ public class NullMessage extends SingleMessage
     @Override
     protected ObjectName getObjectName() throws MalformedObjectNameException
     {
-        return new ObjectName("org.vesalainen.can:type=Unknown" + canId);
+        return new ObjectName("org.vesalainen.can:type=Unknown,canId=" + canId);
     }
 
     @Override
