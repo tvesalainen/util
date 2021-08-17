@@ -27,4 +27,11 @@ public interface CanMXBean
     int getPgn();
     int getSource();
     int getPriority();
+    int getUpdateCount();
+    int getExecuteCount();
+    int getRepeatSize();
+    int getRepeatStart();
+    int getRepeatCount();
+    int getCurrentBytes();
+    int getMaxBytes();
 }

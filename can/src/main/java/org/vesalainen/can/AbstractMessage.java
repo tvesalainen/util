@@ -23,14 +23,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -78,6 +77,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected SimpleNotificationEmitter<String> emitter;
     protected ObjectName objectName;
     protected final Executor executor;
+    protected int updateCount;
+    protected int executeCount;
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -124,11 +125,11 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             throw new RuntimeException(ex);
         }
     }
-    private void attach()
+    protected void attach()
     {
         jmxAction = compileSignals(new JmxCompiler());
     }
-    private void detach()
+    protected void detach()
     {
         jmxAction = null;
     }
@@ -187,21 +188,37 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         return PGN.messagePriority(canId);
     }
 
+    @Override
+    public int getUpdateCount()
+    {
+        return updateCount;
+    }
+
+    @Override
+    public int getExecuteCount()
+    {
+        return executeCount;
+    }
+
+    @Override
     public int getRepeatSize()
     {
         return repeatSize;
     }
 
+    @Override
     public int getRepeatStart()
     {
         return repeatStart;
     }
 
+    @Override
     public int getRepeatCount()
     {
         return repeatCount;
     }
 
+    @Override
     public int getCurrentBytes()
     {
         return currentBytes;
@@ -217,23 +234,25 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         return getCurrentBytes()*8;
     }
     
+    @Override
     public abstract int getMaxBytes();
     
     public int getMaxBits()
     {
         return getMaxBytes()*8;
     }
+
     protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
     /**
      * Updates CanProcessor data. Returns true if needs to execute.
      * @param service
      * @return 
      */
-    protected boolean update(AbstractCanService service)
-    {
-        return jmxAction != null;
-    }
-    protected void execute()
+    protected abstract boolean update(AbstractCanService service);
+
+    protected abstract void execute();
+
+    protected void sendJmx()
     {
         if (jmxAction != null)
         {
@@ -241,13 +260,16 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             jmxAction.run();
         }
     }
-    
     void addSignals(SignalCompiler compiler)
     {
-        action = compileSignals(compiler);
+        if (messageClass != null)
+        {
+            action = compileSignals(compiler);
+        }
     }
     Runnable compileSignals(SignalCompiler compiler)
     {
+        Objects.requireNonNull(messageClass, "MessageClass null");
         IntRange repeatRange = messageClass.getRepeatRange();
         ActionBuilder actionBuilder = new ActionBuilder(messageClass, compiler, repeatRange);
         return actionBuilder.build();
@@ -514,27 +536,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     public static NullMessage getNullMessage(Executor executor, int canId)
     {
         return new NullMessage(executor, canId);
-    }
-    public static class NullMessage extends AbstractMessage
-    {
-
-        private NullMessage(Executor executor, int canId)
-        {
-            super(executor, null, canId);
-        }
-
-        @Override
-        public int getMaxBytes()
-        {
-            return 0;
-        }
-
-        @Override
-        protected ObjectName getObjectName() throws MalformedObjectNameException
-        {
-            return new ObjectName("org.vesalainen.can:type=Unknown"+canId);
-        }
-
     }
     private class JmxCompiler implements SignalCompiler
     {

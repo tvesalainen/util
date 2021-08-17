@@ -23,7 +23,6 @@ import static java.util.logging.Level.*;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.vesalainen.can.dbc.MessageClass;
-import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
  *
@@ -71,6 +70,7 @@ public class SingleMessage extends AbstractMessage
             int remaining = frame.remaining();
             setCurrentBytes(remaining);
             frame.get(buf, 0, min(buf.length, remaining));
+            updateCount++;
             return true;
         }
         catch (Exception ex)
@@ -87,7 +87,8 @@ public class SingleMessage extends AbstractMessage
         try
         {
             action.run();
-            super.execute();
+            sendJmx();
+            executeCount++;
         }
         catch (Exception ex)
         {
