@@ -135,7 +135,7 @@ BO_ 33362174 Pgn130320_Tide_Station_Data: 20 Environmental
  SG_ Tide_Tendency : 4|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Reserved_Bits : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Measurement_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Measurement_Time : 24|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Measurement_Time : 24|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Station_Location_Latitude : 56|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
  SG_ Station_Location_Longitude : 88|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
  SG_ Tide_Level : 120|16@1- (0.001,0.0) [0.0|0.0] "m" MFD
@@ -178,7 +178,7 @@ BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
  SG_ Position_Reference_Point_From_Starboard : 328|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
  SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 344|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
  SG_ Estimated_Date_Of_Arrival : 360|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Estimated_Time_Of_Arrival : 376|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Estimated_Time_Of_Arrival : 376|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Draft : 408|16@1+ (0.01,0.0) [0.0|0.0] "m" MFD
  SG_ Destination : 424|160@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Ais_Version : 584|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
@@ -250,7 +250,7 @@ BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
 
 BO_ 33032702 Pgn129033_Time_Date: 8 Navigation
  SG_ Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Time : 16|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Time : 16|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Local_Offset_Minutes : 48|16@1- (1.0,0.0) [0.0|0.0] "minutes" MFD
 
 BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
@@ -270,7 +270,7 @@ BO_ 33030910 Pgn129026_Cog_Sog_Rapid_Update: 8 Navigation
 BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Position_Date : 8|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Position_Time : 24|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Position_Time : 24|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Latitude : 56|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
  SG_ Longitude : 120|64@1- (1.0E-16,0.0) [0.0|0.0] "deg" MFD
  SG_ Altitude : 184|64@1- (1.0E-6,0.0) [0.0|0.0] "m" MFD
@@ -391,7 +391,7 @@ BO_ 33096958 Pgn129284_Navigation_Data: 34 Navigation
  SG_ Perpendicular_Crossed : 42|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Arrival_Circle_Entered : 44|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Calculation_Type : 46|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
- SG_ Eta_Time : 48|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Eta_Time : 48|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Eta_Date : 80|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
  SG_ Bearing_Origin_To_Destination_Waypoint : 96|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
  SG_ Bearing_Position_To_Destination_Waypoint : 112|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
@@ -432,7 +432,7 @@ BO_ 32836606 Pgn128267_Water_Depth: 8 Navigation
 
 BO_ 32838654 Pgn128275_Distance_Log: 14 Navigation
  SG_ Measurement_Date : 0|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Measurement_Time : 16|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Measurement_Time : 16|32@1+ (100,0.0) [0.0|0.0] "us" MFD
  SG_ Total_Cumulative_Distance : 48|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
  SG_ Distance_Since_Last_Reset : 80|32@1+ (1.0,0.0) [0.0|0.0] "m" MFD
 
@@ -621,7 +621,7 @@ BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
  SG_ Source : 8|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Reserved_Bits : 12|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Date : 16|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
- SG_ Time : 32|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Time : 32|32@1+ (100,0.0) [0.0|0.0] "us" MFD
 
 BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
  SG_ Nmea_2000_Database_Version : 0|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
