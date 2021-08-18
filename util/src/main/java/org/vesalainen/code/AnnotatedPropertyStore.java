@@ -78,8 +78,7 @@ import org.vesalainen.util.logging.JavaLogging;
 /**
  * AnnotatedPropertyStore is a PropertyGetter/Setter implementation which 
  * automates getting and or setting properties which are either accessed by
- * fields or methods. Fields and methods must be annotated with @Property and
- * they must have public or packet private access.
+ * fields or methods. Fields and methods must be annotated with @Property.
  * 
  * <p>Loading and storing to file implements a subset of properties features.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
