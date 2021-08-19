@@ -47,7 +47,7 @@ public class MessageFactory extends JavaLogging
         }
         else
         {
-            return AbstractMessage.getNullMessage(executor, canId);
+            return null;
         }
     }
     public AbstractMessage createPgnMessage(int canId, MessageClass mc)
@@ -74,7 +74,7 @@ public class MessageFactory extends JavaLogging
         }
         else
         {
-            return AbstractMessage.getNullMessage(executor, canId);
+            return null;
         }
     }
 }

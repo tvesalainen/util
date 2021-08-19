@@ -141,11 +141,14 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     
     private void addProc(int canId, AbstractMessage msg)
     {
-        msg.registerMBean();
-        AbstractMessage old = procMap.put(canId, msg);
-        if (old != null)
+        if (msg != null)
         {
-            old.unregisterMBean();
+            AbstractMessage old = procMap.put(canId, msg);
+            if (old != null)
+            {
+                old.unregisterMBean();
+            }
+            msg.registerMBean();
         }
     }
 
