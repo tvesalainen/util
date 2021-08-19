@@ -18,8 +18,8 @@ package org.vesalainen.ham.hffax;
 
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import org.vesalainen.math.sliding.SlidingMax;
-import org.vesalainen.math.sliding.SlidingMin;
+import org.vesalainen.math.sliding.DoubleSlidingMax;
+import org.vesalainen.math.sliding.DoubleSlidingMin;
 
 /**
  *
@@ -32,8 +32,8 @@ public class FrequencyCounter
     private float runLength;
     private float halfLength;
     private float frequency;
-    private SlidingMin min = new SlidingMin(15);
-    private SlidingMax max = new SlidingMax(15);
+    private DoubleSlidingMin min = new DoubleSlidingMin(15);
+    private DoubleSlidingMax max = new DoubleSlidingMax(15);
     private float zero;
     private long count;
     private float amplitude;

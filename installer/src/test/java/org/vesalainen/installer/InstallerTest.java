@@ -61,14 +61,14 @@ public class InstallerTest
         Installer.install("-jp", "9000", "-dd", DEFAULT.toString(), "-id", INIT.toString(), "-jd", LOCAL.toString(), "-g", "org.vesalainen.nmea", "-a", "nmea-router", "SERVER");
     }
     
-    @Test
+    //@Test
     public void testWinClient() throws IOException, URISyntaxException, InterruptedException
     {
         Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
         Installer.install("-ed", BIN.toString(), "-jd", BIN.toString(), "-g", "org.vesalainen", "-a", "maven-installer", "CLIENT");
     }
     
-    @Test
+    //@Test
     public void testScript() throws IOException, URISyntaxException, InterruptedException
     {
         Installer.install("-g", "org.vesalainen", "-a", "maven-installer", "SCRIPT");

@@ -18,6 +18,7 @@
         <module>vfs</module>
         <module>ham</module>
         <module>radiorecorder</module>
+        <module>can</module>
     </modules>
     <name>Utilities Parent</name>
     <description>

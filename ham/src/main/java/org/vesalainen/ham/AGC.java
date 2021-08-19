@@ -17,7 +17,7 @@
 package org.vesalainen.ham;
 
 import java.io.IOException;
-import org.vesalainen.math.sliding.TimeoutSlidingAverage;
+import org.vesalainen.math.sliding.DoubleTimeoutSlidingAverage;
 import org.vesalainen.nio.IntArray;
 import org.vesalainen.nmea.icommanager.IcomManager;
 import org.vesalainen.util.logging.JavaLogging;

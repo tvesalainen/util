@@ -16,6 +16,7 @@
  */
 package org.vesalainen.ham.ssn;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,9 +31,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.vesalainen.math.AbstractPoint;
-import org.vesalainen.math.CubicSplineCurve;
-import org.vesalainen.math.Point;
+import org.vesalainen.math.ClosedCubicSpline;
+import org.vesalainen.math.RelaxedCubicSpline;
 import org.vesalainen.net.NetFile;
 
 /**
@@ -45,7 +45,7 @@ import org.vesalainen.net.NetFile;
 public class SunSpotNumber extends NetFile
 {
     private FileTime lastModified;
-    private CubicSplineCurve curve;
+    private RelaxedCubicSpline curve;
 
     public SunSpotNumber(Path file) throws MalformedURLException
     {
@@ -68,7 +68,7 @@ public class SunSpotNumber extends NetFile
         readLock.lock();
         try
         {
-            return curve.get(key, 0.01);
+            return curve.applyAsDouble(key);
         }
         finally
         {
@@ -96,11 +96,11 @@ public class SunSpotNumber extends NetFile
     {
         try (Stream<String> lines = Files.lines(file))
         {
-            List<Point> points = lines
+            List<Point2D> points = lines
                     .map((l)->l.split("[ ]+"))
-                    .map((a)->new AbstractPoint(Double.parseDouble(a[2]), Double.parseDouble(a[4])))
+                    .map((a)->new Point2D.Double(Double.parseDouble(a[2]), Double.parseDouble(a[4])))
                     .collect(Collectors.toList());
-            curve = new CubicSplineCurve(points);
+            curve = new RelaxedCubicSpline(points);
         }
     }
 }
