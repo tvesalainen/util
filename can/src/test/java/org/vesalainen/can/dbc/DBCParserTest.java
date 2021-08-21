@@ -46,6 +46,7 @@ public class DBCParserTest
         test("/example.dbc");
         test("/curtis_ac1239_map.dbc");
         test("/j1939_utf8.dbc");
+        test("/n2k.dbc");
     }
     public void test(String file) throws IOException
     {

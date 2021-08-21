@@ -1,0 +1,894 @@
+VERSION ""
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_ :
+
+BU_: MFD
+
+
+
+BO_ 16646398 Generator_Phase_Bbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16646654 Generator_Phase_Aac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16646910 Generator_Phase_Aac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|32@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 32|32@1+ (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16647166 Generator_Phase_Abasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16647422 Generator_Total_Ac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16647678 Generator_Total_Ac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 16|16@1+ (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16647934 Generator_Average_Basic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 33425406 Watermaker_Input_Setting_And_Status: 24 Vector__XXX
+ SG_ Watermaker_Operating_State : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Production_Start_Stop : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rinse_Start_Stop : 8|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Low_Pressure_Pump_Status : 10|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ High_Pressure_Pump_Status : 12|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Emergency_Stop : 14|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Product_Solenoid_Valve_Status : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Flush_Mode_Status : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Salinity_Status : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sensor_Status : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Oil_Change_Indicator_Status : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Filter_Status : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ System_Status : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Salinity : 32|16@1+ (1.0,0.0) [0.0|0.0] "ppm" MFD
+ SG_ Product_Water_Temperature : 48|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+ SG_ Pre_Filter_Pressure : 64|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Post_Filter_Pressure : 80|16@1+ (1.0,0.0) [0.0|0.0] "hPa" MFD
+ SG_ Feed_Pressure : 96|16@1- (1.0,0.0) [0.0|0.0] "kPa" MFD
+ SG_ System_High_Pressure : 112|16@1+ (1.0,0.0) [0.0|0.0] "kPa" MFD
+ SG_ Product_Water_Flow : 128|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Brine_Water_Flow : 144|16@1- (0.1,0.0) [0.0|0.0] "L/h" MFD
+ SG_ Run_Time : 160|32@1+ (1.0,0.0) [0.0|0.0] "s" MFD
+
+BO_ 16713726 Airmar_Access_Level: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Format_Code : 16|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Access_Level : 19|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Access_Seed_Key : 24|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16712958 Maretron_Proprietary_Dc_Breaker_Current: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Bank_Instance : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indicator_Number : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Breaker_Current : 32|16@1- (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Reserved : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16713214 Airmar_Boot_State_Acknowledgment: 8 Vector__XXX
+ SG_ Manufacturer_Code M: 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Reserved m135: 11|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Industry_Code m135: 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Boot_State m135: 16|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M140_Reserved m140: 11|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ M140_Industry_Code m140: 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M140_Temperature_Source m140: 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M140_Actual_Temperature m140: 24|16@1+ (0.01,-273.15) [0.0|0.0] "C" MFD
+
+BO_ 16713470 Airmar_Boot_State_Request: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 11|2@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16732414 Seatalk_Pilot_Locked_Heading: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Target_Heading_True : 24|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Target_Heading_Magnetic : 40|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Reserved : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16732670 Seatalk_Silence_Alarm: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alarm_Id : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alarm_Group : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 32|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16744958 Airmar_Speed_Pulse_Count: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sid : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Duration_Of_Interval : 24|16@1+ (0.001,0.0) [0.0|0.0] "s" MFD
+ SG_ Number_Of_Pulses_Received : 40|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 56|8@1+ (0.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33489150 Sonichub_Volume: 8 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 16|8@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Proprietary_Id : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Control : 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Zone : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Level : 48|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33494270 Maretron_Proprietary_Switch_Status_Counter: 16 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Bank_Instance : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indicator_Number : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Start_Date : 32|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Start_Time : 48|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Off_Counter : 80|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ On_Counter : 88|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Error_Counter : 96|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Switch_Status : 104|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 106|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 33494526 Maretron_Proprietary_Switch_Status_Timer: 23 Vector__XXX
+ SG_ Manufacturer_Code : 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Industry_Code : 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Bank_Instance : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Indicator_Number : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Start_Date : 32|16@1+ (1.0,0.0) [0.0|0.0] "days" MFD
+ SG_ Start_Time : 48|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Accumulated_Off_Period : 80|32@1+ (1.0,0.0) [0.0|0.0] "seconds" MFD
+ SG_ Accumulated_On_Period : 112|32@1+ (1.0,0.0) [0.0|0.0] "seconds" MFD
+ SG_ Accumulated_Error_Period : 144|32@1+ (1.0,0.0) [0.0|0.0] "seconds" MFD
+ SG_ Switch_Status : 176|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 178|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16642814 Utility_Phase_Bac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 32|32@1- (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16641790 Utility_Phase_Cac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16640510 Bus1phase_Cbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+
+BO_ 16640766 Bus1phase_Bbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+
+BO_ 16641022 Bus1phase_Abasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+
+BO_ 16642046 Utility_Phase_Cac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 32|32@1- (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16642302 Utility_Phase_Cbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16642558 Utility_Phase_Bac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16643070 Utility_Phase_Bbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16643326 Utility_Phase_Aac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 32|16@1- (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16643582 Utility_Phase_Aac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 32|32@1- (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16643838 Utility_Phase_Abasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16644094 Utility_Total_Ac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 32|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 48|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16644350 Utility_Total_Ac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 32|32@1- (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16644606 Utility_Average_Basic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16645118 Generator_Phase_Cac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16645374 Generator_Phase_Cac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 16|16@1+ (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 16645630 Generator_Phase_Cbasic_Ac_Quantities: 8 Vector__XXX
+ SG_ Line_Line_Ac_Rms_Voltage : 0|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Line_Neutral_Ac_Rms_Voltage : 16|16@1+ (1.0,0.0) [0.0|0.0] "V" MFD
+ SG_ Ac_Frequency : 32|16@1+ (0.0078125,0.0) [0.0|0.0] "Hz" MFD
+ SG_ Ac_Rms_Current : 48|16@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+
+BO_ 16645886 Generator_Phase_Bac_Reactive_Power: 8 Vector__XXX
+ SG_ Reactive_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "var" MFD
+ SG_ Power_Factor : 16|16@1+ (0.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Factor_Lagging : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 16646142 Generator_Phase_Bac_Power: 8 Vector__XXX
+ SG_ Real_Power : 0|16@1+ (1.0,0.0) [0.0|0.0] "W" MFD
+ SG_ Apparent_Power : 16|16@1+ (1.0,0.0) [0.0|0.0] "VA" MFD
+
+BO_ 33361150 Temperature_Extended_Range: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temperature : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Set_Temperature : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+
+BO_ 33034750 Ais_Aids_To_Navigation_Aton_Report: 60 Vector__XXX
+ SG_ Message_Id : 0|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ User_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Raim_Flag : 105|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Length_Diameter : 112|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Beam_Diameter : 128|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_From_Starboard_Edge : 144|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Position_Reference_From_True_North_Facing_Edge : 160|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Ato_N_Type : 176|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Off_Position_Indicator : 181|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Virtual_Ato_N_Flag : 182|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Assigned_Mode_Flag : 183|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Spare : 184|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Position_Fixing_Device_Type : 185|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ato_N_Status : 192|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ais_Transceiver_Information : 200|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 205|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ato_N_Name : 208|272@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32966910 Windlass_Control_Status: 7 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Id : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Direction_Control : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Anchor_Docking_Control : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Speed_Control_Type : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Speed_Control : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Power_Enable : 32|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mechanical_Lock : 34|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Deck_And_Anchor_Wash : 36|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Anchor_Light : 38|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Command_Timeout : 40|8@1+ (0.005,0.0) [0.0|0.0] "s" MFD
+ SG_ Windlass_Control_Events : 48|4@1+ (1.0,0.0) [0.0|0.0] "0=Another device controlling windlass" MFD
+ SG_ Reserved : 52|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32967166 Anchor_Windlass_Operating_Status: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Id : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Direction_Control : 16|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Motion_Status : 18|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rode_Type_Status : 20|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 22|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Rode_Counter_Value : 24|16@1+ (0.1,0.0) [0.0|0.0] "m" MFD
+ SG_ Windlass_Line_Speed : 40|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Anchor_Docking_Status : 56|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Operating_Events : 58|6@1+ (1.0,0.0) [0.0|0.0] "0=System error,1=Sensor error,2=No windlass motion detected,3=Retrieval docking distance reached,4=End or rode reached" MFD
+
+BO_ 32967422 Anchor_Windlass_Monitoring_Status: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Id : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Windlass_Monitoring_Events : 16|8@1+ (1.0,0.0) [0.0|0.0] "0=Controller under voltage cut-out,1=Controller over current cut-out,2=Controller over temperature cut-out,3=Manufacturer defined" MFD
+ SG_ Controller_Voltage : 24|8@1+ (0.2,0.0) [0.0|0.0] "V" MFD
+ SG_ Motor_Current : 32|8@1+ (1.0,0.0) [0.0|0.0] "A" MFD
+ SG_ Total_Motor_Time : 40|16@1+ (60.0,0.0) [0.0|0.0] "s" MFD
+ SG_ Reserved : 56|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32768254 Leeway_Angle: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Leeway_Angle : 8|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Reserved : 24|40@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32640254 Load_Controller_Connection_State_Control: 10 Vector__XXX
+ SG_ Sequence_Id : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Id : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ State : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Status : 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Operational_Status_Control : 32|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Pwm_Duty_Cycle : 40|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_On : 48|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Time_Off : 64|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32702718 Ac_Power_Current_Phase_A: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Number : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ac_Rms_Current : 16|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Power : 32|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+
+BO_ 32702974 Ac_Power_Current_Phase_B: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Number : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ac_Rms_Current : 16|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Power : 32|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+
+BO_ 32703230 Ac_Power_Current_Phase_C: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Number : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ac_Rms_Current : 16|16@1+ (0.1,0.0) [0.0|0.0] "A" MFD
+ SG_ Power : 32|32@1- (1.0,0.0) [0.0|0.0] "W" MFD
+
+BO_ 32704254 Converter_Status: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Number : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Operating_State : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temperature_State : 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Overload_State : 26|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Low_Dc_Voltage_State : 28|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Ripple_State : 30|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 32|32@1+ (0.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32704510 Dc_Voltage_Current: 8 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Connection_Number : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Dc_Voltage : 16|16@1+ (0.1,0.0) [0.0|0.0] "V" MFD
+ SG_ Dc_Current : 32|24@1- (0.01,0.0) [0.0|0.0] "A" MFD
+ SG_ Reserved : 56|8@1+ (0.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32507902 Alert: 28 Vector__XXX
+ SG_ Alert_Type : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Category : 4|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_System : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Sub_System : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Id : 24|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Network_Id_Name : 40|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Instance : 104|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Index_Source : 112|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Occurrence_Number : 120|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temporary_Silence_Status : 128|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Acknowledge_Status : 129|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Escalation_Status : 130|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Temporary_Silence_Support : 131|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Acknowledge_Support : 132|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Escalation_Support : 133|1@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_Reserved : 134|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Acknowledge_Source_Network_Id_Name : 136|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Trigger_Condition : 200|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Threshold_Status : 204|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Priority : 208|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_State : 216|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32508158 Alert_Response: 25 Vector__XXX
+ SG_ Alert_Type : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Category : 4|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_System : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Sub_System : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Id : 24|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Network_Id_Name : 40|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Instance : 104|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Index_Source : 112|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Occurrence_Number : 120|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Acknowledge_Source_Network_Id_Name : 128|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Response_Command : 192|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Nmea_Reserved : 194|6@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32508414 Alert_Text: 49 Vector__XXX
+ SG_ Alert_Type : 0|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Category : 4|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_System : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Sub_System : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Id : 24|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Network_Id_Name : 40|64@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Instance : 104|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Data_Source_Index_Source : 112|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Occurrence_Number : 120|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Language_Id : 128|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Text_Description : 136|128@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Alert_Location_Text_Description : 0|128@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32510462 Heartbeat: 8 Vector__XXX
+ SG_ Data_Transmit_Offset : 0|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ Sequence_Counter : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 24|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32571902 Man_Overboard_Notification: 35 Vector__XXX
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Mob_Emitter_Id : 8|32@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Man_Overboard_Status : 40|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Activation_Time : 48|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Position_Source : 80|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Position_Date : 88|16@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Position_Time : 104|32@1+ (1.0E-4,0.0) [0.0|0.0] "s" MFD
+ SG_ Latitude : 136|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Longitude : 168|32@1- (1.0E-7,0.0) [0.0|0.0] "deg" MFD
+ SG_ Cog_Reference : 200|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Cog : 208|16@1+ (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ Sog : 224|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ Mmsi_Of_Vessel_Of_Origin : 240|32@1+ (1.0,0.0) [0.0|0.0] "MMSI" MFD
+ SG_ Mob_Emitter_Battery_Status : 272|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 275|5@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32440574 Airmar_Attitude_Offset: 12 Vector__XXX
+ SG_ Manufacturer_Code M: 0|11@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Azimuth_Offset m135: 24|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ M135_Pitch_Offset m135: 40|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ M135_Roll_Offset m135: 56|16@1- (0.005729577951308232,0.0) [0.0|0.0] "deg" MFD
+ SG_ M135_Simulate_Mode m135: 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Speed_Of_Sound_Mode m135: 24|16@1+ (0.1,0.0) [0.0|0.0] "m/s" MFD
+ SG_ M135_Number_Of_Pairs_Of_Data_Points m135: 24|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Input_Frequency m135: 32|16@1+ (0.1,0.0) [0.0|0.0] "Hz" MFD
+ SG_ M135_Output_Speed m135: 48|16@1+ (0.01,0.0) [0.0|0.0] "m/s" MFD
+ SG_ M135_Temperature_Instance m135: 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Temperature_Offset m135: 32|16@1- (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ M135_Filter_Type m135: 24|4@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Sample_Interval m135: 32|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ M135_Filter_Duration m135: 48|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ M135_Industry_Code m135: 13|3@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Proprietary_Id m135: 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Transmission_Interval m135: 24|2@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ M135_Reserved m135: 26|22@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+
+CM_ "This DBC is based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn" ;
+
+
+CM_ BO_ 16646398 "Generator Phase B Basic AC Quantities" ;
+CM_ BO_ 16646654 "Generator Phase A AC Reactive Power" ;
+CM_ BO_ 16646910 "Generator Phase A AC Power" ;
+CM_ BO_ 16647166 "Generator Phase A Basic AC Quantities" ;
+CM_ BO_ 16647422 "Generator Total AC Reactive Power" ;
+CM_ BO_ 16647678 "Generator Total AC Power" ;
+CM_ BO_ 16647934 "Generator Average Basic AC Quantities" ;
+CM_ BO_ 33425406 "Watermaker Input Setting and Status" ;
+CM_ BO_ 16713726 "Airmar: Access Level" ;
+CM_ BO_ 16712958 "Maretron: Proprietary DC Breaker Current" ;
+CM_ BO_ 16713214 "Airmar: Boot State Acknowledgment" ;
+CM_ BO_ 16713470 "Airmar: Boot State Request" ;
+CM_ BO_ 16732414 "Seatalk: Pilot Locked Heading" ;
+CM_ BO_ 16732670 "Seatalk: Silence Alarm" ;
+CM_ BO_ 16744958 "Airmar: Speed Pulse Count" ;
+CM_ BO_ 33489150 "SonicHub: Volume" ;
+CM_ BO_ 33494270 "Maretron Proprietary Switch Status Counter" ;
+CM_ BO_ 33494526 "Maretron Proprietary Switch Status Timer" ;
+CM_ BO_ 16642814 "Utility Phase B AC Power" ;
+CM_ BO_ 16641790 "Utility Phase C AC Reactive Power" ;
+CM_ BO_ 16640510 "Bus #1 Phase C Basic AC Quantities" ;
+CM_ BO_ 16640766 "Bus #1 Phase B Basic AC Quantities" ;
+CM_ BO_ 16641022 "Bus #1 Phase A Basic AC Quantities" ;
+CM_ BO_ 16642046 "Utility Phase C AC Power" ;
+CM_ BO_ 16642302 "Utility Phase C Basic AC Quantities" ;
+CM_ BO_ 16642558 "Utility Phase B AC Reactive Power" ;
+CM_ BO_ 16643070 "Utility Phase B Basic AC Quantities" ;
+CM_ BO_ 16643326 "Utility Phase A AC Reactive Power" ;
+CM_ BO_ 16643582 "Utility Phase A AC Power" ;
+CM_ BO_ 16643838 "Utility Phase A Basic AC Quantities" ;
+CM_ BO_ 16644094 "Utility Total AC Reactive Power" ;
+CM_ BO_ 16644350 "Utility Total AC Power" ;
+CM_ BO_ 16644606 "Utility Average Basic AC Quantities" ;
+CM_ BO_ 16645118 "Generator Phase C AC Reactive Power" ;
+CM_ BO_ 16645374 "Generator Phase C AC Power" ;
+CM_ BO_ 16645630 "Generator Phase C Basic AC Quantities" ;
+CM_ BO_ 16645886 "Generator Phase B AC Reactive Power" ;
+CM_ BO_ 16646142 "Generator Phase B AC Power" ;
+CM_ BO_ 33361150 "Temperature Extended Range" ;
+CM_ BO_ 33034750 "AIS Aids to Navigation (AtoN) Report" ;
+CM_ BO_ 32966910 "Windlass Control Status" ;
+CM_ BO_ 32967166 "Anchor Windlass Operating Status" ;
+CM_ BO_ 32967422 "Anchor Windlass Monitoring Status" ;
+CM_ BO_ 32768254 "Leeway Angle" ;
+CM_ BO_ 32640254 "Load Controller Connection State/Control" ;
+CM_ BO_ 32702718 "AC Power / Current - Phase A" ;
+CM_ BO_ 32702974 "AC Power / Current - Phase B" ;
+CM_ BO_ 32703230 "AC Power / Current - Phase C" ;
+CM_ BO_ 32704254 "Converter Status" ;
+CM_ BO_ 32704510 "DC Voltage/Current" ;
+CM_ BO_ 32507902 "Alert" ;
+CM_ BO_ 32508158 "Alert Response" ;
+CM_ BO_ 32508414 "Alert Text" ;
+CM_ BO_ 32510462 "Heartbeat" ;
+CM_ BO_ 32571902 "Man Overboard Notification" ;
+CM_ BO_ 32440574 "Airmar: Attitude Offset" ;
+
+BA_DEF_ "RepeatSize" INT 0 0;
+BA_DEF_ "BusType" STRING;
+BA_DEF_ "SignalType" STRING;
+BA_DEF_ "ProtocolType" STRING;
+BA_DEF_ "RepeatStartBit" INT 0 0;
+BA_DEF_ "MessageType" STRING;
+BA_DEF_DEF_ "RepeatSize" 0;
+BA_DEF_DEF_ "BusType" "";
+BA_DEF_DEF_ "SignalType" "UNKNOWN";
+BA_DEF_DEF_ "ProtocolType" "";
+BA_DEF_DEF_ "RepeatStartBit" 0;
+BA_DEF_DEF_ "MessageType" "Single";
+BA_ "RepeatSize" 0;
+BA_ "BusType" "CAN";
+BA_ "SignalType" "";
+BA_ "ProtocolType" "N2K";
+BA_ "RepeatStartBit" 0;
+BA_ "MessageType" "";
+BA_ "MessageType" BO_ 16646398 "Single";
+BA_ "MessageType" BO_ 16646654 "Single";
+BA_ "SignalType" SG_ 16646654 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16646910 "Single";
+BA_ "MessageType" BO_ 16647166 "Single";
+BA_ "MessageType" BO_ 16647422 "Single";
+BA_ "SignalType" SG_ 16647422 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16647678 "Single";
+BA_ "MessageType" BO_ 16647934 "Single";
+BA_ "MessageType" BO_ 33425406 "Fast";
+BA_ "SignalType" SG_ 33425406 Watermaker_Operating_State "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Production_Start_Stop "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Rinse_Start_Stop "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Low_Pressure_Pump_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 High_Pressure_Pump_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Emergency_Stop "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Product_Solenoid_Valve_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Flush_Mode_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Salinity_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Sensor_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Oil_Change_Indicator_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Filter_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 System_Status "LOOKUP";
+BA_ "SignalType" SG_ 33425406 Reserved "BINARY";
+BA_ "SignalType" SG_ 33425406 Salinity "INT";
+BA_ "SignalType" SG_ 33425406 Product_Water_Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33425406 Pre_Filter_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33425406 Post_Filter_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33425406 Feed_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33425406 System_High_Pressure "DOUBLE";
+BA_ "SignalType" SG_ 33425406 Run_Time "INT";
+BA_ "MessageType" BO_ 16713726 "Single";
+BA_ "SignalType" SG_ 16713726 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16713726 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 16713726 Format_Code "LOOKUP";
+BA_ "SignalType" SG_ 16713726 Access_Level "LOOKUP";
+BA_ "SignalType" SG_ 16713726 Reserved "BINARY";
+BA_ "SignalType" SG_ 16713726 Access_Seed_Key "INT";
+BA_ "MessageType" BO_ 16712958 "Single";
+BA_ "SignalType" SG_ 16712958 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16712958 Industry_Code "LOOKUP";
+BA_ "MessageType" BO_ 16713214 "Single";
+BA_ "SignalType" SG_ 16713214 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16713214 M135_Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 16713214 M135_Boot_State "LOOKUP";
+BA_ "SignalType" SG_ 16713214 M140_Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 16713214 M140_Temperature_Source "LOOKUP";
+BA_ "SignalType" SG_ 16713214 M140_Actual_Temperature "DOUBLE";
+BA_ "MessageType" BO_ 16713470 "Single";
+BA_ "SignalType" SG_ 16713470 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16713470 Industry_Code "LOOKUP";
+BA_ "MessageType" BO_ 16732414 "Single";
+BA_ "SignalType" SG_ 16732414 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16732414 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 16732414 Sid "BINARY";
+BA_ "SignalType" SG_ 16732414 Reserved "BINARY";
+BA_ "MessageType" BO_ 16732670 "Single";
+BA_ "SignalType" SG_ 16732670 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16732670 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 16732670 Alarm_Id "LOOKUP";
+BA_ "SignalType" SG_ 16732670 Alarm_Group "LOOKUP";
+BA_ "SignalType" SG_ 16732670 Reserved "BINARY";
+BA_ "MessageType" BO_ 16744958 "Single";
+BA_ "SignalType" SG_ 16744958 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 16744958 Industry_Code "LOOKUP";
+BA_ "MessageType" BO_ 33489150 "Fast";
+BA_ "SignalType" SG_ 33489150 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 33489150 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 33489150 Proprietary_Id "LOOKUP";
+BA_ "SignalType" SG_ 33489150 Control "LOOKUP";
+BA_ "SignalType" SG_ 33489150 Zone "LOOKUP";
+BA_ "SignalType" SG_ 33489150 Level "INT";
+BA_ "MessageType" BO_ 33494270 "Fast";
+BA_ "SignalType" SG_ 33494270 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 33494270 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 33494270 Start_Date "INT";
+BA_ "SignalType" SG_ 33494270 Start_Time "DOUBLE";
+BA_ "SignalType" SG_ 33494270 Off_Counter "INT";
+BA_ "SignalType" SG_ 33494270 On_Counter "INT";
+BA_ "SignalType" SG_ 33494270 Error_Counter "INT";
+BA_ "SignalType" SG_ 33494270 Switch_Status "LOOKUP";
+BA_ "MessageType" BO_ 33494526 "Fast";
+BA_ "SignalType" SG_ 33494526 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 33494526 Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 33494526 Start_Date "INT";
+BA_ "SignalType" SG_ 33494526 Start_Time "DOUBLE";
+BA_ "SignalType" SG_ 33494526 Accumulated_Off_Period "INT";
+BA_ "SignalType" SG_ 33494526 Accumulated_On_Period "INT";
+BA_ "SignalType" SG_ 33494526 Accumulated_Error_Period "INT";
+BA_ "SignalType" SG_ 33494526 Switch_Status "LOOKUP";
+BA_ "MessageType" BO_ 16642814 "Single";
+BA_ "MessageType" BO_ 16641790 "Single";
+BA_ "SignalType" SG_ 16641790 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16640510 "Single";
+BA_ "MessageType" BO_ 16640766 "Single";
+BA_ "MessageType" BO_ 16641022 "Single";
+BA_ "MessageType" BO_ 16642046 "Single";
+BA_ "MessageType" BO_ 16642302 "Single";
+BA_ "MessageType" BO_ 16642558 "Single";
+BA_ "SignalType" SG_ 16642558 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16643070 "Single";
+BA_ "MessageType" BO_ 16643326 "Single";
+BA_ "SignalType" SG_ 16643326 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16643582 "Single";
+BA_ "MessageType" BO_ 16643838 "Single";
+BA_ "MessageType" BO_ 16644094 "Single";
+BA_ "SignalType" SG_ 16644094 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16644350 "Single";
+BA_ "MessageType" BO_ 16644606 "Single";
+BA_ "MessageType" BO_ 16645118 "Single";
+BA_ "SignalType" SG_ 16645118 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16645374 "Single";
+BA_ "MessageType" BO_ 16645630 "Single";
+BA_ "MessageType" BO_ 16645886 "Single";
+BA_ "SignalType" SG_ 16645886 Power_Factor_Lagging "LOOKUP";
+BA_ "MessageType" BO_ 16646142 "Single";
+BA_ "MessageType" BO_ 33361150 "Single";
+BA_ "SignalType" SG_ 33361150 Source "LOOKUP";
+BA_ "SignalType" SG_ 33361150 Temperature "DOUBLE";
+BA_ "SignalType" SG_ 33361150 Set_Temperature "DOUBLE";
+BA_ "MessageType" BO_ 33034750 "Fast";
+BA_ "SignalType" SG_ 33034750 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33034750 User_Id "INT";
+BA_ "SignalType" SG_ 33034750 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 33034750 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 33034750 Position_Accuracy "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Ais_Raim_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Time_Stamp "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Ato_N_Type "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Off_Position_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Virtual_Ato_N_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Assigned_Mode_Flag "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Ais_Spare "BINARY";
+BA_ "SignalType" SG_ 33034750 Position_Fixing_Device_Type "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Ato_N_Status "BINARY";
+BA_ "SignalType" SG_ 33034750 Ais_Transceiver_Information "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Reserved "BINARY";
+BA_ "SignalType" SG_ 33034750 Ato_N_Name "STRINGLAU";
+BA_ "MessageType" BO_ 32966910 "Single";
+BA_ "SignalType" SG_ 32966910 Windlass_Direction_Control "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Anchor_Docking_Control "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Speed_Control_Type "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Speed_Control "BINARY";
+BA_ "SignalType" SG_ 32966910 Power_Enable "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Mechanical_Lock "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Deck_And_Anchor_Wash "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Anchor_Light "LOOKUP";
+BA_ "SignalType" SG_ 32966910 Windlass_Control_Events "BITFIELD";
+BA_ "SignalType" SG_ 32966910 Reserved "BINARY";
+BA_ "MessageType" BO_ 32967166 "Single";
+BA_ "SignalType" SG_ 32967166 Windlass_Direction_Control "LOOKUP";
+BA_ "SignalType" SG_ 32967166 Windlass_Motion_Status "LOOKUP";
+BA_ "SignalType" SG_ 32967166 Rode_Type_Status "LOOKUP";
+BA_ "SignalType" SG_ 32967166 Reserved "BINARY";
+BA_ "SignalType" SG_ 32967166 Anchor_Docking_Status "LOOKUP";
+BA_ "SignalType" SG_ 32967166 Windlass_Operating_Events "BITFIELD";
+BA_ "MessageType" BO_ 32967422 "Single";
+BA_ "SignalType" SG_ 32967422 Windlass_Monitoring_Events "BITFIELD";
+BA_ "SignalType" SG_ 32967422 Reserved "BINARY";
+BA_ "MessageType" BO_ 32768254 "Single";
+BA_ "SignalType" SG_ 32768254 Reserved "BINARY";
+BA_ "MessageType" BO_ 32640254 "Fast";
+BA_ "SignalType" SG_ 32640254 Sequence_Id "INT";
+BA_ "SignalType" SG_ 32640254 Connection_Id "INT";
+BA_ "SignalType" SG_ 32640254 State "INT";
+BA_ "SignalType" SG_ 32640254 Status "INT";
+BA_ "SignalType" SG_ 32640254 Operational_Status_Control "INT";
+BA_ "SignalType" SG_ 32640254 Pwm_Duty_Cycle "INT";
+BA_ "SignalType" SG_ 32640254 Time_On "INT";
+BA_ "SignalType" SG_ 32640254 Time_Off "INT";
+BA_ "MessageType" BO_ 32702718 "Single";
+BA_ "MessageType" BO_ 32702974 "Single";
+BA_ "MessageType" BO_ 32703230 "Single";
+BA_ "MessageType" BO_ 32704254 "Single";
+BA_ "SignalType" SG_ 32704254 Sid "BINARY";
+BA_ "SignalType" SG_ 32704254 Operating_State "LOOKUP";
+BA_ "SignalType" SG_ 32704254 Temperature_State "LOOKUP";
+BA_ "SignalType" SG_ 32704254 Overload_State "LOOKUP";
+BA_ "SignalType" SG_ 32704254 Low_Dc_Voltage_State "LOOKUP";
+BA_ "SignalType" SG_ 32704254 Ripple_State "LOOKUP";
+BA_ "MessageType" BO_ 32704510 "Single";
+BA_ "SignalType" SG_ 32704510 Sid "BINARY";
+BA_ "MessageType" BO_ 32507902 "Fast";
+BA_ "SignalType" SG_ 32507902 Alert_Type "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Alert_Category "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Temporary_Silence_Status "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Acknowledge_Status "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Escalation_Status "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Temporary_Silence_Support "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Acknowledge_Support "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Escalation_Support "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Nmea_Reserved "BINARY";
+BA_ "SignalType" SG_ 32507902 Trigger_Condition "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Threshold_Status "LOOKUP";
+BA_ "SignalType" SG_ 32507902 Alert_State "LOOKUP";
+BA_ "MessageType" BO_ 32508158 "Fast";
+BA_ "SignalType" SG_ 32508158 Alert_Type "LOOKUP";
+BA_ "SignalType" SG_ 32508158 Alert_Category "LOOKUP";
+BA_ "SignalType" SG_ 32508158 Response_Command "LOOKUP";
+BA_ "SignalType" SG_ 32508158 Nmea_Reserved "BINARY";
+BA_ "MessageType" BO_ 32508414 "Fast";
+BA_ "SignalType" SG_ 32508414 Alert_Type "LOOKUP";
+BA_ "SignalType" SG_ 32508414 Alert_Category "LOOKUP";
+BA_ "SignalType" SG_ 32508414 Language_Id "LOOKUP";
+BA_ "SignalType" SG_ 32508414 Alert_Text_Description "STRINGLAU";
+BA_ "SignalType" SG_ 32508414 Alert_Location_Text_Description "STRINGLAU";
+BA_ "MessageType" BO_ 32510462 "Single";
+BA_ "SignalType" SG_ 32510462 Sequence_Counter "INT";
+BA_ "SignalType" SG_ 32510462 Reserved "BINARY";
+BA_ "MessageType" BO_ 32571902 "Fast";
+BA_ "SignalType" SG_ 32571902 Mob_Emitter_Id "INT";
+BA_ "SignalType" SG_ 32571902 Man_Overboard_Status "LOOKUP";
+BA_ "SignalType" SG_ 32571902 Activation_Time "DOUBLE";
+BA_ "SignalType" SG_ 32571902 Position_Source "LOOKUP";
+BA_ "SignalType" SG_ 32571902 Position_Date "INT";
+BA_ "SignalType" SG_ 32571902 Position_Time "DOUBLE";
+BA_ "SignalType" SG_ 32571902 Latitude "DOUBLE";
+BA_ "SignalType" SG_ 32571902 Longitude "DOUBLE";
+BA_ "SignalType" SG_ 32571902 Cog_Reference "LOOKUP";
+BA_ "SignalType" SG_ 32571902 Mmsi_Of_Vessel_Of_Origin "INT";
+BA_ "SignalType" SG_ 32571902 Mob_Emitter_Battery_Status "LOOKUP";
+BA_ "SignalType" SG_ 32571902 Reserved "BINARY";
+BA_ "MessageType" BO_ 32440574 "Fast";
+BA_ "SignalType" SG_ 32440574 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 32440574 M135_Simulate_Mode "LOOKUP";
+BA_ "SignalType" SG_ 32440574 M135_Number_Of_Pairs_Of_Data_Points "INT";
+BA_ "SignalType" SG_ 32440574 M135_Temperature_Instance "LOOKUP";
+BA_ "SignalType" SG_ 32440574 M135_Filter_Type "LOOKUP";
+BA_ "SignalType" SG_ 32440574 M135_Industry_Code "LOOKUP";
+BA_ "SignalType" SG_ 32440574 M135_Proprietary_Id "INT";
+BA_ "SignalType" SG_ 32440574 M135_Transmission_Interval "LOOKUP";
+BA_ "SignalType" SG_ 32440574 M135_Reserved "BINARY";
+
+VAL_ 16646654 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16647422 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 33425406 Watermaker_Operating_State  0 "Stopped" 1 "Starting" 2 "Running" 3 "Stopping" 4 "Flushing" 5 "Rinsing" 6 "Initiating" 7 "Manual Mode" 62 "Error" 63 "Unavailable";
+VAL_ 33425406 Production_Start_Stop  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 Rinse_Start_Stop  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 Low_Pressure_Pump_Status  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 High_Pressure_Pump_Status  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 Emergency_Stop  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 Product_Solenoid_Valve_Status  0 "OK" 1 "Warning";
+VAL_ 33425406 Flush_Mode_Status  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33425406 Salinity_Status  0 "OK" 1 "Warning";
+VAL_ 33425406 Sensor_Status  0 "OK" 1 "Warning";
+VAL_ 33425406 Oil_Change_Indicator_Status  0 "OK" 1 "Warning";
+VAL_ 33425406 Filter_Status  0 "OK" 1 "Warning";
+VAL_ 33425406 System_Status  0 "OK" 1 "Warning";
+VAL_ 16713726 Format_Code  1 "Format code 1";
+VAL_ 16713726 Access_Level  0 "Locked" 1 "unlocked level 1" 2 "unlocked level 2";
+VAL_ 16713214 M135_Boot_State  0 "in Startup Monitor" 1 "running Bootloader" 2 "running Application";
+VAL_ 16713214 M140_Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
+VAL_ 16732670 Alarm_Id  0 "No Alarm" 1 "Shallow Depth" 2 "Deep Depth" 3 "Shallow Anchor" 4 "Deep Anchor" 5 "Off Course" 6 "AWA High" 7 "AWA Low" 8 "AWS High" 9 "AWS Low" 10 "TWA High" 11 "TWA Low" 12 "TWS High" 13 "TWS Low" 14 "WP Arrival" 15 "Boat Speed High" 16 "Boat Speed Low" 17 "Sea Temp High" 18 "Sea Temp Low" 19 "Pilot Watch" 20 "Pilot Off Course" 21 "Pilot Wind Shift" 22 "Pilot Low Battery" 23 "Pilot Last Minute Of Watch" 24 "Pilot No NMEA Data" 25 "Pilot Large XTE" 26 "Pilot NMEA DataError" 27 "Pilot CU Disconnected" 28 "Pilot Auto Release" 29 "Pilot Way Point Advance" 30 "Pilot Drive Stopped" 31 "Pilot Type Unspecified" 32 "Pilot Calibration Required" 33 "Pilot Last Heading" 34 "Pilot No Pilot" 35 "Pilot Route Complete" 36 "Pilot Variable Text" 37 "GPS Failure" 38 "MOB" 39 "Seatalk1 Anchor" 40 "Pilot Swapped Motor Power" 41 "Pilot Standby Too Fast To Fish" 42 "Pilot No GPS Fix" 43 "Pilot No GPS COG" 44 "Pilot Start Up" 45 "Pilot Too Slow" 46 "Pilot No Compass" 47 "Pilot Rate Gyro Fault" 48 "Pilot Current Limit" 49 "Pilot Way Point Advance Port" 50 "Pilot Way Point Advance Stbd" 51 "Pilot No Wind Data" 52 "Pilot No Speed Data" 53 "Pilot Seatalk Fail1" 54 "Pilot Seatalk Fail2" 55 "Pilot Warning Too Fast To Fish" 56 "Pilot Auto Dockside Fail" 57 "Pilot Turn Too Fast" 58 "Pilot No Nav Data" 59 "Pilot Lost Waypoint Data" 60 "Pilot EEPROM Corrupt" 61 "Pilot Rudder Feedback Fail" 62 "Pilot Autolearn Fail1" 63 "Pilot Autolearn Fail2" 64 "Pilot Autolearn Fail3" 65 "Pilot Autolearn Fail4" 66 "Pilot Autolearn Fail5" 67 "Pilot Autolearn Fail6" 68 "Pilot Warning Cal Required" 69 "Pilot Warning OffCourse" 70 "Pilot Warning XTE" 71 "Pilot Warning Wind Shift" 72 "Pilot Warning Drive Short" 73 "Pilot Warning Clutch Short" 74 "Pilot Warning Solenoid Short" 75 "Pilot Joystick Fault" 76 "Pilot No Joystick Data" 77 "not assigned" 78 "not assigned" 79 "not assigned" 80 "Pilot Invalid Command" 81 "AIS TX Malfunction" 82 "AIS Antenna VSWR fault" 83 "AIS Rx channel 1 malfunction" 84 "AIS Rx channel 2 malfunction" 85 "AIS No sensor position in use" 86 "AIS No valid SOG information" 87 "AIS No valid COG information" 88 "AIS 12V alarm" 89 "AIS 6V alarm" 90 "AIS Noise threshold exceeded channel A" 91 "AIS Noise threshold exceeded channel B" 92 "AIS Transmitter PA fault" 93 "AIS 3V3 alarm" 94 "AIS Rx channel 70 malfunction" 95 "AIS Heading lost/invalid" 96 "AIS internal GPS lost" 97 "AIS No sensor position" 98 "AIS Lock failure" 99 "AIS Internal GGA timeout" 100 "AIS Protocol stack restart" 101 "Pilot No IPS communications" 102 "Pilot Power-On or Sleep-Switch Reset While Engaged     " 103 "Pilot Unexpected Reset While Engaged" 104 "AIS Dangerous Target" 105 "AIS Lost Target" 106 "AIS Safety Related Message (used to silence)" 107 "AIS Connection Lost" 108 "No Fix";
+VAL_ 16732670 Alarm_Group  0 "Instrument" 1 "Autopilot" 2 "Radar" 3 "Chart Plotter" 4 "AIS";
+VAL_ 33489150 Control  0 "Set" 128 "Ack";
+VAL_ 33489150 Zone  0 "Zone 1" 1 "Zone 2" 2 "Zone 3";
+VAL_ 33494270 Switch_Status  0 "Off" 1 "On" 2 "Failed";
+VAL_ 33494526 Switch_Status  0 "Off" 1 "On" 2 "Failed";
+VAL_ 16641790 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16642558 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16643326 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16644094 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16645118 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 16645886 Power_Factor_Lagging  0 "Leading" 1 "Lagging" 2 "Error";
+VAL_ 33361150 Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
+VAL_ 33034750 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33034750 Position_Accuracy  0 "Low" 1 "High";
+VAL_ 33034750 Ais_Raim_Flag  0 "not in use" 1 "in use";
+VAL_ 33034750 Time_Stamp  60 "Not available" 61 "Manual input mode" 62 "Dead reckoning mode" 63 "Positioning system is inoperative";
+VAL_ 33034750 Ato_N_Type  0 "Default: Type of AtoN not specified" 1 "Referece point" 2 "RACON" 3 "Fixed structure off-shore" 4 "Reserved for future use" 5 "Fixed light: without sectors" 6 "Fixed light: with sectors" 7 "Fixed leading light front" 8 "Fixed leading light rear" 9 "Fixed beacon: cardinal N" 10 "Fixed beacon: cardinal E" 11 "Fixed beacon: cardinal S" 12 "Fixed beacon: cardinal W" 13 "Fixed beacon: port hand" 14 "Fixed beacon: starboard hand" 15 "Fixed beacon: preferred channel port hand" 16 "Fixed beacon: preferred channel starboard hand" 17 "Fixed beacon: isolated danger" 18 "Fixed beacon: safe water" 19 "Fixed beacon: special mark" 20 "Floating AtoN: cardinal N" 21 "Floating AtoN: cardinal E" 22 "Floating AtoN: cardinal S" 23 "Floating AtoN: cardinal W" 24 "Floating AtoN: port hand mark" 25 "Floating AtoN: starboard hand mark" 26 "Floating AtoN: preferred channel port hand" 27 "Floating AtoN: preferred channel starboard hand" 28 "Floating AtoN: isolated danger" 29 "Floating AtoN: safe water" 30 "Floating AtoN: special mark" 31 "Floating AtoN: light vessel/LANBY/rigs";
+VAL_ 33034750 Off_Position_Indicator  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33034750 Virtual_Ato_N_Flag  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 33034750 Assigned_Mode_Flag  0 "Autonomous and continuous" 1 "Assigned mode";
+VAL_ 33034750 Position_Fixing_Device_Type  0 "Default: undefined" 1 "GPS" 2 "GLONASS" 3 "Combined GPS/GLONASS" 4 "Loran-C" 5 "Chayka" 6 "Integrated navigation system" 7 "Surveyed" 8 "Galileo" 15 "Internal GNSS";
+VAL_ 33034750 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
+VAL_ 32966910 Windlass_Direction_Control  0 "Off" 1 "Down" 2 "Up";
+VAL_ 32966910 Anchor_Docking_Control  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32966910 Speed_Control_Type  0 "Single Speed" 1 "Dual Speed" 2 "Proportional Speed";
+VAL_ 32966910 Power_Enable  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32966910 Mechanical_Lock  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32966910 Deck_And_Anchor_Wash  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32966910 Anchor_Light  0 "No" 1 "Yes" 10 "Error" 11 "Unavailable";
+VAL_ 32967166 Windlass_Direction_Control  0 "Off" 1 "Down" 2 "Up";
+VAL_ 32967166 Windlass_Motion_Status  0 "Windlass stopped" 1 "Deployment occurring" 2 "Retrieval occurring";
+VAL_ 32967166 Rode_Type_Status  0 "Chain presently detected" 1 "Rope presently detected" 2 "Error";
+VAL_ 32967166 Anchor_Docking_Status  0 "Not docked" 1 "Fully docked" 2 "Error";
+VAL_ 32704254 Operating_State  0 "Off" 1 "Low Power Mode" 2 "Fault" 3 "Bulk" 4 "Absorption" 5 "Float" 6 "Storage" 7 "Equalize" 8 "Pass thru" 9 "Inverting" 10 "Assisting";
+VAL_ 32704254 Temperature_State  0 "Ok" 1 "Warning" 2 "Over Temperature" 3 "Not Available";
+VAL_ 32704254 Overload_State  0 "Ok" 1 "Warning" 2 "Overload" 3 "Not Available";
+VAL_ 32704254 Low_Dc_Voltage_State  0 "Ok" 1 "Warning" 2 "DC voltage too low" 3 "Not Available";
+VAL_ 32704254 Ripple_State  0 "Ok" 1 "Warning" 2 "Ripple Too High" 3 "Not Available";
+VAL_ 32507902 Alert_Type  0 "Reserved" 1 "Emergency Alarm" 2 "Alarm" 3 "Reserved" 4 "Reserved" 5 "Warning" 6 "Reserved" 7 "Reserved" 8 "Caution" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32507902 Alert_Category  0 "Navigational" 1 "Technical" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32507902 Temporary_Silence_Status  0 "Not Temporary Silence" 1 "Temporary Silence";
+VAL_ 32507902 Acknowledge_Status  0 "Not Acknowledged" 1 "Acknowledged";
+VAL_ 32507902 Escalation_Status  0 "Not Escalated" 1 "Escalated";
+VAL_ 32507902 Temporary_Silence_Support  0 "Not Supported" 1 "Supported";
+VAL_ 32507902 Acknowledge_Support  0 "Not Supported" 1 "Supported";
+VAL_ 32507902 Escalation_Support  0 "Not Supported" 1 "Supported";
+VAL_ 32507902 Trigger_Condition  0 "Manual" 1 "Auto" 2 "Test" 3 "Disabled" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32507902 Threshold_Status  0 "Normal" 1 "Threshold Exceeded" 2 "Extreme Threshold Exceeded" 3 "Low Threshold Exceeded" 4 "Acknowledged" 5 "Awaiting Acknowledge" 253 "Reserved" 254 "Data out of range" 255 "Data not available";
+VAL_ 32507902 Alert_State  0 "Disabled" 1 "Normal" 2 "Active" 3 "Silenced" 4 "Acknowledged" 5 "Awaiting Acknowledge" 253 "Reserved" 254 "Data out of range" 255 "Data not available";
+VAL_ 32508158 Alert_Type  0 "Reserved" 1 "Emergency Alarm" 2 "Alarm" 3 "Reserved" 4 "Reserved" 5 "Warning" 6 "Reserved" 7 "Reserved" 8 "Caution" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32508158 Alert_Category  0 "Navigational" 1 "Technical" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32508158 Response_Command  0 "Acknowledge" 1 "Temporary Silence" 2 "Test Command off" 3 "Test Command on";
+VAL_ 32508414 Alert_Type  0 "Reserved" 1 "Emergency Alarm" 2 "Alarm" 3 "Reserved" 4 "Reserved" 5 "Warning" 6 "Reserved" 7 "Reserved" 8 "Caution" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32508414 Alert_Category  0 "Navigational" 1 "Technical" 13 "Reserved" 14 "Data out of range" 15 "Data not available";
+VAL_ 32508414 Language_Id  0 "English (US)" 1 "English (UK)" 2 "Arabic" 3 "Chinese (simplified)" 4 "Croatian" 5 "Danish" 6 "Dutch" 7 "Finnish" 8 "French" 9 "German" 10 "Greek" 11 "Italian" 12 "Japanese" 13 "Korean" 14 "Norwegian" 15 "Polish" 16 "Portuguese" 17 "Russian" 18 "Spanish" 19 "Sweedish";
+VAL_ 32571902 Man_Overboard_Status  0 "MOB Emitter Activated" 1 "Manual on-board MOB Button Activation" 2 "Test Mode" 3 "MOB Not Active";
+VAL_ 32571902 Position_Source  0 "Position estimated by the Vessel" 1 "Position reported by MOB emitter";
+VAL_ 32571902 Cog_Reference  0 "True" 1 "Magnetic" 2 "Error" 3 "Null";
+VAL_ 32571902 Mob_Emitter_Battery_Status  0 "Good" 1 "Low";
+VAL_ 32440574 M135_Simulate_Mode  0 "Off" 1 "On";
+VAL_ 32440574 M135_Temperature_Instance  0 "Device Sensor" 1 "Onboard Water Sensor" 2 "Optional Water Sensor";
+VAL_ 32440574 M135_Filter_Type  0 "no filter" 1 "basic IIR filter" 15 "data not available";
+VAL_ 32440574 M135_Transmission_Interval  0 "Measure Interval" 1 "Requested by user" 2 "reserved" 3 "data not available";

@@ -169,11 +169,12 @@ public class PGNDefinitions extends DBCFile
                 break;
             }
         }
-        if (complete)
+        //System.err.println("put("+pgn+", \""+description+"\");");
+        N2KData.PGNInfo pgnInfo = N2KData.N2K.getPGNInfo(pgn, description);
+        if (complete && pgnInfo == null)
         {
             int canId = PGN.canId(pgn);
-            N2KData.PGNInfo pgnInfo = N2KData.N2K.getPGNInfo(pgn, description);
-            if (fields != null && pgnInfo != null)
+            if (fields != null)
             {
                 List<SignalClass> signals = new ArrayList<>();
                 NodeList fieldNodes = fields.getChildNodes();
@@ -181,7 +182,7 @@ public class PGNDefinitions extends DBCFile
                 for (int ff=0;ff<fldLen;ff++)
                 {
                     Node fieldNode = fieldNodes.item(ff);
-                    SignalClass sc = parseField(canId, fieldNode, pgnInfo);
+                    SignalClass sc = parseField(canId, fieldNode);
                     if (sc != null)
                     {
                         signals.add(sc);
@@ -191,22 +192,20 @@ public class PGNDefinitions extends DBCFile
                 {
                     
                 }
-                String transmitter = CamelCase.delimited(pgnInfo.getCategory(), "_");
-                MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(pgnInfo.getName(), "_"), size, transmitter, signals);
+                MessageClass msg = new MessageClass(this, canId, CamelCase.delimited(id, "_"), size, "Vector__XXX", signals);
                 msg.setAttributeValue("MessageType", type.toString());
                 if (repeatingFields > 0)
                 {
                     handleRepeating(msg, repeatingFields, signals);
                 }
-                msg.setComment(pgnInfo.getDescription());
-                addNode(transmitter);
+                msg.setComment(description);
                 return msg;
             }
         }
         return null;
   }
 
-    private SignalClass parseField(int canId, Node fieldNode, N2KData.PGNInfo pgnInfo)
+    private SignalClass parseField(int canId, Node fieldNode)
     {
         String name = null;
         int order = 0;
@@ -261,10 +260,6 @@ public class PGNDefinitions extends DBCFile
         }
         if (name != null && len > 0)
         {
-            if (pgnInfo.isFieldInRange(order))
-            {
-                name = pgnInfo.getField(order);
-            }
             String nam = CamelCase.delimited(name, "_");
             SignalClass sc = createSignal(
                     nam, 
@@ -411,6 +406,8 @@ public class PGNDefinitions extends DBCFile
         switch (type)
         {
             case "Integer":
+            case "Date":
+            case "Decimal encoded number":
                 signalType = INT.toString();
                 break;
             case "Latitude":
@@ -428,9 +425,6 @@ public class PGNDefinitions extends DBCFile
             case "Binary data":
             case "Manufacturer code":
                 signalType = BINARY.toString();;
-                break;
-            case "Date":
-                signalType = INT.toString();;
                 break;
             case "ASCII text":
                 signalType = ASCIIZ.toString();

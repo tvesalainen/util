@@ -25,6 +25,7 @@ public interface CanMXBean
     int getCanId();
     String getComment();
     int getPgn();
+    String getPgnName();
     int getSource();
     int getPriority();
     int getUpdateCount();

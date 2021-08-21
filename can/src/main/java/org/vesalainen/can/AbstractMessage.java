@@ -46,6 +46,7 @@ import org.vesalainen.can.dbc.MultiplexerIndicator;
 import org.vesalainen.can.dbc.SignalClass;
 import static org.vesalainen.can.dbc.ValueType.SIGNED;
 import org.vesalainen.can.j1939.PGN;
+import org.vesalainen.can.n2k.N2KPgns;
 import org.vesalainen.management.SimpleNotificationEmitter;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HexUtil;
@@ -64,7 +65,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected final int canId;
     protected byte[] buf;
     protected String name;
-    protected Runnable action;
+    protected Runnable action = ()->{};
     protected Runnable jmxAction;
     protected int maxRepeatCount;
     protected Runnable[] repeatables;
@@ -174,6 +175,12 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     public int getPgn()
     {
         return PGN.pgn(canId);
+    }
+
+    @Override
+    public String getPgnName()
+    {
+        return N2KPgns.MAP.get(getPgn());
     }
 
     @Override

@@ -49,7 +49,7 @@ public class PGNDefinitionsT
         System.err.print(sb);
         DBCParser parser = DBCParser.getInstance();
         parser.parse(sb, dbcFile2);
-        Path target = Paths.get("src", "main", "resources", "n2k.dbc");
+        Path target = Paths.get("src", "main", "resources", "n2kproprietary.dbc");
         try (BufferedWriter br = Files.newBufferedWriter(target))
         {
             pgnDef.print(br);

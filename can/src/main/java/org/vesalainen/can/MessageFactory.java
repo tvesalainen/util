@@ -38,22 +38,16 @@ public class MessageFactory extends JavaLogging
     
     public AbstractMessage createMessage(int canId, MessageClass mc)
     {
-        if (compiler.needCompilation(canId))
-        {
             SingleMessage sm = new SingleMessage(executor, mc, canId, mc.getMinSize(), mc.getName());
             finer("compile(%s)", mc);
-            sm.addSignals(compiler);
+            if (compiler.needCompilation(canId))
+            {
+                sm.addSignals(compiler);
+            }
             return sm;
-        }
-        else
-        {
-            return null;
-        }
     }
     public AbstractMessage createPgnMessage(int canId, MessageClass mc)
     {
-        if (compiler.needCompilation(canId))
-        {
             SingleMessage sm;
             String type = (String)mc.getAttributeValue("MessageType");
             type = type != null ? type : "Single";
@@ -69,12 +63,10 @@ public class MessageFactory extends JavaLogging
                     throw new UnsupportedOperationException(mc.getAttributeValue("MessageType")+" not supported");
             }
             finer("compile(%s)", mc);
-            sm.addSignals(compiler);
+            if (compiler.needCompilation(canId))
+            {
+                sm.addSignals(compiler);
+            }
             return sm;
-        }
-        else
-        {
-            return null;
-        }
     }
 }

@@ -92,7 +92,7 @@ BO_ 33359870 Pgn130311_Environmental_Parameters: 8 Environmental
  SG_ Main_Cabin_Temperature m4 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
  SG_ Live_Well_Temperature m5 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
  SG_ Bait_Well_Temperature m6 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
- SG_ Refridgeration_Temperature m7 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
+ SG_ Refrigeration_Temperature m7 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
  SG_ Heating_System_Temperature m8 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
  SG_ Dew_Point_Temperature m9 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
  SG_ Apparent_Wind_Chill_Temperature m10 : 16|16@1+ (0.01,-273.15) [0|0] "C" MFD
@@ -129,6 +129,41 @@ BO_ 33360894 Pgn130315_Set_Pressure: 8 Unknown
  SG_ Pressue_Instance : 8|8@1+ (1,0) [0|0] "" MFD
  SG_ Pressure_Source : 16|8@1+ (1,0) [0|0] "" MFD
  SG_ Pressure : 24|32@1+ (0.1,0) [0|0] "dPa" MFD
+
+BO_ 33361150 Pgn130316_Temperature_Extended_Range: 8 Environmental
+ SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Instance : 8|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Source M : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Sea_Temperature m0 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Sea_Set_Temperature m0 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Outside_Temperature m1 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Outside_Set_Temperature m1 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Inside_Temperature m2 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Inside_Set_Temperature m2 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Engine_Room_Temperature m3 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Engine_Room_Set_Temperature m3 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Main_Cabin_Temperature m4 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Main_Cabin_Set_Temperature m4 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Live_Well_Temperature m5 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Live_Well_Set_Temperature m5 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Bait_Well_Temperature m6 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Bait_Well_Set_Temperature m6 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Refrigeration_Temperature m7 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Refrigeration_Set_Temperature m7 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heating_System_Temperature m8 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heating_System_Set_Temperature m8 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Dew_Point_Temperature m9 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Dew_Point_Set_Temperature m9 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Apparent_Wind_Chill_Temperature m10 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Apparent_Wind_Chill_Set_Temperature m10 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Theoretical_Wind_Chill_Temperature m11 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Theoretical_Wind_Chill_Set_Temperature m11 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heat_Index_Temperature m12 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Heat_Index_Set_Temperature m12 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Freezer_Temperature m13 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Freezer_Set_Temperature m13 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
+ SG_ Exhaust_Gas_Temperature m14 : 24|24@1+ (0.001,-273.15) [0.0|0.0] "C" MFD
+ SG_ Exhaust_Gas_Set_Temperature m14 : 48|16@1+ (0.1,-273.15) [0.0|0.0] "C" MFD
 
 BO_ 33362174 Pgn130320_Tide_Station_Data: 20 Environmental
  SG_ Mode : 0|4@1+ (1,0) [0|0] "" MFD
@@ -623,6 +658,11 @@ BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
  SG_ Date : 16|16@1+ (1,0) [0|0] "days" MFD
  SG_ Time : 32|32@1+ (100,0) [0|0] "us" MFD
 
+BO_ 32510462 Pgn126993Heartbeat: 8 General_Or_Mandatory
+ SG_ Data_Transmit_Offset : 0|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ Sequence_Counter : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 24|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
 BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
  SG_ Nmea_2000_Database_Version : 0|16@1+ (1,0) [0|0] "" MFD
  SG_ Nmea_Manufacturer_S_Product_Code : 16|16@1+ (1,0) [0|0] "" MFD
@@ -899,24 +939,6 @@ BA_ "SignalType" SG_ 33359614 Outside_Ambient_Air_Temp "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Atmospheric_Pressure "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 33359870 "Single";
-BA_ "SignalType" SG_ 33359870 Sea_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Outside_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Inside_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Engine_Room_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Main_Cabin_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Live_Well_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Bait_Well_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Refridgeration_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Heating_System_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Dew_Point_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Apparent_Wind_Chill_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Theoretical_Wind_Chill_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Heat_Index_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Freezer_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Exhaust_Gas_Temperature "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Atmospheric_Pressure "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Inside_Humidity "DOUBLE";
-BA_ "SignalType" SG_ 33359870 Outside_Humidity "DOUBLE";
 BA_ "MessageType" BO_ 33360126 "Single";
 BA_ "SignalType" SG_ 33360126 Temperature_Source "LOOKUP";
 BA_ "SignalType" SG_ 33360126 Actual_Temperature "DOUBLE";
@@ -1334,7 +1356,7 @@ BA_ "SignalType" SG_ 15204606 Pgn_Of_Requested_Information "INT";
 
 VAL_ 16701694 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
 VAL_ 16701694 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
-VAL_ 33360126 Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refridgeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
+VAL_ 33360126 Temperature_Source  0 "Sea Temperature" 1 "Outside Temperature" 2 "Inside Temperature" 3 "Engine Room Temperature" 4 "Main Cabin Temperature" 5 "Live Well Temperature" 6 "Bait Well Temperature" 7 "Refrigeration Temperature" 8 "Heating System Temperature" 9 "Dew Point Temperature" 10 "Apparent Wind Chill Temperature" 11 "Theoretical Wind Chill Temperature" 12 "Heat Index Temperature" 13 "Freezer Temperature" 14 "Exhaust Gas Temperature";
 VAL_ 33360382 Humidity_Source  0 "Inside" 1 "Outside";
 VAL_ 33360638 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
 VAL_ 33360894 Pressure_Source  0 "Atmospheric" 1 "Water" 2 "Steam" 3 "Compressed Air" 4 "Hydraulic";
@@ -1502,7 +1524,7 @@ SG_MUL_VAL_ 33359870 Engine_Room_Temperature Temperature_Instance 3-3;
 SG_MUL_VAL_ 33359870 Main_Cabin_Temperature Temperature_Instance 4-4;
 SG_MUL_VAL_ 33359870 Live_Well_Temperature Temperature_Instance 5-5;
 SG_MUL_VAL_ 33359870 Bait_Well_Temperature Temperature_Instance 6-6;
-SG_MUL_VAL_ 33359870 Refridgeration_Temperature Temperature_Instance 7-7;
+SG_MUL_VAL_ 33359870 Refrigeration_Temperature Temperature_Instance 7-7;
 SG_MUL_VAL_ 33359870 Heating_System_Temperature Temperature_Instance 8-8;
 SG_MUL_VAL_ 33359870 Dew_Point_Temperature Temperature_Instance 9-9;
 SG_MUL_VAL_ 33359870 Apparent_Wind_Chill_Temperature Temperature_Instance 10-10;
