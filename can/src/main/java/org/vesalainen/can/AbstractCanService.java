@@ -64,8 +64,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     }
     public static AbstractCanService openSocketCan2Udp(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
-        UnconnectedDatagramChannel udc = UnconnectedDatagramChannel.open(host, port, 16, true, false);
-        return new SocketCanService((ByteChannel)udc, executor, compiler);
+        return new SocketCanService(host, port, executor, compiler);
     }
     public void start()
     {

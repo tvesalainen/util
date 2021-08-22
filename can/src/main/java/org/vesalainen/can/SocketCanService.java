@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
 import static java.util.logging.Level.*;
+import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
@@ -33,6 +34,10 @@ public class SocketCanService extends AbstractCanService
     private ByteChannel channel;
     private ByteBuffer frame;
 
+    protected SocketCanService(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    {
+        this(UnconnectedDatagramChannel.open(host, port, 16, true, false), executor, compiler);
+    }
     protected SocketCanService(ByteChannel channel, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         super(executor, compiler);
