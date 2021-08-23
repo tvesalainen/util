@@ -131,47 +131,4 @@ public class BeaconListener extends JavaLogging implements Runnable, AutoCloseab
         infoMap.put(info.getAddress(), info);
         
     }
-    public class SocketCandInfo
-    {
-        private InetSocketAddress address;
-        private final Set<String> busses = new HashSet<>();
-
-        public SocketCandInfo(Element root)
-        {
-            root.forEachChild((e)->
-            {
-                switch (e.getTag())
-                {
-                    case "URL":
-                        {
-                            try
-                            {
-                                URI uri = new URI(e.getText());
-                                address = InetSocketAddress.createUnresolved(uri.getHost(), uri.getPort());
-                            }
-                            catch (URISyntaxException ex)
-                            {
-                                log(SEVERE, ex, "%s", ex.getMessage());
-                            }
-                        }
-                        break;
-                    case "Bus":
-                        busses.add(e.getAttributeValue("name"));
-                        break;
-
-                }
-            });
-        }
-
-        public InetSocketAddress getAddress()
-        {
-            return address;
-        }
-
-        public Set<String> getBusses()
-        {
-            return busses;
-        }
-        
-    }
 }

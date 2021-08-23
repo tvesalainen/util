@@ -16,12 +16,26 @@
  */
 package org.vesalainen.can.socketcand;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.MessageFactory;
+import org.vesalainen.nio.ByteBufferInputStream;
+import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
+import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
+import org.vesalainen.xml.SimpleXMLParser;
+import org.vesalainen.xml.SimpleXMLParser.Element;
 
 /**
  *
@@ -29,12 +43,10 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  */
 public class SocketCandService extends AbstractCanService
 {
-    private SocketAddress address;
     
-    public SocketCandService(String hostname, int port, CachedScheduledThreadPool executor, MessageFactory messageFactory)
+    public SocketCandService(CachedScheduledThreadPool executor, MessageFactory messageFactory)
     {
         super(executor, messageFactory);
-        this.address = InetSocketAddress.createUnresolved(hostname, port);
     }
 
     @Override
@@ -57,6 +69,47 @@ public class SocketCandService extends AbstractCanService
 
     @Override
     public void run()
+    {
+        while (true)
+        {
+            try
+            {
+                SocketCandInfo info = waitForBeacon();
+                SocketChannel channel = SocketChannel.open(info.getAddress());
+                readSocketCand(channel);
+            }
+            catch (IOException ex)
+            {
+                log(Level.SEVERE, "exit SocketCandService", ex);
+                return;
+            }
+        }
+    }
+    
+    private SocketCandInfo waitForBeacon() throws IOException
+    {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+        UnconnectedDatagramChannel channel = UnconnectedDatagramChannel.open("255.255.255.255", 42000, 1024, true, false);
+        buffer.clear();
+        channel.read(buffer);
+        buffer.flip();
+        ByteBufferInputStream bbis = new ByteBufferInputStream(buffer);
+        SimpleXMLParser parser = new SimpleXMLParser(bbis);
+        return new SocketCandInfo(parser.getRoot());
+    }
+
+    private void readSocketCand(SocketChannel channel)
+    {
+        SocketCandParser parser = SocketCandParser.getInstance();
+        parser.parse(channel, this);
+    }
+
+    void openBus()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void rawMode()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
