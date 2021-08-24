@@ -19,6 +19,7 @@ package org.vesalainen.can;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +30,7 @@ import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.j1939.PGN;
+import org.vesalainen.can.socketcand.SocketCandService;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
@@ -65,6 +67,14 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     public static AbstractCanService openSocketCan2Udp(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
         return new SocketCanService(host, port, executor, compiler);
+    }
+    public static AbstractCanService openSocketCand(String canBus, SignalCompiler compiler) throws IOException
+    {
+        return openSocketCand(canBus, new CachedScheduledThreadPool(), compiler);
+    }
+    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    {
+        return new SocketCandService(canBus, executor, compiler);
     }
     public void start()
     {
@@ -106,10 +116,14 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     }
 
     public abstract ByteBuffer getFrame();
-    
-    public abstract int getLength();
-
-    public abstract void readData(byte[] data, int offset);
+    public long getMillis()
+    {
+        return System.currentTimeMillis();
+    }
+    public Instant getInstant()
+    {
+        return Instant.ofEpochMilli(getMillis());
+    }
     
     protected void compile(int canId)
     {

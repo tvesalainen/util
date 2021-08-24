@@ -33,6 +33,7 @@ public class SocketCanService extends AbstractCanService
 {
     private ByteChannel channel;
     private ByteBuffer frame;
+    private ByteBuffer data;
 
     protected SocketCanService(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
@@ -43,6 +44,8 @@ public class SocketCanService extends AbstractCanService
         super(executor, compiler);
         this.channel = channel;
         this.frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);  // Raspian Pi!!!
+        frame.position(8);
+        this.data = frame.slice();
     }
 
     @Override
@@ -90,22 +93,11 @@ public class SocketCanService extends AbstractCanService
     }
 
     @Override
-    public int getLength()
-    {
-        return frame.get(4);
-    }
-    @Override
     public ByteBuffer getFrame()
     {
-        return frame;
+        data.position(0);
+        data.limit(frame.get(4));
+        return data;
     }
     
-    @Override
-    public void readData(byte[] data, int offset)
-    {
-        int length = getLength();
-        frame.position(8);
-        frame.get(data, offset, length);
-    }
-
 }

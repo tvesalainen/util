@@ -35,7 +35,7 @@ public class SocketCandServiceT
     @Test
     public void test() throws InterruptedException, ExecutionException
     {
-        SocketCandService svc = new SocketCandService(new CachedScheduledThreadPool(), null);
+        SocketCandService svc = new SocketCandService("can0", new CachedScheduledThreadPool(), null);
         svc.startAndWait();
     }
     

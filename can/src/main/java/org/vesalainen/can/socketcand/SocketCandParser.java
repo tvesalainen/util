@@ -20,13 +20,16 @@ import java.nio.channels.ByteChannel;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.parser.GenClassFactory;
+import org.vesalainen.parser.ParserConstants;
 import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
 import org.vesalainen.parser.annotation.ParseMethod;
 import org.vesalainen.parser.annotation.ParserContext;
 import org.vesalainen.parser.annotation.Rule;
+import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.AbstractParser;
+import org.vesalainen.parser.util.InputReader;
 
 /**
  *
@@ -34,24 +37,42 @@ import org.vesalainen.parser.util.AbstractParser;
  */
 @GenClassname()
 @GrammarDef()
-@Rule(left="socketcand", value={"hi ok frame*"})
+@Rule(left="socketcand", value={"hi busOk rawOk frame*"})
 public abstract class SocketCandParser extends AbstractParser implements ParserInfo
 {
     @Rule("'<' 'hi' '>'")
-    protected void hi(@ParserContext("SocketCandService") SocketCandService svc)
+    protected void hi(@ParserContext("SocketCandService") SocketCandService svc, @ParserContext(ParserConstants.INPUTREADER) InputReader input)
     {
         svc.openBus();
+        svc.setInput(input);
     }
     @Rule("'<' 'ok' '>'")
-    protected void ok(@ParserContext("SocketCandService") SocketCandService svc)
+    protected void busOk(@ParserContext("SocketCandService") SocketCandService svc)
     {
         svc.rawMode();
     }
-    @Rule("'<' 'frame' hex double hex hex hex hex hex hex hex hex '>'")
-    protected void frame(long canId, double time, int d1, int d2, int d3, int d4, int d5, int d6, int d7, int d8, @ParserContext("SocketCandService") SocketCandService svc)
+    @Rule("'<' 'ok' '>'")
+    protected void rawOk(@ParserContext("SocketCandService") SocketCandService svc)
     {
-        svc.openBus();
     }
+    @Rule("'<' 'frame' hex time data '>'")
+    protected void frame(int canId, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    {
+        svc.frame(canId);
+    }
+    
+    @Terminal(expression="[0-9a-fA-F]+")
+    protected void data(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    {
+        svc.setData(input.getStart(), input.getLength());
+    }
+
+    @Terminal(expression = "[\\+\\-]?[0-9]+\\.[0-9]+")
+    protected void time(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    {
+        svc.setTime(input.getStart(), input.getLength());
+    }
+    
     @ParseMethod(start="socketcand", whiteSpace={"whiteSpace"}, charSet="US-ASCII")
     public void parse(ByteChannel channel, @ParserContext("SocketCandService") SocketCandService svc)
     {

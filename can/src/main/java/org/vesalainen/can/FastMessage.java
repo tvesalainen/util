@@ -50,16 +50,16 @@ public class FastMessage extends PgnMessage
         try
         {
             ByteBuffer frame = service.getFrame();
-            byte b = frame.get(8);
+            byte b = frame.get(0);
             byte id = (byte) (b & 0xe0);
             int seq = b & 0x1f;
             if (seq == 0)
             {   // new message
                 packetId = id;
                 packetSeq = 0;
-                byteCount = frame.get(9) & 0xff;
+                byteCount = frame.get(1) & 0xff;
                 setCurrentBytes(byteCount);
-                frame.position(10);
+                frame.position(2);
                 info("new fast %s: %d cnt=%d buf=%d", name, id, byteCount, buf.length);
             }
             else
@@ -74,7 +74,7 @@ public class FastMessage extends PgnMessage
                     }
                     return false;
                 }
-                frame.position(9);
+                frame.position(1);
             }
             int off = seq == 0 ? 0 : 6 + (seq-1)*7;
             int remaining = min(frame.remaining(), byteCount);

@@ -17,25 +17,22 @@
 package org.vesalainen.can.socketcand;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import java.time.Instant;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.MessageFactory;
+import org.vesalainen.can.SignalCompiler;
+import org.vesalainen.lang.Primitives;
+import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
+import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.xml.SimpleXMLParser;
-import org.vesalainen.xml.SimpleXMLParser.Element;
 
 /**
  *
@@ -43,28 +40,21 @@ import org.vesalainen.xml.SimpleXMLParser.Element;
  */
 public class SocketCandService extends AbstractCanService
 {
+    private final ByteBufferCharSequence openBus;
+    private final ByteBufferCharSequence rawMode = new ByteBufferCharSequence("< rawmode >");
+    private SocketChannel channel;
+    private ByteBuffer data;
+    private InputReader input;
+    private long dataStart;
+    private int dataLength;
+    private long timeStart;
+    private int timeLength;
     
-    public SocketCandService(CachedScheduledThreadPool executor, MessageFactory messageFactory)
+    public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        super(executor, messageFactory);
-    }
-
-    @Override
-    public ByteBuffer getFrame()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getLength()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void readData(byte[] data, int offset)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        super(executor, compiler);
+        this.openBus = new ByteBufferCharSequence("< open "+canBus+" >");
+        this.data = ByteBuffer.allocate(8);
     }
 
     @Override
@@ -75,7 +65,7 @@ public class SocketCandService extends AbstractCanService
             try
             {
                 SocketCandInfo info = waitForBeacon();
-                SocketChannel channel = SocketChannel.open(info.getAddress());
+                channel = SocketChannel.open(info.getAddress());
                 readSocketCand(channel);
             }
             catch (IOException ex)
@@ -104,14 +94,76 @@ public class SocketCandService extends AbstractCanService
         parser.parse(channel, this);
     }
 
+    void setInput(InputReader input)
+    {
+        this.input = input;
+    }
+    
     void openBus()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try
+        {
+            ByteBufferCharSequence.writeAll(channel, openBus);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     void rawMode()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try
+        {
+            ByteBufferCharSequence.writeAll(channel, rawMode);
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
     }
-    
+
+    void frame(int canId)
+    {
+        rawFrame(canId);
+    }
+
+    @Override
+    public ByteBuffer getFrame()
+    {
+        data.clear();
+        String string = input.getString(dataStart, dataLength);
+        for (int ii=0;ii<dataLength;ii+=2)
+        {
+            data.put((byte) (Character.digit(input.get(dataStart+ii), 16)<<4|Character.digit(input.get(dataStart+ii+1), 16)));
+        }
+        data.flip();
+        String remainingToHex = HexDump.remainingToHex(data);
+        return data;
+    }
+
+    @Override
+    public Instant getInstant()
+    {
+        return super.getInstant(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public long getMillis()
+    {
+        return super.getMillis(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void setData(long start, int length)
+    {
+        this.dataStart = start;
+        this.dataLength = length;
+    }
+
+    void setTime(long start, int length)
+    {
+        this.timeStart = start;
+        this.timeLength = length;
+    }
+
 }

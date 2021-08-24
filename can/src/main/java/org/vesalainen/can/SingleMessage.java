@@ -66,7 +66,6 @@ public class SingleMessage extends AbstractMessage
         try
         {
             ByteBuffer frame = service.getFrame();
-            frame.position(8);
             int remaining = frame.remaining();
             setCurrentBytes(remaining);
             frame.get(buf, 0, min(buf.length, remaining));
