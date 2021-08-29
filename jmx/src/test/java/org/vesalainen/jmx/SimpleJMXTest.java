@@ -18,9 +18,13 @@ package org.vesalainen.jmx;
 
 import java.lang.management.ManagementFactory;
 import java.util.Set;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,7 +41,7 @@ public class SimpleJMXTest
     }
 
     @Test
-    public void testPlatformMBean()
+    public void testPlatformMBean() throws InstanceNotFoundException, IntrospectionException, ReflectionException
     {
         MBeanServer pbs = ManagementFactory.getPlatformMBeanServer();
         assertEquals("DefaultDomain", pbs.getDefaultDomain());
@@ -46,6 +50,10 @@ public class SimpleJMXTest
         assertEquals(22, (int)pbs.getMBeanCount());
         Set<ObjectName> queryNames = pbs.queryNames(ObjectName.WILDCARD, null);
         Set<ObjectInstance> queryMBeans = pbs.queryMBeans(ObjectName.WILDCARD, null);
+        for (ObjectName on : queryNames)
+        {
+            MBeanInfo mBeanInfo = pbs.getMBeanInfo(on);
+        }
     }
     
 }

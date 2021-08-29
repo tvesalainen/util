@@ -17,6 +17,12 @@
 package org.vesalainen.jmx;
 
 import java.io.ObjectInputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +37,10 @@ import javax.management.AttributeNotFoundException;
 import javax.management.BadAttributeValueExpException;
 import javax.management.BadBinaryOpValueExpException;
 import javax.management.BadStringOperationException;
+import javax.management.Descriptor;
+import javax.management.DescriptorKey;
+import javax.management.DynamicMBean;
+import javax.management.ImmutableDescriptor;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
@@ -38,14 +48,19 @@ import javax.management.InvalidApplicationException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.JMX;
 import javax.management.ListenerNotFoundException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerDelegate;
 import javax.management.MBeanServerNotification;
 import javax.management.NotCompliantMBeanException;
+import javax.management.NotificationBroadcaster;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
@@ -56,6 +71,7 @@ import javax.management.ReflectionException;
 import javax.management.RuntimeMBeanException;
 import javax.management.RuntimeOperationsException;
 import javax.management.loading.ClassLoaderRepository;
+import org.vesalainen.bean.BeanHelper;
 
 /**
  *
@@ -150,10 +166,10 @@ public class SimpleMBeanServer implements MBeanServer
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException
     {
         Objects.requireNonNull(name, "name == null");
-        Object object = mBeans.get(name);
-        if (object == null)
+        Object object = getObject(name);
+        if (name.equals(MBeanServerDelegate.DELEGATE_NAME))
         {
-            throw new InstanceNotFoundException(name.toString());
+            throw new RuntimeOperationsException(new RuntimeException("trying to unregister delegate"));
         }
         MBeanRegistration mBeanRegistration = null;
         if (object instanceof MBeanRegistration)
@@ -194,11 +210,7 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException
     {
-        Object object = mBeans.get(name);
-        if (object == null)
-        {
-            throw new InstanceNotFoundException(name.toString());
-        }
+        Object object = getObject(name);
         return new ObjectInstance(name, object.getClass().getName());
     }
 
@@ -326,7 +338,39 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException, IntrospectionException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Object object = getObject(name);
+        if (object instanceof DynamicMBean)
+        {
+            DynamicMBean db = (DynamicMBean) object;
+            return db.getMBeanInfo();
+        }
+        Class<?> mBeanInterface;
+        try
+        {
+            mBeanInterface = getMBeanInterface(object, name);
+        }
+        catch (NotCompliantMBeanException ex)
+        {
+            throw new IntrospectionException();
+        }
+        Class<? extends Object> cls = object.getClass();
+        String classname = cls.getName();
+        MBeanAttributeInfo[] attributeInfo = getAttributeInfo(mBeanInterface);
+        MBeanConstructorInfo[] constructorInfo = getConstructorInfo(cls);
+        MBeanOperationInfo[] operationInfo = getOperationInfo(mBeanInterface);
+        MBeanNotificationInfo[] notificationInfo = null;
+        if (object instanceof NotificationBroadcaster)
+        {
+            NotificationBroadcaster nb = (NotificationBroadcaster) object;
+            notificationInfo = nb.getNotificationInfo();
+        }
+        Descriptor descriptor = ImmutableDescriptor.EMPTY_DESCRIPTOR;
+        DescriptorKey descriptorAnnotation = mBeanInterface.getAnnotation(DescriptorKey.class);
+        if (descriptorAnnotation != null)
+        {
+            descriptor = new ImmutableDescriptor(descriptorAnnotation.value());
+        }
+        return new MBeanInfo(classname, null, attributeInfo, constructorInfo, operationInfo, notificationInfo, descriptor);
     }
 
     @Override
@@ -397,7 +441,11 @@ public class SimpleMBeanServer implements MBeanServer
 
     private void checkMBean(Object object, ObjectName name) throws NotCompliantMBeanException
     {
-        int count = 0;
+        getMBeanInterface(object, name);
+    }
+    private Class<?> getMBeanInterface(Object object, ObjectName name) throws NotCompliantMBeanException
+    {
+        Class<?> interf = null;
         Class<? extends Object> cls = object.getClass();
         while (cls != null)
         {
@@ -405,20 +453,90 @@ public class SimpleMBeanServer implements MBeanServer
             {
                 if (isMBean(itf))
                 {
-                    count++;
+                    if (interf != null)
+                    {
+                        throw new NotCompliantMBeanException(name.toString());
+                    }
+                    interf = itf;
                 }
             }
             cls = cls.getSuperclass();
         }
-        if (count != 1)
+        if (interf == null)
         {
             throw new NotCompliantMBeanException(name.toString());
         }
+        return interf;
     }
 
     private boolean isMBean(Class<?> itf)
     {
         return JMX.isMXBeanInterface(itf) || itf.getName().endsWith("MBean");
+    }
+
+    private Object getObject(ObjectName name) throws InstanceNotFoundException
+    {
+        Object object = mBeans.get(name);
+        if (object == null)
+        {
+            throw new InstanceNotFoundException(name.toString());
+        }
+        return object;
+    }
+
+    private MBeanAttributeInfo[] getAttributeInfo(Class<?> mBeanInterface) throws IntrospectionException
+    {
+        Set<String> attributes = new HashSet<>();
+        Map<String,Method> getters = new HashMap<>();
+        Map<String,Method> setters = new HashMap<>();
+        for (Method method : mBeanInterface.getMethods())
+        {
+            if (BeanHelper.isGetter(method))
+            {
+                String property = BeanHelper.getProperty(method);
+                attributes.add(property);
+                getters.put(property, method);
+            }
+            if (BeanHelper.isSetter(method))
+            {
+                String property = BeanHelper.getProperty(method);
+                attributes.add(property);
+                setters.put(property, method);
+            }
+        }
+        MBeanAttributeInfo[] info = new MBeanAttributeInfo[attributes.size()];
+        int idx = 0;
+        for (String property : attributes)
+        {
+            Method getter = getters.get(property);
+            Method setter = setters.get(property);
+            info[idx++] = new MBeanAttributeInfo(property, property, getter, setter);
+        }
+        return info;
+    }
+
+    private MBeanConstructorInfo[] getConstructorInfo(Class<? extends Object> cls)
+    {
+        Constructor<?>[] constructors = cls.getConstructors();
+        MBeanConstructorInfo[] info = new MBeanConstructorInfo[constructors.length];
+        for (int ii=0;ii<info.length;ii++)
+        {
+            info[ii] = new MBeanConstructorInfo("<init>", constructors[ii]);
+        }
+        return info;
+    }
+
+    private MBeanOperationInfo[] getOperationInfo(Class<?> mBeanInterface)
+    {
+        List<MBeanOperationInfo> list = new ArrayList<>();
+        for (Method method : mBeanInterface.getMethods())
+        {
+            if (!BeanHelper.isGetter(method) && !BeanHelper.isSetter(method))
+            {
+                list.add(new MBeanOperationInfo(method.getName(), method));
+            }
+        }
+        return list.toArray(new MBeanOperationInfo[list.size()]);
     }
     
 }

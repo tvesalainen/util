@@ -16,6 +16,10 @@
  */
 package org.vesalainen.jmx;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.jetty.server.Server;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -24,10 +28,20 @@ public class SimpleJMX
 {
 
     private static String safe;
+    private static Server server;
     public static final void start()
     {
         safe = System.getProperty("javax.management.builder.initial");
         System.setProperty("javax.management.builder.initial", "org.vesalainen.jmx.SimpleMBeanServerBuilder");
+        server = new Server(8080);
+        try
+        {
+            server.start();
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
     public static final void stop()
     {
