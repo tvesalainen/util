@@ -33,15 +33,6 @@ public class SimpleJMX
     {
         safe = System.getProperty("javax.management.builder.initial");
         System.setProperty("javax.management.builder.initial", "org.vesalainen.jmx.SimpleMBeanServerBuilder");
-        server = new Server(8080);
-        try
-        {
-            server.start();
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
     }
     public static final void stop()
     {

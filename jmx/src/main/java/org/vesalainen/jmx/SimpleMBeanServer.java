@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,8 +29,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -61,6 +60,8 @@ import javax.management.MBeanServerDelegate;
 import javax.management.MBeanServerNotification;
 import javax.management.NotCompliantMBeanException;
 import javax.management.NotificationBroadcaster;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
@@ -70,7 +71,10 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.RuntimeMBeanException;
 import javax.management.RuntimeOperationsException;
+import javax.management.StandardEmitterMBean;
+import javax.management.StandardMBean;
 import javax.management.loading.ClassLoaderRepository;
+import javax.management.loading.PrivateClassLoader;
 import org.vesalainen.bean.BeanHelper;
 
 /**
@@ -82,8 +86,11 @@ public class SimpleMBeanServer implements MBeanServer
     private final String defaultDomain;
     private final MBeanServer outer;
     private final MBeanServerDelegate delegate;
-    private final Map<ObjectName,Object> mBeans = new ConcurrentHashMap<>();
+    private final Map<ObjectName,DynamicMBean> mBeans = new ConcurrentHashMap<>();
     private final AtomicLong sequenceNumber = new AtomicLong();
+    private final List<ClassLoader> classLoaders = Collections.synchronizedList(new ArrayList<>());
+    private final ClassLoaderRepository classLoaderRepository = new ClassLoaderRepositoryImpl();
+    private final List<NotificationJoint> joints = new ArrayList<>();
 
     SimpleMBeanServer(String defaultDomain, MBeanServer outer, MBeanServerDelegate delegate)
     {
@@ -98,30 +105,31 @@ public class SimpleMBeanServer implements MBeanServer
         {
             throw new RuntimeException(ex);
         }
+        classLoaders.add(SimpleMBeanServer.class.getClassLoader());
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException, InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params, String[] signature) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException, InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -147,8 +155,13 @@ public class SimpleMBeanServer implements MBeanServer
                 }
             }
             Objects.requireNonNull(name, "name == null");
-            checkMBean(object, name);
-            mBeans.put(name, object);
+            DynamicMBean dynamicMBean = wrapMBean(object, name);
+            mBeans.put(name, dynamicMBean);
+            if ((object instanceof ClassLoader) && !(object instanceof PrivateClassLoader))
+            {
+                ClassLoader cl = (ClassLoader) object;
+                classLoaders.add(cl);
+            }
             delegate.sendNotification(new MBeanServerNotification(MBeanServerNotification.REGISTRATION_NOTIFICATION, this, sequenceNumber.incrementAndGet(), name));
             if (mBeanRegistration != null)
             {
@@ -188,7 +201,13 @@ public class SimpleMBeanServer implements MBeanServer
                 throw new RuntimeMBeanException(new RuntimeException(ex));
             }
         }
+        if ((object instanceof ClassLoader) && !(object instanceof PrivateClassLoader))
+        {
+            ClassLoader cl = (ClassLoader) object;
+            classLoaders.remove(cl);
+        }
         mBeans.remove(object);
+        delegate.sendNotification(new MBeanServerNotification(MBeanServerNotification.UNREGISTRATION_NOTIFICATION, this, sequenceNumber.incrementAndGet(), name));
         if (object instanceof MBeanRegistration)
         {
             mBeanRegistration = (MBeanRegistration) object;
@@ -259,31 +278,36 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DynamicMBean bean = getObject(name);
+        return bean.getAttribute(attribute);
     }
 
     @Override
     public AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DynamicMBean bean = getObject(name);
+        return bean.getAttributes(attributes);
     }
 
     @Override
     public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DynamicMBean bean = getObject(name);
+        bean.setAttribute(attribute);
     }
 
     @Override
     public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DynamicMBean bean = getObject(name);
+        return bean.setAttributes(attributes);
     }
 
     @Override
     public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature) throws InstanceNotFoundException, MBeanException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DynamicMBean bean = getObject(name);
+        return bean.invoke(operationName, params, signature);
     }
 
     @Override
@@ -302,37 +326,46 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback) throws InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Object object = getObject(name);
+        if (object instanceof NotificationBroadcaster)
+        {
+            NotificationBroadcaster nb = (NotificationBroadcaster) object;
+            joints.add(new NotificationJoint(nb, listener, filter, handback));
+        }
+        else
+        {
+            throw new IllegalArgumentException(name+" not NotificationBroadcaster");
+        }
     }
 
     @Override
     public void addNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback) throws InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, ObjectName listener) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -376,74 +409,120 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try
+        {
+            Object object = getObject(name);
+            MBeanInfo mBeanInfo = getMBeanInfo(name);
+            if (className.equals(mBeanInfo.getClassName()))
+            {
+                return true;
+            }
+            ClassLoader classLoader = getClassLoaderFor(name);
+            Class<?> cls = classLoader.loadClass(className);
+            if (cls.isInstance(object))
+            {
+                return true;
+            }
+            Class<?> cls2 = classLoader.loadClass(mBeanInfo.getClassName());
+            if (cls.isAssignableFrom(cls2))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (IntrospectionException | ReflectionException | ClassNotFoundException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public Object instantiate(String className) throws ReflectionException, MBeanException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Object instantiate(String className, ObjectName loaderName) throws ReflectionException, MBeanException, InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Object instantiate(String className, Object[] params, String[] signature) throws ReflectionException, MBeanException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Object instantiate(String className, ObjectName loaderName, Object[] params, String[] signature) throws ReflectionException, MBeanException, InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInputStream deserialize(ObjectName name, byte[] data) throws InstanceNotFoundException, OperationsException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInputStream deserialize(String className, byte[] data) throws OperationsException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) throws InstanceNotFoundException, OperationsException, ReflectionException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) throws InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Object object = getObject(mbeanName);
+        ClassLoader classLoader = object.getClass().getClassLoader();
+        if (classLoader == null)
+        {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        return classLoader;
     }
 
     @Override
     public ClassLoader getClassLoader(ObjectName loaderName) throws InstanceNotFoundException
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ClassLoaderRepository getClassLoaderRepository()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return classLoaderRepository;
     }
 
-    private void checkMBean(Object object, ObjectName name) throws NotCompliantMBeanException
+    private DynamicMBean wrapMBean(Object object, ObjectName name) throws NotCompliantMBeanException
     {
-        getMBeanInterface(object, name);
+        if (
+                (object instanceof StandardEmitterMBean) ||
+                (object instanceof StandardMBean) && !(object instanceof NotificationEmitter))
+        {
+            return (DynamicMBean) object;
+        }
+        Class<Object> mBeanInterface = getMBeanInterface(object, name);
+        if (object instanceof NotificationEmitter)
+        {
+            NotificationEmitter ne = (NotificationEmitter) object;
+            MBeanNotificationInfo[] info = ne.getNotificationInfo();
+            return new StandardEmitterMBean(object, mBeanInterface, JMX.isMXBeanInterface(mBeanInterface), new NotificationBroadcasterSupport(info));
+        }
+        else
+        {
+            return new StandardMBean(object, mBeanInterface, JMX.isMXBeanInterface(mBeanInterface));
+        }
     }
-    private Class<?> getMBeanInterface(Object object, ObjectName name) throws NotCompliantMBeanException
+    private Class<Object> getMBeanInterface(Object object, ObjectName name) throws NotCompliantMBeanException
     {
         Class<?> interf = null;
         Class<? extends Object> cls = object.getClass();
@@ -466,7 +545,7 @@ public class SimpleMBeanServer implements MBeanServer
         {
             throw new NotCompliantMBeanException(name.toString());
         }
-        return interf;
+        return (Class<Object>) interf;
     }
 
     private boolean isMBean(Class<?> itf)
@@ -474,9 +553,9 @@ public class SimpleMBeanServer implements MBeanServer
         return JMX.isMXBeanInterface(itf) || itf.getName().endsWith("MBean");
     }
 
-    private Object getObject(ObjectName name) throws InstanceNotFoundException
+    private DynamicMBean getObject(ObjectName name) throws InstanceNotFoundException
     {
-        Object object = mBeans.get(name);
+        DynamicMBean object = mBeans.get(name);
         if (object == null)
         {
             throw new InstanceNotFoundException(name.toString());
@@ -538,5 +617,69 @@ public class SimpleMBeanServer implements MBeanServer
         }
         return list.toArray(new MBeanOperationInfo[list.size()]);
     }
-    
+
+    private void halt()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public class ClassLoaderRepositoryImpl implements ClassLoaderRepository
+    {
+
+        @Override
+        public Class<?> loadClass(String className) throws ClassNotFoundException
+        {
+            for (ClassLoader cl : classLoaders)
+            {
+                try
+                {
+                    return cl.loadClass(className);
+                }
+                catch (ClassNotFoundException ex)
+                {
+                }
+            }
+            throw new ClassNotFoundException(className);
+        }
+
+        @Override
+        public Class<?> loadClassWithout(ClassLoader exclude, String className) throws ClassNotFoundException
+        {
+            for (ClassLoader cl : classLoaders)
+            {
+                try
+                {
+                    if (!cl.equals(exclude))
+                    {
+                        return cl.loadClass(className);
+                    }
+                }
+                catch (ClassNotFoundException ex)
+                {
+                }
+            }
+            throw new ClassNotFoundException(className);
+        }
+
+        @Override
+        public Class<?> loadClassBefore(ClassLoader stop, String className) throws ClassNotFoundException
+        {
+            for (ClassLoader cl : classLoaders)
+            {
+                try
+                {
+                    if (cl.equals(stop))
+                    {
+                        continue;
+                    }
+                    return cl.loadClass(className);
+                }
+                catch (ClassNotFoundException ex)
+                {
+                }
+            }
+            throw new ClassNotFoundException(className);
+        }
+        
+    }
 }
