@@ -32,6 +32,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
+import org.vesalainen.util.WeakMapList;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -42,7 +43,7 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class SimpleNotificationEmitter<U> implements NotificationEmitter
 {
-    private MapList<NotificationListener,ListenerWrapper> map = new HashMapList<>();
+    private MapList<NotificationListener,ListenerWrapper> map = new WeakMapList<>();
     private String type;
     private ObjectName source;
     private MBeanNotificationInfo[] infos;

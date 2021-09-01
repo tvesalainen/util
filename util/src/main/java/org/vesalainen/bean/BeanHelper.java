@@ -727,13 +727,13 @@ public class BeanHelper
         return "is" + upper(fieldName);
     }
     /**
-     * Return true if method name starts with get.
+     * Return true if method name starts with get or is.
      * @param method
      * @return 
      */
     public static final boolean isGetter(Method method)
     {
-        return method.getName().startsWith("get");
+        return method.getName().startsWith("get") || method.getName().startsWith("is");
     }
     /**
      * Return true if method name starts with set.
