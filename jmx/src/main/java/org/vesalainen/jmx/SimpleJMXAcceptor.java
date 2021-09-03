@@ -24,17 +24,26 @@ import static java.nio.channels.SelectionKey.*;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.vesalainen.util.concurrent.RefreshableTimer;
 import org.vesalainen.util.logging.JavaLogging;
+import org.vesalainen.web.servlet.JarServlet;
 
 /**
  *
@@ -98,12 +107,21 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
                     ServerConnector connector = new ServerConnector(server);
                     connector.open(channel);
                     server.addConnector(connector);
-                    ServletContextHandler context = new ServletContextHandler();
-                    ServletHolder debugHolder = new ServletHolder();
+                    HandlerList handlers = new HandlerList();
+                    ServletContextHandler servletHandler = new ServletContextHandler();
+                    servletHandler.addServlet(JMXServlet.class, "/");
+                    servletHandler.addServlet(AjaxServlet.class, "/ajax_nodes.html/*");
+                    servletHandler.addServlet(JarServlet.class, "*.js");
+                    servletHandler.addServlet(JarServlet.class, "*.css");
+                    RefreshableTimer timer = new RefreshableTimer();
+                    TimeoutHandler timeoutHandler = new TimeoutHandler(timer);
+                    handlers.addHandler(timeoutHandler);
+                    handlers.addHandler(servletHandler);
+                    server.setHandler(handlers);
                     server.start();
                     server.setStopTimeout(0);
                     info("started %s", server);
-                    Thread.sleep(5000);
+                    timer.wait(60, TimeUnit.SECONDS);
                     info("stopping %s", server);
                     server.stop();
                     info("stopped %s", server);
@@ -119,5 +137,19 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
             Logger.getLogger(SimpleJMXAcceptor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+    private class TimeoutHandler extends  AbstractHandler
+    {
+        private final RefreshableTimer timer;
+
+        public TimeoutHandler(RefreshableTimer timer)
+        {
+            this.timer = timer;
+        }
+        
+        @Override
+        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
+        {
+            timer.refresh();
+        }
+    }
 }

@@ -14,8 +14,8 @@
     </description>
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
+            <groupId>org.vesalainen</groupId>
+            <artifactId>web-util</artifactId>
         </dependency>
         <dependency>
             <groupId>org.vesalainen</groupId>
