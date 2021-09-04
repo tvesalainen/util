@@ -109,10 +109,13 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
                     server.addConnector(connector);
                     HandlerList handlers = new HandlerList();
                     ServletContextHandler servletHandler = new ServletContextHandler();
-                    servletHandler.addServlet(JMXServlet.class, "/");
+                    servletHandler.addServlet(IndexServlet.class, "/");
                     servletHandler.addServlet(AjaxServlet.class, "/ajax_nodes.html/*");
                     servletHandler.addServlet(JarServlet.class, "*.js");
                     servletHandler.addServlet(JarServlet.class, "*.css");
+                    servletHandler.addServlet(JarServlet.class, "*.gif");
+                    servletHandler.addServlet(JarServlet.class, "*.png");
+                    servletHandler.addServlet(JarServlet.class, "*.ico");
                     RefreshableTimer timer = new RefreshableTimer();
                     TimeoutHandler timeoutHandler = new TimeoutHandler(timer);
                     handlers.addHandler(timeoutHandler);

@@ -16,33 +16,20 @@
  */
 package org.vesalainen.jmx;
 
-import java.lang.management.ManagementFactory;
-import javax.management.MBeanServer;
-import org.vesalainen.html.Document;
-import org.vesalainen.html.DynamicElement;
-import org.vesalainen.html.Element;
-import org.vesalainen.html.jstree.JsTree;
-import org.vesalainen.web.servlet.AbstractDocumentServlet;
+import javax.servlet.http.HttpServletRequest;
+import org.vesalainen.web.servlet.AbstractJarServlet;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class JMXServlet extends AbstractDocumentServlet<Document>
+public class IndexServlet extends AbstractJarServlet
 {
 
     @Override
-    protected Document createDocument()
+    protected String getPage(HttpServletRequest request)
     {
-        setTitle("JMX");
-        Document doc = new Document();
-        doc.use(new JsTree());
-        doc.getHead().addElement("script")
-                .setAttr("src", "jstree.js");
-        Element body = doc.getBody();
-        Element div = body.addElement("div");
-        div.setAttr("id", "jstree");
-        return doc;
+        return "/index.html";
     }
-    
+
 }
