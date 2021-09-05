@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -41,6 +42,22 @@ import org.vesalainen.html.Tag;
 public class AjaxServlet extends HttpServlet
 {
 
+    private Element root;
+    private ObjectName objectName;
+    private Element pattern;
+
+    @Override
+    public void init() throws ServletException
+    {
+        root = createRoot();
+        pattern = createPattern();
+    }
+
+    @Override
+    public void destroy()
+    {
+    }
+
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
@@ -51,16 +68,16 @@ public class AjaxServlet extends HttpServlet
             Element content = null;
             if ("#".equals(id))
             {
-                content = root();
+                content = root;
             }
             else
             {
                 try
                 {
-                    ObjectName objectName = ObjectName.getInstance(id);
+                    objectName = ObjectName.getInstance(id);
                     if (objectName.isPropertyPattern())
                     {
-                        content = pattern(objectName);
+                        content = pattern;
                     }
                     else
                     {
@@ -91,33 +108,35 @@ public class AjaxServlet extends HttpServlet
         }
     }
 
-    private Element root()
+    private Element createRoot()
     {
         MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-        Element ul = new Element("ul");
-        DynamicElement content = new DynamicElement("li", platformMBeanServer.getDomains())
+        root = new Element("ul");
+        DynamicElement content = DynamicElement.getFromArray("li", platformMBeanServer::getDomains)
                 .addClasses("jstree-closed")
                 .setText((t)->t)
                 .setAttr("id", (t)->t+":*");
-        ul.add(content);
-        return ul;
+        root.add(content);
+        return root;
     }
-
-    private Element pattern(ObjectName objectName)
+    private Element createPattern()
     {
-        MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-        Set<ObjectName> queryNames = platformMBeanServer.queryNames(objectName, null);
-        String canonicalKeyPropertyListString = objectName.getCanonicalKeyPropertyListString();
-        long commas = canonicalKeyPropertyListString.chars().filter((i)->i=='=').count();
-        Stream<String> stream = queryNames
-                .stream()
-                .sorted()
-                .map((o)->o.toString())
-                .map((s)->cut(s, (int) commas+1))
-                .distinct();
+        Supplier<Stream<String>> ss = ()->
+        {
+            MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+            Set<ObjectName> queryNames = platformMBeanServer.queryNames(getObjectName(), null);
+            String canonicalKeyPropertyListString = objectName.getCanonicalKeyPropertyListString();
+            long commas = canonicalKeyPropertyListString.chars().filter((i)->i=='=').count();
+            return queryNames
+                    .stream()
+                    .sorted()
+                    .map((o)->o.toString())
+                    .map((s)->cut(s, (int) commas+1))
+                    .distinct();
+        };
         Element ul = new Element("ul");
-        DynamicElement<String> content = new DynamicElement<String>("li", ()->stream)
-                .addClasses("jstree-closed")
+        DynamicElement<String> content = DynamicElement.getFrom("li", ss)
+                .addClasses((t)->t.endsWith("*") ? "jstree-closed" : "mbean")
                 .setText((t)->nodeName(t))
                 .setAttr("id", (t)->t);
         ul.add(content);
@@ -127,6 +146,11 @@ public class AjaxServlet extends HttpServlet
     private Element bean(ObjectName objectName)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private ObjectName getObjectName()
+    {
+        return objectName;
     }
     
     private String cut(String str, int commas)
@@ -158,4 +182,5 @@ public class AjaxServlet extends HttpServlet
         }
         return name;
     }
+
 }

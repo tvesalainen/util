@@ -9,11 +9,43 @@
         </script>
         <script src="jstree.js">
         </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            .row {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .left {
+                flex: 30%;
+                padding: 10px;
+                border-style: solid;
+            }
+            .right {
+                flex: 70%;
+                padding: 10px;
+                border-style: solid;
+            }
+        </style>        
         <title>JMX
         </title>
     </head>
     <body>
-        <div id="jstree">
+        <div class="row">
+            <div class="left">
+                <div id="jstree">
+                    tree
+                </div>
+            </div>
+            <div class="right">
+                <div id="mbean">
+                    
+                </div>
+            </div>
         </div>
     </body>
 </html>
