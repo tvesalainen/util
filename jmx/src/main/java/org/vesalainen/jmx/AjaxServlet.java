@@ -24,15 +24,20 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.vesalainen.html.DynamicElement;
 import org.vesalainen.html.Element;
+import org.vesalainen.html.Renderer;
 import org.vesalainen.html.Tag;
 
 /**
@@ -42,15 +47,17 @@ import org.vesalainen.html.Tag;
 public class AjaxServlet extends HttpServlet
 {
 
-    private Element root;
+    private Renderer root;
+    private Renderer pattern;
+    private Renderer bean;
     private ObjectName objectName;
-    private Element pattern;
 
     @Override
     public void init() throws ServletException
     {
         root = createRoot();
         pattern = createPattern();
+        bean = createMBean();
     }
 
     @Override
@@ -65,7 +72,7 @@ public class AjaxServlet extends HttpServlet
         String id = req.getParameter("id");
         if (id != null)
         {
-            Element content = null;
+            Renderer content = null;
             if ("#".equals(id))
             {
                 content = root;
@@ -81,7 +88,7 @@ public class AjaxServlet extends HttpServlet
                     }
                     else
                     {
-                        content = bean(objectName);
+                        content = bean;
                     }
                 }
                 catch (MalformedObjectNameException | NullPointerException ex)
@@ -108,20 +115,20 @@ public class AjaxServlet extends HttpServlet
         }
     }
 
-    private Element createRoot()
+    private Renderer createRoot()
     {
         MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-        root = new Element("ul");
-        DynamicElement content = DynamicElement.getFromArray("li", platformMBeanServer::getDomains)
-                .addClasses("jstree-closed")
-                .setText((t)->t)
-                .setAttr("id", (t)->t+":*");
-        root.add(content);
-        return root;
+        Element element = new Element("ul");
+        DynamicElement<String,?> content = DynamicElement.getFromArray("li", platformMBeanServer::getDomains);
+        content.addClasses("jstree-closed")
+            .setText((t)->t)
+            .setAttr("id", (t)->t+":*");
+        element.add(content);
+        return element;
     }
-    private Element createPattern()
+    private Renderer createPattern()
     {
-        Supplier<Stream<String>> ss = ()->
+        Supplier<Stream<String>> streamSupplier = ()->
         {
             MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
             Set<ObjectName> queryNames = platformMBeanServer.queryNames(getObjectName(), null);
@@ -135,17 +142,49 @@ public class AjaxServlet extends HttpServlet
                     .distinct();
         };
         Element ul = new Element("ul");
-        DynamicElement<String> content = DynamicElement.getFrom("li", ss)
-                .addClasses((t)->t.endsWith("*") ? "jstree-closed" : "mbean")
-                .setText((t)->nodeName(t))
-                .setAttr("id", (t)->t);
+        DynamicElement<String,?> content = DynamicElement.getFrom("li", streamSupplier);
+        content.addClasses((t)->t.endsWith("*") ? "jstree-closed" : "mbean")
+            .setText((t)->nodeName(t))
+            .setAttr("id", (t)->t);
         ul.add(content);
         return ul;
     }
 
-    private Element bean(ObjectName objectName)
+    private Renderer createMBean()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Supplier<Stream<MBeanInfo>> streamSupplier = ()->
+        {
+            try
+            {
+                MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+                MBeanInfo mBeanInfo = platformMBeanServer.getMBeanInfo(getObjectName());
+                return Stream.of(mBeanInfo);
+            }
+            catch (InstanceNotFoundException | IntrospectionException | ReflectionException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        };
+        Element form = new Element("form");
+        Element fieldSet = form.addElement("fieldset");
+        DynamicElement<ObjectName,?> legend = DynamicElement.getFrom("legend", ()->Stream.of(getObjectName()));
+        legend.setText((on)->on.toString());
+        fieldSet.add(legend);
+        DynamicElement<MBeanInfo,?> content = DynamicElement.getFrom("div", streamSupplier);
+        content.setText((i)->"classname="+i.getClassName());
+        DynamicElement<MBeanInfo, MBeanInfo> info = content.child("fieldset");
+        info.child("legend").setText((t)->"Attributes");
+        info.child("table")
+                .childFromArray("tr", (t)->t.getAttributes())
+                .child("td")
+                .setText((t)->t.getName());
+        fieldSet.add(content);
+        return form;
+    }
+
+    void setObjectName(ObjectName objectName)
+    {
+        this.objectName = objectName;
     }
 
     private ObjectName getObjectName()
@@ -181,6 +220,11 @@ public class AjaxServlet extends HttpServlet
             name = name.substring(0, name.length()-2);
         }
         return name;
+    }
+
+    Renderer getBean()
+    {
+        return bean;
     }
 
 }
