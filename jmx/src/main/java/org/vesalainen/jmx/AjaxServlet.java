@@ -19,24 +19,34 @@ package org.vesalainen.jmx;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Array;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import javax.management.Attribute;
+import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.TabularData;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.vesalainen.html.DynamicElement;
 import org.vesalainen.html.Element;
+import org.vesalainen.html.InputTag;
 import org.vesalainen.html.Renderer;
 import org.vesalainen.html.Tag;
 
@@ -88,7 +98,15 @@ public class AjaxServlet extends HttpServlet
                     }
                     else
                     {
-                        content = bean;
+                        String attribute = req.getParameter("attribute");
+                        if (attribute != null)
+                        {
+                            content = getAttributeValue(objectName, attribute);
+                        }
+                        else
+                        {
+                            content = bean;
+                        }
                     }
                 }
                 catch (MalformedObjectNameException | NullPointerException ex)
@@ -165,7 +183,7 @@ public class AjaxServlet extends HttpServlet
                 throw new RuntimeException(ex);
             }
         };
-        Element form = new Element("form");
+        Element form = new Element("div");
         Element fieldSet = form.addElement("fieldset");
         DynamicElement<ObjectName,?> legend = DynamicElement.getFrom("legend", ()->Stream.of(getObjectName()));
         legend.setText((on)->on.toString());
@@ -174,10 +192,13 @@ public class AjaxServlet extends HttpServlet
         content.setText((i)->"classname="+i.getClassName());
         DynamicElement<MBeanInfo, MBeanInfo> info = content.child("fieldset");
         info.child("legend").setText((t)->"Attributes");
-        info.child("table")
-                .childFromArray("tr", (t)->t.getAttributes())
-                .child("td")
-                .setText((t)->t.getName());
+        DynamicElement<MBeanAttributeInfo, MBeanInfo> tr = info.child("table").childFromArray("tr", (t)->t.getAttributes());
+        tr.child("td")
+            .setText((t)->t.getName());
+        tr.child("td")
+            .setAttr("id", (a)->a.getName())
+            .setDataAttr("objectname", (t)->getObjectName())
+            .addClasses("attributeValue");
         fieldSet.add(content);
         return form;
     }
@@ -225,6 +246,151 @@ public class AjaxServlet extends HttpServlet
     Renderer getBean()
     {
         return bean;
+    }
+
+    private Renderer getAttributeValue(ObjectName objectName, String name)
+    {
+        MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try
+        {
+            MBeanInfo mBeanInfo = platformMBeanServer.getMBeanInfo(objectName);
+            MBeanAttributeInfo info = getAttribute(mBeanInfo, name);
+            Object value = null;
+            if (info.isReadable())
+            {
+                value = platformMBeanServer.getAttribute(objectName, name);
+            }
+            Class<?> type = getClass(info.getType());
+            if (info.isWritable())
+            {
+                Element form = new Element("form");
+                Renderer input = getInputFor(type, value);
+                form.add(input);
+                return form;
+            }
+            else
+            {
+                return getOutputFor(type, value);
+            }
+        }
+        catch (InstanceNotFoundException | ReflectionException | IntrospectionException | MBeanException | AttributeNotFoundException  ex)
+        {
+            return new Element("span").addText(ex.getMessage());
+        }
+    }
+
+    private MBeanAttributeInfo getAttribute(MBeanInfo mBeanInfo, String name)
+    {
+        for (MBeanAttributeInfo info : mBeanInfo.getAttributes())
+        {
+            if (name.equals(info.getName()))
+            {
+                return info;
+            }
+        }
+        throw new IllegalArgumentException(name+" attribute not found");
+    }
+
+    private Renderer getInputFor(Class<?> type, Object value)
+    {
+        switch (type.getSimpleName())
+        {
+            case "Boolean":
+                return new InputTag("checkbox", "value").addClasses("attribute_input");
+            default:
+                return new Element("span").addText(type+" input not supported");
+        }
+    }
+
+    private Renderer getOutputFor(Class<?> type, Object value)
+    {
+        if (value != null)
+        {
+            if (!type.isArray())
+            {
+                if (type.isAssignableFrom(CompositeData.class))
+                {
+                    return getOutputForCompositeData((CompositeData) value);
+                }
+                if (type.isAssignableFrom(TabularData.class))
+                {
+                    return getOutputForTabularData(value);
+                }
+                return new Element("div").addText(value.toString());
+            }
+            else
+            {
+                Class<?> componentType = type.getComponentType();
+                Element div = new Element("div");
+                int length = Array.getLength(value);
+                for (int ii=0;ii<length;ii++)
+                {
+                    Object v = Array.get(value, ii);
+                    Renderer e = getOutputFor(componentType, v);
+                    div.add(e);
+                }
+                return div;
+            }
+        }
+        else
+        {
+            return new Element("div");
+        }
+    }
+
+    private Renderer getOutputForCompositeData(CompositeData data)
+    {
+        CompositeType type = data.getCompositeType();
+        Element table = new Element("table");
+        for (String key : type.keySet())
+        {
+            Element tr = table.addElement("tr");
+            Element th = tr.addElement("th");
+            th.addText(key);
+            Element td = tr.addElement("td");
+            OpenType<?> ot = type.getType(key);
+            Class<?> cls = getClass(ot.getClassName());
+            Renderer e = getOutputFor(cls, data.get(key));
+            td.add(e);
+        }
+        return table;
+    }
+
+    private Element getOutputForTabularData(Object value)
+    {
+        return new Element("div").addText("TabularData not supported");
+    }
+
+    private Class<?> getClass(String type)
+    {
+        try
+        {
+            return Class.forName(type);
+        }
+        catch (ClassNotFoundException ex)
+        {
+            switch (type)
+            {
+                case "boolean":
+                    return Boolean.class;
+                case "char":
+                    return Character.class;
+                case "byte":
+                    return Byte.class;
+                case "short":
+                    return Short.class;
+                case "int":
+                    return Integer.class;
+                case "long":
+                    return Long.class;
+                case "float":
+                    return Float.class;
+                case "double":
+                    return Double.class;
+                default:
+                    throw new IllegalArgumentException(type+" not supported");
+            }
+        }
     }
 
 }
