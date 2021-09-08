@@ -996,5 +996,13 @@ public class PrimitivesTest
         assertTrue(Primitives.equals((float)(-12345e-2F), (float)(3*-12345e-2/3)));
         assertFalse(Primitives.equals((float)(-12345e-2F), (float)(-12346e-2)));
     }
-    
+    @Test
+    public void testMaxDigits()
+    {
+        assertEquals(4, Primitives.maxByteDigits(10));
+        assertEquals(9, Primitives.maxByteDigits(2));
+        assertEquals(17, Primitives.maxShortDigits(2));
+        assertEquals(33, Primitives.maxIntDigits(2));
+        assertEquals(65, Primitives.maxLongDigits(2));
+    }    
 }

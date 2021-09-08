@@ -1819,6 +1819,42 @@ public final class Primitives
                 return false;
         }
     }
+    /**
+     * Returns maximum number of digits. Possible sign included.
+     * @param radix
+     * @return 
+     */
+    public static final int maxByteDigits(int radix)
+    {
+        return NumberRanges.ByteRange[radix][0].length();
+    }
+    /**
+     * Returns maximum number of digits. Possible sign included.
+     * @param radix
+     * @return 
+     */
+    public static final int maxShortDigits(int radix)
+    {
+        return NumberRanges.ShortRange[radix][0].length();
+    }
+    /**
+     * Returns maximum number of digits. Possible sign included.
+     * @param radix
+     * @return 
+     */
+    public static final int maxIntDigits(int radix)
+    {
+        return NumberRanges.IntRange[radix][0].length();
+    }
+    /**
+     * Returns maximum number of digits. Possible sign included.
+     * @param radix
+     * @return 
+     */
+    public static final int maxLongDigits(int radix)
+    {
+        return NumberRanges.LongRange[radix][0].length();
+    }
     private static void check(CharSequence cs, int radix, CharSequence[][] range, int beginIndex, int endIndex)
     {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
