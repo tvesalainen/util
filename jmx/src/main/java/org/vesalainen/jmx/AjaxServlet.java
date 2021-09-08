@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
+import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
@@ -44,11 +46,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.vesalainen.html.BooleanAttribute;
 import org.vesalainen.html.DynamicElement;
 import org.vesalainen.html.Element;
 import org.vesalainen.html.InputTag;
 import org.vesalainen.html.Renderer;
 import org.vesalainen.html.Tag;
+import org.vesalainen.util.ConvertUtility;
 
 /**
  *
@@ -101,6 +105,21 @@ public class AjaxServlet extends HttpServlet
                         String attribute = req.getParameter("attribute");
                         if (attribute != null)
                         {
+                            String value = req.getParameter("value");
+                            String type = req.getParameter("type");
+                            if (type != null)
+                            {
+                                boolean ok = setValue(attribute, type, value);
+                                if (ok)
+                                {
+                                    resp.setStatus(HttpServletResponse.SC_OK);
+                                }
+                                else
+                                {
+                                    resp.sendError(HttpServletResponse.SC_CONFLICT, "setting "+attribute+" failed");
+                                }
+                                return;
+                            }
                             content = getAttributeValue(objectName, attribute);
                         }
                         else
@@ -264,7 +283,12 @@ public class AjaxServlet extends HttpServlet
             if (info.isWritable())
             {
                 Element form = new Element("form");
+                form.setAttr("action", "ajax_nodes.html");
+                form.setAttr("method", "post");
                 Renderer input = getInputFor(type, value);
+                form.add(new InputTag(form, "hidden", "id", objectName));
+                form.add(new InputTag(form, "hidden", "attribute", name));
+                form.add(new InputTag(form, "hidden", "type", info.getType()));
                 form.add(input);
                 return form;
             }
@@ -273,7 +297,7 @@ public class AjaxServlet extends HttpServlet
                 return getOutputFor(type, value);
             }
         }
-        catch (InstanceNotFoundException | ReflectionException | IntrospectionException | MBeanException | AttributeNotFoundException  ex)
+        catch (Exception ex)
         {
             return new Element("span").addText(ex.getMessage());
         }
@@ -296,7 +320,46 @@ public class AjaxServlet extends HttpServlet
         switch (type.getSimpleName())
         {
             case "Boolean":
-                return new InputTag("checkbox", "value").addClasses("attribute_input");
+                return new InputTag("checkbox", "value")
+                        .addClasses("attributeInput")
+                        .setAttr(new BooleanAttribute("checked", value));
+            case "Integer":
+                return new InputTag("number", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("min", Integer.MIN_VALUE)
+                        .setAttr("max", Integer.MAX_VALUE)
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
+                        .setAttr("value", value);
+            case "Short":
+                return new InputTag("number", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("min", Short.MIN_VALUE)
+                        .setAttr("max", Short.MAX_VALUE)
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
+                        .setAttr("value", value);
+            case "Long":
+                return new InputTag("number", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("min", Long.MIN_VALUE)
+                        .setAttr("max", Long.MAX_VALUE)
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
+                        .setAttr("value", value);
+            case "Float":
+                return new InputTag("number", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("min", Float.MIN_VALUE)
+                        .setAttr("max", Float.MAX_VALUE)
+                        .setAttr("value", value);
+            case "Double":
+                return new InputTag("number", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("min", Double.MIN_VALUE)
+                        .setAttr("max", Double.MAX_VALUE)
+                        .setAttr("value", value);
+            case "String":
+                return new InputTag("text", "value")
+                        .addClasses("attributeInput")
+                        .setAttr("value", value);
             default:
                 return new Element("span").addText(type+" input not supported");
         }
@@ -314,7 +377,7 @@ public class AjaxServlet extends HttpServlet
                 }
                 if (type.isAssignableFrom(TabularData.class))
                 {
-                    return getOutputForTabularData(value);
+                    return getOutputForTabularData((TabularData) value);
                 }
                 return new Element("div").addText(value.toString());
             }
@@ -342,23 +405,53 @@ public class AjaxServlet extends HttpServlet
     {
         CompositeType type = data.getCompositeType();
         Element table = new Element("table");
+        table.add(titleRow(data.getCompositeType()));
+        table.add(dataRow(data));
+        return table;
+    }
+    private Element dataRow(CompositeData data)
+    {
+        CompositeType type = data.getCompositeType();
+        Element tr = new Element("tr");
         for (String key : type.keySet())
         {
-            Element tr = table.addElement("tr");
-            Element th = tr.addElement("th");
-            th.addText(key);
             Element td = tr.addElement("td");
             OpenType<?> ot = type.getType(key);
             Class<?> cls = getClass(ot.getClassName());
             Renderer e = getOutputFor(cls, data.get(key));
             td.add(e);
         }
-        return table;
+        return tr;
     }
-
-    private Element getOutputForTabularData(Object value)
+    private Element titleRow(CompositeType type)
     {
-        return new Element("div").addText("TabularData not supported");
+        Element tr = new Element("tr");
+        for (String key : type.keySet())
+        {
+            Element th = tr.addElement("th");
+            th.addText(key);
+        }
+        return tr;
+    }
+    private Element getOutputForTabularData(TabularData data)
+    {
+        Element table = new Element("table");
+        CompositeType prev = null;
+        for (Object value : data.values())
+        {
+            CompositeData cd = (CompositeData) value;
+            CompositeType type = cd.getCompositeType();
+            if (prev == null || !prev.equals(type))
+            {
+                Element hr = titleRow(type);
+                table.add(hr);
+                prev = type;
+            }
+            Element dr = dataRow(cd);
+            Object[] ci = data.calculateIndex(cd);
+            table.add(dr);
+        }
+        return table;
     }
 
     private Class<?> getClass(String type)
@@ -390,6 +483,32 @@ public class AjaxServlet extends HttpServlet
                 default:
                     throw new IllegalArgumentException(type+" not supported");
             }
+        }
+    }
+
+    private boolean setValue(String name, String type, String value)
+    {
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        Class<?> cls = getClass(type);
+        Object obj = null;
+        switch (cls.getSimpleName())
+        {
+            case "Boolean":
+                obj = Boolean.valueOf(value != null);
+                break;
+            default:
+                obj = ConvertUtility.convert(cls, value);
+                break;
+        }
+        try
+        {
+            server.setAttribute(objectName, new Attribute(name, obj));
+            return true;
+        }
+        catch (MBeanException | ReflectionException | InstanceNotFoundException | AttributeNotFoundException | InvalidAttributeValueException ex)
+        {
+            Logger.getLogger(AjaxServlet.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
     }
 
