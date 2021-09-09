@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -33,7 +34,10 @@ import javax.management.IntrospectionException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
+import javax.management.MBeanFeatureInfo;
 import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -46,6 +50,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.vesalainen.html.AttributedContent;
 import org.vesalainen.html.BooleanAttribute;
 import org.vesalainen.html.DynamicElement;
 import org.vesalainen.html.Element;
@@ -124,7 +129,15 @@ public class AjaxServlet extends HttpServlet
                         }
                         else
                         {
-                            content = bean;
+                            String operation = req.getParameter("operation");
+                            if (operation != null)
+                            {
+                                content = getOperationResult(objectName, operation, req.getParameterMap());
+                            }
+                            else
+                            {
+                                content = bean;
+                            }
                         }
                     }
                 }
@@ -202,69 +215,86 @@ public class AjaxServlet extends HttpServlet
                 throw new RuntimeException(ex);
             }
         };
-        Element form = new Element("div");
-        Element fieldSet = form.addElement("fieldset");
-        DynamicElement<ObjectName,?> legend = DynamicElement.getFrom("legend", ()->Stream.of(getObjectName()));
-        legend.setText((on)->on.toString());
-        fieldSet.add(legend);
+        Element div = new Element("div");
+        Element fieldSet = div.addElement("fieldset");
+        Element legend = fieldSet.addElement("legend");
+        legend.addText(()->getObjectName().toString());
         DynamicElement<MBeanInfo,?> content = DynamicElement.getFrom("div", streamSupplier);
+        fieldSet.add(content);
         content.setText((i)->"classname="+i.getClassName());
-        DynamicElement<MBeanInfo, MBeanInfo> info = content.child("fieldset");
-        info.child("legend").setText((t)->"Attributes");
-        DynamicElement<MBeanAttributeInfo, MBeanInfo> tr = info.child("table").childFromArray("tr", (t)->t.getAttributes());
-        tr.child("td")
+        createAttributes(content.child("fieldset"));
+        createOperations(content.child("fieldset"));
+        return div;
+    }
+
+    private void createAttributes(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
+    {
+        mBeanInfo.child("legend").setText((t)->"Attributes");
+        DynamicElement<MBeanAttributeInfo, MBeanInfo> tr = mBeanInfo.child("table").childFromArray("tr", (t)->t.getAttributes());
+        tr.child("th")
             .setText((t)->t.getName());
         tr.child("td")
             .setAttr("id", (a)->a.getName())
             .setDataAttr("objectname", (t)->getObjectName())
             .addClasses("attributeValue");
-        fieldSet.add(content);
-        return form;
     }
 
-    void setObjectName(ObjectName objectName)
+    private void createOperations(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
     {
-        this.objectName = objectName;
+        mBeanInfo.child("legend").setText((t)->"Operations");
+        DynamicElement<MBeanOperationInfo, MBeanInfo> tr = mBeanInfo.child("table").childFromArray("tr", (t)->t.getOperations());
+        DynamicElement<MBeanOperationInfo, MBeanOperationInfo> form = tr.child("td").child("form");
+        form.child("input")
+            .setAttr("type", "hidden")
+            .setAttr("name", "id")
+            .setAttr("value", ()->objectName);
+        form.child("input")
+            .setAttr("type", "hidden")
+            .setAttr("name", "operation")
+            .setAttr("value", (t)->t.getName());
+        form.child("input")
+            .addClasses("operationInvoke")
+            .setAttr("type", "button")
+            .setAttr("name", "operation")
+            .setAttr("value", (t)->t.getName());
+        form.childFromArray("input", (i)->i.getSignature())
+            .attribute((t,p)->setInputAttributes(getClass(t.getType()), p))
+            .setAttr("name", (p)->p.getName())
+            .setAttr("title", (p)->p.getDescription());
+        tr.child("td")
+            .setAttr("id", (a)->a.getName())
+            .setDataAttr("objectname", (t)->getObjectName())
+            .addClasses("operationResult");
     }
 
-    private ObjectName getObjectName()
+    private Renderer getOperationResult(ObjectName objectName, String name, Map<String, String[]> parameters)
     {
-        return objectName;
-    }
-    
-    private String cut(String str, int commas)
-    {
-        int idx = -1;
-        for (int ii=0;ii<commas;ii++)
+        MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try
         {
-            idx = str.indexOf(',', idx+1);
+            MBeanInfo mBeanInfo = platformMBeanServer.getMBeanInfo(objectName);
+            MBeanOperationInfo info = getFeatureInfo(name, mBeanInfo.getOperations());
+            MBeanParameterInfo[] signature = info.getSignature();
+            Object[] params = new Object[signature.length];
+            String[] sig = new String[signature.length];
+            for (int ii=0;ii<signature.length;ii++)
+            {
+                String[] arr = parameters.get(signature[ii].getName());
+                if (arr == null || arr.length != 1)
+                {
+                    throw new IllegalArgumentException(signature[ii].getName()+" not found");
+                }
+                sig[ii] = signature[ii].getType();
+                Class<?> type = getClass(signature[ii].getType());
+                params[ii] = ConvertUtility.convert(type, arr[0]);
+            }
+            Object result = platformMBeanServer.invoke(objectName, name, params, sig);
+            return getOutputFor(getClass(info.getReturnType()), result);
         }
-        if (idx != -1)
+        catch (Exception ex)
         {
-            return str.substring(0, idx)+",*";
+            return new Element("span").addText(ex.getMessage());
         }
-        else
-        {
-            return str;
-        }
-    }
-    private String nodeName(String name)
-    {
-        int idx = name.lastIndexOf('=');
-        if (idx != -1)
-        {
-            name = name.substring(idx+1);
-        }
-        if (name.endsWith(",*"))
-        {
-            name = name.substring(0, name.length()-2);
-        }
-        return name;
-    }
-
-    Renderer getBean()
-    {
-        return bean;
     }
 
     private Renderer getAttributeValue(ObjectName objectName, String name)
@@ -273,7 +303,7 @@ public class AjaxServlet extends HttpServlet
         try
         {
             MBeanInfo mBeanInfo = platformMBeanServer.getMBeanInfo(objectName);
-            MBeanAttributeInfo info = getAttribute(mBeanInfo, name);
+            MBeanAttributeInfo info = getFeatureInfo(name, mBeanInfo.getAttributes());
             Object value = null;
             if (info.isReadable())
             {
@@ -303,9 +333,9 @@ public class AjaxServlet extends HttpServlet
         }
     }
 
-    private MBeanAttributeInfo getAttribute(MBeanInfo mBeanInfo, String name)
+    private <I extends MBeanFeatureInfo> I getFeatureInfo(String name, I... mBeanFeatureInfo)
     {
-        for (MBeanAttributeInfo info : mBeanInfo.getAttributes())
+        for (I info : mBeanFeatureInfo)
         {
             if (name.equals(info.getName()))
             {
@@ -317,49 +347,54 @@ public class AjaxServlet extends HttpServlet
 
     private Renderer getInputFor(Class<?> type, Object value)
     {
+        Tag input = new Tag("input")
+            .setAttr("name", "value")
+            .addClasses("attributeInput");
         switch (type.getSimpleName())
         {
             case "Boolean":
-                return new InputTag("checkbox", "value")
-                        .addClasses("attributeInput")
-                        .setAttr(new BooleanAttribute("checked", value));
+                input.setAttr(new BooleanAttribute("checked", value));
             case "Integer":
-                return new InputTag("number", "value")
-                        .addClasses("attributeInput")
+            case "Short":
+            case "Long":
+            case "Float":
+            case "Double":
+            case "String":
+                input.setAttr("value", value);
+        }
+        return setInputAttributes(type, input);
+    }
+    private Renderer setInputAttributes(Class<?> type, AttributedContent input)
+    {
+        switch (type.getSimpleName())
+        {
+            case "Boolean":
+                return  input.setAttr("type", "number");
+            case "Integer":
+                return  input.setAttr("type", "number")
                         .setAttr("min", Integer.MIN_VALUE)
                         .setAttr("max", Integer.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
-                        .setAttr("value", value);
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
             case "Short":
-                return new InputTag("number", "value")
-                        .addClasses("attributeInput")
+                return  input.setAttr("type", "number")
                         .setAttr("min", Short.MIN_VALUE)
                         .setAttr("max", Short.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
-                        .setAttr("value", value);
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
             case "Long":
-                return new InputTag("number", "value")
-                        .addClasses("attributeInput")
+                return  input.setAttr("type", "number")
                         .setAttr("min", Long.MIN_VALUE)
                         .setAttr("max", Long.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+")
-                        .setAttr("value", value);
+                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
             case "Float":
-                return new InputTag("number", "value")
-                        .addClasses("attributeInput")
+                return  input.setAttr("type", "number")
                         .setAttr("min", Float.MIN_VALUE)
-                        .setAttr("max", Float.MAX_VALUE)
-                        .setAttr("value", value);
+                        .setAttr("max", Float.MAX_VALUE);
             case "Double":
-                return new InputTag("number", "value")
-                        .addClasses("attributeInput")
+                return  input.setAttr("type", "number")
                         .setAttr("min", Double.MIN_VALUE)
-                        .setAttr("max", Double.MAX_VALUE)
-                        .setAttr("value", value);
+                        .setAttr("max", Double.MAX_VALUE);
             case "String":
-                return new InputTag("text", "value")
-                        .addClasses("attributeInput")
-                        .setAttr("value", value);
+                return  input.setAttr("type", "text");
             default:
                 return new Element("span").addText(type+" input not supported");
         }
@@ -464,6 +499,8 @@ public class AjaxServlet extends HttpServlet
         {
             switch (type)
             {
+                case "void":
+                    return Void.class;
                 case "boolean":
                     return Boolean.class;
                 case "char":
@@ -510,6 +547,51 @@ public class AjaxServlet extends HttpServlet
             Logger.getLogger(AjaxServlet.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
+    }
+
+    void setObjectName(ObjectName objectName)
+    {
+        this.objectName = objectName;
+    }
+
+    private ObjectName getObjectName()
+    {
+        return objectName;
+    }
+    
+    private String cut(String str, int commas)
+    {
+        int idx = -1;
+        for (int ii=0;ii<commas;ii++)
+        {
+            idx = str.indexOf(',', idx+1);
+        }
+        if (idx != -1)
+        {
+            return str.substring(0, idx)+",*";
+        }
+        else
+        {
+            return str;
+        }
+    }
+    private String nodeName(String name)
+    {
+        int idx = name.lastIndexOf('=');
+        if (idx != -1)
+        {
+            name = name.substring(idx+1);
+        }
+        if (name.endsWith(",*"))
+        {
+            name = name.substring(0, name.length()-2);
+        }
+        return name;
+    }
+
+    Renderer getBean()
+    {
+        return bean;
     }
 
 }
