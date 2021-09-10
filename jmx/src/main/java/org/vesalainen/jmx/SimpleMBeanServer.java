@@ -106,6 +106,8 @@ public class SimpleMBeanServer implements MBeanServer
             throw new RuntimeException(ex);
         }
         classLoaders.add(SimpleMBeanServer.class.getClassLoader());
+        SimpleJMXAcceptor acceptor = new SimpleJMXAcceptor(8080);
+        acceptor.start();
     }
 
     @Override
@@ -330,7 +332,7 @@ public class SimpleMBeanServer implements MBeanServer
         if (object instanceof NotificationBroadcaster)
         {
             NotificationBroadcaster nb = (NotificationBroadcaster) object;
-            joints.add(new NotificationJoint(nb, listener, filter, handback));
+            nb.addNotificationListener(listener, filter, handback);
         }
         else
         {

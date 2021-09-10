@@ -2,8 +2,9 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <script src="/jquery-3.6.0.min.js">
-        </script>
+        <script src="/jquery-3.6.0.min.js"> </script>
+        <link rel="stylesheet" href="/jquery-ui-1.12.1.custom/jquery-ui.min.css">
+        <script src="/jquery-ui-1.12.1.custom/jquery-ui.min.js"> </script>
         <link rel="stylesheet" href="/jstree-3.3.11-dist/themes/default/style.min.css">
         <script src="/jstree-3.3.11-dist/jstree.min.js">
         </script>
@@ -46,6 +47,16 @@
                     
                 </div>
             </div>
+        </div>
+        <div id="dialog" title="Notifications">
+            <table id="dialogTable">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Message</th>
+                    <th>Ext</th>
+                    <th>seq</th>
+                </tr>
+            </table>
         </div>
     </body>
 </html>

@@ -17,12 +17,13 @@
 package org.vesalainen.jmx;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.SynchronousQueue;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,14 +33,19 @@ import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.InvalidAttributeValueException;
+import javax.management.ListenerNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanFeatureInfo;
 import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
@@ -136,7 +142,17 @@ public class AjaxServlet extends HttpServlet
                             }
                             else
                             {
-                                content = bean;
+                                String subscribe = req.getParameter("subscribe");
+                                if (subscribe != null)
+                                {
+                                    subscribeNotification(objectName, subscribe, req, resp);
+                                    resp.setStatus(HttpServletResponse.SC_OK);
+                                    return;
+                                }
+                                else
+                                {
+                                    content = bean;
+                                }
                             }
                         }
                     }
@@ -224,6 +240,7 @@ public class AjaxServlet extends HttpServlet
         content.setText((i)->"classname="+i.getClassName());
         createAttributes(content.child("fieldset"));
         createOperations(content.child("fieldset"));
+        createNotifications(content.child("fieldset"));
         return div;
     }
 
@@ -265,6 +282,36 @@ public class AjaxServlet extends HttpServlet
             .setAttr("id", (a)->a.getName())
             .setDataAttr("objectname", (t)->getObjectName())
             .addClasses("operationResult");
+    }
+
+    private void createNotifications(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
+    {
+        mBeanInfo.child("legend").setText((t)->"Notifications");
+        DynamicElement<MBeanNotificationInfo, MBeanInfo> tr = mBeanInfo.child("table").childFromArray("tr", (t)->t.getNotifications());
+        DynamicElement<MBeanNotificationInfo, MBeanNotificationInfo> form = tr.child("td").child("form");
+        form.child("input")
+            .setAttr("type", "hidden")
+            .setAttr("name", "id")
+            .setAttr("value", ()->objectName);
+        form.child("input")
+            .setAttr("type", "hidden")
+            .setAttr("name", "subscribe")
+            .setAttr("value", (t)->t.getName());
+        form.child("input")
+            .addClasses("subscribeNotification")
+            .setAttr("type", "button")
+            .setAttr("name", "subscribe")
+            .setAttr("value", (t)->t.getName());
+        DynamicElement<String, MBeanNotificationInfo> div = form.childFromArray("div", (i)->i.getNotifTypes());
+        div.child("input")
+            .setAttr("type", "checkbox")
+            .setAttr("name", (p)->p)
+            .setAttr("id", (p)->p)
+            .setAttr("value", (p)->p)
+            .setAttr(new BooleanAttribute("checked", true));
+        div.child("label")
+            .setAttr("for", (p)->p)
+            .setText((p)->p.toString());
     }
 
     private Renderer getOperationResult(ObjectName objectName, String name, Map<String, String[]> parameters)
@@ -594,4 +641,82 @@ public class AjaxServlet extends HttpServlet
         return bean;
     }
 
+    private void subscribeNotification(ObjectName objectName, String name, HttpServletRequest req, HttpServletResponse resp) throws IOException
+    {
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        NotificationFilterSupport filter = new NotificationFilterSupport();
+        SynchronousQueue<Notification> queue = new SynchronousQueue<>();
+        Listener listener = new Listener(objectName, queue);
+        try
+        {
+            MBeanInfo mBeanInfo = server.getMBeanInfo(objectName);
+            MBeanNotificationInfo info = getFeatureInfo(name, mBeanInfo.getNotifications());
+            
+            for (String type : info.getNotifTypes())
+            {
+                String parameter = req.getParameter(type);
+                if (parameter != null)
+                {
+                    filter.enableType(type);
+                }
+            }
+            server.addNotificationListener(objectName, listener, filter, null);
+            
+            resp.setContentType("text/event-stream");
+            resp.setCharacterEncoding("UTF-8");
+            resp.setHeader("Cache-Control", "no-store");
+
+            PrintWriter writer = resp.getWriter();
+            while (true)
+            {
+                Notification n = queue.take();
+                writer.write("data:");
+                writer.append("<tr><td>");
+                writer.append(Long.toString(n.getTimeStamp()));
+                writer.append("</td><td>");
+                writer.append(n.getMessage());
+                writer.append("</td><td>");
+                Object u = n.getUserData();
+                writer.append(u != null ? u.toString() : "");
+                writer.append("</td><td>");
+                writer.append(Long.toString(n.getSequenceNumber()));
+                writer.append("</td></tr>");
+                writer.write("\n\n");
+                writer.flush();
+            }
+        }
+        catch (IOException | IllegalArgumentException | InterruptedException | InstanceNotFoundException | IntrospectionException | ReflectionException ex)
+        {
+            throw new IOException(ex);
+        }
+        finally
+        {
+            try
+            {
+                server.removeNotificationListener(objectName, listener, filter, name);
+            }
+            catch (InstanceNotFoundException | ListenerNotFoundException ex)
+            {
+            }
+        }
+    }
+
+    private class Listener implements NotificationListener
+    {
+        private final ObjectName objectName;
+        private final SynchronousQueue<Notification> queue;
+
+        public Listener(ObjectName objectName, SynchronousQueue queue)
+        {
+            this.objectName = objectName;
+            this.queue = queue;
+        }
+
+        @Override
+        public void handleNotification(Notification notification, Object handback)
+        {
+            queue.offer(notification);
+        }
+        
+    }
 }
