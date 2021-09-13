@@ -51,14 +51,14 @@ public class SimpleNotificationEmitter implements NotificationEmitter
     private Runnable attach;
     private Runnable detach;
     /**
-     * Creates NotificationEmitterImpl with gives infos
+     * Creates NotificationEmitterImpl with gives infos.
      * @param type
      * @param source
      * @param infos 
      */
     public SimpleNotificationEmitter(String type, ObjectName source, MBeanNotificationInfo... infos)
     {
-        this(Executors.newCachedThreadPool(), type, source, infos);
+        this((Runnable r)->r.run(), type, source, infos);
     }
     /**
      * Creates NotificationEmitterImpl with gives executer and infos
@@ -118,12 +118,14 @@ public class SimpleNotificationEmitter implements NotificationEmitter
      * @param <U>
      * @param text
      * @param userData
-     * @param timestamp 
+     * @param timeStamp 
      */
-    public synchronized <U> void sendNotification(String text, U userData, long timestamp)
+    public synchronized <U> void sendNotification(String text, U userData, long timeStamp)
     {
+        Notification notification = new Notification(type, source, sequenceNumber.incrementAndGet(), timeStamp, text);
+        notification.setUserData(userData);
         map.valueSet()
-                .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(text, userData, timestamp)));
+                .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(notification)));
     }
     @Override
     public synchronized void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException
@@ -186,10 +188,8 @@ public class SimpleNotificationEmitter implements NotificationEmitter
             this.handback = handback;
         }
 
-        public <U> void sendNotification(String text, U userData, long timeStamp)
+        public <U> void sendNotification(Notification notification)
         {
-            Notification notification = new Notification(type, source, sequenceNumber.incrementAndGet(), timeStamp, text);
-            notification.setUserData(userData);
             if (filter == null || filter.isNotificationEnabled(notification))
             {
                 try
