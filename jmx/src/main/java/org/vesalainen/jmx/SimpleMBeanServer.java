@@ -336,7 +336,7 @@ public class SimpleMBeanServer implements MBeanServer
         }
         else
         {
-            throw new IllegalArgumentException(name+" not NotificationBroadcaster");
+            throw new InstanceNotFoundException(name+" not NotificationBroadcaster");
         }
     }
 
@@ -361,13 +361,39 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Object object = getObject(name);
+        if (object instanceof NotificationBroadcaster)
+        {
+            NotificationBroadcaster nb = (NotificationBroadcaster) object;
+            nb.removeNotificationListener(listener);
+        }
+        else
+        {
+            throw new InstanceNotFoundException(name+" not NotificationBroadcaster");
+        }
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback) throws InstanceNotFoundException, ListenerNotFoundException
     {
-        halt(); throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Object object = getObject(name);
+        if (object instanceof NotificationEmitter)
+        {
+            NotificationEmitter ne = (NotificationEmitter) object;
+            ne.removeNotificationListener(listener, filter, handback);
+        }
+        else
+        {
+            if (object instanceof NotificationBroadcaster)
+            {
+                NotificationBroadcaster nb = (NotificationBroadcaster) object;
+                nb.removeNotificationListener(listener);
+            }
+            else
+            {
+                throw new InstanceNotFoundException(name+" not NotificationBroadcaster");
+            }
+        }
     }
 
     @Override
@@ -517,7 +543,7 @@ public class SimpleMBeanServer implements MBeanServer
         {
             NotificationEmitter ne = (NotificationEmitter) object;
             MBeanNotificationInfo[] info = ne.getNotificationInfo();
-            return new StandardEmitterMBean(object, mBeanInterface, JMX.isMXBeanInterface(mBeanInterface), new NotificationBroadcasterSupport(info));
+            return new StandardEmitterMBean(object, mBeanInterface, JMX.isMXBeanInterface(mBeanInterface), ne);
         }
         else
         {

@@ -23,7 +23,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Array;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +45,7 @@ import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -52,6 +54,9 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularData;
+import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +76,7 @@ import org.vesalainen.util.ConvertUtility;
  */
 public class AjaxServlet extends HttpServlet
 {
-
+    private static final long MILLIS_IN_A_DAY = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
     private Renderer root;
     private Renderer pattern;
     private Renderer bean;
@@ -146,7 +151,6 @@ public class AjaxServlet extends HttpServlet
                                 if (subscribe != null)
                                 {
                                     subscribeNotification(objectName, subscribe, req, resp);
-                                    resp.setStatus(HttpServletResponse.SC_OK);
                                     return;
                                 }
                                 else
@@ -643,10 +647,16 @@ public class AjaxServlet extends HttpServlet
 
     private void subscribeNotification(ObjectName objectName, String name, HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
+        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("text/event-stream");
+        resp.setHeader("Cache-Control", "no-store");
+        resp.flushBuffer();
+        AsyncContext asyncContext = req.startAsync();
+        asyncContext.setTimeout(-1);
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         NotificationFilterSupport filter = new NotificationFilterSupport();
-        SynchronousQueue<Notification> queue = new SynchronousQueue<>();
-        Listener listener = new Listener(objectName, queue);
+        Listener listener = new Listener(objectName, asyncContext, filter, null);
+        asyncContext.addListener(listener);
         try
         {
             MBeanInfo mBeanInfo = server.getMBeanInfo(objectName);
@@ -660,19 +670,43 @@ public class AjaxServlet extends HttpServlet
                     filter.enableType(type);
                 }
             }
-            server.addNotificationListener(objectName, listener, filter, null);
             
-            resp.setContentType("text/event-stream");
-            resp.setCharacterEncoding("UTF-8");
-            resp.setHeader("Cache-Control", "no-store");
+            server.addNotificationListener(objectName, listener, filter, null);
 
-            PrintWriter writer = resp.getWriter();
-            while (true)
+        }
+        catch (IllegalArgumentException | InstanceNotFoundException | IntrospectionException | ReflectionException ex)
+        {
+            throw new IOException(ex);
+        }
+    }
+
+    private class Listener implements NotificationListener, AsyncListener
+    {
+        private final ObjectName objectName;
+        private final AsyncContext asyncContext;
+        private final NotificationFilter filter;
+        private final Object handback;
+        private final ReentrantLock lock = new ReentrantLock();
+
+        public Listener(ObjectName objectName, AsyncContext asyncContext, NotificationFilter filter, Object handback)
+        {
+            this.objectName = objectName;
+            this.asyncContext = asyncContext;
+            this.filter = filter;
+            this.handback = handback;
+        }
+
+        @Override
+        public void handleNotification(Notification n, Object handback)
+        {
+            PrintWriter writer = null;
+            lock.lock();
+            try
             {
-                Notification n = queue.take();
+                writer = asyncContext.getResponse().getWriter();
                 writer.write("data:");
                 writer.append("<tr><td>");
-                writer.append(Long.toString(n.getTimeStamp()));
+                writeTimestamp(writer, n.getTimeStamp());
                 writer.append("</td><td>");
                 writer.append(n.getMessage());
                 writer.append("</td><td>");
@@ -684,39 +718,76 @@ public class AjaxServlet extends HttpServlet
                 writer.write("\n\n");
                 writer.flush();
             }
-        }
-        catch (IOException | IllegalArgumentException | InterruptedException | InstanceNotFoundException | IntrospectionException | ReflectionException ex)
-        {
-            throw new IOException(ex);
-        }
-        finally
-        {
-            try
+            catch (Exception ex)
             {
-                server.removeNotificationListener(objectName, listener, filter, name);
+                removeNotificationListener();
+                log("sse quit", ex);
+                asyncContext.complete();
             }
-            catch (InstanceNotFoundException | ListenerNotFoundException ex)
+            finally
             {
+                lock.unlock();
             }
         }
-    }
-
-    private class Listener implements NotificationListener
-    {
-        private final ObjectName objectName;
-        private final SynchronousQueue<Notification> queue;
-
-        public Listener(ObjectName objectName, SynchronousQueue queue)
+        @Override
+        public void onComplete(AsyncEvent event) throws IOException
         {
-            this.objectName = objectName;
-            this.queue = queue;
+            log("onComplete");
         }
 
         @Override
-        public void handleNotification(Notification notification, Object handback)
+        public void onTimeout(AsyncEvent event) throws IOException
         {
-            queue.offer(notification);
+            removeNotificationListener();
+            log("onTimeout");
         }
+
+        @Override
+        public void onError(AsyncEvent event) throws IOException
+        {
+            removeNotificationListener();
+            Throwable throwable = event.getThrowable();
+            if (throwable != null)
+            {
+                log("onError", throwable);
+            }
+            else
+            {
+                log("onError");
+            }
+        }
+
+        @Override
+        public void onStartAsync(AsyncEvent event) throws IOException
+        {
+            log("onStartAsync");
+        }
+
+        private void removeNotificationListener()
+        {
+            MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+            try
+            {
+                server.removeNotificationListener(objectName, this, filter, handback);
+            }
+            catch (InstanceNotFoundException | ListenerNotFoundException ex1)
+            {
+            }
+        }
+
+        private void writeTimestamp(PrintWriter w, long t)
+        {
+            long d = t % MILLIS_IN_A_DAY;
+            long ms = d % 1000;
+            d /= 1000;
+            long s = d % 60;
+            d /= 60;
+            long m = d % 60;
+            d /= 60;
+            long h = d % 24;
+            w.printf("%02d:%02d:%02d.%03d", h, m, s, ms);
+        }
+
         
     }
 }
