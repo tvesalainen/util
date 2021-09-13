@@ -51,7 +51,8 @@ public class SimpleNotificationEmitter implements NotificationEmitter
     private Runnable attach;
     private Runnable detach;
     /**
-     * Creates NotificationEmitterImpl with gives infos.
+     * Creates NotificationEmitterImpl with gives infos. Notifications are sent
+     * in calling thread.
      * @param type
      * @param source
      * @param infos 
@@ -61,7 +62,8 @@ public class SimpleNotificationEmitter implements NotificationEmitter
         this((Runnable r)->r.run(), type, source, infos);
     }
     /**
-     * Creates NotificationEmitterImpl with gives executer and infos
+     * Creates NotificationEmitterImpl with gives executer and infos. Notifications are sent
+     * using given executor.
      * @param executor
      * @param type
      * @param source
