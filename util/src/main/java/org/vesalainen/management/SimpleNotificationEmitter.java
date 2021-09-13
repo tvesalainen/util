@@ -32,7 +32,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.MapList;
-import org.vesalainen.util.WeakMapList;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -41,9 +40,9 @@ import org.vesalainen.util.logging.JavaLogging;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <U> Type of user-data
  */
-public class SimpleNotificationEmitter<U> implements NotificationEmitter
+public class SimpleNotificationEmitter implements NotificationEmitter
 {
-    private MapList<NotificationListener,ListenerWrapper> map = new WeakMapList<>();
+    private MapList<NotificationListener,ListenerWrapper> map = new HashMapList<>();
     private String type;
     private ObjectName source;
     private MBeanNotificationInfo[] infos;
@@ -53,6 +52,8 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
     private Runnable detach;
     /**
      * Creates NotificationEmitterImpl with gives infos
+     * @param type
+     * @param source
      * @param infos 
      */
     public SimpleNotificationEmitter(String type, ObjectName source, MBeanNotificationInfo... infos)
@@ -62,6 +63,8 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
     /**
      * Creates NotificationEmitterImpl with gives executer and infos
      * @param executor
+     * @param type
+     * @param source
      * @param infos 
      */
     public SimpleNotificationEmitter(Executor executor, String type, ObjectName source, MBeanNotificationInfo... infos)
@@ -70,6 +73,14 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
         this.type = type;
         this.source = source;
         this.infos = infos;
+    }
+    /**
+     * Returns true if there are listeners.
+     * @return 
+     */
+    public boolean hasListeners()
+    {
+        return !map.isEmpty();
     }
     /**
      * Set action that is called when first notification listener enters
@@ -89,12 +100,13 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
     }
     
     /**
-     * Send notification. supplier is called only if there are listeners
+     * Send notification.supplier is called only if there are listeners
+     * @param <U>
      * @param textSupplier
      * @param userDataSupplier
      * @param timestampSupplier 
      */
-    public synchronized void sendNotification(Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
+    public synchronized <U> void sendNotification(Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
     {
         if (!map.isEmpty())
         {
@@ -103,11 +115,12 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
     }
     /**
      * Send notification.
+     * @param <U>
      * @param text
      * @param userData
      * @param timestamp 
      */
-    public synchronized void sendNotification(String text, U userData, long timestamp)
+    public synchronized <U> void sendNotification(String text, U userData, long timestamp)
     {
         map.valueSet()
                 .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(text, userData, timestamp)));
@@ -173,7 +186,7 @@ public class SimpleNotificationEmitter<U> implements NotificationEmitter
             this.handback = handback;
         }
 
-        public void sendNotification(String text, U userData, long timeStamp)
+        public <U> void sendNotification(String text, U userData, long timeStamp)
         {
             Notification notification = new Notification(type, source, sequenceNumber.incrementAndGet(), timeStamp, text);
             notification.setUserData(userData);
