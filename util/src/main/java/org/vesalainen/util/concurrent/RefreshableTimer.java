@@ -18,6 +18,7 @@ package org.vesalainen.util.concurrent;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.BooleanSupplier;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -29,6 +30,7 @@ public class RefreshableTimer extends JavaLogging
     private long nanos;
     private Thread thread;
     private long start;
+    private BooleanSupplier condition;
 
     public RefreshableTimer()
     {
@@ -51,7 +53,7 @@ public class RefreshableTimer extends JavaLogging
         this.start = System.nanoTime();
         this.thread = Thread.currentThread();
         long sleep = nanos-(System.nanoTime()-start);
-        while (sleep > 0)
+        while (sleep > 0 || (condition != null && condition.getAsBoolean()))
         {
             finest("waiting for %d nanos", sleep);
             LockSupport.parkNanos(this, sleep);
@@ -77,4 +79,13 @@ public class RefreshableTimer extends JavaLogging
         LockSupport.unpark(thread);
         finest("refreshed timer");
     }
+    /**
+     * Sets condition that prevents timeout if true.
+     * @param condition 
+     */
+    public void setCondition(BooleanSupplier condition)
+    {
+        this.condition = condition;
+    }
+    
 }
