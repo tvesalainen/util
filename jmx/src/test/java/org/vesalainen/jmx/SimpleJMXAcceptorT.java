@@ -16,6 +16,8 @@
  */
 package org.vesalainen.jmx;
 
+import java.lang.management.ManagementFactory;
+import javax.management.MBeanServer;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -33,9 +35,9 @@ public class SimpleJMXAcceptorT
     @Test
     public void test() throws InterruptedException
     {
-        SimpleJMXAcceptor acceptor = new SimpleJMXAcceptor(8080);
-        acceptor.start();
-        Thread.sleep(10000000000000L);
+        SimpleJMX.start();
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        Thread.sleep(10000000000L);
     }
     
 }

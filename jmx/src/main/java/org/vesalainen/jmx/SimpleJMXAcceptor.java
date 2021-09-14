@@ -27,6 +27,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,13 +52,13 @@ import org.vesalainen.web.servlet.JarServlet;
  */
 public class SimpleJMXAcceptor extends JavaLogging implements Runnable
 {
-    private final int port;
+    private final MBeanServer server;
     private Thread thread;
 
-    public SimpleJMXAcceptor(int port)
+    public SimpleJMXAcceptor(MBeanServer server)
     {
         super(SimpleJMXAcceptor.class);
-        this.port = port;
+        this.server = server;
     }
 
     public void start()
@@ -91,7 +92,9 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
                 {
                     info("opened socket %s", channel);
                     channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-                    channel.bind(new InetSocketAddress(port));
+                    String property = System.getProperty("org.vesalainen.jmxremote.port", "8080");
+                    channel.bind(new InetSocketAddress(Integer.parseInt(property)));
+                    info("bound to %s", property);
                     channel.configureBlocking(false);
                     SelectionKey selectionKey = channel.register(selector, OP_ACCEPT);
                     info("start select %s", channel);
@@ -103,33 +106,9 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
                     }
                     selectionKey.cancel();
                     channel.configureBlocking(true);
-                    Server server = new Server();
-                    ServerConnector connector = new ServerConnector(server);
-                    connector.open(channel);
-                    server.addConnector(connector);
-                    HandlerList handlers = new HandlerList();
-                    ServletContextHandler context = new ServletContextHandler();
-                    context.addServlet(IndexServlet.class, "/");
-                    ServletHolder holder = new ServletHolder(AjaxServlet.class);
-                    holder.setAsyncSupported(true);
-                    context.addServlet(holder, "/ajax_nodes.html/*");
-                    context.addServlet(JarServlet.class, "*.js");
-                    context.addServlet(JarServlet.class, "*.css");
-                    context.addServlet(JarServlet.class, "*.gif");
-                    context.addServlet(JarServlet.class, "*.png");
-                    context.addServlet(JarServlet.class, "*.ico");
-                    RefreshableTimer timer = new RefreshableTimer();
-                    TimeoutHandler timeoutHandler = new TimeoutHandler(timer);
-                    handlers.addHandler(timeoutHandler);
-                    handlers.addHandler(context);
-                    server.setHandler(handlers);
-                    server.start();
-                    server.setStopTimeout(0);
-                    info("started %s", server);
-                    timer.wait(60, TimeUnit.SECONDS);
-                    info("stopping %s", server);
-                    server.stop();
-                    info("stopped %s", server);
+                    SimpleMBeanServerConnection connection = new SimpleMBeanServerConnection(server);
+                    connection.run(channel);
+                    connection = null;
                 }
             }
         }
@@ -140,21 +119,6 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
         catch (Exception ex)
         {
             Logger.getLogger(SimpleJMXAcceptor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    private class TimeoutHandler extends  AbstractHandler
-    {
-        private final RefreshableTimer timer;
-
-        public TimeoutHandler(RefreshableTimer timer)
-        {
-            this.timer = timer;
-        }
-        
-        @Override
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
-        {
-            timer.refresh();
         }
     }
 }

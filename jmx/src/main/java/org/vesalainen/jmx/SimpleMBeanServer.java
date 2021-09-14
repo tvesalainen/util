@@ -60,7 +60,6 @@ import javax.management.MBeanServerDelegate;
 import javax.management.MBeanServerNotification;
 import javax.management.NotCompliantMBeanException;
 import javax.management.NotificationBroadcaster;
-import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -106,7 +105,7 @@ public class SimpleMBeanServer implements MBeanServer
             throw new RuntimeException(ex);
         }
         classLoaders.add(SimpleMBeanServer.class.getClassLoader());
-        SimpleJMXAcceptor acceptor = new SimpleJMXAcceptor(8080);
+        SimpleJMXAcceptor acceptor = new SimpleJMXAcceptor(this);
         acceptor.start();
     }
 
