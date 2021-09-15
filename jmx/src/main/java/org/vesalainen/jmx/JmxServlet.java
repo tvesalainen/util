@@ -270,7 +270,8 @@ public class JmxServlet extends HttpServlet
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "operation")
-            .setAttr("value", (t)->t.getName());
+            .setAttr("value", (t)->getOperationIdentifier(t))
+            .addClasses("operationId");
         form.child("input")
             .addClasses("operationInvoke")
             .setAttr("type", "button")
@@ -279,9 +280,9 @@ public class JmxServlet extends HttpServlet
         form.childFromArray("input", (i)->i.getSignature())
             .attribute((t,p)->setInputAttributes(getClass(t.getType()), p))
             .setAttr("name", (p)->p.getName())
-            .setAttr("title", (p)->p.getDescription());
+            .setAttr("title", (p)->p.getType());
         tr.child("td")
-            .setAttr("id", (a)->a.getName())
+            .setAttr("id", (t)->getOperationIdentifier(t))
             .setDataAttr("objectname", (t)->getObjectName())
             .addClasses("operationResult");
     }
@@ -321,28 +322,58 @@ public class JmxServlet extends HttpServlet
         try
         {
             MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(objectName);
-            MBeanOperationInfo info = getFeatureInfo(name, mBeanInfo.getOperations());
+            MBeanOperationInfo info = null;
+            for (MBeanOperationInfo i : mBeanInfo.getOperations())
+            {
+                if (name.equals(getOperationIdentifier(i)))
+                {
+                    info = i;
+                    break;
+                }
+            }
+            if (info == null)
+            {
+                throw new IllegalArgumentException(name+" not found");
+            }
             MBeanParameterInfo[] signature = info.getSignature();
             Object[] params = new Object[signature.length];
             String[] sig = new String[signature.length];
             for (int ii=0;ii<signature.length;ii++)
             {
+                Class<?> type = getClass(signature[ii].getType());
                 String[] arr = parameters.get(signature[ii].getName());
                 if (arr == null || arr.length != 1)
                 {
-                    throw new IllegalArgumentException(signature[ii].getName()+" not found");
+                    if (Boolean.class.equals(type))
+                    {
+                        arr = new String[]{"false"};
+                    }
+                    else
+                    {
+                        throw new IllegalArgumentException(signature[ii].getName()+" not found");
+                    }
                 }
                 sig[ii] = signature[ii].getType();
-                Class<?> type = getClass(signature[ii].getType());
                 params[ii] = ConvertUtility.convert(type, arr[0]);
             }
-            Object result = serverConnection.invoke(objectName, name, params, sig);
+            Object result = serverConnection.invoke(objectName, info.getName(), params, sig);
             return getOutputFor(getClass(info.getReturnType()), result);
         }
         catch (Exception ex)
         {
             return new Element("span").addText(ex.getMessage());
         }
+    }
+
+    private String getOperationIdentifier(MBeanOperationInfo t)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(t.getName());
+        for (MBeanParameterInfo info : t.getSignature())
+        {
+            sb.append(info.getType());
+        }
+        return sb.toString();
     }
 
     private Renderer getAttributeValue(ObjectName objectName, String name)
@@ -416,7 +447,7 @@ public class JmxServlet extends HttpServlet
         switch (type.getSimpleName())
         {
             case "Boolean":
-                return  input.setAttr("type", "number");
+                return  input.setAttr("type", "checkbox");
             case "Integer":
                 return  input.setAttr("type", "number")
                         .setAttr("min", Integer.MIN_VALUE)

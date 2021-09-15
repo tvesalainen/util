@@ -2,9 +2,9 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <script src="/jquery-3.6.0.min.js"> </script>
+        <script src="/jquery-3.6.0.min.js"></script>
         <link rel="stylesheet" href="/jquery-ui-1.12.1.custom/jquery-ui.min.css">
-        <script src="/jquery-ui-1.12.1.custom/jquery-ui.min.js"> </script>
+        <script src="/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
         <link rel="stylesheet" href="/jstree-3.3.11-dist/themes/default/style.min.css">
         <script src="/jstree-3.3.11-dist/jstree.min.js">
         </script>
@@ -16,20 +16,30 @@
                 box-sizing: border-box;
             }
 
-            .row {
-                display: flex;
-                flex-direction: row;
+            .row::after {
+                content: "";
+                clear: both;
+                display: table;
             }
-
             .left {
-                flex: 30%;
+                width: 30%;
+                float: left;
                 padding: 10px;
                 border-style: solid;
+                border-width: thin;
+                overflow-y: auto;
             }
             .right {
-                flex: 70%;
+                width: 70%;
+                float: left;
                 padding: 10px;
                 border-style: solid;
+                border-width: thin;
+                overflow-y: auto;
+            }
+            td {
+                border-style: solid;
+                border-width: thin;
             }
         </style>        
         <title>Simple JMX
@@ -37,20 +47,20 @@
     </head>
     <body>
         <div class="row">
-            <div class="left">
+            <div class="left windowHeight">
                 <div id="jstree">
                     tree
                 </div>
             </div>
-            <div class="right">
+            <div class="right windowHeight">
                 <div id="mbean">
-                    
+
                 </div>
             </div>
         </div>
         <div id="dialog" title="Notifications">
             <table id="dialogTable">
-                <tr>
+                <tr id="dialogTableHeader">
                     <th>Timestamp</th>
                     <th>Message</th>
                     <th>Ext</th>

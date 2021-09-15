@@ -85,7 +85,7 @@ public class SimpleJMXT
                     "javax.management.Notification",
                     "CAN signals")};
             nbSupport = new NotificationBroadcasterSupport(info);
-            executor.scheduleAtFixedRate(this::send, 3, 1, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(this::send, 3, 100, TimeUnit.MILLISECONDS);
         }
         
         private void send()

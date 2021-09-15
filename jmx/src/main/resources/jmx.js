@@ -18,7 +18,14 @@
 "use strict";
 /* global source */
 var source;
+var jmx = {};
 
+jmx.resize = function(){
+    var h = $('.windowHeight').height();
+    var oh = $('.windowHeight').outerHeight(true);
+    var wh = $(window).height();
+    $('.windowHeight').height(wh-2*(oh-h));
+    };
 $(document).ready(function () {
     $('#jstree')
             // listen for event
@@ -40,8 +47,9 @@ $(document).ready(function () {
                         })
                         $('.operationInvoke').click(function () {
                             var form = $(this).parent();
-                            var target = $(this).attr('value');
-                            $('#' + target).load('jmx', form.serialize());
+                            var data = form.serialize();
+                            var target = '#'+$(form).find('.operationId').first().attr('value');
+                            $(target).load('jmx', data);
                         })
                         $('.subscribeNotification').click(function () {
                             $("#dialog").dialog("open");
@@ -50,7 +58,7 @@ $(document).ready(function () {
                             var url = 'jmx?' + query;
                             source = new EventSource(url);
                             source.onmessage = function (event) {
-                                $("#dialogTable").append(event.data);
+                                $("#dialogTableHeader").after(event.data);
                             };
                         })
                     })
@@ -95,7 +103,12 @@ $(document).ready(function () {
             $('.notification').remove();
         }
     });
-
+    jmx.resize();
+    $("#dialog").dialog('option', 'maxHeight', 0.9*$(window).height());
+    $(window).resize(function(){
+        jmx.resize();
+    });
+    
 });
 
 
