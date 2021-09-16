@@ -24,27 +24,10 @@ import static java.nio.channels.SelectionKey.*;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.MBeanServer;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.server.handler.StatisticsHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.vesalainen.util.concurrent.RefreshableTimer;
 import org.vesalainen.util.logging.JavaLogging;
-import org.vesalainen.web.servlet.JarServlet;
 
 /**
  *
@@ -111,10 +94,6 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
                     connection = null;
                 }
             }
-        }
-        catch (IOException ex)
-        {
-            Logger.getLogger(SimpleJMXAcceptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         catch (Exception ex)
         {

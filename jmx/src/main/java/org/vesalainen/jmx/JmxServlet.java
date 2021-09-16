@@ -100,17 +100,17 @@ public class JmxServlet extends HttpServlet
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
         log(req.toString());
-        String id = req.getParameter("id");
-        if (id != null)
+        Renderer content = null;
+        try
         {
-            Renderer content = null;
-            if ("#".equals(id))
+            String id = req.getParameter("id");
+            if (id != null)
             {
-                content = root;
-            }
-            else
-            {
-                try
+                if ("#".equals(id))
+                {
+                    content = root;
+                }
+                else
                 {
                     objectName = ObjectName.getInstance(id);
                     if (objectName.isPropertyPattern())
@@ -162,11 +162,6 @@ public class JmxServlet extends HttpServlet
                         }
                     }
                 }
-                catch (MalformedObjectNameException | NullPointerException ex)
-                {
-                    resp.setStatus(HttpServletResponse.SC_CONFLICT);
-                    return;
-                }
             }
             if (content != null)
             {
@@ -183,6 +178,12 @@ public class JmxServlet extends HttpServlet
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
+        }
+        catch (Exception ex)
+        {
+            resp.setStatus(HttpServletResponse.SC_CONFLICT);
+            log(ex.getMessage(), ex);
+            return;
         }
     }
 
@@ -239,7 +240,8 @@ public class JmxServlet extends HttpServlet
         legend.addText(()->getObjectName().toString());
         DynamicElement<MBeanInfo,?> content = DynamicElement.getFrom("div", streamSupplier);
         fieldSet.add(content);
-        content.setText((i)->"classname="+i.getClassName());
+        content.child("div").setText((i)->"classname="+i.getClassName());
+        content.child("div").setText((i)->i.getDescription());
         createAttributes(content.child("fieldset"));
         createOperations(content.child("fieldset"));
         createNotifications(content.child("fieldset"));
@@ -732,6 +734,8 @@ public class JmxServlet extends HttpServlet
                 writer.write("data:");
                 writer.append("<tr class=\"notification\"><td>");
                 writeTimestamp(writer, n.getTimeStamp());
+                writer.append("</td><td>");
+                writer.append(n.getType());
                 writer.append("</td><td>");
                 writer.append(n.getMessage());
                 writer.append("</td><td>");

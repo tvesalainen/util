@@ -16,6 +16,7 @@
  */
 package org.vesalainen.jmx;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jetty.server.Server;
@@ -27,15 +28,39 @@ import org.eclipse.jetty.server.Server;
 public class SimpleJMX
 {
 
-    private static String safe;
-    private static Server server;
+    /**
+     * Sets system property:
+     * <p>org.vesalainen.jmxremote.port to port
+     * @param port 
+     */
+    public static final void setPort(int port)
+    {
+        if (port < 0 || port > 65535)
+        {
+            throw new IllegalArgumentException(port+" port out of range 0 - 65535");
+        }
+        System.getProperty("org.vesalainen.jmxremote.port");
+        System.setProperty("org.vesalainen.jmxremote.port", Integer.toString(port));
+    }
+    /**
+     * Sets system property:
+     * <p>org.vesalainen.jmxremote.timeout to timeout
+     * <p>Note! Actual System property is in millis!
+     * @param port 
+     */
+    public static final void setTimeout(long timeout, TimeUnit unit)
+    {
+        System.setProperty("org.vesalainen.jmxremote.timeout", Long.toString(TimeUnit.MILLISECONDS.convert(timeout, unit)));
+    }
+    /**
+     * Starts SimpleJMX by setting system properties: 
+     * <p>javax.management.builder.initial to org.vesalainen.jmx.SimpleMBeanServerBuilder
+     * <p>
+     * This is meant for testing. It is recommended to set these properties
+     * the normal way. 
+     */
     public static final void start()
     {
-        safe = System.getProperty("javax.management.builder.initial");
         System.setProperty("javax.management.builder.initial", "org.vesalainen.jmx.SimpleMBeanServerBuilder");
-    }
-    public static final void stop()
-    {
-        System.setProperty("javax.management.builder.initial", safe);
     }
 }

@@ -51,6 +51,7 @@ public class SimpleJMXT
     
     public SimpleJMXT()
     {
+        SimpleJMX.setTimeout(59, TimeUnit.SECONDS);
         SimpleJMX.start();
     }
 

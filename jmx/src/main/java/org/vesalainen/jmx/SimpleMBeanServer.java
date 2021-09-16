@@ -89,7 +89,6 @@ public class SimpleMBeanServer implements MBeanServer
     private final AtomicLong sequenceNumber = new AtomicLong();
     private final List<ClassLoader> classLoaders = Collections.synchronizedList(new ArrayList<>());
     private final ClassLoaderRepository classLoaderRepository = new ClassLoaderRepositoryImpl();
-    private final List<NotificationJoint> joints = new ArrayList<>();
 
     SimpleMBeanServer(String defaultDomain, MBeanServer outer, MBeanServerDelegate delegate)
     {

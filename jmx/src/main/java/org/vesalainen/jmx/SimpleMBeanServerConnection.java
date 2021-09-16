@@ -83,7 +83,8 @@ public class SimpleMBeanServerConnection extends AbstractMBeanServerConnection
             server.start();
             server.setStopTimeout(0);
             info("started %s", server);
-            timer.wait(60, TimeUnit.SECONDS);
+            long timeut = Long.parseLong(System.getProperty("org.vesalainen.jmxremote.timeout", "60000"));
+            timer.wait(timeut, TimeUnit.MILLISECONDS);
             info("stopping %s", server);
             server.stop();
             info("stopped %s", server);
@@ -127,7 +128,14 @@ public class SimpleMBeanServerConnection extends AbstractMBeanServerConnection
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
         {
-            timer.refresh();
+            try
+            {
+                timer.refresh();
+            }
+            catch (IllegalStateException ex)
+            {
+                // don't care. timer is not started yet.
+            }
         }
     }
 }
