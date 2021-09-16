@@ -65,12 +65,19 @@ public class SingleMessage extends AbstractMessage
     {
         try
         {
-            ByteBuffer frame = service.getFrame();
-            int remaining = frame.remaining();
-            setCurrentBytes(remaining);
-            frame.get(buf, 0, min(buf.length, remaining));
             updateCount++;
-            return true;
+            if (action != null)
+            {
+                ByteBuffer frame = service.getFrame();
+                int remaining = frame.remaining();
+                setCurrentBytes(remaining);
+                frame.get(buf, 0, min(buf.length, remaining));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         catch (Exception ex)
         {

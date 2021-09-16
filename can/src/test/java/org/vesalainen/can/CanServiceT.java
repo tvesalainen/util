@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import org.junit.Test;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
+import org.vesalainen.jmx.SimpleJMX;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -40,6 +41,7 @@ public class CanServiceT
     public CanServiceT()
     {
         JavaLogging.setConsoleHandler("org.vesalainen", Level.FINER);
+        SimpleJMX.start();
     }
 
     @Test

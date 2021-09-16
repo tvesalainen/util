@@ -35,8 +35,10 @@ import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
+import javax.management.Notification;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -61,11 +63,13 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public abstract class AbstractMessage extends JavaLogging implements CanMXBean, NotificationEmitter
 {
+    protected final String NOTIF_PREFIX = "org.vesalainen.can.notif.";
+    protected final String NOTIF_HEX_TYPE = NOTIF_PREFIX+"HEX";
     protected final MessageClass messageClass;
     protected final int canId;
     protected byte[] buf;
     protected String name;
-    protected Runnable action = ()->{};
+    protected Runnable action;
     protected Runnable jmxAction;
     protected int maxRepeatCount;
     protected Runnable[] repeatables;
@@ -75,11 +79,12 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected Runnable startRepeat;
     protected Runnable endRepeat;
     private int currentBytes;
-    protected SimpleNotificationEmitter<String> emitter;
+    protected SimpleNotificationEmitter emitter;
     protected ObjectName objectName;
     protected final Executor executor;
     protected int updateCount;
     protected int executeCount;
+    protected MBeanNotificationInfo[] mBeanNotificationInfos;
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -87,6 +92,24 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         this.executor = executor;
         this.messageClass = messageClass;
         this.canId = canId;
+        // notif
+        mBeanNotificationInfos = new MBeanNotificationInfo[1];
+        String[] types;
+        if (messageClass != null)
+        {
+            types = new String[messageClass.getSignalCount()+1];
+            Object[] arr = messageClass.getSignals().keySet().toArray();
+            for (int ii=0;ii<arr.length;ii++)
+            {
+                types[ii+1] = NOTIF_PREFIX+arr[ii];
+            }
+        }
+        else
+        {
+            types = new String[1];
+        }
+        mBeanNotificationInfos[0] = new MBeanNotificationInfo(types, Notification.class.getName(), "CAN Signals");
+        types[0] = NOTIF_HEX_TYPE;
     }
 
     void registerMBean()
@@ -98,20 +121,19 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                     executor, 
                     "org.vesalainen.can.notification", 
                     objectName, 
-                    new MBeanNotificationInfo(
-                            new String[]{"org.vesalainen.can.notification"},
-                            "javax.management.Notification",
-                            "CAN signals")
+                    mBeanNotificationInfos
                     );
             emitter.setAttach(this::attach);
             emitter.setDetach(this::detach);
-            ManagementFactory.getPlatformMBeanServer().registerMBean(this, objectName);
+            MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+            server.registerMBean(this, objectName);
         }
-        catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException ex)
+        catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException  ex)
         {
             throw new RuntimeException(ex);
         }
     }
+
     void unregisterMBean()
     {
         try
@@ -129,10 +151,12 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected void attach()
     {
         jmxAction = compileSignals(new JmxCompiler());
+        info("attach JMX %s", name);
     }
     protected void detach()
     {
         jmxAction = null;
+        info("detach JMX %s", name);
     }
 
     @Override
@@ -263,7 +287,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     {
         if (jmxAction != null)
         {
-            emitter.sendNotification(()->HexUtil.toString(buf), ()->null, System::currentTimeMillis);
+            emitter.sendNotification(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), System::currentTimeMillis);
             jmxAction.run();
         }
     }
@@ -379,14 +403,23 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         }
         private Runnable combineRunnables(List<Runnable> sigs)
         {
-            Runnable[] array = createArray(sigs);
-            return ()->
+            if (!sigs.isEmpty())
             {
-                for (Runnable c : array)
+                Runnable[] array = createArray(sigs);
+                int length = array.length;
+                return ()->
                 {
-                    c.run();
-                }
-            };
+                    for (int ii=0;ii<length;ii++)
+                    {
+                        Runnable c = array[ii];
+                        c.run();
+                    }
+                };
+            }
+            else
+            {
+                return null;
+            }
         }
         private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals)
         {
@@ -562,8 +595,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->name+"="+supplier.getAsInt()+unit;
-            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
+            Supplier<String> text = ()->supplier.getAsInt()+unit;
+            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
         }
 
         @Override
@@ -571,8 +604,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->name+"="+supplier.getAsLong()+unit;
-            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
+            Supplier<String> text = ()->supplier.getAsLong()+unit;
+            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
         }
 
         @Override
@@ -580,8 +613,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->name+"="+supplier.getAsDouble()+unit;
-            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
+            Supplier<String> text = ()->supplier.getAsDouble()+unit;
+            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
         }
 
         @Override
@@ -589,8 +622,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->name+"="+map.apply(supplier.getAsInt())+unit;
-            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
+            Supplier<String> text = ()->map.apply(supplier.getAsInt())+unit;
+            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
         }
 
         @Override
@@ -598,8 +631,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->name+"="+ss.get()+unit;
-            return ()->emitter.sendNotification(text, ()->null, System::currentTimeMillis);
+            Supplier<String> text = ()->ss.get()+unit;
+            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
         }
 
     }
