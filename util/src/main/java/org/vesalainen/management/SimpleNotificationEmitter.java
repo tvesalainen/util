@@ -38,20 +38,19 @@ import org.vesalainen.util.logging.JavaLogging;
  * NotificationEmitter implementation which tries to minimize cpu load in
  * transmitting part in particular if there are no listeners.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
- * @param <U> Type of user-data
  */
 public class SimpleNotificationEmitter implements NotificationEmitter
 {
     private MapList<NotificationListener,ListenerWrapper> map = new HashMapList<>();
-    private String type;
-    private ObjectName source;
+    private String typeDefault;
+    private ObjectName sourceDefault;
     private MBeanNotificationInfo[] infos;
     private Executor executor;
     private AtomicLong sequenceNumber = new AtomicLong();
     private Runnable attach;
     private Runnable detach;
     /**
-     * Creates NotificationEmitterImpl with gives infos. Notifications are sent
+     * Creates NotificationEmitterImpl with given infos. Notifications are sent
      * in calling thread.
      * @param type
      * @param source
@@ -72,8 +71,8 @@ public class SimpleNotificationEmitter implements NotificationEmitter
     public SimpleNotificationEmitter(Executor executor, String type, ObjectName source, MBeanNotificationInfo... infos)
     {
         this.executor = executor;
-        this.type = type;
-        this.source = source;
+        this.typeDefault = type;
+        this.sourceDefault = source;
         this.infos = infos;
     }
     /**
@@ -110,21 +109,28 @@ public class SimpleNotificationEmitter implements NotificationEmitter
      */
     public synchronized <U> void sendNotification(Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
     {
+        sendNotification(()->typeDefault, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, userDataSupplier, timestampSupplier);
+    }
+    public synchronized <U> void sendNotification(Supplier<String> typeSupplier, Supplier<Object> sourceSupplier, LongSupplier sequenceSupplier, Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
+    {
         if (!map.isEmpty())
         {
-            sendNotification(textSupplier.get(), userDataSupplier.get(), timestampSupplier.getAsLong());
+            sendNotification(typeSupplier.get(), sourceSupplier.get(), sequenceSupplier.getAsLong(), textSupplier.get(), userDataSupplier.get(), timestampSupplier.getAsLong());
         }
     }
     /**
      * Send notification.
      * @param <U>
+     * @param type
+     * @param source
+     * @param sequence
      * @param text
      * @param userData
      * @param timeStamp 
      */
-    public synchronized <U> void sendNotification(String text, U userData, long timeStamp)
+    public synchronized <U> void sendNotification(String type, Object source, long sequence, String text, U userData, long timeStamp)
     {
-        Notification notification = new Notification(type, source, sequenceNumber.incrementAndGet(), timeStamp, text);
+        Notification notification = new Notification(type, source, sequence, timeStamp, text);
         notification.setUserData(userData);
         map.valueSet()
                 .forEach((ListenerWrapper w)->executor.execute(()->w.sendNotification(notification)));
