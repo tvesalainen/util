@@ -30,6 +30,7 @@ import org.vesalainen.can.dbc.SignalClass;
  */
 public interface SignalCompiler
 {
+    long getMillis();
     default boolean needCompilation(int canId)
     {
         return true;

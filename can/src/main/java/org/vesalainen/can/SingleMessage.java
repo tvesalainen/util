@@ -19,6 +19,7 @@ package org.vesalainen.can;
 import static java.lang.Integer.min;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
+import java.util.function.LongSupplier;
 import static java.util.logging.Level.*;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -30,6 +31,8 @@ import org.vesalainen.can.dbc.MessageClass;
  */
 public class SingleMessage extends AbstractMessage
 {
+
+    protected LongSupplier millisSupplier;
 
     public SingleMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
     {
@@ -72,6 +75,7 @@ public class SingleMessage extends AbstractMessage
                 int remaining = frame.remaining();
                 setCurrentBytes(remaining);
                 frame.get(buf, 0, min(buf.length, remaining));
+                millisSupplier = service.getMillisSupplier();
                 return true;
             }
             else
@@ -100,6 +104,12 @@ public class SingleMessage extends AbstractMessage
         {
             log(WARNING, ex, "execute %s", name);
         }
+    }
+
+    @Override
+    protected long getMillis()
+    {
+        return millisSupplier.getAsLong();
     }
 
 }

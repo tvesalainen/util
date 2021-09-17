@@ -63,6 +63,7 @@ public class FastMessage extends PgnMessage
                     byteCount = frame.get(1) & 0xff;
                     setCurrentBytes(byteCount);
                     frame.position(2);
+                    millisSupplier = service.getMillisSupplier();
                     finest("new fast %s: %d cnt=%d buf=%d", name, id, byteCount, buf.length);
                 }
                 else

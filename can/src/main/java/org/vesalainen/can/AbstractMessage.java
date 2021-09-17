@@ -108,8 +108,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             types = new String[1];
         }
-        mBeanNotificationInfos[0] = new MBeanNotificationInfo(types, Notification.class.getName(), "CAN Signals");
         types[0] = NOTIF_HEX_TYPE;
+        mBeanNotificationInfos[0] = new MBeanNotificationInfo(types, Notification.class.getName(), "CAN Signals");
     }
 
     void registerMBean()
@@ -150,7 +150,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     }
     protected void attach()
     {
-        jmxAction = compileSignals(new JmxCompiler());
+        jmxAction = compileSignals(new JmxCompiler(this::getMillis));
         info("attach JMX %s", name);
     }
     protected void detach()
@@ -282,12 +282,14 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected abstract boolean update(AbstractCanService service);
 
     protected abstract void execute();
+    
+    protected abstract long getMillis();
 
     protected void sendJmx()
     {
         if (jmxAction != null)
         {
-            emitter.sendNotification(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), System::currentTimeMillis);
+            emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis);
             jmxAction.run();
         }
     }
@@ -580,8 +582,17 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     private class JmxCompiler implements SignalCompiler
     {
 
-        public JmxCompiler()
+        private final LongSupplier millisSupplier;
+
+        public JmxCompiler(LongSupplier millisSupplier)
         {
+            this.millisSupplier = millisSupplier;
+        }
+
+        @Override
+        public long getMillis()
+        {
+            return millisSupplier.getAsLong();
         }
 
         @Override
@@ -596,7 +607,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             String name = sc.getName();
             String unit = sc.getUnit();
             Supplier<String> text = ()->supplier.getAsInt()+unit;
-            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
+            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
         }
 
         @Override
@@ -605,7 +616,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             String name = sc.getName();
             String unit = sc.getUnit();
             Supplier<String> text = ()->supplier.getAsLong()+unit;
-            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
+            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
         }
 
         @Override
@@ -614,7 +625,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             String name = sc.getName();
             String unit = sc.getUnit();
             Supplier<String> text = ()->supplier.getAsDouble()+unit;
-            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
+            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
         }
 
         @Override
@@ -623,7 +634,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             String name = sc.getName();
             String unit = sc.getUnit();
             Supplier<String> text = ()->map.apply(supplier.getAsInt())+unit;
-            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
+            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
         }
 
         @Override
@@ -632,7 +643,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             String name = sc.getName();
             String unit = sc.getUnit();
             Supplier<String> text = ()->ss.get()+unit;
-            return ()->emitter.sendNotification(()->NOTIF_PREFIX+name, text, System::currentTimeMillis);
+            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
         }
 
     }

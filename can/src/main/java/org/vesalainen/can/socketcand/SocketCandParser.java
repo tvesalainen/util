@@ -17,8 +17,6 @@
 package org.vesalainen.can.socketcand;
 
 import java.nio.channels.ByteChannel;
-import org.vesalainen.can.dbc.DBCFile;
-import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.ParserConstants;
 import org.vesalainen.parser.ParserInfo;

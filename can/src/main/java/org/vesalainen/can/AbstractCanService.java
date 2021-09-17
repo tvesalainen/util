@@ -18,20 +18,19 @@ package org.vesalainen.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.LongSupplier;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.socketcand.SocketCandService;
-import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -116,6 +115,10 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     }
 
     public abstract ByteBuffer getFrame();
+    public LongSupplier getMillisSupplier()
+    {
+        return this::getMillis;
+    }
     public long getMillis()
     {
         return System.currentTimeMillis();

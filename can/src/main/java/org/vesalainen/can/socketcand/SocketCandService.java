@@ -20,12 +20,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.time.Instant;
+import java.util.function.LongSupplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
-import org.vesalainen.can.MessageFactory;
 import org.vesalainen.can.SignalCompiler;
-import org.vesalainen.lang.Primitives;
 import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
@@ -132,26 +130,63 @@ public class SocketCandService extends AbstractCanService
     public ByteBuffer getFrame()
     {
         data.clear();
-        String string = input.getString(dataStart, dataLength);
         for (int ii=0;ii<dataLength;ii+=2)
         {
             data.put((byte) (Character.digit(input.get(dataStart+ii), 16)<<4|Character.digit(input.get(dataStart+ii+1), 16)));
         }
         data.flip();
-        String remainingToHex = HexDump.remainingToHex(data);
         return data;
     }
 
     @Override
     public Instant getInstant()
     {
-        return super.getInstant(); //To change body of generated methods, choose Tools | Templates.
+        return super.getInstant();
+    }
+
+    @Override
+    public LongSupplier getMillisSupplier()
+    {
+        return ()->millis(timeStart, timeLength);
     }
 
     @Override
     public long getMillis()
     {
-        return super.getMillis(); //To change body of generated methods, choose Tools | Templates.
+        return millis(timeStart, timeLength);
+    }
+
+    private long millis(long start, int length)
+    {
+        long m = 0;
+        boolean decimal = false;
+        int dec = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            int cc = input.get(start+ii);
+            if (cc == '.')
+            {
+                decimal = true;
+            }
+            else
+            {
+                m*=10;
+                m+=Character.digit(cc, 10);
+                if (decimal)
+                {
+                    dec++;
+                    if (dec == 3)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        if (dec != 3)
+        {
+            throw new IllegalArgumentException(input.getString(start, length));
+        }
+        return m;
     }
 
     void setData(long start, int length)

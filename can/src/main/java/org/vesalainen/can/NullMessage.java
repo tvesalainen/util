@@ -61,7 +61,7 @@ public class NullMessage extends SingleMessage
         super.update(service);
         if (emitter != null)
         {
-            emitter.sendNotification(() -> HexUtil.toString(buf), () -> null, System::currentTimeMillis);
+            emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis);
         }
         return false;
     }

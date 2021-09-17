@@ -59,6 +59,12 @@ public class CanServiceT
     {
 
         @Override
+        public long getMillis()
+        {
+            return System.currentTimeMillis();
+        }
+
+        @Override
         public Runnable compileBegin(MessageClass mc)
         {
             return ()->System.err.print(mc.getName()+":");
