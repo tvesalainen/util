@@ -31,7 +31,7 @@ public class RefreshableTimerTest
     {
     }
 
-    @Test
+    //@Test
     public void test()
     {
         RefreshableTimer timer = new RefreshableTimer();

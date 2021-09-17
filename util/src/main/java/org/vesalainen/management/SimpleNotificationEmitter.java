@@ -111,6 +111,20 @@ public class SimpleNotificationEmitter implements NotificationEmitter
     {
         sendNotification(()->typeDefault, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, userDataSupplier, timestampSupplier);
     }
+    public synchronized void sendNotification2(Supplier<String> typeSupplier, Supplier<String> textSupplier, LongSupplier timestampSupplier)
+    {
+        sendNotification(typeSupplier, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, ()->null, timestampSupplier);
+    }
+    /**
+     * Send notification.supplier is called only if there are listeners
+     * @param <U>
+     * @param typeSupplier
+     * @param sourceSupplier
+     * @param sequenceSupplier
+     * @param textSupplier
+     * @param userDataSupplier
+     * @param timestampSupplier 
+     */
     public synchronized <U> void sendNotification(Supplier<String> typeSupplier, Supplier<Object> sourceSupplier, LongSupplier sequenceSupplier, Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
     {
         if (!map.isEmpty())
