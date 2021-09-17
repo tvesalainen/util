@@ -206,7 +206,7 @@ public class SimpleMBeanServer implements MBeanServer
             ClassLoader cl = (ClassLoader) object;
             classLoaders.remove(cl);
         }
-        mBeans.remove(object);
+        mBeans.remove(name);
         delegate.sendNotification(new MBeanServerNotification(MBeanServerNotification.UNREGISTRATION_NOTIFICATION, this, sequenceNumber.incrementAndGet(), name));
         if (object instanceof MBeanRegistration)
         {

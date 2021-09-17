@@ -67,6 +67,7 @@ import org.vesalainen.html.Element;
 import org.vesalainen.html.InputTag;
 import org.vesalainen.html.Renderer;
 import org.vesalainen.html.Tag;
+import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
 
 /**
@@ -181,9 +182,7 @@ public class JmxServlet extends HttpServlet
         }
         catch (Exception ex)
         {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            log(ex.getMessage(), ex);
-            return;
+            throw new ServletException(ex);
         }
     }
 
@@ -681,14 +680,14 @@ public class JmxServlet extends HttpServlet
         resp.flushBuffer();
         AsyncContext asyncContext = req.startAsync();
         asyncContext.setTimeout(-1);
-        NotificationFilterSupport filter = new NotificationFilterSupport();
-        Listener listener = new Listener(objectName, asyncContext, filter, null);
-        asyncContext.addListener(listener);
+        
         try
         {
             MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(objectName);
             MBeanNotificationInfo info = getFeatureInfo(name, mBeanInfo.getNotifications());
-            
+            int commonPrefixLength = CharSequences.commonPrefixLength(info.getNotifTypes());
+            NotificationFilterSupport filter = new NotificationFilterSupport();
+            boolean notAllSet = false;
             for (String type : info.getNotifTypes())
             {
                 String parameter = req.getParameter(type);
@@ -696,8 +695,18 @@ public class JmxServlet extends HttpServlet
                 {
                     filter.enableType(type);
                 }
+                else
+                {
+                    notAllSet = true;
+                }
+            }
+            if (!notAllSet)
+            {
+                filter = null;
             }
             
+            Listener listener = new Listener(objectName, asyncContext, filter, commonPrefixLength);
+            asyncContext.addListener(listener);
             serverConnection.addNotificationListener(objectName, listener, filter, null);
 
         }
@@ -712,15 +721,15 @@ public class JmxServlet extends HttpServlet
         private final ObjectName objectName;
         private final AsyncContext asyncContext;
         private final NotificationFilter filter;
-        private final Object handback;
+        private final int commonPrefixLength;
         private final ReentrantLock lock = new ReentrantLock();
 
-        public Listener(ObjectName objectName, AsyncContext asyncContext, NotificationFilter filter, Object handback)
+        public Listener(ObjectName objectName, AsyncContext asyncContext, NotificationFilter filter, int commonPrefixLength)
         {
             this.objectName = objectName;
             this.asyncContext = asyncContext;
             this.filter = filter;
-            this.handback = handback;
+            this.commonPrefixLength = commonPrefixLength;
         }
 
         @Override
@@ -735,7 +744,7 @@ public class JmxServlet extends HttpServlet
                 writer.append("<tr class=\"notification\"><td>");
                 writeTimestamp(writer, n.getTimeStamp());
                 writer.append("</td><td>");
-                writer.append(n.getType());
+                writer.append(n.getType().substring(commonPrefixLength));
                 writer.append("</td><td>");
                 writer.append(n.getMessage());
                 writer.append("</td><td>");
@@ -801,7 +810,7 @@ public class JmxServlet extends HttpServlet
         {
             try
             {
-                serverConnection.removeNotificationListener(objectName, this, filter, handback);
+                serverConnection.removeNotificationListener(objectName, this, filter, null);
             }
             catch (InstanceNotFoundException | ListenerNotFoundException ex1)
             {
