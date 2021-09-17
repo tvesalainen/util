@@ -34,6 +34,13 @@ public class CharSequencesTest
     }
 
     @Test
+    public void testCommonPrefixLength()
+    {
+        assertEquals(3, CharSequences.commonPrefixLength(new String[]{"abcdef", "abcdjke", "abcqwe"}));
+        assertEquals(-1, CharSequences.commonPrefixLength(new String[]{}));
+        assertEquals(0, CharSequences.commonPrefixLength(new String[]{"abcdef", "sbcdjke", "abcqwe"}));
+    }
+    @Test
     public void test1()
     {
         String s1 = "qw\rerty\r\n\r\ncontent";

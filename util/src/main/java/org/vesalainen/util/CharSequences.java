@@ -18,13 +18,15 @@ package org.vesalainen.util;
 
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.min;
 import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.Stream;
@@ -37,8 +39,66 @@ import org.vesalainen.util.stream.Streams;
  * A Utility class that contains helper methods for CharSequences.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CharSequences
+public final class CharSequences
 {
+    /**
+     * Returns length of prefix that all strings have in common.
+     * @param <T>
+     * @param array
+     * @return 
+     */
+    public static <T extends CharSequence> int commonPrefixLength(T... array)
+    {
+        return commonPrefixLength(Stream.of(array));
+    }
+    /**
+     * Returns length of prefix that all strings have in common.
+     * @param <T>
+     * @param collection
+     * @return 
+     */
+    public static <T extends CharSequence> int commonPrefixLength(Collection<T> collection)
+    {
+        return commonPrefixLength(collection.stream());
+    }
+    /**
+     * Returns length of prefix that all strings have in common.
+     * @param <T>
+     * @param stream
+     * @return 
+     */
+    public static <T extends CharSequence> int commonPrefixLength(Stream<T> stream)
+    {
+        int cpl;
+        Iterator<T> it = stream.iterator();
+        if (it.hasNext())
+        {
+            T first = it.next();
+            cpl = first.length();
+            while (it.hasNext())
+            {
+                T next = it.next();
+                int len = min(cpl, next.length());
+                for (int ii=0;ii<len;ii++)
+                {
+                    if (first.charAt(ii) != next.charAt(ii))
+                    {
+                        cpl = ii;
+                        break;
+                    }
+                }
+                if (cpl == 0)
+                {
+                    break;
+                }
+            }
+            return cpl;
+        }
+        else
+        {
+            return -1;
+        }
+    }
     /**
      * Compares two CharSequences
      * @param s1
