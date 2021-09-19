@@ -30,12 +30,11 @@ import org.vesalainen.can.dbc.SignalClass;
  */
 public interface SignalCompiler
 {
-    long getMillis();
     default boolean needCompilation(int canId)
     {
         return true;
     }
-    default Runnable compileBegin(MessageClass mc) {return null;};
+    default Runnable compileBegin(MessageClass mc, LongSupplier millisSupplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier) {return null;};

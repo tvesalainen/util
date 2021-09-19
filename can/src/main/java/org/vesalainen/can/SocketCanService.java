@@ -26,7 +26,8 @@ import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
- *
+ * @deprecated SocketCan is not suitable network protocol because it is not
+ * using network-byte-order.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class SocketCanService extends AbstractCanService

@@ -66,7 +66,7 @@ public class SocketCandService extends AbstractCanService
                 channel = SocketChannel.open(info.getAddress());
                 readSocketCand(channel);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 log(Level.SEVERE, "exit SocketCandService", ex);
                 return;

@@ -150,7 +150,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     }
     protected void attach()
     {
-        jmxAction = compileSignals(new JmxCompiler(this::getMillis));
+        jmxAction = compileSignals(new JmxCompiler());
         info("attach JMX %s", name);
     }
     protected void detach()
@@ -463,7 +463,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         }
         private Runnable createBegin(MessageClass mc)
         {
-            return compiler.compileBegin(mc);
+            return compiler.compileBegin(mc, ()->getMillis());
         }
         private Runnable createSignal(MessageClass mc, SignalClass sc)
         {
@@ -582,14 +582,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     private class JmxCompiler implements SignalCompiler
     {
 
-        private final LongSupplier millisSupplier;
+        private LongSupplier millisSupplier;
 
-        public JmxCompiler(LongSupplier millisSupplier)
-        {
-            this.millisSupplier = millisSupplier;
-        }
-
-        @Override
         public long getMillis()
         {
             return millisSupplier.getAsLong();
@@ -599,6 +593,13 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         public boolean needCompilation(int canId)
         {
             return true;
+        }
+
+        @Override
+        public Runnable compileBegin(MessageClass mc, LongSupplier millisSupplier)
+        {
+            this.millisSupplier = millisSupplier;
+            return SignalCompiler.super.compileBegin(mc, millisSupplier);
         }
 
         @Override
