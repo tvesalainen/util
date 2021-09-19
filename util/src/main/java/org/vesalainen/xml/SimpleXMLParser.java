@@ -268,7 +268,7 @@ public class SimpleXMLParser
             int length = attributes.getLength();
             for (int ii=0;ii<length;ii++)
             {
-                check(attributes.getURI(ii), attributes.getLocalName(ii));
+                //check(attributes.getURI(ii), attributes.getLocalName(ii));
                 map.put(attributes.getQName(ii), attributes.getValue(ii));
             }
             return map;
