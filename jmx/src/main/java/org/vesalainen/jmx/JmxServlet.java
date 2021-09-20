@@ -740,20 +740,20 @@ public class JmxServlet extends HttpServlet
             try
             {
                 writer = asyncContext.getResponse().getWriter();
-                writer.write("data:");
+                writer.append("data:");
                 writer.append("<tr class=\"notification\"><td>");
                 writeTimestamp(writer, n.getTimeStamp());
                 writer.append("</td><td>");
                 writer.append(n.getType().substring(commonPrefixLength));
                 writer.append("</td><td>");
-                writer.append(n.getMessage());
+                writer.append(n.getMessage().trim());
                 writer.append("</td><td>");
                 Object u = n.getUserData();
                 writer.append(u != null ? u.toString() : "");
                 writer.append("</td><td>");
                 writer.append(Long.toString(n.getSequenceNumber()));
                 writer.append("</td></tr>");
-                writer.write("\n\n");
+                writer.append("\n\n");
                 if (writer.checkError())
                 {
                     removeNotificationListener();
