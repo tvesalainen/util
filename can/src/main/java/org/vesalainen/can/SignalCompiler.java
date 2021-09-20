@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -41,7 +42,7 @@ public interface SignalCompiler
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map) {return null;};
     default Runnable compileBinary(MessageClass mc, SignalClass sc) {return null;}
     default Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss) {return null;};
-    default Runnable compileEnd(MessageClass mc) {return null;};
+    default Consumer<Throwable> compileEnd(MessageClass mc) {return null;};
     default Runnable compileBeginRepeat(MessageClass mc) {return null;};
     default Runnable compileEndRepeat(MessageClass mc) {return null;};
 

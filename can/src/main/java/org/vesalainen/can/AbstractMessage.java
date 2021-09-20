@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
@@ -69,6 +70,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected final int canId;
     protected byte[] buf;
     protected String name;
+    protected Runnable begin;
+    protected Consumer<Throwable> end;
     protected Runnable action;
     protected Runnable jmxAction;
     protected int maxRepeatCount;
@@ -297,7 +300,9 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     {
         if (messageClass != null)
         {
+            begin = compiler.compileBegin(messageClass, ()->getMillis());
             action = compileSignals(compiler);
+            end = compiler.compileEnd(messageClass);
         }
     }
     Runnable compileSignals(SignalCompiler compiler)
@@ -328,7 +333,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         private Runnable build()
         {
             List<SignalClass> repeatingSignals = new ArrayList<>();
-            addAction(createBegin(mc));
             mc.forEach((sc)->
             {
                 finer("add signal %s", sc);
@@ -378,7 +382,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 startRepeat = compiler.compileBeginRepeat(mc);
                 endRepeat = compiler.compileEndRepeat(mc);
             }
-            addAction(createEnd(mc));
             if (rootMultiplexor != null)
             {
                 mpxMap.forEach((sc,map)->
@@ -461,10 +464,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             });
             return combineRunnables(list);
         }
-        private Runnable createBegin(MessageClass mc)
-        {
-            return compiler.compileBegin(mc, ()->getMillis());
-        }
         private Runnable createSignal(MessageClass mc, SignalClass sc)
         {
             return createSignal(mc, sc, 0);
@@ -505,10 +504,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }
-        }
-        private Runnable createEnd(MessageClass mc)
-        {
-            return compiler.compileEnd(mc);
         }
         private void addAction(Runnable act)
         {

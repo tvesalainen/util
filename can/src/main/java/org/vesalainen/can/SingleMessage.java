@@ -93,10 +93,28 @@ public class SingleMessage extends AbstractMessage
     @Override
     protected void execute()
     {
-        //info("execute pgn=%d src=%d %s\n%s", pgn, source, name, HexUtil.toString(buf));
         try
         {
-            action.run();
+            Throwable thr = null;
+            if (begin != null)
+            {
+                begin.run();
+            }
+            try
+            {
+                action.run();
+            }
+            catch (Throwable ex)
+            {
+                thr = ex;
+            }
+            finally
+            {
+                if (end != null)
+                {
+                    end.accept(thr);
+                }
+            }
             sendJmx();
             executeCount++;
         }
