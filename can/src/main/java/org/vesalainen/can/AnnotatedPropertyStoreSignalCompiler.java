@@ -22,7 +22,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
-import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.j1939.PGN;
@@ -32,7 +31,6 @@ import org.vesalainen.code.setter.FloatSetter;
 import org.vesalainen.code.setter.IntSetter;
 
 /**
- * TODO move to org.vesalainen.can
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
@@ -42,7 +40,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
     protected final Map<Integer,Msg> pgnMap = new HashMap<>();
     protected ThreadLocal<Msg> ctx = new ThreadLocal<>();
 
-    public AnnotatedPropertyStoreSignalCompiler(AnnotatedPropertyStore store)
+    public <T extends AnnotatedPropertyStore> AnnotatedPropertyStoreSignalCompiler(T store)
     {
         this.store = store;
     }
