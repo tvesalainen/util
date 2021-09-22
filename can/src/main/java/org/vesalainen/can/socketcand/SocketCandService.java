@@ -19,10 +19,9 @@ package org.vesalainen.can.socketcand;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.time.Instant;
-import java.util.function.LongSupplier;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
+import org.vesalainen.can.Frame;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
@@ -41,18 +40,13 @@ public class SocketCandService extends AbstractCanService
     private final ByteBufferCharSequence openBus;
     private final ByteBufferCharSequence rawMode = new ByteBufferCharSequence("< rawmode >");
     private SocketChannel channel;
-    private ByteBuffer data;
     private InputReader input;
-    private long dataStart;
-    private int dataLength;
-    private long timeStart;
-    private int timeLength;
+    private ThreadLocal<FrameImpl> localFrame = ThreadLocal.withInitial(FrameImpl::new);
     
     public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         super(executor, compiler);
         this.openBus = new ByteBufferCharSequence("< open "+canBus+" >");
-        this.data = ByteBuffer.allocate(8);
     }
 
     @Override
@@ -121,84 +115,119 @@ public class SocketCandService extends AbstractCanService
         }
     }
 
-    void frame(int canId)
+    void frame(int rawId, int timeRef, int dataRef)
     {
-        rawFrame(canId);
+        executor.execute(()->frame2(rawId, timeRef, dataRef));
     }
-
-    @Override
-    public ByteBuffer getFrame()
+    void frame2(int rawId, int timeRef, int dataRef)
     {
-        data.clear();
-        for (int ii=0;ii<dataLength;ii+=2)
+        if ((rawId & 0b1100000000000000000000000000000) != 0)
         {
-            data.put((byte) (Character.digit(input.get(dataStart+ii), 16)<<4|Character.digit(input.get(dataStart+ii+1), 16)));
+            warning("\nEFF/SFF is set in the MSB %s", input.getString(dataRef));
         }
-        data.flip();
-        return data;
-    }
-
-    @Override
-    public Instant getInstant()
-    {
-        return super.getInstant();
-    }
-
-    @Override
-    public LongSupplier getMillisSupplier()
-    {
-        return ()->millis(timeStart, timeLength);
-    }
-
-    @Override
-    public long getMillis()
-    {
-        return millis(timeStart, timeLength);
-    }
-
-    private long millis(long start, int length)
-    {
-        long m = 0;
-        boolean decimal = false;
-        int dec = 0;
-        for (int ii=0;ii<length;ii++)
+        else
         {
-            int cc = input.get(start+ii);
-            if (cc == '.')
+            int canId;
+            if ((rawId & 0b10000000000000000000000000000000) != 0)
             {
-                decimal = true;
+                canId = rawId & 0b11111111111111111111111111111;
             }
             else
             {
-                m*=10;
-                m+=Character.digit(cc, 10);
-                if (decimal)
+                canId = rawId;
+            }
+            FrameImpl frame = localFrame.get();
+            frame.init(canId, timeRef, dataRef);
+            rawFrame(frame);
+        }
+    }
+
+    private class FrameImpl implements Frame
+    {
+        private int canId;
+        private int timeRef;
+        private int dataLength;
+        private int dataStart;
+
+        private void init(int canId, int timeRef, int dataRef)
+        {
+            this.canId = canId;
+            this.timeRef = timeRef;
+            this.dataLength = input.getLength(dataRef);
+            this.dataStart = input.getStart(dataRef);
+        }
+        
+        @Override
+        public long getMillis()
+        {
+            int start = input.getStart(timeRef);
+            int length = input.getLength(timeRef);
+            long m = 0;
+            boolean decimal = false;
+            int dec = 0;
+            for (int ii=0;ii<length;ii++)
+            {
+                int cc = input.get(start+ii);
+                if (cc == '.')
                 {
-                    dec++;
-                    if (dec == 3)
+                    decimal = true;
+                }
+                else
+                {
+                    m*=10;
+                    m+=Character.digit(cc, 10);
+                    if (decimal)
                     {
-                        break;
+                        dec++;
+                        if (dec == 3)
+                        {
+                            break;
+                        }
                     }
                 }
             }
+            if (dec != 3)
+            {
+                throw new IllegalArgumentException(input.getString(start, length));
+            }
+            return m;
         }
-        if (dec != 3)
+
+        @Override
+        public byte getData(int index)
         {
-            throw new IllegalArgumentException(input.getString(start, length));
+            if (index > dataLength/2 || index < 0)
+            {
+                throw new IndexOutOfBoundsException(index+" out of bounds");
+            }
+            return (byte) (Character.digit(input.get(dataStart+2*index), 16)<<4|Character.digit(input.get(dataStart+2*index+1), 16));
         }
-        return m;
-    }
 
-    void setData(long start, int length)
-    {
-        this.dataStart = start;
-        this.dataLength = length;
-    }
+        @Override
+        public void getData(byte[] buf, int sourceOffset, int bufOffset, int length)
+        {
+            if (sourceOffset+length > dataLength/2 || sourceOffset < 0 || bufOffset < 0)
+            {
+                throw new IndexOutOfBoundsException("out of bounds");
+            }
+            for (int ii=0;ii<length;ii++)
+            {
+                int index = sourceOffset+ii;
+                buf[bufOffset+ii] = (byte) (Character.digit(input.get(dataStart+2*index), 16)<<4|Character.digit(input.get(dataStart+2*index+1), 16));
+            }
+        }
 
-    void setTime(long start, int length)
-    {
-        this.timeStart = start;
-        this.timeLength = length;
-    }
+        @Override
+        public int getDataLength()
+        {
+            return dataLength/2;
+        }
 
+        @Override
+        public int getCanId()
+        {
+            return canId;
+        }
+        
+    }
 }

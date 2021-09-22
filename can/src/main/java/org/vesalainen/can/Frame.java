@@ -16,39 +16,23 @@
  */
 package org.vesalainen.can;
 
-import java.util.concurrent.Executor;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import org.vesalainen.util.HexUtil;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class NullMessage extends SingleMessage
+public interface Frame
 {
+
+    long getMillis();
+    byte getData(int index);
+    int getDataLength();
+    default void getData(byte[] buf, int sourceOffset, int bufOffset, int length)
+    {
+        for (int ii=0;ii<length;ii++)
+        {
+            buf[bufOffset+ii] = getData(sourceOffset+ii);
+        }
+    }
+    int getCanId();
     
-    public NullMessage(Executor executor, int canId)
-    {
-        super(executor, null, canId, 8, "unknown frame");
-    }
-
-    @Override
-    public int getMaxBytes()
-    {
-        return 0;
-    }
-
-    @Override
-    protected ObjectName getObjectName() throws MalformedObjectNameException
-    {
-        return new ObjectName("org.vesalainen.can:type=Unknown,canId=" + canId);
-    }
-
-    @Override
-    Action compileSignals(SignalCompiler compiler)
-    {
-        return new Action(()->emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis));
-    }
-
 }

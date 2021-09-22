@@ -17,14 +17,11 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.LongSupplier;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
@@ -59,14 +56,6 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         this.messageFactory = messageFactory;
     }
 
-    public static AbstractCanService openSocketCan2Udp(String host, int port, SignalCompiler compiler) throws IOException
-    {
-        return openSocketCan2Udp(host, port, new CachedScheduledThreadPool(), compiler);
-    }
-    public static AbstractCanService openSocketCan2Udp(String host, int port, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
-    {
-        return new SocketCanService(host, port, executor, compiler);
-    }
     public static AbstractCanService openSocketCand(String canBus, SignalCompiler compiler) throws IOException
     {
         return openSocketCand(canBus, new CachedScheduledThreadPool(), compiler);
@@ -97,37 +86,19 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         start();
         future.get();
     }
-    final protected void rawFrame(int canId)
+    final protected void rawFrame(Frame frame)
     {
+        int canId = frame.getCanId();
         AbstractMessage proc = procMap.get(canId);
-        if (proc != null)
-        {
-            if (proc.update(this))
-            {
-                proc.execute();
-            }
-        }
-        else
+        if (proc == null)
         {
             addProc(canId, AbstractMessage.getNullMessage(executor, canId));
-            executor.submit((Runnable) ()->compile(canId));
+            compile(canId);
+            proc = procMap.get(canId);
         }
+        proc.rawUpdate(frame);
     }
 
-    public abstract ByteBuffer getFrame();
-    public LongSupplier getMillisSupplier()
-    {
-        return this::getMillis;
-    }
-    public long getMillis()
-    {
-        return System.currentTimeMillis();
-    }
-    public Instant getInstant()
-    {
-        return Instant.ofEpochMilli(getMillis());
-    }
-    
     protected void compile(int canId)
     {
         try

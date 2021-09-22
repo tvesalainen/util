@@ -156,7 +156,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     @Override
     public String toString()
     {
-        return "Message{" + Integer.toHexString(id) + ", name=" + name + ", size=" + size + ", comment=" + comment + '}';
+        return "Message{" + id + ", name=" + name + ", size=" + size + ", comment=" + comment + '}';
     }
 
     public void setSignalValueDescription(String signalName, List<ValueDescription> valDesc)

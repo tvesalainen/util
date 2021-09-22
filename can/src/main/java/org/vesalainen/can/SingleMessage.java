@@ -64,18 +64,16 @@ public class SingleMessage extends AbstractMessage
     }
     
     @Override
-    protected boolean update(AbstractCanService service)
+    protected boolean update(Frame frame)
     {
         try
         {
-            updateCount++;
             if (action != null)
             {
-                ByteBuffer frame = service.getFrame();
-                int remaining = frame.remaining();
+                int remaining = frame.getDataLength();
                 setCurrentBytes(remaining);
-                frame.get(buf, 0, min(buf.length, remaining));
-                millisSupplier = service.getMillisSupplier();
+                frame.getData(buf, 0, 0, min(buf.length, remaining));
+                millisSupplier = ()->frame.getMillis();
                 return true;
             }
             else
@@ -88,40 +86,6 @@ public class SingleMessage extends AbstractMessage
             log(WARNING, ex, "execute %s", name);
         }
         return false;
-    }
-
-    @Override
-    protected void execute()
-    {
-        try
-        {
-            Throwable thr = null;
-            if (begin != null)
-            {
-                begin.run();
-            }
-            try
-            {
-                action.run();
-            }
-            catch (Throwable ex)
-            {
-                thr = ex;
-            }
-            finally
-            {
-                if (end != null)
-                {
-                    end.accept(thr);
-                }
-            }
-            sendJmx();
-            executeCount++;
-        }
-        catch (Exception ex)
-        {
-            log(WARNING, ex, "execute %s", name);
-        }
     }
 
     @Override

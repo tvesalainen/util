@@ -54,21 +54,21 @@ public abstract class SocketCandParser extends AbstractParser implements ParserI
     {
     }
     @Rule("'<' 'frame' hex time data '>'")
-    protected void frame(int canId, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected void frame(int canId, int time, int data, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        svc.frame(canId);
+        svc.frame(canId, time, data);
     }
     
     @Terminal(expression="[0-9a-fA-F]+")
-    protected void data(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected int data(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        svc.setData(input.getStart(), input.getLength());
+        return input.getFieldRef();
     }
 
     @Terminal(expression = "[\\+\\-]?[0-9]+\\.[0-9]+")
-    protected void time(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected int time(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        svc.setTime(input.getStart(), input.getLength());
+        return input.getFieldRef();
     }
     
     @ParseMethod(start="socketcand", whiteSpace={"whiteSpace"}, charSet="US-ASCII")

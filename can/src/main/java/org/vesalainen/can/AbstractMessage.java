@@ -25,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -70,10 +73,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected final int canId;
     protected byte[] buf;
     protected String name;
-    protected Runnable begin;
-    protected Consumer<Throwable> end;
-    protected Runnable action;
-    protected Runnable jmxAction;
+    protected Action action;
+    protected Action jmxAction;
     protected int maxRepeatCount;
     protected Runnable[] repeatables;
     protected int repeatSize;
@@ -85,9 +86,11 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected SimpleNotificationEmitter emitter;
     protected ObjectName objectName;
     protected final Executor executor;
-    protected int updateCount;
-    protected int executeCount;
+    private volatile int updateCount;
+    private volatile int currentUpdateCount;
+    private int executeCount;
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
+    private ReentrantLock lock = new ReentrantLock();
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -121,7 +124,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         {
             this.objectName = getObjectName();
             this.emitter = new SimpleNotificationEmitter(
-                    executor, 
                     "org.vesalainen.can.notification", 
                     objectName, 
                     mBeanNotificationInfos
@@ -146,9 +148,9 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             emitter = null;
             detach();
         }
-        catch (InstanceNotFoundException | MBeanRegistrationException ex)
+        catch (Exception ex)
         {
-            throw new RuntimeException(ex);
+            log(WARNING, ex, "unregisterMBean(%s)", objectName);
         }
     }
     protected void attach()
@@ -279,38 +281,50 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
     /**
      * Updates CanProcessor data. Returns true if needs to execute.
-     * @param service
+     * @param frame
      * @return 
      */
-    protected abstract boolean update(AbstractCanService service);
-
-    protected abstract void execute();
-    
-    protected abstract long getMillis();
-
-    protected void sendJmx()
+    void rawUpdate(Frame frame)
     {
-        if (jmxAction != null)
+        lock.lock();
+        try
         {
-            emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis);
-            jmxAction.run();
+            updateCount++;
+            if (update(frame))
+            {
+                currentUpdateCount = updateCount;
+                action.run();
+                if (jmxAction != null)
+                {
+                    emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis);
+                    jmxAction.run();
+                }
+            }
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
+    protected abstract boolean update(Frame frame);
+    protected abstract long getMillis();
+
     void addSignals(SignalCompiler compiler)
     {
         if (messageClass != null)
         {
-            begin = compiler.compileBegin(messageClass, ()->getMillis());
             action = compileSignals(compiler);
-            end = compiler.compileEnd(messageClass);
         }
     }
-    Runnable compileSignals(SignalCompiler compiler)
+    Action compileSignals(SignalCompiler compiler)
     {
         Objects.requireNonNull(messageClass, "MessageClass null");
         IntRange repeatRange = messageClass.getRepeatRange();
         ActionBuilder actionBuilder = new ActionBuilder(messageClass, compiler, repeatRange);
-        return actionBuilder.build();
+        Runnable begin = compiler.compileBegin(messageClass, ()->getMillis());
+        Runnable act = actionBuilder.build();
+        Consumer<Throwable> end = compiler.compileEnd(messageClass);
+        return new Action(begin, act, end);
     }
 
     private class ActionBuilder
@@ -384,25 +398,35 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             }
             if (rootMultiplexor != null)
             {
-                mpxMap.forEach((sc,map)->
+                if (!mpxMap.isEmpty())
                 {
-                    RtMultiplexor em = extendedMultiplexors.get(sc);
-                    if (em != null)
+                    mpxMap.forEach((sc,map)->
                     {
-                        map.forEach((i, l)->l.add(i, em));
-                    }
-                    IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
-                    map.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
-                    IndexMap<Runnable> indexMap = mpxBuilder.build();
-                    if (em != null)
+                        RtMultiplexor em = extendedMultiplexors.get(sc);
+                        if (em != null)
+                        {
+                            map.forEach((i, l)->l.add(i, em));
+                        }
+                        IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
+                        map.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
+                        IndexMap<Runnable> indexMap = mpxBuilder.build();
+                        if (em != null)
+                        {
+                            em.setMap(indexMap);
+                        }
+                        else
+                        {
+                            rootMultiplexor.setMap(indexMap);
+                        }
+                    });
+                }
+                else
+                {
+                    if (signals.size() == 1)    // multiplexor is the only signal
                     {
-                        em.setMap(indexMap);
+                        signals.clear();
                     }
-                    else
-                    {
-                        rootMultiplexor.setMap(indexMap);
-                    }
-                });
+                }
             }
             return combineRunnables(signals);
         }
@@ -542,6 +566,56 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             return ml;
         }
 
+    }
+    protected class Action implements Runnable
+    {
+        private Runnable begin;
+        private Runnable action;
+        private Consumer<Throwable> end;
+
+        public Action(Runnable action)
+        {
+            this(null, action, null);
+        }
+
+        public Action(Runnable begin, Runnable action, Consumer<Throwable> end)
+        {
+            this.begin = begin != null ? begin : ()->{};
+            this.action = action != null ? action : ()->{};
+            this.end = end != null ? end : (e)->{};
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                Throwable thr = null;
+                begin.run();
+                try
+                {
+                    action.run();
+                    if (currentUpdateCount != updateCount)
+                    {
+                        throw new IllegalMonitorStateException("writing started while reading");
+                    }
+                }
+                catch (Throwable ex)
+                {
+                    thr = ex;
+                    log(SEVERE, ex, "%s %s", name, ex.getMessage());
+                }
+                finally
+                {
+                    end.accept(thr);
+                }
+            }
+            catch (Exception ex)
+            {
+                log(WARNING, ex, "execute %s", name);
+            }
+        }
+        
     }
     private class RtMultiplexor implements Runnable
     {

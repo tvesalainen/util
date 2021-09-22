@@ -30,8 +30,8 @@ public class FastMessage extends PgnMessage
 {
     private final static int MAX_FAST_SIZE = 223*8; // bits
     private byte packetId;
-    private int packetSeq;
     private int byteCount;
+    private int byteMax;
     
     public FastMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
     {
@@ -45,48 +45,41 @@ public class FastMessage extends PgnMessage
     }
 
     @Override
-    protected boolean update(AbstractCanService service)
+    protected boolean update(Frame frame)
     {
         try
         {
-            updateCount++;
             if (action != null)
             {
-                ByteBuffer frame = service.getFrame();
-                byte b = frame.get(0);
+                int header;
+                byte b = frame.getData(0);
                 byte id = (byte) (b & 0xe0);
+                if (id != packetId)
+                {
+                    packetId = id;
+                    byteMax = Integer.MAX_VALUE;
+                    byteCount = 0;
+                }
                 int seq = b & 0x1f;
                 if (seq == 0)
                 {   // new message
                     packetId = id;
-                    packetSeq = 0;
-                    byteCount = frame.get(1) & 0xff;
-                    setCurrentBytes(byteCount);
-                    frame.position(2);
-                    millisSupplier = service.getMillisSupplier();
-                    finest("new fast %s: %d cnt=%d buf=%d", name, id, byteCount, buf.length);
+                    byteMax = frame.getData(1) & 0xff;
+                    setCurrentBytes(byteMax);
+                    header = 2;
+                    millisSupplier = ()->frame.getMillis();
+                    finest("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
                 }
                 else
                 {
-                    if (id != packetId || seq != packetSeq + 1)
-                    {   // out of order
-                        if (packetId != -1)
-                        {
-                            finest("reject fast %d %d", id, seq);
-                            packetId = -1;
-                            packetSeq = -1;
-                        }
-                        return false;
-                    }
-                    frame.position(1);
+                    header = 1;
                 }
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
-                int remaining = min(frame.remaining(), byteCount);
-                byteCount -= remaining;
-                finest("seq=%d cnt=%d rem=%d", seq, byteCount, remaining);
-                frame.get(buf, off, remaining);
-                packetSeq = seq;
-                return byteCount == 0;
+                int remaining = min(frame.getDataLength()-header, buf.length-off);
+                byteCount += remaining;
+                finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
+                frame.getData(buf, header, off, remaining);
+                return byteMax == byteCount;
             }
             else
             {
