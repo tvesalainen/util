@@ -19,6 +19,7 @@ package org.vesalainen.can.dbc;
 import java.nio.ByteOrder;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.can.SignalType.LONG;
 
 /**
  *
@@ -31,6 +32,11 @@ public class SignalClassTest
     {
     }
 
+    @Test
+    public void testGetType()
+    {
+        assertEquals(LONG, SignalClass.getType(32, false, 100, 0));
+    }
     @Test
     public void testNormalizeStartBit()
     {

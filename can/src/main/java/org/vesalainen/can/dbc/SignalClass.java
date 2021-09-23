@@ -22,8 +22,6 @@ import java.util.List;
 import static java.util.Locale.US;
 import java.util.Objects;
 import java.util.function.IntFunction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.can.SignalType;
 import static org.vesalainen.can.SignalType.*;
@@ -133,11 +131,11 @@ public class SignalClass extends DBCBase implements Cloneable
         {
             if (signed)
             {
-                return bits <= 32 ? INT : LONG;
+                return bits <= 32 && factor >= 1.0 ? INT : LONG;
             }
             else
             {
-                return bits <= 31 ? INT : LONG;
+                return bits <= 31 && factor >= 1.0 ? INT : LONG;
             }
         }
         else

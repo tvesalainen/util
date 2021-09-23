@@ -14,29 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.socketcand;
+package org.vesalainen.can;
 
-import java.util.concurrent.ExecutionException;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
+import org.vesalainen.can.dbc.MessageClass;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SocketCandServiceT
+public class DefaultMessageFactory extends AbstractMessageFactory
 {
-    
-    public SocketCandServiceT()
-    {
-    }
 
-    @Test
-    public void test() throws InterruptedException, ExecutionException
+    private final SignalCompiler compiler;
+
+    public DefaultMessageFactory(SignalCompiler compiler)
     {
-        SocketCandService svc = new SocketCandService("can0", new CachedScheduledThreadPool(), null);
-        svc.startAndWait();
+        this.compiler = compiler;
     }
     
+
+    @Override
+    protected SignalCompiler getCompiler(MessageClass mc)
+    {
+        return compiler;
+    }
 }

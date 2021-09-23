@@ -21,6 +21,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
+import org.vesalainen.can.AbstractMessageFactory;
+import org.vesalainen.can.DefaultMessageFactory;
 import org.vesalainen.can.Frame;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.nio.ByteBufferCharSequence;
@@ -45,7 +47,12 @@ public class SocketCandService extends AbstractCanService
     
     public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        super(executor, compiler);
+        this(canBus, executor, new DefaultMessageFactory(compiler));
+    }
+
+    public SocketCandService(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
+    {
+        super(executor, messageFactory);
         this.openBus = new ByteBufferCharSequence("< open "+canBus+" >");
     }
 

@@ -980,7 +980,7 @@ BA_ "SignalType" SG_ 33227518 Call_Sign "ASCIIZ";
 BA_ "SignalType" SG_ 33227518 Name "ASCIIZ";
 BA_ "SignalType" SG_ 33227518 Ship_Cargo_Type "LOOKUP";
 BA_ "SignalType" SG_ 33227518 Estimated_Date_Of_Arrival "INT";
-BA_ "SignalType" SG_ 33227518 Estimated_Time_Of_Arrival "DOUBLE";
+BA_ "SignalType" SG_ 33227518 Estimated_Time_Of_Arrival "LONG";
 BA_ "SignalType" SG_ 33227518 Destination "ASCIIZ";
 BA_ "SignalType" SG_ 33227518 Ais_Version "LOOKUP";
 BA_ "SignalType" SG_ 33227518 Type_Of_Electronic_Positioning_Device "LOOKUP";

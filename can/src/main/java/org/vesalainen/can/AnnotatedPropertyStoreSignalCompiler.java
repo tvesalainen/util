@@ -29,6 +29,7 @@ import org.vesalainen.code.AnnotatedPropertyStore;
 import org.vesalainen.code.setter.DoubleSetter;
 import org.vesalainen.code.setter.FloatSetter;
 import org.vesalainen.code.setter.IntSetter;
+import org.vesalainen.code.setter.ObjectSetter;
 
 /**
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -140,15 +141,27 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss)
+    public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
     {
-        return SignalCompiler.super.compile(mc, sc, ss); //To change body of generated methods, choose Tools | Templates.
+        String name = sc.getName();
+        Msg msg = ctx.get();
+        if (msg != null && msg.signals.containsKey(name))
+        {
+            String target = msg.signals.get(name);
+            ObjectSetter<String> setter = store.getObjectSetter(target);
+            if (setter == null || store.getType(target) != String.class)
+            {
+                throw new IllegalArgumentException(target+" no setter or wrong type");
+            }
+            return ()->setter.set(supplier.get());
+        }
+        return null;
     }
 
     @Override
     public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
     {
-        return SignalCompiler.super.compile(mc, sc, supplier, map); //To change body of generated methods, choose Tools | Templates.
+        return compile(mc, sc, supplier);
     }
 
     protected static class Msg

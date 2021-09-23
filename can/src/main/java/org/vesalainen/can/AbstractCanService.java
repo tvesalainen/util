@@ -41,15 +41,15 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final CachedScheduledThreadPool executor;
-    protected final MessageFactory messageFactory;
+    protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
 
     protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        this(executor, new MessageFactory(executor, compiler));
+        this(executor, new DefaultMessageFactory(compiler));
     }
 
-    public AbstractCanService(CachedScheduledThreadPool executor, MessageFactory messageFactory)
+    public AbstractCanService(CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(AbstractCanService.class);
         this.executor = executor;
@@ -63,6 +63,10 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
         return new SocketCandService(canBus, executor, compiler);
+    }
+    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
+    {
+        return new SocketCandService(canBus, executor, messsageFactory);
     }
     public void start()
     {
@@ -141,11 +145,11 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
 
     protected AbstractMessage compile(int canId, MessageClass mc)
     {
-        return messageFactory.createMessage(canId, mc);
+        return messageFactory.createMessage(executor, canId, mc);
     }
     protected AbstractMessage compilePgn(int canId, MessageClass mc)
     {
-        return messageFactory.createPgnMessage(canId, mc);
+        return messageFactory.createPgnMessage(executor, canId, mc);
     }
     public void addN2K()
     {

@@ -35,7 +35,6 @@ import java.util.function.Supplier;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanRegistrationException;
