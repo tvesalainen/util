@@ -333,7 +333,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public BooleanSetter getBooleanSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             BooleanSingleSetter s = MethodHandleProxies.asInterfaceInstance(BooleanSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -347,7 +347,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public ByteSetter getByteSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             ByteSingleSetter s = MethodHandleProxies.asInterfaceInstance(ByteSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -361,7 +361,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public CharSetter getCharSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             CharSingleSetter s = MethodHandleProxies.asInterfaceInstance(CharSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -375,7 +375,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public ShortSetter getShortSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             ShortSingleSetter s = MethodHandleProxies.asInterfaceInstance(ShortSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -389,7 +389,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public IntSetter getIntSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             IntSingleSetter s = MethodHandleProxies.asInterfaceInstance(IntSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -403,7 +403,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public LongSetter getLongSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             LongSingleSetter s = MethodHandleProxies.asInterfaceInstance(LongSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -417,7 +417,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public FloatSetter getFloatSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             FloatSingleSetter s = MethodHandleProxies.asInterfaceInstance(FloatSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -431,7 +431,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public DoubleSetter getDoubleSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             DoubleSingleSetter s = MethodHandleProxies.asInterfaceInstance(DoubleSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
@@ -445,7 +445,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     public <T> ObjectSetter<T> getObjectSetter(String property)
     {
         C c = c(property);
-        if (c.getter != null)
+        if (c.setter != null)
         {
             ObjectSingleSetter s = MethodHandleProxies.asInterfaceInstance(ObjectSingleSetter.class, c.setter.bindTo(this));
             return (v)->s.set(v);
