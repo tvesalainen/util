@@ -524,6 +524,9 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 case ASCIIZ:
                     ss = ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
                     return compiler.compile(mc, sc, ss);
+                case AISSTRING:
+                    ss = ArrayFuncs.getAisStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
+                    return compiler.compile(mc, sc, ss);
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }

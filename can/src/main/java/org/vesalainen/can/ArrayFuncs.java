@@ -16,12 +16,13 @@
  */
 package org.vesalainen.can;
 
-import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import org.vesalainen.util.CharSequences;
+import org.vesalainen.util.HexDump;
+import org.vesalainen.util.HexUtil;
 
 /**
  *
@@ -29,9 +30,33 @@ import org.vesalainen.util.CharSequences;
  */
 public final class ArrayFuncs
 {
+    public static final Supplier<String> getAisStringSupplier(int offset, int length, byte... buf)
+    {
+        checkBitsString(offset, length, buf);
+        return ()->
+        {
+            CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
+            int idx = CharSequences.indexOf(seq, '@');
+            if (idx != -1)
+            {
+                return seq.subSequence(0, idx).toString().trim();
+            }
+            else
+            {
+                return seq.toString().trim();
+            }
+        };
+    }
+    /**
+     * 
+     * @param offset    in bytes
+     * @param length    in bytes
+     * @param buf
+     * @return 
+     */
     public static final Supplier<String> getZeroTerminatingStringSupplier(int offset, int length, byte... buf)
     {
-        checkBitsInt(offset, length, buf);
+        checkBitsString(offset, length, buf);
         return ()->
         {
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
@@ -199,6 +224,21 @@ public final class ArrayFuncs
             d++;
         }
         return d;
+    }
+    private static void checkBitsString(int offset, int length, byte[] buf)
+    {
+        if (offset < 0) 
+        {
+            throw new IllegalArgumentException("negative offset");
+        }
+        if (length < 0) 
+        {
+            throw new IllegalArgumentException("negative length");
+        }
+        if ((offset + length) > buf.length) 
+        {
+            throw new IllegalArgumentException("buffer overflow");
+        }
     }
     private static void checkBitsInt(int offset, int length, byte[] buf)
     {

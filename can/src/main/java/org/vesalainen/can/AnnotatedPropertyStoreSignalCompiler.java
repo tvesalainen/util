@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
@@ -29,6 +30,7 @@ import org.vesalainen.code.AnnotatedPropertyStore;
 import org.vesalainen.code.setter.DoubleSetter;
 import org.vesalainen.code.setter.FloatSetter;
 import org.vesalainen.code.setter.IntSetter;
+import org.vesalainen.code.setter.LongSetter;
 import org.vesalainen.code.setter.ObjectSetter;
 
 /**
@@ -98,6 +100,24 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
             return ()->setter.set(supplier.getAsInt());
+        }
+        return null;
+    }
+
+    @Override
+    public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
+    {
+        String name = sc.getName();
+        Msg msg = ctx.get();
+        if (msg != null && msg.signals.containsKey(name))
+        {
+            String target = msg.signals.get(name);
+            LongSetter setter = store.getLongSetter(target);
+            if (setter == null || store.getType(target) != long.class)
+            {
+                throw new IllegalArgumentException(target+" no setter or wrong type");
+            }
+            return ()->setter.set(supplier.getAsLong());
         }
         return null;
     }

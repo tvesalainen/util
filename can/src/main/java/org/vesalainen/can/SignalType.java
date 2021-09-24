@@ -33,5 +33,6 @@ public enum SignalType
     STRINGLZ,
     STRINGLAU,
     BITFIELD,
-    IEEE_FLOAT
+    IEEE_FLOAT,
+    AISSTRING
 }

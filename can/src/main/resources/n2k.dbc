@@ -269,7 +269,7 @@ BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
  SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
- SG_ Type_Of_Ship_And_Cargo : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Cargo_Type : 40|8@1+ (1,0) [0|0] "" MFD
  SG_ Vendor_Id : 48|56@1+ (1,0) [0|0] "" MFD
  SG_ Call_Sign : 104|56@1+ (1,0) [0|0] "" MFD
  SG_ Ship_Length : 160|16@1+ (0.1,0) [0|0] "m" MFD
@@ -976,12 +976,12 @@ BA_ "MessageType" BO_ 33227518 "Fast";
 BA_ "SignalType" SG_ 33227518 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33227518 User_Id "INT";
 BA_ "SignalType" SG_ 33227518 Imo "INT";
-BA_ "SignalType" SG_ 33227518 Call_Sign "ASCIIZ";
-BA_ "SignalType" SG_ 33227518 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33227518 Call_Sign "AISSTRING";
+BA_ "SignalType" SG_ 33227518 Name "AISSTRING";
 BA_ "SignalType" SG_ 33227518 Ship_Cargo_Type "LOOKUP";
 BA_ "SignalType" SG_ 33227518 Estimated_Date_Of_Arrival "INT";
 BA_ "SignalType" SG_ 33227518 Estimated_Time_Of_Arrival "LONG";
-BA_ "SignalType" SG_ 33227518 Destination "ASCIIZ";
+BA_ "SignalType" SG_ 33227518 Destination "AISSTRING";
 BA_ "SignalType" SG_ 33227518 Ais_Version "LOOKUP";
 BA_ "SignalType" SG_ 33227518 Type_Of_Electronic_Positioning_Device "LOOKUP";
 BA_ "SignalType" SG_ 33227518 Data_Terminal_Equipment_Dte "LOOKUP";
@@ -1012,16 +1012,15 @@ BA_ "SignalType" SG_ 33228286 Binary_Data "BINARY";
 BA_ "MessageType" BO_ 33231358 "Fast";
 BA_ "SignalType" SG_ 33231358 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33231358 User_Id "INT";
-BA_ "SignalType" SG_ 33231358 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33231358 Name "AISSTRING";
 BA_ "SignalType" SG_ 33231358 Ais_Transceiver_Information "LOOKUP";
 BA_ "SignalType" SG_ 33231358 Reserved "BINARY";
 BA_ "SignalType" SG_ 33231358 Sequence_Id "INT";
 BA_ "MessageType" BO_ 33231614 "Fast";
 BA_ "SignalType" SG_ 33231614 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33231614 User_Id "INT";
-BA_ "SignalType" SG_ 33231614 Type_Of_Ship_And_Cargo "LOOKUP";
-BA_ "SignalType" SG_ 33231614 Vendor_Id "ASCIIZ";
-BA_ "SignalType" SG_ 33231614 Call_Sign "ASCIIZ";
+BA_ "SignalType" SG_ 33231614 Vendor_Id "AISSTRING";
+BA_ "SignalType" SG_ 33231614 Call_Sign "AISSTRING";
 BA_ "SignalType" SG_ 33231614 Mother_Ship_Mmsi "INT";
 BA_ "SignalType" SG_ 33231614 Nmea_2000_Reserved "BINARY";
 BA_ "SignalType" SG_ 33231614 Spare "INT";
@@ -1093,7 +1092,7 @@ BA_ "SignalType" SG_ 33034494 Time_Stamp "LOOKUP";
 BA_ "SignalType" SG_ 33034494 Ship_Cargo_Type "LOOKUP";
 BA_ "SignalType" SG_ 33034494 Nmea_2000_Reserved "BINARY";
 BA_ "SignalType" SG_ 33034494 Type_Of_Electronic_Positioning_Device "LOOKUP";
-BA_ "SignalType" SG_ 33034494 Name "ASCIIZ";
+BA_ "SignalType" SG_ 33034494 Name "AISSTRING";
 BA_ "SignalType" SG_ 33034494 Data_Terminal_Equipment_Dte "LOOKUP";
 BA_ "SignalType" SG_ 33034494 Spare "BINARY";
 BA_ "SignalType" SG_ 33034494 Ais_Transceiver_Information "LOOKUP";
@@ -1381,7 +1380,6 @@ VAL_ 33228286 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channe
 VAL_ 33231358 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
 VAL_ 33231358 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
 VAL_ 33231614 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
-VAL_ 33231614 Type_Of_Ship_And_Cargo  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
 VAL_ 33231614 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channel B VDL reception" 2 "Channel A VDL transmission" 3 "Channel B VDL transmission" 4 "Own information not broadcast" 5 "Reserved";
 VAL_ 33031678 Type_Of_System  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
 VAL_ 33031678 Method_Gnss  0 "no GNSS" 1 "GNSS fix" 2 "DGNSS fix" 3 "Precise GNSS" 4 "RTK Fixed Integer" 5 "RTK float" 6 "Estimated (DR) mode" 7 "Manual Input" 8 "Simulate mode";
