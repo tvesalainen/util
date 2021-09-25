@@ -111,6 +111,10 @@ public class SimpleNotificationEmitter implements NotificationEmitter
     {
         sendNotification(()->typeDefault, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, userDataSupplier, timestampSupplier);
     }
+    public synchronized <U> void sendNotification(Supplier<String> typeSupplier, Supplier<String> textSupplier, Supplier<U> userDataSupplier, LongSupplier timestampSupplier)
+    {
+        sendNotification(typeSupplier, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, userDataSupplier, timestampSupplier);
+    }
     public synchronized void sendNotification2(Supplier<String> typeSupplier, Supplier<String> textSupplier, LongSupplier timestampSupplier)
     {
         sendNotification(typeSupplier, ()->sourceDefault, sequenceNumber::incrementAndGet, textSupplier, ()->null, timestampSupplier);
