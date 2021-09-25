@@ -540,7 +540,6 @@ public class SimpleMBeanServer implements MBeanServer
         if (object instanceof NotificationEmitter)
         {
             NotificationEmitter ne = (NotificationEmitter) object;
-            MBeanNotificationInfo[] info = ne.getNotificationInfo();
             return new StandardEmitterMBean(object, mBeanInterface, JMX.isMXBeanInterface(mBeanInterface), ne);
         }
         else
