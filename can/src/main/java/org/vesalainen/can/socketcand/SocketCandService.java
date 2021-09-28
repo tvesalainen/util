@@ -29,7 +29,6 @@ import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.parser.util.InputReader;
-import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.xml.SimpleXMLParser;
 
@@ -69,8 +68,7 @@ public class SocketCandService extends AbstractCanService
             }
             catch (Exception ex)
             {
-                log(Level.SEVERE, "exit SocketCandService", ex);
-                return;
+                log(Level.SEVERE, "restarting SocketCandService", ex);
             }
         }
     }

@@ -346,6 +346,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         private Runnable build()
         {
             List<SignalClass> repeatingSignals = new ArrayList<>();
+            addAction(compiler.compileRaw(mc, ()->buf));
             mc.forEach((sc)->
             {
                 finer("add signal %s", sc);
