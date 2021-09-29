@@ -33,15 +33,21 @@ public class FastMessage extends PgnMessage
     private int byteCount;
     private int byteMax;
     
-    public FastMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
+    public FastMessage(Executor executor, MessageClass mc, int canId, int len, String comment)
     {
-        super(executor, messageClass, canId, len, comment);
+        super(executor, mc, canId, mc.isRepeating()?223:len, comment);
     }
 
     @Override
     public int getMaxBytes()
     {
         return 223;
+    }
+
+    @Override
+    public int getMaxBits()
+    {
+        return MAX_FAST_SIZE;
     }
 
     @Override

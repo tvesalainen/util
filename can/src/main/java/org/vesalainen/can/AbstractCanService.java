@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.dbc.DBCFile;
@@ -40,16 +41,16 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
-    protected final CachedScheduledThreadPool executor;
+    protected final ExecutorService executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
 
-    protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
+    protected AbstractCanService(ExecutorService executor, SignalCompiler compiler)
     {
         this(executor, new DefaultMessageFactory(compiler));
     }
 
-    public AbstractCanService(CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
+    public AbstractCanService(ExecutorService executor, AbstractMessageFactory messageFactory)
     {
         super(AbstractCanService.class);
         this.executor = executor;
@@ -60,11 +61,11 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     {
         return openSocketCand(canBus, new CachedScheduledThreadPool(), compiler);
     }
-    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    public static AbstractCanService openSocketCand(String canBus, ExecutorService executor, SignalCompiler compiler) throws IOException
     {
         return new SocketCandService(canBus, executor, compiler);
     }
-    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
+    public static AbstractCanService openSocketCand(String canBus, ExecutorService executor, AbstractMessageFactory messsageFactory) throws IOException
     {
         return new SocketCandService(canBus, executor, messsageFactory);
     }
@@ -89,6 +90,24 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     {
         start();
         future.get();
+    }
+    public final int rawToCanId(int rawId)
+    {
+        if ((rawId & 0b1100000000000000000000000000000) != 0)
+        {
+            throw new RuntimeException("\nEFF/SFF is set in the MSB "+getHexData());
+        }
+        else
+        {
+            if ((rawId & 0b10000000000000000000000000000000) != 0)
+            {
+                return rawId & 0b11111111111111111111111111111;
+            }
+            else
+            {
+                return rawId;
+            }
+        }
     }
     final protected void rawFrame(Frame frame)
     {
@@ -193,4 +212,5 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
     }
 
+    protected abstract String getHexData();
 }

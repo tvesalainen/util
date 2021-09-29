@@ -82,7 +82,11 @@ public class MessageClass extends DBCBase implements AttachedLogger
             return SimpleIntRange.EMPTY_RANGE;
         }
     }
-    
+    public boolean isRepeating()
+    {
+        Long s = (Long) getAttributeValue("RepeatSize");
+        return s != null && s > 0;
+    }
     public boolean isMultiplexed()
     {
         return multiplexed;

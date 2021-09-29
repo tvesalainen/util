@@ -19,6 +19,7 @@ package org.vesalainen.can.socketcand;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
@@ -43,15 +44,18 @@ public class SocketCandService extends AbstractCanService
     private SocketChannel channel;
     private InputReader input;
     private ThreadLocal<FrameImpl> localFrame = ThreadLocal.withInitial(FrameImpl::new);
+    private int dataRef;
+    private String canBus;
     
-    public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
+    public SocketCandService(String canBus, ExecutorService executor, SignalCompiler compiler)
     {
         this(canBus, executor, new DefaultMessageFactory(compiler));
     }
 
-    public SocketCandService(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
+    public SocketCandService(String canBus, ExecutorService executor, AbstractMessageFactory messageFactory)
     {
         super(executor, messageFactory);
+        this.canBus = canBus;
         this.openBus = new ByteBufferCharSequence("< open "+canBus+" >");
     }
 
@@ -126,25 +130,17 @@ public class SocketCandService extends AbstractCanService
     }
     void frame2(int rawId, int timeRef, int dataRef)
     {
-        if ((rawId & 0b1100000000000000000000000000000) != 0)
-        {
-            warning("\nEFF/SFF is set in the MSB %s", input.getString(dataRef));
-        }
-        else
-        {
-            int canId;
-            if ((rawId & 0b10000000000000000000000000000000) != 0)
-            {
-                canId = rawId & 0b11111111111111111111111111111;
-            }
-            else
-            {
-                canId = rawId;
-            }
-            FrameImpl frame = localFrame.get();
-            frame.init(canId, timeRef, dataRef);
-            rawFrame(frame);
-        }
+        this.dataRef = dataRef;
+        int canId = rawToCanId(rawId);
+        FrameImpl frame = localFrame.get();
+        frame.init(canId, timeRef, dataRef);
+        rawFrame(frame);
+    }
+
+    @Override
+    protected String getHexData()
+    {
+        return input.getString(dataRef);
     }
 
     private class FrameImpl implements Frame
@@ -160,6 +156,12 @@ public class SocketCandService extends AbstractCanService
             this.timeRef = timeRef;
             this.dataLength = input.getLength(dataRef);
             this.dataStart = input.getStart(dataRef);
+        }
+
+        @Override
+        public String getBus()
+        {
+            return canBus;
         }
         
         @Override

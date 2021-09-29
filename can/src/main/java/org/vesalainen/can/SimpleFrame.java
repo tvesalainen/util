@@ -20,19 +20,49 @@ package org.vesalainen.can;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface Frame
+public class SimpleFrame implements Frame
 {
-    String getBus();
-    long getMillis();
-    byte getData(int index);
-    int getDataLength();
-    default void getData(byte[] buf, int sourceOffset, int bufOffset, int length)
+    private final String bus;
+    private final int canId;
+    private final byte[] data;
+    private final long millis;
+
+    public SimpleFrame(String bus, int canId, byte[] data, long millis)
     {
-        for (int ii=0;ii<length;ii++)
-        {
-            buf[bufOffset+ii] = getData(sourceOffset+ii);
-        }
+        this.bus = bus;
+        this.canId = canId;
+        this.data = data;
+        this.millis = millis;
     }
-    int getCanId();
+
+    @Override
+    public String getBus()
+    {
+        return bus;
+    }
+    
+    @Override
+    public long getMillis()
+    {
+        return millis;
+    }
+
+    @Override
+    public byte getData(int index)
+    {
+        return data[index];
+    }
+
+    @Override
+    public int getDataLength()
+    {
+        return data.length;
+    }
+
+    @Override
+    public int getCanId()
+    {
+        return canId;
+    }
     
 }
