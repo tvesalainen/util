@@ -1040,7 +1040,7 @@ BA_ "RepeatSize" BO_ 33031678 32;
 BA_ "RepeatStartBit" BO_ 33031678 344;
 BA_ "MessageType" BO_ 33031678 "Fast";
 BA_ "SignalType" SG_ 33031678 Position_Date "INT";
-BA_ "SignalType" SG_ 33031678 Position_Time "DOUBLE";
+BA_ "SignalType" SG_ 33031678 Position_Time "LONG";
 BA_ "SignalType" SG_ 33031678 Latitude "DOUBLE";
 BA_ "SignalType" SG_ 33031678 Longitude "DOUBLE";
 BA_ "SignalType" SG_ 33031678 Type_Of_System "LOOKUP";

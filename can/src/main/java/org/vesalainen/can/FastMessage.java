@@ -17,9 +17,8 @@
 package org.vesalainen.can;
 
 import static java.lang.Integer.min;
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.*;
 import org.vesalainen.can.dbc.MessageClass;
 
 /**
@@ -69,7 +68,6 @@ public class FastMessage extends PgnMessage
                 int seq = b & 0x1f;
                 if (seq == 0)
                 {   // new message
-                    packetId = id;
                     byteMax = frame.getData(1) & 0xff;
                     setCurrentBytes(byteMax);
                     header = 2;
@@ -81,7 +79,7 @@ public class FastMessage extends PgnMessage
                     header = 1;
                 }
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
-                int remaining = min(frame.getDataLength()-header, buf.length-off);
+                int remaining = min(frame.getDataLength()-header, byteMax - byteCount);
                 byteCount += remaining;
                 finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 frame.getData(buf, header, off, remaining);
