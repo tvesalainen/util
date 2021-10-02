@@ -32,6 +32,10 @@ public class AppendablePrinter implements Printer
     protected Appendable out;
     protected String eol;
     protected Formatter formatter = new Formatter(this);
+
+    protected AppendablePrinter()
+    {
+    }
     /**
      * Creates new AppendablePrinter. End-of-line is \\n
      * @param out 
@@ -46,6 +50,10 @@ public class AppendablePrinter implements Printer
      * @param endOfLine 
      */
     public AppendablePrinter(Appendable out, String endOfLine)
+    {
+        init(out, endOfLine);
+    }
+    protected final void init(Appendable out, String endOfLine)
     {
         this.out = out;
         this.eol = endOfLine;
