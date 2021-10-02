@@ -17,6 +17,7 @@
 package org.vesalainen.io;
 
 import java.io.IOException;
+import java.util.Formatter;
 import java.util.Locale;
 
 /**
@@ -26,10 +27,11 @@ import java.util.Locale;
  * <p>This class throws IOException wrapped in IllegalArgumentException.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AppendablePrinter implements Appendable
+public class AppendablePrinter implements Printer
 {
     protected Appendable out;
     protected String eol;
+    protected Formatter formatter = new Formatter(this);
     /**
      * Creates new AppendablePrinter. End-of-line is \\n
      * @param out 
@@ -87,30 +89,29 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void format(String format, Object... args)
     {
-        try
+        formatter.format(format, args);
+        IOException ioException = formatter.ioException();
+        if (ioException != null)
         {
-            out.append(String.format(format, args));
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
+            throw new IllegalArgumentException(ioException);
         }
     }
 
+    @Override
     public void format(Locale l, String format, Object... args)
     {
-        try
+        formatter.format(l, format, args);
+        IOException ioException = formatter.ioException();
+        if (ioException != null)
         {
-            out.append(String.format(l, format, args));
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException(ex);
+            throw new IllegalArgumentException(ioException);
         }
     }
 
+    @Override
     public void print(boolean b)
     {
         try
@@ -123,6 +124,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(char c)
     {
         try
@@ -135,6 +137,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(int i)
     {
         try
@@ -147,6 +150,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(long l)
     {
         try
@@ -159,6 +163,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(float f)
     {
         try
@@ -171,6 +176,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(double d)
     {
         try
@@ -183,6 +189,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(char[] s)
     {
             try
@@ -198,6 +205,7 @@ public class AppendablePrinter implements Appendable
             }
     }
 
+    @Override
     public void print(String s)
     {
         try
@@ -210,6 +218,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void print(Object obj)
     {
         try
@@ -222,6 +231,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void printf(String format, Object... args)
     {
         try
@@ -234,6 +244,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void printf(Locale l, String format, Object... args)
     {
         try
@@ -246,6 +257,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println()
     {
         try
@@ -258,6 +270,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(boolean b)
     {
         try
@@ -270,6 +283,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(char c)
     {
         try
@@ -282,6 +296,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(int i)
     {
         try
@@ -294,6 +309,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(long l)
     {
         try
@@ -306,6 +322,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(float f)
     {
         try
@@ -318,6 +335,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(double d)
     {
         try
@@ -330,6 +348,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(char[] s)
     {
         try
@@ -346,6 +365,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(String s)
     {
         try
@@ -358,6 +378,7 @@ public class AppendablePrinter implements Appendable
         }
     }
 
+    @Override
     public void println(Object obj)
     {
         try
