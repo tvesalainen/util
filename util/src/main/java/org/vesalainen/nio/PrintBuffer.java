@@ -16,28 +16,79 @@
  */
 package org.vesalainen.nio;
 
+import java.io.Flushable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import org.vesalainen.io.AppendablePrinter;
 
 /**
- * PrintBuffer is a class for applications using only us-ascii to use Printer interface
+ * PrintBuffer is a class use Printer interface
  * methods to put text directly to ByteBuffer.
+ * After constructing text use flush() to move it to ByteBuffer.
+ * <p>If charset is one-char to one-byte (like US-ASCII) flush is not needed 
+ * because text is written to ByteBuffer directly. Calling flush() doesn't do
+ * anything.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class PrintBuffer extends AppendablePrinter
 {
     private final ByteBuffer bb;
-    
+    private CharBuffer cb;
+    private final CharsetEncoder encoder;
+    /**
+     * Creates PrintBuffer using UTF-8 and NL as eol.
+     * @param bb 
+     */
     public PrintBuffer(ByteBuffer bb)
     {
-        this(bb, "\n");
+        this(UTF_8, bb);
     }
-
-    public PrintBuffer(ByteBuffer bb, String endOfLine)
+    /**
+     * Creates PrintBuffer using given charset and NL as eol.
+     * @param charset
+     * @param bb 
+     */
+    public PrintBuffer(Charset charset, ByteBuffer bb)
     {
+        this(charset, bb, "\n");
+    }
+    /**
+     * Creates PrintBuffer using given charset and given endOfLine.
+     * @param charset
+     * @param bb
+     * @param endOfLine 
+     */
+    public PrintBuffer(Charset charset, ByteBuffer bb, String endOfLine)
+    {
+        this.encoder = charset.newEncoder();
         this.bb = bb;
-        init(new AppendableBB(), endOfLine);
+        if (encoder.maxBytesPerChar() <= 1.0)
+        {
+            cb = null;
+            init(new AppendableBB(), endOfLine);
+        }
+        else
+        {
+            cb = CharBuffer.allocate(bb.remaining());
+            init(cb, endOfLine);
+        }
+    }
+    /**
+     * Ensures text is written to ByteBuffer.
+     * @throws IOException 
+     */
+    public void flush()
+    {
+        if (cb != null)
+        {
+            cb.flip();
+            encoder.encode(cb, bb, true);
+            cb = null;
+        }
     }
 
     private class AppendableBB implements Appendable

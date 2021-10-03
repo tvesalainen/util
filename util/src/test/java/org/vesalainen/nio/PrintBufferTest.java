@@ -17,6 +17,7 @@
 package org.vesalainen.nio;
 
 import java.nio.ByteBuffer;
+import static java.nio.charset.StandardCharsets.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -32,14 +33,25 @@ public class PrintBufferTest
     }
 
     @Test
-    public void test()
+    public void test1()
     {
         ByteBuffer bb = ByteBuffer.allocate(100);
-        PrintBuffer pb = new PrintBuffer(bb);
+        PrintBuffer pb = new PrintBuffer(US_ASCII, bb);
         pb.format("test %d %s", 123, "qwerty");
         bb.flip();
         ByteBufferCharSequence seq = new ByteBufferCharSequence(bb);
         assertEquals("test 123 qwerty", seq.toString());
+    }
+    @Test
+    public void test2()
+    {
+        ByteBuffer bb = ByteBuffer.allocate(100);
+        PrintBuffer pb = new PrintBuffer(UTF_8, bb);
+        pb.format("testiä %d %s", 123, "ÖÄöä");
+        pb.flush();
+        bb.flip();
+        String seq = new String(bb.array(), 0, bb.remaining(), UTF_8);
+        assertEquals("testiä 123 ÖÄöä", seq.toString());
     }
     
 }
