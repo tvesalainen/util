@@ -320,7 +320,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         Objects.requireNonNull(messageClass, "MessageClass null");
         IntRange repeatRange = messageClass.getRepeatRange();
         ActionBuilder actionBuilder = new ActionBuilder(messageClass, compiler, repeatRange);
-        Runnable begin = compiler.compileBegin(messageClass, ()->getMillis());
+        Runnable begin = compiler.compileBegin(messageClass, canId, ()->getMillis());
         Runnable act = actionBuilder.build();
         Consumer<Throwable> end = compiler.compileEnd(messageClass);
         return new Action(begin, act, end);
@@ -668,10 +668,10 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         }
 
         @Override
-        public Runnable compileBegin(MessageClass mc, LongSupplier millisSupplier)
+        public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
         {
             this.millisSupplier = millisSupplier;
-            return SignalCompiler.super.compileBegin(mc, millisSupplier);
+            return SignalCompiler.super.compileBegin(mc, canId, millisSupplier);
         }
 
         @Override

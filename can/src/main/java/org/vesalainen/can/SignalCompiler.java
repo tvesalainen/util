@@ -36,7 +36,7 @@ public interface SignalCompiler
         return true;
     }
     default Runnable compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
-    default Runnable compileBegin(MessageClass mc, LongSupplier millisSupplier) {return null;};
+    default Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier) {return null;};

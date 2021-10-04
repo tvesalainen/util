@@ -64,7 +64,7 @@ public class CanServiceT
     {
 
         @Override
-        public Runnable compileBegin(MessageClass mc, LongSupplier millisSupplier)
+        public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
         {
             return ()->System.err.print(mc.getName()+":");
         }
