@@ -16,7 +16,6 @@
  */
 package org.vesalainen.nio;
 
-import java.io.Flushable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -36,8 +35,8 @@ import org.vesalainen.io.AppendablePrinter;
  */
 public class PrintBuffer extends AppendablePrinter
 {
-    private final ByteBuffer bb;
-    private CharBuffer cb;
+    private final ByteBuffer byteBuffer;
+    private CharBuffer charBuffer;
     private final CharsetEncoder encoder;
     /**
      * Creates PrintBuffer using UTF-8 and NL as eol.
@@ -65,30 +64,42 @@ public class PrintBuffer extends AppendablePrinter
     public PrintBuffer(Charset charset, ByteBuffer bb, String endOfLine)
     {
         this.encoder = charset.newEncoder();
-        this.bb = bb;
+        this.byteBuffer = bb;
         if (encoder.maxBytesPerChar() <= 1.0)
         {
-            cb = null;
+            charBuffer = null;
             init(new AppendableBB(), endOfLine);
         }
         else
         {
-            cb = CharBuffer.allocate(bb.remaining());
-            init(cb, endOfLine);
+            charBuffer = CharBuffer.allocate(bb.remaining());
+            init(charBuffer, endOfLine);
+        }
+    }
+    public void clear()
+    {
+        byteBuffer.clear();
+        if (charBuffer != null)
+        {
+            charBuffer.clear();
         }
     }
     /**
-     * Ensures text is written to ByteBuffer.
-     * @throws IOException 
+     * Ensures text is written to ByteBuffer. 
      */
     public void flush()
     {
-        if (cb != null)
+        if (charBuffer != null)
         {
-            cb.flip();
-            encoder.encode(cb, bb, true);
-            cb = null;
+            charBuffer.flip();
+            encoder.encode(charBuffer, byteBuffer, true);
+            charBuffer = null;
         }
+    }
+
+    public ByteBuffer getByteBuffer()
+    {
+        return byteBuffer;
     }
 
     private class AppendableBB implements Appendable
@@ -113,7 +124,7 @@ public class PrintBuffer extends AppendablePrinter
         @Override
         public Appendable append(char c) throws IOException
         {
-            bb.put((byte) c);
+            byteBuffer.put((byte) c);
             return this;
         }
         
