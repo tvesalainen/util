@@ -23,8 +23,10 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.Executors;
@@ -40,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import org.vesalainen.util.ArrayIterator;
 import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
@@ -82,6 +85,16 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     public CachedScheduledThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler)
     {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+    }
+
+    @Override
+    protected void afterExecute(Runnable r, Throwable t)
+    {
+        super.afterExecute(r, t);
+        if (t != null)
+        {
+            log(WARNING, t, "unhandled %s", t.getMessage());
+        }
     }
 
     public Clock getClock()
