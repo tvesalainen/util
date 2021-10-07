@@ -32,11 +32,12 @@ import org.vesalainen.code.setter.FloatSetter;
 import org.vesalainen.code.setter.IntSetter;
 import org.vesalainen.code.setter.LongSetter;
 import org.vesalainen.code.setter.ObjectSetter;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
+public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements SignalCompiler
 {
     protected final AnnotatedPropertyStore store;
     protected final Map<Integer,Msg> canIdMap = new HashMap<>();
@@ -45,12 +46,12 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
 
     public <T extends AnnotatedPropertyStore> AnnotatedPropertyStoreSignalCompiler(T store)
     {
+        super(AnnotatedPropertyStoreSignalCompiler.class);
         this.store = store;
     }
 
     public AnnotatedPropertyStoreSignalCompiler addSetter(int canId, String source, String target)
     {
-        Class<?> type = store.getType(target);
         Msg msg = canIdMap.get(canId);
         if (msg == null)
         {
@@ -58,12 +59,12 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
             canIdMap.put(canId, msg);
         }
         msg.add(source, target);
+        finer("addSetter(%d, %s, %s)", canId, source, target);
         return this;
     }
             
     public AnnotatedPropertyStoreSignalCompiler addPgnSetter(int pgn, String source, String target)
     {
-        Class<?> type = store.getType(target);
         Msg msg = pgnMap.get(pgn);
         if (msg == null)
         {
@@ -71,6 +72,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
             pgnMap.put(pgn, msg);
         }
         msg.add(source, target);
+        finer("addSetter(%d, %s, %s)", pgn, source, target);
         return this;
     }
             
@@ -99,6 +101,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
             {
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
+            finer("compiled %s -> %s int", name, target);
             return ()->setter.set(supplier.getAsInt());
         }
         return null;
@@ -117,6 +120,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
             {
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
+            finer("compiled %s -> %s long", name, target);
             return ()->setter.set(supplier.getAsLong());
         }
         return null;
@@ -138,6 +142,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
                 {
                     throw new IllegalArgumentException(target+" no setter");
                 }
+                finer("compiled %s -> %s double", name, target);
                 return ()->setter.set(supplier.getAsDouble());
             }
             else
@@ -149,6 +154,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
                     {
                         throw new IllegalArgumentException(target+" no setter");
                     }
+                    finer("compiled %s -> %s double/float", name, target);
                     return ()->setter.set(supplier.getAsDouble());
                 }
                 else
@@ -173,6 +179,7 @@ public class AnnotatedPropertyStoreSignalCompiler implements SignalCompiler
             {
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
+            finer("compiled %s -> %s String", name, target);
             return ()->setter.set(supplier.get());
         }
         return null;

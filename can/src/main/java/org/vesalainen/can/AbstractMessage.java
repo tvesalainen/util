@@ -89,7 +89,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     private volatile int currentUpdateCount;
     private int executeCount;
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
-    private ReentrantLock lock = new ReentrantLock(true);
+    private ReentrantLock lock = new ReentrantLock();
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {

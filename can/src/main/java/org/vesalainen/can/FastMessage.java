@@ -79,7 +79,7 @@ public class FastMessage extends PgnMessage
                     header = 1;
                 }
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
-                int remaining = min(frame.getDataLength()-header, byteMax - byteCount);
+                int remaining = min(frame.getDataLength()-header, byteMax - off);
                 byteCount += remaining;
                 finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 frame.getData(buf, header, off, remaining);
