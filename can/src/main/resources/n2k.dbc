@@ -274,8 +274,8 @@ BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
  SG_ Call_Sign : 104|56@1+ (1,0) [0|0] "" MFD
  SG_ Ship_Length : 160|16@1+ (0.1,0) [0|0] "m" MFD
  SG_ Ship_Beam : 176|16@1+ (0.1,0) [0|0] "m" MFD
- SG_ Reference_Point_Position_From_Starboard : 192|16@1+ (0.1,0) [0|0] "m" MFD
- SG_ Reference_Point_Position_Aft_Of_Bow : 208|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 192|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 208|16@1+ (0.1,0) [0|0] "m" MFD
  SG_ Mother_Ship_Mmsi : 224|32@1+ (1,0) [0|0] "MMSI" MFD
  SG_ Nmea_2000_Reserved : 256|2@1+ (1,0) [0|0] "" MFD
  SG_ Spare : 258|6@1+ (1,0) [0|0] "" MFD
