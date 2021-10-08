@@ -23,7 +23,7 @@ package org.vesalainen.math;
 public final class Stats
 {
     /**
-     * Returns minimum of arguments
+     * Returns maximum of arguments
      * @param x
      * @return 
      */
@@ -41,7 +41,7 @@ public final class Stats
         return r;
     }
     /**
-     * Returns maximum of arguments
+     * Returns minimum of arguments
      * @param x
      * @return 
      */
