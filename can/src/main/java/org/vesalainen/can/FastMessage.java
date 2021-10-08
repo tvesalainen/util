@@ -82,7 +82,14 @@ public class FastMessage extends PgnMessage
                 int remaining = min(frame.getDataLength()-header, byteMax - off);
                 byteCount += remaining;
                 finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
-                frame.getData(buf, header, off, remaining);
+                try
+                {
+                    frame.getData(buf, header, off, remaining);
+                }
+                catch (ArrayIndexOutOfBoundsException ex)
+                {
+                    log(SEVERE, ex, "seq=%d off=%d max=%d cnt=%d rem=%d", seq, off, byteMax, byteCount, remaining);
+                }
                 return byteMax == byteCount;
             }
             else
