@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
 import java.util.concurrent.ExecutorService;
+import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.Frame;
@@ -80,7 +81,7 @@ public class CanDumpService extends AbstractCanService
         }
         catch (Exception ex)
         {
-            log(DEBUG, ex, "%s", ex.getMessage());
+            log(SEVERE, ex, "%s", ex.getMessage());
         }
     }
 

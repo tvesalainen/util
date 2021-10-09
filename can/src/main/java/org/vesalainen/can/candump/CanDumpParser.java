@@ -16,15 +16,11 @@
  */
 package org.vesalainen.can.candump;
 
-import java.nio.channels.ByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import org.vesalainen.can.SimpleFrame;
-import org.vesalainen.can.socketcand.SocketCandParser;
-import org.vesalainen.can.socketcand.SocketCandService;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.math.MoreMath;
 import org.vesalainen.parser.GenClassFactory;
-import org.vesalainen.parser.ParserConstants;
 import org.vesalainen.parser.ParserInfo;
 import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
@@ -33,7 +29,6 @@ import org.vesalainen.parser.annotation.ParserContext;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.AbstractParser;
-import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.HexUtil;
 
@@ -43,17 +38,75 @@ import org.vesalainen.util.HexUtil;
  */
 @GenClassname()
 @GrammarDef()
-@Rule(left="candump", value={"frame*"})
+@Rule(left="candump", value={"line*"})
 public abstract class CanDumpParser extends AbstractParser implements ParserInfo
 {
-    @Rule("'\\(' time '\\)' string hex '#' data")
-    protected void frame(long time, String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    @Rule("hashComment")
+    protected void line()
+    {
+    }
+    @Rule("identifier hex data2 '\r\n'")
+    protected void line(String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    {
+        if (svc.isEnabled(bus))
+        {
+            int canId = svc.rawToCanId(rawId);
+            svc.frame(new SimpleFrame(bus, canId, data, System.currentTimeMillis()));
+        }
+    }
+    @Rule("'\\(' time '\\)' identifier hex '#' data '\r\n'")
+    protected void line(long time, String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         if (svc.isEnabled(bus))
         {
             int canId = svc.rawToCanId(rawId);
             svc.frame(new SimpleFrame(bus, canId, data, time));
         }
+    }
+    @Rule("'\\[1\\]' hbyte")
+    protected byte[] data2(byte b1)
+    {
+        return new byte[]{b1};
+    }
+    @Rule("'\\[2\\]' hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2)
+    {
+        return new byte[]{b1, b2};
+    }
+    @Rule("'\\[3\\]' hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3)
+    {
+        return new byte[]{b1, b2, b3};
+    }
+    @Rule("'\\[4\\]' hbyte hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3, byte b4)
+    {
+        return new byte[]{b1, b2, b3, b4};
+    }
+    @Rule("'\\[5\\]' hbyte hbyte hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5)
+    {
+        return new byte[]{b1, b2, b3, b4, b5};
+    }
+    @Rule("'\\[6\\]' hbyte hbyte hbyte hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6)
+    {
+        return new byte[]{b1, b2, b3, b4, b5, b6};
+    }
+    @Rule("'\\[7\\]' hbyte hbyte hbyte hbyte hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7)
+    {
+        return new byte[]{b1, b2, b3, b4, b5, b6, b7};
+    }
+    @Rule("'\\[8\\]' hbyte hbyte hbyte hbyte hbyte hbyte hbyte hbyte")
+    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7, byte b8)
+    {
+        return new byte[]{b1, b2, b3, b4, b5, b6, b7, b8};
+    }
+    @Terminal(expression = "[0-9a-fA-F][0-9a-fA-F]", radix=16)
+    protected byte hbyte(byte b)
+    {
+        return b;
     }
     @Terminal(expression = "[\\+\\-]?[0-9]+\\.[0-9]+")
     protected long time(CharSequence seq)
@@ -75,7 +128,10 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
     {
         return HexUtil.fromString(str);
     }
-    @ParseMethod(start="candump", whiteSpace={"whiteSpace"}, charSet="US-ASCII")
+    @Terminal(expression = "[ \t]+")
+    protected abstract void ws();
+    
+    @ParseMethod(start="candump", whiteSpace={"ws"}, charSet="US-ASCII")
     public void parse(ReadableByteChannel channel, @ParserContext("CanDumpService") CanDumpService svc)
     {
         throw new UnsupportedOperationException();

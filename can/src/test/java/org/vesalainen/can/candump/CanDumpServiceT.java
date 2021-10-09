@@ -39,10 +39,18 @@ public class CanDumpServiceT
         JavaLogging.setConsoleHandler("org.vesalainen", Level.INFO);
     }
 
-    @Test
-    public void test() throws IOException, InterruptedException, ExecutionException
+    //@Test
+    public void test1() throws IOException, InterruptedException, ExecutionException
     {
         Path path = Paths.get("C:\\Users\\tkv\\share", "candump.txt");
+        CanDumpService svc = new CanDumpService("can1", path, Executors.newCachedThreadPool(), new Compiler());
+        svc.addN2K();
+        svc.startAndWait();
+    }
+    @Test
+    public void test2() throws IOException, InterruptedException, ExecutionException
+    {
+        Path path = Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\samples", "candumpSample2.txt");
         CanDumpService svc = new CanDumpService("can1", path, Executors.newCachedThreadPool(), new Compiler());
         svc.addN2K();
         svc.startAndWait();

@@ -62,7 +62,7 @@ public class FastMessage extends PgnMessage
                 if (id != packetId)
                 {
                     packetId = id;
-                    byteMax = Integer.MAX_VALUE;
+                    byteMax = buf.length;
                     byteCount = 0;
                 }
                 int seq = b & 0x1f;
