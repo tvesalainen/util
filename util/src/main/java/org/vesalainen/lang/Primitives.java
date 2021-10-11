@@ -17,6 +17,7 @@
 
 package org.vesalainen.lang;
 
+import java.math.BigInteger;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -45,8 +46,163 @@ import org.vesalainen.util.CharSequences;
  */
 public final class Primitives
 {
+    public static final BigInteger BYTE_MAX = BigInteger.valueOf(Byte.MAX_VALUE);
+    public static final BigInteger BYTE_MIN = BigInteger.valueOf(Byte.MIN_VALUE);
+    public static final BigInteger SHORT_MAX = BigInteger.valueOf(Short.MAX_VALUE);
+    public static final BigInteger SHORT_MIN = BigInteger.valueOf(Short.MIN_VALUE);
+    public static final BigInteger INT_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+    public static final BigInteger INT_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
+    public static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
+    public static final BigInteger LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE);
+    
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
+    /**
+     * If value fits in bits-integer it is returned.Otherwise throws
+     * NumberFormatException
+     * @param bits
+     * @param radix
+     * @param value
+     * @return 
+     */
+    public static final int checkRange(int bits, int radix, int value)
+    {
+        if (radix == 10)
+        {
+            if (Primitives.fitBits(bits, value))
+            {
+                return value;
+            }
+        }
+        else
+        {
+            if (Primitives.fitBitsUnsigned(bits, value))
+            {
+                return value;
+            }
+        }
+        throw new NumberFormatException(value+" doesn't fit in "+bits+" integer");
+    }
+    /**
+     * If value fits in bits-integer it is returned.Otherwise throws
+     * NumberFormatException
+     * @param bits
+     * @param radix
+     * @param value
+     * @return 
+     */
+    public static final long checkRange(int bits, int radix, long value)
+    {
+        if (radix == 10)
+        {
+            if (Primitives.fitBits(bits, value))
+            {
+                return value;
+            }
+        }
+        else
+        {
+            if (Primitives.fitBitsUnsigned(bits, value))
+            {
+                return value;
+            }
+        }
+        throw new NumberFormatException(value+" doesn't fit in "+bits+" integer");
+    }
+    public static final boolean fitBits(int bits, int value)
+    {
+        if (bits <= 0)
+        {
+            throw new IllegalArgumentException(bits+" out of range");
+        }
+        if (bits >= Long.SIZE)
+        {
+            return true;
+        }
+        int m2 = -1<<(bits-1);
+        if (value >= 0)
+        {
+            return (value&m2)==0;
+        }
+        else
+        {
+            return (value&m2)==m2;
+        }
+    }
+    public static final boolean fitBits(int bits, long value)
+    {
+        if (bits <= 0)
+        {
+            throw new IllegalArgumentException(bits+" out of range");
+        }
+        if (bits >= Long.SIZE)
+        {
+            return true;
+        }
+        long m2 = -1<<(bits-1);
+        if (value >= 0)
+        {
+            return (value&m2)==0;
+        }
+        else
+        {
+            return (value&m2)==m2;
+        }
+    }
+    /**
+     * Returns true if given value can be assigned to bits length integer.
+     * @param bits
+     * @param value
+     * @return 
+     */
+    public static final boolean fitBitsUnsigned(int bits, int value)
+    {
+        if (bits <= 0)
+        {
+            throw new IllegalArgumentException(bits+" out of range");
+        }
+        if (bits >= Long.SIZE)
+        {
+            return true;
+        }
+        int m1 = -1<<(bits);
+        int m2 = -1<<(bits-1);
+        if (value >= 0)
+        {
+            return (value&m1)==0;
+        }
+        else
+        {
+            return (value&m2)==m2;
+        }
+    }
+    /**
+     * Returns true if given value can be assigned to bits length integer.
+     * @param bits
+     * @param value
+     * @return 
+     */
+    public static final boolean fitBitsUnsigned(int bits, long value)
+    {
+        if (bits <= 0)
+        {
+            throw new IllegalArgumentException(bits+" out of range");
+        }
+        if (bits >= Long.SIZE)
+        {
+            return true;
+        }
+        long m1 = -1L<<(bits);
+        long m2 = -1L<<(bits-1);
+        if (value >= 0)
+        {
+            return (value&m1)==0;
+        }
+        else
+        {
+            return (value&m2)==m2;
+        }
+    }
     /**
      * Returns true if values differ less that first parameters ulp.
      * @param v1
@@ -876,11 +1032,11 @@ public final class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseInt(cs, 2, 2, cs.length());
+            return parseInt(cs, 2, 2, cs.length(), true);
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseInt(cs, 16, 2, cs.length());
+            return parseInt(cs, 16, 2, cs.length(), true);
         }
         return parseInt(cs, 10);
     }
@@ -900,7 +1056,7 @@ public final class Primitives
      */
     public static final int parseInt(CharSequence cs, int radix)
     {
-        return parseInt(cs, radix, 0, cs.length());
+        return parseInt(cs, radix, 0, cs.length(), true);
     }
     /**
      * Parses int from input.
@@ -919,7 +1075,7 @@ public final class Primitives
      */
     public static final int parseInt(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseInt(cs, 10, beginIndex, endIndex);
+        return parseInt(cs, 10, beginIndex, endIndex, true);
     }
     /**
      * Parses int from input.
@@ -937,77 +1093,24 @@ public final class Primitives
      * @see java.lang.Integer#parseInt(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
-        int size = Integer.SIZE;
-        int end = endIndex;
-        boolean twoComp = false;
-        if (radix < 0)
+        long result = parse(cs, radix, beginIndex, endIndex, Integer.SIZE);
+        if (signed && radix > 0)
         {
-            twoComp = true;
-            radix = -radix;
-            check(cs, size, beginIndex, endIndex);
+            if (result < Integer.MIN_VALUE || result > Integer.MAX_VALUE)
+            {
+                throw new NumberFormatException(cs+" is not signed byte");
+            }
+            return (int) result;
         }
         else
         {
-            check(cs, radix, NumberRanges.IntRange, beginIndex, endIndex);
-        }
-        int result = 0;
-        int sign = -1;
-        int index = beginIndex;
-        int cp = Character.codePointAt(cs, index);
-        if (cp == '+')
-        {
-            if (twoComp)
+            if (!fitBitsUnsigned(Integer.SIZE, result))
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
+                throw new NumberFormatException(cs+" is not unsigned byte");
             }
-            index++;
-        }
-        if (cp == '-')
-        {
-            if (twoComp)
-            {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
-            }
-            sign = 1;
-            index++;
-        }
-        if (index >= end)
-        {
-            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-        }
-        int count = Character.codePointCount(cs, index, end);
-        if (count == size)
-        {
-            twoComp = false;
-        }
-        while (index < end)
-        {
-            result *= radix;
-            cp = Character.codePointAt(cs, index);
-            int digit = Character.digit(cp, radix);
-            if (digit == -1)
-            {
-                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-            }
-            result -= digit;
-            if (Character.isBmpCodePoint(cp))
-            {
-                index++;
-            }
-            else
-            {
-                index += 2;
-            }
-        }
-        if (!twoComp || -result < (1<<(count-1)))
-        {
-            return sign*result;
-        }
-        else
-        {
-            return -result + (-1<<count);
+            return (int) result;
         }
     }
     /**
@@ -1023,11 +1126,11 @@ public final class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseLong(cs, 2, 2, cs.length());
+            return parseLong(cs, 2, 2, cs.length(), true);
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseLong(cs, 16, 2, cs.length());
+            return parseLong(cs, 16, 2, cs.length(), true);
         }
         return parseLong(cs, 10);
     }
@@ -1047,7 +1150,7 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int radix)
     {
-        return parseLong(cs, radix, 0, cs.length());
+        return parseLong(cs, radix, 0, cs.length(), true);
     }
     /**
      * Parses long from input.
@@ -1066,7 +1169,7 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseLong(cs, 10, beginIndex, endIndex);
+        return parseLong(cs, 10, beginIndex, endIndex, true);
     }
     /**
      * Parses long from input.
@@ -1084,78 +1187,9 @@ public final class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
-        int size = Long.SIZE;
-        int end = endIndex;
-        boolean twoComp = false;
-        if (radix < 0)
-        {
-            twoComp = true;
-            radix = -radix;
-            check(cs, size, beginIndex, endIndex);
-        }
-        else
-        {
-            check(cs, radix, NumberRanges.LongRange, beginIndex, endIndex);
-        }
-        long result = 0;
-        int sign = -1;
-        int index = beginIndex;
-        int cp = Character.codePointAt(cs, index);
-        if (cp == '+')
-        {
-            if (twoComp)
-            {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
-            }
-            index++;
-        }
-        if (cp == '-')
-        {
-            if (twoComp)
-            {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
-            }
-            sign = 1;
-            index++;
-        }
-        if (index >= end)
-        {
-            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-        }
-        int count = Character.codePointCount(cs, index, end);
-        if (count == size)
-        {
-            twoComp = false;
-        }
-        while (index < end)
-        {
-            result *= radix;
-            cp = Character.codePointAt(cs, index);
-            int digit = Character.digit(cp, radix);
-            if (digit == -1)
-            {
-                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-            }
-            result -= digit;
-            if (Character.isBmpCodePoint(cp))
-            {
-                index++;
-            }
-            else
-            {
-                index += 2;
-            }
-        }
-        if (!twoComp || -result < (1<<(count-1)))
-        {
-            return sign*result;
-        }
-        else
-        {
-            return -result + (-1<<count);
-        }
+        return parse(cs, radix, beginIndex, endIndex, Long.SIZE);
     }
     /**
      * Equal to calling parseShort(cs, 10).
@@ -1170,11 +1204,11 @@ public final class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseShort(cs, 2, 2, cs.length());
+            return parseShort(cs, 2, 2, cs.length(), true);
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseShort(cs, 16, 2, cs.length());
+            return parseShort(cs, 16, 2, cs.length(), true);
         }
         return parseShort(cs, 10);
     }
@@ -1194,7 +1228,7 @@ public final class Primitives
      */
     public static final short parseShort(CharSequence cs, int radix)
     {
-        return parseShort(cs, radix, 0, cs.length());
+        return parseShort(cs, radix, 0, cs.length(), true);
     }
     /**
      * Parses short from input.
@@ -1213,7 +1247,7 @@ public final class Primitives
      */
     public static final short parseShort(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseShort(cs, 10, beginIndex, endIndex);
+        return parseShort(cs, 10, beginIndex, endIndex, true);
     }
     /**
      * Parses short from input.
@@ -1231,77 +1265,24 @@ public final class Primitives
      * @see java.lang.Short#parseShort(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
-        int size = Short.SIZE;
-        int end = endIndex;
-        boolean twoComp = false;
-        if (radix < 0)
+        long result = parse(cs, radix, beginIndex, endIndex, Short.SIZE);
+        if (signed && radix > 0)
         {
-            twoComp = true;
-            radix = -radix;
-            check(cs, size, beginIndex, endIndex);
+            if (result < Short.MIN_VALUE || result > Short.MAX_VALUE)
+            {
+                throw new NumberFormatException(cs+" is not signed byte");
+            }
+            return (short) result;
         }
         else
         {
-            check(cs, radix, NumberRanges.ShortRange, beginIndex, endIndex);
-        }
-        short result = 0;
-        int sign = -1;
-        int index = beginIndex;
-        int cp = Character.codePointAt(cs, index);
-        if (cp == '+')
-        {
-            if (twoComp)
+            if (!fitBitsUnsigned(Short.SIZE, result))
             {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
+                throw new NumberFormatException(cs+" is not unsigned byte");
             }
-            index++;
-        }
-        if (cp == '-')
-        {
-            if (twoComp)
-            {
-                throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
-            }
-            sign = 1;
-            index++;
-        }
-        if (index >= end)
-        {
-            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-        }
-        int count = Character.codePointCount(cs, index, end);
-        if (count == size)
-        {
-            twoComp = false;
-        }
-        while (index < end)
-        {
-            result *= radix;
-            cp = Character.codePointAt(cs, index);
-            int digit = Character.digit(cp, radix);
-            if (digit == -1)
-            {
-                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-            }
-            result -= digit;
-            if (Character.isBmpCodePoint(cp))
-            {
-                index++;
-            }
-            else
-            {
-                index += 2;
-            }
-        }
-        if (!twoComp || -result < (1<<(count-1)))
-        {
-            return (short) (sign*result);
-        }
-        else
-        {
-            return (short) (-result + (-1<<count));
+            return (short) result;
         }
     }
     /**
@@ -1333,7 +1314,7 @@ public final class Primitives
      */
     public static final byte parseByte(CharSequence cs, int radix)
     {
-        return parseByte(cs, radix, 0, cs.length());
+        return parseByte(cs, radix, 0, cs.length(), true);
     }
     /**
      * Parses byte from input.
@@ -1352,7 +1333,7 @@ public final class Primitives
      */
     public static final byte parseByte(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseByte(cs, 10, beginIndex, endIndex);
+        return parseByte(cs, 10, beginIndex, endIndex, true);
     }
     /**
      * Parses byte from input.
@@ -1370,23 +1351,46 @@ public final class Primitives
      * @see java.lang.Byte#parseByte(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
-        int size = Byte.SIZE;
+        long result = parse(cs, radix, beginIndex, endIndex, Byte.SIZE);
+        if (signed && radix > 0)
+        {
+            if (result < Byte.MIN_VALUE || result > Byte.MAX_VALUE)
+            {
+                throw new NumberFormatException(cs+" is not signed byte");
+            }
+            return (byte) result;
+        }
+        else
+        {
+            if (!fitBitsUnsigned(Byte.SIZE, result))
+            {
+                throw new NumberFormatException(cs+" is not unsigned byte");
+            }
+            return (byte) result;
+        }
+    }
+    private static long parse(CharSequence cs, int radix, int beginIndex, int endIndex, int size)
+    {
         int end = endIndex;
         boolean twoComp = false;
         if (radix < 0)
         {
+            if (radix != -2)
+            {
+                throw new UnsupportedOperationException(radix+" radix not supported");
+            }
+            if (endIndex-beginIndex>size)
+            {
+                throw new NumberFormatException(cs+" too long for a bit pattern");
+            }
             twoComp = true;
             radix = -radix;
-            check(cs, size, beginIndex, endIndex);
         }
-        else
-        {
-            check(cs, radix, NumberRanges.ByteRange, beginIndex, endIndex);
-        }
-        short result = 0;
-        int sign = -1;
+        check(cs, radix, beginIndex, endIndex);
+        long result = 0;
+        int sign = 1;
         int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
         if (cp == '+')
@@ -1403,7 +1407,7 @@ public final class Primitives
             {
                 throw new NumberFormatException("no signs for 2-complement "+cs.subSequence(beginIndex, endIndex));
             }
-            sign = 1;
+            sign = -1;
             index++;
         }
         if (index >= end)
@@ -1411,39 +1415,59 @@ public final class Primitives
             throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
         }
         int count = Character.codePointCount(cs, index, end);
+        if (
+                (endIndex - beginIndex <= NumberSafeLengths.LongSafeLength[radix]) ||
+                (twoComp && count <= size)
+                )
+        {
+            while (index < end)
+            {
+                result *= radix;
+                cp = Character.codePointAt(cs, index);
+                int digit = Character.digit(cp, radix);
+                if (digit == -1)
+                {
+                    throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
+                }
+                result += digit;
+                if (Character.isBmpCodePoint(cp))
+                {
+                    index++;
+                }
+                else
+                {
+                    index += 2;
+                }
+            }
+            result *= sign;
+        }
+        else
+        {
+            BigInteger bi = new BigInteger(cs.toString(), radix);
+            try
+            {
+                result = bi.longValueExact();
+            }
+            catch (ArithmeticException ex)
+            {
+                throw new NumberFormatException(cs+" "+ex.getMessage());
+            }
+        }
         if (count == size)
         {
             twoComp = false;
         }
-        while (index < end)
+        if (!twoComp || result < (1<<(count-1)))
         {
-            result *= radix;
-            cp = Character.codePointAt(cs, index);
-            int digit = Character.digit(cp, radix);
-            if (digit == -1)
-            {
-                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-            }
-            result -= digit;
-            if (Character.isBmpCodePoint(cp))
-            {
-                index++;
-            }
-            else
-            {
-                index += 2;
-            }
-        }
-        if (!twoComp || -result < (1<<(count-1)))
-        {
-            return (byte) (sign*result);
+            return result;
         }
         else
         {
-            return (byte) (-result + (-1<<count));
+            return (result | (-1<<count));
         }
     }
     /**
+     * @deprecated what does this really do
      * Equal to calling parseUnsignedInt(cs, 10).
      * @param cs
      * @return 
@@ -1457,6 +1481,7 @@ public final class Primitives
         return parseUnsignedInt(cs, 10);
     }
     /**
+     * @deprecated what does this really do
      * Parses unsigned int from input.
      * <p>Input can start with '+'.
      * <p>Numeric value is according to radix
@@ -1473,6 +1498,7 @@ public final class Primitives
         return parseUnsignedInt(cs, radix, 0, cs.length());
     }
     /**
+     * @deprecated what does this really do
      * Parses unsigned int from input.
      * <p>Input can start with '+'.
      * <p>Numeric value is according to radix
@@ -1488,7 +1514,7 @@ public final class Primitives
      */
     public static final int parseUnsignedInt(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
-        check(cs, radix, NumberRanges.UnsignedIntRange, beginIndex, endIndex);
+        check(cs, radix, beginIndex, endIndex);
         int end = endIndex;
         int result = 0;
         int index = beginIndex;
@@ -1518,6 +1544,10 @@ public final class Primitives
             else
             {
                 index += 2;
+            }
+            if (result < 0)
+            {
+                throw new NumberFormatException("not unsigned "+cs.subSequence(beginIndex, endIndex));
             }
         }
         return result;
@@ -1579,7 +1609,7 @@ public final class Primitives
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
-        return parseInt(cs, radix, begin, endIndex(end, endIndex));
+        return parseInt(cs, radix, begin, endIndex(end, endIndex), true);
     }
     /**
      * Parses next long
@@ -1638,7 +1668,7 @@ public final class Primitives
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
-        return parseLong(cs, radix, begin, endIndex(end, endIndex));
+        return parseLong(cs, radix, begin, endIndex(end, endIndex), true);
     }
     /**
      * Parses next float
@@ -1826,7 +1856,7 @@ public final class Primitives
      */
     public static final int maxByteDigits(int radix)
     {
-        return NumberRanges.ByteRange[radix][0].length();
+        return NumberSafeLengths.ByteSafeLength[radix]+2;
     }
     /**
      * Returns maximum number of digits. Possible sign included.
@@ -1835,7 +1865,7 @@ public final class Primitives
      */
     public static final int maxShortDigits(int radix)
     {
-        return NumberRanges.ShortRange[radix][0].length();
+        return NumberSafeLengths.ShortSafeLength[radix]+2;
     }
     /**
      * Returns maximum number of digits. Possible sign included.
@@ -1844,7 +1874,7 @@ public final class Primitives
      */
     public static final int maxIntDigits(int radix)
     {
-        return NumberRanges.IntRange[radix][0].length();
+        return NumberSafeLengths.IntSafeLength[radix]+2;
     }
     /**
      * Returns maximum number of digits. Possible sign included.
@@ -1853,16 +1883,14 @@ public final class Primitives
      */
     public static final int maxLongDigits(int radix)
     {
-        return NumberRanges.LongRange[radix][0].length();
+        return NumberSafeLengths.LongSafeLength[radix]+2;
     }
-    private static void check(CharSequence cs, int radix, CharSequence[][] range, int beginIndex, int endIndex)
+    private static void check(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
         {
             throw new NumberFormatException(cs+" radix "+radix+" not supported");
         }
-        CharSequence lower = range[radix][0];
-        CharSequence upper = range[radix][1];
         int sign = 1;
         int index = beginIndex;
         int cp = Character.codePointAt(cs, index);
@@ -1892,86 +1920,6 @@ public final class Primitives
             digit = Character.digit(cp, radix);
             count--;
         }
-        if (sign == -1)
-        {
-            if (Character.codePointAt(lower, 0) != '-')
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
-            }
-            if (count+1 > lower.length())
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
-            }
-            if (count+1 == lower.length() && isGreater(cs, radix, lower, beginIndex, endIndex))
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
-            }
-        }
-        else
-        {
-            if (count > upper.length())
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
-            }
-            if (count == upper.length() && isGreater(cs, radix, upper, beginIndex, endIndex))
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+" not in range["+lower+" - "+upper+"]");
-            }
-        }
     }
-    private static boolean isGreater(CharSequence cs, int radix, CharSequence range, int beginIndex, int endIndex)
-    {
-        int end = endIndex;
-        int count = Character.codePointCount(cs, beginIndex, end);
-        int ii = 0;
-        int jj = 0;
-        switch (cs.charAt(beginIndex))
-        {
-            case '-':
-                ii = 1;
-                jj = 1;
-                break;
-            case '+':
-                ii = 1;
-                break;
-        }
-        for (;ii<count;ii++)
-        {
-            int cp1 = Character.codePointAt(cs, jj);
-            int d1 = Character.digit(cp1, radix);
-            if (d1 == -1)
-            {
-                throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+"not valid number");
-            }
-            int cp2 = Character.codePointAt(range, ii);
-            int d2 = Character.digit(cp2, radix);
-            if (d1 > d2)
-            {
-                return true;
-            }
-            if (d1 < d2)
-            {
-                return false;
-            }
-            if (Character.isBmpCodePoint(cp1))
-            {
-                jj++;
-            }
-            else
-            {
-                jj += 2;
-            }
-        }
-        return false;
-    }
-    private static void check(CharSequence cs, int size, int beginIndex, int endIndex)
-    {
-        int end = endIndex;
-        int index = beginIndex;
-        int count = Character.codePointCount(cs, index, end);
-        if (count > size)
-        {
-            throw new NumberFormatException(cs.subSequence(beginIndex, endIndex)+"not valid number");
-        }
-    }
+    
 }

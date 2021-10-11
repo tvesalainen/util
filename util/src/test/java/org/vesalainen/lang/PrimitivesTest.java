@@ -17,6 +17,7 @@
 
 package org.vesalainen.lang;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import org.junit.Assert;
 import static org.junit.Assert.*;
@@ -45,6 +46,25 @@ public class PrimitivesTest
             }
         }
     }
+    @Test
+    public void test0()
+    {
+        BigInteger bi = new BigInteger("8000", 16);
+        int bitLength = bi.bitLength();
+        int bitCount = bi.bitCount();
+    }
+    @Test
+    public void testFitBits()
+    {
+        assertTrue(Primitives.fitBits(Integer.SIZE, Integer.MAX_VALUE));
+        assertTrue(Primitives.fitBits(Integer.SIZE, Integer.MIN_VALUE));
+        assertTrue(Primitives.fitBits(Short.SIZE, Short.MAX_VALUE));
+        assertTrue(Primitives.fitBits(Short.SIZE, Short.MIN_VALUE));
+        assertTrue(Primitives.fitBits(Byte.SIZE, Byte.MAX_VALUE));
+        assertTrue(Primitives.fitBits(Byte.SIZE, Byte.MIN_VALUE));
+        assertFalse(Primitives.fitBits(Integer.SIZE-1, Integer.MAX_VALUE));
+        assertFalse(Primitives.fitBits(Integer.SIZE-1, Integer.MIN_VALUE));
+    }
     /**
      * Test of parseFloat method, of class Primitives.
      */
@@ -62,6 +82,8 @@ public class PrimitivesTest
         testEquals(1.0000001F, Primitives.parseFloat("1.00000017881393421514957253748434595763683319091796875001"));
         testEquals(1000000178813934215149572537484345F, Primitives.parseFloat("1000000178813934215149572537484345"));
         testEquals(1234F, Primitives.parseFloat("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
+        testEquals(Float.MAX_VALUE, Primitives.parseFloat(Float.toString(Float.MAX_VALUE)));
+        testEquals(Float.MIN_VALUE, Primitives.parseFloat(Float.toString(Float.MIN_VALUE)));
         try
         {
             Primitives.parseFloat("-123456789E-3.2");
@@ -102,12 +124,8 @@ public class PrimitivesTest
         testEquals(-123456.789, Primitives.parseDouble("-123456789E-3"));
         testEquals(123456.789, Primitives.parseDouble("+123456.789"));
         testEquals(123456.789, Primitives.parseDouble("+123456789E-3"));
-        double max = Double.MAX_VALUE;
-        String maxs = Double.toString(max);
-        testEquals(max, Primitives.parseDouble(maxs));
-        double min = Double.MIN_VALUE;
-        String mins = Double.toString(min);
-        testEquals(min, Primitives.parseDouble(mins));
+        testEquals(Double.MAX_VALUE, Primitives.parseDouble(Double.toString(Double.MAX_VALUE)));
+        testEquals(Double.MIN_VALUE, Primitives.parseDouble(Double.toString(Double.MIN_VALUE)));
         testEquals(1.0000001788139342, Primitives.parseDouble("1.00000017881393421514957253748434595763683319091796875001"));
         testEquals(100000017881393421514957253748434595763683319091796875001.0, Primitives.parseDouble("100000017881393421514957253748434595763683319091796875001"));
         testEquals(1234, Primitives.parseDouble("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
@@ -141,15 +159,15 @@ public class PrimitivesTest
      * Test of Primitives.parseInt method, of class Primitives.
      */
     @Test
-    public void testParseInt_CharSequence_int()
+    public void testParseInt()
     {
         String maxBin = Integer.toBinaryString(Integer.MAX_VALUE);
         String maxOct = Integer.toOctalString(Integer.MAX_VALUE);
         String maxHex = Integer.toHexString(Integer.MAX_VALUE);
         String maxDec = Integer.toString(Integer.MAX_VALUE);
-        String minBin = Integer.toBinaryString(Integer.MIN_VALUE);
-        String minOct = Integer.toOctalString(Integer.MIN_VALUE);
-        String minHex = Integer.toHexString(Integer.MIN_VALUE);
+        String minBin = Integer.toString(Integer.MIN_VALUE, 2);
+        String minOct = Integer.toString(Integer.MIN_VALUE, 8);
+        String minHex = Integer.toString(Integer.MIN_VALUE, 16);
         String minDec = Integer.toString(Integer.MIN_VALUE);
         assertEquals(0, Primitives.parseInt("0", 10));
         assertEquals(473, Primitives.parseInt("473", 10));
@@ -162,39 +180,13 @@ public class PrimitivesTest
         assertEquals(Integer.MAX_VALUE, Primitives.parseInt(maxOct, 8));
         assertEquals(Integer.MAX_VALUE, Primitives.parseInt(maxBin, 2));
         assertEquals(Integer.MIN_VALUE, Primitives.parseInt(minDec, 10));
-        assertEquals(1234, Primitives.parseInt("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa", 10));
-        try
-        {
-            Primitives.parseInt("2147483648", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseInt("-2147483649", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseInt("99", 8);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseInt("Kona", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
+        assertEquals(Integer.MIN_VALUE, Primitives.parseInt(minHex, 16));
+        assertEquals(Integer.MIN_VALUE, Primitives.parseInt(minOct, 8));
+        assertEquals(Integer.MIN_VALUE, Primitives.parseInt(minBin, 2));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseInt(Long.toString((long)Integer.MAX_VALUE+1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseInt(Long.toString((long)Integer.MIN_VALUE-1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseInt("99", 8));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseInt("Kona", 10));
         assertEquals(411787, Primitives.parseInt("Kona", 27));
         assertEquals(126, Primitives.parseInt("01111110", -2));
         assertEquals(127, Primitives.parseInt("01111111", -2));
@@ -236,15 +228,15 @@ public class PrimitivesTest
      * Test of parseLong method, of class Primitives.
      */
     @Test
-    public void testParseLong_CharSequence_int()
+    public void testParseLong()
     {
         String maxBin = Long.toBinaryString(Long.MAX_VALUE);
         String maxOct = Long.toOctalString(Long.MAX_VALUE);
         String maxHex = Long.toHexString(Long.MAX_VALUE);
         String maxDec = Long.toString(Long.MAX_VALUE);
-        String minBin = Long.toBinaryString(Long.MIN_VALUE);
-        String minOct = Long.toOctalString(Long.MIN_VALUE);
-        String minHex = Long.toHexString(Long.MIN_VALUE);
+        String minBin = Long.toString(Long.MIN_VALUE, 2);
+        String minOct = Long.toString(Long.MIN_VALUE, 8);
+        String minHex = Long.toString(Long.MIN_VALUE, 16);
         String minDec = Long.toString(Long.MIN_VALUE);
         assertEquals(0, Primitives.parseLong("0", 10));
         assertEquals(473, Primitives.parseLong("473", 10));
@@ -252,44 +244,27 @@ public class PrimitivesTest
         assertEquals(0, Primitives.parseLong("-0", 10));
         assertEquals(-255, Primitives.parseLong("-FF", 16));
         assertEquals(102, Primitives.parseLong("1100110", 2));
+        assertEquals(0, Primitives.parseLong("0"));
+        assertEquals(473, Primitives.parseLong("473"));
+        assertEquals(473, Primitives.parseLong("123473123", 3, 6));
+        assertEquals(42, Primitives.parseLong("+42"));
+        assertEquals(0, Primitives.parseLong("-0"));
         assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxDec, 10));
         assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxHex, 16));
         assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxOct, 8));
         assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxBin, 2));
         assertEquals(Long.MIN_VALUE, Primitives.parseLong(minDec, 10));
-        assertEquals(1234, Primitives.parseLong("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa", 10));
-        try
-        {
-            Primitives.parseLong("9223372036854775808", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("-9223372036854775809", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("99", 8);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("Kona", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
+        assertEquals(Long.MIN_VALUE, Primitives.parseLong(minHex, 16));
+        assertEquals(Long.MIN_VALUE, Primitives.parseLong(minOct, 8));
+        assertEquals(Long.MIN_VALUE, Primitives.parseLong(minBin, 2));
+        BigInteger maxPlus = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE);
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong(maxPlus.toString(), 10));
+        BigInteger minMinus = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE);
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong(minMinus.toString(), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("9223372036854775808", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("-9223372036854775809", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("99", 8));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("Kona", 10));
         assertEquals(411787, Primitives.parseLong("Kona", 27));
         assertEquals(126, Primitives.parseLong("01111110", -2));
         assertEquals(127, Primitives.parseLong("01111111", -2));
@@ -323,51 +298,41 @@ public class PrimitivesTest
      * Test of parseShort method, of class Primitives.
      */
     @Test
-    public void testParseShort_CharSequence_int()
+    public void testParseShort()
     {
         String maxDec = Short.toString(Short.MAX_VALUE);
+        String maxHex = Integer.toHexString(Short.MAX_VALUE);
+        String maxOct = Integer.toOctalString(Short.MAX_VALUE);
+        String maxBin = Integer.toBinaryString(Short.MAX_VALUE);
         String minDec = Short.toString(Short.MIN_VALUE);
+        String minHex = "-8000";
+        String minOct = "-100000";
+        String minBin = "-1000000000000000";
         assertEquals(0, Primitives.parseShort("0", 10));
         assertEquals(473, Primitives.parseShort("473", 10));
         assertEquals(42, Primitives.parseShort("+42", 10));
         assertEquals(0, Primitives.parseShort("-0", 10));
         assertEquals(-255, Primitives.parseShort("-FF", 16));
         assertEquals(102, Primitives.parseShort("1100110", 2));
+        assertEquals(0, Primitives.parseShort("0"));
+        assertEquals(473, Primitives.parseShort("473"));
+        assertEquals(473, Primitives.parseShort("123473123", 3, 6));
+        assertEquals(42, Primitives.parseShort("+42"));
+        assertEquals(0, Primitives.parseShort("-0"));
         assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxDec, 10));
+        assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxHex, 16));
+        assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxOct, 8));
+        assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxBin, 2));
         assertEquals(Short.MIN_VALUE, Primitives.parseShort(minDec, 10));
-        assertEquals(1234, Primitives.parseShort("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa", 10));
-        try
-        {
-            Primitives.parseShort("32768", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseShort("-32769", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseShort("99", 8);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseShort("Kona", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
+        assertEquals(Short.MIN_VALUE, Primitives.parseShort(minHex, 16));
+        assertEquals(Short.MIN_VALUE, Primitives.parseShort(minOct, 8));
+        assertEquals(Short.MIN_VALUE, Primitives.parseShort(minBin, 2));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort(Long.toString(Short.MAX_VALUE+1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort(Long.toString(Short.MIN_VALUE-1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort("32768", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort("-32769", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort("99", 8));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseShort("Kona", 10));
         assertEquals(15251, Primitives.parseShort("Kon", 27));
         assertEquals(126, Primitives.parseShort("01111110", -2));
         assertEquals(127, Primitives.parseShort("01111111", -2));
@@ -409,51 +374,41 @@ public class PrimitivesTest
      * Test of parseByte method, of class Primitives.
      */
     @Test
-    public void testParseByte_CharSequence_int()
+    public void testParseByte()
     {
-        String maxDec = Byte.toString(Byte.MAX_VALUE);
-        String minDec = Byte.toString(Byte.MIN_VALUE);
+        String maxDec = Integer.toString(Byte.MAX_VALUE);
+        String maxHex = Integer.toHexString(Byte.MAX_VALUE);
+        String maxOct = Integer.toOctalString(Byte.MAX_VALUE);
+        String maxBin = Integer.toBinaryString(Byte.MAX_VALUE);
+        String minDec = Integer.toString(Byte.MIN_VALUE);
+        String minHex = "-80";
+        String minOct = "-200";
+        String minBin = "-10000000";
         assertEquals(0, Primitives.parseByte("00000000000000000000000", 10));
         assertEquals(73, Primitives.parseByte("73", 10));
         assertEquals(42, Primitives.parseByte("+42", 10));
         assertEquals(0, Primitives.parseByte("-0", 10));
         assertEquals(-15, Primitives.parseByte("-F", 16));
         assertEquals(102, Primitives.parseByte("1100110", 2));
+        assertEquals(0, Primitives.parseByte("0"));
+        assertEquals(73, Primitives.parseByte("73"));
+        assertEquals(73, Primitives.parseByte("12373123", 3, 5));
+        assertEquals(42, Primitives.parseByte("+42"));
+        assertEquals(0, Primitives.parseByte("-0"));
         assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxDec, 10));
+        assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxHex, 16));
+        assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxOct, 8));
+        assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxBin, 2));
         assertEquals(Byte.MIN_VALUE, Primitives.parseByte(minDec, 10));
-        assertEquals(123, Primitives.parseByte("\ud835\udff7\ud835\udff8\ud835\udff9", 10));
-        try
-        {
-            Primitives.parseByte("128", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseByte("-129", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseByte("99", 8);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseByte("Kona", 10);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
+        assertEquals(Byte.MIN_VALUE, Primitives.parseByte(minHex, 16));
+        assertEquals(Byte.MIN_VALUE, Primitives.parseByte(minOct, 8));
+        assertEquals(Byte.MIN_VALUE, Primitives.parseByte(minBin, 2));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte(Long.toString(Byte.MAX_VALUE+1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte(Long.toString(Byte.MIN_VALUE-1), 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte("128", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte("-129", 10));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte("99", 8));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseByte("Kona", 10));
         assertEquals(20, Primitives.parseByte("K", 27));
         assertEquals(126, Primitives.parseByte("01111110", -2));
         assertEquals(127, Primitives.parseByte("01111111", -2));
@@ -490,199 +445,10 @@ public class PrimitivesTest
     }
 
     /**
-     * Test of parseInt method, of class Primitives.
-     */
-    @Test
-    public void testParseInt_CharSequence()
-    {
-        String maxBin = Integer.toBinaryString(Integer.MAX_VALUE);
-        String maxOct = Integer.toOctalString(Integer.MAX_VALUE);
-        String maxHex = Integer.toHexString(Integer.MAX_VALUE);
-        String maxDec = Integer.toString(Integer.MAX_VALUE);
-        String minBin = Integer.toBinaryString(Integer.MIN_VALUE);
-        String minOct = Integer.toOctalString(Integer.MIN_VALUE);
-        String minHex = Integer.toHexString(Integer.MIN_VALUE);
-        String minDec = Integer.toString(Integer.MIN_VALUE);
-        assertEquals(0, Primitives.parseInt("0"));
-        assertEquals(473, Primitives.parseInt("473"));
-        assertEquals(473, Primitives.parseInt("123473123", 3, 6));
-        assertEquals(42, Primitives.parseInt("+42"));
-        assertEquals(0, Primitives.parseInt("-0"));
-        assertEquals(Integer.MAX_VALUE, Primitives.parseInt(maxDec));
-        assertEquals(Integer.MIN_VALUE, Primitives.parseInt(minDec));
-        assertEquals(1234, Primitives.parseInt("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
-        try
-        {
-            Primitives.parseInt("2147483648");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseInt("-2147483649");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseInt("Kona");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-    }
-
-    /**
-     * Test of parseLong method, of class Primitives.
-     */
-    @Test
-    public void testParseLong_CharSequence()
-    {
-        String maxBin = Long.toBinaryString(Long.MAX_VALUE);
-        String maxOct = Long.toOctalString(Long.MAX_VALUE);
-        String maxHex = Long.toHexString(Long.MAX_VALUE);
-        String maxDec = Long.toString(Long.MAX_VALUE);
-        String minBin = Long.toBinaryString(Long.MIN_VALUE);
-        String minOct = Long.toOctalString(Long.MIN_VALUE);
-        String minHex = Long.toHexString(Long.MIN_VALUE);
-        String minDec = Long.toString(Long.MIN_VALUE);
-        assertEquals(0, Primitives.parseLong("0"));
-        assertEquals(473, Primitives.parseLong("473"));
-        assertEquals(473, Primitives.parseLong("123473123", 3, 6));
-        assertEquals(42, Primitives.parseLong("+42"));
-        assertEquals(0, Primitives.parseLong("-0"));
-        assertEquals(Long.MAX_VALUE, Primitives.parseLong(maxDec));
-        assertEquals(Long.MIN_VALUE, Primitives.parseLong(minDec));
-        assertEquals(1234, Primitives.parseLong("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
-        try
-        {
-            Primitives.parseLong("9223372036854775808");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("-9223372036854775809");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("Kona");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-    }
-
-    /**
-     * Test of parseShort method, of class Primitives.
-     */
-    @Test
-    public void testParseShort_CharSequence()
-    {
-        String maxDec = Short.toString(Short.MAX_VALUE);
-        String minDec = Short.toString(Short.MIN_VALUE);
-        assertEquals(0, Primitives.parseShort("0"));
-        assertEquals(473, Primitives.parseShort("473"));
-        assertEquals(473, Primitives.parseShort("123473123", 3, 6));
-        assertEquals(42, Primitives.parseShort("+42"));
-        assertEquals(0, Primitives.parseShort("-0"));
-        assertEquals(Short.MAX_VALUE, Primitives.parseShort(maxDec));
-        assertEquals(Short.MIN_VALUE, Primitives.parseShort(minDec));
-        assertEquals(1234, Primitives.parseShort("\ud835\udff7\ud835\udff8\ud835\udff9\ud835\udffa"));
-        try
-        {
-            Primitives.parseShort("32768");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseShort("-32769");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseShort("Kona");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-    }
-
-    /**
-     * Test of parseByte method, of class Primitives.
-     */
-    @Test
-    public void testParseByte_CharSequence()
-    {
-        String maxDec = Byte.toString(Byte.MAX_VALUE);
-        String minDec = Byte.toString(Byte.MIN_VALUE);
-        assertEquals(0, Primitives.parseByte("0"));
-        assertEquals(73, Primitives.parseByte("73"));
-        assertEquals(73, Primitives.parseByte("12373123", 3, 5));
-        assertEquals(42, Primitives.parseByte("+42"));
-        assertEquals(0, Primitives.parseByte("-0"));
-        assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxDec));
-        assertEquals(Byte.MIN_VALUE, Primitives.parseByte(minDec));
-        assertEquals(123, Primitives.parseByte("\ud835\udff7\ud835\udff8\ud835\udff9"));
-        try
-        {
-            Primitives.parseByte("128");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseByte("-129");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseByte("Kona");
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-    }
-
-    /**
      * Test of parseUnsignedInt method, of class Primitives.
      */
-    @Test
-    public void testParseUnsignedInt_CharSequence()
-    {
-    }
-
-    /**
-     * Test of parseUnsignedInt method, of class Primitives.
-     */
-    /*
-    @Test
-    public void testParseUnsignedInt_CharSequence_int()
+    //@Test
+    public void testParseUnsignedInt()
     {
         String maxBin = Integer.toUnsignedString(-1, 2);
         String maxOct = Integer.toUnsignedString(-1, 8);
@@ -739,7 +505,6 @@ public class PrimitivesTest
         }
         assertEquals(411787, Primitives.parseUnsignedInt("Kona", 27));
     }
-    */
 
     /**
      * Test of parseChar method, of class Primitives.
@@ -771,20 +536,12 @@ public class PrimitivesTest
      * Test of parseBoolean method, of class Primitives.
      */
     @Test
-    public void testParseBoolean_CharSequence()
+    public void testParseBoolean()
     {
         assertEquals(true, Primitives.parseBoolean("True"));
         assertEquals(true, Primitives.parseBoolean("FalseTrueFalse", 5, 9));
         assertEquals(true, Primitives.parseBoolean("true"));
         assertEquals(false, Primitives.parseBoolean("qwerty"));
-    }
-
-    /**
-     * Test of parseBoolean method, of class Primitives.
-     */
-    @Test
-    public void testParseBoolean_CharSequence_int()
-    {
         assertEquals(true, Primitives.parseBoolean("1", 2));
         assertEquals(true, Primitives.parseBoolean("010", 2, 1, 2));
         assertEquals(false, Primitives.parseBoolean("0", 2));
@@ -1000,9 +757,9 @@ public class PrimitivesTest
     public void testMaxDigits()
     {
         assertEquals(4, Primitives.maxByteDigits(10));
-        assertEquals(9, Primitives.maxByteDigits(2));
-        assertEquals(17, Primitives.maxShortDigits(2));
-        assertEquals(33, Primitives.maxIntDigits(2));
-        assertEquals(65, Primitives.maxLongDigits(2));
+        assertEquals(8, Primitives.maxByteDigits(2));
+        assertEquals(16, Primitives.maxShortDigits(2));
+        assertEquals(32, Primitives.maxIntDigits(2));
+        assertEquals(64, Primitives.maxLongDigits(2));
     }    
 }
