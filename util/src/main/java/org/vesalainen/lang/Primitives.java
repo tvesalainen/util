@@ -1078,6 +1078,64 @@ public final class Primitives
         return parseInt(cs, 10, beginIndex, endIndex, true);
     }
     /**
+     * Equal to calling parseInt(cs, 10).
+     * @param cs
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseInt(java.lang.String) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final int parseUnsignedInt(CharSequence cs)
+    {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseInt(cs, 2, 2, cs.length(), false);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseInt(cs, 16, 2, cs.length(), false);
+        }
+        return parseInt(cs, 10);
+    }
+    /**
+     * Parses int from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseInt(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final int parseUnsignedInt(CharSequence cs, int radix)
+    {
+        return parseInt(cs, radix, 0, cs.length(), false);
+    }
+    /**
+     * Parses int from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * int.
+     * @see java.lang.Integer#parseInt(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final int parseUnsignedInt(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseInt(cs, 10, beginIndex, endIndex, false);
+    }
+    /**
      * Parses int from input.
      * <p>Input can start with '-' or '+'.
      * <p>Numeric value is according to radix
@@ -1087,6 +1145,7 @@ public final class Primitives
      * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
      * @param beginIndex the index to the first char of the text range.
      * @param endIndex the index after the last char of the text range.
+     * @param signed if true the number is resolved as unsigned bit pattern. Ex. Byte 254 will become -2.
      * @return 
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * int.
@@ -1126,11 +1185,11 @@ public final class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseLong(cs, 2, 2, cs.length(), true);
+            return parseLong(cs, 2, 2, cs.length());
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseLong(cs, 16, 2, cs.length(), true);
+            return parseLong(cs, 16, 2, cs.length());
         }
         return parseLong(cs, 10);
     }
@@ -1150,7 +1209,7 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int radix)
     {
-        return parseLong(cs, radix, 0, cs.length(), true);
+        return parseLong(cs, radix, 0, cs.length());
     }
     /**
      * Parses long from input.
@@ -1169,7 +1228,7 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseLong(cs, 10, beginIndex, endIndex, true);
+        return parseLong(cs, 10, beginIndex, endIndex);
     }
     /**
      * Parses long from input.
@@ -1187,7 +1246,7 @@ public final class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
+    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
     {
         return parse(cs, radix, beginIndex, endIndex, Long.SIZE);
     }
@@ -1250,6 +1309,64 @@ public final class Primitives
         return parseShort(cs, 10, beginIndex, endIndex, true);
     }
     /**
+     * Equal to calling parseShort(cs, 10).
+     * @param cs
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * short.
+     * @see java.lang.Short#parseShort(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final short parseUnsignedShort(CharSequence cs)
+    {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseShort(cs, 2, 2, cs.length(), false);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseShort(cs, 16, 2, cs.length(), false);
+        }
+        return parseShort(cs, 10);
+    }
+    /**
+     * Parses short from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * short.
+     * @see java.lang.Short#parseShort(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final short parseUnsignedShort(CharSequence cs, int radix)
+    {
+        return parseShort(cs, radix, 0, cs.length(), false);
+    }
+    /**
+     * Parses short from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * short.
+     * @see java.lang.Short#parseShort(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final short parseUnsignedShort(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseShort(cs, 10, beginIndex, endIndex, false);
+    }
+    /**
      * Parses short from input.
      * <p>Input can start with '-' or '+'.
      * <p>Numeric value is according to radix
@@ -1259,6 +1376,7 @@ public final class Primitives
      * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
      * @param beginIndex the index to the first char of the text range.
      * @param endIndex the index after the last char of the text range.
+     * @param signed if true the number is resolved as unsigned bit pattern. Ex. Byte 254 will become -2.
      * @return 
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * short.
@@ -1336,6 +1454,56 @@ public final class Primitives
         return parseByte(cs, 10, beginIndex, endIndex, true);
     }
     /**
+     * Equal to calling parseByte(cs, 10).
+     * @param cs
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * byte.
+     * @see java.lang.Byte#parseByte(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final byte parseUnsignedByte(CharSequence cs)
+    {
+        return parseUnsignedByte(cs, 10);
+    }
+    /**
+     * Parses byte from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * byte.
+     * @see java.lang.Byte#parseByte(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final byte parseUnsignedByte(CharSequence cs, int radix)
+    {
+        return parseByte(cs, radix, 0, cs.length(), false);
+    }
+    /**
+     * Parses byte from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * byte.
+     * @see java.lang.Byte#parseByte(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final byte parseUnsignedByte(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseByte(cs, 10, beginIndex, endIndex, false);
+    }
+    /**
      * Parses byte from input.
      * <p>Input can start with '-' or '+'.
      * <p>Numeric value is according to radix
@@ -1345,6 +1513,7 @@ public final class Primitives
      * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
      * @param beginIndex the index to the first char of the text range.
      * @param endIndex the index after the last char of the text range.
+     * @param signed if true the number is resolved as unsigned bit pattern. Ex. Byte 254 will become -2.
      * @return 
      * @throws java.lang.NumberFormatException if input cannot be parsed to proper
      * byte.
@@ -1467,92 +1636,6 @@ public final class Primitives
         }
     }
     /**
-     * @deprecated what does this really do
-     * Equal to calling parseUnsignedInt(cs, 10).
-     * @param cs
-     * @return 
-     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
-     * unsigned int.
-     * @see java.lang.Integer#parseUnsignedInt(java.lang.String) 
-     * @see java.lang.Character#digit(int, int) 
-     */
-    public static final int parseUnsignedInt(CharSequence cs)
-    {
-        return parseUnsignedInt(cs, 10);
-    }
-    /**
-     * @deprecated what does this really do
-     * Parses unsigned int from input.
-     * <p>Input can start with '+'.
-     * <p>Numeric value is according to radix
-     * @param cs
-     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
-     * @return 
-     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
-     * int.
-     * @see java.lang.Integer#parseUnsignedInt(java.lang.String, int) 
-     * @see java.lang.Character#digit(int, int) 
-     */
-    public static final int parseUnsignedInt(CharSequence cs, int radix)
-    {
-        return parseUnsignedInt(cs, radix, 0, cs.length());
-    }
-    /**
-     * @deprecated what does this really do
-     * Parses unsigned int from input.
-     * <p>Input can start with '+'.
-     * <p>Numeric value is according to radix
-     * @param cs
-     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
-     * @param beginIndex the index to the first char of the text range.
-     * @param endIndex the index after the last char of the text range.
-     * @return 
-     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
-     * int.
-     * @see java.lang.Integer#parseUnsignedInt(java.lang.String, int) 
-     * @see java.lang.Character#digit(int, int) 
-     */
-    public static final int parseUnsignedInt(CharSequence cs, int radix, int beginIndex, int endIndex)
-    {
-        check(cs, radix, beginIndex, endIndex);
-        int end = endIndex;
-        int result = 0;
-        int index = beginIndex;
-        int cp = Character.codePointAt(cs, index);
-        if (cp == '+')
-        {
-            index++;
-        }
-        if (index >= end)
-        {
-            throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-        }
-        while (index < end)
-        {
-            result *= radix;
-            cp = Character.codePointAt(cs, index);
-            int digit = Character.digit(cp, radix);
-            if (digit == -1)
-            {
-                throw new NumberFormatException("unparsable number "+cs.subSequence(beginIndex, endIndex));
-            }
-            result += digit;
-            if (Character.isBmpCodePoint(cp))
-            {
-                index++;
-            }
-            else
-            {
-                index += 2;
-            }
-            if (result < 0)
-            {
-                throw new NumberFormatException("not unsigned "+cs.subSequence(beginIndex, endIndex));
-            }
-        }
-        return result;
-    }
-    /**
      * Parses next int.
      * @param cs
      * @return 
@@ -1668,7 +1751,7 @@ public final class Primitives
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
-        return parseLong(cs, radix, begin, endIndex(end, endIndex), true);
+        return parseLong(cs, radix, begin, endIndex(end, endIndex));
     }
     /**
      * Parses next float

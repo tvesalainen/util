@@ -395,6 +395,7 @@ public class PrimitivesTest
         assertEquals(73, Primitives.parseByte("12373123", 3, 5));
         assertEquals(42, Primitives.parseByte("+42"));
         assertEquals(0, Primitives.parseByte("-0"));
+        assertEquals(-1, Primitives.parseUnsignedByte("ff", 16));
         assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxDec, 10));
         assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxHex, 16));
         assertEquals(Byte.MAX_VALUE, Primitives.parseByte(maxOct, 8));
