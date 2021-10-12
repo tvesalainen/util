@@ -257,6 +257,7 @@ public class PrimitivesTest
         assertEquals(Long.MIN_VALUE, Primitives.parseLong(minHex, 16));
         assertEquals(Long.MIN_VALUE, Primitives.parseLong(minOct, 8));
         assertEquals(Long.MIN_VALUE, Primitives.parseLong(minBin, 2));
+        assertEquals(Long.MAX_VALUE, Primitives.parseUnsignedLong(maxDec, 10));
         BigInteger maxPlus = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE);
         assertThrows(NumberFormatException.class, ()->Primitives.parseLong(maxPlus.toString(), 10));
         BigInteger minMinus = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.ONE);
@@ -276,22 +277,11 @@ public class PrimitivesTest
         assertEquals(-1, Primitives.parseLong("1111111111111111111111111111111111111111111111111111111111111111", -2));
         assertEquals(-1, Primitives.parseLong("1111111", -2));
         assertEquals(-2, Primitives.parseLong("1111110", -2));
-        try
-        {
-            Primitives.parseLong("0000001111111111111111111111111111111111111111111111111111111111111111", -2);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
-        try
-        {
-            Primitives.parseLong("+000001111111111111111111111111111111111111111111111111111111111111111", -2);
-            fail("should throw exception");
-        }
-        catch (NumberFormatException ex)
-        {
-        }
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("0000001111111111111111111111111111111111111111111111111111111111111111", -2));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseLong("+000001111111111111111111111111111111111111111111111111111111111111111", -2));
+        assertEquals(-1, Primitives.parseUnsignedLong("0xFFFFFFFFFFFFFFFF"));
+        assertEquals(-2, Primitives.parseUnsignedLong("0xFFFFFFFFFFFFFFFE"));
+        assertThrows(NumberFormatException.class, ()->Primitives.parseUnsignedLong("0x1FFFFFFFFFFFFFFFF"));
     }
 
     /**

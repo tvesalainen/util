@@ -46,15 +46,14 @@ import org.vesalainen.util.CharSequences;
  */
 public final class Primitives
 {
-    public static final BigInteger BYTE_MAX = BigInteger.valueOf(Byte.MAX_VALUE);
-    public static final BigInteger BYTE_MIN = BigInteger.valueOf(Byte.MIN_VALUE);
-    public static final BigInteger SHORT_MAX = BigInteger.valueOf(Short.MAX_VALUE);
-    public static final BigInteger SHORT_MIN = BigInteger.valueOf(Short.MIN_VALUE);
-    public static final BigInteger INT_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
-    public static final BigInteger INT_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
+    public static final long BYTE_UMAX = 0xFF;
+    public static final long SHORT_UMAX = 0xFFFF;
+    public static final long INT_UMAX = 0xFFFFFFFF;
     public static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
-    public static final BigInteger LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE);
+    public static final BigInteger LONG_UMAX = new BigInteger("FFFFFFFFFFFFFFFF", 16);
     
+    private static final BigInteger SUB = new BigInteger("10000000000000000", 16);
+
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
     /**
@@ -1056,7 +1055,11 @@ public final class Primitives
      */
     public static final int parseInt(CharSequence cs, int radix)
     {
-        return parseInt(cs, radix, 0, cs.length(), true);
+        return parseInt(cs, radix, true);
+    }
+    public static final int parseInt(CharSequence cs, int radix, boolean signed)
+    {
+        return parseInt(cs, radix, 0, cs.length(), signed);
     }
     /**
      * Parses int from input.
@@ -1096,7 +1099,7 @@ public final class Primitives
         {
             return parseInt(cs, 16, 2, cs.length(), false);
         }
-        return parseInt(cs, 10);
+        return parseUnsignedInt(cs, 10);
     }
     /**
      * Parses int from input.
@@ -1155,7 +1158,15 @@ public final class Primitives
     public static final int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
         long result = parse(cs, radix, beginIndex, endIndex, Integer.SIZE);
-        if (signed && radix > 0)
+        if (radix < 0)
+        {
+            if (!fitBitsUnsigned(Integer.SIZE, result))
+            {
+                throw new NumberFormatException(cs+" is not unsigned int");
+            }
+            return (int) result;
+        }
+        if (signed)
         {
             if (result < Integer.MIN_VALUE || result > Integer.MAX_VALUE)
             {
@@ -1165,9 +1176,9 @@ public final class Primitives
         }
         else
         {
-            if (!fitBitsUnsigned(Integer.SIZE, result))
+            if (result < 0L || result > INT_UMAX)
             {
-                throw new NumberFormatException(cs+" is not unsigned byte");
+                throw new NumberFormatException(cs+" is not unsigned int");
             }
             return (int) result;
         }
@@ -1185,11 +1196,11 @@ public final class Primitives
     {
         if (CharSequences.startsWith(cs, "0b"))
         {
-            return parseLong(cs, 2, 2, cs.length());
+            return parseLong(cs, 2, 2, cs.length(), true);
         }
         if (CharSequences.startsWith(cs, "0x"))
         {
-            return parseLong(cs, 16, 2, cs.length());
+            return parseLong(cs, 16, 2, cs.length(), true);
         }
         return parseLong(cs, 10);
     }
@@ -1209,7 +1220,11 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int radix)
     {
-        return parseLong(cs, radix, 0, cs.length());
+        return parseLong(cs, radix, true);
+    }
+    public static final long parseLong(CharSequence cs, int radix, boolean signed)
+    {
+        return parseLong(cs, radix, 0, cs.length(), signed);
     }
     /**
      * Parses long from input.
@@ -1228,7 +1243,65 @@ public final class Primitives
      */
     public static final long parseLong(CharSequence cs, int beginIndex, int endIndex)
     {
-        return parseLong(cs, 10, beginIndex, endIndex);
+        return parseLong(cs, 10, beginIndex, endIndex, true);
+    }
+    /**
+     * Equal to calling parseLong(cs, 10).
+     * @param cs
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * long.
+     * @see java.lang.Long#parseLong(java.lang.String) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final long parseUnsignedLong(CharSequence cs)
+    {
+        if (CharSequences.startsWith(cs, "0b"))
+        {
+            return parseLong(cs, 2, 2, cs.length(), false);
+        }
+        if (CharSequences.startsWith(cs, "0x"))
+        {
+            return parseLong(cs, 16, 2, cs.length(), false);
+        }
+        return parseUnsignedLong(cs, 10);
+    }
+    /**
+     * Parses long from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param radix A value between Character.MIN_RADIX and Character.MAX_RADIX or -2
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * long.
+     * @see java.lang.Long#parseLong(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final long parseUnsignedLong(CharSequence cs, int radix)
+    {
+        return parseLong(cs, radix, 0, cs.length(), false);
+    }
+    /**
+     * Parses long from input.
+     * <p>Input can start with '-' or '+'.
+     * <p>Numeric value is according to radix
+     * <p>Radix can also be -2, where input is parsed as 2-complement binary string.
+     * Input beginning with '1' is always negative. Eg. '111' == -1, '110' == -2
+     * @param cs
+     * @param beginIndex the index to the first char of the text range.
+     * @param endIndex the index after the last char of the text range.
+     * @return 
+     * @throws java.lang.NumberFormatException if input cannot be parsed to proper
+     * long.
+     * @see java.lang.Long#parseLong(java.lang.String, int) 
+     * @see java.lang.Character#digit(int, int) 
+     */
+    public static final long parseUnsignedLong(CharSequence cs, int beginIndex, int endIndex)
+    {
+        return parseLong(cs, 10, beginIndex, endIndex, false);
     }
     /**
      * Parses long from input.
@@ -1246,9 +1319,42 @@ public final class Primitives
      * @see java.lang.Long#parseLong(java.lang.String, int) 
      * @see java.lang.Character#digit(int, int) 
      */
-    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
-        return parse(cs, radix, beginIndex, endIndex, Long.SIZE);
+        if (radix < 0 || endIndex - beginIndex <= NumberSafeLengths.LongSafeLength[radix])
+        {
+            return parse(cs, radix, beginIndex, endIndex, Long.SIZE);
+        }
+        else
+        {
+            BigInteger bi = new BigInteger(cs.subSequence(beginIndex, endIndex).toString(), radix);
+            if (signed)
+            {
+                try
+                {
+                    return bi.longValueExact();
+                }
+                catch (ArithmeticException ex)
+                {
+                    throw new NumberFormatException(ex.getMessage());
+                }
+            }
+            else
+            {
+                if (bi.signum() < 0 || bi.compareTo(LONG_UMAX) > 0)
+                {
+                    throw new NumberFormatException(cs+" is not unsigned long");
+                }
+                if (bi.compareTo(LONG_MAX) > 0)
+                {
+                    return bi.subtract(SUB).longValue();
+                }
+                else
+                {
+                    return bi.longValue();
+                }
+            }
+        }
     }
     /**
      * Equal to calling parseShort(cs, 10).
@@ -1287,7 +1393,11 @@ public final class Primitives
      */
     public static final short parseShort(CharSequence cs, int radix)
     {
-        return parseShort(cs, radix, 0, cs.length(), true);
+        return parseShort(cs, radix, true);
+    }
+    public static final short parseShort(CharSequence cs, int radix, boolean signed)
+    {
+        return parseShort(cs, radix, 0, cs.length(), signed);
     }
     /**
      * Parses short from input.
@@ -1327,7 +1437,7 @@ public final class Primitives
         {
             return parseShort(cs, 16, 2, cs.length(), false);
         }
-        return parseShort(cs, 10);
+        return parseUnsignedShort(cs, 10);
     }
     /**
      * Parses short from input.
@@ -1386,19 +1496,27 @@ public final class Primitives
     public static final short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
         long result = parse(cs, radix, beginIndex, endIndex, Short.SIZE);
-        if (signed && radix > 0)
+        if (radix < 0)
+        {
+            if (!fitBitsUnsigned(Short.SIZE, result))
+            {
+                throw new NumberFormatException(cs+" is not unsigned short");
+            }
+            return (short) result;
+        }
+        if (signed)
         {
             if (result < Short.MIN_VALUE || result > Short.MAX_VALUE)
             {
-                throw new NumberFormatException(cs+" is not signed byte");
+                throw new NumberFormatException(cs+" is not signed short");
             }
             return (short) result;
         }
         else
         {
-            if (!fitBitsUnsigned(Short.SIZE, result))
+            if (result < 0 || result > SHORT_UMAX)
             {
-                throw new NumberFormatException(cs+" is not unsigned byte");
+                throw new NumberFormatException(cs+" is not unsigned short");
             }
             return (short) result;
         }
@@ -1432,7 +1550,11 @@ public final class Primitives
      */
     public static final byte parseByte(CharSequence cs, int radix)
     {
-        return parseByte(cs, radix, 0, cs.length(), true);
+        return parseByte(cs, radix, true);
+    }
+    public static final byte parseByte(CharSequence cs, int radix, boolean signed)
+    {
+        return parseByte(cs, radix, 0, cs.length(), signed);
     }
     /**
      * Parses byte from input.
@@ -1523,7 +1645,15 @@ public final class Primitives
     public static final byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex, boolean signed)
     {
         long result = parse(cs, radix, beginIndex, endIndex, Byte.SIZE);
-        if (signed && radix > 0)
+        if (radix < 0)
+        {
+            if (!fitBitsUnsigned(Byte.SIZE, result))
+            {
+                throw new NumberFormatException(cs+" is not unsigned byte");
+            }
+            return (byte) result;
+        }
+        if (signed)
         {
             if (result < Byte.MIN_VALUE || result > Byte.MAX_VALUE)
             {
@@ -1533,7 +1663,7 @@ public final class Primitives
         }
         else
         {
-            if (!fitBitsUnsigned(Byte.SIZE, result))
+            if (result < 0 || result > BYTE_UMAX)
             {
                 throw new NumberFormatException(cs+" is not unsigned byte");
             }
@@ -1585,7 +1715,7 @@ public final class Primitives
         }
         int count = Character.codePointCount(cs, index, end);
         if (
-                (endIndex - beginIndex <= NumberSafeLengths.LongSafeLength[radix]) ||
+                (count <= NumberSafeLengths.LongSafeLength[radix]) ||
                 (twoComp && count <= size)
                 )
         {
@@ -1612,7 +1742,7 @@ public final class Primitives
         }
         else
         {
-            BigInteger bi = new BigInteger(cs.toString(), radix);
+            BigInteger bi = new BigInteger(cs.subSequence(beginIndex, endIndex).toString(), radix);
             try
             {
                 result = bi.longValueExact();
@@ -1751,7 +1881,7 @@ public final class Primitives
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
-        return parseLong(cs, radix, begin, endIndex(end, endIndex));
+        return parseLong(cs, radix, begin, endIndex(end, endIndex), true);
     }
     /**
      * Parses next float
