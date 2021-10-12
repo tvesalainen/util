@@ -103,7 +103,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
     {
         return new byte[]{b1, b2, b3, b4, b5, b6, b7, b8};
     }
-    @Terminal(expression = "[0-9a-fA-F][0-9a-fA-F]", radix=16)
+    @Terminal(expression = "[0-9a-fA-F][0-9a-fA-F]", radix=16, signed=false)
     protected byte hbyte(byte b)
     {
         return b;

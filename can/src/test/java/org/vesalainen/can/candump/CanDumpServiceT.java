@@ -51,7 +51,7 @@ public class CanDumpServiceT
     public void test2() throws IOException, InterruptedException, ExecutionException
     {
         Path path = Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\samples", "candumpSample2.txt");
-        CanDumpService svc = new CanDumpService("can1", path, Executors.newCachedThreadPool(), new Compiler());
+        CanDumpService svc = new CanDumpService("can0", path, Executors.newCachedThreadPool(), new Compiler());
         svc.addN2K();
         svc.startAndWait();
     }
