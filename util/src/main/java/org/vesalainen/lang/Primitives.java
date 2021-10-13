@@ -46,9 +46,9 @@ import org.vesalainen.util.CharSequences;
  */
 public final class Primitives
 {
-    public static final long BYTE_UMAX = 0xFF;
-    public static final long SHORT_UMAX = 0xFFFF;
-    public static final long INT_UMAX = 0xFFFFFFFF;
+    public static final long BYTE_UMAX = 0xFFL;
+    public static final long SHORT_UMAX = 0xFFFFL;
+    public static final long INT_UMAX = 0xFFFFFFFFL;
     public static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
     public static final BigInteger LONG_UMAX = new BigInteger("FFFFFFFFFFFFFFFF", 16);
     
