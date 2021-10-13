@@ -78,7 +78,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected Runnable[] repeatables;
     protected int repeatSize;
     protected int repeatStart;
-    protected int repeatCount;
     protected Runnable startRepeat;
     protected Runnable endRepeat;
     private int currentBytes;
@@ -248,12 +247,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     }
 
     @Override
-    public int getRepeatCount()
-    {
-        return repeatCount;
-    }
-
-    @Override
     public int getCurrentBytes()
     {
         return currentBytes;
@@ -346,7 +339,9 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         private Runnable build()
         {
             List<SignalClass> repeatingSignals = new ArrayList<>();
+            String repeatCountSignalName = (String) mc.getAttributeValue("RepeatCount");
             addAction(compiler.compileRaw(mc, ()->buf));
+            SignalClass repeatCountSignal = mc.getSignal(repeatCountSignalName);
             mc.forEach((sc)->
             {
                 finer("add signal %s", sc);
@@ -392,7 +387,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             });
             if (!repeatingSignals.isEmpty())
             {
-                addAction(createRepeatingSignals(mc, repeatingSignals));
+                addAction(createRepeatingSignals(mc, repeatingSignals, repeatCountSignal));
                 startRepeat = compiler.compileBeginRepeat(mc);
                 endRepeat = compiler.compileEndRepeat(mc);
             }
@@ -450,7 +445,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 return null;
             }
         }
-        private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals)
+        private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals, SignalClass repeatCountSignal)
         {
             List<Runnable> list = new ArrayList<>();
             repeatSize = repeatRange.getSize();
@@ -465,15 +460,38 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 list.add(createRepeat(mc, repeatingSignals, ii * repeatSize));
             }
             repeatables = createArray(list);
+            IntSupplier repeatCountSupplier = getRepeatCountSupplier(repeatCountSignal);
             return ()->
             {
+                int repeatCount = repeatCountSupplier.getAsInt();
                 for (int ii=0;ii<repeatCount;ii++)
                 {
-                    startRepeat.run();
-                    repeatables[ii].run();
-                    endRepeat.run();
+                    if (startRepeat != null)
+                    {
+                        startRepeat.run();
+                    }
+                    Runnable repeatable = repeatables[ii];
+                    if (repeatable != null)
+                    {
+                        repeatable.run();
+                    }
+                    if (endRepeat != null)
+                    {
+                        endRepeat.run();
+                    }
                 }
             };
+        }
+        private IntSupplier getRepeatCountSupplier(SignalClass repeatCountSignal)
+        {
+            if (repeatCountSignal != null)
+            {
+                return ArrayFuncs.getIntSupplier(repeatCountSignal.getStartBit(), repeatCountSignal.getSize(), repeatCountSignal.getByteOrder()==BIG_ENDIAN, repeatCountSignal.getValueType()==SIGNED, buf);
+            }
+            else
+            {
+                return ()->getRepeatCount();
+            }
         }
         private Runnable createRepeat(MessageClass mc, List<SignalClass> repeatingSignals, int off)
         {

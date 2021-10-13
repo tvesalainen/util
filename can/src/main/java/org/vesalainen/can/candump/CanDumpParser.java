@@ -26,6 +26,7 @@ import org.vesalainen.parser.annotation.GenClassname;
 import org.vesalainen.parser.annotation.GrammarDef;
 import org.vesalainen.parser.annotation.ParseMethod;
 import org.vesalainen.parser.annotation.ParserContext;
+import org.vesalainen.parser.annotation.ReservedWords;
 import org.vesalainen.parser.annotation.Rule;
 import org.vesalainen.parser.annotation.Terminal;
 import org.vesalainen.parser.util.AbstractParser;
@@ -39,13 +40,25 @@ import org.vesalainen.util.HexUtil;
 @GenClassname()
 @GrammarDef()
 @Rule(left="candump", value={"line*"})
+@ReservedWords({"interface", "family", "type", "proto"})
 public abstract class CanDumpParser extends AbstractParser implements ParserInfo
 {
     @Rule("hashComment")
     protected void line()
     {
     }
-    @Rule("identifier hex data2 '\r\n'")
+    @Rule("interface '=' identifier '\\,' family '=' int '\\,' type '=' int '\\,' proto '=' int")
+    protected void line(String bus, int family, int type, int proto, @ParserContext("CanDumpService") CanDumpService svc)
+    {
+        svc.setBus(bus);
+    }
+    @Rule("'<0x' hex '>' data2")
+    protected void line(int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    {
+        int canId = svc.rawToCanId(rawId);
+        svc.frame(new SimpleFrame(svc.getBus(), canId, data, System.currentTimeMillis()));
+    }
+    @Rule("identifier hex data2")
     protected void line(String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         if (svc.isEnabled(bus))
@@ -54,7 +67,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
             svc.frame(new SimpleFrame(bus, canId, data, System.currentTimeMillis()));
         }
     }
-    @Rule("'\\(' time '\\)' identifier hex '#' data '\r\n'")
+    @Rule("'\\(' time '\\)' identifier hex '#' data")
     protected void line(long time, String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         if (svc.isEnabled(bus))
@@ -131,7 +144,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
     @Terminal(expression = "[ \t]+")
     protected abstract void ws();
     
-    @ParseMethod(start="candump", whiteSpace={"ws"}, charSet="US-ASCII")
+    @ParseMethod(start="candump", whiteSpace={"whiteSpace"}, charSet="US-ASCII")
     public void parse(ReadableByteChannel channel, @ParserContext("CanDumpService") CanDumpService svc)
     {
         throw new UnsupportedOperationException();

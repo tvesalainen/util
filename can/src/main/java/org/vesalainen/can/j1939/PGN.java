@@ -23,7 +23,16 @@ package org.vesalainen.can.j1939;
 public class PGN
 {
     /**
-     * Returns PGN of canid
+     * Returns PGN and source address. Can be used as unique combination.
+     * @param canId
+     * @return 
+     */
+    public static final int addressedPgn(int canId)
+    {
+        return (pgn(canId)<<8)|sourceAddress(canId);
+    }
+    /**
+     * Returns PGN of canId
      * @param canId
      * @return 
      */
@@ -33,12 +42,12 @@ public class PGN
         int dp = dataPage(canId);
         if (pf < 0xf0)
         {
-            return (dp<<16)+(pf<<8);
+            return (dp<<16)|(pf<<8);
         }
         else
         {
             int ps = pduSpecific(canId);
-            return (dp<<16)+(pf<<8)+ps;
+            return (dp<<16)|(pf<<8)+ps;
         }
     }
     /**
@@ -52,12 +61,12 @@ public class PGN
         int dp = (pgn>>16) & 0x1;
         if (pf < 0xf0)
         {
-            return (dp<<24)+(pf<<16)+0xfe;
+            return (dp<<24)|(pf<<16)|0xfe;
         }
         else
         {
             int ps = pgn & 0xff;
-            return (dp<<24)+(pf<<16)+(ps<<8)+0xfe;
+            return (dp<<24)|(pf<<16)|(ps<<8)|0xfe;
         }
     }
     /**

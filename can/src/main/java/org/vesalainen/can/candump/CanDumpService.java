@@ -27,8 +27,6 @@ import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.Frame;
 import org.vesalainen.can.SignalCompiler;
-import org.vesalainen.can.SimpleFrame;
-import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
  *
@@ -37,7 +35,7 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 public class CanDumpService extends AbstractCanService
 {
     private final ReadableByteChannel channel;
-    private final String bus;
+    private String bus;
 
     public CanDumpService(String bus, Path path, ExecutorService executor, SignalCompiler compiler) throws IOException
     {
@@ -59,6 +57,16 @@ public class CanDumpService extends AbstractCanService
         super(executor, messageFactory);
         this.bus = bus;
         this.channel = channel;
+    }
+
+    public String getBus()
+    {
+        return bus;
+    }
+
+    public void setBus(String bus)
+    {
+        this.bus = bus;
     }
 
     boolean isEnabled(String canBus)

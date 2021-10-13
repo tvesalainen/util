@@ -137,12 +137,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
 
     public SignalClass getSignal(String signalName)
     {
-        SignalClass signal = signals.get(signalName);
-        if (signal == null)
-        {
-            throw new IllegalArgumentException(signalName+" signal not found");
-        }
-        return signal;
+        return signals.get(signalName);
     }
     public void setSignalComment(String name, String comment)
     {

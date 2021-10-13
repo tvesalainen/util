@@ -23,7 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
@@ -44,6 +48,8 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     protected final ExecutorService executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
+    private ReentrantLock compileLock = new ReentrantLock();
+    protected final Map<Integer,Condition> compileLockMap = new HashMap<>();
 
     protected AbstractCanService(ExecutorService executor, SignalCompiler compiler)
     {
@@ -112,12 +118,41 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     final protected void rawFrame(Frame frame)
     {
         int canId = frame.getCanId();
-        AbstractMessage proc = procMap.get(canId);
+        AbstractMessage proc = getProc(canId);
         if (proc == null)
         {
-            addProc(canId, AbstractMessage.getNullMessage(executor, canId));
-            compile(canId);
-            proc = procMap.get(canId);
+            compileLock.lock();
+            try
+            {
+                int addressedPgn = PGN.addressedPgn(canId);
+                Condition cond = compileLockMap.get(addressedPgn);
+                if (cond == null)
+                {
+                    cond = compileLock.newCondition();
+                    compileLockMap.put(canId, cond);
+                    try
+                    {
+                        compile(canId);
+                    }
+                    finally
+                    {
+                        cond.signalAll();
+                    }
+                }
+                else
+                {
+                    cond.await();
+                }
+            }
+            catch (InterruptedException ex)
+            {
+                log(SEVERE, ex, "%s", ex.getMessage());
+            }            
+            finally
+            {
+                compileLock.unlock();
+            }
+            proc = getProc(canId);
         }
         proc.rawUpdate(frame);
     }
@@ -145,6 +180,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         }
         catch (Exception ex)
         {
+            addProc(canId, AbstractMessage.getNullMessage(executor, canId));
             log(SEVERE, ex, "compiling %d", PGN.pgn(canId));
         }
     }
@@ -153,13 +189,18 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     {
         if (msg != null)
         {
-            AbstractMessage old = procMap.put(canId, msg);
+            AbstractMessage old = procMap.put(PGN.addressedPgn(canId), msg);
             if (old != null)
             {
                 old.unregisterMBean();
             }
             msg.registerMBean();
         }
+    }
+
+    private AbstractMessage getProc(int canId)
+    {
+        return procMap.get(PGN.addressedPgn(canId));
     }
 
     protected AbstractMessage compile(int canId, MessageClass mc)

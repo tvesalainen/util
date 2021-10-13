@@ -192,12 +192,12 @@ BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
  SG_ Mode : 8|2@1+ (1,0) [0|0] "" MFD
  SG_ Reserve_Bits : 10|6@1+ (1,0) [0|0] "" MFD
  SG_ Number_Of_Svs : 16|8@1+ (1,0) [0|0] "" MFD
- SG_ Prn_1 : 24|8@1+ (1,0) [0|0] "" MFD
- SG_ Elevation_1 : 32|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
- SG_ Azimuth_1 : 48|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
- SG_ Snr_1 : 64|16@1+ (0.01,0) [0|0] "dB" MFD
- SG_ Range_Residuals_1 : 80|32@1- (1,0) [0|0] "" MFD
- SG_ Prn_Status_1 : 112|4@1+ (1,0) [0|0] "" MFD
+ SG_ Prn : 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ Elevation : 32|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Azimuth : 48|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
+ SG_ Snr : 64|16@1+ (0.01,0) [0|0] "dB" MFD
+ SG_ Range_Residuals : 80|32@1- (1,0) [0|0] "" MFD
+ SG_ Prn_Status : 112|4@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Bits : 116|4@1+ (1,0) [0|0] "" MFD
 
 BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
@@ -318,9 +318,9 @@ BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
  SG_ Pdop : 288|16@1- (0.01,0) [0|0] "" MFD
  SG_ Geoidal_Separation : 304|32@1- (0.01,0) [0|0] "m" MFD
  SG_ Number_Of_Reference_Stations : 336|8@1+ (1,0) [0|0] "" MFD
- SG_ Reference_Station_Type_1 : 344|4@1+ (1,0) [0|0] "" MFD
- SG_ Reference_Station_Id_1 : 348|12@1+ (1,0) [0|0] "" MFD
- SG_ Age_Of_Dgnss_Corrections_1 : 360|16@1+ (0.01,0) [0|0] "s" MFD
+ SG_ Reference_Station_Type : 344|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reference_Station_Id : 348|12@1+ (1,0) [0|0] "" MFD
+ SG_ Age_Of_Dgnss_Corrections : 360|16@1+ (0.01,0) [0|0] "s" MFD
 
 BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
@@ -771,7 +771,7 @@ BO_ 15466750 Pgn060416_Iso_Transport_Protocol_Connection_Management_Rts_Group_Fu
  SG_ M255_Reserved_Bits m255: 16|16@1+ (1,0) [0|0] "" MFD
  SG_ M255_Pgn_Of_Multi_Packet_Message m255: 32|24@1+ (1,0) [0|0] "" MFD
 
-BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 12 General_Or_Mandatory
+BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 223 General_Or_Mandatory
  SG_ Complex_Request_Group_Function_Code M: 0|8@1+ (1,0) [0|0] "" MFD
  SG_ M0_Requested_Pgn m0: 8|24@1+ (1,0) [0|0] "" MFD
  SG_ M0_Transmission_Interval m0: 32|32@1+ (0.001,0) [0|0] "s" MFD
@@ -912,12 +912,14 @@ BA_DEF_ "SignalType" STRING;
 BA_DEF_ "ProtocolType" STRING;
 BA_DEF_ "RepeatStartBit" INT 0 0;
 BA_DEF_ "MessageType" STRING;
+BA_DEF_ "RepeatCount" STRING;
 BA_DEF_DEF_ "RepeatSize" 0;
 BA_DEF_DEF_ "BusType" "";
 BA_DEF_DEF_ "SignalType" "UNKNOWN";
 BA_DEF_DEF_ "ProtocolType" "";
 BA_DEF_DEF_ "RepeatStartBit" 0;
 BA_DEF_DEF_ "MessageType" "Single";
+BA_DEF_DEF_ "RepeatCount" "";
 BA_ "RepeatSize" 0;
 BA_ "BusType" "CAN";
 BA_ "SignalType" "";
@@ -967,10 +969,11 @@ BA_ "SignalType" SG_ 33162238 Op_Mode "LOOKUP";
 BA_ "SignalType" SG_ 33162238 Reserve "BINARY";
 BA_ "RepeatSize" BO_ 33162494 96;
 BA_ "RepeatStartBit" BO_ 33162494 24;
+BA_ "RepeatCount" BO_ 33162494 "Number_Of_Svs";
 BA_ "MessageType" BO_ 33162494 "Fast";
 BA_ "SignalType" SG_ 33162494 Mode "LOOKUP";
 BA_ "SignalType" SG_ 33162494 Reserve_Bits "BINARY";
-BA_ "SignalType" SG_ 33162494 Prn_Status_1 "LOOKUP";
+BA_ "SignalType" SG_ 33162494 Prn_Status "LOOKUP";
 BA_ "SignalType" SG_ 33162494 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 33227518 "Fast";
 BA_ "SignalType" SG_ 33227518 Repeat_Indicator "LOOKUP";
@@ -1038,6 +1041,7 @@ BA_ "MessageType" BO_ 33030910 "Single";
 BA_ "SignalType" SG_ 33030910 Reserved_Bits "BINARY";
 BA_ "RepeatSize" BO_ 33031678 32;
 BA_ "RepeatStartBit" BO_ 33031678 344;
+BA_ "RepeatCount" BO_ 33031678 "Number_Of_Reference_Stations";
 BA_ "MessageType" BO_ 33031678 "Fast";
 BA_ "SignalType" SG_ 33031678 Position_Date "INT";
 BA_ "SignalType" SG_ 33031678 Position_Time "LONG";
@@ -1047,7 +1051,7 @@ BA_ "SignalType" SG_ 33031678 Type_Of_System "LOOKUP";
 BA_ "SignalType" SG_ 33031678 Method_Gnss "LOOKUP";
 BA_ "SignalType" SG_ 33031678 Integrity "LOOKUP";
 BA_ "SignalType" SG_ 33031678 Reserved_Bits "BINARY";
-BA_ "SignalType" SG_ 33031678 Reference_Station_Type_1 "LOOKUP";
+BA_ "SignalType" SG_ 33031678 Reference_Station_Type "LOOKUP";
 BA_ "MessageType" BO_ 33033982 "Fast";
 BA_ "SignalType" SG_ 33033982 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33033982 User_Id "INT";
@@ -1364,7 +1368,7 @@ VAL_ 33362174 Tide_Tendency  0 "Falling" 1 "Rising";
 VAL_ 33162238 Set_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
 VAL_ 33162238 Op_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
 VAL_ 33162494 Mode  3 "Range residuals used to calculate position";
-VAL_ 33162494 Prn_Status_1  0 "Not tracked" 1 "Tracked" 2 "Used" 3 "Not tracked+Diff" 4 "Tracked+Diff" 5 "Used+Diff";
+VAL_ 33162494 Prn_Status  0 "Not tracked" 1 "Tracked" 2 "Used" 3 "Not tracked+Diff" 4 "Tracked+Diff" 5 "Used+Diff";
 VAL_ 33227518 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
 VAL_ 33227518 Ship_Cargo_Type  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
 VAL_ 33227518 Ais_Version  0 "ITU-R M.1371-1" 1 "ITU-R M.1371-3";
@@ -1384,7 +1388,7 @@ VAL_ 33231614 Ais_Transceiver_Information  0 "Channel A VDL reception" 1 "Channe
 VAL_ 33031678 Type_Of_System  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
 VAL_ 33031678 Method_Gnss  0 "no GNSS" 1 "GNSS fix" 2 "DGNSS fix" 3 "Precise GNSS" 4 "RTK Fixed Integer" 5 "RTK float" 6 "Estimated (DR) mode" 7 "Manual Input" 8 "Simulate mode";
 VAL_ 33031678 Integrity  0 "No integrity checking" 1 "Safe" 2 "Caution";
-VAL_ 33031678 Reference_Station_Type_1  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
+VAL_ 33031678 Reference_Station_Type  0 "GPS" 1 "GLONASS" 2 "GPS+GLONASS" 3 "GPS+SBAS/WAAS" 4 "GPS+SBAS/WAAS+GLONASS" 5 "Chayka" 6 "integrated" 7 "surveyed" 8 "Galileo";
 VAL_ 33033982 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
 VAL_ 33033982 Position_Accuracy  0 "Low" 1 "High";
 VAL_ 33033982 Raim_Flag  0 "not in use" 1 "in use";

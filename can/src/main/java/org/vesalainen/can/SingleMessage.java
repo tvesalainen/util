@@ -51,10 +51,12 @@ public class SingleMessage extends AbstractMessage
     public void setCurrentBytes(int currentBytes)
     {
         super.setCurrentBytes(currentBytes);
-        if (repeatSize > 0)
-        {
-            repeatCount = (getCurrentBits() - repeatStart) / repeatSize;
-        }
+    }
+
+    @Override
+    public int getRepeatCount()
+    {
+        return (getCurrentBits() - repeatStart) / repeatSize;
     }
 
     @Override
