@@ -1138,6 +1138,10 @@ public final class Primitives
     {
         return parseInt(cs, 10, beginIndex, endIndex, false);
     }
+    public static final int parseInt(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        return parseInt(cs, radix, beginIndex, endIndex, true);
+    }
     /**
      * Parses int from input.
      * <p>Input can start with '-' or '+'.
@@ -1302,6 +1306,10 @@ public final class Primitives
     public static final long parseUnsignedLong(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseLong(cs, 10, beginIndex, endIndex, false);
+    }
+    public static final long parseLong(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        return parseLong(cs, radix, beginIndex, endIndex, true);
     }
     /**
      * Parses long from input.
@@ -1476,6 +1484,10 @@ public final class Primitives
     {
         return parseShort(cs, 10, beginIndex, endIndex, false);
     }
+    public static final short parseShort(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        return parseShort(cs, radix, beginIndex, endIndex, true);
+    }
     /**
      * Parses short from input.
      * <p>Input can start with '-' or '+'.
@@ -1624,6 +1636,10 @@ public final class Primitives
     public static final byte parseUnsignedByte(CharSequence cs, int beginIndex, int endIndex)
     {
         return parseByte(cs, 10, beginIndex, endIndex, false);
+    }
+    public static final byte parseByte(CharSequence cs, int radix, int beginIndex, int endIndex)
+    {
+        return parseByte(cs, radix, beginIndex, endIndex, true);
     }
     /**
      * Parses byte from input.
