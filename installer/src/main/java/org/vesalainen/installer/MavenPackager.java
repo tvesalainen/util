@@ -44,6 +44,7 @@ import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
 import org.vesalainen.test.pom.FileModelResolver;
 import org.vesalainen.test.pom.ModelFactory;
+import org.vesalainen.test.pom.SimpleVersion;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.LoggingCommandLine;
 import org.vesalainen.vfs.VirtualFileSystems;

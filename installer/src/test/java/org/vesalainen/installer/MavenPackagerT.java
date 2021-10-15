@@ -23,10 +23,10 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class MavenPackagerTest
+public class MavenPackagerT
 {
     
-    public MavenPackagerTest()
+    public MavenPackagerT()
     {
     }
 

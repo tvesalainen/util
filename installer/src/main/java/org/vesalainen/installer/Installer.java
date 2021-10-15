@@ -47,6 +47,7 @@ import static org.vesalainen.loader.LibraryLoader.OS.*;
 import org.vesalainen.nio.FileUtil;
 import org.vesalainen.test.pom.FileModelResolver;
 import org.vesalainen.test.pom.ModelFactory;
+import org.vesalainen.test.pom.SimpleVersion;
 import org.vesalainen.test.pom.Version;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.LoggingCommandLine;
