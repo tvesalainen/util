@@ -19,6 +19,7 @@
         <module>ham</module>
         <module>radiorecorder</module>
         <module>can</module>
+        <module>jmx</module>
     </modules>
     <name>Utilities Parent</name>
     <description>
