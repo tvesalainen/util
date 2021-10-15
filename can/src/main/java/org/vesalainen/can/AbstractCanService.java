@@ -116,25 +116,24 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     }
     final protected void rawFrame(Frame frame)
     {
-        String tn = Thread.currentThread().getName();
         int canId = frame.getCanId();
         AbstractMessage proc = getProc(canId);
         if (proc == null)
         {
-            info("%s: needs compiling %d", tn, canId);
+            finest("needs compiling %d", canId);
             compileLock.lock();
             try
             {
                 proc = getProc(canId);
                 if (proc == null)
                 {
-                    info("%s: compiling %d", tn, canId);
+                    finest("compiling %d", canId);
                     compile(canId);
                     proc = getProc(canId);
                 }
                 else
                 {
-                    info("%s: had it compiled %d", tn, canId);
+                    finest("had it compiled %d", canId);
                 }
             }
             finally

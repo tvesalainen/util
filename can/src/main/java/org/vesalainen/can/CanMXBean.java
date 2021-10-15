@@ -30,6 +30,7 @@ public interface CanMXBean
     int getPriority();
     int getUpdateCount();
     int getExecuteCount();
+    float getFrequency();
     int getRepeatSize();
     int getRepeatStart();
     int getRepeatCount();

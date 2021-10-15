@@ -32,7 +32,7 @@ import org.vesalainen.can.dbc.MessageClass;
 public class SingleMessage extends AbstractMessage
 {
 
-    protected LongSupplier millisSupplier;
+    protected LongSupplier millisSupplier = System::currentTimeMillis;
 
     public SingleMessage(Executor executor, MessageClass messageClass, int canId, int len, String comment)
     {

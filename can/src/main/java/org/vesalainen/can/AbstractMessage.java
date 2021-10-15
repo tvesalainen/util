@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import static java.lang.Integer.min;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Array;
 import static java.nio.ByteOrder.BIG_ENDIAN;
@@ -75,20 +76,17 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected Action action;
     protected Action jmxAction;
     protected int maxRepeatCount;
-    protected Runnable[] repeatables;
     protected int repeatSize;
     protected int repeatStart;
-    protected Runnable startRepeat;
-    protected Runnable endRepeat;
     private int currentBytes;
     protected SimpleNotificationEmitter emitter;
     protected ObjectName objectName;
     protected final Executor executor;
     private volatile int updateCount;
-    private volatile int currentUpdateCount;
     private int executeCount;
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
     private ReentrantLock lock = new ReentrantLock();
+    private final long startMillis;
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -114,6 +112,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         }
         types[0] = NOTIF_HEX_TYPE;
         mBeanNotificationInfos[0] = new MBeanNotificationInfo(types, Notification.class.getName(), "CAN Signals");
+        this.startMillis = System.currentTimeMillis();
     }
 
     void registerMBean()
@@ -151,6 +150,13 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             log(WARNING, ex, "unregisterMBean(%s)", objectName);
         }
     }
+
+    @Override
+    public float getFrequency()
+    {
+        return 1000F*executeCount/(System.currentTimeMillis()-startMillis);
+    }
+    
     protected void attach()
     {
         jmxAction = compileSignals(new JmxCompiler());
@@ -284,13 +290,20 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             updateCount++;
             if (update(frame))
             {
-                currentUpdateCount = updateCount;
                 action.run();
+                executeCount++;
+            }
+            else
+            {
                 if (jmxAction != null)
                 {
-                    emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis);
-                    jmxAction.run();
+                    frame.getData(buf, 0, 0, min(buf.length, frame.getDataLength()));
                 }
+            }
+            if (jmxAction != null)
+            {
+                emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
+                jmxAction.run();
             }
         }
         finally
@@ -388,8 +401,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             if (!repeatingSignals.isEmpty())
             {
                 addAction(createRepeatingSignals(mc, repeatingSignals, repeatCountSignal));
-                startRepeat = compiler.compileBeginRepeat(mc);
-                endRepeat = compiler.compileEndRepeat(mc);
             }
             if (rootMultiplexor != null)
             {
@@ -447,6 +458,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         }
         private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals, SignalClass repeatCountSignal)
         {
+            Runnable startRepeat = compiler.compileBeginRepeat(mc);
+            Runnable endRepeat = compiler.compileEndRepeat(mc);
             List<Runnable> list = new ArrayList<>();
             repeatSize = repeatRange.getSize();
             repeatStart = repeatRange.getFrom();
@@ -459,7 +472,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             {
                 list.add(createRepeat(mc, repeatingSignals, ii * repeatSize));
             }
-            repeatables = createArray(list);
+            Runnable[] repeatables = createArray(list);
             IntSupplier repeatCountSupplier = getRepeatCountSupplier(repeatCountSignal);
             return ()->
             {
@@ -616,10 +629,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 try
                 {
                     action.run();
-                    if (currentUpdateCount != updateCount)
-                    {
-                        throw new IllegalMonitorStateException("writing started while reading");
-                    }
                 }
                 catch (Throwable ex)
                 {
