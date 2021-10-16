@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.DefaultMessageFactory;
@@ -30,7 +31,6 @@ import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.parser.util.InputReader;
-import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.xml.SimpleXMLParser;
 
 /**
@@ -72,7 +72,7 @@ public class SocketCandService extends AbstractCanService
             }
             catch (Exception ex)
             {
-                log(Level.SEVERE, "restarting SocketCandService", ex);
+                log(SEVERE, ex, "restarting SocketCandService", ex);
             }
         }
     }

@@ -302,8 +302,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             }
             if (jmxAction != null)
             {
-                emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
                 jmxAction.run();
+                emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
             }
         }
         finally
