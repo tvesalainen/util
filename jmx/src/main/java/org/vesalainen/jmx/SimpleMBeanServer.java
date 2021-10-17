@@ -85,7 +85,7 @@ public class SimpleMBeanServer implements MBeanServer
     private final String defaultDomain;
     private final MBeanServer outer;
     private final MBeanServerDelegate delegate;
-    private final Map<ObjectName,DynamicMBean> mBeans = new ConcurrentHashMap<>();
+    private final ObjectNameMap<DynamicMBean> mBeans = new ObjectNameMap<>();
     private final AtomicLong sequenceNumber = new AtomicLong();
     private final List<ClassLoader> classLoaders = Collections.synchronizedList(new ArrayList<>());
     private final ClassLoaderRepository classLoaderRepository = new ClassLoaderRepositoryImpl();
@@ -245,24 +245,9 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query)
     {
-        return mBeans
-                .keySet()
-                .stream()
-                .filter((n)->match(n, name, query))
-                .collect(Collectors.toSet());
+        return mBeans.queryNames(name, query);
     }
 
-    private boolean match(ObjectName target, ObjectName name, QueryExp query)
-    {
-        try
-        {
-            return (name == null || name.apply(target)) && (query == null || query.apply(target));
-        }
-        catch (BadStringOperationException | BadBinaryOpValueExpException | BadAttributeValueExpException | InvalidApplicationException ex)
-        {
-            throw new IllegalArgumentException(ex);
-        }
-    }
     @Override
     public boolean isRegistered(ObjectName name)
     {
@@ -319,8 +304,7 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public String[] getDomains()
     {
-        Set<String> set = mBeans.keySet().stream().map((n)->n.getDomain()).collect(Collectors.toSet());
-        return set.toArray(new String[set.size()]);
+        return mBeans.getDomains();
     }
 
     @Override
