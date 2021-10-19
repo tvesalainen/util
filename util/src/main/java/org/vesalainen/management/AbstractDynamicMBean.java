@@ -1,0 +1,421 @@
+/*
+ * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.vesalainen.management;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.Descriptor;
+import javax.management.DynamicMBean;
+import javax.management.IntrospectionException;
+import javax.management.InvalidAttributeValueException;
+import javax.management.JMX;
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanConstructorInfo;
+import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanRegistration;
+import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationBroadcaster;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.management.modelmbean.DescriptorSupport;
+import org.vesalainen.bean.BeanHelper;
+
+/**
+ *
+ * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ */
+public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcaster, MBeanRegistration
+{
+    private final Map<String,AttributeImpl> attributes = new TreeMap<>();
+    private final Map<String,OperationImpl> operations = new TreeMap<>();
+    private final String description;
+    private final NotificationBroadcasterSupport notificationBroadcasterSupport;
+    private Descriptor descriptor = new DescriptorSupport();
+    private long sequence;
+    private MBeanServer server;
+
+    public AbstractDynamicMBean(String description, Object target)
+    {
+        this(description);
+        addAttributes(target);
+    }
+    public AbstractDynamicMBean(String description)
+    {
+        this.description = description;
+        this.notificationBroadcasterSupport = new NotificationBroadcasterSupport(new MBeanNotificationInfo(new String[]{"jmx.mbean.info.changed"}, Notification.class.getName(), "changed"));
+        descriptor.setField(JMX.IMMUTABLE_INFO_FIELD, "false");
+    }
+    
+    public final void addOperation(Object target, String methodName)
+    {
+        Method method = null;
+        for (Method m : target.getClass().getMethods())
+        {
+            if (methodName.equals(m.getName()))
+            {
+                if (method != null)
+                {
+                    throw new IllegalArgumentException(methodName+" is ambiguous");
+                }
+                method = m;
+            }
+        }
+        if (method == null)
+        {
+            throw new IllegalArgumentException(methodName+" not found");
+        }
+        addOperation(target, method);
+    }
+    public final void addOperation(Object target, Method method)
+    {
+        operations.put(method.getName(), new OperationImpl(target, method));
+    }
+    public final <T> void addAttribute(String name, Class<T> type, Supplier<T> getter, Consumer<T> setter)
+    {
+        if (!OpenTypeUtil.isOpenType(type))
+        {
+            throw new IllegalArgumentException(type+" not open type");
+        }
+        attributes.put(name, new AttributeImpl(name, type, getter, setter));
+        notificationBroadcasterSupport.sendNotification(new Notification("jmx.mbean.info.changed", this, sequence++));
+    }
+    public final void addAttributes(Object target)
+    {
+        Set<String> attrs = new TreeSet<>();
+        Map<String,Method> getters = new HashMap<>();
+        Map<String,Method> setters = new HashMap<>();
+        try
+        {
+            Class<? extends Object> cls = target.getClass();
+            for (Method method : cls.getMethods())
+            {
+                if (isGetter(method))
+                {
+                    String property = BeanHelper.getProperty(method);
+                    attrs.add(property);
+                    getters.put(property, method);
+                }
+                else
+                {
+                    if (isSetter(method))
+                    {
+                        String property = BeanHelper.getProperty(method);
+                        attrs.add(property);
+                        setters.put(property, method);
+                    }
+                }
+            }
+            for (String property : attrs)
+            {
+                Method getter = getters.get(property);
+                Method setter = setters.get(property);
+                attributes.put(property, new AttributeImpl(property, property, target, getter, setter));
+            }
+            notificationBroadcasterSupport.sendNotification(new Notification("jmx.mbean.info.changed", target, sequence++));
+        }
+        catch (IntrospectionException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    @Override
+    public Object getAttribute(String attribute) throws AttributeNotFoundException, MBeanException, ReflectionException
+    {
+        AttributeImpl a = attributes.get(attribute);
+        if (a == null)
+        {
+            throw new AttributeNotFoundException(attribute);
+        }
+        return a.get();
+    }
+
+    @Override
+    public void setAttribute(Attribute attribute) throws AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException
+    {
+        AttributeImpl a = attributes.get(attribute.getName());
+        if (a == null)
+        {
+            throw new AttributeNotFoundException(attribute.getName());
+        }
+        a.set(attribute.getValue());
+    }
+
+    @Override
+    public AttributeList getAttributes(String[] attributes)
+    {
+        AttributeList list = new AttributeList();
+        for (String attribute : attributes)
+        {
+            try
+            {
+                list.add(new Attribute(attribute, getAttribute(attribute)));
+            }
+            catch (AttributeNotFoundException | MBeanException | ReflectionException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public AttributeList setAttributes(AttributeList attributes)
+    {
+        AttributeList list = new AttributeList();
+        int size = attributes.size();
+        for (int ii=0;ii<size;ii++)
+        {
+            Attribute a = (Attribute) attributes.get(ii);
+            Attribute na = new Attribute(a.getName(), a.getValue());
+            try
+            {
+                setAttribute(na);
+            }
+            catch (AttributeNotFoundException | InvalidAttributeValueException | MBeanException | ReflectionException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+            list.add(na);
+        }
+        return list;
+    }
+
+    @Override
+    public Object invoke(String actionName, Object[] params, String[] signature) throws MBeanException, ReflectionException
+    {
+        OperationImpl operation = operations.get(actionName);
+        if (operation == null)
+        {
+            throw new IllegalArgumentException(operation+" not found");
+        }
+        return operation.invoke(params);
+    }
+
+    @Override
+    public MBeanInfo getMBeanInfo()
+    {
+        return new MBeanInfo(
+                this.getClass().getName(), 
+                description, 
+                getAttributeInfo(), 
+                null, 
+                getOperationInfo(), 
+                notificationBroadcasterSupport.getNotificationInfo(), 
+                descriptor);
+    }
+
+    @Override
+    public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
+    {
+        this.server = server;
+        return name;
+    }
+
+    @Override
+    public void postRegister(Boolean registrationDone)
+    {
+        if (!registrationDone)
+        {
+            this.server = null;
+        }
+    }
+
+    @Override
+    public void preDeregister() throws Exception
+    {
+    }
+
+    @Override
+    public void postDeregister()
+    {
+        this.server = null;
+    }
+
+    private MBeanAttributeInfo[] getAttributeInfo()
+    {
+        MBeanAttributeInfo[] info = new MBeanAttributeInfo[attributes.size()];
+        int index = 0;
+        for (Entry<String, AttributeImpl> entry : attributes.entrySet())
+        {
+            info[index++] = entry.getValue();
+        }
+        return info;
+    }
+    private MBeanOperationInfo[] getOperationInfo()
+    {
+        MBeanOperationInfo[] info = new MBeanOperationInfo[operations.size()];
+        int index = 0;
+        for (Entry<String, OperationImpl> entry : operations.entrySet())
+        {
+            info[index++] = entry.getValue();
+        }
+        return info;
+    }
+    @Override
+    public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException
+    {
+        notificationBroadcasterSupport.addNotificationListener(listener, filter, handback);
+    }
+
+    @Override
+    public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException
+    {
+        notificationBroadcasterSupport.removeNotificationListener(listener);
+    }
+
+    @Override
+    public MBeanNotificationInfo[] getNotificationInfo()
+    {
+        return notificationBroadcasterSupport.getNotificationInfo();
+    }
+
+    private boolean isGetter(Method method)
+    {
+        return 
+                BeanHelper.isGetter(method) &&
+                method.getParameterTypes().length == 0 &&
+                OpenTypeUtil.isOpenType(method.getReturnType())
+                ;
+    }
+
+    private boolean isSetter(Method method)
+    {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        return 
+                BeanHelper.isSetter(method) &&
+                void.class.equals(method.getReturnType()) &&
+                parameterTypes.length == 1 &&
+                OpenTypeUtil.isOpenType(parameterTypes[0])
+                ;
+    }
+
+    private static class OperationImpl extends MBeanOperationInfo
+    {
+        private final Method method;
+        private final Object target;
+        
+        public OperationImpl(Object target, Method method)
+        {
+            super(method.getName(), method);
+            this.target = target;
+            this.method = method;
+        }
+        
+        public Object invoke(Object[] params) throws MBeanException, ReflectionException
+        {
+            try
+            {
+                return method.invoke(target, params);
+            }
+            catch (IllegalAccessException | IllegalArgumentException ex)
+            {
+                throw new ReflectionException(ex);
+            }
+            catch (InvocationTargetException ex)
+            {
+                throw new MBeanException(ex);
+            }
+        }
+
+    }
+    private static class AttributeImpl<T> extends MBeanAttributeInfo
+    {
+        private final Supplier<T> getter;
+        private final Consumer<T> setter;
+
+        public AttributeImpl(String name, Class<T> type, Supplier<T> getter, Consumer<T> setter)
+        {
+            super(name, type.getName(), name, getter != null, setter != null, getter != null && (type==boolean.class || type==Boolean.class));
+            this.getter = getter;
+            this.setter = setter;
+        }
+
+        public AttributeImpl(String name, String description, Object target, Method getter, Method setter) throws IntrospectionException
+        {
+            super(name, description, getter, setter);
+            if (getter != null)
+            {
+                this.getter = ()->
+                {
+                    try
+                    {
+                        return (T) getter.invoke(target);
+                    }
+                    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
+                };
+            }
+            else
+            {
+                this.getter = null;
+            }
+            if (setter != null)
+            {
+                this.setter = (v)->
+                {
+                    try
+                    {
+                        setter.invoke(target, v);
+                    }
+                    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
+                };
+            }
+            else
+            {
+                this.setter = null;
+            }
+        }
+
+        public Object get() throws ReflectionException
+        {
+            return getter.get();
+        }
+
+        public void set(T value) throws ReflectionException
+        {
+            setter.accept(value);
+        }
+
+    }
+    
+}
