@@ -26,8 +26,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -38,7 +36,6 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.JMX;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
@@ -56,10 +53,10 @@ import javax.management.modelmbean.DescriptorSupport;
 import org.vesalainen.bean.BeanHelper;
 
 /**
- *
+ * Base class for DynamicMBean
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcaster, MBeanRegistration
+public abstract class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcaster, MBeanRegistration
 {
     private final Map<String,AttributeImpl> attributes = new TreeMap<>();
     private final Map<String,OperationImpl> operations = new TreeMap<>();
@@ -68,19 +65,36 @@ public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcast
     private Descriptor descriptor = new DescriptorSupport();
     private long sequence;
     private MBeanServer server;
-
+    /**
+     * Create AbstractDynamicMBean with description and target. All targets
+     * valid attribute methods are added as attributes. Attribute is valid
+     * if it is standard java attribute (get/set/is) and it's object type
+     * is open-type.
+     * @param description
+     * @param target 
+     * @see javax.management.openmbean.OpenType
+     */
     public AbstractDynamicMBean(String description, Object target)
     {
         this(description);
         addAttributes(target);
     }
+    /**
+     * Create AbstractDynamicMBean with description and target. All targets
+     * @param description 
+     */
     public AbstractDynamicMBean(String description)
     {
         this.description = description;
         this.notificationBroadcasterSupport = new NotificationBroadcasterSupport(new MBeanNotificationInfo(new String[]{"jmx.mbean.info.changed"}, Notification.class.getName(), "changed"));
         descriptor.setField(JMX.IMMUTABLE_INFO_FIELD, "false");
     }
-    
+    /**
+     * Adds operation. Convenience method to extract methodName from target.
+     * @param target
+     * @param methodName 
+     * @see javax.management.openmbean.OpenType
+     */
     public final void addOperation(Object target, String methodName)
     {
         Method method = null;
@@ -101,10 +115,25 @@ public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcast
         }
         addOperation(target, method);
     }
+    /**
+     * Add operation.
+     * @param target
+     * @param method 
+     * @see javax.management.openmbean.OpenType
+     */
     public final void addOperation(Object target, Method method)
     {
         operations.put(method.getName(), new OperationImpl(target, method));
     }
+    /**
+     * Add functional attribute. Type must be open-type.
+     * @param <T>
+     * @param name
+     * @param type
+     * @param getter
+     * @param setter 
+     * @see javax.management.openmbean.OpenType
+     */
     public final <T> void addAttribute(String name, Class<T> type, Supplier<T> getter, Consumer<T> setter)
     {
         if (!OpenTypeUtil.isOpenType(type))
@@ -114,6 +143,10 @@ public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcast
         attributes.put(name, new AttributeImpl(name, type, getter, setter));
         notificationBroadcasterSupport.sendNotification(new Notification("jmx.mbean.info.changed", this, sequence++));
     }
+    /**
+     * Adds all valid attributes from target.
+     * @param target 
+     */
     public final void addAttributes(Object target)
     {
         Set<String> attrs = new TreeSet<>();
@@ -243,6 +276,10 @@ public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcast
     public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
     {
         this.server = server;
+        if (name == null)
+        {
+            return createObjectName();
+        }
         return name;
     }
 
@@ -323,6 +360,8 @@ public class AbstractDynamicMBean implements DynamicMBean, NotificationBroadcast
                 OpenTypeUtil.isOpenType(parameterTypes[0])
                 ;
     }
+
+    protected abstract ObjectName createObjectName();
 
     private static class OperationImpl extends MBeanOperationInfo
     {
