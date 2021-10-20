@@ -16,6 +16,7 @@
  */
 package org.vesalainen.management;
 
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -26,11 +27,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.Descriptor;
 import javax.management.DynamicMBean;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.JMX;
@@ -41,7 +46,9 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanRegistration;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.NotCompliantMBeanException;
 import javax.management.Notification;
 import javax.management.NotificationBroadcaster;
 import javax.management.NotificationBroadcasterSupport;
@@ -65,6 +72,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     private Descriptor descriptor = new DescriptorSupport();
     private long sequence;
     private MBeanServer server;
+    private ObjectName objectName;
     /**
      * Create AbstractDynamicMBean with description and target. All targets
      * valid attribute methods are added as attributes. Attribute is valid
@@ -271,16 +279,55 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
                 notificationBroadcasterSupport.getNotificationInfo(), 
                 descriptor);
     }
-
+    /**
+     * Register with platform mbean server with default name.
+     * @see org.vesalainen.management.AbstractDynamicMBean#createObjectName() 
+     */
+    public void register()
+    {
+        register(null);
+    }
+    /**
+     * Register with platform mbean server using given name.
+     * @param name 
+     */
+    public void register(ObjectName name)
+    {
+        try
+        {
+            MBeanServer pbs = ManagementFactory.getPlatformMBeanServer();
+            pbs.registerMBean(this, name);
+        }
+        catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    /**
+     * Unregister with platform mbean server
+     */
+    public void unregister()
+    {
+        try
+        {
+            MBeanServer pbs = ManagementFactory.getPlatformMBeanServer();
+            pbs.unregisterMBean(objectName);
+        }
+        catch (MBeanRegistrationException | InstanceNotFoundException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
     @Override
     public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
     {
         this.server = server;
-        if (name == null)
+        this.objectName = name;
+        if (objectName == null)
         {
-            return createObjectName();
+            objectName = createObjectName();
         }
-        return name;
+        return objectName;
     }
 
     @Override
