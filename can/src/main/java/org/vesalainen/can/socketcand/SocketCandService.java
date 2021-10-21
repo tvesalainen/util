@@ -18,9 +18,9 @@ package org.vesalainen.can.socketcand;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
@@ -69,6 +69,11 @@ public class SocketCandService extends AbstractCanService
                 SocketCandInfo info = waitForBeacon();
                 channel = SocketChannel.open(info.getAddress());
                 readSocketCand(channel);
+            }
+            catch (ClosedByInterruptException ex)
+            {
+                log(SEVERE, "SocketCandService interrupted");
+                return;
             }
             catch (Exception ex)
             {
