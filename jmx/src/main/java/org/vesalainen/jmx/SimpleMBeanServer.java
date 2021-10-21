@@ -27,15 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
-import javax.management.BadAttributeValueExpException;
-import javax.management.BadBinaryOpValueExpException;
-import javax.management.BadStringOperationException;
 import javax.management.Descriptor;
 import javax.management.DescriptorKey;
 import javax.management.DynamicMBean;
@@ -43,7 +39,6 @@ import javax.management.ImmutableDescriptor;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
-import javax.management.InvalidApplicationException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.JMX;
 import javax.management.ListenerNotFoundException;
@@ -381,7 +376,9 @@ public class SimpleMBeanServer implements MBeanServer
     @Override
     public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException, IntrospectionException, ReflectionException
     {
-        Object object = getObject(name);
+        DynamicMBean db = getObject(name);
+        return db.getMBeanInfo();
+        /*
         if (object instanceof DynamicMBean)
         {
             DynamicMBean db = (DynamicMBean) object;
@@ -414,6 +411,7 @@ public class SimpleMBeanServer implements MBeanServer
             descriptor = new ImmutableDescriptor(descriptorAnnotation.value());
         }
         return new MBeanInfo(classname, null, attributeInfo, constructorInfo, operationInfo, notificationInfo, descriptor);
+        */
     }
 
     @Override
@@ -514,9 +512,7 @@ public class SimpleMBeanServer implements MBeanServer
 
     private DynamicMBean wrapMBean(Object object, ObjectName name) throws NotCompliantMBeanException
     {
-        if (
-                (object instanceof StandardEmitterMBean) ||
-                (object instanceof StandardMBean) && !(object instanceof NotificationEmitter))
+        if (object instanceof DynamicMBean)
         {
             return (DynamicMBean) object;
         }

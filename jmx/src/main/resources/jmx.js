@@ -39,7 +39,9 @@ $(document).ready(function () {
                             var id = this.id;
                             $(this).load('jmx', {'id': objectname, 'attribute': id}, function (responseTxt, statusTxt, xhr) {
                                 $('.attributeInput').change(function () {
-                                    $.post('jmx', $('form').serialize()), function (responseTxt, statusTxt, xhr) {
+                                    var form = $(this).parent();
+                                    var data = form.serialize();
+                                    $.post('jmx', data), function (responseTxt, statusTxt, xhr) {
                                         a = this;
                                     };
                                 })
@@ -49,7 +51,9 @@ $(document).ready(function () {
                             var form = $(this).parent();
                             var data = form.serialize();
                             var target = '#'+$(form).find('.operationId').first().attr('value');
-                            $(target).load('jmx', data);
+                            $(target).load('jmx', data, function (responseTxt, statusTxt, xhr) {
+                                a = statusTxt;
+                            });
                         })
                         $('.subscribeNotification').click(function () {
                             $("#dialog").dialog("open");

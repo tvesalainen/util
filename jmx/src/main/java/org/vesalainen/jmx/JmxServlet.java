@@ -374,7 +374,7 @@ public class JmxServlet extends HttpServlet
         {
             sb.append(info.getType());
         }
-        return sb.toString();
+        return sb.toString().replace('.', '-');
     }
 
     private Renderer getAttributeValue(ObjectName objectName, String name)
