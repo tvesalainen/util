@@ -73,6 +73,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     private long sequence;
     private MBeanServer server;
     private ObjectName objectName;
+    private String classname;
     /**
      * Create AbstractDynamicMBean with description and target. All targets
      * valid attribute methods are added as attributes. Attribute is valid
@@ -86,6 +87,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     {
         this(description);
         addAttributes(target);
+        this.classname = target.getClass().getName();
     }
     /**
      * Create AbstractDynamicMBean with description and target. All targets
@@ -93,35 +95,29 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
      */
     public AbstractDynamicMBean(String description)
     {
+        this.classname = this.getClass().getName();
         this.description = description;
         this.notificationBroadcasterSupport = new NotificationBroadcasterSupport(new MBeanNotificationInfo(new String[]{"jmx.mbean.info.changed"}, Notification.class.getName(), "changed"));
         descriptor.setField(JMX.IMMUTABLE_INFO_FIELD, "false");
     }
     /**
-     * Adds operation. Convenience method to extract methodName from target.
+     * Adds operation.Convenience method to extract methodName from target.
      * @param target
      * @param methodName 
+     * @param params 
      * @see javax.management.openmbean.OpenType
      */
-    public final void addOperation(Object target, String methodName)
+    public final void addOperation(Object target, String methodName, Class<?>... params)
     {
-        Method method = null;
-        for (Method m : target.getClass().getMethods())
+        try
         {
-            if (methodName.equals(m.getName()))
-            {
-                if (method != null)
-                {
-                    throw new IllegalArgumentException(methodName+" is ambiguous");
-                }
-                method = m;
-            }
+            Method method = target.getClass().getMethod(methodName, params);
+            addOperation(target, method);
         }
-        if (method == null)
+        catch (NoSuchMethodException | SecurityException ex)
         {
-            throw new IllegalArgumentException(methodName+" not found");
+            throw new RuntimeException(ex);
         }
-        addOperation(target, method);
     }
     /**
      * Add operation.
@@ -271,7 +267,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     public MBeanInfo getMBeanInfo()
     {
         return new MBeanInfo(
-                this.getClass().getName(), 
+                classname, 
                 description, 
                 getAttributeInfo(), 
                 null, 
