@@ -148,6 +148,7 @@ public abstract class SimpleWorkflow<K,M,C>
                 Runnable runnable = create(to);
                 runnable = new Wrapper(runnable);
                 nextThread = new Thread(runnable, to.toString());
+                nextThread.setDaemon(true);
                 Semaphore semaphore = new Semaphore(0);
                 threadMap.put(to, nextThread);
                 semaphoreMap.put(nextThread, semaphore);
