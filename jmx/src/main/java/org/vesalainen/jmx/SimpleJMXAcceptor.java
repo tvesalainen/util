@@ -16,7 +16,6 @@
  */
 package org.vesalainen.jmx;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
@@ -51,6 +50,7 @@ public class SimpleJMXAcceptor extends JavaLogging implements Runnable
             throw new IllegalStateException("already started");
         }
         thread = new Thread(this, "Simple JMX Acceptor");
+        thread.setDaemon(true);
         thread.start();
     }
     public void stop()
