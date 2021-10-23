@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
@@ -42,6 +42,7 @@ import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
@@ -80,8 +81,16 @@ public class JmxServlet extends HttpServlet
     private Renderer root;
     private Renderer pattern;
     private Renderer bean;
-    private ObjectName objectName;
     private MBeanServer serverConnection;
+    private MBeanData mBeanData = new MBeanData();
+    private Supplier<ObjectName> objectName = mBeanData::getObjectName;
+    private Supplier<MBeanInfo> mBeanInfo = mBeanData::getMBeanInfo;
+    private Function<String,MBeanAttributeInfo> attributeInfo = mBeanData::getAttributeInfo;
+    private Function<String,MBeanOperationInfo> operationInfo = mBeanData::getOperationInfo;
+    private Function<String,MBeanNotificationInfo> notificationInfo = mBeanData::getNotificationInfo;
+    private Function<String,Object> attributeValue = mBeanData::getAttributeValue;
+    private Function<String,Class<?>> attributeType = mBeanData::getAttributeType;
+    private BiConsumer<String,Object> setAttribute = mBeanData::setAttributeValue;
 
     @Override
     public void init() throws ServletException
@@ -113,8 +122,8 @@ public class JmxServlet extends HttpServlet
                 }
                 else
                 {
-                    objectName = ObjectName.getInstance(id);
-                    if (objectName.isPropertyPattern())
+                    mBeanData.setName(id);
+                    if (objectName.get().isPropertyPattern())
                     {
                         content = pattern;
                     }
@@ -138,21 +147,21 @@ public class JmxServlet extends HttpServlet
                                 }
                                 return;
                             }
-                            content = getAttributeValue(objectName, attribute);
+                            content = getAttributeValue(attribute);
                         }
                         else
                         {
                             String operation = req.getParameter("operation");
                             if (operation != null)
                             {
-                                content = getOperationResult(objectName, operation, req.getParameterMap());
+                                content = getOperationResult(operation, req.getParameterMap());
                             }
                             else
                             {
                                 String subscribe = req.getParameter("subscribe");
                                 if (subscribe != null)
                                 {
-                                    subscribeNotification(objectName, subscribe, req, resp);
+                                    subscribeNotification(subscribe, req, resp);
                                     return;
                                 }
                                 else
@@ -200,8 +209,8 @@ public class JmxServlet extends HttpServlet
     {
         Supplier<Stream<String>> streamSupplier = ()->
         {
-            Set<ObjectName> queryNames = serverConnection.queryNames(getObjectName(), null);
-            String canonicalKeyPropertyListString = objectName.getCanonicalKeyPropertyListString();
+            Set<ObjectName> queryNames = serverConnection.queryNames(objectName.get(), null);
+            String canonicalKeyPropertyListString = objectName.get().getCanonicalKeyPropertyListString();
             long commas = canonicalKeyPropertyListString.chars().filter((i)->i=='=').count();
             return queryNames
                     .stream()
@@ -223,20 +232,12 @@ public class JmxServlet extends HttpServlet
     {
         Supplier<Stream<MBeanInfo>> streamSupplier = ()->
         {
-            try
-            {
-                MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(getObjectName());
-                return Stream.of(mBeanInfo);
-            }
-            catch (InstanceNotFoundException | IntrospectionException | ReflectionException ex)
-            {
-                throw new RuntimeException(ex);
-            }
+            return Stream.of(mBeanInfo.get());
         };
         Element div = new Element("div");
         Element fieldSet = div.addElement("fieldset");
         Element legend = fieldSet.addElement("legend");
-        legend.addText(()->getObjectName().toString());
+        legend.addText(()->objectName.get().toString());
         DynamicElement<MBeanInfo,?> content = DynamicElement.getFrom("div", streamSupplier);
         fieldSet.add(content);
         content.child("div").setText((i)->"classname="+i.getClassName());
@@ -253,10 +254,51 @@ public class JmxServlet extends HttpServlet
         DynamicElement<MBeanAttributeInfo, MBeanInfo> tr = mBeanInfo.child("table").childFromArray("tr", (t)->t.getAttributes());
         tr.child("th")
             .setText((t)->t.getName());
-        tr.child("td")
+        DynamicElement<MBeanAttributeInfo, MBeanAttributeInfo> td = tr.child("td")
             .setAttr("id", (a)->a.getName())
-            .setDataAttr("objectname", (t)->getObjectName())
+            .setDataAttr("objectname", (t)->objectName.get())
             .addClasses("attributeValue");
+
+        DynamicElement<MBeanAttributeInfo, MBeanAttributeInfo> form = td.child("form")
+                .setAttr("action", "ajax_nodes.html")
+                .setAttr("method", "post");
+        form.child("input")
+                .setAttr("type", "hidden")
+                .setAttr("name", "id")
+                .setAttr("value", objectName);
+        form.child("input")
+                .setAttr("type", "hidden")
+                .setAttr("name", "attribute")
+                .setAttr("value", (t)->t.getName());
+        form.child("input")
+                .setAttr("type", "hidden")
+                .setAttr("name", "type")
+                .setAttr("value", (t)->t.getType());
+        form.child("input")
+            .setAttr("name", "value")
+            .addClasses("attributeInput")
+            .attribute((t,p)->setInputAttributes(t.getName(), p));
+    }
+    private void setInputAttributes(String attribute, AttributedContent input)
+    {
+        MBeanAttributeInfo info = attributeInfo.apply(attribute);
+        Class<?> type = attributeType.apply(attribute);
+        if (info.isWritable())
+        {
+            switch (type.getSimpleName())
+            {
+                case "Boolean":
+                    input.setAttr(new BooleanAttribute("checked", ()->attributeValue.apply(attribute)));
+                case "Integer":
+                case "Short":
+                case "Long":
+                case "Float":
+                case "Double":
+                case "String":
+                    input.setAttr("value", ()->attributeValue.apply(attribute));
+            }
+            setInputAttributes(type, input);
+        }
     }
 
     private void createOperations(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
@@ -267,7 +309,7 @@ public class JmxServlet extends HttpServlet
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "id")
-            .setAttr("value", ()->objectName);
+            .setAttr("value", ()->objectName.get());
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "operation")
@@ -284,7 +326,7 @@ public class JmxServlet extends HttpServlet
             .setAttr("title", (p)->p.getType());
         tr.child("td")
             .setAttr("id", (t)->getOperationIdentifier(t))
-            .setDataAttr("objectname", (t)->getObjectName())
+            .setDataAttr("objectname", (t)->objectName.get())
             .addClasses("operationResult");
     }
 
@@ -296,7 +338,7 @@ public class JmxServlet extends HttpServlet
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "id")
-            .setAttr("value", ()->objectName);
+            .setAttr("value", ()->objectName.get());
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "subscribe")
@@ -318,13 +360,12 @@ public class JmxServlet extends HttpServlet
             .setText((p)->p.toString());
     }
 
-    private Renderer getOperationResult(ObjectName objectName, String name, Map<String, String[]> parameters)
+    private Renderer getOperationResult(String name, Map<String, String[]> parameters)
     {
         try
         {
-            MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(objectName);
             MBeanOperationInfo info = null;
-            for (MBeanOperationInfo i : mBeanInfo.getOperations())
+            for (MBeanOperationInfo i : mBeanInfo.get().getOperations())
             {
                 if (name.equals(getOperationIdentifier(i)))
                 {
@@ -357,7 +398,7 @@ public class JmxServlet extends HttpServlet
                 sig[ii] = signature[ii].getType();
                 params[ii] = ConvertUtility.convert(type, arr[0]);
             }
-            Object result = serverConnection.invoke(objectName, info.getName(), params, sig);
+            Object result = mBeanData.getOperationResult(info.getName(), params, sig);
             return getOutputFor(getClass(info.getReturnType()), result);
         }
         catch (Exception ex)
@@ -377,16 +418,15 @@ public class JmxServlet extends HttpServlet
         return sb.toString().replace('.', '-');
     }
 
-    private Renderer getAttributeValue(ObjectName objectName, String name)
+    private Renderer getAttributeValue(String name)
     {
         try
         {
-            MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(objectName);
-            MBeanAttributeInfo info = getFeatureInfo(name, mBeanInfo.getAttributes());
+            MBeanAttributeInfo info = attributeInfo.apply(name);
             Object value = null;
             if (info.isReadable())
             {
-                value = serverConnection.getAttribute(objectName, name);
+                value = attributeValue.apply(name);
             }
             Class<?> type = getClass(info.getType());
             if (info.isWritable())
@@ -395,7 +435,7 @@ public class JmxServlet extends HttpServlet
                 form.setAttr("action", "ajax_nodes.html");
                 form.setAttr("method", "post");
                 Renderer input = getInputFor(type, value);
-                form.add(new InputTag(form, "hidden", "id", objectName));
+                form.add(new InputTag(form, "hidden", "id", objectName.get()));
                 form.add(new InputTag(form, "hidden", "attribute", name));
                 form.add(new InputTag(form, "hidden", "type", info.getType()));
                 form.add(input);
@@ -410,18 +450,6 @@ public class JmxServlet extends HttpServlet
         {
             return new Element("span").addText(ex.getMessage());
         }
-    }
-
-    private <I extends MBeanFeatureInfo> I getFeatureInfo(String name, I... mBeanFeatureInfo)
-    {
-        for (I info : mBeanFeatureInfo)
-        {
-            if (name.equals(info.getName()))
-            {
-                return info;
-            }
-        }
-        throw new IllegalArgumentException(name+" attribute not found");
     }
 
     private Renderer getInputFor(Class<?> type, Object value)
@@ -517,7 +545,6 @@ public class JmxServlet extends HttpServlet
 
     private Renderer getOutputForCompositeData(CompositeData data)
     {
-        CompositeType type = data.getCompositeType();
         Element table = new Element("table");
         table.add(titleRow(data.getCompositeType()));
         table.add(dataRow(data));
@@ -568,7 +595,7 @@ public class JmxServlet extends HttpServlet
         return table;
     }
 
-    private Class<?> getClass(String type)
+    private static Class<?> getClass(String type)
     {
         try
         {
@@ -615,28 +642,10 @@ public class JmxServlet extends HttpServlet
                 obj = ConvertUtility.convert(cls, value);
                 break;
         }
-        try
-        {
-            serverConnection.setAttribute(objectName, new Attribute(name, obj));
-            return true;
-        }
-        catch (MBeanException | ReflectionException | InstanceNotFoundException | AttributeNotFoundException | InvalidAttributeValueException ex)
-        {
-            Logger.getLogger(JmxServlet.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
+        setAttribute.accept(name, obj);
+        return true;
     }
 
-    void setObjectName(ObjectName objectName)
-    {
-        this.objectName = objectName;
-    }
-
-    private ObjectName getObjectName()
-    {
-        return objectName;
-    }
-    
     private String cut(String str, int commas)
     {
         int idx = -1;
@@ -672,7 +681,7 @@ public class JmxServlet extends HttpServlet
         return bean;
     }
 
-    private void subscribeNotification(ObjectName objectName, String name, HttpServletRequest req, HttpServletResponse resp) throws IOException
+    private void subscribeNotification(String name, HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("text/event-stream");
@@ -683,8 +692,7 @@ public class JmxServlet extends HttpServlet
         
         try
         {
-            MBeanInfo mBeanInfo = serverConnection.getMBeanInfo(objectName);
-            MBeanNotificationInfo info = getFeatureInfo(name, mBeanInfo.getNotifications());
+            MBeanNotificationInfo info = notificationInfo.apply(name);
             int commonPrefixLength = CharSequences.commonPrefixLength(info.getNotifTypes());
             NotificationFilterSupport filter = new NotificationFilterSupport();
             boolean notAllSet = false;
@@ -705,12 +713,12 @@ public class JmxServlet extends HttpServlet
                 filter = null;
             }
             
-            Listener listener = new Listener(objectName, asyncContext, filter, commonPrefixLength);
+            Listener listener = new Listener(objectName.get(), asyncContext, filter, commonPrefixLength);
             asyncContext.addListener(listener);
-            serverConnection.addNotificationListener(objectName, listener, filter, null);
+            serverConnection.addNotificationListener(objectName.get(), listener, filter, null);
 
         }
-        catch (IllegalArgumentException | InstanceNotFoundException | IntrospectionException | ReflectionException ex)
+        catch (IllegalArgumentException | InstanceNotFoundException  ex)
         {
             throw new IOException(ex);
         }
@@ -829,7 +837,115 @@ public class JmxServlet extends HttpServlet
             long h = d % 24;
             w.printf("%02d:%02d:%02d.%03d", h, m, s, ms);
         }
-
         
+    }
+    private class MBeanData
+    {
+        private ObjectName objectName;
+        private MBeanInfo mBeanInfo;
+        
+        public void setName(String name)
+        {
+            try
+            {
+                this.objectName = ObjectName.getInstance(name);
+                if (!objectName.isPattern())
+                {
+                    this.mBeanInfo = serverConnection.getMBeanInfo(objectName);
+                }
+                else
+                {
+                    this.mBeanInfo = null;
+                }
+            }
+            catch (InstanceNotFoundException | IntrospectionException | ReflectionException | MalformedObjectNameException | NullPointerException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public ObjectName getObjectName()
+        {
+            return objectName;
+        }
+
+        public MBeanInfo getMBeanInfo()
+        {
+            return mBeanInfo;
+        }
+
+        public MBeanAttributeInfo getAttributeInfo(String attribute)
+        {
+            return getFeatureInfo(attribute, mBeanInfo.getAttributes());
+        }
+
+        public MBeanOperationInfo getOperationInfo(String operation)
+        {
+            return getFeatureInfo(operation, mBeanInfo.getOperations());
+        }
+
+        public MBeanNotificationInfo getNotificationInfo(String notification)
+        {
+            return getFeatureInfo(notification, mBeanInfo.getNotifications());
+        }
+        public Class<?> getAttributeType(String attribute)
+        {
+            MBeanAttributeInfo info = getAttributeInfo(attribute);
+            return JmxServlet.getClass(info.getType());
+        }
+        public Object getAttributeValue(String attribute)
+        {
+            try
+            {
+                MBeanAttributeInfo info = getAttributeInfo(attribute);
+                if (info.isReadable())
+                {
+                    return serverConnection.getAttribute(objectName, attribute);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (InstanceNotFoundException | ReflectionException | MBeanException | AttributeNotFoundException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        public void setAttributeValue(String attribute, Object value)
+        {
+            try
+            {
+                serverConnection.setAttribute(objectName, new Attribute(attribute, value));
+            }
+            catch (InstanceNotFoundException | AttributeNotFoundException | InvalidAttributeValueException | MBeanException | ReflectionException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        public Object getOperationResult(String operation, Object[] params, String[] sig)
+        {
+            try
+            {
+                return serverConnection.invoke(objectName, operation, params, sig);
+            }
+            catch (InstanceNotFoundException | MBeanException | ReflectionException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        private <I extends MBeanFeatureInfo> I getFeatureInfo(String name, I... mBeanFeatureInfo)
+        {
+            for (I info : mBeanFeatureInfo)
+            {
+                if (name.equals(info.getName()))
+                {
+                    return info;
+                }
+            }
+            throw new IllegalArgumentException(name+" attribute not found");
+        }
+
+
     }
 }

@@ -34,18 +34,12 @@ $(document).ready(function () {
                 if (!id.endsWith('*'))
                 {
                     $('#mbean').load('jmx', {'id': id}, function (responseTxt, statusTxt, xhr) {
-                        $('.attributeValue').each(function (index, element) {
-                            var objectname = $(this).attr('data-objectname');
-                            var id = this.id;
-                            $(this).load('jmx', {'id': objectname, 'attribute': id}, function (responseTxt, statusTxt, xhr) {
-                                $('.attributeInput').change(function () {
-                                    var form = $(this).parent();
-                                    var data = form.serialize();
-                                    $.post('jmx', data), function (responseTxt, statusTxt, xhr) {
-                                        a = this;
-                                    };
-                                })
-                            });
+                        $('.attributeInput').change(function () {
+                            var form = $(this).parent();
+                            var data = form.serialize();
+                            $.post('jmx', data), function (responseTxt, statusTxt, xhr) {
+                                a = this;
+                            };
                         })
                         $('.operationInvoke').click(function () {
                             var form = $(this).parent();
