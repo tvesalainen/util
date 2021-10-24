@@ -57,6 +57,45 @@ public final class Primitives
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
     /**
+     * Returns class for simple name.
+     * @param type
+     * @return 
+     */
+    public static final Class<?> getClass(String type)
+    {
+        try
+        {
+            return Class.forName(type);
+        }
+        catch (ClassNotFoundException ex)
+        {
+            switch (type)
+            {
+                case "void":
+                    return Void.class;
+                case "boolean":
+                    return Boolean.class;
+                case "char":
+                    return Character.class;
+                case "byte":
+                    return Byte.class;
+                case "short":
+                    return Short.class;
+                case "int":
+                    return Integer.class;
+                case "long":
+                    return Long.class;
+                case "float":
+                    return Float.class;
+                case "double":
+                    return Double.class;
+                default:
+                    throw new IllegalArgumentException(type+" not supported");
+            }
+        }
+    }
+
+    /**
      * If value fits in bits-integer it is returned.Otherwise throws
      * NumberFormatException
      * @param bits
