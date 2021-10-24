@@ -60,6 +60,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.vesalainen.html.AbstractDynamicInput;
 import org.vesalainen.html.AttributedContent;
 import org.vesalainen.html.BooleanAttribute;
 import org.vesalainen.html.DynamicElement;
@@ -68,6 +69,7 @@ import org.vesalainen.html.EntityReferences;
 import org.vesalainen.html.InputTag;
 import org.vesalainen.html.Renderer;
 import org.vesalainen.html.Tag;
+import org.vesalainen.lang.Primitives;
 import org.vesalainen.util.CharSequences;
 import org.vesalainen.util.ConvertUtility;
 
@@ -274,30 +276,36 @@ public class JmxServlet extends HttpServlet
                 .setAttr("type", "hidden")
                 .setAttr("name", "type")
                 .setAttr("value", (t)->t.getType());
-        form.child("input")
-            .setAttr("name", "value")
-            .addClasses("attributeInput")
-            .attribute((t,p)->setInputAttributes(t.getName(), p));
+        AttributeInput attributeInput = new AttributeInput();
+        attributeInput.setAttr("name", "value");
+        attributeInput.addClasses("attributeInput");
+        form.addContent(attributeInput);
     }
-    private void setInputAttributes(String attribute, AttributedContent input)
+    private void setInputAttributes(MBeanAttributeInfo i, AttributedContent input)
     {
-        MBeanAttributeInfo info = attributeInfo.apply(attribute);
-        Class<?> type = attributeType.apply(attribute);
+        MBeanAttributeInfo info = attributeInfo.apply(i.getName());
+        Class<?> type = attributeType.apply(i.getName());
         if (info.isWritable())
         {
             switch (type.getSimpleName())
             {
                 case "Boolean":
-                    input.setAttr(new BooleanAttribute("checked", ()->attributeValue.apply(attribute)));
+                    input.setAttr(new BooleanAttribute("checked", ()->attributeValue.apply(i.getName())));
+                    break;
                 case "Integer":
                 case "Short":
                 case "Long":
                 case "Float":
                 case "Double":
                 case "String":
-                    input.setAttr("value", ()->attributeValue.apply(attribute));
+                    input.setAttr("value", ()->attributeValue.apply(i.getName()));
+                    break;
             }
             setInputAttributes(type, input);
+        }
+        else
+        {
+            // TODO
         }
     }
 
@@ -321,7 +329,7 @@ public class JmxServlet extends HttpServlet
             .setAttr("name", "operation")
             .setAttr("value", (t)->t.getName());
         form.childFromArray("input", (i)->i.getSignature())
-            .attribute((t,p)->setInputAttributes(getClass(t.getType()), p))
+            .attribute((t,p)->setInputAttributes(Primitives.getClass(t.getType()), p))
             .setAttr("name", (p)->p.getName())
             .setAttr("title", (p)->p.getType());
         tr.child("td")
@@ -382,7 +390,7 @@ public class JmxServlet extends HttpServlet
             String[] sig = new String[signature.length];
             for (int ii=0;ii<signature.length;ii++)
             {
-                Class<?> type = getClass(signature[ii].getType());
+                Class<?> type = Primitives.getClass(signature[ii].getType());
                 String[] arr = parameters.get(signature[ii].getName());
                 if (arr == null || arr.length != 1)
                 {
@@ -399,7 +407,7 @@ public class JmxServlet extends HttpServlet
                 params[ii] = ConvertUtility.convert(type, arr[0]);
             }
             Object result = mBeanData.getOperationResult(info.getName(), params, sig);
-            return getOutputFor(getClass(info.getReturnType()), result);
+            return getOutputFor(Primitives.getClass(info.getReturnType()), result);
         }
         catch (Exception ex)
         {
@@ -428,7 +436,7 @@ public class JmxServlet extends HttpServlet
             {
                 value = attributeValue.apply(name);
             }
-            Class<?> type = getClass(info.getType());
+            Class<?> type = Primitives.getClass(info.getType());
             if (info.isWritable())
             {
                 Element form = new Element("form");
@@ -558,7 +566,7 @@ public class JmxServlet extends HttpServlet
         {
             Element td = tr.addElement("td");
             OpenType<?> ot = type.getType(key);
-            Class<?> cls = getClass(ot.getClassName());
+            Class<?> cls = Primitives.getClass(ot.getClassName());
             Renderer e = getOutputFor(cls, data.get(key));
             td.add(e);
         }
@@ -595,43 +603,9 @@ public class JmxServlet extends HttpServlet
         return table;
     }
 
-    private static Class<?> getClass(String type)
-    {
-        try
-        {
-            return Class.forName(type);
-        }
-        catch (ClassNotFoundException ex)
-        {
-            switch (type)
-            {
-                case "void":
-                    return Void.class;
-                case "boolean":
-                    return Boolean.class;
-                case "char":
-                    return Character.class;
-                case "byte":
-                    return Byte.class;
-                case "short":
-                    return Short.class;
-                case "int":
-                    return Integer.class;
-                case "long":
-                    return Long.class;
-                case "float":
-                    return Float.class;
-                case "double":
-                    return Double.class;
-                default:
-                    throw new IllegalArgumentException(type+" not supported");
-            }
-        }
-    }
-
     private boolean setValue(String name, String type, String value)
     {
-        Class<?> cls = getClass(type);
+        Class<?> cls = Primitives.getClass(type);
         Object obj = null;
         switch (cls.getSimpleName())
         {
@@ -848,6 +822,7 @@ public class JmxServlet extends HttpServlet
         {
             try
             {
+                log("setName"+name);
                 this.objectName = ObjectName.getInstance(name);
                 if (!objectName.isPattern())
                 {
@@ -891,7 +866,7 @@ public class JmxServlet extends HttpServlet
         public Class<?> getAttributeType(String attribute)
         {
             MBeanAttributeInfo info = getAttributeInfo(attribute);
-            return JmxServlet.getClass(info.getType());
+            return Primitives.getClass(info.getType());
         }
         public Object getAttributeValue(String attribute)
         {
@@ -936,6 +911,7 @@ public class JmxServlet extends HttpServlet
         }
         private <I extends MBeanFeatureInfo> I getFeatureInfo(String name, I... mBeanFeatureInfo)
         {
+            log("getFeatureInfo "+name);
             for (I info : mBeanFeatureInfo)
             {
                 if (name.equals(info.getName()))
@@ -945,7 +921,15 @@ public class JmxServlet extends HttpServlet
             }
             throw new IllegalArgumentException(name+" attribute not found");
         }
+    }
+    private class AttributeInput extends AbstractDynamicInput<MBeanAttributeInfo>
+    {
 
-
+        @Override
+        public void append(Appendable out, MBeanAttributeInfo t) throws IOException
+        {
+            append(out, Primitives.getClass(t.getType()), attributeValue.apply(t.getName()));
+        }
+        
     }
 }
