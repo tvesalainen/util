@@ -149,7 +149,7 @@ public class JmxServlet extends HttpServlet
                                 }
                                 return;
                             }
-                            content = getAttributeValue(attribute);
+                            //content = getAttributeValue(attribute);
                         }
                         else
                         {
@@ -281,39 +281,15 @@ public class JmxServlet extends HttpServlet
         attributeInput.addClasses("attributeInput");
         form.addContent(attributeInput);
     }
-    private void setInputAttributes(MBeanAttributeInfo i, AttributedContent input)
-    {
-        MBeanAttributeInfo info = attributeInfo.apply(i.getName());
-        Class<?> type = attributeType.apply(i.getName());
-        if (info.isWritable())
-        {
-            switch (type.getSimpleName())
-            {
-                case "Boolean":
-                    input.setAttr(new BooleanAttribute("checked", ()->attributeValue.apply(i.getName())));
-                    break;
-                case "Integer":
-                case "Short":
-                case "Long":
-                case "Float":
-                case "Double":
-                case "String":
-                    input.setAttr("value", ()->attributeValue.apply(i.getName()));
-                    break;
-            }
-            setInputAttributes(type, input);
-        }
-        else
-        {
-            // TODO
-        }
-    }
-
     private void createOperations(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
     {
         mBeanInfo.child("legend").setText((t)->"Operations");
         DynamicElement<MBeanOperationInfo, MBeanInfo> tr = mBeanInfo.child("table").childFromArray("tr", (t)->t.getOperations());
         DynamicElement<MBeanOperationInfo, MBeanOperationInfo> form = tr.child("td").child("form");
+        tr.child("td")
+            .setAttr("id", (t)->getOperationIdentifier(t))
+            .setDataAttr("objectname", (t)->objectName.get())
+            .addClasses("operationResult");
         form.child("input")
             .setAttr("type", "hidden")
             .setAttr("name", "id")
@@ -328,14 +304,11 @@ public class JmxServlet extends HttpServlet
             .setAttr("type", "button")
             .setAttr("name", "operation")
             .setAttr("value", (t)->t.getName());
-        form.childFromArray("input", (i)->i.getSignature())
-            .attribute((t,p)->setInputAttributes(Primitives.getClass(t.getType()), p))
-            .setAttr("name", (p)->p.getName())
-            .setAttr("title", (p)->p.getType());
-        tr.child("td")
-            .setAttr("id", (t)->getOperationIdentifier(t))
-            .setDataAttr("objectname", (t)->objectName.get())
-            .addClasses("operationResult");
+        ParameterInput parameterInput = new ParameterInput();
+        parameterInput.setAttr("name", (p)->p.getName());
+        parameterInput.setAttr("title", (p)->p.getType());
+        form.childFromArray(null, (i)->i.getSignature())
+            .addContent(parameterInput);
     }
 
     private void createNotifications(DynamicElement<MBeanInfo, MBeanInfo> mBeanInfo)
@@ -407,7 +380,7 @@ public class JmxServlet extends HttpServlet
                 params[ii] = ConvertUtility.convert(type, arr[0]);
             }
             Object result = mBeanData.getOperationResult(info.getName(), params, sig);
-            return getOutputFor(Primitives.getClass(info.getReturnType()), result);
+            return new ValueRenderer(result);
         }
         catch (Exception ex)
         {
@@ -424,183 +397,6 @@ public class JmxServlet extends HttpServlet
             sb.append(info.getType());
         }
         return sb.toString().replace('.', '-');
-    }
-
-    private Renderer getAttributeValue(String name)
-    {
-        try
-        {
-            MBeanAttributeInfo info = attributeInfo.apply(name);
-            Object value = null;
-            if (info.isReadable())
-            {
-                value = attributeValue.apply(name);
-            }
-            Class<?> type = Primitives.getClass(info.getType());
-            if (info.isWritable())
-            {
-                Element form = new Element("form");
-                form.setAttr("action", "ajax_nodes.html");
-                form.setAttr("method", "post");
-                Renderer input = getInputFor(type, value);
-                form.add(new InputTag(form, "hidden", "id", objectName.get()));
-                form.add(new InputTag(form, "hidden", "attribute", name));
-                form.add(new InputTag(form, "hidden", "type", info.getType()));
-                form.add(input);
-                return form;
-            }
-            else
-            {
-                return getOutputFor(type, value);
-            }
-        }
-        catch (Exception ex)
-        {
-            return new Element("span").addText(ex.getMessage());
-        }
-    }
-
-    private Renderer getInputFor(Class<?> type, Object value)
-    {
-        Tag input = new Tag("input")
-            .setAttr("name", "value")
-            .addClasses("attributeInput");
-        switch (type.getSimpleName())
-        {
-            case "Boolean":
-                input.setAttr(new BooleanAttribute("checked", value));
-            case "Integer":
-            case "Short":
-            case "Long":
-            case "Float":
-            case "Double":
-            case "String":
-                input.setAttr("value", value);
-        }
-        return setInputAttributes(type, input);
-    }
-    private Renderer setInputAttributes(Class<?> type, AttributedContent input)
-    {
-        switch (type.getSimpleName())
-        {
-            case "Boolean":
-                return  input.setAttr("type", "checkbox");
-            case "Integer":
-                return  input.setAttr("type", "number")
-                        .setAttr("min", Integer.MIN_VALUE)
-                        .setAttr("max", Integer.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
-            case "Short":
-                return  input.setAttr("type", "number")
-                        .setAttr("min", Short.MIN_VALUE)
-                        .setAttr("max", Short.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
-            case "Long":
-                return  input.setAttr("type", "number")
-                        .setAttr("min", Long.MIN_VALUE)
-                        .setAttr("max", Long.MAX_VALUE)
-                        .setAttr("pattern", "[\\-\\+]?[0-9]+");
-            case "Float":
-                return  input.setAttr("type", "number")
-                        .setAttr("min", Float.MIN_VALUE)
-                        .setAttr("max", Float.MAX_VALUE);
-            case "Double":
-                return  input.setAttr("type", "number")
-                        .setAttr("min", Double.MIN_VALUE)
-                        .setAttr("max", Double.MAX_VALUE);
-            case "String":
-                return  input.setAttr("type", "text");
-            default:
-                return new Element("span").addText(type+" input not supported");
-        }
-    }
-
-    private Renderer getOutputFor(Class<?> type, Object value)
-    {
-        if (value != null)
-        {
-            if (!type.isArray())
-            {
-                if (type.isAssignableFrom(CompositeData.class))
-                {
-                    return getOutputForCompositeData((CompositeData) value);
-                }
-                if (type.isAssignableFrom(TabularData.class))
-                {
-                    return getOutputForTabularData((TabularData) value);
-                }
-                return new Element("div").addText(value.toString());
-            }
-            else
-            {
-                Class<?> componentType = type.getComponentType();
-                Element div = new Element("div");
-                int length = Array.getLength(value);
-                for (int ii=0;ii<length;ii++)
-                {
-                    Object v = Array.get(value, ii);
-                    Renderer e = getOutputFor(componentType, v);
-                    div.add(e);
-                }
-                return div;
-            }
-        }
-        else
-        {
-            return new Element("div");
-        }
-    }
-
-    private Renderer getOutputForCompositeData(CompositeData data)
-    {
-        Element table = new Element("table");
-        table.add(titleRow(data.getCompositeType()));
-        table.add(dataRow(data));
-        return table;
-    }
-    private Element dataRow(CompositeData data)
-    {
-        CompositeType type = data.getCompositeType();
-        Element tr = new Element("tr");
-        for (String key : type.keySet())
-        {
-            Element td = tr.addElement("td");
-            OpenType<?> ot = type.getType(key);
-            Class<?> cls = Primitives.getClass(ot.getClassName());
-            Renderer e = getOutputFor(cls, data.get(key));
-            td.add(e);
-        }
-        return tr;
-    }
-    private Element titleRow(CompositeType type)
-    {
-        Element tr = new Element("tr");
-        for (String key : type.keySet())
-        {
-            Element th = tr.addElement("th");
-            th.addText(key);
-        }
-        return tr;
-    }
-    private Element getOutputForTabularData(TabularData data)
-    {
-        Element table = new Element("table");
-        CompositeType prev = null;
-        for (Object value : data.values())
-        {
-            CompositeData cd = (CompositeData) value;
-            CompositeType type = cd.getCompositeType();
-            if (prev == null || !prev.equals(type))
-            {
-                Element hr = titleRow(type);
-                table.add(hr);
-                prev = type;
-            }
-            Element dr = dataRow(cd);
-            Object[] ci = data.calculateIndex(cd);
-            table.add(dr);
-        }
-        return table;
     }
 
     private boolean setValue(String name, String type, String value)
@@ -822,7 +618,6 @@ public class JmxServlet extends HttpServlet
         {
             try
             {
-                log("setName"+name);
                 this.objectName = ObjectName.getInstance(name);
                 if (!objectName.isPattern())
                 {
@@ -911,7 +706,6 @@ public class JmxServlet extends HttpServlet
         }
         private <I extends MBeanFeatureInfo> I getFeatureInfo(String name, I... mBeanFeatureInfo)
         {
-            log("getFeatureInfo "+name);
             for (I info : mBeanFeatureInfo)
             {
                 if (name.equals(info.getName()))
@@ -922,13 +716,64 @@ public class JmxServlet extends HttpServlet
             throw new IllegalArgumentException(name+" attribute not found");
         }
     }
+    private class ParameterInput extends AbstractDynamicInput<MBeanParameterInfo>
+    {
+
+        @Override
+        public void append(Appendable out, MBeanParameterInfo t) throws IOException
+        {
+            try
+            {
+                append(out, t, Primitives.getClass(t.getType()), null);
+            }
+            catch (Exception ex)
+            {
+                out.append("<code>");
+                out.append(ex.getMessage());
+                out.append("</code>");
+            }
+        }
+        
+    }
     private class AttributeInput extends AbstractDynamicInput<MBeanAttributeInfo>
     {
 
         @Override
         public void append(Appendable out, MBeanAttributeInfo t) throws IOException
         {
-            append(out, Primitives.getClass(t.getType()), attributeValue.apply(t.getName()));
+            try
+            {
+                if (t.isWritable())
+                {
+                    append(out, t, Primitives.getClass(t.getType()), attributeValue.apply(t.getName()));
+                }
+                else
+                {
+                    OpenTypeAppendable.append(out, Primitives.getClass(t.getType()), attributeValue.apply(t.getName()));
+                }
+            }
+            catch (Exception ex)
+            {
+                out.append("<code>");
+                out.append(ex.getMessage());
+                out.append("</code>");
+            }
+        }
+        
+    }
+    private class ValueRenderer implements Renderer
+    {
+        private final Object value;
+
+        public ValueRenderer(Object value)
+        {
+            this.value = value;
+        }
+        
+        @Override
+        public void append(Appendable out) throws IOException
+        {
+            OpenTypeAppendable.append(out, out != null ? out.getClass() : Object.class, value);
         }
         
     }

@@ -17,6 +17,14 @@
 package org.vesalainen.jmx;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -32,12 +40,22 @@ public class OpenTypeAppendableTest
     }
 
     @Test
-    public void test() throws IOException
+    public void test1() throws IOException
     {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[]{"foo", "bar"};
         OpenTypeAppendable.append(sb, arr.getClass(), arr);
         assertEquals("<div><div>foo</div><div>bar</div></div>", sb.toString());
+    }
+    //@Test
+    public void test2() throws IOException, MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException
+    {
+        MBeanServer pbs = ManagementFactory.getPlatformMBeanServer();
+        System.gc();
+        Object value = pbs.getAttribute(ObjectName.getInstance("java.lang:type=GarbageCollector,name=PS MarkSweep"), "LastGcInfo");
+        StringBuilder sb = new StringBuilder();
+        OpenTypeAppendable.append(sb, value.getClass(), value);
+        assertEquals("", sb.toString());
     }
     
 }

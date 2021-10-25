@@ -33,38 +33,44 @@ public class OpenTypeAppendable
 {
     public static final void append(Appendable out, Class<?> type, Object value) throws IOException
     {
-        if (value != null)
-        {
-            if (!type.isArray())
+            if (value != null)
             {
-                if (type.isAssignableFrom(CompositeData.class))
+                if (!type.isArray())
                 {
-                    appendCompositeData(out, (CompositeData) value);
+                    if (CompositeData.class.isAssignableFrom(type))
+                    {
+                        appendCompositeData(out, (CompositeData) value);
+                    }
+                    else
+                    {
+                        if (TabularData.class.isAssignableFrom(type))
+                        {
+                            appendTabularData(out, (TabularData) value);
+                        }
+                        else
+                        {
+                            append(out, value);
+                        }
+                    }
                 }
-                if (type.isAssignableFrom(TabularData.class))
+                else
                 {
-                    appendTabularData(out, (TabularData) value);
+                    Class<?> componentType = type.getComponentType();
+                    embed(out, "div", (o)->
+                    {
+                        int length = Array.getLength(value);
+                        for (int ii=0;ii<length;ii++)
+                        {
+                            Object v = Array.get(value, ii);
+                            append(o, componentType, v);
+                        }
+                    });
                 }
-                append(out, value);
             }
             else
             {
-                Class<?> componentType = type.getComponentType();
-                embed(out, "div", (o)->
-                {
-                    int length = Array.getLength(value);
-                    for (int ii=0;ii<length;ii++)
-                    {
-                        Object v = Array.get(value, ii);
-                        append(o, componentType, v);
-                    }
-                });
+                out.append("<div/>");
             }
-        }
-        else
-        {
-            out.append("<div/>");
-        }
     }
     private static void appendCompositeData(Appendable out, CompositeData value) throws IOException
     {
