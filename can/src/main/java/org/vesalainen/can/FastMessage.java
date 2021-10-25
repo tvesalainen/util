@@ -72,7 +72,7 @@ public class FastMessage extends PgnMessage
                     setCurrentBytes(byteMax);
                     header = 2;
                     millisSupplier = ()->frame.getMillis();
-                    finest("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
+                    info("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
                 }
                 else
                 {
@@ -81,7 +81,7 @@ public class FastMessage extends PgnMessage
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
                 int remaining = min(frame.getDataLength()-header, byteMax - off);
                 byteCount += remaining;
-                finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
+                info("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 try
                 {
                     frame.getData(buf, header, off, remaining);
