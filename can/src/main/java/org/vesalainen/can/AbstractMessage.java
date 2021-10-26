@@ -82,7 +82,7 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected SimpleNotificationEmitter emitter;
     protected ObjectName objectName;
     protected final Executor executor;
-    private volatile int updateCount;
+    protected int updateCount;
     private int executeCount;
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
     private ReentrantLock lock = new ReentrantLock();
@@ -292,18 +292,11 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             {
                 action.run();
                 executeCount++;
-            }
-            else
-            {
                 if (jmxAction != null)
                 {
-                    frame.getData(buf, 0, 0, min(buf.length, frame.getDataLength()));
+                    jmxAction.run();
+                    emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
                 }
-            }
-            if (jmxAction != null)
-            {
-                jmxAction.run();
-                emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
             }
         }
         finally
@@ -529,19 +522,34 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             LongSupplier ls;
             DoubleSupplier ds;
             Supplier<String> ss;
+            double factor = sc.getFactor();
+            double offset = sc.getOffset();
             switch (sc.getSignalType())
             {
                 case INT:
                     is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    if (isFactored(factor, offset))
+                    {
+                        return compiler.compile(mc, sc, ()->(int) (factor*is.getAsInt()+offset));
+                    }
                     return compiler.compile(mc, sc, is);
                 case LONG:
                     ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    if (isFactored(factor, offset))
+                    {
+                        return compiler.compile(mc, sc, ()->(long) (factor*ls.getAsLong()+offset));
+                    }
                     return compiler.compile(mc, sc, ls);
                 case DOUBLE:
                     ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                    double factor = sc.getFactor();
-                    double offset = sc.getOffset();
-                    ds = ()->factor*ls.getAsLong()+offset;
+                    if (isFactored(factor, offset))
+                    {
+                        ds = ()->factor*ls.getAsLong()+offset;
+                    }
+                    else
+                    {
+                        ds = ()->ls.getAsLong();
+                    }
                     return compiler.compile(mc, sc, ds);
                 case LOOKUP:
                     is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
@@ -598,6 +606,11 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                 mpxMap.put(multiplexor, ml);
             }
             return ml;
+        }
+
+        private boolean isFactored(double factor, double offset)
+        {
+            return factor != 1.0 || offset != 0.0;
         }
 
     }

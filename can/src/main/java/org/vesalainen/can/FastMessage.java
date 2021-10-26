@@ -20,6 +20,7 @@ import static java.lang.Integer.min;
 import java.util.concurrent.Executor;
 import static java.util.logging.Level.*;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.util.HexUtil;
 
 /**
  *
@@ -54,7 +55,7 @@ public class FastMessage extends PgnMessage
     {
         try
         {
-            if (action != null)
+            if (action != null || jmxAction != null)
             {
                 int header;
                 byte b = frame.getData(0);
@@ -72,7 +73,7 @@ public class FastMessage extends PgnMessage
                     setCurrentBytes(byteMax);
                     header = 2;
                     millisSupplier = ()->frame.getMillis();
-                    info("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
+                    finest("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
                 }
                 else
                 {
@@ -81,10 +82,11 @@ public class FastMessage extends PgnMessage
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
                 int remaining = min(frame.getDataLength()-header, byteMax - off);
                 byteCount += remaining;
-                info("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
+                finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 try
                 {
                     frame.getData(buf, header, off, remaining);
+                    finest("%s", HexUtil.toString(buf));
                 }
                 catch (ArrayIndexOutOfBoundsException ex)
                 {

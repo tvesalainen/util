@@ -48,7 +48,7 @@ public class NullMessage extends SingleMessage
     @Override
     Action compileSignals(SignalCompiler compiler)
     {
-        return new Action(()->emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), this::getMillis));
+        return null;
     }
 
 }

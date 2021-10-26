@@ -17,7 +17,6 @@
 package org.vesalainen.can;
 
 import static java.lang.Integer.min;
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 import java.util.function.LongSupplier;
 import static java.util.logging.Level.*;
@@ -70,7 +69,7 @@ public class SingleMessage extends AbstractMessage
     {
         try
         {
-            if (action != null)
+            if (action != null || jmxAction != null)
             {
                 int remaining = frame.getDataLength();
                 setCurrentBytes(remaining);
