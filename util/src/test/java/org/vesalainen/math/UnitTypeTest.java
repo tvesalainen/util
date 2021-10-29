@@ -19,6 +19,8 @@ package org.vesalainen.math;
 import static java.lang.Math.PI;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.math.UnitType.DEGREES_PER_MINUTE;
+import static org.vesalainen.math.UnitType.RADIANS_PER_SECOND;
 
 /**
  *
@@ -116,8 +118,11 @@ public class UnitTypeTest
     @Test
     public void testRateOfTurn()
     {
+        assertEquals(60, UnitType.DEGREES_PER_SECOND.convertTo(1, UnitType.DEGREES_PER_MINUTE), 1e-3);
         assertEquals(1, UnitType.DEGREES_PER_MINUTE.convertTo(60, UnitType.DEGREES_PER_SECOND), 1e-3);
         assertEquals(1, UnitType.DEGREES_PER_SECOND.convertTo(180, UnitType.RADIANS_PER_SECOND), 1e-3);
         assertEquals(180, UnitType.RADIANS_PER_SECOND.convertTo(1, UnitType.DEGREES_PER_SECOND), 1e-3);
+        assertEquals(0.33749999999999997, RADIANS_PER_SECOND.convertTo(3.125e-05, DEGREES_PER_MINUTE), 1e-3);
+        assertEquals(0.108, RADIANS_PER_SECOND.convertTo(0.00001, DEGREES_PER_MINUTE), 1e-3);
     }
 }
