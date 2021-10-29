@@ -336,7 +336,7 @@ BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
  SG_ Communication_State : 144|19@1+ (1,0) [0|0] "" MFD
  SG_ Ais_Transceiver_Information : 163|5@1+ (1,0) [0|0] "" MFD
  SG_ True_Heading : 168|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
- SG_ Rate_Of_Turn : 184|16@1- (0.33749999999999997,0) [0|0] "deg/min" MFD
+ SG_ Rate_Of_Turn : 184|16@1- (0.108,0) [0|0] "deg/min" MFD
  SG_ Navigational_Status : 200|4@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_For_Regional_Applications : 204|2@1+ (1,0) [0|0] "" MFD
  SG_ Spare : 206|2@1+ (1,0) [0|0] "" MFD
@@ -694,7 +694,7 @@ BO_ 32572926 Pgn127237_Heading_Track_Control: 21 Steering
  SG_ Rudder_Limit : 72|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
  SG_ Off_Heading_Limit : 88|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
  SG_ Radius_Of_Turn_Order : 104|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
- SG_ Rate_Of_Turn_Order : 120|16@1- (0.33749999999999997,0) [0|0] "deg/min" MFD
+ SG_ Rate_Of_Turn_Order : 120|16@1- (0.108,0) [0|0] "deg/min" MFD
  SG_ Off_Track_Limit : 136|16@1- (1,0) [0|0] "m" MFD
  SG_ Vessel_Heading : 152|16@1+ (0.005729577951308232,0) [0|0] "deg" MFD
 
@@ -718,7 +718,7 @@ BO_ 32576254 Pgn127250_Vessel_Heading: 8 Steering
 
 BO_ 32576510 Pgn127251_Rate_Of_Turn: 5 Steering
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
- SG_ Rate_Of_Turn : 8|32@1- (3.3749999999999996E-4,0) [0|0] "deg/min" MFD
+ SG_ Rate_Of_Turn : 8|32@1- (0.108,0) [0|0] "deg/min" MFD
 
 BO_ 32578046 Pgn127257_Attitude: 7 Steering
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
