@@ -21,8 +21,6 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import org.vesalainen.util.CharSequences;
-import org.vesalainen.util.HexDump;
-import org.vesalainen.util.HexUtil;
 
 /**
  *
@@ -135,9 +133,9 @@ public final class ArrayFuncs
     }
     public static final IntSupplier getIntSupplier(byte[] arr, byte... buf)
     {
+        int len = arr.length/3;
         return ()->
         {
-            int len = arr.length/3;
             int res = 0;
             for (int ii=0;ii<len;ii++)
             {
@@ -156,9 +154,9 @@ public final class ArrayFuncs
     }
     public static final LongSupplier getLongSupplier(byte[] arr, byte... buf)
     {
+        int len = arr.length/3;
         return ()->
         {
-            int len = arr.length/3;
             long res = 0;
             for (int ii=0;ii<len;ii++)
             {
@@ -215,15 +213,18 @@ public final class ArrayFuncs
     }
     static int dim(int offset, int length)
     {
-        int d = 1;
-        int om = offset % 8;
-        length -= min(om == 0 ? 8 : om, length);
-        d += length / 8;
-        if ((length % 8) != 0)
+        int dim = 0;
+        int off = offset;
+        int len = length;
+        while (len > 0)
         {
-            d++;
+            int bo = off % 8;
+            int bits = min(8 - bo, len);
+            off += bits;
+            len -= bits;
+            dim++;
         }
-        return d;
+        return dim;
     }
     private static void checkBitsString(int offset, int length, byte[] buf)
     {
