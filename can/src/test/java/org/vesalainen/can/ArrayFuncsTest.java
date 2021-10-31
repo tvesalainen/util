@@ -59,6 +59,40 @@ public class ArrayFuncsTest
         byte[] arr = ArrayFuncs.createLittleEndian(2, 16);
     }
     @Test
+    public void testIIRIS()
+    {
+        byte[] arr = HexUtil.fromString("44482452");
+        find(35090, false, false, arr);
+    }
+    @Test
+    public void testWETA()
+    {
+        byte[] arr = HexUtil.fromString("48435B51");
+        find(14033, false, false, arr);
+    }
+    @Test
+    public void test00()
+    {
+        byte[] arr = HexUtil.fromString("44484058");
+        find(32792, false, false, arr);
+    }
+    public int find(int val, boolean bigEndian, boolean signed, byte[] arr)
+    {
+        int bits = 32-Integer.numberOfLeadingZeros(val);
+        int len = arr.length*8;
+        int max = len-bits;
+        for (int ii=0;ii<max;ii++)
+        {
+            IntSupplier is1 = ArrayFuncs.getIntSupplier(ii, bits, bigEndian, signed, arr);
+            int asInt = is1.getAsInt();
+            if (asInt == val)
+            {
+                return ii;
+            }
+        }
+        return -1;
+    }
+    @Test
     public void testGNSSPositionData()
     {
         byte[] arr = HexUtil.fromString("4A7949B069932F0040AAC50EAA0AFB00005D9BF7983118000000000000000023FC0C45008A00120C0000010000000000000000");

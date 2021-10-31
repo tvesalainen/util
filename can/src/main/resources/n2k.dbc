@@ -270,7 +270,8 @@ BO_ 33231614 Pgn129810_Ais_Class_B_Cs_Static_Data_Report_Part_B: 34 Ais
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
  SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
  SG_ Ship_Cargo_Type : 40|8@1+ (1,0) [0|0] "" MFD
- SG_ Vendor_Id : 48|56@1+ (1,0) [0|0] "" MFD
+ SG_ Vendor_Id : 48|24@1+ (1,0) [0|0] "" MFD
+ SG_ Serial_Number : 72|32@1+ (1,0) [0|0] "" MFD
  SG_ Call_Sign : 104|56@1+ (1,0) [0|0] "" MFD
  SG_ Ship_Length : 160|16@1+ (0.1,0) [0|0] "m" MFD
  SG_ Ship_Beam : 176|16@1+ (0.1,0) [0|0] "m" MFD
