@@ -1024,6 +1024,7 @@ BA_ "MessageType" BO_ 33231614 "Fast";
 BA_ "SignalType" SG_ 33231614 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33231614 User_Id "INT";
 BA_ "SignalType" SG_ 33231614 Vendor_Id "AISSTRING";
+BA_ "SignalType" SG_ 33231614 Serial_Number "BINARY";
 BA_ "SignalType" SG_ 33231614 Call_Sign "AISSTRING";
 BA_ "SignalType" SG_ 33231614 Mother_Ship_Mmsi "INT";
 BA_ "SignalType" SG_ 33231614 Nmea_2000_Reserved "BINARY";

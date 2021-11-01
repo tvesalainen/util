@@ -532,7 +532,6 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                         return compiler.compile(mc, sc, ()->(int) (factor*is.getAsInt()+offset));
                     }
                     return compiler.compile(mc, sc, is);
-                case BINARY:
                 case LONG:
                     ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     if (isFactored(factor, offset))
@@ -559,6 +558,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
                         return compiler.compile(mc, sc, is);
                     }
                     return compiler.compile(mc, sc, is, f);
+                case BINARY:
+                    return compiler.compileBinary(mc, sc, buf, sc.getStartBit()+off, sc.getSize());
                 case ASCIIZ:
                     ss = ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
                     return compiler.compile(mc, sc, ss);

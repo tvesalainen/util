@@ -62,7 +62,34 @@ public class ArrayFuncsTest
     public void testIIRIS()
     {
         byte[] arr = HexUtil.fromString("44482452");
-        find(35090, false, false, arr);
+        int ser = get6Bit(arr[0]);
+        assertEquals(1, ser>>>2);
+        ser &= 3;
+        ser <<= 6;
+        ser |= get6Bit(arr[1]);
+        ser <<= 6;
+        ser |= get6Bit(arr[2]);
+        ser <<= 6;
+        ser |= get6Bit(arr[3]);
+        assertEquals(35090, ser);
+    }
+    private int get6Bit(byte cc)
+    {
+        if (cc > 64 && cc <= 95)
+        {
+            return cc - 64;
+        }
+        else
+        {
+            if (cc >= 32 && cc <= 63)
+            {
+                return cc;
+            }
+            else
+            {
+                throw new IllegalArgumentException(cc+" cannot be encoded");
+            }
+        }
     }
     @Test
     public void testWETA()
@@ -73,8 +100,8 @@ public class ArrayFuncsTest
     @Test
     public void test00()
     {
-        byte[] arr = HexUtil.fromString("44484058");
-        find(32792, false, false, arr);
+        byte[] arr = HexUtil.fromString("4652434C");
+        find(598220, false, false, arr);
     }
     public int find(int val, boolean bigEndian, boolean signed, byte[] arr)
     {

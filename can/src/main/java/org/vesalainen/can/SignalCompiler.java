@@ -41,7 +41,7 @@ public interface SignalCompiler
     default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map) {return null;};
-    default Runnable compileBinary(MessageClass mc, SignalClass sc) {return null;}
+    default Runnable compileBinary(MessageClass mc, SignalClass sc, byte[] buf, int offset, int length) {return null;}
     default Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss) {return null;};
     default Consumer<Throwable> compileEnd(MessageClass mc) {return null;};
     default Runnable compileBeginRepeat(MessageClass mc) {return null;};
