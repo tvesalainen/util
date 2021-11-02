@@ -219,7 +219,12 @@ public enum UnitType
         this.fromSI = fromSI;
         this.toSI = toSI;
     }
-
+    /**
+     * Converts value from this unit to to unit
+     * @param value
+     * @param to
+     * @return 
+     */
     public double convertTo(double value, UnitType to)
     {
         if (equals(to))
@@ -229,7 +234,13 @@ public enum UnitType
         check(this, to);
         return to.fromSI.applyAsDouble(toSI.applyAsDouble(value));
     }
-    
+    /**
+     * Converts value from from unit to to unit.
+     * @param value
+     * @param from
+     * @param to
+     * @return 
+     */
     public static double convert(double value, UnitType from, UnitType to)
     {
         return from.convertTo(value, to);
@@ -242,12 +253,18 @@ public enum UnitType
             throw new IllegalArgumentException(from+" cannot be converted to "+to);
         }
     }
-    
+    /**
+     * Returns category
+     * @return 
+     */
     public UnitCategory getCategory()
     {
         return category;
     }
-    
+    /**
+     * Returns display unit
+     * @return 
+     */
     public String getUnit()
     {
         return unit;
