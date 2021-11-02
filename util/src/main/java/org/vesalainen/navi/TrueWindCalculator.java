@@ -19,7 +19,12 @@ package org.vesalainen.navi;
 import static java.lang.Math.*;
 
 /**
- *
+ * Calculates different types of true wind.
+ * <p>For traditional boat referenced true wind put both setTrueHeading and
+ * setSpeedAngle to 0.
+ * <p>For ground referenced true wind put setTrueHeading to boats heading and
+ * setSpeedAngle to GPS bearing.
+ * <p>Other combinations are possible.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TrueWindCalculator
@@ -32,31 +37,46 @@ public class TrueWindCalculator
     private boolean needCalc;
     private double cx;
     private double cy;
-
+    /**
+     * Set relative wind angle in degrees
+     * @param relativeWindAngle 
+     */
     public void setRelativeWindAngle(double relativeWindAngle)
     {
         this.relativeWindAngle = toRadians(relativeWindAngle);
         needCalc = true;
     }
-
+    /**
+     * Set relative wind speed in knots
+     * @param relativeWindSpeed 
+     */
     public void setRelativeWindSpeed(double relativeWindSpeed)
     {
         this.relativeWindSpeed = relativeWindSpeed;
         needCalc = true;
     }
-
+    /**
+     * Set true heading in degrees.
+     * @param trueHeading 
+     */
     public void setTrueHeading(double trueHeading)
     {
         this.trueHeading = toRadians(trueHeading);
         needCalc = true;
     }
-
+    /**
+     * Set speed angle in degrees. 
+     * @param speedAngle 
+     */
     public void setSpeedAngle(double speedAngle)
     {
         this.speedAngle = toRadians(speedAngle);
         needCalc = true;
     }
-
+    /**
+     * Set speed in knots.
+     * @param speed 
+     */
     public void setSpeed(double speed)
     {
         this.speed = speed;
