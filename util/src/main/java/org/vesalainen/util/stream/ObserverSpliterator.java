@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * @deprecated Bad idea
  * This class is intended to generate Streams from observers. Observer calls 
  offer while generate is used as supplier.
  <p>This class simplifies SynchronousQueue by wrapping exceptions and hiding not
