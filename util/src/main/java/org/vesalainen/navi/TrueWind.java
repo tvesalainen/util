@@ -17,7 +17,7 @@
 package org.vesalainen.navi;
 
 /**
- *
+ * @deprecated TrueWindCalculator handles also ground referenced true winds
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TrueWind
