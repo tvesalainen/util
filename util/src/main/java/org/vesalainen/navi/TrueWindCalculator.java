@@ -20,10 +20,21 @@ import static java.lang.Math.*;
 
 /**
  * Calculates different types of true wind.
- * <p>For traditional boat referenced true wind put both setTrueHeading and
+ * <p>For traditional boat referenced true wind:
+ * <code>
+ * setZeroAngle(trueHeading);
+ * setTrueHeading(trueHeading);
+ * setSpeed(waterSpeed);
+ * setSpeedAngle(trueHeading);
+ * </code>
  * setSpeedAngle to 0.
- * <p>For ground referenced true wind put setTrueHeading to boats heading and
- * setSpeedAngle to GPS bearing.
+ * <p>For ground referenced true wind:
+ * <code>
+ * setZeroAngle(trueHeading);
+ * setTrueHeading(trueHeading);
+ * setSpeed(sog);
+ * setSpeedAngle(trackMadeGoode);
+ * </code>
  * <p>Other combinations are possible.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
