@@ -27,7 +27,6 @@ import static java.lang.Math.*;
  * setSpeed(waterSpeed);
  * setSpeedAngle(trueHeading);
  * </code>
- * setSpeedAngle to 0.
  * <p>For ground referenced true wind:
  * <code>
  * setZeroAngle(trueHeading);
