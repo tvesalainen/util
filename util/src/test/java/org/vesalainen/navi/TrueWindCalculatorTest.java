@@ -91,6 +91,19 @@ public class TrueWindCalculatorTest
         assertEquals(Math.sqrt(5*5+5*5), tw.getTrueWindSpeed(), Epsilon);
         assertEquals(135, tw.getTrueWindAngle(), Epsilon);
     }
+    @Test
+    public void test5()
+    {
+        TrueWindCalculator tw = new TrueWindCalculator();
+        tw.setRelativeWindAngle(90);
+        tw.setRelativeWindSpeed(5);
+        tw.setZeroAngle(10);
+        tw.setTrueHeading(10);
+        tw.setSpeedAngle(10);
+        tw.setSpeed(5);
+        assertEquals(Math.sqrt(5*5+5*5), tw.getTrueWindSpeed(), Epsilon);
+        assertEquals(135, tw.getTrueWindAngle(), Epsilon);
+    }
     // reusing TrueWind tests
     @Test
     public void testTW0()
