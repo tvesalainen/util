@@ -29,6 +29,7 @@ import static java.lang.Math.*;
  */
 public class TrueWindCalculator
 {
+    private double zeroAngle;
     private double relativeWindAngle;
     private double relativeWindSpeed;
     private double trueHeading;
@@ -37,6 +38,14 @@ public class TrueWindCalculator
     private boolean needCalc;
     private double cx;
     private double cy;
+    /**
+     * Set the reference angle. Mostly same as true heading.
+     * @param zeroAngle 
+     */
+    public void setZeroAngle(double zeroAngle)
+    {
+        this.zeroAngle = zeroAngle;
+    }
     /**
      * Set relative wind angle in degrees
      * @param relativeWindAngle 
@@ -101,12 +110,7 @@ public class TrueWindCalculator
     public double getTrueWindAngle()
     {
         correctSpeed();
-        double trueAngle = toDegrees(atan2(cy, cx));
-        if (trueAngle < 0)
-        {
-            trueAngle += 360.0;
-        }
-        return trueAngle;
+        return Navis.normalizeAngle(toDegrees(atan2(cy, cx)) - zeroAngle);
     }
     /**
      * Returns true wind speed in knots
