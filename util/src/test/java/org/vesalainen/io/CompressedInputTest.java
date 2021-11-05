@@ -37,12 +37,18 @@ public class CompressedInputTest
     }
 
     @Test
+    public void test0() throws IOException
+    {
+        CompressedInput ci = new CompressedInput(Paths.get("C:\\Users\\tkv\\share\\20211104020702.mea"));
+        ci.dump(System.err);
+    }
+    //@Test
     public void test1() throws IOException
     {
         CompressedInput ci = new CompressedInput(Paths.get("src", "test", "resources",  "20180409122422.trc"));
         ci.dump(System.err);
     }
-    @Test
+    //@Test
     public void test2() throws IOException
     {
         Path dir = Paths.get("src", "test", "resources");
