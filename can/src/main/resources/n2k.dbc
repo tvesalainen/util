@@ -464,7 +464,7 @@ BO_ 32836606 Pgn128267_Water_Depth: 8 Navigation
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
  SG_ Water_Depth_Transducer : 8|32@1+ (0.01,0) [0|0] "m" MFD
  SG_ Offset : 40|16@1- (0.001,0) [0|0] "m" MFD
- SG_ Reserved_Bits : 56|8@1+ (10.0,0) [0|0] "m" MFD
+ SG_ Maximum_Range_Scale : 56|8@1+ (10.0,0) [0|0] "m" MFD
 
 BO_ 32838654 Pgn128275_Distance_Log: 14 Navigation
  SG_ Measurement_Date : 0|16@1+ (1,0) [0|0] "days" MFD
@@ -1140,6 +1140,7 @@ BA_ "MessageType" BO_ 32834558 "Single";
 BA_ "SignalType" SG_ 32834558 Speed_Water_Referenced_Type "LOOKUP";
 BA_ "SignalType" SG_ 32834558 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 32836606 "Single";
+BA_ "SignalType" SG_ 32836606 Maximum_Range_Scale "DOUBLE";
 BA_ "MessageType" BO_ 32838654 "Fast";
 BA_ "SignalType" SG_ 32838654 Measurement_Date "INT";
 BA_ "SignalType" SG_ 32838654 Measurement_Time "DOUBLE";
