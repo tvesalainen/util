@@ -19,16 +19,24 @@ package org.vesalainen.nio.channels;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.GatheringByteChannel;
+import java.nio.channels.InterruptibleChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Writing to NullChannel is like writing to a channel that can handle all
  * remaining bytes. Maximum remaining bytes is returned and position is moved
  * to limit.
+ * <p>Reading from NullChannel block until thread is interrupted. When that 
+ * happens ClosedByInterruptException is thrown.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class NullChannel implements Closeable, AutoCloseable, GatheringByteChannel, WritableByteChannel
+public class NullChannel implements Closeable, AutoCloseable, ByteChannel, GatheringByteChannel, InterruptibleChannel, WritableByteChannel, ReadableByteChannel, ScatteringByteChannel
 {
 
     private boolean closed;
@@ -70,6 +78,39 @@ public class NullChannel implements Closeable, AutoCloseable, GatheringByteChann
     public long write(ByteBuffer[] srcs) throws IOException
     {
         return write(srcs, 0, srcs.length);
+    }
+
+    @Override
+    public int read(ByteBuffer dst) throws IOException
+    {
+        waitForInterrupt();
+        return -1;
+    }
+
+    @Override
+    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException
+    {
+        waitForInterrupt();
+        return -1;
+    }
+
+    @Override
+    public long read(ByteBuffer[] dsts) throws IOException
+    {
+        waitForInterrupt();
+        return -1;
+    }
+
+    private void waitForInterrupt() throws IOException
+    {
+        while (true)
+        {
+            LockSupport.park(this);
+            if (Thread.interrupted())
+            {
+                throw new ClosedByInterruptException();
+            }
+        }
     }
     
 }
