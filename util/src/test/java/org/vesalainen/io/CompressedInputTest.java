@@ -39,7 +39,7 @@ public class CompressedInputTest
     @Test
     public void test0() throws IOException
     {
-        CompressedInput ci = new CompressedInput(Paths.get("C:\\Users\\tkv\\share\\20211104020702.mea"));
+        CompressedInput ci = new CompressedInput(Paths.get("C:\\Users\\tkv\\share\\20211105031240.mea"));
         ci.dump(System.err);
     }
     //@Test
