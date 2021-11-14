@@ -200,6 +200,22 @@ BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
  SG_ Prn_Status : 112|4@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Bits : 116|4@1+ (1,0) [0|0] "" MFD
 
+BO_ 33034750 Pgn129041_AIS_Aids_To_Navigation_Report: 57 Ais
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+ SG_ Longitude : 40|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Latitude : 72|32@1- (1.0E-7,0) [0|0] "deg" MFD
+ SG_ Position_Accuracy : 104|1@1+ (1,0) [0|0] "" MFD
+ SG_ Raim_Flag : 105|1@1+ (1,0) [0|0] "" MFD
+ SG_ Time_Stamp : 106|6@1+ (1,0) [0|0] "" MFD
+ SG_ Ship_Length : 112|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Ship_Beam : 128|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_From_Starboard : 144|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 160|16@1+ (0.1,0) [0|0] "m" MFD
+ SG_ Aid_Type : 176|5@1+ (1,0) [0|0] "" MFD
+ SG_ Name : 224|160@1+ (1,0) [0|0] "" MFD
+
 BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
@@ -976,6 +992,13 @@ BA_ "SignalType" SG_ 33162494 Mode "LOOKUP";
 BA_ "SignalType" SG_ 33162494 Reserve_Bits "BINARY";
 BA_ "SignalType" SG_ 33162494 Prn_Status "LOOKUP";
 BA_ "SignalType" SG_ 33162494 Reserved_Bits "BINARY";
+
+BA_ "MessageType" BO_ 33034750 "Fast";
+BA_ "SignalType" SG_ 33034750 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33034750 User_Id "INT";
+BA_ "SignalType" SG_ 33034750 Aid_Type "LOOKUP";
+BA_ "SignalType" SG_ 33034750 Name "AISSTRING";
+
 BA_ "MessageType" BO_ 33227518 "Fast";
 BA_ "SignalType" SG_ 33227518 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33227518 User_Id "INT";
@@ -1372,6 +1395,10 @@ VAL_ 33162238 Set_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
 VAL_ 33162238 Op_Mode  0 "1D" 1 "2D" 2 "3D" 3 "Auto";
 VAL_ 33162494 Mode  3 "Range residuals used to calculate position";
 VAL_ 33162494 Prn_Status  0 "Not tracked" 1 "Tracked" 2 "Used" 3 "Not tracked+Diff" 4 "Tracked+Diff" 5 "Used+Diff";
+
+VAL_ 33034750 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
+VAL_ 33034750 Aid_Type  0 "Default, Type of Aid to Navigation not specified" 1 "Reference point" 2 "RACON (radar transponder marking a navigation hazard)" 3 "Fixed structure off shore, such as oil platforms, wind farms, rigs. (Note: This code should identify an obstruction that is fitted with an Aid-to-Navigation AIS station.)" 4 "Spare, Reserved for future use." 5 "Light, without sectors" 6 "Light, with sectors" 7 "Leading Light Front" 8 "Leading Light Rear" 9 "Beacon, Cardinal N" 10 "Beacon, Cardinal E" 11 "Beacon, Cardinal S" 12 "Beacon, Cardinal W" 13 "Beacon, Port hand" 14 "Beacon, Starboard hand" 15 "Beacon, Preferred Channel port hand" 16 "Beacon, Preferred Channel starboard hand" 17 "Beacon, Isolated danger" 18 "Beacon, Safe water" 19 "Beacon, Special mark" 20 "Cardinal Mark N" 21 "Cardinal Mark E" 22 "Cardinal Mark S" 23 "Cardinal Mark W" 24 "Port hand Mark" 25 "Starboard hand Mark" 26 "Preferred Channel Port hand" 27 "Preferred Channel Starboard hand" 28 "Isolated danger" 29 "Safe Water" 30 "Special Mark" 31 "Light Vessel / LANBY / Rigs";
+
 VAL_ 33227518 Repeat_Indicator  0 "Initial" 1 "First retransmission" 2 "Second retransmission" 3 "Final retransmission";
 VAL_ 33227518 Ship_Cargo_Type  0 "unavailable" 20 "Wing In Ground" 29 "Wing In Ground (no other information)" 30 "Fishing" 31 "Towing" 32 "Towing exceeds 200m or wider than 25m" 33 "Engaged in dredging or underwater operations" 34 "Engaged in diving operations" 35 "Engaged in military operations" 36 "Sailing" 37 "Pleasure" 40 "High speed craft" 41 "High speed craft carrying dangerous goods" 42 "High speed craft hazard cat B" 43 "High speed craft hazard cat C" 44 "High speed craft hazard cat D" 49 "High speed craft (no additional information)" 50 "Pilot vessel" 51 "SAR" 52 "Tug" 53 "Port tender" 54 "Anti-pollution" 55 "Law enforcement" 56 "Spare" 57 "Spare #2" 58 "Medical" 59 "RR Resolution No.18" 60 "Passenger ship" 69 "Passenger ship (no additional information)" 70 "Cargo ship" 71 "Cargo ship carrying dangerous goods" 72 "Cargo ship hazard cat B" 73 "Cargo ship hazard cat C" 74 "Cargo ship hazard cat D" 79 "Cargo ship (no additional information)" 80 "Tanker" 81 "Tanker carrying dangerous goods" 82 "Tanker hazard cat B" 83 "Tanker hazard cat C" 84 "Tanker hazard cat D" 89 "Tanker (no additional information)" 90 "Other" 91 "Other carrying dangerous goods" 92 "Other hazard cat B" 93 "Other hazard cat C" 94 "Other hazard cat D" 99 "Other (no additional information)";
 VAL_ 33227518 Ais_Version  0 "ITU-R M.1371-1" 1 "ITU-R M.1371-3";
