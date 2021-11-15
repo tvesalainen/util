@@ -28,12 +28,46 @@ import org.vesalainen.util.CharSequences;
  */
 public final class ArrayFuncs
 {
-    public static final Supplier<String> getAisStringSupplier(int offset, int length, byte... buf)
+    /**
+     * Returns String supplier for AIS @ terminated string.
+     * @param offset
+     * @param length
+     * @param buf
+     * @return 
+     */
+    public static final Supplier<String> getAisStringSupplier2(int offset, byte[] buf)
+    {
+        return ()->
+        {
+            int len = buf[offset] & 0xff; // max length
+            CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, len);
+            int idx = CharSequences.indexOf(seq, '@');
+            if (idx != -1)
+            {
+                return seq.subSequence(0, idx).toString().trim();
+            }
+            else
+            {
+                return seq.toString().trim();
+            }
+        };
+    }
+    /**
+     * Returns String supplier for AIS @ terminated string.
+     * @param offset bytes
+     * @param length bytes
+     * @param buf
+     * @param limitSupplier Message length
+     * @return 
+     */
+    public static final Supplier<String> getAisStringSupplier(int offset, int length, byte[] buf, IntSupplier limitSupplier)
     {
         checkBitsString(offset, length, buf);
         return ()->
         {
-            CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
+            int limit = limitSupplier.getAsInt();
+            int len = min(length, limit-offset);
+            CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, len);
             int idx = CharSequences.indexOf(seq, '@');
             if (idx != -1)
             {
