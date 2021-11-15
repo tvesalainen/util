@@ -200,7 +200,7 @@ BO_ 33162494 Pgn129540_Gnss_Sats_In_View: 233 Navigation
  SG_ Prn_Status : 112|4@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Bits : 116|4@1+ (1,0) [0|0] "" MFD
 
-BO_ 33034750 Pgn129041_AIS_Aids_To_Navigation_Report: 57 Ais
+BO_ 33034750 Pgn129041_AIS_Aids_To_Navigation_Report: 62 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
  SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
@@ -214,7 +214,12 @@ BO_ 33034750 Pgn129041_AIS_Aids_To_Navigation_Report: 57 Ais
  SG_ Position_Reference_Point_From_Starboard : 144|16@1+ (0.1,0) [0|0] "m" MFD
  SG_ Position_Reference_Point_Aft_Of_Ship_S_Bow : 160|16@1+ (0.1,0) [0|0] "m" MFD
  SG_ Aid_Type : 176|5@1+ (1,0) [0|0] "" MFD
- SG_ Name : 224|160@1+ (1,0) [0|0] "" MFD
+ SG_ Off_Position : 181|1@1+ (1,0) [0|0] "" MFD
+ SG_ Virtual_Aid : 182|1@1+ (1,0) [0|0] "" MFD
+ SG_ Mode_Flag : 183|1@1+ (1,0) [0|0] "" MFD
+ SG_ Type_Of_Electronic_Positioning_Device : 185|4@1+ (1,0) [0|0] "" MFD
+ SG_ Regional : 192|8@1+ (1,0) [0|0] "" MFD
+ SG_ Name : 208|288@1+ (1,0) [0|0] "" MFD
 
 BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
@@ -997,7 +1002,7 @@ BA_ "MessageType" BO_ 33034750 "Fast";
 BA_ "SignalType" SG_ 33034750 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33034750 User_Id "INT";
 BA_ "SignalType" SG_ 33034750 Aid_Type "LOOKUP";
-BA_ "SignalType" SG_ 33034750 Name "AISSTRING";
+BA_ "SignalType" SG_ 33034750 Name "AISSTRING2";
 
 BA_ "MessageType" BO_ 33227518 "Fast";
 BA_ "SignalType" SG_ 33227518 Repeat_Indicator "LOOKUP";
