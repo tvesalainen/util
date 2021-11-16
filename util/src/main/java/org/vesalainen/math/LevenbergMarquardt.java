@@ -219,19 +219,19 @@ public class LevenbergMarquardt implements Serializable
      */
     protected void configure(DoubleMatrix initParam, DoubleMatrix X, DoubleMatrix Y)
     {
-        if (Y.getNumRows() != X.getNumRows())
+        if (Y.rows() != X.rows())
         {
             throw new IllegalArgumentException("Different vector lengths");
         }
-        else if (Y.getNumCols() != 1 /*|| X.getNumCols() != 1*/)
+        else if (Y.columns() != 1 /*|| X.cols() != 1*/)
         {
             throw new IllegalArgumentException("Inputs must be a column vector");
         }
 
-        int numParam = initParam.getNumElements();
-        int numPoints = Y.getNumRows();
+        int numParam = initParam.elements();
+        int numPoints = Y.rows();
 
-        if (param.getNumElements() != initParam.getNumElements())
+        if (param.elements() != initParam.elements())
         {
             // reshaping a matrix means that new memory is only declared when needed
             this.param.reshape(numParam, 1, false);
@@ -270,8 +270,8 @@ public class LevenbergMarquardt implements Serializable
             computeNumericalJacobian(param, x, jacobian);
         }
 
-        int numParam = param.getNumElements();
-        int length = y.getNumElements();
+        int numParam = param.elements();
+        int length = y.elements();
 
         // d = average{ (f(x_i;p) - y_i) * jacobian(:,i) }
         for (int i = 0; i < numParam; i++)
@@ -296,7 +296,7 @@ public class LevenbergMarquardt implements Serializable
      */
     private void computeA(DoubleMatrix A, DoubleMatrix H, double lambda)
     {
-        final int numParam = param.getNumElements();
+        final int numParam = param.elements();
 
         A.set(H);
         for (int i = 0; i < numParam; i++)
