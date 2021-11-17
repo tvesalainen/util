@@ -483,7 +483,25 @@ public final class Navis
         angle = normalizeAngle(angle);
         return signed(angle);
     }
-
+    /**
+     * Returns distance from left to right.
+     * @param left
+     * @param right
+     * @return 
+     */
+    public static final double angleDistance(double left, double right)
+    {
+        left = normalizeAngle(left);
+        right = normalizeAngle(right);
+        if (right < left)
+        {
+            return (360-left)+right;
+        }
+        else
+        {
+            return right-left;
+        }
+    }
     /**
      * Returns true if angle2 is clockwise of angle1
      * @param angle1
