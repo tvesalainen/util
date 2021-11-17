@@ -627,7 +627,7 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("decompose() not called");
         }
-        DoubleMatrix IA = getInstance(rows(), columns());
+        DoubleMatrix IA = new DoubleMatrix(rows(), columns());
         lupInvert(A, P, IA);
         return IA;
     }
@@ -1010,7 +1010,7 @@ public class DoubleMatrix extends AbstractMatrix
         int p = m2.cols;
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
-        DoubleMatrix mr = DoubleMatrix.getInstance(m, p);
+        DoubleMatrix mr = new DoubleMatrix(m, p);
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {
