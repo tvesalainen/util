@@ -485,7 +485,7 @@ public final class Navis
     }
 
     /**
-     * Returns true if angle1 is clockwise of angle2
+     * Returns true if angle2 is clockwise of angle1
      * @param angle1
      * @param angle2
      * @return 
