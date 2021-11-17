@@ -42,7 +42,7 @@ public class ClosedCubicSpline extends AbstractCubicSpline
     @Override
     protected DoubleMatrix createMatrix(int n)
     {
-        DoubleMatrix m = DoubleMatrix.getInstance(n, n);
+        DoubleMatrix m = new DoubleMatrix(n, n);
         for (int i=0;i<n;i++)
         {
             m.set(i, Math.floorMod(i-1, n), D1P6);
