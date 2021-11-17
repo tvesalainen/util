@@ -21,6 +21,8 @@ import org.vesalainen.math.MoreMath;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="http://abc-moorings.weebly.com/catenary-calculator.html">CATENARY CALCULATOR</a>
+ * @see <a href="http://alain.fraysse.free.fr/sail/rode/forces/forces.htm">TUNING AN ANCHOR RODE</a>
  */
 public class ElasticChain extends Chain
 { // chain unit weight
@@ -50,25 +52,5 @@ public class ElasticChain extends Chain
     public double horizontalForce(Double T, double d)
     {
         return AE*Math.sqrt(Math.pow(T/AE+1, 2)-2*w*d/AE)-AE;
-    }
-    /**
-     * Minimum line length required (or suspended length for a given fairlead 
-     * tension) for gravity anchor:
-     * @param T Fairlead tension
-     * @param Th Horizontal force
-     * @return 
-     */
-    public double minimalLineLength(double T, double Th)
-    {
-        return Math.sqrt(T*T-Th*Th)/w;
-    }
-    /**
-     * Vertical force at the fairlead
-     * @param s Chain length
-     * @return 
-     */
-    public double verticalForce(double s)
-    {
-        return w*s;
     }
 }

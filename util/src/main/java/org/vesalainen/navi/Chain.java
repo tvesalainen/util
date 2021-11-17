@@ -102,5 +102,27 @@ public class Chain
     {
         return w * (s * s + d * d) / (2 * d);
     }
+
+    /**
+     * Minimum line length required (or suspended length for a given fairlead
+     * tension) for gravity anchor:
+     * @param T Fairlead tension
+     * @param Th Horizontal force
+     * @return
+     */
+    public double minimalLineLength(double T, double Th)
+    {
+        return Math.sqrt(T * T - Th * Th) / w;
+    }
+
+    /**
+     * Vertical force at the fairlead
+     * @param s Chain length
+     * @return
+     */
+    public double verticalForce(double s)
+    {
+        return w * s;
+    }
     
 }
