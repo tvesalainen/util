@@ -147,6 +147,19 @@ public class NavisTest
         assertEquals(20, Navis.angleDiff(350, 10), Epsilon);
     }
     @Test
+    public void testClockwise()
+    {
+        assertTrue(Navis.clockwise(10, 20));
+        assertTrue(Navis.clockwise(350, 20));
+    }
+    @Test
+    public void testAngleDistance()
+    {
+        assertEquals(20, Navis.angleDistance(350, 10), Epsilon);
+        assertEquals(350, Navis.angleDistance(350, 340), Epsilon);
+        assertEquals(0, Navis.angleDistance(350, 350), Epsilon);
+    }
+    @Test
     public void testFathom()
     {
         assertEquals(1.8288, Navis.fathomsToMeters(1), Epsilon);
