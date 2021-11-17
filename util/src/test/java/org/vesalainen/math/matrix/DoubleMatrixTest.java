@@ -37,7 +37,7 @@ public class DoubleMatrixTest
     @Test
     public void test0()
     {
-        DoubleMatrix m1 = DoubleMatrix.getInstance(2, 3);
+        DoubleMatrix m1 = new DoubleMatrix(2, 3);
         for (int i=0;i<2;i++)
         {
             for (int j=0;j<3;j++)
@@ -50,7 +50,7 @@ public class DoubleMatrixTest
     @Test
     public void testClone()
     {
-        DoubleMatrix m1 = DoubleMatrix.getInstance(2, 3);
+        DoubleMatrix m1 = new DoubleMatrix(2, 3);
         for (int i=0;i<2;i++)
         {
             for (int j=0;j<3;j++)
@@ -132,7 +132,7 @@ public class DoubleMatrixTest
     @Test
     public void testTranspose()
     {
-        DoubleMatrix m1 = DoubleMatrix.getInstance(2, 3);
+        DoubleMatrix m1 = new DoubleMatrix(2, 3);
         for (int i=0;i<2;i++)
         {
             for (int j=0;j<3;j++)
