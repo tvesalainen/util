@@ -49,6 +49,15 @@ public interface Transactional
      * @param reason 
      * @param updatedProperties 
      */
+    default void commit(String reason, String... updatedProperties)
+    {
+        commit(reason, CollectionHelp.create(updatedProperties));
+    }
+    /**
+     * Confirm changes after start.
+     * @param reason 
+     * @param updatedProperties 
+     */
     default void commit(String reason, Collection<String> updatedProperties)
     {
         commit(reason);
