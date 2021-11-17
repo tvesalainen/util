@@ -21,6 +21,7 @@ import java.util.function.IntToDoubleFunction;
 import java.util.function.Supplier;
 import org.vesalainen.util.function.DoubleBiConsumer;
 import org.vesalainen.util.navi.AbstractLocationSupport.LocationFactory;
+import static org.vesalainen.util.navi.Angle.angleDiff;
 
 /**
  * Collection of navigational methods etc.
@@ -481,6 +482,17 @@ public final class Navis
         angle = anAngle2 - anAngle1;
         angle = normalizeAngle(angle);
         return signed(angle);
+    }
+
+    /**
+     * Returns true if angle1 is clockwise of angle2
+     * @param angle1
+     * @param angle2
+     * @return 
+     */
+    public static final boolean clockwise(double angle1, double angle2)
+    {
+        return angleDiff(angle1, angle2) >= 0;
     }
 
     private static void checkLatitude(double latitude)
