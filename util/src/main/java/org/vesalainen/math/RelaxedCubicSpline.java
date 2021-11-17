@@ -50,7 +50,7 @@ public class RelaxedCubicSpline extends AbstractCubicSpline
     @Override
     protected DoubleMatrix createMatrix(int n)
     {
-        DoubleMatrix m = DoubleMatrix.getInstance(n, n);
+        DoubleMatrix m = new DoubleMatrix(n, n);
         m.set(0, 0, 1);
         for (int i=1;i<n-1;i++)
         {
