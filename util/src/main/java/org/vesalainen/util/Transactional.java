@@ -45,7 +45,8 @@ public interface Transactional
      */
     default void rollback(String reason){}
     /**
-     * Confirm changes after start.
+     * Confirm changes after start. This is convenience method and should not
+     * be over ridden.
      * @param reason 
      * @param updatedProperties 
      */
