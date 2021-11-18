@@ -39,32 +39,6 @@ public class CatenaryAnchoringTest
     }
 
     @Test
-    public void test0()
-    {
-        double mm = 10;
-        ElasticChain ec = new ElasticChain(mm);
-        double d = 5;
-        double s = 25;
-        double T = ec.fairleadTension(s, d);
-        double Th0 = ec.horizontalForce(d, s);
-        double Th = ec.AE*Math.sqrt(Math.pow(T/ec.AE+1, 2)-2*ec.w*d/ec.AE)-ec.AE;
-        double lmin = Math.sqrt(T*T-Th*Th)/ec.w;
-        double x0 = ec.horizontalScope(Th, d, s);
-        double a = Th0/ec.w;
-        Catenary c = new Catenary(a);
-        //assertEquals(d+a, c.applyAsDouble(x0), 1);
-    }
-    @Test
-    public void test1()
-    {
-        double mm = 10;
-        ElasticChain ec = new ElasticChain(mm);
-        double d = 13;
-        double Th = 1409;
-        double s = ec.chainLengthForHorizontalForce(Th, d);
-        double x0 = ec.horizontalScope(Th, d, s);
-    }
-    @Test
     public void testPlot() throws IOException
     {
         Plotter p = new Plotter(1000, 1000, Color.CYAN);
@@ -75,20 +49,6 @@ public class CatenaryAnchoringTest
         p.drawCoordinates();
         p.plot("Anchoring", "png");
         
-    }
-    @Test
-    public void testDepth()
-    {
-        double mm = 10;
-        ElasticChain ca = new ElasticChain(mm);
-        double d0 = 5;
-        double s0 = 25;
-        double Th = ca.horizontalForce(d0, s0);
-        for (int ii=1;ii<10;ii++)
-        {
-            double s1 = ca.chainLengthForHorizontalForce(Th, d0*ii);
-            System.err.println(d0*ii+" "+s1);
-        }
     }
     @Test
     public void testFairleadTension()
@@ -114,6 +74,18 @@ public class CatenaryAnchoringTest
         assertEquals(d+a, c.applyAsDouble(x), 1e-10);
     }    
     @Test
+    public void testMinimalDepth()
+    {
+        double mm = 10;
+        double s = 80;
+        double T = 2000;
+        ElasticChain ca = new ElasticChain(mm);
+        double d = ca.maximalDepth(T, s);
+        assertEquals(26.66666666666667, d, 1e-10);
+        double l = ca.chainLength(T, d);
+        assertEquals(s, l, 1e-10);
+    }
+    //@Test
     public void testHorizontalForce()
     {
         double mm = 10;
@@ -121,7 +93,7 @@ public class CatenaryAnchoringTest
         double s = 40;
         ElasticChain ca = new ElasticChain(mm);
         double T = ca.fairleadTension(s, d);
-        double Th = ca.horizontalForce(d, s);
+        double Th = ca.horizontalForce(T, d);
         double Tz = ca.w*s;
         assertEquals(T, Math.hypot(Th, Tz), 1e-10);
     }
