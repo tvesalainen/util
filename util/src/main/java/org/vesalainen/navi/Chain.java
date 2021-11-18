@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import static java.lang.Math.*;
 import org.vesalainen.math.MoreMath;
 
 /**
@@ -26,11 +27,19 @@ public class Chain
 {
     public final double w; // chain unit weight
     private final double maxChainLength;
-    
+    /**
+     * Creates new Chain.
+     * @param mm Chain thickness in mm.
+     */
     public Chain(double mm)
     {
         this(mm, Double.MAX_VALUE);
     }
+    /**
+     * Creates new Chain.
+     * @param mm Chain thickness in mm.
+     * @param maxChainLength Available chain length
+     */
     public Chain(double mm, double maxChainLength)
     {
         this.w = chainWeight(mm);
@@ -39,7 +48,7 @@ public class Chain
 
     /**
      * Submerged weight per unit length N/M (w)
-     * @param d In mm
+     * @param d Chain diameter in mm
      * @return
      */
     public static double chainWeight(double d)
@@ -48,17 +57,18 @@ public class Chain
     }
 
     /**
-     * Returns chain length
+     * Returns catenary part of chain length. This is the minimum chain length
+     * with tension and depth.
      * @param T Fairlead tension
      * @param d depth
      * @return
      */
     public double chainLength(double T, double d)
     {
-        return Math.min(Math.sqrt(d * (2 * T / w - d)), maxChainLength);
+        return sqrt(d * (2 * T / w + d));
     }
     /**
-     * Horizontal scope (length in plan view from fairlead to touchdown point)
+     * Horizontal scope (length in plan view from fairlead to chain touchdown point)
      * @param T Fairlead tension
      * @param d Depth
      * @return 
@@ -68,10 +78,10 @@ public class Chain
         return horizontalScope(T, d, chainLength(T, d));
     }
     /**
-     * Horizontal scope (length in plan view from fairlead to touchdown point)
+     * Horizontal scope (length in plan view from fairlead to chain touchdown point)
      * @param T Fairlead tension
      * @param d Depth
-     * @param s Chain length
+     * @param s Catenary part of chain length
      * @return 
      */
     public double horizontalScope(double T, double d, double s)
@@ -80,27 +90,19 @@ public class Chain
         return (Fw - d) * Math.log((s + Fw) / (Fw - d));
     }
 
-    public double horizontalForce(double d, double s)
-    {
-        double Tz = w * s;
-        double T = fairleadTension(s, d);
-        return Math.sqrt(T * T - Tz * Tz);
-    }
-
-    public double chainLengthForHorizontalForce(double Th, double d)
-    {
-        return MoreMath.solve(this::horizontalForce, d, Th, d, 10 * d);
-    }
-
     /**
-     * Returns fairlead tension
+     * Returns Fairlead horizontal tension
      * @param s
      * @param d
      * @return
      */
     public double fairleadTension(double s, double d)
     {
-        return w * (s * s + d * d) / (2 * d);
+        if (s < d)
+        {
+            throw new IllegalArgumentException("chain shorter that depth");
+        }
+        return w * (s * s - d * d) / (2 * d);
     }
 
     /**
@@ -124,5 +126,10 @@ public class Chain
     {
         return w * s;
     }
-    
+    public double maximalDepth(double T, double s)
+    {
+        double b = 2*T/w;
+        double c = -s*s;
+        return (-b+sqrt(b*b-4*c))/2;
+    }
 }
