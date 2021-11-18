@@ -385,6 +385,10 @@ public final class MoreMath
         for (int ii=0;ii<128;ii++)
         {
             y = f.applyAsDouble(targetX, coef);
+            if (!Double.isFinite(y))
+            {
+                throw new IllegalArgumentException("Y="+y);
+            }
             if (y == y2)
             {
                 return coef;
