@@ -32,11 +32,9 @@ import org.vesalainen.util.ArrayHelp.RowComparator;
  * <p>Implementation is using equations and Jacobian as described in 
  * <a href="https://www.spaceroots.org/documents/circle/circle-fitting.pdf">Finding the circle that best fits a set of points</a>
  * <p>Levenberg-Marquardt algorithm is slightly modified from an example from 
- * <a href="https://code.google.com/p/efficient-java-matrix-library/">EJML</a>
  * @author Timo Vesalainen
  * @see <a href="https://www.spaceroots.org/documents/circle/circle-fitting.pdf">Finding the circle that best fits a set of points</a>
  * @see <a href="http://www.cs.bsu.edu/homepages/kerryj/kjones/circles.pdf">A Few Methods for Fitting Circles to Data</a>
- * @see <a href="https://code.google.com/p/efficient-java-matrix-library/">EJML</a> 
  * @see org.vesalainen.math.LevenbergMarquardt
  */
 public class CircleFitter implements Function, JacobianFactory, Circle, Serializable
@@ -303,7 +301,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         {
             double xd = xx - points.get(row, 0);
             double yd = yy - points.get(row, 1);
-            double r = Math.sqrt(xd*xd+yd*yd);
+            double r = Math.hypot(xd, yd);
             di.set(row, 0, r);
         }
     }
