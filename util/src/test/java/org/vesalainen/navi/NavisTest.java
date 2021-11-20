@@ -32,6 +32,14 @@ public class NavisTest
     }
 
     @Test
+    public void testDegreesToCartesian()
+    {
+        assertEquals(90, Navis.degreesToCartesian(0), Epsilon);
+        assertEquals(270, Navis.degreesToCartesian(180), Epsilon);
+        assertEquals(180, Navis.degreesToCartesian(270), Epsilon);
+        assertEquals(0, Navis.degreesToCartesian(90), Epsilon);
+    }
+    @Test
     public void testCenter()
     {
         Location expResult = new Location();
