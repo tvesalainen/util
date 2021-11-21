@@ -384,6 +384,10 @@ public final class MoreMath
         }
         for (int ii=0;ii<128;ii++)
         {
+            if (coef < minCoef || coef > maxCoef)
+            {
+                throw new IllegalArgumentException(coef+" coef out of bounds");
+            }
             y = f.applyAsDouble(targetX, coef);
             if (!Double.isFinite(y))
             {
