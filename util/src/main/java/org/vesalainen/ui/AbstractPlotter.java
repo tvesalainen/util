@@ -409,6 +409,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         drawMark(p.getX(), p.getY(), 45, new PlusShape());
     }
 
+    public void drawCross(Point p)
+    {
+        drawCross(p.getX(), p.getY());
+    }
     public void drawCross(double x, double y)
     {
         drawMark(x, y, 45, new PlusShape());

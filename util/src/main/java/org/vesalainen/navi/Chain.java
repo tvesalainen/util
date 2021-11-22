@@ -17,7 +17,9 @@
 package org.vesalainen.navi;
 
 import static java.lang.Math.*;
+import java.util.function.DoubleBinaryOperator;
 import org.vesalainen.math.MoreMath;
+import static org.vesalainen.math.MoreMath.solve;
 
 /**
  *
@@ -89,14 +91,52 @@ public class Chain
         double Fw = T / w;
         return (Fw - d) * Math.log((s + Fw) / (Fw - d));
     }
-
     /**
-     * Returns Fairlead horizontal tension
+     * Returns needed tension to get given scope.
+     * @param scope
+     * @param d
+     * @param s
+     * @return 
+     */
+    public double forceForScope(double scope, double d, double s)
+    {
+        double max = maximalScope(d, s);
+        if (scope > max)
+        {
+            throw new IllegalArgumentException(scope+" too large");
+        }
+        DoubleBinaryOperator f = (x, T)->
+        {
+            return horizontalScopeForChain(T, d, s);
+        };
+        return solve(f, 0, scope, Math.nextUp(d*w), 5000);
+    }
+    /**
+     * Real scope for given chain length. Includes catenary part and non catenary
+     * part.
+     * @param T
+     * @param d
+     * @param s
+     * @return 
+     */
+    public double horizontalScopeForChain(double T, double d, double s)
+    {
+        double catPart = chainLength(T, d);
+        if (catPart > s)
+        {
+            return horizontalScope(T, d, s);    // too much tension
+        }
+        double catScope = horizontalScope(T, d, catPart);
+        return catScope + (s - catPart);
+    }
+    /**
+     * Returns Fairlead horizontal tension for given catenary chain length.
+     * This is the minimum force that lifts that length of chain.
      * @param s
      * @param d
      * @return
      */
-    public double fairleadTension(double s, double d)
+    public double fairleadMinimumTensionForChain(double s, double d)
     {
         if (s < d)
         {
@@ -126,10 +166,37 @@ public class Chain
     {
         return w * s;
     }
+    /**
+     * Maximal depth where given tension and chain to keep chain vertical
+     * at anchor side.
+     * @param T
+     * @param s
+     * @return 
+     */
     public double maximalDepth(double T, double s)
     {
         double b = 2*T/w;
         double c = -s*s;
         return (-b+sqrt(b*b-4*c))/2;
+    }
+    /**
+     * Minimal scope where chain goes down vertically.
+     * @param d
+     * @param s
+     * @return 
+     */
+    public static double minimalScope(double d, double s)
+    {
+        return s - d;
+    }
+    /**
+     * Maximal scope where chain is direct line from anchor.
+     * @param d
+     * @param s
+     * @return 
+     */
+    public static double maximalScope(double d, double s)
+    {
+        return sqrt(s*s - d*d);
     }
 }

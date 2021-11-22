@@ -1044,11 +1044,11 @@ public class DoubleMatrix extends AbstractMatrix
         int n = cols;
         for (int i = 0; i < m; i++)
         {
+            sb.append('\n');
             for (int j = 0; j < n; j++)
             {
                 sb.append(String.format(US, "%.3f", Array.getDouble(array, M.at(i, j)))).append(' ');
             }
-            sb.append('\n');
         }
         return sb.toString();
     }

@@ -67,16 +67,31 @@ public class SimplePoint implements Point, Serializable
         this.y = y;
     }
     
+    public void add(Point point)
+    {
+        add(point.getX(), point.getY());
+    }
+    
     public void add(double x, double y)
     {
         this.x += x;
         this.y += y;
     }
     
+    public void mul(Point point)
+    {
+        mul(point.getX(), point.getY());
+    }
+    
     public void mul(double x, double y)
     {
         this.x *= x;
         this.y *= y;
+    }
+    
+    public void mul(double k)
+    {
+        mul(k, k);
     }
     
     public void setX(double x)
@@ -138,15 +153,26 @@ public class SimplePoint implements Point, Serializable
      */
     public static final double distance(Point p1, Point p2)
     {
-        return Math.hypot(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+        return distance(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+    public static final double distance(double x1, double y1, double x2, double y2)
+    {
+        return Math.hypot(x1 - x2, y1 - y2);
     }
     /**
      * @return angle int degrees from p1 to p2
      */
     public static final double angle(Point p1, Point p2)
     {
-        double aa = p2.getY()-p1.getY();
-        double bb = p2.getX()-p1.getX();
+        return angle(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+    /**
+     * @return angle int degrees from p1 to p2
+     */
+    public static final double angle(double x1, double y1, double x2, double y2)
+    {
+        double aa = y2-y1;
+        double bb = x2-x1;
         double dd = Math.atan2(aa, bb);
         if (dd < 0)
         {

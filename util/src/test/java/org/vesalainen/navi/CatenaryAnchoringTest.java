@@ -22,10 +22,7 @@ import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.Catenary;
-import org.vesalainen.math.MathFunction;
 import org.vesalainen.ui.Plotter;
-import org.vesalainen.ui.scale.LogarithmScale;
-import org.vesalainen.ui.scale.MergeScale;
 
 /**
  *
@@ -57,7 +54,7 @@ public class CatenaryAnchoringTest
         double d = 10;
         double s = 40;
         ElasticChain ca = new ElasticChain(mm);
-        double F = ca.fairleadTension(s, d);
+        double F = ca.fairleadMinimumTensionForChain(s, d);
         assertEquals(s, ca.chainLength(F, d), 1e-10);
     }
     @Test
@@ -67,12 +64,33 @@ public class CatenaryAnchoringTest
         double d = 10;
         double s = 40;
         ElasticChain ca = new ElasticChain(mm);
-        double F = ca.fairleadTension(s, d);
+        double F = ca.fairleadMinimumTensionForChain(s, d);
         double x = ca.horizontalScope(F, d);
         double a = Catenary.aForXAndH(x, d);
         Catenary c = new Catenary(a);
         assertEquals(d+a, c.applyAsDouble(x), 1e-10);
     }    
+    @Test
+    public void testForceForScope()
+    {
+        double mm = 10;
+        double d = 10;
+        double s = 50;
+        ElasticChain ca = new ElasticChain(mm);
+        double scope = ca.horizontalScope(2000, d);
+        double exp = scope*0.9;
+        double forceForScope = ca.forceForScope(exp, d, s);
+        assertEquals(exp, ca.horizontalScopeForChain(forceForScope, d, s), 1e-10);
+        double horizontalScopeForChain = ca.horizontalScopeForChain(1e4, d, s);
+    }
+    @Test
+    public void testMaximalScope()
+    {
+        double d = 10;
+        double s = 50;
+        double max = Chain.maximalScope(d, s);
+        assertEquals(s, Math.hypot(max, d), 1e-10);
+    }
     @Test
     public void testMinimalDepth()
     {
@@ -92,7 +110,7 @@ public class CatenaryAnchoringTest
         double d = 10;
         double s = 40;
         ElasticChain ca = new ElasticChain(mm);
-        double T = ca.fairleadTension(s, d);
+        double T = ca.fairleadMinimumTensionForChain(s, d);
         double Th = ca.horizontalForce(T, d);
         double Tz = ca.w*s;
         assertEquals(T, Math.hypot(Th, Tz), 1e-10);

@@ -6,6 +6,8 @@
 
 package org.vesalainen.math;
 
+import static java.lang.Math.*;
+
 /**
  * Line implementation
  * 
@@ -105,7 +107,17 @@ public class SimpleLine implements Line
             this.a = x1;
         }
     }
-
+    public void setFromAngle(double degree, double x1, double y1)
+    {
+        double rad = toRadians(degree);
+        set(sin(rad)/cos(rad), x1, y1);
+    }
+    public static final SimpleLine getFromAngle(double x1, double y1, double degree)
+    {
+        SimpleLine line = new SimpleLine();
+        line.setFromAngle(degree, x1, y1);
+        return line;
+    }
     /**
      * <p>Returns y for x If slope != infinity
      * <p>Returns infinity If slope == infinity and x == constant x
@@ -176,7 +188,7 @@ public class SimpleLine implements Line
      * @param p
      * @return 
      */
-    public static Point crossPoint(Line l1, Line l2, AbstractPoint p)
+    public static Point crossPoint(Line l1, Line l2, SimplePoint p)
     {
         if (Double.isInfinite(l1.getSlope()))
         {
@@ -217,11 +229,11 @@ public class SimpleLine implements Line
         return cyclePoint(p, xu/dd, yu/dd);
         
     }
-    private static Point cyclePoint(AbstractPoint p, double x, double y)
+    private static Point cyclePoint(SimplePoint p, double x, double y)
     {
         if (p == null)
         {
-            return new AbstractPoint(x, y);
+            return new SimplePoint(x, y);
         }
         else
         {

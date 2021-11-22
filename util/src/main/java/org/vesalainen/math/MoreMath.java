@@ -18,6 +18,7 @@
 package org.vesalainen.math;
 
 import java.awt.geom.Point2D;
+import static java.lang.Math.*;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
@@ -384,10 +385,6 @@ public final class MoreMath
         }
         for (int ii=0;ii<128;ii++)
         {
-            if (coef < minCoef || coef > maxCoef)
-            {
-                throw new IllegalArgumentException(coef+" coef out of bounds");
-            }
             y = f.applyAsDouble(targetX, coef);
             if (!Double.isFinite(y))
             {
@@ -400,7 +397,11 @@ public final class MoreMath
             y2 = y;
             if (test.test(y, targetY))
             {
-                coef += d;
+                if (coef == maxCoef)
+                {
+                    throw new IllegalArgumentException(coef+" coef out of bounds");
+                }
+                coef = min(maxCoef, coef+d);
                 if (s != 1)
                 {
                     d /= 2;
@@ -409,7 +410,11 @@ public final class MoreMath
             }
             else
             {
-                coef -= d;
+                if (coef == minCoef)
+                {
+                    throw new IllegalArgumentException(coef+" coef out of bounds");
+                }
+                coef = max(minCoef, coef-d);
                 if (s != 2)
                 {
                     d /= 2;
