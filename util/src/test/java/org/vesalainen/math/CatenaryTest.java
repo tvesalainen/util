@@ -87,6 +87,15 @@ public class CatenaryTest
         Catenary c = new Catenary(a);
         assertEquals(y+a, c.applyAsDouble(x), 1e-9);
     }    
+    @Test
+    public void testXForArc()
+    {
+        double a = 0.5;
+        double x = 2;
+        Catenary c = new Catenary(a);
+        double s = c.arcLength().applyAsDouble(x);
+        assertEquals(x, c.xForArc().applyAsDouble(s), 1e-10);
+    }
     //@Test
     public void testX()
     {

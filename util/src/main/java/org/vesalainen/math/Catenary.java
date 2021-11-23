@@ -16,6 +16,9 @@
  */
 package org.vesalainen.math;
 
+import static java.lang.Math.*;
+import static org.vesalainen.math.MoreMath.*;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -50,25 +53,34 @@ public class Catenary implements MathFunction
     @Override
     public double applyAsDouble(double x)
     {
-        return a*Math.cosh(x/a)+b;
+        return a*cosh(x/a)+b;
     }
 
     @Override
     public MathFunction inverse()
     {
-        return (x)->a*MoreMath.arcosh((x-b)/a);
+        return (x)->a*arcosh((x-b)/a);
     }
 
     @Override
     public MathFunction arcLength()
     {
-        return (x)->a*Math.sinh(x/a);
+        return (x)->a*sinh(x/a);
+    }
+    /**
+     * Returns x for arc length s.
+     * @param s
+     * @return 
+     */
+    public MathFunction xForArc()
+    {
+        return (s)->a*arsinh(s/a);
     }
 
     @Override
     public MathFunction derivative()
     {
-        return (x)->Math.sinh(x/a); // s/a
+        return (x)->sinh(x/a); // s/a
     }
     /**Returns a for a catenary having height h at x. Height is distance from 
      * vertex (a) to y.
@@ -79,8 +91,8 @@ public class Catenary implements MathFunction
      */
     public static double aForXAndH(double x, double h)
     {
-        return MoreMath.solve(
-                (xx,a)->a*Math.cosh(xx/a)-a, 
+        return solve(
+                (xx,a)->a*cosh(xx/a)-a, 
                 x, 
                 h, 
                 Double.MIN_VALUE, 
@@ -92,8 +104,8 @@ public class Catenary implements MathFunction
     }
     public static double aForY(double targetX, double targetY)
     {
-        return MoreMath.solve(
-                (x,a)->a*MoreMath.arcosh(x/a), 
+        return solve(
+                (x,a)->a*arcosh(x/a), 
                 targetX, 
                 targetY, 
                 Double.MIN_VALUE, 

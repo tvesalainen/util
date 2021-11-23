@@ -19,6 +19,8 @@ package org.vesalainen.navi;
 import static java.lang.Math.*;
 import java.util.function.DoubleBinaryOperator;
 import org.vesalainen.math.MoreMath;
+import static org.vesalainen.math.MoreMath.arcosh;
+import static org.vesalainen.math.MoreMath.arsinh;
 import static org.vesalainen.math.MoreMath.solve;
 
 /**
@@ -77,19 +79,8 @@ public class Chain
      */
     public double horizontalScope(double T, double d)
     {
-        return horizontalScope(T, d, chainLength(T, d));
-    }
-    /**
-     * Horizontal scope (length in plan view from fairlead to chain touchdown point)
-     * @param T Fairlead tension
-     * @param d Depth
-     * @param s Catenary part of chain length
-     * @return 
-     */
-    public double horizontalScope(double T, double d, double s)
-    {
-        double Fw = T / w;
-        return (Fw - d) * Math.log((s + Fw) / (Fw - d));
+        double a = T/w;
+        return a*arcosh((d+a)/a);
     }
     /**
      * Returns needed tension to get given scope.
@@ -121,13 +112,18 @@ public class Chain
      */
     public double horizontalScopeForChain(double T, double d, double s)
     {
-        double catPart = chainLength(T, d);
-        if (catPart > s)
-        {
-            return horizontalScope(T, d, s);    // too much tension
+        double catS = chainLength(T, d);
+        double catScope = horizontalScope(T, d);
+        if (catS > s)
+        {   // catenary vertex is under sea bed
+            double a = T/w;
+            double xScope = a*arsinh((s-catS)/a);   // under sea bed scope
+            return catScope - xScope;
         }
-        double catScope = horizontalScope(T, d, catPart);
-        return catScope + (s - catPart);
+        else
+        {
+            return catScope + (s - catS);
+        }
     }
     /**
      * Returns Fairlead horizontal tension for given catenary chain length.
