@@ -17,7 +17,6 @@
 package org.vesalainen.ui;
 
 import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.util.function.DoubleBiConsumer;

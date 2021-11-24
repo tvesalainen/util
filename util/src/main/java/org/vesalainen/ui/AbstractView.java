@@ -24,7 +24,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.stream.Stream;
 import org.vesalainen.math.Circle;
-import org.vesalainen.math.BasicPolygon;
 import org.vesalainen.math.Polygon;
 import org.vesalainen.math.Rect;
 
@@ -44,7 +43,7 @@ public class AbstractView
     protected final DoubleBounds userBounds = new DoubleBounds();
     protected final DoubleBounds transformedUserBounds = new DoubleBounds();
     protected boolean keepAspectRatio;
-    protected final DoubleTransform transform;
+    protected DoubleTransform transform;
     protected DoubleTransform combinedTransform;
     protected AffineTransform affineTransform = new AffineTransform();
     protected DoubleTransform inverse;
@@ -70,6 +69,10 @@ public class AbstractView
     }
     public void reset()
     {
+        if (transform == null)
+        {
+            transform = createTransform();
+        }
         userBounds.clear();
         transformedUserBounds.clear();
         update(minUserBounds);
@@ -307,6 +310,11 @@ public class AbstractView
     double getMaxY()
     {
         return transformedUserBounds.getMaxY();
+    }
+
+    protected DoubleTransform createTransform()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
