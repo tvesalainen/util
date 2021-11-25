@@ -18,6 +18,7 @@ package org.vesalainen.navi;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntToDoubleFunction;
+import org.vesalainen.math.UnitType;
 import org.vesalainen.util.navi.AbstractLocationSupport.LocationFactory;
 
 /**
@@ -518,7 +519,26 @@ public final class Navis
     {
         return angleDiff(angle1, angle2) >= 0;
     }
-
+    /**
+     * Returns latitude in degrees and minutes format.
+     * @param latitude
+     * @return 
+     * @see org.vesalainen.navi.CoordinateFormat#formatLatitude(double, org.vesalainen.math.UnitType) 
+     */
+    public static final String latitudeString(double latitude)
+    {
+        return CoordinateFormat.formatLatitude(latitude, UnitType.COORDINATE_DEGREES_AND_MINUTES);
+    }
+    /**
+     * Returns longitude in degrees and minutes format.
+     * @param latitude
+     * @return 
+     * @see org.vesalainen.navi.CoordinateFormat#formatLongitude(double, org.vesalainen.math.UnitType) 
+     */
+    public static final String longitudeString(double latitude)
+    {
+        return CoordinateFormat.formatLongitude(latitude, UnitType.COORDINATE_DEGREES_AND_MINUTES);
+    }
     private static void checkLatitude(double latitude)
     {
         if (latitude > 90 || latitude < -90)
