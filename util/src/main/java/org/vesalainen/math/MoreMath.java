@@ -399,7 +399,7 @@ public final class MoreMath
             {
                 if (coef == maxCoef)
                 {
-                    throw new IllegalArgumentException(coef+" coef out of bounds");
+                    throw new IllegalArgumentException(coef+" coef at limit");
                 }
                 coef = min(maxCoef, coef+d);
                 if (s != 1)
@@ -412,7 +412,7 @@ public final class MoreMath
             {
                 if (coef == minCoef)
                 {
-                    throw new IllegalArgumentException(coef+" coef out of bounds");
+                    throw new IllegalArgumentException(coef+" coef at limit");
                 }
                 coef = max(minCoef, coef-d);
                 if (s != 2)

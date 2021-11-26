@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import static java.lang.Math.*;
 import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.math.MathFunction;
+import org.vesalainen.ui.scale.CoordinateScale;
 import org.vesalainen.ui.scale.CoordinateScale.LatitudeScale;
 import org.vesalainen.ui.scale.CoordinateScale.LongitudeScale;
 
@@ -37,7 +38,7 @@ public class ChartPlotter extends AbstractPlotter
     }
     public ChartPlotter(int width, int height, Color background)
     {
-        super(width, height, background, true, new LongitudeScale(), new LatitudeScale(), null);
+        super(width, height, background, true, CoordinateScale.LONGITUDE, CoordinateScale.LATITUDE, null);
     }
 
     @Override
@@ -45,6 +46,7 @@ public class ChartPlotter extends AbstractPlotter
     {
         DoubleBounds rect = new DoubleBounds();
         shapes.forEach((r)->rect.add(r.getBounds()));
+        fixedShapes.stream().forEach((f)->rect.add(f.getX(), f.getY()));
         double centerY = rect.getCenterY();
         return DoubleTransform.composite(MathFunction.preMultiplier(MathFunction.IDENTITY, cos(toRadians(centerY))), MathFunction.IDENTITY);
     }

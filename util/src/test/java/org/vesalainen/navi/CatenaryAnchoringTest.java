@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.Catenary;
+import static org.vesalainen.math.MoreMath.arsinh;
 import org.vesalainen.ui.Plotter;
 
 /**
@@ -76,12 +77,19 @@ public class CatenaryAnchoringTest
         double mm = 10;
         double d = 10;
         double s = 50;
+        double T = 2000;
         ElasticChain ca = new ElasticChain(mm);
-        double scope = ca.horizontalScope(2000, d);
+        double w = ca.w;
+        double scope = ca.horizontalScope(T, d);
+        double chainLength = ca.chainLength(T, d);
+        double a = T/w;
+        double xScope = a*arsinh((chainLength)/a);   // under sea bed scope
+        assertEquals(xScope, scope, 1e-10);
         double exp = scope*0.9;
         double forceForScope = ca.forceForScope(exp, d, s);
         assertEquals(exp, ca.horizontalScopeForChain(forceForScope, d, s), 1e-10);
         double horizontalScopeForChain = ca.horizontalScopeForChain(1e4, d, s);
+        assertTrue(horizontalScopeForChain < Chain.maximalScope(d, s));
     }
     @Test
     public void testMaximalScope()

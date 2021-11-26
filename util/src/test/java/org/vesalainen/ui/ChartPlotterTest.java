@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.navi.Navis;
+import org.vesalainen.util.navi.Location;
 
 /**
  *
@@ -37,8 +39,14 @@ public class ChartPlotterTest
     public void test1() throws IOException
     {
         ChartPlotter cp = new ChartPlotter(1000, 1000);
-        
-        cp.drawLine(25, 60, 24, 61);
+        String lat = Navis.latitudeString(60.1);
+        String lon = Navis.longitudeString(25.1);
+        cp.drawPlus(141.102155, -36.609808);
+        cp.drawCross(141.101232, -36.609503);
+        cp.drawCross(141.101224, -36.609561);
+        cp.drawCross(141.101221, -36.609586);
+        cp.drawCross(141.101218, -36.609624);
+        cp.drawCross(141.101218, -36.609625);
         cp.drawCoordinates();
         Path path = Paths.get("c:\\temp\\charPlotter.png");
         cp.plot(path);

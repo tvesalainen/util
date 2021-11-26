@@ -92,15 +92,16 @@ public class Chain
     public double forceForScope(double scope, double d, double s)
     {
         double max = maximalScope(d, s);
-        if (scope > max)
+        double min = minimalScope(d, s);
+        if (scope > max || scope < min)
         {
-            throw new IllegalArgumentException(scope+" too large");
+            throw new IllegalArgumentException(scope+" out of range");
         }
         DoubleBinaryOperator f = (x, T)->
         {
             return horizontalScopeForChain(T, d, s);
         };
-        return solve(f, 0, scope, Math.nextUp(d*w), 5000);
+        return solve(f, 0, scope, Math.nextUp(0), 5000);
     }
     /**
      * Real scope for given chain length. Includes catenary part and non catenary
@@ -112,12 +113,12 @@ public class Chain
      */
     public double horizontalScopeForChain(double T, double d, double s)
     {
+        double a = T/w;
         double catS = chainLength(T, d);
-        double catScope = horizontalScope(T, d);
+        double catScope = a*arsinh((catS)/a);
         if (catS > s)
         {   // catenary vertex is under sea bed
-            double a = T/w;
-            double xScope = a*arsinh((s-catS)/a);   // under sea bed scope
+            double xScope = a*arsinh((catS-s)/a);   // under sea bed scope
             return catScope - xScope;
         }
         else

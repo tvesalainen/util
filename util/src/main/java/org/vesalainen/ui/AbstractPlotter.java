@@ -46,6 +46,7 @@ import org.vesalainen.math.Polygon;
 import org.vesalainen.math.SimplePoint;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import static org.vesalainen.ui.Direction.*;
+import static org.vesalainen.ui.TextAlignment.*;
 import org.vesalainen.ui.scale.MergeScale;
 import org.vesalainen.ui.scale.Scale;
 
@@ -57,7 +58,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 {
     protected static final FontRenderContext fontRenderContext = new FontRenderContext(null, false, true);
     protected final List<Drawable> backgroundShapes = new ArrayList<>();
-    protected final List<Drawable> fixedShapes = new ArrayList<>();
+    protected final List<Fixed> fixedShapes = new ArrayList<>();
     protected final List<Drawable> shapes = new ArrayList<>();
     private double lastX = Double.NaN;
     private double lastY = Double.NaN;
@@ -155,6 +156,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     protected void plot(Drawer drawer)
     {
         update(shapes.stream().map(Drawable::getBounds));
+        fixedShapes.stream().forEach((f)->updatePoint(f.getX(), f.getY()));
         calculate();
         trace();
         DoubleBounds origUserBounds = new DoubleBounds();
@@ -375,7 +377,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         shapes.add(new Drawable(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
     }
-
+    /**
+     * Draw point x = (0,0) y=(1,0)
+     * @param point 
+     */
     public void drawPoint(DoubleMatrix point)
     {
         assert point.columns() == 1;
@@ -384,6 +389,22 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         double x = d[0];
         double y = d[1];
         drawPoint(x, y);
+    }
+    /**
+     * Draw points x=(row,0) y=(row,1)
+     * @param points 
+     */
+    public void drawPoints(DoubleMatrix points)
+    {
+        assert points.columns() == 2;
+        double[] d = points.data();
+        int len = points.rows();
+        for (int row=0;row<len;row++)
+        {
+            double x = points.get(row, 0);
+            double y = points.get(row, 1);
+            drawPoint(x, y);
+        }
     }
 
     public void drawPoint(Point p)
@@ -421,18 +442,13 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     }
     public void drawMark(double x, double y, double deg, Shape mark)
     {
-        Rectangle2D bounds = mark.getBounds2D();
         AffineTransform at = new AffineTransform();
         if (deg != 0)
         {
             at.rotate(Math.toRadians(deg), x, y);
         }
-        if (x != bounds.getCenterX() || y != bounds.getCenterY())
-        {
-            at.translate(x-bounds.getCenterX(), y-bounds.getCenterY());
-            mark = at.createTransformedShape(mark);
-        }
-        shapes.add(new DrawableMark(mark));
+        mark = at.createTransformedShape(mark);
+        drawScreen(x, y, mark, MIDDLE_X, MIDDLE_Y);
     }
     public void drawPolygon(Polygon polygon)
     {
@@ -680,7 +696,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             shape = (S) at.createTransformedShape(shape);
         }
     }
-    private class Fixed extends Drawable
+    public class Fixed extends Drawable
     {
         private double x;
         private double y;
@@ -712,6 +728,16 @@ public class AbstractPlotter extends AbstractView implements DrawContext
             Rectangle2D b = shape.getBounds2D();
             super.draw(drawer);
             shape = safe;
+        }
+
+        public double getX()
+        {
+            return x;
+        }
+
+        public double getY()
+        {
+            return y;
         }
         
     }
