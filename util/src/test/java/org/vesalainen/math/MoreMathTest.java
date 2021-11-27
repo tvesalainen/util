@@ -64,11 +64,10 @@ public class MoreMathTest
     public void testSolve()
     {
         double res = MoreMath.solve(
-                (x,a)->a*a+x,
-                1,
+                (a)->a*a+1,
                 2,
-                -10, 
-                100);
+                0, 
+                10);
         assertEquals(1, res, 1e-10);
     }
     @Test

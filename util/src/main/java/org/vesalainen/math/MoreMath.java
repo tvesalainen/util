@@ -20,6 +20,7 @@ package org.vesalainen.math;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.math.matrix.DoubleUnaryMatrix;
@@ -361,64 +362,48 @@ public final class MoreMath
      * @return 
      */
     public static double solve(
-            DoubleBinaryOperator f,
-            double targetX,
+            DoubleUnaryOperator f,
             double targetY,
             double minCoef,
             double maxCoef
     )
     {
         double coef = (maxCoef-minCoef)/2.0;
-        double y = 0;
-        double d = coef/2.0;
-        int s = 0;
-        DoubleBiPredicate test;
-        y = f.applyAsDouble(targetX, coef);
-        double y2 = f.applyAsDouble(targetX, coef*0.5);
-        if (y2 > y)
-        {
-            test = (l,r)->l>r;
-        }
-        else
-        {
-            test = (l,r)->l<r;
-        }
         for (int ii=0;ii<128;ii++)
         {
-            y = f.applyAsDouble(targetX, coef);
+            double y = f.applyAsDouble(coef);
             if (!Double.isFinite(y))
             {
                 throw new IllegalArgumentException("Y="+y);
             }
-            if (y == y2)
+            if (abs(y - targetY) < 2*ulp(targetY))
             {
                 return coef;
             }
-            y2 = y;
-            if (test.test(y, targetY))
+            double k = derivative(f, coef);
+            double c;
+            if (k != 0)
             {
-                if (coef == maxCoef)
-                {
-                    throw new IllegalArgumentException(coef+" coef at limit");
-                }
-                coef = min(maxCoef, coef+d);
-                if (s != 1)
-                {
-                    d /= 2;
-                    s = 1;
-                }
+                double a = y - k*coef;
+                c = (targetY-a)/k;
             }
             else
             {
-                if (coef == minCoef)
+                c = nextUp(coef);
+            }
+            if (c < minCoef)
+            {
+                coef = (minCoef+coef)/2;
+            }
+            else
+            {
+                if (c > maxCoef)
                 {
-                    throw new IllegalArgumentException(coef+" coef at limit");
+                    coef = (maxCoef+coef)/2;
                 }
-                coef = max(minCoef, coef-d);
-                if (s != 2)
+                else
                 {
-                    d /= 2;
-                    s = 2;
+                    coef = c;
                 }
             }
         }

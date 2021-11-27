@@ -18,6 +18,7 @@ package org.vesalainen.navi;
 
 import static java.lang.Math.*;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.MoreMath;
 import static org.vesalainen.math.MoreMath.arcosh;
 import static org.vesalainen.math.MoreMath.arsinh;
@@ -97,11 +98,11 @@ public class Chain
         {
             throw new IllegalArgumentException(scope+" out of range");
         }
-        DoubleBinaryOperator f = (x, T)->
+        DoubleUnaryOperator f = (T)->
         {
             return horizontalScopeForChain(T, d, s);
         };
-        return solve(f, 0, scope, Math.nextUp(0), 5000);
+        return solve(f, scope, Math.nextUp(0), 2000);
     }
     /**
      * Real scope for given chain length. Includes catenary part and non catenary
@@ -118,8 +119,18 @@ public class Chain
         double catScope = a*arsinh((catS)/a);
         if (catS > s)
         {   // catenary vertex is under sea bed
-            double xScope = a*arsinh((catS-s)/a);   // under sea bed scope
-            return catScope - xScope;
+            DoubleUnaryOperator f = (x1)->
+            {
+                double s1 = a*sinh(x1/a);
+                double x2 = a*arsinh((s1+s)/a);
+                double y1 = a*cosh(x1/a);
+                double y2 = a*cosh(x2/a);
+                return y2-y1;
+            };
+            double x1 = solve(f, d, 0, catS);
+            double s1 = a*sinh(x1/a);
+            double x2 = a*arsinh((s1+s)/a);
+            return x2 - x1;
         }
         else
         {

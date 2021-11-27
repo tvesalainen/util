@@ -92,8 +92,7 @@ public class Catenary implements MathFunction
     public static double aForXAndH(double x, double h)
     {
         return solve(
-                (xx,a)->a*cosh(xx/a)-a, 
-                x, 
+                (a)->a*cosh(x/a)-a, 
                 h, 
                 Double.MIN_VALUE, 
                 100);
@@ -105,8 +104,7 @@ public class Catenary implements MathFunction
     public static double aForY(double targetX, double targetY)
     {
         return solve(
-                (x,a)->a*arcosh(x/a), 
-                targetX, 
+                (a)->a*arcosh(targetX/a), 
                 targetY, 
                 Double.MIN_VALUE, 
                 10);

@@ -86,10 +86,10 @@ public class CatenaryAnchoringTest
         double xScope = a*arsinh((chainLength)/a);   // under sea bed scope
         assertEquals(xScope, scope, 1e-10);
         double exp = scope*0.9;
-        double forceForScope = ca.forceForScope(exp, d, s);
-        assertEquals(exp, ca.horizontalScopeForChain(forceForScope, d, s), 1e-10);
         double horizontalScopeForChain = ca.horizontalScopeForChain(1e4, d, s);
         assertTrue(horizontalScopeForChain < Chain.maximalScope(d, s));
+        double forceForScope = ca.forceForScope(exp, d, s);
+        assertEquals(exp, ca.horizontalScopeForChain(forceForScope, d, s), 1e-10);
     }
     @Test
     public void testMaximalScope()
