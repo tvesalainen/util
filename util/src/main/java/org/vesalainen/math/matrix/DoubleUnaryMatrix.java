@@ -46,14 +46,14 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     }
     public double hypot(double t)
     {
-        if ((rows < 1 || cols < 1) || (rows > 1 && cols > 1))
+        if ((rows() < 1 || columns() < 1) || (rows() > 1 && columns() > 1))
         {
             throw new IllegalArgumentException("not a vector");
         }
         double sum = 0;
-        if (cols == 1)
+        if (columns() == 1)
         {
-            for (int i=0;i<rows;i++)
+            for (int i=0;i<rows();i++)
             {
                 double v = eval(i, 0, t);
                 sum += v*v;
@@ -61,7 +61,7 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
         }
         else
         {
-            for (int j=0;j<cols;j++)
+            for (int j=0;j<columns();j++)
             {
                 double v = eval(0, j, t);
                 sum += v*v;
@@ -94,13 +94,13 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     }
     public static DoubleUnaryMatrix multiply(DoubleUnaryMatrix m1, DoubleUnaryMatrix m2)
     {
-        if (m1.cols != m2.rows)
+        if (m1.columns() != m2.rows())
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows;
-        int n = m1.cols;
-        int p = m2.cols;
+        int m = m1.rows();
+        int n = m1.columns();
+        int p = m2.columns();
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
         DoubleUnaryMatrix mr = new DoubleUnaryMatrix(m, p);
@@ -129,12 +129,12 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     {
         int sign = 1;
         SumBuilder sum = DoubleUnaryOperators.sumBuilder();
-        PermutationMatrix pm = PermutationMatrix.getInstance(rows);
-        int perms = pm.rows;
+        PermutationMatrix pm = PermutationMatrix.getInstance(rows());
+        int perms = pm.rows();
         for (int p=0;p<perms;p++)
         {
             MultiplyBuilder mul = DoubleUnaryOperators.multiplyBuilder();
-            for (int i=0;i<rows;i++)
+            for (int i=0;i<rows();i++)
             {
                 mul.add(get(i, pm.get(p, i)));
             }
@@ -145,13 +145,13 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     }
     public boolean equals(DoubleUnaryMatrix other, double t, double delta)
     {
-        if (rows != other.rows || cols != other.cols)
+        if (rows() != other.rows() || columns() != other.columns())
         {
             return false;
         }
-        for (int i = 0; i < rows; i++)
+        for (int i = 0; i < rows(); i++)
         {
-            for (int j = 0; j < cols; j++)
+            for (int j = 0; j < columns(); j++)
             {
                 double e1 = eval(i, j, t);
                 double e2 = other.eval(i, j, t);
@@ -165,10 +165,10 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     }
     public DoubleMatrix snapshot(double t)
     {
-        DoubleMatrix m = new DoubleMatrix(rows, cols);
-        for (int i = 0; i < rows; i++)
+        DoubleMatrix m = new DoubleMatrix(rows(), columns());
+        for (int i = 0; i < rows(); i++)
         {
-            for (int j = 0; j < cols; j++)
+            for (int j = 0; j < columns(); j++)
             {
                 m.set(i, j, eval(i, j, t));
             }

@@ -19,6 +19,7 @@ package org.vesalainen.math.matrix;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Objects;
+import java.util.function.IntSupplier;
 import org.vesalainen.util.ArrayHelp;
 import org.vesalainen.util.ArrayHelp.RowComparator;
 
@@ -31,8 +32,8 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 {
 
     protected static final long serialVersionUID = 1L;
-    protected int rows;
-    protected int cols;
+    private IntProvider rows;
+    private IntProvider columns;
     protected Index M;
     protected Object array;
     protected Class<T> cls;
@@ -57,11 +58,19 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         {
             throw new IllegalArgumentException("wrong number of items");
         }
-        this.rows = rows;
-        this.cols = cols;
+        this.rows = ()->rows;
+        this.columns = ()->cols;
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> cols * i + j;
+    }
+    protected AbstractMatrix(int origCol, int startRow, int startCol, int rows, int cols, Object array)
+    {
+        this.rows = ()->rows;
+        this.columns = ()->cols;
+        this.array = array;
+        this.cls = (Class<T>) array.getClass().getComponentType();
+        this.M = (i, j) -> origCol * (i+startCol) + (j+startRow);
     }
     public void setReshape(AbstractMatrix m)
     {
@@ -71,9 +80,9 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         System.arraycopy(m.array, 0, array, 0, m.elements());
 
-        this.rows = m.rows;
-        this.cols = m.cols;
-        this.M = (i, j) -> cols * i + j;
+        this.rows = m::rows;
+        this.columns = m::columns;
+        this.M = (i, j) -> columns.getAsInt() * i + j;
     }
     public void reshape(int rows, int cols)
     {
@@ -93,13 +102,13 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             this.array = d;
         }
 
-        this.rows = rows;
-        this.cols = cols;
+        this.rows = ()->rows;
+        this.columns = ()->cols;
         this.M = (i, j) -> cols * i + j;
     }
     public void sort(RowComparator comp)
     {
-        ArrayHelp.sort(array, cols, comp);
+        ArrayHelp.sort(array, columns.getAsInt(), comp);
     }
     /**
      * Copies row1 from a to row2 in b
@@ -110,16 +119,16 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public static void copyRow(AbstractMatrix a, int row1, AbstractMatrix b, int row2)
     {
-        if (a.cols != b.cols)
+        if (a.columns != b.columns)
         {
             throw new IllegalArgumentException("cols differ");
         }
-        int cls = a.cols;
+        int cls = a.columns.getAsInt();
         System.arraycopy(a.array, row1*cls, b.array, row2*cls, cls);
     }
     public boolean sameDimensions(AbstractMatrix o)
     {
-        return rows == o.rows && cols == o.cols;
+        return rows() == o.rows() && columns() == o.columns();
     }
     /**
      * Returns new DoubleMatrix initialized to zeroes.
@@ -193,7 +202,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
     public int elements()
     {
-        return rows * cols;
+        return rows.getAsInt() * columns.getAsInt();
     }
     /**
      * Returns number of rows
@@ -202,7 +211,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public int rows()
     {
-        return rows;
+        return rows.getAsInt();
     }
 
     /**
@@ -212,15 +221,15 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public int columns()
     {
-        return cols;
+        return columns.getAsInt();
     }
 
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        int m = rows;
-        int n = cols;
+        int m = rows.getAsInt();
+        int n = columns.getAsInt();
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < n; j++)
@@ -239,7 +248,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public boolean isSquare()
     {
-        return rows == cols;
+        return rows() == columns();
     }
 
     /**
@@ -249,7 +258,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public boolean isEmpty()
     {
-        return rows == 0 && cols == 0;
+        return rows.getAsInt() == 0 && columns.getAsInt() == 0;
     }
 
     /**
@@ -291,8 +300,8 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
     public int hashCode()
     {
         int hash = 5;
-        hash = 67 * hash + this.rows;
-        hash = 67 * hash + this.cols;
+        hash = 67 * hash + this.rows.getAsInt();
+        hash = 67 * hash + this.columns.getAsInt();
         hash = 67 * hash + Objects.hashCode(this.array);
         hash = 67 * hash + Objects.hashCode(this.cls);
         return hash;
@@ -318,7 +327,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         {
             return false;
         }
-        if (this.cols != other.cols)
+        if (this.columns != other.columns)
         {
             return false;
         }
@@ -338,5 +347,11 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
     {
 
         int at(int i, int j);
+    }
+    @FunctionalInterface
+    protected interface IntProvider extends Serializable
+    {
+
+        int getAsInt();
     }
 }

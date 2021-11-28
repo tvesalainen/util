@@ -33,13 +33,13 @@ public class ByteMatrix extends AbstractMatrix
     public ByteMatrix(int rows, byte[] array)
     {
         super(rows, array);
-        supplier = (i, j) -> array[cols * i + j];
-        consumer = (i, j, v) -> array[cols * i + j] = (byte)v;
+        supplier = (i, j) -> array[columns() * i + j];
+        consumer = (i, j, v) -> array[columns() * i + j] = (byte)v;
     }
      @Override
     public ByteMatrix clone()
     {
-        return new ByteMatrix(rows, (byte[]) copyOf(array, cls));
+        return new ByteMatrix(rows(), (byte[]) copyOf(array, cls));
     }
 
     /**
@@ -70,7 +70,7 @@ public class ByteMatrix extends AbstractMatrix
      */
     public void setRow(int i, int[] array, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             set(i, j, array[j+offset]);

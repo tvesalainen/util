@@ -35,14 +35,14 @@ public class Matrix<T> extends AbstractMatrix
     public Matrix(int rows, T[] array)
     {
         super(rows, array);
-        supplier = (i, j) -> array[cols * i + j];
-        consumer = (i, j, v) -> array[cols * i + j] = v;
+        supplier = (i, j) -> array[columns() * i + j];
+        consumer = (i, j, v) -> array[columns() * i + j] = v;
     }
     
     @Override
     public Matrix clone()
     {
-        return new Matrix(rows, (T[]) copyOf(array, cls));
+        return new Matrix(rows(), (T[]) copyOf(array, cls));
     }
 
     /**
@@ -101,7 +101,7 @@ public class Matrix<T> extends AbstractMatrix
      */
     public void setRow(int i, T[] array, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             set(i, j, array[j+offset]);
@@ -115,7 +115,7 @@ public class Matrix<T> extends AbstractMatrix
      */
     public void getRow(int i, T[] array, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             array[j+offset] = get(i, j);
@@ -129,7 +129,7 @@ public class Matrix<T> extends AbstractMatrix
      */
     public void getColumn(int j, T[] array, int offset)
     {
-        int m = rows;
+        int m = rows();
         for (int i=0;i<m;i++)
         {
             array[i+offset] = get(i, j);

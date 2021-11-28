@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import static java.util.Locale.US;
+import java.util.function.IntSupplier;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -51,7 +52,7 @@ public class DoubleMatrix extends AbstractMatrix
         this(rows, cols, Arrays.copyOf(d, rows*cols));
         if (!rowMajor)
         {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("rowMajor not supported");
         }
     }
     public DoubleMatrix(int rows, double[] d)
@@ -65,6 +66,41 @@ public class DoubleMatrix extends AbstractMatrix
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
 
+    private DoubleMatrix(int origCol, int startRow, int startCol, int rows, int cols, Object array)
+    {
+        super(origCol, startRow, startCol, rows, cols, array);
+    }
+    /**
+     * Returns view of sub matrix. Returned Matrix shares the same data.
+     * Matrix covers the rest of the matrix.
+     * @param startRow
+     * @param startCol
+     * @return 
+     */
+    public DoubleMatrix getView(int startRow, int startCol)
+    {
+        return getView(startRow, startCol, rows()-startRow, columns()-startCol);
+    }
+    /**
+     * Returns view of sub matrix. Returned Matrix shares the same data.
+     * @param startRow
+     * @param startCol
+     * @param rows
+     * @param cols
+     * @return 
+     */
+    public DoubleMatrix getView(int startRow, int startCol, int rows, int cols)
+    {
+        if (startRow+rows > rows() || startCol+cols > columns())
+        {
+            throw new IllegalArgumentException("rows/cols overlap");
+        }
+        IntSupplier colSup = ()->columns();
+        DoubleMatrix m = new DoubleMatrix(colSup.getAsInt(), startRow, startCol, rows, cols, array);
+        m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow));
+        m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow), v);
+        return m;
+    }
     @Override
     public void reshape(int rows, int cols, boolean save)
     {
@@ -82,12 +118,12 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public double[][] as2D()
     {
-        return ArrayHelp.unFlatten(rows, (double[]) array);
+        return ArrayHelp.unFlatten(rows(), (double[]) array);
     }
     @Override
     public DoubleMatrix clone()
     {
-        return new DoubleMatrix(rows, (double[]) copyOf(array, cls));
+        return new DoubleMatrix(rows(), (double[]) copyOf(array, cls));
     }
     /**
      * Access as vector
@@ -96,7 +132,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public double data(int i)
     {
-        if (!(rows == 1 || cols == 1))
+        if (!(rows() == 1 || columns() == 1))
         {
             throw new IllegalArgumentException();
         }
@@ -109,7 +145,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void data(int i, double v)
     {
-        if (!(rows == 1 || cols == 1))
+        if (!(rows() == 1 || columns() == 1))
         {
             throw new IllegalArgumentException();
         }
@@ -145,8 +181,8 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void set(double v)
     {
-        int m = rows;
-        int n = cols;
+        int m = rows();
+        int n = columns();
         ItemConsumer ic = consumer;
         for (int i = 0; i < m; i++)
         {
@@ -162,7 +198,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void set(DoubleMatrix B)
     {
-        if (rows != B.rows || cols != B.cols)
+        if (rows() != B.rows() || columns() != B.columns())
         {
             throw new IllegalArgumentException("cols/rows differ");
         }
@@ -204,7 +240,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void setRow(int i, double[] array, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             set(i, j, array[j+offset]);
@@ -218,7 +254,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void getRow(int i, double[] array, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             array[j+offset] = get(i, j);
@@ -232,7 +268,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void getColumn(int j, double[] array, int offset)
     {
-        int m = rows;
+        int m = rows();
         for (int i=0;i<m;i++)
         {
             array[i+offset] = get(i, j);
@@ -246,7 +282,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void addRow(int i, double[] arr, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             add(i, j, arr[j+offset]);
@@ -260,7 +296,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void subRow(int i, double[] arr, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             sub(i, j, arr[j+offset]);
@@ -274,7 +310,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void mulRow(int i, double[] arr, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             mul(i, j, arr[j+offset]);
@@ -288,7 +324,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void divRow(int i, double[] arr, int offset)
     {
-        int n = cols;
+        int n = columns();
         for (int j=0;j<n;j++)
         {
             div(i, j, arr[j+offset]);
@@ -326,8 +362,8 @@ public class DoubleMatrix extends AbstractMatrix
     }
     public static void divide(DoubleMatrix a, double v)
     {
-        int m = a.rows;
-        int n = a.cols;
+        int m = a.rows();
+        int n = a.columns();
         ItemConsumer ic = a.consumer;
         ItemSupplier is = a.supplier;
         for (int i = 0; i < m; i++)
@@ -354,8 +390,8 @@ public class DoubleMatrix extends AbstractMatrix
     }
     public double elementSum()
     {
-        int m = rows;
-        int n = cols;
+        int m = rows();
+        int n = columns();
         ItemSupplier is = supplier;
         double sum = 0;
         for (int i = 0; i < m; i++)
@@ -373,8 +409,8 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("dims differ");
         }
-        int m = a.rows;
-        int n = a.cols;
+        int m = a.rows();
+        int n = a.columns();
         ItemSupplier sa = a.supplier;
         ItemSupplier sb = b.supplier;
         ItemConsumer ic = c.consumer;
@@ -392,8 +428,8 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("dims differ");
         }
-        int m = a.rows;
-        int n = a.cols;
+        int m = a.rows();
+        int n = a.columns();
         double sum = 0;
         ItemSupplier sa = a.supplier;
         ItemSupplier sb = b.supplier;
@@ -416,8 +452,8 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void scalarMultiply(double c)
     {
-        int m = rows;
-        int n = cols;
+        int m = rows();
+        int n = columns();
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < n; j++)
@@ -465,17 +501,17 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("a or b can be the same matrix as c");
         }
-        if( a.cols != b.cols ) 
+        if( a.columns() != b.columns() ) 
         {
             throw new IllegalArgumentException("The a and b matrices do not have compatible dimensions");
         } 
-        if( a.rows != c.rows || b.rows != c.cols ) 
+        if( a.rows() != c.rows() || b.rows() != c.columns() ) 
         {
             throw new IllegalArgumentException("The results matrix does not have the desired dimensions");
         }
-        int m = a.rows;
-        int n = b.rows;
-        int p = b.cols;
+        int m = a.rows();
+        int n = b.rows();
+        int p = b.columns();
         ItemSupplier sa = a.supplier;
         ItemSupplier sb = b.supplier;
         ItemConsumer co = c.consumer;
@@ -550,12 +586,12 @@ public class DoubleMatrix extends AbstractMatrix
     {
         int sign = 1;
         double sum = 0;
-        PermutationMatrix pm = PermutationMatrix.getInstance(rows);
-        int perms = pm.rows;
+        PermutationMatrix pm = PermutationMatrix.getInstance(rows());
+        int perms = pm.rows();
         for (int p=0;p<perms;p++)
         {
             double mul = 1;
-            for (int i=0;i<rows;i++)
+            for (int i=0;i<rows();i++)
             {
                 mul *= get(i, pm.get(p, i));
             }
@@ -898,7 +934,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix add(DoubleMatrix m1, DoubleMatrix m2)
     {
-        DoubleMatrix mr = new DoubleMatrix(m1.rows, m1.cols);
+        DoubleMatrix mr = new DoubleMatrix(m1.rows(), m1.columns());
         add(m1, m2, mr);
         return mr;
     }
@@ -911,13 +947,13 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static void add(DoubleMatrix m1, DoubleMatrix m2, DoubleMatrix mr)
     {
-        if (m1.rows != m2.rows
-                || m1.cols != m2.cols)
+        if (m1.rows() != m2.rows()
+                || m1.columns() != m2.columns())
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows;
-        int n = m1.cols;
+        int m = m1.rows();
+        int n = m1.columns();
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
         ItemConsumer c = mr.consumer;
@@ -954,7 +990,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix subtract(DoubleMatrix m1, DoubleMatrix m2)
     {
-        DoubleMatrix mr = new DoubleMatrix(m1.rows, m1.cols);
+        DoubleMatrix mr = new DoubleMatrix(m1.rows(), m1.columns());
         subtract(m1, m2, mr);
         return mr;
     }
@@ -966,13 +1002,13 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static void subtract(DoubleMatrix m1, DoubleMatrix m2, DoubleMatrix mr)
     {
-        if (m1.rows != m2.rows
-                || m1.cols != m2.cols)
+        if (m1.rows() != m2.rows()
+                || m1.columns() != m2.columns())
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows;
-        int n = m1.cols;
+        int m = m1.rows();
+        int n = m1.columns();
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
         ItemConsumer c = mr.consumer;
@@ -1001,13 +1037,13 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static DoubleMatrix multiply(DoubleMatrix m1, DoubleMatrix m2)
     {
-        if (m1.cols != m2.rows)
+        if (m1.columns() != m2.rows())
         {
             throw new IllegalArgumentException("Matrices not comfortable");
         }
-        int m = m1.rows;
-        int n = m1.cols;
-        int p = m2.cols;
+        int m = m1.rows();
+        int n = m1.columns();
+        int p = m2.columns();
         ItemSupplier s1 = m1.supplier;
         ItemSupplier s2 = m2.supplier;
         DoubleMatrix mr = new DoubleMatrix(m, p);
@@ -1040,8 +1076,8 @@ public class DoubleMatrix extends AbstractMatrix
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        int m = rows;
-        int n = cols;
+        int m = rows();
+        int n = columns();
         for (int i = 0; i < m; i++)
         {
             sb.append('\n');
@@ -1108,14 +1144,14 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public int findRow(double... row)
     {
-        if (row.length != cols)
+        if (row.length != columns())
         {
             throw new IllegalArgumentException("illegal column count");
         }
-        for (int r=0;r<rows;r++)
+        for (int r=0;r<rows();r++)
         {
             boolean eq=true;
-            for (int c=0;c<cols;c++)
+            for (int c=0;c<columns();c++)
             {
                 if (get(r, c) != row[c])
                 {
@@ -1132,38 +1168,38 @@ public class DoubleMatrix extends AbstractMatrix
     }
     public void setRow(int index, double... row)
     {
-        if (row.length != cols)
+        if (row.length != columns())
         {
             throw new IllegalArgumentException("illegal column count");
         }
-        System.arraycopy(row, 0, array, cols*index, row.length);
+        System.arraycopy(row, 0, array, columns()*index, row.length);
     }
 
     public void addRow(double... row)
     {
-        int r = rows;
-        if (row.length != cols)
+        int r = rows();
+        if (row.length != columns())
         {
             throw new IllegalArgumentException("illegal column count");
         }
-        reshape(rows+1, cols, true);
-        System.arraycopy(row, 0, array, cols*r, row.length);
+        reshape(rows()+1, columns(), true);
+        System.arraycopy(row, 0, array, columns()*r, row.length);
     }
     public void insertRow(int index, double... row)
     {
-        int r = rows;
-        if (row.length != cols)
+        int r = rows();
+        if (row.length != columns())
         {
             throw new IllegalArgumentException("illegal column count");
         }
-        reshape(rows+1, cols, true);
-        System.arraycopy(array, cols*index, array, cols*(index+1), cols*(r-index));
-        System.arraycopy(row, 0, array, cols*index, row.length);
+        reshape(rows()+1, columns(), true);
+        System.arraycopy(array, columns()*index, array, columns()*(index+1), columns()*(r-index));
+        System.arraycopy(row, 0, array, columns()*index, row.length);
     }
     public void removeRowAt(int index)
     {
-        System.arraycopy(array, cols*(index+1), array, cols*index, cols*(rows-index-1));
-        reshape(rows-1, cols, true);
+        System.arraycopy(array, columns()*(index+1), array, columns()*index, columns()*(rows()-index-1));
+        reshape(rows()-1, columns(), true);
     }
     /**
      * Removes equal subsequent rows and additionally last row if it is equal to first row.
@@ -1171,31 +1207,31 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void removeEqualRows()
     {
-        if (rows < 2)
+        if (rows() < 2)
         {
             return;
         }
-        int left = rows-1;
+        int left = rows()-1;
         int delta = 0;
         for (int i=0;i<left;i++)
         {
             int j=i;
-            for (;j<left && eq(array, i, j+1, cols);j++);
+            for (;j<left && eq(array, i, j+1, columns());j++);
             if (i != j)
             {
                 int cnt = j-i;
-                System.arraycopy(array, cols*j, array, cols*i, cols*(left-j+1));
+                System.arraycopy(array, columns()*j, array, columns()*i, columns()*(left-j+1));
                 left -= cnt;
                 delta += cnt;
             }
         }
-        if (eq(array, 0, rows-1, cols))
+        if (eq(array, 0, rows()-1, columns()))
         {
             delta++;
         }
         if (delta > 0)
         {
-            reshape(rows-delta, cols, true);
+            reshape(rows()-delta, columns(), true);
         }
     }
     private boolean eq(Object d, int i1, int i2, int cols)
