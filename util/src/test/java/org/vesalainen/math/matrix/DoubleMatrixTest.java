@@ -48,6 +48,26 @@ public class DoubleMatrixTest
         }
     }
     @Test
+    public void testView()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getView(1, 1, -1, 2);
+        assertEquals(2, view.rows());
+        assertEquals(2, view.columns());
+        assertEquals(5, view.get(0, 0), 1e-10);
+        assertEquals(6, view.get(0, 1), 1e-10);
+        assertEquals(8, view.get(1, 0), 1e-10);
+        assertEquals(9, view.get(1, 1), 1e-10);
+        view.set(0, 0, 123);
+        assertEquals(123, view.get(0, 0), 1e-10);
+        m.reshape(6, 4, true);
+        assertEquals(5, view.rows());
+        assertEquals(2, view.columns());
+    }
+    @Test
     public void testClone()
     {
         DoubleMatrix m1 = new DoubleMatrix(2, 3);

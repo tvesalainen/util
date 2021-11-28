@@ -66,27 +66,16 @@ public class DoubleMatrix extends AbstractMatrix
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
 
-    private DoubleMatrix(int origCol, int startRow, int startCol, int rows, int cols, Object array)
+    private DoubleMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
     {
-        super(origCol, startRow, startCol, rows, cols, array);
-    }
-    /**
-     * Returns view of sub matrix. Returned Matrix shares the same data.
-     * Matrix covers the rest of the matrix.
-     * @param startRow
-     * @param startCol
-     * @return 
-     */
-    public DoubleMatrix getView(int startRow, int startCol)
-    {
-        return getView(startRow, startCol, rows()-startRow, columns()-startCol);
+        super(origRows, origCols, startRow, startCol, rows, cols, array);
     }
     /**
      * Returns view of sub matrix. Returned Matrix shares the same data.
      * @param startRow
      * @param startCol
-     * @param rows
-     * @param cols
+     * @param rows If -1 the matrix covers rest of the rows
+     * @param cols If -1 the matrix covers rest of the columns
      * @return 
      */
     public DoubleMatrix getView(int startRow, int startCol, int rows, int cols)
@@ -95,8 +84,9 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("rows/cols overlap");
         }
-        IntSupplier colSup = ()->columns();
-        DoubleMatrix m = new DoubleMatrix(colSup.getAsInt(), startRow, startCol, rows, cols, array);
+        IntProvider rowSup = ()->rows();
+        IntProvider colSup = ()->columns();
+        DoubleMatrix m = new DoubleMatrix(rowSup, colSup, startRow, startCol, rows, cols, array);
         m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow));
         m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow), v);
         return m;

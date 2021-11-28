@@ -64,13 +64,27 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> cols * i + j;
     }
-    protected AbstractMatrix(int origCol, int startRow, int startCol, int rows, int cols, Object array)
+    protected AbstractMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
     {
-        this.rows = ()->rows;
-        this.columns = ()->cols;
+        if (rows != -1)
+        {
+            this.rows = ()->rows;
+        }
+        else
+        {
+            this.rows = ()->origRows.getAsInt()-startRow;
+        }
+        if (cols != -1)
+        {
+            this.columns = ()->cols;
+        }
+        else
+        {
+            this.columns = ()->origCols.getAsInt()-startCol;
+        }
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
-        this.M = (i, j) -> origCol * (i+startCol) + (j+startRow);
+        this.M = (i, j) -> origCols.getAsInt() * (i+startCol) + (j+startRow);
     }
     public void setReshape(AbstractMatrix m)
     {
