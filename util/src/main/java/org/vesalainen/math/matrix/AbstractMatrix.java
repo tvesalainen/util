@@ -86,6 +86,45 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> origCols.getAsInt() * (i+startCol) + (j+startRow);
     }
+
+    protected AbstractMatrix(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)
+    {
+        if (rows != -1)
+        {
+            if (cols != -1)
+            {
+                checkPositions(pos, rows+cols);
+                this.columns = ()->cols;
+                this.M = (i, j) -> origCols.getAsInt() * pos[i] + pos[rows+j];
+            }
+            else
+            {
+                checkPositions(pos, rows);
+                this.columns = origCols;
+                this.M = (i, j) -> origCols.getAsInt() * pos[i] + j;
+            }
+            this.rows = ()->rows;
+        }
+        else
+        {
+            if (cols != -1)
+            {
+                checkPositions(pos, cols);
+                this.columns = ()->cols;
+                this.M = (i, j) -> origCols.getAsInt() * i + pos[j];
+            }
+            else
+            {
+                checkPositions(pos, 0);
+                this.columns = origCols;
+                this.M = (i, j) -> origCols.getAsInt() * i + j;
+            }
+            this.rows = origRows;
+        }
+        this.array = array;
+        this.cls = (Class<T>) array.getClass().getComponentType();
+    }
+    
     public void setReshape(AbstractMatrix m)
     {
         if (Array.getLength(array) < Array.getLength(m.array))
@@ -354,6 +393,14 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             return false;
         }
         return true;
+    }
+
+    private void checkPositions(int[] positions, int len)
+    {
+        if (positions.length != len)
+        {
+            throw new IllegalArgumentException("positions array length wrong");
+        }
     }
 
     @FunctionalInterface

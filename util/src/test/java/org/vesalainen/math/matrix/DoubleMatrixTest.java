@@ -48,13 +48,77 @@ public class DoubleMatrixTest
         }
     }
     @Test
-    public void testView()
+    public void testSparse1()
     {
         DoubleMatrix m = DoubleMatrix.getInstance(3, 
                 1, 2, 3, 
                 4, 5, 6, 
                 7, 8, 9);
-        DoubleMatrix view = m.getView(1, 1, -1, 2);
+        DoubleMatrix view = m.getSparse(2, 2, 1, 2, 1, 2);
+        assertEquals(2, view.rows());
+        assertEquals(2, view.columns());
+        assertEquals(5, view.get(0, 0), 1e-10);
+        assertEquals(6, view.get(0, 1), 1e-10);
+        assertEquals(8, view.get(1, 0), 1e-10);
+        assertEquals(9, view.get(1, 1), 1e-10);
+        view.set(0, 0, 123);
+        assertEquals(123, view.get(0, 0), 1e-10);
+        m.reshape(6, 4, true);
+        assertEquals(2, view.rows());
+        assertEquals(2, view.columns());
+    }
+    @Test
+    public void testSparse2()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getSparse(-1, 2, 0, 2);
+        assertEquals(3, view.rows());
+        assertEquals(2, view.columns());
+        assertEquals(1, view.get(0, 0), 1e-10);
+        assertEquals(3, view.get(0, 1), 1e-10);
+        assertEquals(4, view.get(1, 0), 1e-10);
+        assertEquals(6, view.get(1, 1), 1e-10);
+        assertEquals(7, view.get(2, 0), 1e-10);
+        assertEquals(9, view.get(2, 1), 1e-10);
+        view.set(0, 0, 123);
+        assertEquals(123, view.get(0, 0), 1e-10);
+        m.reshape(6, 4, true);
+        assertEquals(6, view.rows());
+        assertEquals(2, view.columns());
+    }
+    @Test
+    public void testSparse3()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getSparse(2, -1, 0, 2);
+        assertEquals(2, view.rows());
+        assertEquals(3, view.columns());
+        assertEquals(1, view.get(0, 0), 1e-10);
+        assertEquals(2, view.get(0, 1), 1e-10);
+        assertEquals(3, view.get(0, 2), 1e-10);
+        assertEquals(7, view.get(1, 0), 1e-10);
+        assertEquals(8, view.get(1, 1), 1e-10);
+        assertEquals(9, view.get(1, 2), 1e-10);
+        view.set(0, 0, 123);
+        assertEquals(123, view.get(0, 0), 1e-10);
+        m.reshape(6, 4, true);
+        assertEquals(2, view.rows());
+        assertEquals(4, view.columns());
+    }
+    @Test
+    public void testSub()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getSub(1, 1, -1, 2);
         assertEquals(2, view.rows());
         assertEquals(2, view.columns());
         assertEquals(5, view.get(0, 0), 1e-10);

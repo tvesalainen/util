@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import static java.util.Locale.US;
-import java.util.function.IntSupplier;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -66,9 +65,48 @@ public class DoubleMatrix extends AbstractMatrix
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
 
-    private DoubleMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
+    protected DoubleMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
     {
         super(origRows, origCols, startRow, startCol, rows, cols, array);
+    }
+
+    protected DoubleMatrix(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)
+    {
+        super(origRows, origCols, rows, cols, array, pos);
+    }
+    
+    public DoubleMatrix getSparse(int rows, int cols, int... pos)
+    {
+        IntProvider rowSup = ()->rows();
+        IntProvider colSup = ()->columns();
+        DoubleMatrix m = new DoubleMatrixView(rowSup, colSup, rows, cols, array, pos);
+        if (rows != -1)
+        {
+            if (cols != -1)
+            {
+                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * pos[i] + pos[rows+j]);
+                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * pos[i] + pos[rows+j], v);
+            }
+            else
+            {
+                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * pos[i] + j);
+                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * pos[i] + j, v);
+            }
+        }
+        else
+        {
+            if (cols != -1)
+            {
+                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * i + pos[j]);
+                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * i + pos[j], v);
+            }
+            else
+            {
+                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * i + j);
+                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * i + j, v);
+            }
+        }
+        return m;
     }
     /**
      * Returns view of sub matrix. Returned Matrix shares the same data.
@@ -78,7 +116,7 @@ public class DoubleMatrix extends AbstractMatrix
      * @param cols If -1 the matrix covers rest of the columns
      * @return 
      */
-    public DoubleMatrix getView(int startRow, int startCol, int rows, int cols)
+    public DoubleMatrix getSub(int startRow, int startCol, int rows, int cols)
     {
         if (startRow+rows > rows() || startCol+cols > columns())
         {
@@ -86,7 +124,7 @@ public class DoubleMatrix extends AbstractMatrix
         }
         IntProvider rowSup = ()->rows();
         IntProvider colSup = ()->columns();
-        DoubleMatrix m = new DoubleMatrix(rowSup, colSup, startRow, startCol, rows, cols, array);
+        DoubleMatrix m = new DoubleMatrixView(rowSup, colSup, startRow, startCol, rows, cols, array);
         m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow));
         m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow), v);
         return m;
