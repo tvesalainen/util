@@ -385,10 +385,7 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         assert point.columns() >= 1;
         assert point.rows() >= 2;
-        double[] d = point.data();
-        double x = d[0];
-        double y = d[1];
-        drawPoint(x, y);
+        drawPoint(point.get(0, 0), point.get(0, 1));
     }
     /**
      * Draw points x=(row,0) y=(row,1)
@@ -397,7 +394,6 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     public void drawPoints(DoubleMatrix points)
     {
         assert points.columns() >= 2;
-        double[] d = points.data();
         int len = points.rows();
         for (int row=0;row<len;row++)
         {

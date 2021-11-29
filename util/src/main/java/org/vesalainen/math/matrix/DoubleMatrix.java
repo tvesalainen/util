@@ -118,15 +118,17 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public DoubleMatrix getSub(int startRow, int startCol, int rows, int cols)
     {
-        if (startRow+rows > rows() || startCol+cols > columns())
+        int r = rows != -1 ? rows : 0;
+        int c = cols != -1 ? cols : 0;
+        if (startRow+r > rows() || startCol+c > columns())
         {
             throw new IllegalArgumentException("rows/cols overlap");
         }
         IntProvider rowSup = ()->rows();
         IntProvider colSup = ()->columns();
         DoubleMatrix m = new DoubleMatrixView(rowSup, colSup, startRow, startCol, rows, cols, array);
-        m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow));
-        m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startCol) + (j+startRow), v);
+        m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startRow) + (j+startCol));
+        m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startRow) + (j+startCol), v);
         return m;
     }
     @Override

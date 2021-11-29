@@ -369,16 +369,31 @@ public final class MoreMath
     )
     {
         double coef = (maxCoef-minCoef)/2.0;
-        for (int ii=0;ii<128;ii++)
+        double dif = 0;
+        double prevDif = Double.MAX_VALUE;
+        for (int ii=0;ii<128;)
         {
             double y = f.applyAsDouble(coef);
             if (!Double.isFinite(y))
             {
                 throw new IllegalArgumentException("Y="+y);
             }
-            if (abs(y - targetY) < 2*ulp(targetY))
+            dif = abs(y - targetY);
+            if (dif == 0)
             {
                 return coef;
+            }
+            else
+            {
+                if (dif >= prevDif)
+                {
+                    if (dif < 10*ulp(targetY))
+                    {
+                        return coef;
+                    }
+                    ii++;
+                }
+                prevDif = dif;
             }
             double k = derivative(f, coef);
             double c;
@@ -407,6 +422,6 @@ public final class MoreMath
                 }
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("too much iteration dif="+dif);
     }
 }

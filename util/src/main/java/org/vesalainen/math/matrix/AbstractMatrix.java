@@ -84,7 +84,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
-        this.M = (i, j) -> origCols.getAsInt() * (i+startCol) + (j+startRow);
+        this.M = (i, j) -> origCols.getAsInt() * (i+startRow) + (j+startCol);
     }
 
     protected AbstractMatrix(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)

@@ -17,11 +17,13 @@
 package org.vesalainen.navi;
 
 import java.awt.Color;
+import static java.awt.Color.WHITE;
 import static java.awt.Font.BOLD;
 import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.Catenary;
+import org.vesalainen.math.MathFunction;
 import static org.vesalainen.math.MoreMath.arsinh;
 import org.vesalainen.ui.Plotter;
 
@@ -47,6 +49,22 @@ public class CatenaryAnchoringTest
         p.drawCoordinates();
         p.plot("Anchoring", "png");
         
+    }
+    @Test
+    public void testHorizonTalScopeForChain() throws IOException
+    {
+        double mm = 10;
+        double d = 10;
+        double s = 80;
+        ElasticChain ca = new ElasticChain(mm);
+        MathFunction f = (T)->
+                {
+                    return ca.horizontalScopeForChain(T, d, s);
+                };
+        Plotter p = new Plotter(1000, 1000, WHITE, false);
+        p.draw(f, 0, 70, 2000, 80);
+        p.drawCoordinates();
+        p.plot("c:\\temp\\scope.png");
     }
     @Test
     public void testFairleadTension()
