@@ -20,11 +20,9 @@ package org.vesalainen.math;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleBinaryMatrix;
 import org.vesalainen.math.matrix.DoubleUnaryMatrix;
-import org.vesalainen.util.function.DoubleBiPredicate;
 
 /**
  * @author Timo Vesalainen
@@ -353,9 +351,9 @@ public final class MoreMath
         return Math.log(x+Math.sqrt(x*x-1));
     }
     /**
-     * Returns coefficient that fulfills targetY = f(targetX, coef)
+     * Returns coefficient that fulfills targetY = f(targetX, coef) using
+     * epsilon 10*ulp(targetY)
      * @param f F(x, coef)
-     * @param targetX
      * @param targetY
      * @param minCoef
      * @param maxCoef
@@ -366,6 +364,25 @@ public final class MoreMath
             double targetY,
             double minCoef,
             double maxCoef
+    )
+    {
+        return solve(f, targetY, minCoef, maxCoef, 10*ulp(targetY));
+    }
+    /**
+     * Returns coefficient that fulfills targetY = f(targetX, coef)
+     * @param f F(x, coef)
+     * @param targetY
+     * @param minCoef
+     * @param maxCoef
+     * @param epsilon Allowed difference to targetY
+     * @return 
+     */
+    public static double solve(
+            DoubleUnaryOperator f,
+            double targetY,
+            double minCoef,
+            double maxCoef,
+            double epsilon
     )
     {
         double coef = (maxCoef-minCoef)/2.0;
@@ -379,7 +396,7 @@ public final class MoreMath
                 throw new IllegalArgumentException("Y="+y);
             }
             dif = abs(y - targetY);
-            if (dif == 0)
+            if (dif < epsilon)
             {
                 return coef;
             }
@@ -387,10 +404,6 @@ public final class MoreMath
             {
                 if (dif >= prevDif)
                 {
-                    if (dif < 10*ulp(targetY))
-                    {
-                        return coef;
-                    }
                     ii++;
                 }
                 prevDif = dif;
@@ -422,6 +435,6 @@ public final class MoreMath
                 }
             }
         }
-        throw new IllegalArgumentException("too much iteration dif="+dif);
+        throw new IllegalArgumentException("too much iteration dif="+dif+" ulp="+ulp(targetY));
     }
 }
