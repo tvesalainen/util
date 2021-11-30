@@ -377,6 +377,10 @@ public class AbstractPlotter extends AbstractView implements DrawContext
     {
         shapes.add(new Drawable(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
     }
+    public void drawEllipse(double x, double y, double w, double h)
+    {
+        shapes.add(new Drawable(new Ellipse2D.Double(x-w, y-h, w*2, h*2)));
+    }
     /**
      * Draw point x = (0,0) y=(1,0)
      * @param point 

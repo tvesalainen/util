@@ -127,7 +127,7 @@ public class Chain
                 double y2 = a*cosh(x2/a);
                 return y2-y1;
             };
-            double x1 = solve(f, d, 0, catS);
+            double x1 = solve(f, d, 0, catS, 0.001);
             double s1 = a*sinh(x1/a);
             double x2 = a*arsinh((s1+s)/a);
             return x2 - x1;

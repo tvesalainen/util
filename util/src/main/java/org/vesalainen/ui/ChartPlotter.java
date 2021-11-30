@@ -17,13 +17,10 @@
 package org.vesalainen.ui;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import static java.lang.Math.*;
 import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.ui.scale.CoordinateScale;
-import org.vesalainen.ui.scale.CoordinateScale.LatitudeScale;
-import org.vesalainen.ui.scale.CoordinateScale.LongitudeScale;
 
 /**
  *
@@ -31,6 +28,8 @@ import org.vesalainen.ui.scale.CoordinateScale.LongitudeScale;
  */
 public class ChartPlotter extends AbstractPlotter
 {
+
+    protected double departure;
     
     public ChartPlotter(int width, int height)
     {
@@ -48,7 +47,14 @@ public class ChartPlotter extends AbstractPlotter
         shapes.forEach((r)->rect.add(r.getBounds()));
         fixedShapes.stream().forEach((f)->rect.add(f.getX(), f.getY()));
         double centerY = rect.getCenterY();
-        return DoubleTransform.composite(MathFunction.preMultiplier(MathFunction.IDENTITY, cos(toRadians(centerY))), MathFunction.IDENTITY);
+        departure = cos(toRadians(centerY));
+        return DoubleTransform.composite(MathFunction.preMultiplier(MathFunction.IDENTITY, departure), MathFunction.IDENTITY);
     }
-    
+
+    @Override
+    public void drawCircle(double x, double y, double r)
+    {
+        super.drawEllipse(x, y, r/cos(toRadians(y)), r);
+    }
+
 }

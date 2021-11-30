@@ -51,20 +51,32 @@ public class CatenaryAnchoringTest
         
     }
     @Test
-    public void testHorizonTalScopeForChain() throws IOException
+    public void testHorizontalScopeForChain() throws IOException
     {
         double mm = 10;
         double d = 10;
         double s = 80;
         ElasticChain ca = new ElasticChain(mm);
+        double max = Chain.maximalScope(d, s);
+        double min = Chain.minimalScope(d, s);
         MathFunction f = (T)->
                 {
                     return ca.horizontalScopeForChain(T, d, s);
                 };
         Plotter p = new Plotter(1000, 1000, WHITE, false);
-        p.draw(f, 0, 70, 2000, 80);
+        p.draw(f, 0, min, 4000, max);
         p.drawCoordinates();
         p.plot("c:\\temp\\scope.png");
+    }
+    @Test
+    public void testHorizontalScopeForChain2() throws IOException
+    {
+        double mm = 10;
+        double d = 10.399999618530273;
+        double s = 38.41958928418916;
+        double T = 3770.4991119416145;
+        ElasticChain ca = new ElasticChain(mm);
+        double horizontalScopeForChain = ca.horizontalScopeForChain(T, d, s);
     }
     @Test
     public void testFairleadTension()
