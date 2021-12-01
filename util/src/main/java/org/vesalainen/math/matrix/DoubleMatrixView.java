@@ -25,14 +25,14 @@ import org.vesalainen.util.ArrayHelp;
 public class DoubleMatrixView extends DoubleMatrix
 {
     
-    protected DoubleMatrixView(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
+    protected DoubleMatrixView(AbstractMatrix parent, int startRow, int startCol, int rows, int cols, Object array)
     {
-        super(origRows, origCols, startRow, startCol, rows, cols, array);
+        super(parent, startRow, startCol, rows, cols, array);
     }
 
-    public DoubleMatrixView(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)
+    public DoubleMatrixView(AbstractMatrix parent, int rows, int cols, Object array, int... pos)
     {
-        super(origRows, origCols, rows, cols, array, pos);
+        super(parent, rows, cols, array, pos);
     }
 
     @Override

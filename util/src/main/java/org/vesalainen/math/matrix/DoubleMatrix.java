@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import static java.util.Locale.US;
+import java.util.function.IntPredicate;
 import org.vesalainen.util.ArrayHelp;
 
 /**
@@ -65,45 +66,91 @@ public class DoubleMatrix extends AbstractMatrix
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
 
-    protected DoubleMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
+    protected DoubleMatrix(AbstractMatrix parent, int startRow, int startCol, int rows, int cols, Object array)
     {
-        super(origRows, origCols, startRow, startCol, rows, cols, array);
+        super(parent, startRow, startCol, rows, cols, array);
     }
 
-    protected DoubleMatrix(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)
+    protected DoubleMatrix(AbstractMatrix parent, int rows, int cols, Object array, int... pos)
     {
-        super(origRows, origCols, rows, cols, array, pos);
+        super(parent, rows, cols, array, pos);
     }
-    
+    /**
+     * Returns matrix covering only rows that pass predicate test. 
+     * Returned Matrix shares the same data. Test is evaluated on creation
+     * when matrix is created.
+     * @param predicate
+     * @return 
+     */
+    public DoubleMatrix getConditionalRows(IntPredicate predicate)
+    {
+        int rows = rows();
+        int[] array = new int[rows];
+        int len = 0;
+        for (int ii=0;ii<rows;ii++)
+        {
+            if (predicate.test(ii))
+            {
+                array[len++] = ii;
+            }
+        }
+        return getSparse(len, -1, Arrays.copyOf(array, len));
+    }
+    /**
+     * Returns matrix covering only columns that pass predicate test. 
+     * Returned Matrix shares the same data. Test is evaluated on creation
+     * when matrix is created.
+     * @param predicate
+     * @return 
+     */
+    public DoubleMatrix getConditionalColumns(IntPredicate predicate)
+    {
+        int columns = columns();
+        int[] array = new int[columns];
+        int len = 0;
+        for (int ii=0;ii<columns;ii++)
+        {
+            if (predicate.test(ii))
+            {
+                array[len++] = ii;
+            }
+        }
+        return getSparse(-1, len, Arrays.copyOf(array, len));
+    }
+    /**
+     * Returns view of sub matrix. Returned Matrix shares the same data.
+     * @param rows Number of rows in view. Row numbers must be in pos before column positions . If -1 no change
+     * @param cols Number of columns in view. Column numbers must be in pos after row positions. If -1 no change
+     * @param pos
+     * @return 
+     */
     public DoubleMatrix getSparse(int rows, int cols, int... pos)
     {
-        IntProvider rowSup = ()->rows();
-        IntProvider colSup = ()->columns();
-        DoubleMatrix m = new DoubleMatrixView(rowSup, colSup, rows, cols, array, pos);
+        DoubleMatrix m = new DoubleMatrixView(this, rows, cols, array, pos);
         if (rows != -1)
         {
             if (cols != -1)
             {
-                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * pos[i] + pos[rows+j]);
-                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * pos[i] + pos[rows+j], v);
+                m.supplier = (i, j) -> get(pos[i], pos[rows+j]);
+                m.consumer = (i, j, v) -> set(pos[i], pos[rows+j], v);
             }
             else
             {
-                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * pos[i] + j);
-                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * pos[i] + j, v);
+                m.supplier = (i, j) -> get(pos[i], j);
+                m.consumer = (i, j, v) -> set(pos[i], j, v);
             }
         }
         else
         {
             if (cols != -1)
             {
-                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * i + pos[j]);
-                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * i + pos[j], v);
+                m.supplier = (i, j) -> get(i, pos[j]);
+                m.consumer = (i, j, v) -> set(i, pos[j], v);
             }
             else
             {
-                m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * i + j);
-                m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * i + j, v);
+                m.supplier = (i, j) -> get(i, j);
+                m.consumer = (i, j, v) -> set(i, j, v);
             }
         }
         return m;
@@ -124,11 +171,9 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("rows/cols overlap");
         }
-        IntProvider rowSup = ()->rows();
-        IntProvider colSup = ()->columns();
-        DoubleMatrix m = new DoubleMatrixView(rowSup, colSup, startRow, startCol, rows, cols, array);
-        m.supplier = (i, j) -> Array.getDouble(array, colSup.getAsInt() * (i+startRow) + (j+startCol));
-        m.consumer = (i, j, v) -> Array.setDouble(array, colSup.getAsInt() * (i+startRow) + (j+startCol), v);
+        DoubleMatrix m = new DoubleMatrixView(this, startRow, startCol, rows, cols, array);
+        m.supplier = (i, j) -> get(i+startRow, j+startCol);
+        m.consumer = (i, j, v) -> set(i+startRow, j+startCol, v);
         return m;
     }
     @Override

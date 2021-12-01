@@ -48,6 +48,43 @@ public class DoubleMatrixTest
         }
     }
     @Test
+    public void testConditionalRows1()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getConditionalRows((i)->m.get(i, 0)==1);
+        assertEquals(1, view.rows());
+        assertEquals(3, view.columns());
+        assertEquals(1, view.get(0, 0), 1e-10);
+    }
+    @Test
+    public void testConditionalRows2()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix sparse = m.getSparse(-1, 1, 1);
+        DoubleMatrix view = sparse.getConditionalRows((i)->sparse.get(i, 0)==5);
+        assertEquals(1, view.rows());
+        assertEquals(1, view.columns());
+        assertEquals(5, view.get(0, 0), 1e-10);
+    }
+    @Test
+    public void testConditionalColumns()
+    {
+        DoubleMatrix m = DoubleMatrix.getInstance(3, 
+                1, 2, 3, 
+                4, 5, 6, 
+                7, 8, 9);
+        DoubleMatrix view = m.getConditionalColumns((i)->m.get(i, 0)==1);
+        assertEquals(1, view.columns());
+        assertEquals(3, view.rows());
+        assertEquals(1, view.get(0, 0), 1e-10);
+    }
+    @Test
     public void testSparse1()
     {
         DoubleMatrix m = DoubleMatrix.getInstance(3, 

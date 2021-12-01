@@ -19,7 +19,6 @@ package org.vesalainen.math.matrix;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Objects;
-import java.util.function.IntSupplier;
 import org.vesalainen.util.ArrayHelp;
 import org.vesalainen.util.ArrayHelp.RowComparator;
 
@@ -64,7 +63,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         this.cls = (Class<T>) array.getClass().getComponentType();
         this.M = (i, j) -> cols * i + j;
     }
-    protected AbstractMatrix(IntProvider origRows, IntProvider origCols, int startRow, int startCol, int rows, int cols, Object array)
+    protected AbstractMatrix(AbstractMatrix parent, int startRow, int startCol, int rows, int cols, Object array)
     {
         if (rows != -1)
         {
@@ -72,7 +71,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         else
         {
-            this.rows = ()->origRows.getAsInt()-startRow;
+            this.rows = ()->parent.rows()-startRow;
         }
         if (cols != -1)
         {
@@ -80,14 +79,14 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         else
         {
-            this.columns = ()->origCols.getAsInt()-startCol;
+            this.columns = ()->parent.columns()-startCol;
         }
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
-        this.M = (i, j) -> origCols.getAsInt() * (i+startRow) + (j+startCol);
+        this.M = (i, j) -> parent.at(i+startRow, j+startCol);
     }
 
-    protected AbstractMatrix(IntProvider origRows, IntProvider origCols, int rows, int cols, Object array, int... pos)
+    protected AbstractMatrix(AbstractMatrix parent, int rows, int cols, Object array, int... pos)
     {
         if (rows != -1)
         {
@@ -95,13 +94,13 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             {
                 checkPositions(pos, rows+cols);
                 this.columns = ()->cols;
-                this.M = (i, j) -> origCols.getAsInt() * pos[i] + pos[rows+j];
+                this.M = (i, j) -> parent.at(pos[i], pos[rows+j]);
             }
             else
             {
                 checkPositions(pos, rows);
-                this.columns = origCols;
-                this.M = (i, j) -> origCols.getAsInt() * pos[i] + j;
+                this.columns = ()->parent.columns();
+                this.M = (i, j) -> parent.at(pos[i], j);
             }
             this.rows = ()->rows;
         }
@@ -111,15 +110,15 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             {
                 checkPositions(pos, cols);
                 this.columns = ()->cols;
-                this.M = (i, j) -> origCols.getAsInt() * i + pos[j];
+                this.M = (i, j) -> parent.at(i, pos[j]);
             }
             else
             {
                 checkPositions(pos, 0);
-                this.columns = origCols;
-                this.M = (i, j) -> origCols.getAsInt() * i + j;
+                this.columns = ()->parent.columns();
+                this.M = (i, j) -> parent.at(i, j);
             }
-            this.rows = origRows;
+            this.rows = ()->parent.rows();
         }
         this.array = array;
         this.cls = (Class<T>) array.getClass().getComponentType();
@@ -234,7 +233,17 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             throw new IllegalArgumentException();
         }
     }
-
+    /**
+     * Returns index to data array
+     * @param i
+     * @param j
+     * @return 
+     */
+    public int at(int i, int j)
+    {
+        return M.at(i, j);
+    }
+    
     @Deprecated
     public int getNumRows()
     {
@@ -311,7 +320,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
      */
     public boolean isEmpty()
     {
-        return rows.getAsInt() == 0 && columns.getAsInt() == 0;
+        return rows.getAsInt() == 0 || columns.getAsInt() == 0;
     }
 
     /**
