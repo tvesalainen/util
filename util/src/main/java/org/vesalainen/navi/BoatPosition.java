@@ -94,7 +94,7 @@ public interface BoatPosition
      * @param heading
      * @return 
      */
-    default double longitudeAt(SimpleBoatPosition pos, double latitude, double longitude, double heading)
+    default double longitudeAt(BoatPosition pos, double latitude, double longitude, double heading)
     {
         if (getLength() != pos.getLength() || getBeam() != pos.getBeam())
         {

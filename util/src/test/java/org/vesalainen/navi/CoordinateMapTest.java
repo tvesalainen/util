@@ -37,6 +37,7 @@ public class CoordinateMapTest
         CoordinateMap<String> m = new CoordinateMap<>(60, 1, METER);
         m.put(25, 60, "25,60");
         m.put(24, 60, "24,60");
+        assertEquals("24,60", m.get(24.000002249820017, 60.000004499640035));
         assertEquals("25,60", m.get(25, 60));
         m.forEach((lon,lat, s)->System.err.println(lon+", "+lat+", "+s));
     }

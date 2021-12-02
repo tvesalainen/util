@@ -31,7 +31,7 @@ public class CoordinateMap<V>
     private final double departure;
     private final double boxSize;
     private final double boxSize2;
-    private final Map2D<Double,Double,V> map;
+    private final Map2D<Integer,Integer,V> map;
     
     public CoordinateMap(double latitude, double boxSize, UnitType unit)
     {
@@ -43,14 +43,14 @@ public class CoordinateMap<V>
 
     public V put(double longitude, double latitude, V value)
     {
-        Double lon = (longitude/departure)/boxSize;
-        Double lat = latitude/boxSize;
+        int lon = (int) floor((longitude/departure)/boxSize);
+        int lat = (int) floor(latitude/boxSize);
         return map.put(lon, lat, value);
     }
     public V get(double longitude, double latitude)
     {
-        Double lon = (longitude/departure)/boxSize;
-        Double lat = latitude/boxSize;
+        int lon = (int) floor((longitude/departure)/boxSize);
+        int lat = (int) floor(latitude/boxSize);
         return map.get(lon, lat);
     }
     
