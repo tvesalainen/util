@@ -202,6 +202,84 @@ public final class Primitives
         throw new NullPointerException(nullMsg);
     }
     /**
+     * Returns byte or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final byte getByte(Number number)
+    {
+        if (number!=null)
+        {
+            return number.byteValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
+     * Returns short or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final short getShort(Number number)
+    {
+        if (number!=null)
+        {
+            return number.shortValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
+     * Returns int or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final int getInt(Number number)
+    {
+        if (number!=null)
+        {
+            return number.intValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
+     * Returns long or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final long getLong(Number number)
+    {
+        if (number!=null)
+        {
+            return number.longValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
+     * Returns float or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final float getFloat(Number number)
+    {
+        if (number!=null)
+        {
+            return number.floatValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
+     * Returns double or throws NullPointerException.
+     * @param number
+     * @return 
+     */
+    public static final double getDouble(Number number)
+    {
+        if (number!=null)
+        {
+            return number.doubleValue();
+        }
+        throw new NullPointerException();
+    }
+    /**
      * Returns class for simple name.
      * @param type
      * @return 
