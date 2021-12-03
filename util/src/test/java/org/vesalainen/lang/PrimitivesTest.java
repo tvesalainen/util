@@ -54,6 +54,22 @@ public class PrimitivesTest
         int bitCount = bi.bitCount();
     }
     @Test
+    public void testGetInt()
+    {
+        assertEquals(1, Primitives.getInt(null, 1));
+        assertEquals(1, Primitives.getInt(1, 2));
+        assertEquals(1, Primitives.getInt(1, "can't be null"));
+        try
+        {
+            Primitives.getInt(null, "can't be null");
+            fail("should throw NullPointerException");
+        }
+        catch (NullPointerException ex)
+        {
+            assertEquals("can't be null", ex.getMessage());
+        }
+    }
+    @Test
     public void testFitBits()
     {
         assertTrue(Primitives.fitBits(Integer.SIZE, Integer.MAX_VALUE));

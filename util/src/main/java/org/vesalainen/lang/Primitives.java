@@ -22,6 +22,7 @@ import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.IntPredicate;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import org.vesalainen.util.CharSequences;
@@ -56,6 +57,150 @@ public final class Primitives
 
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
+    /**
+     * Returns byte or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final byte getByte(Number number, byte def)
+    {
+        return number!=null?number.byteValue():def;
+    }
+    /**
+     * Returns short or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final short getShort(Number number, short def)
+    {
+        return number!=null?number.shortValue():def;
+    }
+    /**
+     * Returns int or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final int getInt(Number number, int def)
+    {
+        return number!=null?number.intValue():def;
+    }
+    /**
+     * Returns long or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final long getLong(Number number, long def)
+    {
+        return number!=null?number.longValue():def;
+    }
+    /**
+     * Returns float or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final float getFloat(Number number, float def)
+    {
+        return number!=null?number.floatValue():def;
+    }
+    /**
+     * Returns double or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final double getDouble(Number number, double def)
+    {
+        return number!=null?number.doubleValue():def;
+    }
+    /**
+     * Returns byte or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final byte getByte(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.byteValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
+    /**
+     * Returns short or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final short getShort(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.shortValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
+    /**
+     * Returns int or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final int getInt(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.intValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
+    /**
+     * Returns long or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final long getLong(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.longValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
+    /**
+     * Returns float or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final float getFloat(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.floatValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
+    /**
+     * Returns double or throws NullPointerException with nullMsg if number is null.
+     * @param number
+     * @param nullMsg
+     * @return 
+     */
+    public static final double getDouble(Number number, String nullMsg)
+    {
+        if (number!=null)
+        {
+            return number.doubleValue();
+        }
+        throw new NullPointerException(nullMsg);
+    }
     /**
      * Returns class for simple name.
      * @param type
