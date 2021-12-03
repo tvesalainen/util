@@ -69,7 +69,7 @@ public interface BoatPosition
     }
 
     /**
-     * Returns latitude at pos with given this coordinates and heading.
+     * Returns latitude at pos when coordinates are at this.
      * @param pos
      * @param latitude
      * @param longitude
@@ -87,7 +87,7 @@ public interface BoatPosition
 
 
     /**
-     * Returns longitude at pos with given this coordinates and heading.
+     * Returns longitude at pos when coordinates are at this.
      * @param pos
      * @param latitude
      * @param longitude
