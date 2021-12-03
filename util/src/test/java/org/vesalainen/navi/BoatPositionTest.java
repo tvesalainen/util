@@ -33,6 +33,14 @@ public class BoatPositionTest
     }
 
     @Test
+    public void test1()
+    {
+        SimpleBoatPosition gps = new SimpleBoatPosition(1, 3, 12, 0);
+        SimpleBoatPosition depth = new SimpleBoatPosition(2, 2, 5, 7);
+        double latDepth = gps.latitudeAt(depth, 0, 0, 180);
+        double lonDepth = gps.longitudeAt(depth, 0, 0, 180);
+    }
+    @Test
     public void testCenterLatitude()
     {
         double heading = 0;

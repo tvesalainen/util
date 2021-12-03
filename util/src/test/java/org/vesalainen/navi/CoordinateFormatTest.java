@@ -36,10 +36,10 @@ public class CoordinateFormatTest
     public void test1()
     {
         assertEquals("N 60.500000°", CoordinateFormat.formatLatitude(Locale.US, 60.5, UnitType.COORDINATE_DEGREES));
-        assertEquals("S 60° 30,000'", CoordinateFormat.formatLatitude(Locale.forLanguageTag("FI"), -60.5, UnitType.COORDINATE_DEGREES_AND_MINUTES));
+        assertEquals("S 60° 30,00000'", CoordinateFormat.formatLatitude(Locale.forLanguageTag("FI"), -60.5, UnitType.COORDINATE_DEGREES_AND_MINUTES));
         assertEquals("N 60° 30' 0.0\"", CoordinateFormat.formatLatitude(Locale.US, 60.5, UnitType.COORDINATE_DEGREES_MINUTES_SECONDS));
         assertEquals("W 25.500000°", CoordinateFormat.formatLongitude(Locale.US, -25.5, UnitType.COORDINATE_DEGREES));
-        assertEquals("E 25° 30.000'", CoordinateFormat.formatLongitude(Locale.US, 25.5, UnitType.COORDINATE_DEGREES_AND_MINUTES));
+        assertEquals("E 25° 30.00000'", CoordinateFormat.formatLongitude(Locale.US, 25.5, UnitType.COORDINATE_DEGREES_AND_MINUTES));
         assertEquals("W 25° 30' 0.0\"", CoordinateFormat.formatLongitude(Locale.US, -25.5, UnitType.COORDINATE_DEGREES_MINUTES_SECONDS));
     }
     
