@@ -23,16 +23,25 @@ import java.util.function.Supplier;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <K>
+ * @param <L>
+ * @param <V>
  */
 public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
 {
     protected Map<K,Map<L,V>> map;
-    protected Supplier<Map<L,V>> creator;
+    protected Supplier<Map<L,V>> mapCreator;
+    protected Supplier<V> itemCreator;
 
-    protected AbstractMap2D(Supplier<Map<L, V>> creator)
+    protected AbstractMap2D(Supplier<Map<L, V>> mapCreator)
     {
-        this.map = (Map<K, Map<L, V>>) creator.get();
-        this.creator = creator;
+        this(mapCreator, null);
+    }
+    protected AbstractMap2D(Supplier<Map<L, V>> mapCreator, Supplier<V> itemCreator)
+    {
+        this.map = (Map<K, Map<L, V>>) mapCreator.get();
+        this.mapCreator = mapCreator;
+        this.itemCreator = itemCreator;
     }
     
     @Override
@@ -75,6 +84,34 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         }
         return null;
     }
+    /**
+     * Returns item or creates it.
+     * @param key1
+     * @param key2
+     * @return 
+     */
+    @Override
+    public V getOrCreate(K key1, L key2)
+    {
+        Map<L, V> m = map.get(key1);
+        if (m != null)
+        {
+            return m.get(key2);
+        }
+        else
+        {
+            if (itemCreator != null)
+            {
+                V item = itemCreator.get();
+                put(key1, key2, item);
+                return item;
+            }
+            else
+            {
+                throw new UnsupportedOperationException("itemCreator not supported on init");
+            }
+        }
+    }
 
     @Override
     public boolean isEmpty()
@@ -88,7 +125,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         Map<L, V> m = map.get(key1);
         if (m == null)
         {
-            m = creator.get();
+            m = mapCreator.get();
             map.put(key1, m);
         }
         return m.put(key2, value);

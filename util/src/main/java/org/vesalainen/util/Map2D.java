@@ -32,6 +32,7 @@ public interface Map2D<K,L,V>
     boolean containsValue(V value);
     boolean equals(Object o);
     V get(K key1, L key2);
+    V getOrCreate(K key1, L key2);
     int	hashCode();
     boolean isEmpty();
     V put(K key1, L key2, V value);

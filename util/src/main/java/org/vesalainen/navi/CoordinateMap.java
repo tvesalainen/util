@@ -17,6 +17,7 @@
 package org.vesalainen.navi;
 
 import static java.lang.Math.*;
+import java.util.function.Supplier;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.*;
 import org.vesalainen.util.Map2D;
@@ -35,8 +36,12 @@ public class CoordinateMap<V>
     
     public CoordinateMap(double latitude, double boxSize, UnitType unit)
     {
+        this(latitude, boxSize, unit, null);
+    }
+    public CoordinateMap(double latitude, double boxSize, UnitType unit, Supplier<V> squareCreator)
+    {
         this.departure = cos(toRadians(latitude));
-        this.map = new TreeMap2D<>();
+        this.map = new TreeMap2D<>(squareCreator);
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
         this.boxSize2 = boxSize/2;
     }
