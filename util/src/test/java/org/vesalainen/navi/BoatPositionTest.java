@@ -16,6 +16,8 @@
  */
 package org.vesalainen.navi;
 
+import static java.lang.Math.hypot;
+import java.util.function.DoubleBinaryOperator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.UnitType;
@@ -39,6 +41,16 @@ public class BoatPositionTest
         SimpleBoatPosition depth = new SimpleBoatPosition(2, 2, 5, 7);
         double latDepth = gps.latitudeAt(depth, 0, 0, 180);
         double lonDepth = gps.longitudeAt(depth, 0, 0, 180);
+        double expDst = METER.convertTo(hypot(2-1, 7-0), NAUTICAL_MILE);
+        assertEquals(expDst, Navis.distance(0, 0, latDepth, lonDepth), 1e-10);
+
+        DoubleBinaryOperator latOp = gps.latitudeAtOperator(depth);
+        DoubleBinaryOperator lonOp = gps.longitudeAtOperator(depth, 0);
+        assertEquals(expDst, Navis.distance(0, 0, latOp.applyAsDouble(0, 180), lonOp.applyAsDouble(0, 180)), 1e-10);
+        
+        assertEquals(latDepth, latOp.applyAsDouble(0, 180), 1e-10);
+        assertEquals(lonDepth, lonOp.applyAsDouble(0, 180), 1e-10);
+
     }
     @Test
     public void testCenterLatitude()

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi;
 
+import java.util.function.DoubleBinaryOperator;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.METER;
 import static org.vesalainen.math.UnitType.NAUTICAL_MILE;
@@ -67,7 +68,14 @@ public interface BoatPosition
     {
         return longitudeAt(getBeam()/2, getLength()/2, latitude, longitude, heading);
     }
-
+    default DoubleBinaryOperator latitudeAtOperator(BoatPosition pos)
+    {
+        if (getLength() != pos.getLength() || getBeam() != pos.getBeam())
+        {
+            throw new IllegalArgumentException("dimensions differ");
+        }
+        return latitudeAtOperator(pos.getDimensionToPort(), pos.getDimensionToBow());
+    }
     /**
      * Returns latitude at pos when coordinates are at this.
      * @param pos
@@ -85,7 +93,14 @@ public interface BoatPosition
         return latitudeAt(pos.getDimensionToPort(), pos.getDimensionToBow(), latitude, heading);
     }
 
-
+    default DoubleBinaryOperator longitudeAtOperator(BoatPosition pos, double latitude)
+    {
+        if (getLength() != pos.getLength() || getBeam() != pos.getBeam())
+        {
+            throw new IllegalArgumentException("dimensions differ");
+        }
+        return longitudeAtOperator(pos.getDimensionToPort(), pos.getDimensionToBow(), latitude);
+    }
     /**
      * Returns longitude at pos when coordinates are at this.
      * @param pos
@@ -103,6 +118,18 @@ public interface BoatPosition
         return longitudeAt(pos.getDimensionToPort(), pos.getDimensionToBow(), latitude, longitude, heading);
     }
     
+    default DoubleBinaryOperator latitudeAtOperator(double toPort, double toBow)
+    {
+        double bowDir = getDimensionToBow() - toBow; 
+        double portDir = getDimensionToPort() - toPort;
+        double meters = Math.hypot(bowDir, portDir);
+        double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
+        return (double latitude, double heading)->
+        {
+            double bearing = Navis.normalizeAngle(angle+heading);
+            return latitude + Navis.deltaLatitude(UnitType.convert(meters, METER, NAUTICAL_MILE), bearing);
+        };
+    }
     default double latitudeAt(double toPort, double toBow, double latitude, double heading)
     {
         double bowDir = getDimensionToBow() - toBow; 
@@ -111,6 +138,18 @@ public interface BoatPosition
         double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
         double bearing = Navis.normalizeAngle(angle+heading);
         return latitude + Navis.deltaLatitude(UnitType.convert(meters, METER, NAUTICAL_MILE), bearing);
+    }
+    default DoubleBinaryOperator longitudeAtOperator(double toPort, double toBow, double latitude)
+    {
+        double bowDir = getDimensionToBow() - toBow; 
+        double portDir = getDimensionToPort() - toPort;
+        double meters = Math.hypot(bowDir, portDir);
+        double angle = -Math.toDegrees(Math.atan2(portDir, bowDir));
+        return (double longitude, double heading)->
+        {
+            double bearing = Navis.normalizeAngle(angle+heading);
+            return longitude + Navis.deltaLongitude(latitude, UnitType.convert(meters, METER, NAUTICAL_MILE), bearing);
+        };
     }
     default double longitudeAt(double toPort, double toBow, double latitude, double longitude, double heading)
     {

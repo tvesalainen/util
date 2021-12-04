@@ -17,6 +17,7 @@
 package org.vesalainen.navi;
 
 import static java.lang.Math.*;
+import java.util.function.DoubleToIntFunction;
 import java.util.function.Supplier;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.*;
@@ -33,6 +34,8 @@ public class CoordinateMap<V>
     private final double boxSize;
     private final double boxSize2;
     private final Map2D<Integer,Integer,V> map;
+    private final DoubleToIntFunction lon;
+    private final DoubleToIntFunction lat;
     
     public CoordinateMap(double latitude, double boxSize, UnitType unit)
     {
@@ -44,19 +47,53 @@ public class CoordinateMap<V>
         this.map = new TreeMap2D<>(squareCreator);
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
         this.boxSize2 = boxSize/2;
+        this.lon = (lo)->(int) floor((lo/departure)/this.boxSize);
+        this.lat = (la)->(int) floor(la/this.boxSize);
     }
 
     public V put(double longitude, double latitude, V value)
     {
-        int lon = (int) floor((longitude/departure)/boxSize);
-        int lat = (int) floor(latitude/boxSize);
-        return map.put(lon, lat, value);
+        return map.put(lon.applyAsInt(longitude), lat.applyAsInt(latitude), value);
     }
     public V get(double longitude, double latitude)
     {
-        int lon = (int) floor((longitude/departure)/boxSize);
-        int lat = (int) floor(latitude/boxSize);
-        return map.get(lon, lat);
+        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
+    }
+    public V getOrCreate(double longitude, double latitude)
+    {
+        return map.getOrCreate(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
+    }
+    public V getNorth(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)+1);
+    }
+    public V getNorthEast(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)+1);
+    }
+    public V getNorthWest(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)+1);
+    }
+    public V getSouth(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)-1);
+    }
+    public V getSouthEast(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)-1);
+    }
+    public V getSouthWest(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)-1);
+    }
+    public V getEast(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude));
+    }
+    public V getWest(double longitude, double latitude)
+    {
+        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude));
     }
     
     public void forEach(CoordinateConsumer<V> act)

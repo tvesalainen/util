@@ -37,9 +37,11 @@ public class LocalLongitude implements Serializable
     private static final long serialVersionUID = 1L;
     
     protected double departure;
+    private final double latitude;
 
     private LocalLongitude(double latitude)
     {
+        this.latitude = latitude;
         this.departure = Math.cos(Math.toRadians(latitude));
     }
     /**
@@ -81,6 +83,11 @@ public class LocalLongitude implements Serializable
     public double getExternal(double longitude)
     {
         return longitude / departure;
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
     }
     
     public Polygon createExternal(Polygon internal)

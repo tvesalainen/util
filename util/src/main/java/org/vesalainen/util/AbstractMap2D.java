@@ -93,10 +93,10 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public V getOrCreate(K key1, L key2)
     {
-        Map<L, V> m = map.get(key1);
-        if (m != null)
+        V value = get(key1, key2);
+        if (value != null)
         {
-            return m.get(key2);
+            return value;
         }
         else
         {
