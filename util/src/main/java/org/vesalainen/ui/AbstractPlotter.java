@@ -771,6 +771,8 @@ public class AbstractPlotter extends AbstractView implements DrawContext
         public Polyline(Color color, BasicStroke stroke)
         {
             super(new DoublePolygon());
+            this.color = color;
+            this.stroke = stroke;
         }
         public void lineTo(Point p)
         {
