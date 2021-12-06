@@ -49,4 +49,28 @@ public interface TimeArray
      * @return 
      */
     long maxDuration();
+    /**
+     * Returns actual milliseconds between lastTime() and firstTime();
+     * @return 
+     */
+    default long duration()
+    {
+        return lastTime() - firstTime();
+    }
+    /**
+     * Returns duration()/maxDuration() in percents.
+     * @return 
+     */
+    default double fullness()
+    {
+        return 100.0*duration()/maxDuration();
+    }
+    /**
+     * Returns mean of lastTime() and firstTime();
+     * @return 
+     */
+    default long meanTime()
+    {
+        return (lastTime() + firstTime())/2;
+    }
 }

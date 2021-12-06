@@ -37,7 +37,13 @@ public abstract class AbstractSliding
     public AbstractSliding()
     {
     }
-
+    /**
+     * Clears buffer(s).
+     */
+    public void clear()
+    {
+        end = begin;
+    }
     /**
      * Returns number of active items. (end-begin)
      * @return

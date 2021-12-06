@@ -182,7 +182,7 @@ public class LevenbergMarquardt implements Serializable
 
                 if (!DoubleMatrix.solve(A, d, negDelta))
                 {
-                    return false;
+                    return false;   // throws exception 
                 }
                 // compute the candidate parameters
                 DoubleMatrix.subtract(param, negDelta, tempParam);

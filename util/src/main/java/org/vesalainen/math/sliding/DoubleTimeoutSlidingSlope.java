@@ -16,10 +16,11 @@
  */
 package org.vesalainen.math.sliding;
 
-import static java.lang.Math.*;
 import java.util.PrimitiveIterator;
 import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
+import org.vesalainen.math.Line;
+import org.vesalainen.math.SimpleLine;
 
 /**
  *
@@ -38,6 +39,19 @@ public class DoubleTimeoutSlidingSlope extends DoubleAbstractTimeoutSliding
     {
         super(clock, initialSize, timeout, timeConv);
     }
+
+    @Override
+    public void clear()
+    {
+        super.clear();
+        sxi = 0;
+        syi = 0;
+    }
+    
+    /**
+     * Returns slope
+     * @return 
+     */
     public double slope()
     {
         readLock.lock();
@@ -58,6 +72,47 @@ public class DoubleTimeoutSlidingSlope extends DoubleAbstractTimeoutSliding
                 s2 += sq(xi - xa);
             }
             return s1/s2;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    /**
+     * Returns point where line intercepts y-axis.
+     * @return 
+     */
+    public double yIntercept()
+    {
+        readLock.lock();
+        try
+        {
+            int count = count();
+            double xa = sxi/count;
+            double ya = syi/count;
+            double m = slope();
+            return ya - m*xa;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    /**
+     * Returns best fit line.
+     * @return 
+     */
+    public Line line()
+    {
+        readLock.lock();
+        try
+        {
+            int count = count();
+            double xa = sxi/count;
+            double ya = syi/count;
+            double m = slope();
+            double y = ya - m*xa;
+            return new SimpleLine(m, 0, y);
         }
         finally
         {
