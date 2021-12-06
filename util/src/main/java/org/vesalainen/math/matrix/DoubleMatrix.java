@@ -198,7 +198,7 @@ public class DoubleMatrix extends AbstractMatrix
     @Override
     public DoubleMatrix clone()
     {
-        return new DoubleMatrix(rows(), (double[]) copyOf(array, cls));
+        return (DoubleMatrix) super.clone();   //new DoubleMatrix(rows(), columns(), (double[]) copyOf(array, cls));
     }
     /**
      * Access as vector
@@ -693,16 +693,9 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public static boolean solve(DoubleMatrix a, DoubleMatrix b, DoubleMatrix x)
     {
-        try
-        {
-            a.decompose();
-            a.solve(b, x);
-            return true;
-        }
-        catch (IllegalArgumentException ex)
-        {
-            return false;
-        }
+        a.decompose();
+        a.solve(b, x);
+        return true;
     }
     /**
      * Solve linear equation Ax = b returning x
