@@ -198,7 +198,7 @@ public class DoubleMatrix extends AbstractMatrix
     @Override
     public DoubleMatrix clone()
     {
-        return (DoubleMatrix) super.clone();   //new DoubleMatrix(rows(), columns(), (double[]) copyOf(array, cls));
+        return new DoubleMatrix(rows(), columns(), (double[]) copyOf(array, cls));
     }
     /**
      * Access as vector
