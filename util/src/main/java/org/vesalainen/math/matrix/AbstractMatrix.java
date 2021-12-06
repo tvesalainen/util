@@ -53,7 +53,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
             throw new IllegalArgumentException("not array");
         }
         int length = Array.getLength(array);
-        if (length != rows*cols)
+        if (length < rows*cols)
         {
             throw new IllegalArgumentException("wrong number of items");
         }
