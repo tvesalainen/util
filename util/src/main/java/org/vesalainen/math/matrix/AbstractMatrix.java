@@ -144,7 +144,7 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
     {
         if (Array.getLength(array) < rows * cols)
         {
-            Object d = Array.newInstance(cls, rows * cols);
+            Object d = Array.newInstance(cls, 2*(rows * cols));
 
             if (save)
             {
