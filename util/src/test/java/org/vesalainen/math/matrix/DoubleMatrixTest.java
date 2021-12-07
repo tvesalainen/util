@@ -407,6 +407,20 @@ public class DoubleMatrixTest
         assertArrayEquals(dc.data, (double[]) c.array, 1e-10);
     }
     @Test
+    public void testAdd8()
+    {
+        DenseMatrix64F da = new DenseMatrix64F(2, 2, true, new double[]{1, 2, 3, 4});
+        DenseMatrix64F db = new DenseMatrix64F(2, 2, true, new double[]{10, 20, 30, 40});
+        DenseMatrix64F dc = new DenseMatrix64F(2, 2, true, new double[]{1, 2, 3, 4});
+        DoubleMatrix a = new DoubleMatrix(2, new double[]{1, 2, 3, 4});
+        DoubleMatrix b = new DoubleMatrix(2, new double[]{10, 20, 30, 40});
+        double alpha = 1.23;
+        double beta = 4.56;
+        add(alpha, da, beta, db, dc);
+        DoubleMatrix.add(alpha, a, beta, b, a);
+        assertArrayEquals(dc.data, (double[]) a.array, 1e-10);
+    }
+    @Test
     public void testRemoveRow1()
     {
         DoubleMatrix x = new DoubleMatrix(1, 3);

@@ -17,41 +17,32 @@
 package org.vesalainen.math;
 
 import static java.lang.Math.*;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
 
 /**
- *
+ * Fitter for a*f(x+b) type function
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SineFitter extends FunctionAfxBFitter
+public class FunctionAfxBFitter extends AbstractFitter
 {
-
-    public SineFitter()
-    {
-        super(Math::sin);
-    }
-
-    public SineFitter(DoubleMatrix points)
-    {
-        super(points, Math::sin);
-    }
+    private final DoubleUnaryOperator f;
     
-    public MathFunction getDerivative()
+    public FunctionAfxBFitter(DoubleUnaryOperator f)
     {
-        double[] param = getParams();
-        double coef = param[0];
-        double phase = param[1];
-        return (x)->coef*cos(x+phase);
+        super(1, 1, 0);
+        this.f = f;
     }
-    public MathFunction getAntiderivative()
+
+    public FunctionAfxBFitter(DoubleMatrix points, DoubleUnaryOperator f)
     {
-        double[] param = getParams();
-        double coef = param[0];
-        double phase = param[1];
-        return (x)->-coef*cos(x+phase);
+        super(points, 1, 0);
+        this.f = f;
     }
+
     @Override
-    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+    public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
     {
         double coef = param.get(0, 0);
         double phase = param.get(1, 0);
@@ -59,10 +50,27 @@ public class SineFitter extends FunctionAfxBFitter
         for (int ii=0;ii<rows;ii++)
         {
             double xx = x.get(ii, 0);
-            double ya = sin(xx+phase);
-            double yb = coef*cos(xx+phase);
-            jacobian.set(0, ii, ya);
-            jacobian.set(1, ii, yb);
+            double yy = coef*f.applyAsDouble(xx+phase);
+            y.set(ii, 0, yy);
         }
+    }
+    
+    public double getParamA()
+    {
+        double[] param = getParams();
+        return param[0];
+    }
+    public double getParamB()
+    {
+        double[] param = getParams();
+        return param[1];
+    }
+    
+    public MathFunction getFunction()
+    {
+        double[] param = getParams();
+        double coef = param[0];
+        double phase = param[1];
+        return (x)->coef*f.applyAsDouble(x+phase);
     }
 }

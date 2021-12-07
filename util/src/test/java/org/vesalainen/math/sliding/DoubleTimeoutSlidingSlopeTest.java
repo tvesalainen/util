@@ -27,8 +27,9 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongToDoubleFunction;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.math.CosineFitter;
 import org.vesalainen.math.MathFunction;
-import org.vesalainen.math.SineFitter;
+import org.vesalainen.math.FunctionAfxBFitter;
 import org.vesalainen.navi.Tide;
 import org.vesalainen.ui.AbstractPlotter;
 import org.vesalainen.ui.AbstractPlotter.Polyline;
@@ -73,7 +74,7 @@ public class DoubleTimeoutSlidingSlopeTest
         LongToDoubleFunction xer = (t)->PI2*t/Tide.PERIOD;
         LongReference time = new LongReference(0);
         DoubleTimeoutSlidingSlope sloper = new DoubleTimeoutSlidingSlope(()->time.getValue(), 1000, Tide.PERIOD/18, xer);
-        SineFitter sineFitter = new SineFitter();
+        CosineFitter cosineFitter = new CosineFitter();
         Plotter p = new Plotter(1024, 1024, WHITE, false);
         Polyline blue = p.polyline(BLUE);
         Polyline green = p.polyline(GREEN);
@@ -94,13 +95,13 @@ public class DoubleTimeoutSlidingSlopeTest
             {
                 p.setColor(RED);
                 p.drawCross(sloper.meanTime(), slope);
-                sineFitter.addPoints(xer.applyAsDouble(sloper.meanTime()), slope);
-                sineFitter.fit();
-                MathFunction cosz = sineFitter.getCos();
-                MathFunction cost = (tt)->-cosz.applyAsDouble(xer.applyAsDouble((long) tt));
-                int n = sineFitter.getPointCount();
+                cosineFitter.addPoints(xer.applyAsDouble(sloper.meanTime()), slope);
+                cosineFitter.fit();
+                MathFunction ader = cosineFitter.getAntiderivative();
+                MathFunction adert = (tt)->ader.applyAsDouble(xer.applyAsDouble((long) tt));
+                int n = cosineFitter.getPointCount();
                 p.setColor(Color.getHSBColor((float) (n*0.1), 1, 1));
-                p.draw(cost, 0, -1, Tide.PERIOD, 1);
+                p.draw(adert, 0, -1, Tide.PERIOD, 1);
                 sloper.clear();
             }
         }

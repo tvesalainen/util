@@ -23,17 +23,17 @@ import org.vesalainen.math.matrix.DoubleMatrix;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SineFitter extends FunctionAfxBFitter
+public class CosineFitter extends FunctionAfxBFitter
 {
 
-    public SineFitter()
+    public CosineFitter()
     {
-        super(Math::sin);
+        super(Math::cos);
     }
 
-    public SineFitter(DoubleMatrix points)
+    public CosineFitter(DoubleMatrix points)
     {
-        super(points, Math::sin);
+        super(points, Math::cos);
     }
     
     public MathFunction getDerivative()
@@ -41,15 +41,16 @@ public class SineFitter extends FunctionAfxBFitter
         double[] param = getParams();
         double coef = param[0];
         double phase = param[1];
-        return (x)->coef*cos(x+phase);
+        return (x)->-coef*sin(x+phase);
     }
     public MathFunction getAntiderivative()
     {
         double[] param = getParams();
         double coef = param[0];
         double phase = param[1];
-        return (x)->-coef*cos(x+phase);
+        return (x)->coef*sin(x+phase);
     }
+
     @Override
     public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
     {
@@ -59,8 +60,8 @@ public class SineFitter extends FunctionAfxBFitter
         for (int ii=0;ii<rows;ii++)
         {
             double xx = x.get(ii, 0);
-            double ya = sin(xx+phase);
-            double yb = coef*cos(xx+phase);
+            double ya = cos(xx+phase);
+            double yb = -coef*sin(xx+phase);
             jacobian.set(0, ii, ya);
             jacobian.set(1, ii, yb);
         }
