@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.function.Supplier;
 
 /**
@@ -29,17 +30,17 @@ import java.util.function.Supplier;
  */
 public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
 {
-    protected Map<K,Map<L,V>> map;
-    protected Supplier<Map<L,V>> mapCreator;
+    protected NavigableMap<K,NavigableMap<L,V>> map;
+    protected Supplier<NavigableMap<L,V>> mapCreator;
     protected Supplier<V> itemCreator;
 
-    protected AbstractMap2D(Supplier<Map<L, V>> mapCreator)
+    protected AbstractMap2D(Supplier<NavigableMap<L, V>> mapCreator)
     {
         this(mapCreator, null);
     }
-    protected AbstractMap2D(Supplier<Map<L, V>> mapCreator, Supplier<V> itemCreator)
+    protected AbstractMap2D(Supplier<NavigableMap<L, V>> mapCreator, Supplier<V> itemCreator)
     {
-        this.map = (Map<K, Map<L, V>>) mapCreator.get();
+        this.map = (NavigableMap<K, NavigableMap<L, V>>) mapCreator.get();
         this.mapCreator = mapCreator;
         this.itemCreator = itemCreator;
     }
@@ -53,7 +54,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public boolean containsKey(K key1, L key2)
     {
-        Map<L, V> m = map.get(key1);
+        NavigableMap<L, V> m = map.get(key1);
         if (m != null)
         {
             return m.containsKey(key2);
@@ -64,7 +65,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public boolean containsValue(V value)
     {
-        for (Entry<K, Map<L, V>> entry : map.entrySet())
+        for (Entry<K, NavigableMap<L, V>> entry : map.entrySet())
         {
             if (entry.getValue().containsValue(value))
             {
@@ -77,7 +78,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public V get(K key1, L key2)
     {
-        Map<L, V> m = map.get(key1);
+        NavigableMap<L, V> m = map.get(key1);
         if (m != null)
         {
             return m.get(key2);
@@ -122,7 +123,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public V put(K key1, L key2, V value)
     {
-        Map<L, V> m = map.get(key1);
+        NavigableMap<L, V> m = map.get(key1);
         if (m == null)
         {
             m = mapCreator.get();
@@ -134,7 +135,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     @Override
     public V remove(K key1, L key2)
     {
-        Map<L, V> m = map.get(key1);
+        NavigableMap<L, V> m = map.get(key1);
         if (m != null)
         {
             V removed = m.remove(key2);
@@ -151,7 +152,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
     public int size()
     {
         int size = 0;
-        for (Entry<K, Map<L, V>> entry : map.entrySet())
+        for (Entry<K, NavigableMap<L, V>> entry : map.entrySet())
         {
             size += entry.getValue().size();
         }
