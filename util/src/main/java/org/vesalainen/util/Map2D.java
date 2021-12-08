@@ -16,8 +16,6 @@
  */
 package org.vesalainen.util;
 
-import java.util.Collection;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
@@ -16,7 +17,6 @@
  */
 package org.vesalainen.util;
 
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.function.Supplier;
@@ -186,4 +186,24 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         return sb.toString();
     }
     
+    public V nearest(K key1, L key2, Distance<K,L> distance)
+    {
+        Wrap<V> result = new Wrap<>();
+        DoubleReference min = new DoubleReference(Double.MAX_VALUE);
+        forEach((k,l,v)->
+        {
+            double dst = distance.distance(k, l, key1, key2);
+            if (dst < min.value)
+            {
+                result.setValue(v);
+                min.setValue(dst);
+            }
+        });
+        return result.getValue();
+    }
+    @FunctionalInterface
+    public interface Distance<K,L>
+    {
+        double distance(K k11, L k12, K k21, L k22);
+    }
 }

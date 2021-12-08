@@ -17,23 +17,25 @@
 package org.vesalainen.navi;
 
 import static java.lang.Math.*;
+import java.util.Iterator;
+import java.util.NavigableMap;
 import java.util.function.DoubleToIntFunction;
 import java.util.function.Supplier;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.*;
 import org.vesalainen.util.Map2D;
+import org.vesalainen.util.Merger;
 import org.vesalainen.util.TreeMap2D;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CoordinateMap<V>
+public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
 {
     private final double departure;
     private final double boxSize;
     private final double boxSize2;
-    private final Map2D<Integer,Integer,V> map;
     private final DoubleToIntFunction lon;
     private final DoubleToIntFunction lat;
     
@@ -43,71 +45,164 @@ public class CoordinateMap<V>
     }
     public CoordinateMap(double latitude, double boxSize, UnitType unit, Supplier<V> squareCreator)
     {
+        super(squareCreator);
         this.departure = cos(toRadians(latitude));
-        this.map = new TreeMap2D<>(squareCreator);
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
         this.boxSize2 = boxSize/2;
-        this.lon = (lo)->(int) floor((lo/departure)/this.boxSize);
+        this.lon = (lo)->(int) floor((lo*departure)/this.boxSize);
         this.lat = (la)->(int) floor(la/this.boxSize);
     }
 
     public V put(double longitude, double latitude, V value)
     {
-        return map.put(lon.applyAsInt(longitude), lat.applyAsInt(latitude), value);
+        return super.put(lon.applyAsInt(longitude), lat.applyAsInt(latitude), value);
     }
     public V get(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
+        return super.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
     }
     public V getOrCreate(double longitude, double latitude)
     {
-        return map.getOrCreate(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
+        return super.getOrCreate(lon.applyAsInt(longitude), lat.applyAsInt(latitude));
     }
     public V getNorth(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)+1);
+        return super.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)+1);
     }
     public V getNorthEast(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)+1);
+        return super.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)+1);
     }
     public V getNorthWest(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)+1);
+        return super.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)+1);
     }
     public V getSouth(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)-1);
+        return super.get(lon.applyAsInt(longitude), lat.applyAsInt(latitude)-1);
     }
     public V getSouthEast(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)-1);
+        return super.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude)-1);
     }
     public V getSouthWest(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)-1);
+        return super.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude)-1);
     }
     public V getEast(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude));
+        return super.get(lon.applyAsInt(longitude)+1, lat.applyAsInt(latitude));
     }
     public V getWest(double longitude, double latitude)
     {
-        return map.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude));
+        return super.get(lon.applyAsInt(longitude)-1, lat.applyAsInt(latitude));
     }
     
-    public void forEach(CoordinateConsumer<V> act)
+    public void forEachCoordinate(CoordinateConsumer<V> act)
     {
-        map.forEach((lon,lat,v)->
+        super.forEach((lon,lat,v)->
         {
-            act.accept((lon+boxSize2)*departure*boxSize, (lat+boxSize2)*boxSize, v);
+            act.accept(((lon+boxSize2)/departure)*boxSize, (lat+boxSize2)*boxSize, v);
         });
+    }
+    public V nearest(double longitude, double latitude)
+    {
+        if (map.isEmpty())
+        {
+            return null;
+        }
+        V res = get(longitude, latitude);
+        if (res != null)
+        {
+            return res;
+        }
+        int loni = lon.applyAsInt(longitude);
+        int lati = lat.applyAsInt(latitude);
+        long min = Long.MAX_VALUE;
+        int bestLon = 0;
+        int bestLat = 0;
+        Iterator<Integer> it = nearest(loni);
+        while (it.hasNext())
+        {
+            Integer lonKey = it.next();
+            if (distance(loni, lonKey) > min)
+            {
+                break;
+            }
+            NavigableMap<Integer, V> latMap = map.get(lonKey);
+            Integer latKey = nearest(latMap, lati);
+            long distance = distance(loni, lati, lonKey, latKey);
+            if (distance < min)
+            {
+                min = distance;
+                bestLon = lonKey;
+                bestLat = latKey;
+            }
+        }
+        return super.get(bestLon, bestLat);
+    }
+    private Integer nearest(NavigableMap<Integer, V> m, int k)
+    {
+        if (m.containsKey(k))
+        {
+            return k;
+        }
+        Integer ceilingKey = m.ceilingKey(k);
+        Integer floorKey = m.floorKey(k);
+        if (ceilingKey != null && floorKey != null)
+        {
+            return less(k, ceilingKey, floorKey);
+        }
+        else
+        {
+            if (ceilingKey != null)
+            {
+                return ceilingKey;
+            }
+            else
+            {
+                return floorKey;
+            }
+        }
+    }
+    private Iterator<Integer> nearest(int k)
+    {
+        NavigableMap<Integer, NavigableMap<Integer, V>> headMap = map.headMap(k, true);
+        NavigableMap<Integer, NavigableMap<Integer, V>> tailMap = map.tailMap(k, false);
+        return Merger.merge(
+                (i,j)->abs(i-k)-abs(j-k), 
+                headMap.descendingKeySet().iterator(),
+                tailMap.keySet().iterator()
+                );
+    }
+    private int less(int k, int i, int j)
+    {
+        if (abs(i-k) < abs(j-k))
+        {
+            return i;
+        }
+        else
+        {
+            return j;
+        }
+    }
+    private long distance(long x1, long x2)
+    {
+        return sq(x2-x1);
+    }
+    private long distance(long x1, long y1, long x2, long y2)
+    {
+        return sq(x2-x1)+sq(y2-y1);
+    }
+    private long sq(long x)
+    {
+        return x*x;
     }
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        forEach((double lon, double lat, V v)->
+        forEachCoordinate((double lon, double lat, V v)->
         {
             sb.append('\n');
             sb.append(CoordinateFormat.formatLongitude(lon, COORDINATE_DEGREES_AND_MINUTES));

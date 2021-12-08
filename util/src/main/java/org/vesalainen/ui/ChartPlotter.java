@@ -57,4 +57,16 @@ public class ChartPlotter extends AbstractPlotter
         super.drawEllipse(x, y, r/cos(toRadians(y)), r);
     }
 
+    @Override
+    public void drawRectangle(double x, double y, double w, double h)
+    {
+        super.drawRectangle(x, y, w/cos(toRadians(y)), h);
+    }
+
+    @Override
+    public void drawRectangle(double x, double y, double w, double h, boolean fill)
+    {
+        super.drawRectangle(x, y, w/cos(toRadians(y)), h, fill);
+    }
+
 }

@@ -375,11 +375,27 @@ public class AbstractPlotter extends AbstractView implements DrawContext
 
     public void drawCircle(double x, double y, double r)
     {
-        shapes.add(new Drawable(new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
+        drawCircle(x, y, r, false);
+    }
+    public void drawCircle(double x, double y, double r, boolean fill)
+    {
+        shapes.add(new Drawable(fill, new Ellipse2D.Double(x-r, y-r, r*2, r*2)));
     }
     public void drawEllipse(double x, double y, double w, double h)
     {
-        shapes.add(new Drawable(new Ellipse2D.Double(x-w, y-h, w*2, h*2)));
+        drawEllipse(x, y, w, h, false);
+    }
+    public void drawEllipse(double x, double y, double w, double h, boolean fill)
+    {
+        shapes.add(new Drawable(fill, new Ellipse2D.Double(x-w, y-h, w*2, h*2)));
+    }
+    public void drawRectangle(double x, double y, double w, double h)
+    {
+        drawRectangle(x, y, w, h, false);
+    }
+    public void drawRectangle(double x, double y, double w, double h, boolean fill)
+    {
+        shapes.add(new Drawable(fill, new Rectangle2D.Double(x-w, y-h, w, h)));
     }
     /**
      * Draw point x = (0,0) y=(1,0)
