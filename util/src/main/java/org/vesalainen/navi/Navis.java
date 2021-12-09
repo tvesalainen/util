@@ -37,6 +37,15 @@ public final class Navis
     @Deprecated public static final double HoursInSeconds = TimeUnit.HOURS.toSeconds(1);
     @Deprecated public static final double NMInMetersPerHoursInSecond = NMInMeters / HoursInSeconds;
     /**
+     * Converts cartesian bearing to nautical angle.
+     * @param deg
+     * @return 
+     */
+    public static double cartesianToDegrees(double deg)
+    {
+        return normalizeAngle(360-(deg-90));
+    }
+    /**
      * Converts nautical bearing to cartesian angle.
      * @param deg
      * @return 

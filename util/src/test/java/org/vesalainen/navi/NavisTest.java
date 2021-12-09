@@ -32,6 +32,14 @@ public class NavisTest
     }
 
     @Test
+    public void testCartesianToDegrees()
+    {
+        assertEquals(0, Navis.cartesianToDegrees(90), Epsilon);
+        assertEquals(180, Navis.cartesianToDegrees(270), Epsilon);
+        assertEquals(270, Navis.cartesianToDegrees(180), Epsilon);
+        assertEquals(90, Navis.cartesianToDegrees(0), Epsilon);
+    }
+    @Test
     public void testDegreesToCartesian()
     {
         assertEquals(90, Navis.degreesToCartesian(0), Epsilon);

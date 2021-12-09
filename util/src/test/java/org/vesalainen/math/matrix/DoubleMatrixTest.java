@@ -274,7 +274,7 @@ public class DoubleMatrixTest
     public void testToString()
     {
         DoubleMatrix m1 = DoubleMatrix.getInstance(2, 2, 3, 4, 1, 0, 0);
-        assertEquals("\n2.000 3.000 4.000 \n1.000 0.000 0.000 ", m1.toString());
+        assertEquals("\n2.000000 3.000000 4.000000 \n1.000000 0.000000 0.000000 ", m1.toString());
     }
     @Test
     public void testMultiply()

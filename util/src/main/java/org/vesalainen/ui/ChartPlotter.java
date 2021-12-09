@@ -20,6 +20,8 @@ import java.awt.Color;
 import static java.lang.Math.*;
 import org.vesalainen.math.DoubleTransform;
 import org.vesalainen.math.MathFunction;
+import org.vesalainen.math.Point;
+import org.vesalainen.navi.Navis;
 import org.vesalainen.ui.scale.CoordinateScale;
 
 /**
@@ -54,19 +56,24 @@ public class ChartPlotter extends AbstractPlotter
     @Override
     public void drawCircle(double x, double y, double r)
     {
-        super.drawEllipse(x, y, r/cos(toRadians(y)), r);
+        super.drawEllipse(x, y, r/cos(toRadians(y)), r, false);
     }
-
     @Override
-    public void drawRectangle(double x, double y, double w, double h)
+    public void drawCircle(double x, double y, double r, boolean fill)
     {
-        super.drawRectangle(x, y, w/cos(toRadians(y)), h);
+        super.drawEllipse(x, y, r/cos(toRadians(y)), r, fill);
     }
 
     @Override
     public void drawRectangle(double x, double y, double w, double h, boolean fill)
     {
         super.drawRectangle(x, y, w/cos(toRadians(y)), h, fill);
+    }
+
+    @Override
+    public void drawLineTo(Point p1, double degrees, double length)
+    {
+        super.drawLineTo(p1, Navis.degreesToCartesian(degrees), length);
     }
 
 }

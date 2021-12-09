@@ -244,6 +244,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public double get(int i, int j)
     {
+        check(i, j);
         return supplier.get(i, j);
     }
     public void zero()
@@ -287,6 +288,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void set(int i, int j, DoubleMatrix B)
     {
+        check(i, j);
         int m = B.rows();
         int n = B.columns();
         for (int ii = 0; ii < m; ii++)
@@ -1151,10 +1153,18 @@ public class DoubleMatrix extends AbstractMatrix
             sb.append('\n');
             for (int j = 0; j < n; j++)
             {
-                sb.append(String.format(US, "%.3f", Array.getDouble(array, M.at(i, j)))).append(' ');
+                sb.append(String.format(US, "%.6f", Array.getDouble(array, M.at(i, j)))).append(' ');
             }
         }
         return sb.toString();
+    }
+
+    private void check(int i, int j)
+    {
+        if (i < 0 || i >= rows() || j < 0 || j >= columns())
+        {
+            throw new IllegalArgumentException("illegal row/col");
+        }
     }
 
     @FunctionalInterface
