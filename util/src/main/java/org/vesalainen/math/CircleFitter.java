@@ -143,9 +143,9 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
     public static void limitDistance(DoubleMatrix p0, DoubleMatrix pr, double min, double max)
     {
         double x0 = p0.get(0, 0);
-        double y0 = p0.get(0, 1);
+        double y0 = p0.get(1, 0);
         double xr = pr.get(0, 0);;
-        double yr = pr.get(0, 1);;
+        double yr = pr.get(1, 0);;
         double dx = xr-x0;
         double dy = yr-y0;
         double r = Math.sqrt(dx*dx+dy*dy);
@@ -360,7 +360,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
     @Override
     public double getY()
     {
-        return initCenter.get(0, 1);
+        return initCenter.get(1, 0);
     }
 
     @Override
