@@ -101,7 +101,7 @@ public class AnchorWatch extends AbstractLocationObserver implements Serializabl
                 if (!Double.isNaN(radius))
                 {
                     fitter = new CircleFitter();
-                    center = new AbstractPoint(tempCenter.get(0, 0), tempCenter.get(0, 1));
+                    center = new AbstractPoint(tempCenter.get(0, 0), tempCenter.get(1, 0));
                     estimated = new AbstractCircle(center, chainLength);
                     externalEstimated = localLongitude.createExternal(estimated);
                     safeSector = new BasicSafeSector(estimated);
