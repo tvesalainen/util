@@ -71,6 +71,19 @@ public abstract class DoubleAbstractSliding extends AbstractSliding
         }
     }
 
+    public double getValue(int index)
+    {
+        if (count() <= 0)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        if (index < 0 || index >= count())
+        {
+            throw new IllegalStateException("index out of bounds");
+        }
+        return ring[(beginMod()+index) % size];
+    }
+
     
     /**
      * Returns values as stream in the same order as entered. Stream is valid 

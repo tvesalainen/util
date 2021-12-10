@@ -19,6 +19,7 @@ package org.vesalainen.navi;
 import static java.lang.Math.*;
 import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.*;
+import java.util.function.LongToDoubleFunction;
 
 /**
  *
@@ -26,6 +27,7 @@ import static java.util.concurrent.TimeUnit.*;
  */
 public class Tide
 {
+    public static final LongToDoubleFunction TIME_TO_RAD = (t)->PI*2*t/Tide.PERIOD;
     public static final long PERIOD = HOURS.toMillis(12) + MINUTES.toMillis(25);
     private static final long DEGREE_IN_MILLIS = DAYS.toMillis(1)/360;
     

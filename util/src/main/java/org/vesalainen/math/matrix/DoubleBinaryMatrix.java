@@ -33,7 +33,7 @@ public class DoubleBinaryMatrix extends Matrix<DoubleBinaryOperator>
     public DoubleBinaryMatrix(int rows, int cols)
     {
         super(rows, cols, DoubleBinaryOperator.class);
-        Arrays.fill((Object[]) array, ZERO);
+        Arrays.fill((Object[]) array(), ZERO);
     }
 
     public DoubleBinaryMatrix(int rows, DoubleBinaryOperator... array)

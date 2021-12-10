@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  *
@@ -24,7 +25,7 @@ import org.vesalainen.math.matrix.DoubleMatrix;
  */
 public abstract class AbstractFitter implements LevenbergMarquardt.Function, LevenbergMarquardt.JacobianFactory
 {
-    protected final DoubleMatrix points;
+    protected final ReadableDoubleMatrix points;
     protected final DoubleMatrix params;
     protected final DoubleMatrix result;
     protected final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
@@ -33,7 +34,7 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
     {
         this(new DoubleMatrix(0, arguments), initialParams);
     }
-    public AbstractFitter(DoubleMatrix points, double... initialParams)
+    public AbstractFitter(ReadableDoubleMatrix points, double... initialParams)
     {
         this.points = points;
         this.params = new DoubleMatrix(initialParams.length, 1, initialParams);
@@ -54,18 +55,26 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
     }
     public void addPoints(double... row)
     {
-        if (row.length != points.columns()+1)
+        if (points instanceof DoubleMatrix)
         {
-            throw new IllegalArgumentException("illegal number of arguments");
+            DoubleMatrix m = (DoubleMatrix) points;
+            if (row.length != m.columns()+1)
+            {
+                throw new IllegalArgumentException("illegal number of arguments");
+            }
+            int rows = m.rows();
+            int columns = m.columns();
+            m.reshape(rows+1, columns, true);
+            for (int ii=0;ii<columns;ii++)
+            {
+                m.set(rows, ii, row[ii]);
+            }
+            result.addRow(row[row.length-1]);
         }
-        int rows = points.rows();
-        int columns = points.columns();
-        points.reshape(rows+1, columns, true);
-        for (int ii=0;ii<columns;ii++)
+        else
         {
-            points.set(rows, ii, row[ii]);
+            throw new UnsupportedOperationException("not supported with ReadableDoubleMatrix");
         }
-        result.addRow(row[row.length-1]);
     }
 
     public double[] getParams()
@@ -78,7 +87,7 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
         return points.rows();
     }
     @Override
-    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+    public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian)
     {
         levenbergMarquardt.computeNumericalJacobian(param, x, jacobian);
     }

@@ -30,7 +30,7 @@ import org.vesalainen.util.ArrayHelp;
  * <p>Note! Row and column numbers start with 0.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DoubleMatrix extends AbstractMatrix
+public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
 {
     protected ItemSupplier supplier;
     protected ItemConsumer consumer;
@@ -62,6 +62,7 @@ public class DoubleMatrix extends AbstractMatrix
     public DoubleMatrix(int rows, int cols, double... d)
     {
         super(rows, cols, d);
+        Object array = array();
         supplier = (i, j) -> Array.getDouble(array, cols * i + j);
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
@@ -85,16 +86,16 @@ public class DoubleMatrix extends AbstractMatrix
     public DoubleMatrix getConditionalRows(IntPredicate predicate)
     {
         int rows = rows();
-        int[] array = new int[rows];
+        int[] arr = new int[rows];
         int len = 0;
         for (int ii=0;ii<rows;ii++)
         {
             if (predicate.test(ii))
             {
-                array[len++] = ii;
+                arr[len++] = ii;
             }
         }
-        return getSparse(len, -1, Arrays.copyOf(array, len));
+        return getSparse(len, -1, Arrays.copyOf(arr, len));
     }
     /**
      * Returns matrix covering only columns that pass predicate test. 
@@ -126,7 +127,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public DoubleMatrix getSparse(int rows, int cols, int... pos)
     {
-        DoubleMatrix m = new DoubleMatrixView(this, rows, cols, array, pos);
+        DoubleMatrix m = new DoubleMatrixView(this, rows, cols, array(), pos);
         if (rows != -1)
         {
             if (cols != -1)
@@ -171,21 +172,33 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("rows/cols overlap");
         }
-        DoubleMatrix m = new DoubleMatrixView(this, startRow, startCol, rows, cols, array);
+        DoubleMatrix m = new DoubleMatrixView(this, startRow, startCol, rows, cols, array());
         m.supplier = (i, j) -> get(i+startRow, j+startCol);
         m.consumer = (i, j, v) -> set(i+startRow, j+startCol, v);
         return m;
     }
+
+    @Override
+    public void setReshape(AbstractMatrix m)
+    {
+        super.setReshape(m);
+        int cols = columns();
+        Object array = array();
+        supplier = (i, j) -> Array.getDouble(array, cols * i + j);
+        consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
+    }
+    
     @Override
     public void reshape(int rows, int cols, boolean save)
     {
         super.reshape(rows, cols, save);
+        Object array = array();
         supplier = (i, j) -> Array.getDouble(array, cols * i + j);
         consumer = (i, j, v) -> Array.setDouble(array, cols * i + j, v);
     }
     public double[] data()
     {
-        return (double[]) array;
+        return (double[]) array();
     }
     /**
      * Return copy of matrix as 2D array.
@@ -193,14 +206,15 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public double[][] as2D()
     {
-        return ArrayHelp.unFlatten(rows(), (double[]) array);
+        return ArrayHelp.unFlatten(rows(), (double[]) array());
     }
     @Override
     public DoubleMatrix clone()
     {
-        return new DoubleMatrix(rows(), columns(), (double[]) copyOf(array, cls));
+        return new DoubleMatrix(rows(), columns(), (double[]) copyOf(array(), cls));
     }
     /**
+     * @deprecated This is so slow...
      * Access as vector
      * @param i
      * @return 
@@ -211,9 +225,10 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException();
         }
-        return ((double[])array)[i];
+        return ((double[])array())[i];
     }
     /**
+     * @deprecated This is so slow...
      * Access as vector
      * @param i
      * @param v 
@@ -224,7 +239,7 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException();
         }
-        ((double[])array)[i] = v;
+        ((double[])array())[i] = v;
     }
     /**
      * Swaps row r1 and r2 possibly using tmp
@@ -242,6 +257,7 @@ public class DoubleMatrix extends AbstractMatrix
      * @param j
      * @return 
      */
+    @Override
     public double get(int i, int j)
     {
         check(i, j);
@@ -1153,7 +1169,7 @@ public class DoubleMatrix extends AbstractMatrix
             sb.append('\n');
             for (int j = 0; j < n; j++)
             {
-                sb.append(String.format(US, "%.6f", Array.getDouble(array, M.at(i, j)))).append(' ');
+                sb.append(String.format(US, "%.6f", get(i, j))).append(' ');
             }
         }
         return sb.toString();
@@ -1250,7 +1266,7 @@ public class DoubleMatrix extends AbstractMatrix
         {
             throw new IllegalArgumentException("illegal column count");
         }
-        System.arraycopy(row, 0, array, columns()*index, row.length);
+        System.arraycopy(row, 0, array(), columns()*index, row.length);
     }
 
     public void addRow(double... row)
@@ -1261,7 +1277,7 @@ public class DoubleMatrix extends AbstractMatrix
             throw new IllegalArgumentException("illegal column count");
         }
         reshape(rows()+1, columns(), true);
-        System.arraycopy(row, 0, array, columns()*r, row.length);
+        System.arraycopy(row, 0, array(), columns()*r, row.length);
     }
     public void insertRow(int index, double... row)
     {
@@ -1271,11 +1287,13 @@ public class DoubleMatrix extends AbstractMatrix
             throw new IllegalArgumentException("illegal column count");
         }
         reshape(rows()+1, columns(), true);
+        Object array = array();
         System.arraycopy(array, columns()*index, array, columns()*(index+1), columns()*(r-index));
         System.arraycopy(row, 0, array, columns()*index, row.length);
     }
     public void removeRowAt(int index)
     {
+        Object array = array();
         System.arraycopy(array, columns()*(index+1), array, columns()*index, columns()*(rows()-index-1));
         reshape(rows()-1, columns(), true);
     }
@@ -1285,6 +1303,7 @@ public class DoubleMatrix extends AbstractMatrix
      */
     public void removeEqualRows()
     {
+        Object array = array();
         if (rows() < 2)
         {
             return;

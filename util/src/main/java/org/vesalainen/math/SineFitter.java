@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import static java.lang.Math.*;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  *
@@ -51,7 +52,7 @@ public class SineFitter extends FunctionAfxBFitter
         return (x)->-coef*cos(x+phase);
     }
     @Override
-    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+    public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian)
     {
         double coef = param.get(0, 0);
         double phase = param.get(1, 0);

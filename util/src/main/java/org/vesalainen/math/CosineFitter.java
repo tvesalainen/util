@@ -18,6 +18,7 @@ package org.vesalainen.math;
 
 import static java.lang.Math.*;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  *
@@ -31,7 +32,7 @@ public class CosineFitter extends FunctionAfxBFitter
         super(Math::cos);
     }
 
-    public CosineFitter(DoubleMatrix points)
+    public CosineFitter(ReadableDoubleMatrix points)
     {
         super(points, Math::cos);
     }
@@ -52,7 +53,7 @@ public class CosineFitter extends FunctionAfxBFitter
     }
 
     @Override
-    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+    public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian)
     {
         double coef = param.get(0, 0);
         double phase = param.get(1, 0);

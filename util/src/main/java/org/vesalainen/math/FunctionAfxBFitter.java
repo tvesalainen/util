@@ -16,10 +16,9 @@
  */
 package org.vesalainen.math;
 
-import static java.lang.Math.*;
-import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  * Fitter for a*f(x+b) type function
@@ -35,14 +34,14 @@ public class FunctionAfxBFitter extends AbstractFitter
         this.f = f;
     }
 
-    public FunctionAfxBFitter(DoubleMatrix points, DoubleUnaryOperator f)
+    public FunctionAfxBFitter(ReadableDoubleMatrix points, DoubleUnaryOperator f)
     {
         super(points, 1, 0);
         this.f = f;
     }
 
     @Override
-    public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
+    public void compute(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y)
     {
         double coef = param.get(0, 0);
         double phase = param.get(1, 0);

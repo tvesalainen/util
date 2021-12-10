@@ -103,6 +103,10 @@ public class DoubleMatrixTest
         m.reshape(6, 4, true);
         assertEquals(2, view.rows());
         assertEquals(2, view.columns());
+        assertEquals(123, view.get(0, 0), 1e-10);
+        assertEquals(6, view.get(0, 1), 1e-10);
+        assertEquals(8, view.get(1, 0), 1e-10);
+        assertEquals(9, view.get(1, 1), 1e-10);
     }
     @Test
     public void testSparse2()
@@ -404,7 +408,7 @@ public class DoubleMatrixTest
         double beta = 4.56;
         add(alpha, da, beta, db, dc);
         DoubleMatrix.add(alpha, a, beta, b, c);
-        assertArrayEquals(dc.data, (double[]) c.array, 1e-10);
+        assertArrayEquals(dc.data, (double[]) c.array(), 1e-10);
     }
     @Test
     public void testAdd8()
@@ -418,7 +422,7 @@ public class DoubleMatrixTest
         double beta = 4.56;
         add(alpha, da, beta, db, dc);
         DoubleMatrix.add(alpha, a, beta, b, a);
-        assertArrayEquals(dc.data, (double[]) a.array, 1e-10);
+        assertArrayEquals(dc.data, (double[]) a.array(), 1e-10);
     }
     @Test
     public void testRemoveRow1()

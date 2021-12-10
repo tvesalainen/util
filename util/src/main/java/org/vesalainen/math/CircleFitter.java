@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 import org.vesalainen.util.ArrayHelp.RowComparator;
 
 /**
@@ -277,7 +278,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         return true;
     }
         
-    private void computeDi(DoubleMatrix center, DoubleMatrix points)
+    private void computeDi(DoubleMatrix center, ReadableDoubleMatrix points)
     {
         if (di == null)
         {
@@ -292,7 +293,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
         computeDi(center, points, di);
     }
-    private static void computeDi(DoubleMatrix center, DoubleMatrix points, DoubleMatrix di)
+    private static void computeDi(DoubleMatrix center, ReadableDoubleMatrix points, DoubleMatrix di)
     {
         double xx = center.get(0, 0);
         double yy = center.get(1, 0);
@@ -306,7 +307,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
         }
     }
     @Override
-    public void compute(DoubleMatrix center, DoubleMatrix points, DoubleMatrix y)
+    public void compute(DoubleMatrix center, ReadableDoubleMatrix points, DoubleMatrix y)
     {
         double r;
         if (Double.isNaN(radius))
@@ -326,7 +327,7 @@ public class CircleFitter implements Function, JacobianFactory, Circle, Serializ
     }
 
     @Override
-    public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+    public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian)
     {
         computeDi(param, x);
         double xx = param.get(0, 0);

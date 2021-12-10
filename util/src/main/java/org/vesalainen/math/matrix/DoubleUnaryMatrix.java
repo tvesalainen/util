@@ -33,7 +33,7 @@ public class DoubleUnaryMatrix extends Matrix<DoubleUnaryOperator>
     public DoubleUnaryMatrix(int rows, int cols)
     {
         super(rows, cols, DoubleUnaryOperator.class);
-        Arrays.fill((Object[]) array, ZERO);
+        Arrays.fill((Object[]) array(), ZERO);
     }
 
     public DoubleUnaryMatrix(int rows, DoubleUnaryOperator... array)

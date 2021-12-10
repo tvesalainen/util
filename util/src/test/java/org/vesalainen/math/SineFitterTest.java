@@ -16,7 +16,6 @@
  */
 package org.vesalainen.math;
 
-import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import org.junit.Test;
 import static org.junit.Assert.*;

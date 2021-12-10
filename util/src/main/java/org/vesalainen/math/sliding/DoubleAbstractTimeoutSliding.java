@@ -156,6 +156,18 @@ public abstract class DoubleAbstractTimeoutSliding extends DoubleAbstractSliding
         return timeout;
     }
 
+    public long getTime(int index)
+    {
+        if (count() <= 0)
+        {
+            throw new IllegalStateException("count() < 1");
+        }
+        if (index < 0 || index >= count())
+        {
+            throw new IllegalStateException("index out of bounds");
+        }
+        return times[(beginMod()+index) % size];
+    }
     @Override
     public long firstTime()
     {

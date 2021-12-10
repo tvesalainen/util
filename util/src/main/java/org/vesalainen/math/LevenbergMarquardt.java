@@ -2,6 +2,7 @@ package org.vesalainen.math;
 
 import java.io.Serializable;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  * <p>
@@ -133,7 +134,7 @@ public class LevenbergMarquardt implements Serializable
      * @return true if it succeeded and false if it did not.
      */
     public boolean optimize(DoubleMatrix initParam,
-            DoubleMatrix X,
+            ReadableDoubleMatrix X,
             DoubleMatrix Y)
     {
         if (X.rows() == 0)
@@ -160,7 +161,7 @@ public class LevenbergMarquardt implements Serializable
      * Iterate until the difference between the costs is insignificant or it
      * iterates too many times
      */
-    private boolean adjustParam(DoubleMatrix X, DoubleMatrix Y,
+    private boolean adjustParam(ReadableDoubleMatrix X, DoubleMatrix Y,
             double prevCost)
     {
         // lambda adjusts how big of a step it takes
@@ -217,7 +218,7 @@ public class LevenbergMarquardt implements Serializable
      * Performs sanity checks on the input data and reshapes internal matrices.
      * By reshaping a matrix it will only declare new memory when needed.
      */
-    protected void configure(DoubleMatrix initParam, DoubleMatrix X, DoubleMatrix Y)
+    protected void configure(DoubleMatrix initParam, ReadableDoubleMatrix X, DoubleMatrix Y)
     {
         if (Y.rows() != X.rows())
         {
@@ -256,7 +257,7 @@ public class LevenbergMarquardt implements Serializable
      * Computes the d and H parameters. Where d is the average error gradient
      * and H is an approximation of the hessian.
      */
-    private void computeDandH(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
+    private void computeDandH(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y)
     {
         func.compute(param, x, tempDH);
         DoubleMatrix.subtractEquals(tempDH, y);
@@ -310,7 +311,7 @@ public class LevenbergMarquardt implements Serializable
      *
      * cost = (1/N) Sum (f(x;p) - y)^2
      */
-    public double cost(DoubleMatrix param, DoubleMatrix X, DoubleMatrix Y)
+    public double cost(DoubleMatrix param, ReadableDoubleMatrix X, DoubleMatrix Y)
     {
         func.compute(param, X, temp0);
 
@@ -328,7 +329,7 @@ public class LevenbergMarquardt implements Serializable
      * @param deriv Where the jacobian will be stored
      */
     protected void computeNumericalJacobian(DoubleMatrix param,
-            DoubleMatrix pt,
+            ReadableDoubleMatrix pt,
             DoubleMatrix deriv)
     {
         double invDelta = 1.0 / DELTA;
@@ -398,7 +399,7 @@ public class LevenbergMarquardt implements Serializable
          * @param x the input points.
          * @param y the resulting output.
          */
-        public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y);
+        public void compute(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y);
     }
 
     /**
@@ -408,6 +409,6 @@ public class LevenbergMarquardt implements Serializable
     public interface JacobianFactory
     {
 
-        public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian);
+        public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian);
     }
 }

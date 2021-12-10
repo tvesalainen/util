@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  *
@@ -92,7 +93,7 @@ public class CurveFitTest
     {
 
         @Override
-        public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
+        public void compute(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y)
         {
             double a = param.get(0, 0);
             double b = param.get(1, 0);
@@ -100,8 +101,8 @@ public class CurveFitTest
             int index = 0;
             for (int r=0;r<x.rows();r++)
             {
-                double xx = x.data(r);
-                y.data(index++,  a*xx*xx+b*xx+c);
+                double xx = x.get(r, 0);
+                y.set(index++, 0, a*xx*xx+b*xx+c);
             }
         }
         
@@ -111,7 +112,7 @@ public class CurveFitTest
         private boolean done;
         
         @Override
-        public void computeJacobian(DoubleMatrix param, DoubleMatrix pt, DoubleMatrix deriv)
+        public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix pt, DoubleMatrix deriv)
         {
             if (!done)
             {

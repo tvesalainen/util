@@ -39,7 +39,7 @@ public class ByteMatrix extends AbstractMatrix
      @Override
     public ByteMatrix clone()
     {
-        return new ByteMatrix(rows(), (byte[]) copyOf(array, cls));
+        return new ByteMatrix(rows(), (byte[]) copyOf(array(), cls));
     }
 
     /**

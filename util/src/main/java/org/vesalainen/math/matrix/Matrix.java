@@ -42,7 +42,7 @@ public class Matrix<T> extends AbstractMatrix
     @Override
     public Matrix clone()
     {
-        return new Matrix(rows(), (T[]) copyOf(array, cls));
+        return new Matrix(rows(), (T[]) copyOf(array(), cls));
     }
 
     /**

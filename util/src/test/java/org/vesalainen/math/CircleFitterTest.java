@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.vesalainen.math.LevenbergMarquardt.Function;
 import org.vesalainen.math.LevenbergMarquardt.JacobianFactory;
 import org.vesalainen.math.matrix.DoubleMatrix;
+import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
 /**
  *
@@ -330,7 +331,7 @@ public class CircleFitterTest
     {
         private DoubleMatrix di = new DoubleMatrix(1, 1);
         
-        private void computeDi(DoubleMatrix param, DoubleMatrix x)
+        private void computeDi(DoubleMatrix param, ReadableDoubleMatrix x)
         {
             double xx = param.get(0, 0);
             double yy = param.get(1, 0);
@@ -348,7 +349,7 @@ public class CircleFitterTest
             }
         }
         @Override
-        public void compute(DoubleMatrix param, DoubleMatrix x, DoubleMatrix y)
+        public void compute(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y)
         {
             computeDi(param, x);
             double r = DoubleMatrix.elementSum(di) / (double)x.rows();
@@ -359,7 +360,7 @@ public class CircleFitterTest
         }
 
         @Override
-        public void computeJacobian(DoubleMatrix param, DoubleMatrix x, DoubleMatrix jacobian)
+        public void computeJacobian(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix jacobian)
         {
             computeDi(param, x);
             double xx = param.get(0, 0);

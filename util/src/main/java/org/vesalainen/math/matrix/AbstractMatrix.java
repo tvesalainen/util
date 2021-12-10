@@ -17,6 +17,7 @@
 package org.vesalainen.math.matrix;
 
 import java.io.Serializable;
+import static java.lang.Math.min;
 import java.lang.reflect.Array;
 import java.util.Objects;
 import org.vesalainen.util.ArrayHelp;
@@ -33,8 +34,8 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
     protected static final long serialVersionUID = 1L;
     private IntProvider rows;
     private IntProvider columns;
-    protected Index M;
-    protected Object array;
+    private Index M;
+    private Object array;
     protected Class<T> cls;
 
     protected AbstractMatrix(int rows, int cols, Class<T> cls)
@@ -124,6 +125,10 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         this.cls = (Class<T>) array.getClass().getComponentType();
     }
     
+    protected Object array()
+    {
+        return array;
+    }
     public void setReshape(AbstractMatrix m)
     {
         if (Array.getLength(array) < Array.getLength(m.array))
@@ -132,8 +137,10 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         }
         System.arraycopy(m.array, 0, array, 0, m.elements());
 
-        this.rows = m::rows;
-        this.columns = m::columns;
+        int ro = m.rows();
+        int co = m.columns();
+        this.rows = ()->ro;
+        this.columns = ()->co;
         this.M = (i, j) -> columns.getAsInt() * i + j;
     }
     public void reshape(int rows, int cols)
@@ -148,7 +155,20 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
 
             if (save)
             {
-                System.arraycopy(array, 0, d, 0, elements());
+                if (cols == columns())
+                {
+                    System.arraycopy(array, 0, d, 0, elements());
+                }
+                else
+                {
+                    int r = rows();
+                    int c = columns();
+                    int l = min(c, cols);
+                    for (int i=0;i<r;i++)
+                    {
+                        System.arraycopy(array, i*c, d, i*cols, l);
+                    }
+                }
             }
 
             this.array = d;
