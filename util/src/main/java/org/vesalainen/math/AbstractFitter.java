@@ -27,7 +27,7 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
 {
     protected final ReadableDoubleMatrix points;
     protected final DoubleMatrix params;
-    protected final DoubleMatrix result;
+    protected final ReadableDoubleMatrix result;
     protected final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
 
     public AbstractFitter(int arguments, double... initialParams)
@@ -36,9 +36,13 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
     }
     public AbstractFitter(ReadableDoubleMatrix points, double... initialParams)
     {
+        this(points, new DoubleMatrix(points.rows(), 1), initialParams);
+    }
+    public AbstractFitter(ReadableDoubleMatrix points, ReadableDoubleMatrix result, double... initialParams)
+    {
         this.points = points;
+        this.result = result;
         this.params = new DoubleMatrix(initialParams.length, 1, initialParams);
-        this.result = new DoubleMatrix(points.rows(), 1);
     }
 
     public double fit()
@@ -55,9 +59,10 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
     }
     public void addPoints(double... row)
     {
-        if (points instanceof DoubleMatrix)
+        if (points instanceof DoubleMatrix && result instanceof DoubleMatrix)
         {
             DoubleMatrix m = (DoubleMatrix) points;
+            DoubleMatrix r = (DoubleMatrix) result;
             if (row.length != m.columns()+1)
             {
                 throw new IllegalArgumentException("illegal number of arguments");
@@ -69,7 +74,7 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
             {
                 m.set(rows, ii, row[ii]);
             }
-            result.addRow(row[row.length-1]);
+            r.addRow(row[row.length-1]);
         }
         else
         {

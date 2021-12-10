@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import static java.lang.Math.*;
+import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
@@ -34,7 +35,12 @@ public class SineFitter extends FunctionAfxBFitter
 
     public SineFitter(DoubleMatrix points)
     {
-        super(points, Math::sin);
+        super(Math::sin, points);
+    }
+
+    public SineFitter(ReadableDoubleMatrix points, ReadableDoubleMatrix result, double... initialParams)
+    {
+        super(Math::sin, points, result, initialParams);
     }
     
     public MathFunction getDerivative()

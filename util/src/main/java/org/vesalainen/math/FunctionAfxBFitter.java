@@ -34,9 +34,15 @@ public class FunctionAfxBFitter extends AbstractFitter
         this.f = f;
     }
 
-    public FunctionAfxBFitter(ReadableDoubleMatrix points, DoubleUnaryOperator f)
+    public FunctionAfxBFitter(DoubleUnaryOperator f, ReadableDoubleMatrix points)
     {
         super(points, 1, 0);
+        this.f = f;
+    }
+
+    public FunctionAfxBFitter(DoubleUnaryOperator f, ReadableDoubleMatrix points, ReadableDoubleMatrix result, double... initialParams)
+    {
+        super(points, result, initialParams);
         this.f = f;
     }
 

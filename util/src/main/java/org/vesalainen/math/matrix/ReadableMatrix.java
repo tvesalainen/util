@@ -16,27 +16,35 @@
  */
 package org.vesalainen.math.matrix;
 
-import org.vesalainen.math.matrix.DoubleMatrix.ItemSupplier;
-
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface ReadableDoubleMatrix extends ReadableMatrix
+public interface ReadableMatrix
 {
 
     /**
-     * Returns item at i,j. Starts at 0.
-     * @param i
-     * @param j
+     * Returns number of columns
+     *
      * @return
      */
-    double get(int i, int j);
+    int columns();
 
-    default ItemSupplier supplier()
+    /**
+     * Returns number of rows
+     *
+     * @return
+     */
+    int rows();
+
+    default boolean sameDimensions(ReadableMatrix o)
     {
-        return (i, j)->get(i, j);
+        return rows() == o.rows() && columns() == o.columns();
+    }
+
+    default int elements()
+    {
+        return rows() * columns();
     }
     
 }

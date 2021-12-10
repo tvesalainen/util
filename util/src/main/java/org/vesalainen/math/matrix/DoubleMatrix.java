@@ -515,7 +515,7 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
             }
         }
     }
-    public static double diffNorm(DoubleMatrix a, DoubleMatrix b)
+    public static double diffNorm(ReadableDoubleMatrix a, ReadableDoubleMatrix b)
     {
         if (!a.sameDimensions(b))
         {
@@ -524,8 +524,8 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
         int m = a.rows();
         int n = a.columns();
         double sum = 0;
-        ItemSupplier sa = a.supplier;
-        ItemSupplier sb = b.supplier;
+        ItemSupplier sa = a.supplier();
+        ItemSupplier sb = b.supplier();
         for (int i = 0; i < m; i++)
         {
             for (int j = 0; j < n; j++)
@@ -1052,10 +1052,10 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
         }
     }
     /**
-     * this = this - m2
+     * m1 = m1 - m2
      * @param m2 
      */
-    public static void subtractEquals(DoubleMatrix m1, DoubleMatrix m2)
+    public static void subtractEquals(DoubleMatrix m1, ReadableDoubleMatrix m2)
     {
         subtract(m1, m2, m1);
     }
@@ -1064,7 +1064,7 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
      * @param m2
      * @return 
      */
-    public DoubleMatrix subtract(DoubleMatrix m2)
+    public DoubleMatrix subtract(ReadableDoubleMatrix m2)
     {
         return subtract(this, m2);
     }
@@ -1074,7 +1074,7 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
      * @param m2
      * @return 
      */
-    public static DoubleMatrix subtract(DoubleMatrix m1, DoubleMatrix m2)
+    public static DoubleMatrix subtract(ReadableDoubleMatrix m1, ReadableDoubleMatrix m2)
     {
         DoubleMatrix mr = new DoubleMatrix(m1.rows(), m1.columns());
         subtract(m1, m2, mr);
@@ -1086,7 +1086,7 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
      * @param m2
      * @param mr 
      */
-    public static void subtract(DoubleMatrix m1, DoubleMatrix m2, DoubleMatrix mr)
+    public static void subtract(ReadableDoubleMatrix m1, ReadableDoubleMatrix m2, DoubleMatrix mr)
     {
         if (m1.rows() != m2.rows()
                 || m1.columns() != m2.columns())
@@ -1095,8 +1095,8 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
         }
         int m = m1.rows();
         int n = m1.columns();
-        ItemSupplier s1 = m1.supplier;
-        ItemSupplier s2 = m2.supplier;
+        ItemSupplier s1 = m1.supplier();
+        ItemSupplier s2 = m2.supplier();
         ItemConsumer c = mr.consumer;
         for (int i = 0; i < m; i++)
         {

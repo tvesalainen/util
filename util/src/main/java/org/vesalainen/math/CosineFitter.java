@@ -17,6 +17,7 @@
 package org.vesalainen.math;
 
 import static java.lang.Math.*;
+import java.util.function.DoubleUnaryOperator;
 import org.vesalainen.math.matrix.DoubleMatrix;
 import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 
@@ -34,7 +35,12 @@ public class CosineFitter extends FunctionAfxBFitter
 
     public CosineFitter(ReadableDoubleMatrix points)
     {
-        super(points, Math::cos);
+        super(Math::cos, points);
+    }
+
+    public CosineFitter(ReadableDoubleMatrix points, ReadableDoubleMatrix result, double... initialParams)
+    {
+        super(Math::cos, points, result, initialParams);
     }
     
     public MathFunction getDerivative()

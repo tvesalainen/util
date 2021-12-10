@@ -31,6 +31,7 @@ import org.vesalainen.math.CosineFitter;
 import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.FunctionAfxBFitter;
 import org.vesalainen.navi.Tide;
+import org.vesalainen.navi.TideFitter;
 import org.vesalainen.ui.AbstractPlotter;
 import org.vesalainen.ui.AbstractPlotter.Polyline;
 import org.vesalainen.ui.Plotter;
@@ -62,54 +63,4 @@ public class DoubleTimeoutSlidingSlopeTest
         c.clear();
         assertEquals(0, c.count());
     }
-    @Test
-    public void testTide() throws IOException
-    {
-        double PI2 = 2*PI;
-        Random random = new Random(1234567L);
-        DoubleUnaryOperator noise = (x)->x+0.01*random.nextGaussian();
-        double step = 0.1;
-        DoubleUnaryOperator stepper = (x)->floor(x/step)*step+step/2;
-        DoubleToLongFunction timer = (x)->(long) (Tide.PERIOD*x/PI2);
-        LongToDoubleFunction xer = (t)->PI2*t/Tide.PERIOD;
-        LongReference time = new LongReference(0);
-        DoubleTimeoutSlidingSlope sloper = new DoubleTimeoutSlidingSlope(()->time.getValue(), 1000, Tide.PERIOD/18, xer);
-        CosineFitter cosineFitter = new CosineFitter();
-        Plotter p = new Plotter(1024, 1024, WHITE, false);
-        Polyline blue = p.polyline(BLUE);
-        Polyline green = p.polyline(GREEN);
-        Polyline yellow = p.polyline(YELLOW);
-        for (long t=0;t<Tide.PERIOD;t+=1000)
-        {
-            time.setValue(t);
-            double x = xer.applyAsDouble(t);
-            double y1 = sin(x);
-            blue.lineTo(t, y1);
-            double y0 = cos(x);
-            yellow.lineTo(t, y0);
-            double y2 = stepper.applyAsDouble(noise.applyAsDouble(y1));
-            green.lineTo(t, y2);
-            sloper.accept(y2, t);
-            double slope = sloper.slope();
-            if (sloper.fullness() > 99)
-            {
-                p.setColor(RED);
-                p.drawCross(sloper.meanTime(), slope);
-                cosineFitter.addPoints(xer.applyAsDouble(sloper.meanTime()), slope);
-                cosineFitter.fit();
-                MathFunction ader = cosineFitter.getAntiderivative();
-                MathFunction adert = (tt)->ader.applyAsDouble(xer.applyAsDouble((long) tt));
-                int n = cosineFitter.getPointCount();
-                p.setColor(Color.getHSBColor((float) (n*0.1), 1, 1));
-                p.draw(adert, 0, -1, Tide.PERIOD, 1);
-                sloper.clear();
-            }
-        }
-        p.drawPolyline(blue);
-        p.drawPolyline(green);
-        p.drawPolyline(yellow);
-        p.setColor(BLACK);
-        p.drawCoordinates();
-        p.plot("c:\\temp\\tide.png");
-    }    
 }

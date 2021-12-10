@@ -135,7 +135,7 @@ public class LevenbergMarquardt implements Serializable
      */
     public boolean optimize(DoubleMatrix initParam,
             ReadableDoubleMatrix X,
-            DoubleMatrix Y)
+            ReadableDoubleMatrix Y)
     {
         if (X.rows() == 0)
         {
@@ -161,7 +161,7 @@ public class LevenbergMarquardt implements Serializable
      * Iterate until the difference between the costs is insignificant or it
      * iterates too many times
      */
-    private boolean adjustParam(ReadableDoubleMatrix X, DoubleMatrix Y,
+    private boolean adjustParam(ReadableDoubleMatrix X, ReadableDoubleMatrix Y,
             double prevCost)
     {
         // lambda adjusts how big of a step it takes
@@ -218,7 +218,7 @@ public class LevenbergMarquardt implements Serializable
      * Performs sanity checks on the input data and reshapes internal matrices.
      * By reshaping a matrix it will only declare new memory when needed.
      */
-    protected void configure(DoubleMatrix initParam, ReadableDoubleMatrix X, DoubleMatrix Y)
+    protected void configure(DoubleMatrix initParam, ReadableDoubleMatrix X, ReadableDoubleMatrix Y)
     {
         if (Y.rows() != X.rows())
         {
@@ -257,7 +257,7 @@ public class LevenbergMarquardt implements Serializable
      * Computes the d and H parameters. Where d is the average error gradient
      * and H is an approximation of the hessian.
      */
-    private void computeDandH(DoubleMatrix param, ReadableDoubleMatrix x, DoubleMatrix y)
+    private void computeDandH(DoubleMatrix param, ReadableDoubleMatrix x, ReadableDoubleMatrix y)
     {
         func.compute(param, x, tempDH);
         DoubleMatrix.subtractEquals(tempDH, y);
@@ -311,7 +311,7 @@ public class LevenbergMarquardt implements Serializable
      *
      * cost = (1/N) Sum (f(x;p) - y)^2
      */
-    public double cost(DoubleMatrix param, ReadableDoubleMatrix X, DoubleMatrix Y)
+    public double cost(DoubleMatrix param, ReadableDoubleMatrix X, ReadableDoubleMatrix Y)
     {
         func.compute(param, X, temp0);
 

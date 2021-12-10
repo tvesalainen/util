@@ -28,7 +28,7 @@ import org.vesalainen.util.ArrayHelp.RowComparator;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  */
-public class AbstractMatrix<T> implements Cloneable, Serializable
+public class AbstractMatrix<T> implements ReadableMatrix, Cloneable, Serializable
 {
 
     protected static final long serialVersionUID = 1L;
@@ -198,7 +198,8 @@ public class AbstractMatrix<T> implements Cloneable, Serializable
         int cls = a.columns.getAsInt();
         System.arraycopy(a.array, row1*cls, b.array, row2*cls, cls);
     }
-    public boolean sameDimensions(AbstractMatrix o)
+    @Override
+    public boolean sameDimensions(ReadableMatrix o)
     {
         return rows() == o.rows() && columns() == o.columns();
     }
