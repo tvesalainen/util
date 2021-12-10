@@ -16,31 +16,96 @@
  */
 package org.vesalainen.navi;
 
+import static java.lang.Math.sin;
 import java.util.function.LongSupplier;
 import org.vesalainen.math.CosineFitter;
+import org.vesalainen.math.MathFunction;
 import org.vesalainen.math.matrix.ReadableDoubleMatrix;
 import org.vesalainen.math.sliding.DoubleAbstractTimeoutSliding;
 
 /**
- *
+ * TideFitter fits time slope series to create function that returns tide for
+ * time
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TideFitter extends CosineFitter
+public class TideFitter
 {
-    private Data data;
-
+    private final Data data;
+    private final CosineFitter cosineFitter;
+    private final Points points;
+    private final Result result;
+    /**
+     * Creates TideFitter with given clock
+     * @param clock 
+     */
     public TideFitter(LongSupplier clock)
     {
-        super(new Data(clock, 1024, Tide.PERIOD));
-        this.data = (Data) points;
+        this.data = new Data(clock, 1024, Tide.PERIOD);
+        this.points = new Points(data);
+        this.result = new Result(data);
+        this.cosineFitter = new CosineFitter(points, result, 1, 0);
     }
-    
+    /**
+     * Adds time and slope of tide. Slope is positive if water is coming up.
+     * Only values in last tide period are used in calculations.
+     * @param time
+     * @param slope 
+     */
     public void add(long time, double slope)
     {
         data.accept(slope, time);
     }
+    /**
+     * Returns function that returns tide for time in milliseconds using latest
+     * parameters
+     * @return 
+     */
+    public MathFunction getTideFunction()
+    {
+        return (t)->
+        {
+            double a = cosineFitter.getParamA();
+            double b = cosineFitter.getParamB();
+            return a*sin(Tide.TIME_TO_RAD.applyAsDouble((long) t)+b);
+        };
+    }
+    /**
+     * Returns function that returns tide for time in milliseconds using current
+     * parameters.
+     * @return 
+     */
+    public MathFunction getTideSnapshot()
+    {
+        MathFunction ad = cosineFitter.getAntiderivative();
+        return (t)->ad.applyAsDouble(Tide.TIME_TO_RAD.applyAsDouble((long) t));
+    }
+
+    public double getParamA()
+    {
+        return cosineFitter.getParamA();
+    }
+
+    public double getParamB()
+    {
+        return cosineFitter.getParamB();
+    }
+
+    public double fit()
+    {
+        return cosineFitter.fit();
+    }
+
+    public double[] getParams()
+    {
+        return cosineFitter.getParams();
+    }
+
+    public int getPointCount()
+    {
+        return cosineFitter.getPointCount();
+    }
     
-    private static class Data extends DoubleAbstractTimeoutSliding implements ReadableDoubleMatrix
+    private class Data extends DoubleAbstractTimeoutSliding
     {
 
         public Data(LongSupplier clock, int initialSize, long timeout)
@@ -58,30 +123,60 @@ public class TideFitter extends CosineFitter
         {
         }
 
+    }
+    private class Points implements ReadableDoubleMatrix
+    {
+        private Data data;
+
+        public Points(Data data)
+        {
+            this.data = data;
+        }
+        
         @Override
         public double get(int i, int j)
         {
-            switch (j)
-            {
-                case 0:
-                    return Tide.TIME_TO_RAD.applyAsDouble(getTime(i));
-                case 1:
-                    return getValue(i);
-                default:
-                    throw new IllegalArgumentException("wrong column");
-            }
+            return Tide.TIME_TO_RAD.applyAsDouble(data.getTime(i));
         }
 
         @Override
         public int rows()
         {
-            return count();
+            return data.count();
         }
 
         @Override
         public int columns()
         {
-            return 2;
+            return 1;
+        }
+        
+    }
+    private class Result implements ReadableDoubleMatrix
+    {
+        private Data data;
+
+        public Result(Data data)
+        {
+            this.data = data;
+        }
+        
+        @Override
+        public double get(int i, int j)
+        {
+            return data.getValue(i);
+        }
+
+        @Override
+        public int rows()
+        {
+            return data.count();
+        }
+
+        @Override
+        public int columns()
+        {
+            return 1;
         }
         
     }
