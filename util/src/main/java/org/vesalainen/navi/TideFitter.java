@@ -62,12 +62,18 @@ public class TideFitter
      */
     public MathFunction getTideFunction()
     {
-        return (t)->
-        {
-            double a = cosineFitter.getParamA();
-            double b = cosineFitter.getParamB();
-            return a*sin(Tide.TIME_TO_RAD.applyAsDouble((long) t)+b);
-        };
+        return (t)->getTide((long) t);
+    }
+    /**
+     * Returns tide in meters for time in millis.
+     * @param time
+     * @return 
+     */
+    public double getTide(long time)    
+    {
+        double a = cosineFitter.getParamA();
+        double b = cosineFitter.getParamB();
+        return a*sin(Tide.TIME_TO_RAD.applyAsDouble((long) time)+b);
     }
     /**
      * Returns function that returns tide for time in milliseconds using current
