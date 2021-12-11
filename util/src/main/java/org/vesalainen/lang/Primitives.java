@@ -21,7 +21,10 @@ import java.math.BigInteger;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.DoubleSupplier;
 import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
@@ -116,6 +119,36 @@ public final class Primitives
     public static final double getDouble(Number number, double def)
     {
         return number!=null?number.doubleValue():def;
+    }
+    /**
+     * Returns int or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final int getInt(Number number, IntSupplier def)
+    {
+        return number!=null?number.intValue():def.getAsInt();
+    }
+    /**
+     * Returns long or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final long getLong(Number number, LongSupplier def)
+    {
+        return number!=null?number.longValue():def.getAsLong();
+    }
+    /**
+     * Returns double or def if number is null.
+     * @param number
+     * @param def
+     * @return 
+     */
+    public static final double getDouble(Number number, DoubleSupplier def)
+    {
+        return number!=null?number.doubleValue():def.getAsDouble();
     }
     /**
      * Returns byte or throws NullPointerException with nullMsg if number is null.
