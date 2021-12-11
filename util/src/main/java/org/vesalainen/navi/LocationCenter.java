@@ -25,15 +25,26 @@ public class LocationCenter
     private double latitudeSum = 0;
     private double sin = 0;
     private double cos = 0;
-    private long count;
+    private double count;
     
     public void add(double longitude, double latitude)
     {
-        latitudeSum += latitude;
-        double rad = Math.toRadians(longitude);
-        sin += Math.sin(rad);
-        cos += Math.cos(rad);
-        count++;
+        add(longitude, latitude, 1);
+    }
+    public void add(double longitude, double latitude, double weight)
+    {
+        if (Double.isFinite(longitude) && Double.isFinite(latitude) && Double.isFinite(weight))
+        {
+            latitudeSum += latitude*weight;
+            double rad = Math.toRadians(longitude);
+            sin += Math.sin(rad)*weight;
+            cos += Math.cos(rad)*weight;
+            count += weight;
+        }
+        else
+        {
+            throw new IllegalArgumentException("");
+        }
     }
     
     public double latitude()

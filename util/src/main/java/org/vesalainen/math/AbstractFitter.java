@@ -29,6 +29,7 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
     protected final DoubleMatrix params;
     protected final ReadableDoubleMatrix result;
     protected final LevenbergMarquardt levenbergMarquardt = new LevenbergMarquardt(this, this);
+    private double finalCost;
 
     public AbstractFitter(int arguments, double... initialParams)
     {
@@ -50,7 +51,8 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
         if (levenbergMarquardt.optimize(params, points, result))
         {
             params.set(levenbergMarquardt.getParameters());
-            return levenbergMarquardt.getFinalCost();
+            finalCost = levenbergMarquardt.getFinalCost();
+            return finalCost;
         }
         else
         {
@@ -80,6 +82,11 @@ public abstract class AbstractFitter implements LevenbergMarquardt.Function, Lev
         {
             throw new UnsupportedOperationException("not supported with ReadableDoubleMatrix");
         }
+    }
+
+    public double getFinalCost()
+    {
+        return finalCost;
     }
 
     public double[] getParams()

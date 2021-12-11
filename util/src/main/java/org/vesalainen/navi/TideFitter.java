@@ -30,6 +30,7 @@ import org.vesalainen.math.sliding.DoubleAbstractTimeoutSliding;
  */
 public class TideFitter
 {
+    private static final double EPSILON = 0.1;
     private final Data data;
     private final CosineFitter cosineFitter;
     private final Points points;
@@ -55,6 +56,10 @@ public class TideFitter
     {
         data.accept(slope, time);
     }
+    public boolean isValid()
+    {
+        return cosineFitter.getPointCount() > 1 && cosineFitter.getFinalCost() < EPSILON;
+    }
     /**
      * Returns function that returns tide for time in milliseconds using latest
      * parameters
@@ -71,9 +76,8 @@ public class TideFitter
      */
     public double getTide(long time)    
     {
-        double a = cosineFitter.getParamA();
-        double b = cosineFitter.getParamB();
-        return a*sin(Tide.TIME_TO_RAD.applyAsDouble((long) time)+b);
+        double[] p = cosineFitter.getParams();
+        return p[0]*sin(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
     }
     /**
      * Returns function that returns tide for time in milliseconds using current
@@ -109,6 +113,11 @@ public class TideFitter
     public int getPointCount()
     {
         return cosineFitter.getPointCount();
+    }
+
+    public double getFinalCost()
+    {
+        return cosineFitter.getFinalCost();
     }
     
     private class Data extends DoubleAbstractTimeoutSliding

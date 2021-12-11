@@ -85,7 +85,8 @@ public class TideFitterTest
                 p.setColor(RED);
                 p.drawCross(sloper.meanTime(), slope);
                 tideFitter.add(sloper.meanTime(), slope);
-                tideFitter.fit();
+                double cost = tideFitter.fit();
+                System.err.println("cost="+cost+" count="+tideFitter.getPointCount());
                 MathFunction tideSnapshot = tideFitter.getTideSnapshot();
                 MathFunction tideFunction = tideFitter.getTideFunction();
                 assertEquals(tideSnapshot.applyAsDouble(1), tideFunction.applyAsDouble(1), 1e-10);
