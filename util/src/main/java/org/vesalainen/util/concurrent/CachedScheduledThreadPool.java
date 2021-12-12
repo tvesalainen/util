@@ -66,6 +66,14 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     {
         this(0, Integer.MAX_VALUE, 1, TimeUnit.MINUTES, new SynchronousQueue<>());
     }
+    /**
+     * Creates ScheduledThreadPool with 0 corePoolSize, given maximumPoolSize,
+     * keepAlive 1 minute and SynchronousQueue
+     */
+    public CachedScheduledThreadPool(int maximumPoolSize)
+    {
+        this(0, maximumPoolSize, 1, TimeUnit.MINUTES, new SynchronousQueue<>());
+    }
 
     public CachedScheduledThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue)
     {
