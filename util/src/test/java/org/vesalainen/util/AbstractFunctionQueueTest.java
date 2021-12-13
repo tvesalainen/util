@@ -16,6 +16,8 @@
  */
 package org.vesalainen.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -81,6 +83,10 @@ public class AbstractFunctionQueueTest
                 putFloat(f);
                 putDouble(d);
             }
+            catch (InterruptedException ex)
+            {
+                Logger.getLogger(AbstractFunctionQueueTest.class.getName()).log(Level.SEVERE, null, ex);
+            }            
             finally
             {
                 lock.unlock();
@@ -102,6 +108,10 @@ public class AbstractFunctionQueueTest
                     getDouble()
                 );
             }
+            catch (InterruptedException ex)
+            {
+                Logger.getLogger(AbstractFunctionQueueTest.class.getName()).log(Level.SEVERE, null, ex);
+            }            
             finally
             {
                 lock.unlock();

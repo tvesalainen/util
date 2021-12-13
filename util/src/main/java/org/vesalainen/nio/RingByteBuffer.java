@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
-import org.vesalainen.nio.channels.ChannelHelper;
 
 /**
  * RingByteBuffer is a ByteBuffer implementation of RingBuffer

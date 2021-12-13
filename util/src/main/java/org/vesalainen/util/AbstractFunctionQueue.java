@@ -19,6 +19,7 @@ package org.vesalainen.util;
 import java.nio.ByteBuffer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  * AbstractFunctionQueue provides put/get methods to queue parameter transfer
@@ -27,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>AbstractFunctionQueue is backed by ByteBuffer.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractFunctionQueue
+public abstract class AbstractFunctionQueue extends JavaLogging
 {
     private final ByteBuffer readBuf;
     private final ByteBuffer writeBuf;
@@ -39,6 +40,7 @@ public abstract class AbstractFunctionQueue
     
     public AbstractFunctionQueue(int size)
     {
+        super(AbstractFunctionQueue.class);
         this.writeBuf = ByteBuffer.allocate(size);
         this.readBuf = (ByteBuffer) writeBuf.asReadOnlyBuffer();
         this.lock = new ReentrantLock();
@@ -46,134 +48,127 @@ public abstract class AbstractFunctionQueue
         this.hasRoom = lock.newCondition();
         this.writable = size;
     }
-    protected AbstractFunctionQueue put(byte b)
+    protected AbstractFunctionQueue put(byte b) throws InterruptedException
     {
         needToWrite(1);
         writeBuf.put(b);
         return this;
     }
-    protected AbstractFunctionQueue putShort(short s)
+    protected AbstractFunctionQueue putShort(short s) throws InterruptedException
     {
         needToWrite(2);
         writeBuf.putShort(s);
         return this;
     }
-    protected AbstractFunctionQueue putChar(char c)
+    protected AbstractFunctionQueue putChar(char c) throws InterruptedException
     {
         needToWrite(2);
         writeBuf.putChar(c);
         return this;
     }
-    protected AbstractFunctionQueue putInt(int i)
+    protected AbstractFunctionQueue putInt(int i) throws InterruptedException
     {
         needToWrite(4);
         writeBuf.putInt(i);
         return this;
     }
-    protected AbstractFunctionQueue putFloat(float f)
+    protected AbstractFunctionQueue putFloat(float f) throws InterruptedException
     {
         needToWrite(4);
         writeBuf.putFloat(f);
         return this;
     }
-    protected AbstractFunctionQueue putLong(long l)
+    protected AbstractFunctionQueue putLong(long l) throws InterruptedException
     {
         needToWrite(8);
         writeBuf.putLong(l);
         return this;
     }
-    protected AbstractFunctionQueue putDouble(double d)
+    protected AbstractFunctionQueue putDouble(double d) throws InterruptedException
     {
         needToWrite(8);
         writeBuf.putDouble(d);
         return this;
     }
-    protected byte getByte()
+    protected AbstractFunctionQueue putString(double d) throws InterruptedException
+    {
+        needToWrite(8);
+        writeBuf.putDouble(d);
+        return this;
+    }
+    protected byte getByte() throws InterruptedException
     {
         needToRead(1);
         return readBuf.get();
     }
-    protected short getShort()
+    protected short getShort() throws InterruptedException
     {
         needToRead(2);
         return readBuf.getShort();
     }
-    protected char getChar()
+    protected char getChar() throws InterruptedException
     {
         needToRead(2);
         return readBuf.getChar();
     }
-    protected int getInt()
+    protected int getInt() throws InterruptedException
     {
         needToRead(4);
         return readBuf.getInt();
     }
-    protected float getFloat()
+    protected float getFloat() throws InterruptedException
     {
         needToRead(4);
         return readBuf.getFloat();
     }
-    protected long getLong()
+    protected long getLong() throws InterruptedException
     {
         needToRead(8);
         return readBuf.getLong();
     }
-    protected double getDouble()
+    protected double getDouble() throws InterruptedException
     {
         needToRead(8);
         return readBuf.getDouble();
     }
-    private void needToWrite(int size)
+    private void needToWrite(int size) throws InterruptedException
     {
-        try
+        while (writable < size)
         {
-            while (writable < size)
+            hasRoom.await();
+        }
+        int remaining = writeBuf.remaining();
+        if (remaining < size)
+        {
+            while (writable < remaining+size)
             {
                 hasRoom.await();
             }
-            int remaining = writeBuf.remaining();
-            if (remaining < size)
-            {
-                while (writable < remaining+size)
-                {
-                    hasRoom.await();
-                }
-                writeBuf.clear();
-            }
-            writable -= size;
-            readable += size;
-            hasData.signal();
+            writeBuf.clear();
         }
-        catch (InterruptedException ex)
-        {
-            throw new RuntimeException(ex);
-        }
+        writable -= size;
+        readable += size;
+        hasData.signal();
     }
-    private void needToRead(int size)
+    private void needToRead(int size) throws InterruptedException
     {
-        try
+        while (readable < size)
         {
-            while (readable < size)
+            hasData.await();
+        }
+        int remaining = readBuf.remaining();
+        if (remaining < size)
+        {
+            while (readable < remaining+size)
             {
                 hasData.await();
             }
-            int remaining = readBuf.remaining();
-            if (remaining < size)
-            {
-                while (readable < remaining+size)
-                {
-                    hasData.await();
-                }
-                readBuf.clear();
-            }
-            writable += size;
-            readable -= size;
-            hasRoom.signal();
+            readBuf.clear();
         }
-        catch (InterruptedException ex)
-        {
-            throw new RuntimeException(ex);
-        }
+        writable += size;
+        readable -= size;
+        hasRoom.signal();
+
     }
 
 }
