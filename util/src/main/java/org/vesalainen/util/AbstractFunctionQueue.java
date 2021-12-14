@@ -16,6 +16,7 @@
  */
 package org.vesalainen.util;
 
+import static java.lang.Math.max;
 import java.nio.ByteBuffer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,6 +38,7 @@ public abstract class AbstractFunctionQueue extends JavaLogging
     private final Condition hasData;
     private int readable;
     private int writable;
+    private int maxQueue;
     
     public AbstractFunctionQueue(int size)
     {
@@ -149,6 +151,7 @@ public abstract class AbstractFunctionQueue extends JavaLogging
         writable -= size;
         readable += size;
         hasData.signal();
+        maxQueue = max(readable, maxQueue);
     }
     private void needToRead(int size) throws InterruptedException
     {
@@ -169,6 +172,16 @@ public abstract class AbstractFunctionQueue extends JavaLogging
         readable -= size;
         hasRoom.signal();
 
+    }
+
+    public int getQueueLength()
+    {
+        return readable;
+    }
+
+    public int getMaxQueueLength()
+    {
+        return maxQueue;
     }
 
 }
