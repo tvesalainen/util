@@ -30,7 +30,9 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 import java.util.function.LongSupplier;
+import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -64,7 +66,7 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractMessage extends JavaLogging implements CanMXBean, NotificationEmitter
+public abstract class AbstractMessage extends JavaLogging implements Frame, CanMXBean, NotificationEmitter
 {
     protected final String NOTIF_PREFIX = "org.vesalainen.can.notif.";
     protected final String NOTIF_HEX_TYPE = NOTIF_PREFIX+"HEX";
@@ -84,8 +86,8 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected int updateCount;
     private int executeCount;
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
-    private ReentrantLock lock = new ReentrantLock();
     private final long startMillis;
+    private boolean hasSignals;
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -159,6 +161,10 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
     protected void attach()
     {
         jmxAction = compileSignals(new JmxCompiler());
+        if (action == null)
+        {
+            action = new Action();
+        }
         info("attach JMX %s", name);
     }
     protected void detach()
@@ -275,35 +281,34 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
         return getMaxBytes()*8;
     }
 
-    protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
-    /**
-     * Updates CanProcessor data. Returns true if needs to execute.
-     * @param frame
-     * @return 
-     */
-    void rawUpdate(Frame frame)
+    public boolean hasSignals()
     {
-        lock.lock();
-        try
+        return hasSignals;
+    }
+
+    public void setSignals(boolean hasSignals)
+    {
+        this.hasSignals = hasSignals;
+    }
+
+    protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
+
+    @Override
+    public void frame(long time, int canId, int dataLength, byte[] data)
+    {
+        updateCount++;
+        if (update(time, canId, dataLength, data))
         {
-            updateCount++;
-            if (update(frame))
+            action.run();
+            executeCount++;
+            if (jmxAction != null)
             {
-                action.run();
-                executeCount++;
-                if (jmxAction != null)
-                {
-                    jmxAction.run();
-                    emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->frame.getMillis());
-                }
+                jmxAction.run();
+                emitter.sendNotification2(()->NOTIF_HEX_TYPE, ()->HexUtil.toString(buf), ()->time);
             }
         }
-        finally
-        {
-            lock.unlock();
-        }
     }
-    protected abstract boolean update(Frame frame);
+    protected abstract boolean update(long time, int canId, int dataLength, byte[] data);
     protected abstract long getMillis();
 
     void addSignals(SignalCompiler compiler)
@@ -526,30 +531,23 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             switch (sc.getSignalType())
             {
                 case INT:
-                    is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                    if (isFactored(factor, offset))
-                    {
-                        return compiler.compile(mc, sc, ()->(int) (factor*is.getAsInt()+offset));
-                    }
-                    return compiler.compile(mc, sc, is);
+                    return compiler.compile(mc, sc, 
+                            compiler.compileIntBoundCheck(mc, sc, 
+                                factorInt(mc, sc, factor, offset, 
+                                    ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
                 case LONG:
-                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                    if (isFactored(factor, offset))
-                    {
-                        return compiler.compile(mc, sc, ()->(long) (factor*ls.getAsLong()+offset));
-                    }
-                    return compiler.compile(mc, sc, ls);
+                    return compiler.compile(mc, sc, 
+                            compiler.compileLongBoundCheck(mc, sc, 
+                                factorLong(mc, sc, factor, offset, 
+                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
                 case DOUBLE:
-                    ls = ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                    if (isFactored(factor, offset))
-                    {
-                        ds = ()->factor*ls.getAsLong()+offset;
-                    }
-                    else
-                    {
-                        ds = ()->ls.getAsLong();
-                    }
-                    return compiler.compile(mc, sc, ds);
+                    return compiler.compile(mc, sc, 
+                            compiler.compileDoubleBoundCheck(mc, sc, 
+                                factorDouble(mc, sc, factor, offset, 
+                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
                 case LOOKUP:
                     is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     IntFunction<String> f = sc.getMapper();
@@ -615,12 +613,68 @@ public abstract class AbstractMessage extends JavaLogging implements CanMXBean, 
             return factor != 1.0 || offset != 0.0;
         }
 
+        private IntSupplier factorInt(MessageClass mc, SignalClass sc, double factor, double offset, IntSupplier intSupplier)
+        {
+            if (isFactored(factor, offset))
+            {
+                return ()->(int) (factor*intSupplier.getAsInt()+offset);
+            }
+            else
+            {
+                return intSupplier;
+            }
+        }
+
+        private LongSupplier factorLong(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+        {
+            if (isFactored(factor, offset))
+            {
+                return ()->(long) (factor*longSupplier.getAsLong()+offset);
+            }
+            else
+            {
+                return longSupplier;
+            }
+        }
+
+        private DoubleSupplier factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+        {
+            LongToDoubleFunction check = compiler.compileDoubleBoundCheck(mc, sc, longSupplier);
+            if (check != null)
+            {
+                if (isFactored(factor, offset))
+                {
+                    return ()-> (factor*check.applyAsDouble(longSupplier.getAsLong())+offset);
+                }
+                else
+                {
+                    return ()-> check.applyAsDouble(longSupplier.getAsLong());
+                }
+            }
+            else
+            {
+                if (isFactored(factor, offset))
+                {
+                    return ()-> (factor*longSupplier.getAsLong()+offset);
+                }
+                else
+                {
+                    return (DoubleSupplier) longSupplier;
+                }
+            }
+        }
+
     }
     protected class Action implements Runnable
     {
         private Runnable begin;
         private Runnable action;
         private Consumer<Throwable> end;
+
+        public Action()
+        {
+            this(null, null, null);
+        }
 
         public Action(Runnable action)
         {

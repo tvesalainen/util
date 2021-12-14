@@ -65,16 +65,15 @@ public class SingleMessage extends AbstractMessage
     }
     
     @Override
-    protected boolean update(Frame frame)
+    protected boolean update(long time, int canId, int dataLength, byte[] data)
     {
         try
         {
             if (action != null || jmxAction != null)
             {
-                int remaining = frame.getDataLength();
-                setCurrentBytes(remaining);
-                frame.getData(buf, 0, 0, min(buf.length, remaining));
-                millisSupplier = ()->frame.getMillis();
+                setCurrentBytes(dataLength);
+                System.arraycopy(data, 0, buf, 0, min(buf.length, dataLength));
+                millisSupplier = ()->time;
                 return true;
             }
             else

@@ -21,6 +21,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
@@ -37,9 +38,13 @@ public interface SignalCompiler
     }
     default Runnable compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
     default Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier) {return null;};
-    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier) {return null;};
-    default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier) {return null;};
-    default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier) {return null;};
+    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier intSupplier) {return null;};
+    default IntSupplier compileIntBoundCheck(MessageClass mc, SignalClass sc, IntSupplier intSupplier) {return intSupplier;};
+    default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return null;};
+    default LongSupplier compileLongBoundCheck(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return longSupplier;};
+    default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier doubleSupplier) {return null;};
+    default DoubleSupplier compileDoubleBoundCheck(MessageClass mc, SignalClass sc, DoubleSupplier doubleSupplier) {return doubleSupplier;};
+    default LongToDoubleFunction compileDoubleBoundCheck(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map) {return null;};
     default Runnable compileBinary(MessageClass mc, SignalClass sc, byte[] buf, int offset, int length) {return null;}
     default Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss) {return null;};

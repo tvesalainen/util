@@ -40,6 +40,7 @@ public abstract class AbstractMessageFactory extends JavaLogging
         if (comp.needCompilation(canId))
         {
             sm.addSignals(comp);
+            sm.setSignals(true);
         }
         return sm;
     }
@@ -64,6 +65,7 @@ public abstract class AbstractMessageFactory extends JavaLogging
         SignalCompiler comp = getCompiler(mc);
         if (comp.needCompilation(canId))
         {
+            sm.setSignals(true);
             sm.addSignals(comp);
         }
         return sm;

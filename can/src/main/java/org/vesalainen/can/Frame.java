@@ -16,23 +16,21 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.IntUnaryOperator;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public interface Frame
 {
-    String getBus();
-    long getMillis();
-    byte getData(int index);
-    int getDataLength();
-    default void getData(byte[] buf, int sourceOffset, int bufOffset, int length)
+    void frame(long time, int canId, int dataLength, byte[] data);
+    default void getData(byte[] buf, int sourceOffset, int bufOffset, int length, int dataLength, byte[] data)
     {
         for (int ii=0;ii<length;ii++)
         {
-            buf[bufOffset+ii] = getData(sourceOffset+ii);
+            buf[bufOffset+ii] = data[sourceOffset+ii];
         }
     }
-    int getCanId();
     
 }

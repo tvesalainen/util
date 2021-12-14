@@ -51,14 +51,14 @@ public class FastMessage extends PgnMessage
     }
 
     @Override
-    protected boolean update(Frame frame)
+    protected boolean update(long time, int canId, int dataLength, byte[] data)
     {
         try
         {
             if (action != null || jmxAction != null)
             {
                 int header;
-                byte b = frame.getData(0);
+                byte b = data[0];
                 byte id = (byte) (b & 0xe0);
                 if (id != packetId)
                 {
@@ -69,10 +69,10 @@ public class FastMessage extends PgnMessage
                 int seq = b & 0x1f;
                 if (seq == 0)
                 {   // new message
-                    byteMax = frame.getData(1) & 0xff;
+                    byteMax = data[1] & 0xff;
                     setCurrentBytes(byteMax);
                     header = 2;
-                    millisSupplier = ()->frame.getMillis();
+                    millisSupplier = ()->time;
                     finest("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
                 }
                 else
@@ -80,12 +80,12 @@ public class FastMessage extends PgnMessage
                     header = 1;
                 }
                 int off = seq == 0 ? 0 : 6 + (seq-1)*7;
-                int remaining = min(frame.getDataLength()-header, byteMax - off);
+                int remaining = min(dataLength-header, byteMax - off);
                 byteCount += remaining;
                 finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 try
                 {
-                    frame.getData(buf, header, off, remaining);
+                    System.arraycopy(data, header, buf, off, remaining);
                     finest("%s", HexUtil.toString(buf));
                 }
                 catch (ArrayIndexOutOfBoundsException ex)

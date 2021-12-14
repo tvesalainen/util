@@ -20,49 +20,10 @@ package org.vesalainen.can;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SimpleFrame implements Frame
+public interface FrameQueueMXBean
 {
-    private final String bus;
-    private final int canId;
-    private final byte[] data;
-    private final long millis;
-
-    public SimpleFrame(String bus, int canId, byte[] data, long millis)
-    {
-        this.bus = bus;
-        this.canId = canId;
-        this.data = data;
-        this.millis = millis;
-    }
-
-    @Override
-    public String getBus()
-    {
-        return bus;
-    }
-    
-    @Override
-    public long getMillis()
-    {
-        return millis;
-    }
-
-    @Override
-    public byte getData(int index)
-    {
-        return data[index];
-    }
-
-    @Override
-    public int getDataLength()
-    {
-        return data.length;
-    }
-
-    @Override
-    public int getCanId()
-    {
-        return canId;
-    }
-    
+    int getQueueLength();
+    int getMaxQueueLength();
+    int getCanId();
+    int getSource();
 }

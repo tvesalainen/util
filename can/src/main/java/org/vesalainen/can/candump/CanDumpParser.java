@@ -17,7 +17,6 @@
 package org.vesalainen.can.candump;
 
 import java.nio.channels.ReadableByteChannel;
-import org.vesalainen.can.SimpleFrame;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.math.MoreMath;
 import org.vesalainen.parser.GenClassFactory;
@@ -56,7 +55,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
     protected void line(int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         int canId = svc.rawToCanId(rawId);
-        svc.frame(new SimpleFrame(svc.getBus(), canId, data, System.currentTimeMillis()));
+        svc.frame(System.currentTimeMillis(), canId, data.length, data);
     }
     @Rule("identifier hex data2")
     protected void line(String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
@@ -64,7 +63,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
         if (svc.isEnabled(bus))
         {
             int canId = svc.rawToCanId(rawId);
-            svc.frame(new SimpleFrame(bus, canId, data, System.currentTimeMillis()));
+            svc.frame(System.currentTimeMillis(), canId, data.length, data);
         }
     }
     @Rule("'\\(' time '\\)' identifier hex '#' data")
@@ -73,7 +72,7 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
         if (svc.isEnabled(bus))
         {
             int canId = svc.rawToCanId(rawId);
-            svc.frame(new SimpleFrame(bus, canId, data, time));
+            svc.frame(System.currentTimeMillis(), canId, data.length, data);
         }
     }
     @Rule("'\\[1\\]' hbyte")

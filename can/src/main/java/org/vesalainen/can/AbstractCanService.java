@@ -23,11 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
-import java.util.logging.Logger;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
@@ -40,15 +36,16 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractCanService extends JavaLogging implements Runnable, AutoCloseable
+public abstract class AbstractCanService extends JavaLogging implements Frame, Runnable, AutoCloseable
 {
+    protected final Map<Integer,Frame> queueMap = new HashMap<>();
+    protected final FrameQueue defaultQueue = new FrameQueue(8192, 0, this, "Default");
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final ExecutorService executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
-    private ReentrantLock compileLock = new ReentrantLock();
 
     protected AbstractCanService(ExecutorService executor, SignalCompiler compiler)
     {
@@ -60,6 +57,7 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
         super(AbstractCanService.class);
         this.executor = executor;
         this.messageFactory = messageFactory;
+        executor.execute(defaultQueue);
     }
 
     public static AbstractCanService openSocketCand(String canBus, SignalCompiler compiler) throws IOException
@@ -114,16 +112,34 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
             }
         }
     }
-    final protected void rawFrame(Frame frame)
+
+    public void queue(long time, int canId, int dataLength, byte[] data)
     {
-        int canId = frame.getCanId();
-        AbstractMessage proc = getProc(canId);
-        if (proc == null)
+        Frame frame = queueMap.get(PGN.addressedPgn(canId));
+        if (frame != null)
         {
-            finest("needs compiling %d", canId);
-            compileLock.lock();
-            try
+            frame.frame(time, canId, dataLength, data);
+        }
+        else
+        {
+            defaultQueue.frame(time, canId, dataLength, data);
+        }
+    }
+    
+    @Override
+    public void frame(long time, int canId, int dataLength, byte[] data)
+    {
+        Frame frame = queueMap.get(PGN.addressedPgn(canId));
+        if (frame != null)
+        {
+            frame.frame(time, canId, dataLength, data);
+        }
+        else
+        {
+            AbstractMessage proc = getProc(canId);
+            if (proc == null)
             {
+                finest("needs compiling %d", canId);
                 proc = getProc(canId);
                 if (proc == null)
                 {
@@ -136,12 +152,8 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
                     finest("had it compiled %d", canId);
                 }
             }
-            finally
-            {
-                compileLock.unlock();
-            }
+            proc.frame(time, canId, dataLength, data);
         }
-        proc.rawUpdate(frame);
     }
 
     protected void compile(int canId)
@@ -181,6 +193,13 @@ public abstract class AbstractCanService extends JavaLogging implements Runnable
     {
         if (msg != null)
         {
+            if (msg.hasSignals())
+            {
+                FrameQueue frameQueue = new FrameQueue(1024, canId, msg, msg.getComment());
+                executor.execute(frameQueue);
+                queueMap.put(PGN.addressedPgn(canId), frameQueue);
+                info("made own queue for %d %d %s", canId, PGN.addressedPgn(canId), msg.getComment());
+            }
             AbstractMessage old = procMap.put(PGN.addressedPgn(canId), msg);
             if (old != null)
             {

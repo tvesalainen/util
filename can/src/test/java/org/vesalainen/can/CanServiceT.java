@@ -19,16 +19,8 @@ package org.vesalainen.can;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.junit.Test;
-import org.vesalainen.can.dbc.MessageClass;
-import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.jmx.SimpleJMX;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -49,7 +41,7 @@ public class CanServiceT
     public void test() throws IOException, InterruptedException, ExecutionException
     {
         //AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
-        AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new TCompiler());
+        AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new PrintCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
         //canSvc.compilePgn(33162494);

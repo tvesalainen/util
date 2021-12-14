@@ -100,6 +100,14 @@ public class SignalClass extends DBCBase implements Cloneable
     {
         return multiplexerIndicator != null;
     }
+    /**
+     * Returns true if min!=max!=0
+     * @return 
+     */
+    public boolean hasBounds()
+    {
+        return min != 0 && max != 0;
+    }
     public SignalType getSignalType()
     {
         SignalType signalType = UNKNOWN;

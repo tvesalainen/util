@@ -93,9 +93,4 @@ public class CanDumpService extends AbstractCanService
         }
     }
 
-    void frame(Frame frame)
-    {
-        rawFrame(frame);
-    }
-    
 }

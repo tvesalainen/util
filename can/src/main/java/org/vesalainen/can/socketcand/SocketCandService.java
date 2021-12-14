@@ -43,9 +43,9 @@ public class SocketCandService extends AbstractCanService
     private final ByteBufferCharSequence rawMode = new ByteBufferCharSequence("< rawmode >");
     private SocketChannel channel;
     private InputReader input;
-    private ThreadLocal<FrameImpl> localFrame = ThreadLocal.withInitial(FrameImpl::new);
     private int dataRef;
     private String canBus;
+    private final byte[] array = new byte[8];
     
     public SocketCandService(String canBus, ExecutorService executor, SignalCompiler compiler)
     {
@@ -131,115 +131,53 @@ public class SocketCandService extends AbstractCanService
 
     void frame(int rawId, int timeRef, int dataRef)
     {
-        executor.execute(()->frame2(rawId, timeRef, dataRef));
-    }
-    void frame2(int rawId, int timeRef, int dataRef)
-    {
-        this.dataRef = dataRef;
-        int canId = rawToCanId(rawId);
-        FrameImpl frame = localFrame.get();
-        frame.init(canId, timeRef, dataRef);
-        rawFrame(frame);
+        int dataLength = input.getLength(dataRef)/2;
+        int dataStart = input.getStart(dataRef);
+        for (int ii=0;ii<dataLength;ii++)
+        {
+            array[ii] = (byte) (Character.digit(input.get(dataStart+2*ii), 16)<<4|Character.digit(input.get(dataStart+2*ii+1), 16));
+        }
+        queue(getMillis(timeRef), rawToCanId(rawId), dataLength, array);
     }
 
+    public long getMillis(int timeRef)
+    {
+        int start = input.getStart(timeRef);
+        int length = input.getLength(timeRef);
+        long m = 0;
+        boolean decimal = false;
+        int dec = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            int cc = input.get(start+ii);
+            if (cc == '.')
+            {
+                decimal = true;
+            }
+            else
+            {
+                m*=10;
+                m+=Character.digit(cc, 10);
+                if (decimal)
+                {
+                    dec++;
+                    if (dec == 3)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        if (dec != 3)
+        {
+            throw new IllegalArgumentException(input.getString(start, length));
+        }
+        return m;
+    }
     @Override
     protected String getHexData()
     {
         return input.getString(dataRef);
     }
 
-    private class FrameImpl implements Frame
-    {
-        private int canId;
-        private int timeRef;
-        private int dataLength;
-        private int dataStart;
-
-        private void init(int canId, int timeRef, int dataRef)
-        {
-            this.canId = canId;
-            this.timeRef = timeRef;
-            this.dataLength = input.getLength(dataRef);
-            this.dataStart = input.getStart(dataRef);
-        }
-
-        @Override
-        public String getBus()
-        {
-            return canBus;
-        }
-        
-        @Override
-        public long getMillis()
-        {
-            int start = input.getStart(timeRef);
-            int length = input.getLength(timeRef);
-            long m = 0;
-            boolean decimal = false;
-            int dec = 0;
-            for (int ii=0;ii<length;ii++)
-            {
-                int cc = input.get(start+ii);
-                if (cc == '.')
-                {
-                    decimal = true;
-                }
-                else
-                {
-                    m*=10;
-                    m+=Character.digit(cc, 10);
-                    if (decimal)
-                    {
-                        dec++;
-                        if (dec == 3)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (dec != 3)
-            {
-                throw new IllegalArgumentException(input.getString(start, length));
-            }
-            return m;
-        }
-
-        @Override
-        public byte getData(int index)
-        {
-            if (index > dataLength/2 || index < 0)
-            {
-                throw new IndexOutOfBoundsException(index+" out of bounds");
-            }
-            return (byte) (Character.digit(input.get(dataStart+2*index), 16)<<4|Character.digit(input.get(dataStart+2*index+1), 16));
-        }
-
-        @Override
-        public void getData(byte[] buf, int sourceOffset, int bufOffset, int length)
-        {
-            if (sourceOffset+length > dataLength/2 || sourceOffset < 0 || bufOffset < 0)
-            {
-                throw new IndexOutOfBoundsException("out of bounds");
-            }
-            for (int ii=0;ii<length;ii++)
-            {
-                int index = sourceOffset+ii;
-                buf[bufOffset+ii] = (byte) (Character.digit(input.get(dataStart+2*index), 16)<<4|Character.digit(input.get(dataStart+2*index+1), 16));
-            }
-        }
-
-        @Override
-        public int getDataLength()
-        {
-            return dataLength/2;
-        }
-
-        @Override
-        public int getCanId()
-        {
-            return canId;
-        }
-        
-    }
 }
