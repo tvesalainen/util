@@ -36,7 +36,6 @@ import org.vesalainen.util.AbstractFunctionQueue;
  */
 public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable, FrameQueueMXBean
 {
-    private final byte[] array = new byte[8];
     private final int canId;
     private final Frame forwarder;
     private final String name;
@@ -50,27 +49,20 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     }
     
     @Override
-    public void frame(long millis, int canId, int dataLength, byte[] data)
+    public void frame(long millis, int canId, int dataLength, long data)
     {
-        lock.lock();
         try
         {
             putLong(millis);
             putInt(canId);
             put((byte) dataLength);
-            for (int ii=0;ii<dataLength;ii++)
-            {
-                put(data[ii]);
-            }
+            putLong(data);
+            hasMoreData();
         }
         catch (InterruptedException ex)
         {
             log(Level.SEVERE, null, ex);
         }        
-        finally
-        {
-            lock.unlock();
-        }
     }
 
     @Override
@@ -84,17 +76,14 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
             server.registerMBean(this, objectName);
             while (true)
             {
-                lock.lock();
                 try
                 {
                     long millis = getLong();
                     int canId = getInt();
                     int dataLength = getByte();
-                    for (int ii=0;ii<dataLength;ii++)
-                    {
-                        array[ii] = getByte();
-                    }
-                    forwarder.frame(millis, canId, dataLength, array);
+                    long data = getLong();
+                    hasMoreRoom();
+                    forwarder.frame(millis, canId, dataLength, data);
                 }
                 catch (InterruptedException ex)
                 {
@@ -104,10 +93,6 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
                 catch (Exception ex)
                 {
                     log(SEVERE, ex, "%s", ex.getMessage());
-                }
-                finally
-                {
-                    lock.unlock();
                 }
             }
         }

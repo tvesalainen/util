@@ -17,6 +17,7 @@
 package org.vesalainen.can.candump;
 
 import java.nio.channels.ReadableByteChannel;
+import org.vesalainen.can.DataUtil;
 import org.vesalainen.lang.Primitives;
 import org.vesalainen.math.MoreMath;
 import org.vesalainen.parser.GenClassFactory;
@@ -51,74 +52,39 @@ public abstract class CanDumpParser extends AbstractParser implements ParserInfo
     {
         svc.setBus(bus);
     }
-    @Rule("'<0x' hex '>' data2")
-    protected void line(int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    @Rule("'<0x' hex '>' dataLength hexData")
+    protected void line(int rawId, int dataLength, long data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         int canId = svc.rawToCanId(rawId);
-        svc.frame(System.currentTimeMillis(), canId, data.length, data);
+        svc.frame(System.currentTimeMillis(), canId, dataLength, data);
     }
-    @Rule("identifier hex data2")
-    protected void line(String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    @Rule("identifier hex dataLength hexData")
+    protected void line(String bus, int rawId, int dataLength, long data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         if (svc.isEnabled(bus))
         {
             int canId = svc.rawToCanId(rawId);
-            svc.frame(System.currentTimeMillis(), canId, data.length, data);
+            svc.frame(System.currentTimeMillis(), canId, dataLength, data);
         }
     }
-    @Rule("'\\(' time '\\)' identifier hex '#' data")
-    protected void line(long time, String bus, int rawId, byte[] data, @ParserContext("CanDumpService") CanDumpService svc)
+    @Rule("'\\(' time '\\)' identifier hex '#' dataLength hexData")
+    protected void line(long time, String bus, int rawId, int dataLength, long data, @ParserContext("CanDumpService") CanDumpService svc)
     {
         if (svc.isEnabled(bus))
         {
             int canId = svc.rawToCanId(rawId);
-            svc.frame(System.currentTimeMillis(), canId, data.length, data);
+            svc.frame(System.currentTimeMillis(), canId, dataLength, data);
         }
     }
-    @Rule("'\\[1\\]' hbyte")
-    protected byte[] data2(byte b1)
+    @Rule("'\\[' int '\\]'")
+    protected int dataLength(int len)
     {
-        return new byte[]{b1};
+        return len;
     }
-    @Rule("'\\[2\\]' hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2)
+    @Terminal(expression = "[0-9a-fA-F][0-9a-fA-F]+", radix=16, signed=false)
+    protected long hexData(CharSequence seq)
     {
-        return new byte[]{b1, b2};
-    }
-    @Rule("'\\[3\\]' hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3)
-    {
-        return new byte[]{b1, b2, b3};
-    }
-    @Rule("'\\[4\\]' hbyte hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3, byte b4)
-    {
-        return new byte[]{b1, b2, b3, b4};
-    }
-    @Rule("'\\[5\\]' hbyte hbyte hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5)
-    {
-        return new byte[]{b1, b2, b3, b4, b5};
-    }
-    @Rule("'\\[6\\]' hbyte hbyte hbyte hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6)
-    {
-        return new byte[]{b1, b2, b3, b4, b5, b6};
-    }
-    @Rule("'\\[7\\]' hbyte hbyte hbyte hbyte hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7)
-    {
-        return new byte[]{b1, b2, b3, b4, b5, b6, b7};
-    }
-    @Rule("'\\[8\\]' hbyte hbyte hbyte hbyte hbyte hbyte hbyte hbyte")
-    protected byte[] data2(byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7, byte b8)
-    {
-        return new byte[]{b1, b2, b3, b4, b5, b6, b7, b8};
-    }
-    @Terminal(expression = "[0-9a-fA-F][0-9a-fA-F]", radix=16, signed=false)
-    protected byte hbyte(byte b)
-    {
-        return b;
+        return DataUtil.asLong(seq);
     }
     @Terminal(expression = "[\\+\\-]?[0-9]+\\.[0-9]+")
     protected long time(CharSequence seq)

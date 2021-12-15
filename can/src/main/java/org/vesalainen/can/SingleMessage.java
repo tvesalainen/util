@@ -65,14 +65,14 @@ public class SingleMessage extends AbstractMessage
     }
     
     @Override
-    protected boolean update(long time, int canId, int dataLength, byte[] data)
+    protected boolean update(long time, int canId, int dataLength, long data)
     {
         try
         {
             if (action != null || jmxAction != null)
             {
                 setCurrentBytes(dataLength);
-                System.arraycopy(data, 0, buf, 0, min(buf.length, dataLength));
+                DataUtil.fromLong(data, buf, 0, min(buf.length, dataLength));
                 millisSupplier = ()->time;
                 return true;
             }

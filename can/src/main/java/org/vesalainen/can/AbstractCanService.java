@@ -113,7 +113,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         }
     }
 
-    public void queue(long time, int canId, int dataLength, byte[] data)
+    public void queue(long time, int canId, int dataLength, long data)
     {
         Frame frame = queueMap.get(PGN.addressedPgn(canId));
         if (frame != null)
@@ -127,7 +127,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     }
     
     @Override
-    public void frame(long time, int canId, int dataLength, byte[] data)
+    public void frame(long time, int canId, int dataLength, long data)
     {
         Frame frame = queueMap.get(PGN.addressedPgn(canId));
         if (frame != null)

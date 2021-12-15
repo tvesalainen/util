@@ -129,17 +129,6 @@ public class SocketCandService extends AbstractCanService
         }
     }
 
-    void frame(int rawId, int timeRef, int dataRef)
-    {
-        int dataLength = input.getLength(dataRef)/2;
-        int dataStart = input.getStart(dataRef);
-        for (int ii=0;ii<dataLength;ii++)
-        {
-            array[ii] = (byte) (Character.digit(input.get(dataStart+2*ii), 16)<<4|Character.digit(input.get(dataStart+2*ii+1), 16));
-        }
-        queue(getMillis(timeRef), rawToCanId(rawId), dataLength, array);
-    }
-
     public long getMillis(int timeRef)
     {
         int start = input.getStart(timeRef);

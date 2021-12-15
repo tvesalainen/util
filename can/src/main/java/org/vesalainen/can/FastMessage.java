@@ -51,14 +51,14 @@ public class FastMessage extends PgnMessage
     }
 
     @Override
-    protected boolean update(long time, int canId, int dataLength, byte[] data)
+    protected boolean update(long time, int canId, int dataLength, long data)
     {
         try
         {
             if (action != null || jmxAction != null)
             {
                 int header;
-                byte b = data[0];
+                byte b = DataUtil.get(data, 0);
                 byte id = (byte) (b & 0xe0);
                 if (id != packetId)
                 {
@@ -69,7 +69,7 @@ public class FastMessage extends PgnMessage
                 int seq = b & 0x1f;
                 if (seq == 0)
                 {   // new message
-                    byteMax = data[1] & 0xff;
+                    byteMax = DataUtil.get(data, 1);
                     setCurrentBytes(byteMax);
                     header = 2;
                     millisSupplier = ()->time;
@@ -85,7 +85,7 @@ public class FastMessage extends PgnMessage
                 finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
                 try
                 {
-                    System.arraycopy(data, header, buf, off, remaining);
+                    DataUtil.fromLong(data, header, buf, off, remaining);
                     finest("%s", HexUtil.toString(buf));
                 }
                 catch (ArrayIndexOutOfBoundsException ex)

@@ -17,6 +17,7 @@
 package org.vesalainen.can.socketcand;
 
 import java.nio.channels.ByteChannel;
+import org.vesalainen.can.DataUtil;
 import org.vesalainen.parser.GenClassFactory;
 import org.vesalainen.parser.ParserConstants;
 import org.vesalainen.parser.ParserInfo;
@@ -38,6 +39,7 @@ import org.vesalainen.parser.util.InputReader;
 @Rule(left="socketcand", value={"hi busOk rawOk frame*"})
 public abstract class SocketCandParser extends AbstractParser implements ParserInfo
 {
+    private long data;
     @Rule("'<' 'hi' '>'")
     protected void hi(@ParserContext("SocketCandService") SocketCandService svc, @ParserContext(ParserConstants.INPUTREADER) InputReader input)
     {
@@ -54,21 +56,51 @@ public abstract class SocketCandParser extends AbstractParser implements ParserI
     {
     }
     @Rule("'<' 'frame' hex time data '>'")
-    protected void frame(int canId, int time, int data, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected void frame(int canId, long time, int dataLength, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        svc.frame(canId, time, data);
+        svc.queue(time, canId, dataLength, data);
     }
     
     @Terminal(expression="[0-9a-fA-F]+")
-    protected int data(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected int data(CharSequence data, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        return input.getFieldRef();
+        this.data = DataUtil.asLong(data);
+        return DataUtil.length(data);
     }
 
     @Terminal(expression = "[\\+\\-]?[0-9]+\\.[0-9]+")
-    protected int time(InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
+    protected long time(CharSequence time, @ParserContext("SocketCandService") SocketCandService svc)
     {
-        return input.getFieldRef();
+        long m = 0;
+        boolean decimal = false;
+        int dec = 0;
+        int length = time.length();
+        for (int ii=0;ii<length;ii++)
+        {
+            int cc = time.charAt(ii);
+            if (cc == '.')
+            {
+                decimal = true;
+            }
+            else
+            {
+                m*=10;
+                m+=Character.digit(cc, 10);
+                if (decimal)
+                {
+                    dec++;
+                    if (dec == 3)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        if (dec != 3)
+        {
+            throw new IllegalArgumentException(time.toString());
+        }
+        return m;
     }
     
     @ParseMethod(start="socketcand", whiteSpace={"whiteSpace"}, charSet="US-ASCII")

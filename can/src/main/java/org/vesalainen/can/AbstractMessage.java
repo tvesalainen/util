@@ -25,12 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
-import java.util.function.IntUnaryOperator;
 import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
@@ -294,7 +292,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
 
     @Override
-    public void frame(long time, int canId, int dataLength, byte[] data)
+    public void frame(long time, int canId, int dataLength, long data)
     {
         updateCount++;
         if (update(time, canId, dataLength, data))
@@ -308,7 +306,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
             }
         }
     }
-    protected abstract boolean update(long time, int canId, int dataLength, byte[] data);
+    protected abstract boolean update(long time, int canId, int dataLength, long data);
     protected abstract long getMillis();
 
     void addSignals(SignalCompiler compiler)

@@ -24,13 +24,5 @@ import java.util.function.IntUnaryOperator;
  */
 public interface Frame
 {
-    void frame(long time, int canId, int dataLength, byte[] data);
-    default void getData(byte[] buf, int sourceOffset, int bufOffset, int length, int dataLength, byte[] data)
-    {
-        for (int ii=0;ii<length;ii++)
-        {
-            buf[bufOffset+ii] = data[sourceOffset+ii];
-        }
-    }
-    
+    void frame(long time, int canId, int dataLength, long data);
 }
