@@ -27,17 +27,22 @@ import org.vesalainen.util.logging.JavaLogging;
  * between threads.
  * <p>It is meant to replace object creation just for queuing.
  * <p>AbstractFunctionQueue is backed by ByteBuffer.
+ * <p>Important! Implementing class must create matching put and get methods. Put method 
+ * must call hasMoreData() after putting all data. Get method must call
+ * hasMoreRoom() after getting corresponding data from buffer.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see org.vesalainen.util.AbstractFunctionQueue#hasMoreData() 
+ * @see org.vesalainen.util.AbstractFunctionQueue#hasMoreRoom() 
  */
 public abstract class AbstractFunctionQueue extends JavaLogging
 {
     private final ByteBuffer readBuf;
     private final ByteBuffer writeBuf;
-    protected final ReentrantLock lock;
+    private final ReentrantLock lock;
     private final Condition hasRoom;
     private final Condition hasData;
-    private int readable;
-    private int writable;
+    private volatile int readable;
+    private volatile int writable;
     private int maxQueue;
     
     public AbstractFunctionQueue(int size)
@@ -144,34 +149,66 @@ public abstract class AbstractFunctionQueue extends JavaLogging
         {
             while (writable < remaining+size)
             {
-                hasRoom.await();
+                await(hasRoom);
             }
             writeBuf.clear();
         }
         writable -= size;
         readable += size;
-        hasData.signal();
         maxQueue = max(readable, maxQueue);
     }
     private void needToRead(int size) throws InterruptedException
     {
         while (readable < size)
         {
-            hasData.await();
+            await(hasData);
         }
         int remaining = readBuf.remaining();
         if (remaining < size)
         {
             while (readable < remaining+size)
             {
-                hasData.await();
+                await(hasData);
             }
             readBuf.clear();
         }
         writable += size;
         readable -= size;
-        hasRoom.signal();
 
+    }
+
+    protected void hasMoreData()
+    {
+        signal(hasData);
+    }
+    protected void hasMoreRoom()
+    {
+        signal(hasRoom);
+    }
+    private void await(Condition condition) throws InterruptedException
+    {
+        lock.lock();
+        try
+        {
+            condition.await();
+        }
+        finally
+        {
+            lock.unlock();
+        }
+    }
+
+    private void signal(Condition condition)
+    {
+        lock.lock();
+        try
+        {
+            condition.signal();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     public int getQueueLength()
@@ -183,5 +220,6 @@ public abstract class AbstractFunctionQueue extends JavaLogging
     {
         return maxQueue;
     }
+
 
 }

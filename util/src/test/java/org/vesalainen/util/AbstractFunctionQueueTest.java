@@ -72,7 +72,6 @@ public class AbstractFunctionQueueTest
         @Override
         public void accept(byte b, char c, short s, int i, long l, float f, double d)
         {
-            lock.lock();
             try
             {
                 put(b);
@@ -82,20 +81,16 @@ public class AbstractFunctionQueueTest
                 putLong(l);
                 putFloat(f);
                 putDouble(d);
+                hasMoreData();
             }
             catch (InterruptedException ex)
             {
                 Logger.getLogger(AbstractFunctionQueueTest.class.getName()).log(Level.SEVERE, null, ex);
             }            
-            finally
-            {
-                lock.unlock();
-            }
         }
         
         public void run()
         {
-            lock.lock();
             try
             {
                 forwarder.accept(
@@ -107,15 +102,12 @@ public class AbstractFunctionQueueTest
                     getFloat(),
                     getDouble()
                 );
+                hasMoreRoom();
             }
             catch (InterruptedException ex)
             {
                 Logger.getLogger(AbstractFunctionQueueTest.class.getName()).log(Level.SEVERE, null, ex);
             }            
-            finally
-            {
-                lock.unlock();
-            }
         }
 
     }
