@@ -24,14 +24,14 @@ import java.nio.BufferUnderflowException;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 
 /**
- *
+ * ModbusTcp handles modbus tcp protocol.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="https://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf">MODBUS Messaging on TCP/IP Implementation Guide V1.0b</a>
  */
 public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
 {

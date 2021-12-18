@@ -25,15 +25,14 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.vesalainen.modbus.FunctionCode.*;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- *
+ * AbstractModbus handles basic modbus protocol
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
+ * @see <a href="https://modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf">MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b </a>
  */
 public abstract class AbstractModbus<T extends ReadableByteChannel & WritableByteChannel> extends JavaLogging
 {
