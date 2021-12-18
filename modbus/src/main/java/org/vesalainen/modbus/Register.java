@@ -77,6 +77,11 @@ public class Register
         return type;
     }
 
+    public int getWords()
+    {
+        return words;
+    }
+
     public float getScaleFactor()
     {
         return scaleFactor;

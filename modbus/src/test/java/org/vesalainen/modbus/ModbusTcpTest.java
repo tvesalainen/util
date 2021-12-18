@@ -17,8 +17,10 @@
 package org.vesalainen.modbus;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
@@ -29,16 +31,27 @@ public class ModbusTcpTest
     
     public ModbusTcpTest()
     {
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.ALL);
     }
 
     @Test
-    public void testGetShort() throws IOException
+    public void test1() throws IOException
     {
         ModbusTcp m = ModbusTcp.open("192.168.214.222");
-        short r1 = m.getShort(100, 806);
+        m.setShort(100, 807, (short)0);
+        m.getShort(100, 807, (s)->System.err.println(s));
+        int r1 = m.getShort(100, 806);
         System.err.println(r1);
-        short r2 = m.getShort(100, 843);
+        int r2 = m.getShort(100, 843);
         System.err.println(r2);
+        m.getInt(100, 2802, (s)->System.err.println(s));
+        int r3 = m.getInt(100, 2800);
+        System.err.println(r3);
+        m.getString(100, 800, 6, (s)->System.err.println(s));
+        String r4 = m.getString(100, 800, 6);
+        System.err.println(r4);
+        long r5 = m.getUnsignedInt(100, 3420);
+        System.err.println(r5);
     }
     
 }

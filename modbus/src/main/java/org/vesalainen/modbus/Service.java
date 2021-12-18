@@ -19,6 +19,7 @@ package org.vesalainen.modbus;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 
 /**
  *
@@ -27,7 +28,7 @@ import java.util.TreeMap;
 public class Service
 {
     private final String name;
-    private final Map<Integer,Register> map = new TreeMap<>();
+    private final Map<String,Register> map = new TreeMap<>();
 
     public Service(String name)
     {
@@ -36,7 +37,16 @@ public class Service
     
     void add(Register register)
     {
-        map.put(register.getAddress(), register);
+        map.put(register.getPath(), register);
     }
     
+    public Register getRegister(String path)
+    {
+        return map.get(path);
+    }
+    
+    public void forEach(BiConsumer<? super String, ?super Register> act)
+    {
+        map.forEach(act);
+    }
 }

@@ -20,16 +20,14 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -39,9 +37,8 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
 {
     private final AtomicInteger transactionIdentifier = new AtomicInteger();
     private final InetSocketAddress socketAddress;
-    private SocketChannel channel;
     private Thread reader;
-    private Map<Short,Thread> transactionMap = new HashMap<>();
+    private Map<Short,Runnable> transactionMap = new HashMap<>();
     private volatile boolean waitingForReadingFinish;
     
     public static ModbusTcp open(String inetAddress) throws IOException
@@ -60,43 +57,37 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
     }
     private ModbusTcp(InetSocketAddress socketAddress) throws IOException
     {
-        super(260);
+        super(SocketChannel.open(socketAddress), 260);
         this.socketAddress = socketAddress;
     }
     private void open() throws IOException
     {
-        this.channel = SocketChannel.open(socketAddress);
         this.reader = new Thread(this, "ModbusTcp reader");
         reader.start();
     }
 
     @Override
-    protected short startTransaction(byte unitId, int dataLength)
+    protected short startTransaction(byte unitId, int dataLength, Runnable after)
     {
-        short id = (short) transactionIdentifier.getAndIncrement();
+        short transaction = (short) transactionIdentifier.getAndIncrement();
+        fine("start transaction %d", transaction);
+        transactionMap.put(transaction, after);
         sendBuffer.clear();
-        sendBuffer.putShort(id);
+        sendBuffer.putShort(transaction);
         sendBuffer.putShort((short) 0);
         sendBuffer.putShort((short) (dataLength+1));
         sendBuffer.put(unitId);
-        return id;
+        return transaction;
     }
 
     @Override
-    protected void waitFor(short transaction)
+    protected void waitForResponce(short transaction)
     {
-        transactionMap.put(transaction, Thread.currentThread());
+        fine("wait for transaction %d", transaction);
         while (transactionMap.containsKey(transaction))
         {
             LockSupport.park();
         }
-    }
-
-    @Override
-    protected void send() throws IOException
-    {
-        sendBuffer.flip();
-        channel.write(sendBuffer);
     }
 
     @Override
@@ -147,6 +138,7 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
     private void processReceived()
     {
         short transactionId = receiveBuffer.getShort();
+        fine("received %d", transactionId);
         short protocolId = receiveBuffer.getShort();
         short length = receiveBuffer.getShort();
         if (receiveBuffer.remaining() < length)
@@ -154,20 +146,31 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
             throw new BufferUnderflowException();
         }
         byte unitId = receiveBuffer.get();
-        Thread thread = transactionMap.remove(transactionId);
+        Runnable call = transactionMap.remove(transactionId);
+        call.run();
+    }
+
+    @Override
+    protected void waitForReadFinish(Thread thread)
+    {
+        fine("release thread %s", thread.getName());
         waitingForReadingFinish = true;
         LockSupport.unpark(thread);
         while (waitingForReadingFinish)
         {
             LockSupport.park();
         }
+        fine("released thread %s", thread.getName());
     }
 
     @Override
     protected void releaseReader()
     {
-        waitingForReadingFinish = false;
-        LockSupport.unpark(reader);
+        if (waitingForReadingFinish)
+        {
+            waitingForReadingFinish = false;
+            LockSupport.unpark(reader);
+        }
     }
     
 }

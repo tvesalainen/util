@@ -19,50 +19,111 @@ package org.vesalainen.modbus;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.concurrent.locks.ReentrantLock;
-import static org.vesalainen.modbus.FunctionCode.READ_HOLDING_REGISTERS;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static org.vesalainen.modbus.FunctionCode.*;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @param <T>
  */
-public abstract class AbstractModbus extends JavaLogging
+public abstract class AbstractModbus<T extends ReadableByteChannel & WritableByteChannel> extends JavaLogging
 {
+    protected final T channel;
     protected final ByteBuffer sendBuffer;
     protected final ByteBuffer receiveBuffer;
     protected final ReentrantLock sendLock = new ReentrantLock();
 
-    protected AbstractModbus(int size)
+    protected AbstractModbus(T channel, int size)
     {
+        super(AbstractModbus.class);
+        this.channel = channel;
         this.sendBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.BIG_ENDIAN);
         this.receiveBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.BIG_ENDIAN);
     }
     
-    public short getShort(int unitId, int address) throws IOException
+    public void setShort(int unitId, int address, short value) throws IOException
     {
-        short transaction = startTransaction((byte) unitId, 5);
+        Thread currentThread = Thread.currentThread();
+        short transaction = 0;
         sendLock.lock();
         try
         {
-            sendBuffer.put(READ_HOLDING_REGISTERS.code());
-            sendBuffer.putShort((short) address);
-            sendBuffer.putShort((short)1);
+            transaction = putWriteMultipleRegistersRequestHeader(unitId, address, 1, ()->waitForReadFinish(currentThread));
+            sendBuffer.putShort((short) value);
             send();
         }
         finally
         {
             sendLock.unlock();
         }
-        waitFor(transaction);
         try
         {
-            byte functionCode = receiveBuffer.get();
-            byte length = receiveBuffer.get();
-            if (functionCode != READ_HOLDING_REGISTERS.code())
-            {
-                throw new IOException("modbus exception code "+length);
-            }
+            waitForResponce(transaction);
+            readWriteMultipleRegistersResponseHeader();
+        }
+        finally
+        {
+            releaseReader();
+        }
+    }
+    public String getString(int unitId, int address, int words) throws IOException
+    {
+        Thread currentThread = Thread.currentThread();
+        short transaction = 0;
+        sendLock.lock();
+        try
+        {
+            transaction = putReadRegistersRequestHeader(unitId, address, words, ()->waitForReadFinish(currentThread));
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+        try
+        {
+            waitForResponce(transaction);
+            readReadRegistersResponseHeader();
+            byte[] buf = new byte[2*words];
+            receiveBuffer.get(buf);
+            return new String(buf, US_ASCII);
+        }
+        finally
+        {
+            releaseReader();
+        }
+    }
+    public int getUnsignedShort(int unitId, int address) throws IOException
+    {
+        return Short.toUnsignedInt(getShort(unitId, address));
+    }
+    public short getShort(int unitId, int address) throws IOException
+    {
+        Thread currentThread = Thread.currentThread();
+        short transaction = 0;
+        sendLock.lock();
+        try
+        {
+            transaction = putReadRegistersRequestHeader(unitId, address, 1, ()->waitForReadFinish(currentThread));
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+        try
+        {
+            waitForResponce(transaction);
+            readReadRegistersResponseHeader();
             return receiveBuffer.getShort();
         }
         finally
@@ -70,10 +131,178 @@ public abstract class AbstractModbus extends JavaLogging
             releaseReader();
         }
     }
+    public long getUnsignedInt(int unitId, int address) throws IOException
+    {
+        return Integer.toUnsignedLong(getInt(unitId, address));
+    }
+    public int getInt(int unitId, int address) throws IOException
+    {
+        Thread currentThread = Thread.currentThread();
+        short transaction = 0;
+        sendLock.lock();
+        try
+        {
+            transaction = putReadRegistersRequestHeader(unitId, address, 2, ()->waitForReadFinish(currentThread));
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+        try
+        {
+            waitForResponce(transaction);
+            readReadRegistersResponseHeader();
+            return receiveBuffer.getInt();
+        }
+        finally
+        {
+            releaseReader();
+        }
+    }
+    public void getShort(int unitId, int address, IntConsumer consumer) throws IOException
+    {
+        Runnable after = ()->
+        {
+            try
+            {
+                readReadRegistersResponseHeader();
+                consumer.accept(receiveBuffer.getShort());
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        };
+        sendLock.lock();
+        try
+        {
+            putReadRegistersRequestHeader(unitId, address, 1, after);
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+    }
+    public void getInt(int unitId, int address, IntConsumer consumer) throws IOException
+    {
+        Runnable after = ()->
+        {
+            try
+            {
+                readReadRegistersResponseHeader();
+                consumer.accept(receiveBuffer.getInt());
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        };
+        sendLock.lock();
+        try
+        {
+            putReadRegistersRequestHeader(unitId, address, 2, after);
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+    }
+    public void getString(int unitId, int address, int words, Consumer<String> consumer) throws IOException
+    {
+        Runnable after = ()->
+        {
+            try
+            {
+                readReadRegistersResponseHeader();
+                byte[] buf = new byte[2*words];
+                receiveBuffer.get(buf);
+                consumer.accept(new String(buf, US_ASCII));
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        };
+        sendLock.lock();
+        try
+        {
+            putReadRegistersRequestHeader(unitId, address, words, after);
+            send();
+        }
+        finally
+        {
+            sendLock.unlock();
+        }
+    }
 
-    protected abstract short startTransaction(byte unitId, int dataLength);
-    protected abstract void waitFor(short transaction);
+    private short putWriteMultipleRegistersRequestHeader(int unitId, int address, int words, Runnable after) throws IOException
+    {
+        short transaction = startTransaction((byte) unitId, 8, after);
+        sendBuffer.put(WRITE_MULTIPLE_REGISTERS.code());
+        sendBuffer.putShort((short) address);
+        sendBuffer.putShort((short) words);
+        sendBuffer.put((byte) (words*2));
+        return transaction;
+    }
+    private short putReadRegistersRequestHeader(int unitId, int address, int words, Runnable after) throws IOException
+    {
+        short transaction = startTransaction((byte) unitId, 5, after);
+        sendBuffer.put(READ_HOLDING_REGISTERS.code());
+        sendBuffer.putShort((short) address);
+        sendBuffer.putShort((short) words);
+        return transaction;
+    }
+    private void send() throws IOException
+    {
+        sendBuffer.flip();
+        channel.write(sendBuffer);
+    }
+    private void readWriteMultipleRegistersResponseHeader() throws IOException
+    {
+        byte functionCode = receiveBuffer.get();
+        byte exception = receiveBuffer.get();
+        if (functionCode != WRITE_MULTIPLE_REGISTERS.code())
+        {
+            ExceptionCodes[] values = ExceptionCodes.values();
+            if (exception > 0 && exception < values.length)
+            {
+                throw new IOException("modbus exception code "+values[exception]);
+            }
+            else
+            {
+                throw new IOException("modbus exception code "+exception);
+            }
+        }
+        receiveBuffer.get();
+        receiveBuffer.get();
+        receiveBuffer.get();
+    }
+
+    private void readReadRegistersResponseHeader() throws IOException
+    {
+        byte functionCode = receiveBuffer.get();
+        byte exception = receiveBuffer.get();
+        if (functionCode != READ_HOLDING_REGISTERS.code())
+        {
+            ExceptionCodes[] values = ExceptionCodes.values();
+            if (exception > 0 && exception < values.length)
+            {
+                throw new IOException("modbus exception code "+values[exception]);
+            }
+            else
+            {
+                throw new IOException("modbus exception code "+exception);
+            }
+        }
+    }
+    protected abstract short startTransaction(byte unitId, int dataLength, Runnable after);
+    protected abstract void waitForResponce(short transaction);
+    protected abstract void waitForReadFinish(Thread thread);
     protected abstract void releaseReader();
-    protected abstract void send() throws IOException;
+
+
 
 }
