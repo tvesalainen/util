@@ -50,8 +50,6 @@ public class ModbusTcpTest
         m.getString(100, 800, 6, (s)->System.err.println(s));
         String r4 = m.getString(100, 800, 6);
         System.err.println(r4);
-        long r5 = m.getUnsignedInt(100, 3420);
-        System.err.println(r5);
     }
     
 }

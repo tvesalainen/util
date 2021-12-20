@@ -130,7 +130,7 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
     }
 
     @Override
-    public void close() throws Exception
+    public void close() throws IOException
     {
         channel.close();
     }
