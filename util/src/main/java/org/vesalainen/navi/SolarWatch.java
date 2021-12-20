@@ -16,12 +16,9 @@
  */
 package org.vesalainen.navi;
 
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.*;
 import java.util.function.Consumer;
 import net.e175.klaus.solarpositioning.AzimuthZenithAngle;

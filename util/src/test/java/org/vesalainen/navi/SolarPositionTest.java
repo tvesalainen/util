@@ -35,10 +35,21 @@ public class SolarPositionTest
     @Test
     public void test1()
     {
-        SolarPosition sp = new SolarPosition(Clock.systemDefaultZone());
-        sp.set(176.1776266, -37.6704733);
-        ZonedDateTime sunrise = sp.sunrise();
-        ZonedDateTime sunset = sp.sunset();
+        ZonedDateTime now = ZonedDateTime.now();
+        SolarPosition sp = new SolarPosition(now, 176.1776266, -37.6704733);
+        ZonedDateTime sunset = sp.nextSunset();
+        ZonedDateTime dusk = sp.nextDusk();
+        ZonedDateTime dawn = sp.nextDawn();
+        ZonedDateTime sunrise = sp.nextSunrise();
+        switch (sp.getDayPhase())
+        {
+            case DAY:
+                assertTrue(now.isBefore(sunset));
+                assertTrue(sunset.isBefore(dusk));
+                assertTrue(dusk.isBefore(dawn));
+                assertTrue(dawn.isBefore(sunrise));
+                break;
+        }
     }
     
 }
