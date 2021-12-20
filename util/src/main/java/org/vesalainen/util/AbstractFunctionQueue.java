@@ -142,7 +142,7 @@ public abstract class AbstractFunctionQueue extends JavaLogging
     {
         while (writable < size)
         {
-            hasRoom.await();
+            await(hasRoom);
         }
         int remaining = writeBuf.remaining();
         if (remaining < size)
