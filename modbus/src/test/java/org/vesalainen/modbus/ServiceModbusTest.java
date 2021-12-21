@@ -41,7 +41,8 @@ public class ServiceModbusTest
             "com.victronenergy.vebus", 
             "com.victronenergy.battery", 
             "com.victronenergy.solarcharger", 
-            "com.victronenergy.gps"
+            "com.victronenergy.gps",
+            "com.victronenergy.digitalinput"
         })
         {
             int unitId = 0;
@@ -61,6 +62,9 @@ public class ServiceModbusTest
                     break;
                 case "com.victronenergy.gps":
                     unitId = 100;
+                    break;
+                case "com.victronenergy.digitalinput":
+                    unitId = 1;
                     break;
             }
             System.err.println(s);

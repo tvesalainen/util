@@ -125,7 +125,7 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
         }
         catch (IOException ex)
         {
-            log(Level.SEVERE, null, ex);
+            log(Level.SEVERE, "%s", ex);
         }
     }
 
