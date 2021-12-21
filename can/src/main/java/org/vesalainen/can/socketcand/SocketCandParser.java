@@ -58,6 +58,10 @@ public abstract class SocketCandParser extends AbstractParser implements ParserI
     @Rule("'<' 'frame' hex time data '>'")
     protected void frame(int canId, long time, int dataLength, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)
     {
+        if (dataLength < 0 || dataLength > 8)
+        {
+            throw new IllegalArgumentException(dataLength+" illegal");
+        }
         svc.queue(time, canId, dataLength, data);
     }
     
