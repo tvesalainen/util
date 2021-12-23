@@ -18,6 +18,7 @@ package org.vesalainen.util;
 
 import static java.lang.Math.max;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import org.vesalainen.util.logging.JavaLogging;
@@ -36,24 +37,25 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public abstract class AbstractFunctionQueue extends JavaLogging
 {
+    private final int size;
     private final ByteBuffer readBuf;
     private final ByteBuffer writeBuf;
     private final ReentrantLock lock;
     private final Condition hasRoom;
     private final Condition hasData;
-    private volatile int readable;
-    private volatile int writable;
+    private AtomicInteger writable;
     private int maxQueue;
     
     public AbstractFunctionQueue(int size)
     {
         super(AbstractFunctionQueue.class);
+        this.size = size;
         this.writeBuf = ByteBuffer.allocate(size);
         this.readBuf = (ByteBuffer) writeBuf.asReadOnlyBuffer();
         this.lock = new ReentrantLock();
         this.hasData = lock.newCondition();
         this.hasRoom = lock.newCondition();
-        this.writable = size;
+        this.writable = new AtomicInteger(size);
     }
     protected AbstractFunctionQueue put(byte b) throws InterruptedException
     {
@@ -138,43 +140,44 @@ public abstract class AbstractFunctionQueue extends JavaLogging
         needToRead(8);
         return readBuf.getDouble();
     }
-    private void needToWrite(int size) throws InterruptedException
+    private int readable()
     {
-        while (writable < size)
+        return size - writable.get();
+    }
+    private void needToWrite(int length) throws InterruptedException
+    {
+        while (writable.get() < length)
         {
             await(hasRoom);
         }
         int remaining = writeBuf.remaining();
-        if (remaining < size)
+        if (remaining < length)
         {
-            while (writable < remaining+size)
+            while (writable.get() < remaining+length)
             {
                 await(hasRoom);
             }
             writeBuf.clear();
         }
-        writable -= size;
-        readable += size;
-        maxQueue = max(readable, maxQueue);
+        writable.addAndGet(-length);
+        maxQueue = max(readable(), maxQueue);
     }
-    private void needToRead(int size) throws InterruptedException
+    private void needToRead(int length) throws InterruptedException
     {
-        while (readable < size)
+        while (readable() < length)
         {
             await(hasData);
         }
         int remaining = readBuf.remaining();
-        if (remaining < size)
+        if (remaining < length)
         {
-            while (readable < remaining+size)
+            while (readable() < remaining+length)
             {
                 await(hasData);
             }
             readBuf.clear();
         }
-        writable += size;
-        readable -= size;
-
+        writable.addAndGet(length);
     }
 
     protected void hasMoreData()
@@ -213,7 +216,7 @@ public abstract class AbstractFunctionQueue extends JavaLogging
 
     public int getQueueLength()
     {
-        return readable;
+        return readable();
     }
 
     public int getMaxQueueLength()

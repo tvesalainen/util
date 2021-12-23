@@ -163,8 +163,9 @@ public class SolarPosition
         int ss = (int) (720 - 4*(longitude + twilightHourAngle) - eqtime);
         return nextZonedDateTime(ss+timezoneMinutes);
     }
-    private ZonedDateTime nextZonedDateTime(int min)
+    private ZonedDateTime nextZonedDateTime(int i)
     {
+        int min = (1440+i)%1440;
         int h = min/60;
         int m = min%60;
         ZonedDateTime t = ZonedDateTime.of(time.getYear(), time.getMonthValue(), time.getDayOfMonth(), h, m, 0, 0, time.getZone());
