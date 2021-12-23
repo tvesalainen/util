@@ -1,0 +1,16 @@
+#! /bin/sh
+# This is script for java client applications managed by maven_installer
+
+# Read configuration file if it is present
+[ -r /etc/default/maven_installer ] && . /etc/default/maven_installer
+
+ARGS=
+
+##### DON'T EDIT LINES BELOW
+
+CLASSPATH=${classpath}
+MAIN=${mainClass}
+
+##### DON'T EDIT LINES ABOVE
+
+$JAVA -classpath $CLASSPATH $MAIN $ARGS

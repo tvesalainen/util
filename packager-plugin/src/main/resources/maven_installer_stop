@@ -1,0 +1,5 @@
+#
+update-rc.d $1 remove
+service $1 stop
+
+

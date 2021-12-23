@@ -1,0 +1,4 @@
+#
+update-rc.d $1 defaults
+service $1 restart
+
