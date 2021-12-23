@@ -38,7 +38,7 @@ public class PackagerTest
 
         Packager myMojo = ( Packager ) rule.lookupConfiguredMojo( pom, "pack" );
         assertNotNull( myMojo );
-        if (true)
+        if (false)
         myMojo.execute(
                 new File("C:\\\\Users\\\\tkv\\\\share"),
                 "deb",
