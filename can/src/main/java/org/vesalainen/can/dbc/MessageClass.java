@@ -142,6 +142,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     public void setSignalComment(String name, String comment)
     {
         SignalClass signal = getSignal(name);
+        Objects.requireNonNull(signal, name);
         signal.setComment(comment);
     }
 
@@ -149,6 +150,7 @@ public class MessageClass extends DBCBase implements AttachedLogger
     public void setSignalAttribute(String signalName, String name, Object value)
     {
         SignalClass signal = getSignal(signalName);
+        Objects.requireNonNull(signal, signalName);
         signal.setAttributeValue(name, value);
     }
 

@@ -121,14 +121,22 @@ BO_ 33360382 Pgn130313_Humidity: 8 Unknown
 BO_ 33360638 Pgn130314_Actual_Pressure: 8 Unknown
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
  SG_ Pressure_Instance : 8|8@1+ (1,0) [0|0] "" MFD
- SG_ Pressure_Source : 16|8@1+ (1,0) [0|0] "" MFD
- SG_ Pressure : 24|32@1- (0.1,0) [0|0] "dPa" MFD
+ SG_ Pressure_Source M : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Atmospheric_Pressure m0 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Water_Pressure m1 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Steam_Pressure m2 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Compressed_Air_Pressure m3 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Hydraulic_Pressure m4 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
 
 BO_ 33360894 Pgn130315_Set_Pressure: 8 Unknown
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
  SG_ Pressue_Instance : 8|8@1+ (1,0) [0|0] "" MFD
- SG_ Pressure_Source : 16|8@1+ (1,0) [0|0] "" MFD
- SG_ Pressure : 24|32@1+ (0.1,0) [0|0] "dPa" MFD
+ SG_ Pressure_Source M : 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ Atmospheric_Pressure m0 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Water_Pressure m1 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Steam_Pressure m2 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Compressed_Air_Pressure m3 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
+ SG_ Hydraulic_Pressure m4 : 24|32@1- (0.001,0) [0|0] "hPa" MFD
 
 BO_ 33361150 Pgn130316_Temperature_Extended_Range: 8 Environmental
  SG_ Sid : 0|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
@@ -963,6 +971,7 @@ BA_ "SignalType" SG_ 33359614 Outside_Ambient_Air_Temp "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Atmospheric_Pressure "DOUBLE";
 BA_ "SignalType" SG_ 33359614 Reserved_Bits "BINARY";
 BA_ "MessageType" BO_ 33359870 "Single";
+BA_ "SignalType" SG_ 33359870 Atmospheric_Pressure "DOUBLE";
 BA_ "MessageType" BO_ 33360126 "Single";
 BA_ "SignalType" SG_ 33360126 Temperature_Source "LOOKUP";
 BA_ "SignalType" SG_ 33360126 Actual_Temperature "DOUBLE";
@@ -970,11 +979,7 @@ BA_ "SignalType" SG_ 33360126 Set_Temperature "DOUBLE";
 BA_ "MessageType" BO_ 33360382 "Single";
 BA_ "SignalType" SG_ 33360382 Humidity_Source "LOOKUP";
 BA_ "MessageType" BO_ 33360638 "Single";
-BA_ "SignalType" SG_ 33360638 Pressure_Source "LOOKUP";
-BA_ "SignalType" SG_ 33360638 Pressure "DOUBLE";
 BA_ "MessageType" BO_ 33360894 "Single";
-BA_ "SignalType" SG_ 33360894 Pressure_Source "LOOKUP";
-BA_ "SignalType" SG_ 33360894 Pressure "DOUBLE";
 BA_ "MessageType" BO_ 33362174 "Fast";
 BA_ "SignalType" SG_ 33362174 Mode "LOOKUP";
 BA_ "SignalType" SG_ 33362174 Tide_Tendency "LOOKUP";
