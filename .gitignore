@@ -29,3 +29,10 @@ hs_err_pid*
 /can/target/
 /jmx/nbproject/
 /jmx/target/
+/modbus/nbproject/
+/modbus/target/
+/maven-builder/target/
+/packager-plugin/target/
+/mavenproject1/target/
+/maven-help/target/
+/maven-help/nbproject/

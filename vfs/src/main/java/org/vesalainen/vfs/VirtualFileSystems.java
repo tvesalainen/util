@@ -22,6 +22,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Map;
 import static org.vesalainen.vfs.VirtualFileSystemProvider.URI;
+import org.vesalainen.vfs.pm.deb.DEBFileSystem;
 
 /**
  *
@@ -47,5 +48,10 @@ public final class VirtualFileSystems
     public static final FileSystem newFileSystem(Path path, Map<String,?> env) throws IOException
     {
         return getDefault().provider().newFileSystem(path, env);
+    }
+    
+    public static final FileSystem debianFileSystem(Path path, Map<String,?> env) throws IOException
+    {
+        return new DEBFileSystem(new VirtualFileSystemProvider(), path, env);
     }
 }
