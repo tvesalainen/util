@@ -29,12 +29,13 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 
 /**
- * ModbusTcpClient handles modbus tcp protocol.
+ * ModbusTcpClient handles modbus tcp protocol client part.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf">MODBUS Messaging on TCP/IP Implementation Guide V1.0b</a>
  */
 public class ModbusTcpClient extends AbstractModbusClient implements Runnable, AutoCloseable
 {
+    public static final int TCP_MODBUS_ADU = 260;
     private final AtomicInteger transactionIdentifier = new AtomicInteger();
     private final InetSocketAddress socketAddress;
     private Thread reader;
@@ -57,7 +58,7 @@ public class ModbusTcpClient extends AbstractModbusClient implements Runnable, A
     }
     private ModbusTcpClient(InetSocketAddress socketAddress) throws IOException
     {
-        super(SocketChannel.open(socketAddress), 260);
+        super(SocketChannel.open(socketAddress), TCP_MODBUS_ADU);
         this.socketAddress = socketAddress;
     }
     private void open() throws IOException

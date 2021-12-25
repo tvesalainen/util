@@ -35,9 +35,12 @@ public class ModbusTcpTest
     }
 
     @Test
-    public void test1() throws IOException
+    public void test1() throws IOException, InterruptedException
     {
-        ModbusTcp m = ModbusTcp.open("192.168.214.222");
+        ModbusTcpServer server = new ModbusTcpServer();
+        server.start();
+        Thread.sleep(500);
+        ModbusTcpClient m = ModbusTcpClient.open("localhost");
         m.setShort(100, 807, (short)0);
         m.getShort(100, 807, (s)->System.err.println(s));
         int r1 = m.getShort(100, 806);

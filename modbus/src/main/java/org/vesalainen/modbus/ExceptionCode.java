@@ -20,7 +20,7 @@ package org.vesalainen.modbus;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public enum ExceptionCodes
+public enum ExceptionCode
 {
     RESERVED_00,
     /**
@@ -106,8 +106,4 @@ public enum ExceptionCodes
      */
     GATEWAY_TARGET_DEVICE_FAILED_TO_RESPOND_0B;
 
-    static void values(byte exception)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

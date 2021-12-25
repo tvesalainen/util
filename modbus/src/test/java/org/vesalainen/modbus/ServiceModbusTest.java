@@ -34,7 +34,7 @@ public class ServiceModbusTest
     @Test
     public void test1() throws IOException
     {
-        ModbusTcp m = ModbusTcp.open("192.168.214.222");
+        ModbusTcpClient m = ModbusTcpClient.open("192.168.214.222");
         VictronRegistry vr = new VictronRegistry();
         for (String s : new String[]{
             "com.victronenergy.system", 

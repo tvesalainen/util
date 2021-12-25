@@ -265,7 +265,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
         byte exception = receiveBuffer.get();
         if (functionCode != WRITE_MULTIPLE_REGISTERS.code())
         {
-            ExceptionCodes[] values = ExceptionCodes.values();
+            ExceptionCode[] values = ExceptionCode.values();
             if (exception > 0 && exception < values.length)
             {
                 throw new IOException("modbus exception code "+values[exception]);
@@ -286,7 +286,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
         byte exception = receiveBuffer.get();
         if (functionCode != READ_HOLDING_REGISTERS.code())
         {
-            ExceptionCodes[] values = ExceptionCodes.values();
+            ExceptionCode[] values = ExceptionCode.values();
             if (exception > 0 && exception < values.length)
             {
                 throw new IOException("modbus exception code "+values[exception]);
