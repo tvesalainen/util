@@ -29,21 +29,21 @@ import static org.vesalainen.modbus.FunctionCode.*;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
- * AbstractModbus handles basic modbus protocol
+ * AbstractModbusClient handles basic modbus protocol
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @param <T>
  * @see <a href="https://modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf">MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b </a>
  */
-public abstract class AbstractModbus<T extends ReadableByteChannel & WritableByteChannel> extends JavaLogging
+public abstract class AbstractModbusClient<T extends ReadableByteChannel & WritableByteChannel> extends JavaLogging
 {
     protected final T channel;
     protected final ByteBuffer sendBuffer;
     protected final ByteBuffer receiveBuffer;
     protected final ReentrantLock sendLock = new ReentrantLock();
 
-    protected AbstractModbus(T channel, int size)
+    protected AbstractModbusClient(T channel, int size)
     {
-        super(AbstractModbus.class);
+        super(AbstractModbusClient.class);
         this.channel = channel;
         this.sendBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.BIG_ENDIAN);
         this.receiveBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.BIG_ENDIAN);

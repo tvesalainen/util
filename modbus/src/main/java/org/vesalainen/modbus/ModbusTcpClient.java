@@ -29,11 +29,11 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 
 /**
- * ModbusTcp handles modbus tcp protocol.
+ * ModbusTcpClient handles modbus tcp protocol.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf">MODBUS Messaging on TCP/IP Implementation Guide V1.0b</a>
  */
-public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
+public class ModbusTcpClient extends AbstractModbusClient implements Runnable, AutoCloseable
 {
     private final AtomicInteger transactionIdentifier = new AtomicInteger();
     private final InetSocketAddress socketAddress;
@@ -41,21 +41,21 @@ public class ModbusTcp extends AbstractModbus implements Runnable, AutoCloseable
     private Map<Short,Runnable> transactionMap = new HashMap<>();
     private volatile boolean waitingForReadingFinish;
     
-    public static ModbusTcp open(String inetAddress) throws IOException
+    public static ModbusTcpClient open(String inetAddress) throws IOException
     {
         return open(InetAddress.getByName(inetAddress));
     }
-    public static ModbusTcp open(InetAddress inetAddress) throws IOException
+    public static ModbusTcpClient open(InetAddress inetAddress) throws IOException
     {
         return open(new InetSocketAddress(inetAddress, 502));
     }
-    public static ModbusTcp open(InetSocketAddress socketAddress) throws IOException
+    public static ModbusTcpClient open(InetSocketAddress socketAddress) throws IOException
     {
-        ModbusTcp modbusTcp = new ModbusTcp(socketAddress);
+        ModbusTcpClient modbusTcp = new ModbusTcpClient(socketAddress);
         modbusTcp.open();
         return modbusTcp;
     }
-    private ModbusTcp(InetSocketAddress socketAddress) throws IOException
+    private ModbusTcpClient(InetSocketAddress socketAddress) throws IOException
     {
         super(SocketChannel.open(socketAddress), 260);
         this.socketAddress = socketAddress;
