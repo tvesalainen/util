@@ -30,11 +30,11 @@ import static org.vesalainen.modbus.DataType.*;
  */
 public class ServiceModbus
 {
-    private final AbstractModbus modbus;
+    private final AbstractModbusClient modbus;
     private final Service service;
     private final int unitId;
 
-    public ServiceModbus(int unitId, AbstractModbus modbus, Service service)
+    public ServiceModbus(int unitId, AbstractModbusClient modbus, Service service)
     {
         this.unitId = unitId;
         this.modbus = modbus;
