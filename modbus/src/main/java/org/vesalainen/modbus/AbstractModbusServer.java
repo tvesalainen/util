@@ -36,34 +36,43 @@ public abstract class AbstractModbusServer extends JavaLogging
     
     public void handleRequest(ByteBuffer in, ByteBuffer out) throws ModbusException
     {
-        out.mark();
         byte functionCode = in.get();
-        FunctionCode[] values = FunctionCode.values();
-        if (functionCode >= values.length || values[functionCode] == null)
-        {
-            throw new ModbusException(ILLEGAL_FUNCTION_01);
-        }
-        FunctionCode code = values[functionCode];
         out.put(functionCode);
-        switch (code)
+        switch (functionCode)
         {
-            case READ_HOLDING_REGISTERS:
+            case 3:
                 readHoldingRegisters(in, out);
                 break;
-            case WRITE_MULTIPLE_REGISTERS:
+            case 16:
                 writeMultipleRegisters(in, out);
                 break;
+            default:
+                handleRequest(functionCode, in, out);
+                break;
         }
-        handleRequest(functionCode, in, out);
     }
-
-    protected abstract void handleRequest(byte functionCode, ByteBuffer in, ByteBuffer out) throws ModbusException;
+    /**
+     * Override to implement unsupported function code
+     * @param functionCode
+     * @param in
+     * @param out
+     * @throws ModbusException 
+     */
+    protected void handleRequest(byte functionCode, ByteBuffer in, ByteBuffer out) throws ModbusException
+    {
+        throw new ModbusException(ILLEGAL_FUNCTION_01);
+    }
 
     private void writeMultipleRegisters(ByteBuffer in, ByteBuffer out) throws ModbusException
     {
         short address = in.getShort();
+        checkAddress(address);
         short words = in.getShort();
-        
+        if (words < 1 || words > 123)
+        {
+            throw new ModbusException(ILLEGAL_DATA_VALUE_03);
+        }
+        byte bytes = in.get();
         out.putShort(address);
         out.putShort(words);
         
@@ -79,16 +88,33 @@ public abstract class AbstractModbusServer extends JavaLogging
                 writeRegister(address, words, out);
         }
     }
-
+    /**
+     * Override to implement short write
+     * @param address
+     * @param value
+     * @throws ModbusException 
+     */
     protected void writeRegister(short address, short value) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
     }
+    /**
+     * Override to implement int write
+     * @param address
+     * @param value
+     * @throws ModbusException 
+     */
     protected void writeRegister(short address, int value) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
     }
-
+    /**
+     * Override to implement write of words registers
+     * @param address
+     * @param words
+     * @param out
+     * @throws ModbusException 
+     */
     protected void writeRegister(short address, short words, ByteBuffer out) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
@@ -97,8 +123,12 @@ public abstract class AbstractModbusServer extends JavaLogging
     private void readHoldingRegisters(ByteBuffer in, ByteBuffer out) throws ModbusException
     {
         short address = in.getShort();
+        checkAddress(address);
         short words = in.getShort();
-        
+        if (words < 1 || words > 125)
+        {
+            throw new ModbusException(ILLEGAL_DATA_VALUE_03);
+        }
         out.put((byte) (words*2));
         
         switch (words)
@@ -114,18 +144,42 @@ public abstract class AbstractModbusServer extends JavaLogging
                 break;
         }
     }
-
+    /**
+     * Override to check address. If address is not ok throw 
+     * ModbusException(ILLEGAL_DATA_ADDRESS_02)
+     * @param address
+     * @throws ModbusException 
+     */
+    protected abstract void checkAddress(short address) throws ModbusException;
+            
+    /**
+     * Override to implement reading of short register
+     * @param address
+     * @return
+     * @throws ModbusException 
+     */
     protected short readHoldingRegisterShort(short address) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
     }
-
+    /**
+     * Override to implement reading of int register
+     * @param address
+     * @return
+     * @throws ModbusException 
+     */
     protected int readHoldingRegisterInt(short address) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
     }
-
-    private void readHoldingRegisters(short address, short words, ByteBuffer out) throws ModbusException
+    /**
+     * Override to implement reading of words registers
+     * @param address
+     * @param words
+     * @param out
+     * @throws ModbusException 
+     */
+    protected void readHoldingRegisters(short address, short words, ByteBuffer out) throws ModbusException
     {
         throw new ModbusException(ILLEGAL_FUNCTION_01);
     }

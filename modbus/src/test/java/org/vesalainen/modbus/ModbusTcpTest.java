@@ -38,19 +38,16 @@ public class ModbusTcpTest
     public void test1() throws IOException, InterruptedException
     {
         ModbusTcpServer server = new ModbusTcpServer();
+        server.addServer(100, new WritableByteBufferServer(64, 800));
         server.start();
         Thread.sleep(500);
         ModbusTcpClient m = ModbusTcpClient.open("localhost");
-        m.setShort(100, 807, (short)0);
-        m.getShort(100, 807, (s)->System.err.println(s));
-        int r1 = m.getShort(100, 806);
-        System.err.println(r1);
-        int r2 = m.getShort(100, 843);
-        System.err.println(r2);
-        m.getInt(100, 2802, (s)->System.err.println(s));
-        int r3 = m.getInt(100, 2800);
-        System.err.println(r3);
-        m.getString(100, 800, 6, (s)->System.err.println(s));
+        m.setShort(100, 807, (short)123);
+        int r1 = m.getShort(100, 807);
+        assertEquals(123, r1);
+        m.setInt(100, 843, 987);
+        int r2 = m.getInt(100, 843);
+        assertEquals(987, r2);
         String r4 = m.getString(100, 800, 6);
         System.err.println(r4);
     }

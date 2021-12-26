@@ -33,14 +33,11 @@ import java.util.logging.Level;
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  * @see <a href="https://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf">MODBUS Messaging on TCP/IP Implementation Guide V1.0b</a>
  */
-public class ModbusTcpClient extends AbstractModbusClient implements Runnable, AutoCloseable
+public class ModbusTcpClient extends AbstractModbusClient implements AutoCloseable
 {
     public static final int TCP_MODBUS_ADU = 260;
     private final AtomicInteger transactionIdentifier = new AtomicInteger();
     private final InetSocketAddress socketAddress;
-    private Thread reader;
-    private Map<Short,Runnable> transactionMap = new HashMap<>();
-    private volatile boolean waitingForReadingFinish;
     
     public static ModbusTcpClient open(String inetAddress) throws IOException
     {
@@ -53,7 +50,6 @@ public class ModbusTcpClient extends AbstractModbusClient implements Runnable, A
     public static ModbusTcpClient open(InetSocketAddress socketAddress) throws IOException
     {
         ModbusTcpClient modbusTcp = new ModbusTcpClient(socketAddress);
-        modbusTcp.open();
         return modbusTcp;
     }
     private ModbusTcpClient(InetSocketAddress socketAddress) throws IOException
@@ -61,74 +57,20 @@ public class ModbusTcpClient extends AbstractModbusClient implements Runnable, A
         super(SocketChannel.open(socketAddress), TCP_MODBUS_ADU);
         this.socketAddress = socketAddress;
     }
-    private void open() throws IOException
-    {
-        this.reader = new Thread(this, "ModbusTcp reader");
-        reader.start();
-    }
 
     @Override
-    protected short startTransaction(byte unitId, int dataLength, Runnable after)
+    protected short startTransaction(byte unitId, int bytes)
     {
         short transaction = (short) transactionIdentifier.getAndIncrement();
         fine("start transaction %d", transaction);
-        transactionMap.put(transaction, after);
         sendBuffer.clear();
         sendBuffer.putShort(transaction);
         sendBuffer.putShort((short) 0);
-        sendBuffer.putShort((short) (dataLength+1));
+        sendBuffer.putShort((short) (bytes+1));
         sendBuffer.put(unitId);
         return transaction;
     }
 
-    @Override
-    protected void waitForResponce(short transaction)
-    {
-        fine("wait for transaction %d", transaction);
-        while (transactionMap.containsKey(transaction))
-        {
-            LockSupport.park();
-        }
-    }
-
-    @Override
-    public void run()
-    {
-        try
-        {
-            while (true)
-            {
-                int rc = channel.read(receiveBuffer);
-                if (rc == -1)
-                {
-                    throw new EOFException();
-                }
-                receiveBuffer.flip();
-                while (receiveBuffer.hasRemaining())
-                {
-                    receiveBuffer.mark();
-                    try
-                    {
-                        processReceived();
-                    }
-                    catch (BufferUnderflowException ex)
-                    {
-                        receiveBuffer.reset();
-                        receiveBuffer.compact();
-                        break;  // partially read responce
-                    }
-                }
-                if (!receiveBuffer.hasRemaining())
-                {
-                    receiveBuffer.clear();  // all were read
-                }
-            }
-        }
-        catch (IOException ex)
-        {
-            log(Level.SEVERE, "%s", ex);
-        }
-    }
 
     @Override
     public void close() throws IOException
@@ -136,42 +78,4 @@ public class ModbusTcpClient extends AbstractModbusClient implements Runnable, A
         channel.close();
     }
 
-    private void processReceived()
-    {
-        short transactionId = receiveBuffer.getShort();
-        fine("received %d", transactionId);
-        short protocolId = receiveBuffer.getShort();
-        short length = receiveBuffer.getShort();
-        if (receiveBuffer.remaining() < length)
-        {
-            throw new BufferUnderflowException();
-        }
-        byte unitId = receiveBuffer.get();
-        Runnable call = transactionMap.remove(transactionId);
-        call.run();
-    }
-
-    @Override
-    protected void waitForReadFinish(Thread thread)
-    {
-        fine("release thread %s", thread.getName());
-        waitingForReadingFinish = true;
-        LockSupport.unpark(thread);
-        while (waitingForReadingFinish)
-        {
-            LockSupport.park();
-        }
-        fine("released thread %s", thread.getName());
-    }
-
-    @Override
-    protected void releaseReader()
-    {
-        if (waitingForReadingFinish)
-        {
-            waitingForReadingFinish = false;
-            LockSupport.unpark(reader);
-        }
-    }
-    
 }
