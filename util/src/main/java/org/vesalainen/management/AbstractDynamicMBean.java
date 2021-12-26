@@ -48,6 +48,7 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.Notification;
 import javax.management.NotificationBroadcaster;
@@ -321,7 +322,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
         this.objectName = name;
         if (objectName == null)
         {
-            objectName = createObjectName();
+            objectName = objectName();
         }
         return objectName;
     }
@@ -404,7 +405,18 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
                 ;
     }
 
-    protected abstract ObjectName createObjectName();
+    private ObjectName objectName()
+    {
+            try
+            {
+                return createObjectName();
+            }
+            catch (MalformedObjectNameException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+    }
+    protected abstract ObjectName createObjectName() throws MalformedObjectNameException;
 
     private static class OperationImpl extends MBeanOperationInfo
     {
