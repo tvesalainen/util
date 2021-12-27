@@ -24,12 +24,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
 /**
- *
+ * TimeToLiveList items are available just given time.
+ * <p>Many of the List methods are not supported!
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class TimeToLiveList<T> implements List<T>
@@ -123,7 +123,16 @@ public class TimeToLiveList<T> implements List<T>
     @Override
     public boolean addAll(Collection<? extends T> c)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean res = false;
+        for (T t : c)
+        {
+            boolean added = add(t);
+            if (added)
+            {
+                res = true;
+            }
+        }
+        return res;
     }
 
     @Override
@@ -210,10 +219,15 @@ public class TimeToLiveList<T> implements List<T>
         int size = list.size();
         for (int ii=0;ii<size;ii++)
         {
-            if (exp < list.get(ii).expires)
+            Wrapper<T> w = list.get(ii);
+            if (exp < w.expires)
             {
                 list.removeRange(0, ii);
                 return;
+            }
+            else
+            {
+                removeObserver.accept(w.item);
             }
         }
     }
