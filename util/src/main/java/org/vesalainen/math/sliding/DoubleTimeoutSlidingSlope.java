@@ -31,7 +31,7 @@ public class DoubleTimeoutSlidingSlope extends DoubleAbstractTimeoutSliding
     private double sxi;
     private double syi;
 
-    protected DoubleTimeoutSlidingSlope(int initialSize, long timeout)
+    public DoubleTimeoutSlidingSlope(int initialSize, long timeout)
     {
         this(System::currentTimeMillis, initialSize, timeout, (l)->l);
     }
