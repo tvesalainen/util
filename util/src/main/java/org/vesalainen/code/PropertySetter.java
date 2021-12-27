@@ -61,15 +61,56 @@ public interface PropertySetter
     {
         return ArrayHelp.contains(getProperties(), property);
     }
-    default void set(String property, boolean arg){}
-    default void set(String property, byte arg){}
-    default void set(String property, char arg){}
-    default void set(String property, short arg){}
-    default void set(String property, int arg){}
-    default void set(String property, long arg){}
-    default void set(String property, float arg){}
-    default void set(String property, double arg){}
-    default <T> void set(String property, T arg){}
+    default void setProperty(String property, Object arg)
+    {
+        throw new UnsupportedOperationException("Not supported for property '"+property+"'");
+    }
+
+    default void set(String property, boolean arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, byte arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, char arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, short arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, int arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, long arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, float arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default void set(String property, double arg)
+    {
+        setProperty(property, arg);
+    }
+
+    default <T> void set(String property, T arg)
+    {
+        setProperty(property, arg);
+    }
+
 
     default Setter getSetter(String property, Class<?> type)
     {
