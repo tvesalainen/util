@@ -38,65 +38,6 @@ public abstract class AbstractPropertySetter implements PropertySetter, Transact
         this.prefixes = prefixes;
     }
     
-    protected void setProperty(String property, Object arg)
-    {
-        throw new UnsupportedOperationException("Not supported for property '"+property+"'");
-    }
-
-    @Override
-    public void set(String property, boolean arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, byte arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, char arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, short arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, int arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, long arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, float arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public void set(String property, double arg)
-    {
-        setProperty(property, arg);
-    }
-
-    @Override
-    public <T> void set(String property, T arg)
-    {
-        setProperty(property, arg);
-    }
-
     @Override
     public void start(String reason)
     {
