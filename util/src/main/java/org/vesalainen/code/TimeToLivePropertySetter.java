@@ -38,7 +38,7 @@ public class TimeToLivePropertySetter extends AbstractPropertySetter
     }
     
     @Override
-    protected void setProperty(String property, Object arg)
+    public void setProperty(String property, Object arg)
     {
         ttls.refresh(property);
     }
