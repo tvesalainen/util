@@ -65,7 +65,7 @@ public class CompressedInputTest
         }
 
         @Override
-        protected void setProperty(String property, Object arg)
+        public void setProperty(String property, Object arg)
         {
             System.err.println(property+"="+arg);
         }
