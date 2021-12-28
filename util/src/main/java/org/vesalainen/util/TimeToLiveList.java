@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
+import org.vesalainen.math.sliding.TimeValueConsumer;
 
 /**
  * TimeToLiveList items are available just given time.
@@ -61,6 +62,11 @@ public class TimeToLiveList<T> implements List<T>
         this.removeObserver = removeObserver;
     }
 
+    public void forEach(TimeConsumer act)
+    {
+        list.forEach((w)->act.accept(w.expires-defaultTimeout, w.item));
+    }
+    
     @Override
     public int size()
     {
@@ -106,6 +112,7 @@ public class TimeToLiveList<T> implements List<T>
     {
         return add(millis.getAsLong(), e);
     }
+    
     public boolean add(long millis, T e)
     {
         eliminate();
@@ -283,5 +290,10 @@ public class TimeToLiveList<T> implements List<T>
             this.expires = expires;
         }
         
+    }
+    @FunctionalInterface
+    public interface TimeConsumer<T>
+    {
+        void accept(long time, T item);
     }
 }
