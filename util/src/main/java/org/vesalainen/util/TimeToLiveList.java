@@ -62,7 +62,7 @@ public class TimeToLiveList<T> implements List<T>
         this.removeObserver = removeObserver;
     }
 
-    public void forEach(TimeConsumer act)
+    public void forEach(TimeConsumer<T> act)
     {
         list.forEach((w)->act.accept(w.expires-defaultTimeout, w.item));
     }
