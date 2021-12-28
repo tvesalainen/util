@@ -104,8 +104,12 @@ public class TimeToLiveList<T> implements List<T>
     @Override
     public boolean add(T e)
     {
+        return add(millis.getAsLong(), e);
+    }
+    public boolean add(long millis, T e)
+    {
         eliminate();
-        return list.add(new Wrapper(e, defaultTimeout+millis.getAsLong()));
+        return list.add(new Wrapper(e, defaultTimeout+millis));
     }
 
     @Override
