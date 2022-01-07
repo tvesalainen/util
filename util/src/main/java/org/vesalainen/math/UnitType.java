@@ -18,6 +18,8 @@ package org.vesalainen.math;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleUnaryOperator;
+import org.vesalainen.lang.Primitives;
+import org.vesalainen.util.CharSequences;
 
 /**
  *
@@ -25,10 +27,10 @@ import java.util.function.DoubleUnaryOperator;
  */
 public enum UnitType
 {
-    DURATION_DAYS(UnitCategory.DURATION, TimeUnit.SECONDS.toDays(1), "d"),
-    DURATION_HOURS(UnitCategory.DURATION, TimeUnit.SECONDS.toHours(1), "h"),
-    DURATION_MINUTES(UnitCategory.DURATION, TimeUnit.SECONDS.toMinutes(1), "m"),
-    DURATION_SECONDS(UnitCategory.DURATION, TimeUnit.SECONDS.toSeconds(1), "s"),
+    DURATION_DAYS(UnitCategory.DURATION, TimeUnit.DAYS.toSeconds(1), "d"),
+    DURATION_HOURS(UnitCategory.DURATION, TimeUnit.HOURS.toSeconds(1), "h"),
+    DURATION_MINUTES(UnitCategory.DURATION, TimeUnit.MINUTES.toSeconds(1), "m"),
+    DURATION_SECONDS(UnitCategory.DURATION, 1, "s"),
     DURATION_MILLI_SECONDS(UnitCategory.DURATION, 1000, "ms"),
     DURATION_MICRO_SECONDS(UnitCategory.DURATION, 1000000, "μs"),
     DURATION_NANO_SECONDS(UnitCategory.DURATION, 1000000000, "ns"),
@@ -75,11 +77,11 @@ public enum UnitType
     /**
      * FAHRENHEIT
      */
-    FAHRENHEIT(UnitCategory.TEMPERATURE, "Fahrenheit", (double v)->{return v*1.8+32.0;}, (double v)->{return (v-32.0)/1.8;}),
+    FAHRENHEIT(UnitCategory.TEMPERATURE, "\u00B0F", (double v)->{return v*1.8+32.0;}, (double v)->{return (v-32.0)/1.8;}),
     /**
      * KELVIN
      */
-    KELVIN(UnitCategory.TEMPERATURE, "Kelvin", (double v)->{return v+273.15;}, (double v)->{return v-273.15;}),
+    KELVIN(UnitCategory.TEMPERATURE, "\u00B0K", (double v)->{return v+273.15;}, (double v)->{return v-273.15;}),
     /**
      * FATHOM
      */
@@ -272,5 +274,27 @@ public enum UnitType
     public String getUnit()
     {
         return unit;
+    }
+    /**
+     * Parses text.
+     * <p>If text contains unit string of one of same category UnitTypes it is
+     * used to convert value to this UnitType.
+     * @param text
+     * @return 
+     */
+    public double parse(CharSequence text)
+    {
+        double d = Primitives.findDouble(text);
+        for (UnitType u : values())
+        {
+            if (u.category == category)
+            {
+                if (CharSequences.indexOf(text, u.unit) != -1)
+                {
+                    return u.convertTo(d, this);
+                }
+            }
+        }
+        return d;
     }
 }
