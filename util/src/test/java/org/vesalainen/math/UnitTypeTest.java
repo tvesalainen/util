@@ -19,8 +19,7 @@ package org.vesalainen.math;
 import static java.lang.Math.PI;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.vesalainen.math.UnitType.DEGREES_PER_MINUTE;
-import static org.vesalainen.math.UnitType.RADIANS_PER_SECOND;
+import static org.vesalainen.math.UnitType.*;
 
 /**
  *
@@ -125,4 +124,17 @@ public class UnitTypeTest
         assertEquals(0.33749999999999997, RADIANS_PER_SECOND.convertTo(3.125e-05, DEGREES_PER_MINUTE), 1e-3);
         assertEquals(0.108, RADIANS_PER_SECOND.convertTo(0.00001, DEGREES_PER_MINUTE), 1e-3);
     }
+    @Test
+    public void testDuration()
+    {
+        assertEquals(60, UnitType.DURATION_MINUTES.convertTo(1, UnitType.DURATION_SECONDS), 1e-3);
+        assertEquals(60, UnitType.DURATION_HOURS.convertTo(1, UnitType.DURATION_MINUTES), 1e-3);
+        assertEquals(24, UnitType.DURATION_DAYS.convertTo(1, UnitType.DURATION_HOURS), 1e-3);
+    }
+    @Test
+    public void testParse()
+    {
+        assertEquals(60, DURATION_SECONDS.parse("1m"), 1e-10);
+        assertEquals(60, DURATION_MINUTES.parse("1h"), 1e-10);
+    }    
 }
