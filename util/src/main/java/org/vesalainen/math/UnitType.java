@@ -31,9 +31,9 @@ public enum UnitType
     DURATION_HOURS(UnitCategory.DURATION, TimeUnit.HOURS.toSeconds(1), "h"),
     DURATION_MINUTES(UnitCategory.DURATION, TimeUnit.MINUTES.toSeconds(1), "m"),
     DURATION_SECONDS(UnitCategory.DURATION, 1, "s"),
-    DURATION_MILLI_SECONDS(UnitCategory.DURATION, 1000, "ms"),
-    DURATION_MICRO_SECONDS(UnitCategory.DURATION, 1000000, "μs"),
-    DURATION_NANO_SECONDS(UnitCategory.DURATION, 1000000000, "ns"),
+    DURATION_MILLI_SECONDS(UnitCategory.DURATION, 0.001, "ms"),
+    DURATION_MICRO_SECONDS(UnitCategory.DURATION, 0.000001, "μs"),
+    DURATION_NANO_SECONDS(UnitCategory.DURATION, 0.000000001, "ns"),
     /**
      * m/s<sup>2</sup>
      */
