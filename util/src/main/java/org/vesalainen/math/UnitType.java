@@ -151,17 +151,44 @@ public enum UnitType
      */
     BEAUFORT(UnitCategory.SPEED, "B", (double v)->{return Math.round(Math.pow(v/0.837, 2.0/3.0));}, (double v)->{return 0.837*Math.pow(v, 3.0/2.0);}),
     /**
+     * @deprecated Use LATITUDE/LONGITUDE equivalent
      * COORDINATE degrees
      */
     COORDINATE_DEGREES(UnitCategory.COORDINATE, 1, "˚"),
     /**
+     * @deprecated Use LATITUDE/LONGITUDE equivalent
      * COORDINATE degrees and minutes
      */
     COORDINATE_DEGREES_AND_MINUTES(UnitCategory.COORDINATE, 1, ""),
     /**
+     * @deprecated Use LATITUDE/LONGITUDE equivalent
      * COORDINATE degrees, minutes and seconds
      */
     COORDINATE_DEGREES_MINUTES_SECONDS(UnitCategory.COORDINATE, 1, ""),
+    /**
+     * COORDINATE degrees
+     */
+    COORDINATE_DEGREES_LONGITUDE(UnitCategory.COORDINATE, 1, "˚"),
+    /**
+     * COORDINATE degrees and minutes
+     */
+    COORDINATE_DEGREES_AND_MINUTES_LONGITUDE(UnitCategory.COORDINATE, 1, ""),
+    /**
+     * COORDINATE degrees, minutes and seconds
+     */
+    COORDINATE_DEGREES_MINUTES_SECONDS_LONGITUDE(UnitCategory.COORDINATE, 1, ""),
+    /**
+     * COORDINATE degrees
+     */
+    COORDINATE_DEGREES_LATITUDE(UnitCategory.COORDINATE, 1, "˚"),
+    /**
+     * COORDINATE degrees and minutes
+     */
+    COORDINATE_DEGREES_AND_MINUTES_LATITUDE(UnitCategory.COORDINATE, 1, ""),
+    /**
+     * COORDINATE degrees, minutes and seconds
+     */
+    COORDINATE_DEGREES_MINUTES_SECONDS_LATITUDE(UnitCategory.COORDINATE, 1, ""),
     /**
      * VOLT
      */
