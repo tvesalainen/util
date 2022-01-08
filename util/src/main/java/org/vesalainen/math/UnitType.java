@@ -71,6 +71,18 @@ public enum UnitType
      */
     RADIAN(UnitCategory.PLANE_ANGLE, Math.toDegrees(1), "Rad"),
     /**
+     * N, E, S, W
+     */
+    CARDINAL_DIRECTION(UnitCategory.PLANE_ANGLE, 1.0, ""),
+    /**
+     * N, NE, E, SE, ...
+     */
+    INTERCARDINAL_DIRECTION(UnitCategory.PLANE_ANGLE, 1.0, ""),
+    /**
+     * N, NNE, NE, ENE, E, ESE, SE, ...
+     */
+    SECONDARY_INTERCARDINAL_DIRECTION(UnitCategory.PLANE_ANGLE, 1.0, ""),
+    /**
      * CELSIUS
      */
     CELSIUS(UnitCategory.TEMPERATURE, 1.0, "\u00B0C"),
