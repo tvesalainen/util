@@ -50,7 +50,6 @@ import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
-import javax.management.Notification;
 import javax.management.NotificationBroadcaster;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationFilter;
@@ -73,7 +72,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     private Descriptor descriptor = new DescriptorSupport();
     private long sequence;
     private MBeanServer server;
-    private ObjectName objectName;
+    protected ObjectName objectName;
     private String classname;
     /**
      * Create AbstractDynamicMBean with description and target. All targets
