@@ -27,9 +27,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.Attribute;
+import javax.management.AttributeChangeNotification;
+import static javax.management.AttributeChangeNotification.ATTRIBUTE_CHANGE;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.Descriptor;
@@ -98,7 +98,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     {
         this.classname = this.getClass().getName();
         this.description = description;
-        this.notificationBroadcasterSupport = new NotificationBroadcasterSupport(new MBeanNotificationInfo(new String[]{"jmx.mbean.info.changed"}, Notification.class.getName(), "changed"));
+        this.notificationBroadcasterSupport = new NotificationBroadcasterSupport(new MBeanNotificationInfo(new String[]{ATTRIBUTE_CHANGE}, AttributeChangeNotification.class.getName(), "changed"));
         descriptor.setField(JMX.IMMUTABLE_INFO_FIELD, "false");
     }
     /**
@@ -146,7 +146,6 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
             throw new IllegalArgumentException(type+" not open type");
         }
         attributes.put(name, new AttributeImpl(name, type, getter, setter));
-        notificationBroadcasterSupport.sendNotification(new Notification("jmx.mbean.info.changed", this, sequence++));
     }
     /**
      * Adds all valid attributes from target.
@@ -184,7 +183,6 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
                 Method setter = setters.get(property);
                 attributes.put(property, new AttributeImpl(property, property, target, getter, setter));
             }
-            notificationBroadcasterSupport.sendNotification(new Notification("jmx.mbean.info.changed", target, sequence++));
         }
         catch (IntrospectionException ex)
         {
@@ -210,7 +208,20 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
         {
             throw new AttributeNotFoundException(attribute.getName());
         }
-        a.set(attribute.getValue());
+        Object oldValue = a.get();
+        Object newVAlue = attribute.getValue();
+        a.set(newVAlue);
+        notificationBroadcasterSupport.sendNotification(
+                new AttributeChangeNotification(
+                        this, 
+                        sequence++, 
+                        System.currentTimeMillis(),
+                        "changed",
+                        attribute.getName(),
+                        a.getType(),
+                        oldValue,
+                        newVAlue
+                ));
     }
 
     @Override
