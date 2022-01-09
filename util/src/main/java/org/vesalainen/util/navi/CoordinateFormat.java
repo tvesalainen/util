@@ -99,9 +99,9 @@ public class CoordinateFormat extends Format
         DecimalFormatSymbols cfs = new DecimalFormatSymbols(locale);
         decimalSeparator = cfs.getDecimalSeparator();
         boolean latlonset = false;
-        List<Pattern> pts = new ArrayList<Pattern>();
-        List<Field> tps = new ArrayList<Field>();
-        List<Integer> ps = new ArrayList<Integer>();
+        List<Pattern> pts = new ArrayList<>();
+        List<Field> tps = new ArrayList<>();
+        List<Integer> ps = new ArrayList<>();
         Matcher m = PARSE.matcher(pattern);
         StringBuffer sb = new StringBuffer();
         int last = 0;

@@ -130,6 +130,7 @@ public class UnitTypeTest
         assertEquals(60, UnitType.DURATION_MINUTES.convertTo(1, UnitType.DURATION_SECONDS), 1e-3);
         assertEquals(60, UnitType.DURATION_HOURS.convertTo(1, UnitType.DURATION_MINUTES), 1e-3);
         assertEquals(24, UnitType.DURATION_DAYS.convertTo(1, UnitType.DURATION_HOURS), 1e-3);
+        assertEquals(3600000, UnitType.DURATION_HOURS.convertTo(1, UnitType.DURATION_MILLI_SECONDS), 1e-3);
     }
     @Test
     public void testParse()

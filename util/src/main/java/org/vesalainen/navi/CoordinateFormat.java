@@ -31,6 +31,34 @@ public class CoordinateFormat
     private static final char[] NS = new char[] {'N', 'S'};
     private static final char[] EW = new char[] {'E', 'W'};
     
+    public static String format(Locale locale, double coordinate, UnitType unit)
+    {
+        StringBuilder out = new StringBuilder();
+        switch (unit)
+        {
+            case COORDINATE_DEGREES_LONGITUDE:
+                deg(out, locale, coordinate, EW);
+                break;
+            case COORDINATE_DEGREES_AND_MINUTES_LONGITUDE:
+                degmin(out, locale, coordinate, EW);
+                break;
+            case COORDINATE_DEGREES_MINUTES_SECONDS_LONGITUDE:
+                degminsec(out, locale, coordinate, EW);
+                break;
+            case COORDINATE_DEGREES_LATITUDE:
+                deg(out, locale, coordinate, NS);
+                break;
+            case COORDINATE_DEGREES_AND_MINUTES_LATITUDE:
+                degmin(out, locale, coordinate, NS);
+                break;
+            case COORDINATE_DEGREES_MINUTES_SECONDS_LATITUDE:
+                degminsec(out, locale, coordinate, NS);
+                break;
+            default:
+                throw new UnsupportedOperationException(unit+" no supported");
+        }
+        return out.toString();
+    }
     /**
      * Formats latitude
      * @param latitude

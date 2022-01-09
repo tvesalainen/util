@@ -2132,6 +2132,10 @@ public final class Primitives
                 throw new UnsupportedOperationException("radix "+radix+" not supported");
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
+        if (begin == -1)
+        {
+            throw new IllegalArgumentException(cs+" doesn't have int");
+        }
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
         return parseInt(cs, radix, begin, endIndex(end, endIndex), true);
     }
@@ -2191,6 +2195,10 @@ public final class Primitives
                 throw new UnsupportedOperationException("radix "+radix+" not supported");
         }
         int begin = CharSequences.indexOf(cs, predicate, beginIndex);
+        if (begin == -1)
+        {
+            throw new IllegalArgumentException(cs+" doesn't have long");
+        }
         int end = CharSequences.indexOf(cs, predicate.negate(), begin);
         return parseLong(cs, radix, begin, endIndex(end, endIndex), true);
     }
@@ -2213,6 +2221,10 @@ public final class Primitives
     public static final float findFloat(CharSequence cs, int beginIndex, int endIndex)
     {
         int begin = CharSequences.indexOf(cs, Primitives::isFloatDigit, beginIndex);
+        if (begin == -1)
+        {
+            throw new IllegalArgumentException(cs+" doesn't have float");
+        }
         int end = CharSequences.indexOf(cs, (c)->!Primitives.isFloatDigit(c), begin);
         return parseFloat(cs, begin, endIndex(end, endIndex));
     }
@@ -2235,6 +2247,10 @@ public final class Primitives
     public static final double findDouble(CharSequence cs, int beginIndex, int endIndex)
     {
         int begin = CharSequences.indexOf(cs, Primitives::isFloatDigit, beginIndex);
+        if (begin == -1)
+        {
+            throw new IllegalArgumentException(cs+" doesn't have double");
+        }
         int end = CharSequences.indexOf(cs, (c)->!Primitives.isFloatDigit(c), begin);
         return parseDouble(cs, begin, endIndex(end, endIndex));
     }
@@ -2257,6 +2273,10 @@ public final class Primitives
     public static final double findScientific(CharSequence cs, int beginIndex, int endIndex)
     {
         int begin = CharSequences.indexOf(cs, Primitives::isScientificDigit, beginIndex);
+        if (begin == -1)
+        {
+            throw new IllegalArgumentException(cs+" doesn't have scientific");
+        }
         int end = CharSequences.indexOf(cs, (c)->!Primitives.isScientificDigit(c), begin);
         return parseDouble(cs, begin, endIndex(end, endIndex));
     }
