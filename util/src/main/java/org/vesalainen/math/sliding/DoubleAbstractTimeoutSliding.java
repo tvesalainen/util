@@ -139,7 +139,10 @@ public abstract class DoubleAbstractTimeoutSliding extends DoubleAbstractSliding
         return Arrays.stream(toTimeArray());
     }
 
-    @Override
+    /**
+     * Returns a stream time1, value1, time2, value2, ...
+     * @return 
+     */
     public DoubleStream pointStream()
     {
         long[] xArray;
