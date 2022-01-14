@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
 
 /**
@@ -29,6 +30,11 @@ public interface TimeArray
      * @return 
      */
     LongStream timeStream();
+    /**
+     * Returns a stream time1, value1, time2, value2, ...
+     * @return 
+     */
+    DoubleStream pointStream();
     /**
      * Returns time of first sample
      * @return 
