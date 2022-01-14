@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
-import org.vesalainen.math.sliding.TimeValueConsumer;
 
 /**
  * TimeToLiveList items are available just given time.

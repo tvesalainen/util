@@ -31,11 +31,6 @@ public interface TimeArray
      */
     LongStream timeStream();
     /**
-     * Returns a stream time1, value1, time2, value2, ...
-     * @return 
-     */
-    DoubleStream pointStream();
-    /**
      * Returns time of first sample
      * @return 
      */
