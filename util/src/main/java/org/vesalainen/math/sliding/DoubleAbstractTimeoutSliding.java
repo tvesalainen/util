@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.PrimitiveIterator;
 import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
+import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
 
 /**
@@ -136,6 +137,35 @@ public abstract class DoubleAbstractTimeoutSliding extends DoubleAbstractSliding
     public LongStream timeStream()
     {
         return Arrays.stream(toTimeArray());
+    }
+
+    @Override
+    public DoubleStream pointStream()
+    {
+        long[] xArray;
+        double[] yArray;
+        readLock.lock();
+        try
+        {
+            xArray = toTimeArray();
+            yArray = toArray();
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        if (xArray.length != yArray.length)
+        {
+            throw new IllegalArgumentException();
+        }
+        int length = xArray.length;
+        double[] array = new double[length*2];
+        for (int ii=0;ii<length;ii++)
+        {
+            array[2*ii] = xArray[ii];
+            array[2*ii+1] = yArray[ii];
+        }
+        return Arrays.stream(array);
     }
 
     @Override
