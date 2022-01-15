@@ -42,7 +42,15 @@ public abstract class AbstractSliding
      */
     public void clear()
     {
-        end = begin;
+        readLock.lock();
+        try
+        {
+            begin = end;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
     /**
      * Returns number of active items. (end-begin)
