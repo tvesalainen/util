@@ -63,7 +63,8 @@ public abstract class DoubleAbstractSliding extends AbstractSliding
         readLock.lock();
         try
         {
-            return (double[]) copy(ring, size, new double[count()]);
+            int cnt = count();
+            return (double[]) copy(ring, cnt, new double[cnt]);
         }
         finally
         {

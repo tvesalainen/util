@@ -121,7 +121,8 @@ public abstract class DoubleAbstractTimeoutSliding extends DoubleAbstractSliding
         readLock.lock();
         try
         {
-            return (long[]) copy(times, size, new long[count()]);
+            int cnt = count();
+            return (long[]) copy(times, cnt, new long[cnt]);
         }
         finally
         {

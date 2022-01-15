@@ -156,16 +156,16 @@ public abstract class AbstractSliding
      */
     protected Object copy(Object old, int oldLen, Object arr)
     {
-        int sb = Math.floorMod(begin, oldLen);
-        int se = Math.floorMod(end, oldLen);
+        int sb = Math.floorMod(begin, size);
+        int se = Math.floorMod(end, size);
         if (sb < se)
         {
             System.arraycopy(old, sb, arr, 0, se - sb);
         }
         else
         {
-            System.arraycopy(old, sb, arr, 0, oldLen - sb);
-            System.arraycopy(old, 0, arr, oldLen - sb, se);
+            System.arraycopy(old, sb, arr, 0, oldLen - se);
+            System.arraycopy(old, 0, arr, oldLen - se, se);
         }
         return arr;
     }
