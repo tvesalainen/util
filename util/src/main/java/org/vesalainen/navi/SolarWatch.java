@@ -47,10 +47,10 @@ public class SolarWatch
 
     public SolarWatch(DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
     {
-        this(Clock.systemDefaultZone(), new CachedScheduledThreadPool(), ()->60, latitude, longitude, twilightAngle);
+        this(Clock.systemDefaultZone(), new CachedScheduledThreadPool(), latitude, longitude, twilightAngle);
     }
 
-    public SolarWatch(Clock clock, CachedScheduledThreadPool executor, LongGetter updateSeconds, DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
+    public SolarWatch(Clock clock, CachedScheduledThreadPool executor, DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
     {
         this.solarPosition = new SolarPosition(ZonedDateTime.now(clock), longitude.getDouble(), latitude.getDouble());
         this.clock = clock;
