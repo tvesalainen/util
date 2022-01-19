@@ -57,7 +57,18 @@ public class SolarPosition
         this(SUNSET_ANGLE, SUNSET_ANGLE+12, zdt, longitude, latitude);
     }
     /**
-     * Initialize SolarPosition with time and position and sunet and twilight zenith angles.
+     * Initialize SolarPosition with twilight angle, time, position and sunset.
+     * @param twilightAngle
+     * @param time
+     * @param longitude
+     * @param latitude 
+     */
+    public SolarPosition(double twilightAngle, ZonedDateTime time, double longitude, double latitude)
+    {
+        this(SUNSET_ANGLE, SUNSET_ANGLE+twilightAngle, time, longitude, latitude);
+    }
+    /**
+     * Initialize SolarPosition with time and position and sunset and twilight zenith angles.
      * @param sunSetAngle Degrees
      * @param twilightAngle Degrees
      * @param time

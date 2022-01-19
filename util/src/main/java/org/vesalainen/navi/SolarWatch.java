@@ -26,18 +26,17 @@ import org.vesalainen.code.getter.DoubleGetter;
 import org.vesalainen.code.getter.LongGetter;
 import static org.vesalainen.navi.SolarWatch.DayPhase.*;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
+import org.vesalainen.util.logging.JavaLogging;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class SolarWatch
+public class SolarWatch extends JavaLogging
 {
     public enum DayPhase {DAY, NIGHT, TWILIGHT};
     
     private final SolarPosition solarPosition;
     private final Clock clock;
-    private boolean running;
-    private LongGetter updateSeconds;
     private final DoubleGetter latitude;
     private final DoubleGetter longitude;
     private DoubleGetter twilightAngle;
@@ -45,20 +44,19 @@ public class SolarWatch
     private final CachedScheduledThreadPool executor;
     private final List<Consumer<DayPhase>> observers = new ArrayList<>();
 
-    public SolarWatch(DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
+    public SolarWatch(DoubleGetter latitude, DoubleGetter longitude, double twilightAngle)
     {
         this(Clock.systemDefaultZone(), new CachedScheduledThreadPool(), latitude, longitude, twilightAngle);
     }
 
-    public SolarWatch(Clock clock, CachedScheduledThreadPool executor, DoubleGetter latitude, DoubleGetter longitude, DoubleGetter twilightAngle)
+    public SolarWatch(Clock clock, CachedScheduledThreadPool executor, DoubleGetter latitude, DoubleGetter longitude, double twilightAngle)
     {
-        this.solarPosition = new SolarPosition(ZonedDateTime.now(clock), longitude.getDouble(), latitude.getDouble());
+        super(SolarWatch.class);
+        this.solarPosition = new SolarPosition(twilightAngle, ZonedDateTime.now(clock), longitude.getDouble(), latitude.getDouble());
         this.clock = clock;
         this.executor = executor;
-        this.updateSeconds = updateSeconds;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.twilightAngle = twilightAngle;
     }
 
     public void addObserver(Consumer<DayPhase> observer)
@@ -93,10 +91,12 @@ public class SolarWatch
             case DAY:
                 ZonedDateTime sunset = solarPosition.nextSunset();
                 executor.schedule(this::fire, sunset);
+                info("%s next sunset at %s", phase, sunset);
                 break;
             case NIGHT:
                 ZonedDateTime dawn = solarPosition.nextDawn();
                 executor.schedule(this::fire, dawn);
+                info("%s next dawn at %s", phase, dawn);
                 break;
             case TWILIGHT:
                 ZonedDateTime dusk = solarPosition.nextDusk();
@@ -104,10 +104,12 @@ public class SolarWatch
                 if (dusk.isBefore(sunrise))
                 {
                     executor.schedule(this::fire, dusk);
+                    info("%s next dusk at %s", phase, dusk);
                 }
                 else
                 {
                     executor.schedule(this::fire, sunrise);
+                    info("%s next sunrise at %s", phase, sunrise);
                 }
                 break;
         }
