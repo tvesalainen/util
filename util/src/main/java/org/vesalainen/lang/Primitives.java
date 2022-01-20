@@ -61,6 +61,16 @@ public final class Primitives
     private static final int INT_LIMIT = Integer.MAX_VALUE/10-10;
     private static final long LONG_LIMIT = Long.MAX_VALUE/10-10;
     /**
+     * Returns bool or def if bool is null.
+     * @param bool
+     * @param def
+     * @return 
+     */
+    public static final boolean getBoolean(Boolean bool, boolean def)
+    {
+        return bool!=null?bool.booleanValue():def;
+    }
+    /**
      * Returns byte or def if number is null.
      * @param number
      * @param def
