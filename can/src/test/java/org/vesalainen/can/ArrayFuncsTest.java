@@ -17,11 +17,14 @@
 package org.vesalainen.can;
 
 import static java.lang.Integer.min;
+import java.util.Arrays;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.util.HexUtil;
+import org.vesalainen.util.IntReference;
+import org.vesalainen.util.LongReference;
 
 /**
  *
@@ -53,6 +56,50 @@ public class ArrayFuncsTest
     {
     }
 
+    @Test
+    public void testWriteLong()
+    {
+        byte[] buf = new byte[8];
+        LongReference i = new LongReference(123);
+        boolean bigEndian=false;
+        boolean signed=false;
+        testWriteLong(0, 8, bigEndian, signed, i::getValue, buf);
+        testWriteLong(8, 8, bigEndian, signed, i::getValue, buf);
+        testWriteLong(16, 8, bigEndian, signed, i::getValue, buf);
+        testWriteLong(8, 15, bigEndian, signed, i::getValue, buf);
+        testWriteLong(11, 15, bigEndian, signed, i::getValue, buf);
+        testWriteLong(23, 27, bigEndian, signed, i::getValue, buf);
+    }
+    private void testWriteLong(int offset, int length, boolean bigEndian, boolean signed, LongSupplier i, byte[] buf)
+    {
+        Arrays.fill(buf, (byte)0x0);
+        Runnable longWriter = ArrayFuncs.getLongWriter(offset, length, bigEndian, signed, i, buf);
+        LongSupplier longSupplier = ArrayFuncs.getLongSupplier(offset, length, bigEndian, signed, buf);
+        longWriter.run();
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, i.getAsLong(), longSupplier.getAsLong());
+    }
+    @Test
+    public void testWriteInt()
+    {
+        byte[] buf = new byte[8];
+        IntReference i = new IntReference(123);
+        boolean bigEndian=false;
+        boolean signed=true;
+        testWriteInt(0, 8, bigEndian, signed, i::getValue, buf);
+        testWriteInt(8, 8, bigEndian, signed, i::getValue, buf);
+        testWriteInt(16, 8, bigEndian, signed, i::getValue, buf);
+        testWriteInt(8, 15, bigEndian, signed, i::getValue, buf);
+        testWriteInt(11, 15, bigEndian, signed, i::getValue, buf);
+        testWriteInt(23, 27, bigEndian, signed, i::getValue, buf);
+    }
+    private void testWriteInt(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i, byte[] buf)
+    {
+        Arrays.fill(buf, (byte)0x0);
+        Runnable intWriter = ArrayFuncs.getIntWriter(offset, length, bigEndian, signed, i, buf);
+        IntSupplier intSupplier = ArrayFuncs.getIntSupplier(offset, length, bigEndian, signed, buf);
+        intWriter.run();
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, i.getAsInt(), intSupplier.getAsInt());
+    }
     @Test
     public void testLE()
     {
