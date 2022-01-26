@@ -31,7 +31,6 @@ public final class ArrayFuncs
     /**
      * Returns String supplier for AIS @ terminated string.
      * @param offset
-     * @param length
      * @param buf
      * @return 
      */
@@ -100,6 +99,78 @@ public final class ArrayFuncs
             else
             {
                 return seq.toString();
+            }
+        };
+    }
+    public static final Runnable getIntWriter(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i, byte... buf)
+    {
+        checkBitsInt(offset, length, buf);
+        Runnable r;
+        if (bigEndian)
+        {
+            byte[] arr = createBigEndian(offset, length);
+            r = getIntWriter(arr, i, buf);
+        }
+        else
+        {
+            byte[] arr = createLittleEndian(offset, length);
+            r = getIntWriter(arr, i, buf);
+        }
+        return r;
+    }
+    public static final Runnable getLongWriter(int offset, int length, boolean bigEndian, boolean signed, LongSupplier l, byte... buf)
+    {
+        checkBitsLong(offset, length, buf);
+        Runnable r;
+        if (bigEndian)
+        {
+            byte[] arr = createBigEndian(offset, length);
+            r = getLongWriter(arr, l, buf);
+        }
+        else
+        {
+            byte[] arr = createLittleEndian(offset, length);
+            r = getLongWriter(arr, l, buf);
+        }
+        return r;
+    }
+    public static final Runnable getIntWriter(byte[] arr, IntSupplier i, byte... buf)
+    {
+        int len = arr.length/3;
+        return ()->
+        {
+            int v = i.getAsInt();
+            for (int ii=0;ii<len;ii++)
+            {
+                byte sh = arr[3*ii+2];
+                if (sh > 0)
+                {
+                    buf[(int)arr[3*ii]&0xff] = (byte) ((v>>sh)&arr[3*ii+1]);
+                }
+                else
+                {
+                    buf[(int)arr[3*ii]&0xff] = (byte) ((v<<-sh)&arr[3*ii+1]);
+                }
+            }
+        };
+    }
+    public static final Runnable getLongWriter(byte[] arr, LongSupplier l, byte... buf)
+    {
+        int len = arr.length/3;
+        return ()->
+        {
+            long v = l.getAsLong();
+            for (int ii=0;ii<len;ii++)
+            {
+                byte sh = arr[3*ii+2];
+                if (sh > 0)
+                {
+                    buf[(int)arr[3*ii]&0xff] = (byte) ((v>>sh)&arr[3*ii+1]);
+                }
+                else
+                {
+                    buf[(int)arr[3*ii]&0xff] = (byte) ((v<<-sh)&arr[3*ii+1]);
+                }
             }
         };
     }
@@ -194,7 +265,15 @@ public final class ArrayFuncs
             long res = 0;
             for (int ii=0;ii<len;ii++)
             {
-                res |= (((long)buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)<<arr[3*ii+2];
+                byte sh = arr[3*ii+2];
+                if (sh > 0)
+                {
+                    res |= (long)((buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)<<sh;
+                }
+                else
+                {
+                    res |= (long)((buf[(int)arr[3*ii]&0xff]&arr[3*ii+1])&0xff)>>>-sh;
+                }
             }
             return res;
         };
