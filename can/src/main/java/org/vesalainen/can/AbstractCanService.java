@@ -43,6 +43,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
+    protected final Map<Integer,PgnHandler> pgnHandlers = new HashMap<>();
     protected final ExecutorService executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
@@ -126,33 +127,46 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         }
     }
     
+    public void send(int canId, byte... data) throws IOException
+    {
+        send(canId, data.length, data);
+    }
+    public abstract void send(int canId, int length, byte[] data) throws IOException;
     @Override
     public void frame(long time, int canId, int dataLength, long data)
     {
-        Frame frame = queueMap.get(PGN.addressedPgn(canId));
-        if (frame != null)
+        PgnHandler pgnHandler = pgnHandlers.get(PGN.pgn(canId));
+        if (pgnHandler != null)
         {
-            frame.frame(time, canId, dataLength, data);
+            pgnHandler.frame(time, canId, dataLength, data);
         }
         else
         {
-            AbstractMessage proc = getProc(canId);
-            if (proc == null)
+            Frame frame = queueMap.get(PGN.addressedPgn(canId));
+            if (frame != null)
             {
-                finest("needs compiling %d", canId);
-                proc = getProc(canId);
+                frame.frame(time, canId, dataLength, data);
+            }
+            else
+            {
+                AbstractMessage proc = getProc(canId);
                 if (proc == null)
                 {
-                    finest("compiling %d", canId);
-                    compile(canId);
+                    finest("needs compiling %d", canId);
                     proc = getProc(canId);
+                    if (proc == null)
+                    {
+                        finest("compiling %d", canId);
+                        compile(canId);
+                        proc = getProc(canId);
+                    }
+                    else
+                    {
+                        finest("had it compiled %d", canId);
+                    }
                 }
-                else
-                {
-                    finest("had it compiled %d", canId);
-                }
+                proc.frame(time, canId, dataLength, data);
             }
-            proc.frame(time, canId, dataLength, data);
         }
     }
 
@@ -253,6 +267,23 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
                 break;
             default:
                 throw new UnsupportedOperationException(protocolType+" not supported");
+        }
+    }
+    public void adPgnHandler(PgnHandler pgnHandler)
+    {
+        pgnHandler.init(this, executor);
+        for (int pgn : pgnHandler.pgnsToHandle())
+        {
+            MessageClass mc = pgnMap.get(pgn);
+            if (mc != null)
+            {
+                pgnHandler.init(pgn, mc);
+            }
+            else
+            {
+                throw new UnsupportedOperationException(pgn+" PGN not supported");
+            }
+            pgnHandlers.put(pgn, pgnHandler);
         }
     }
     @Override

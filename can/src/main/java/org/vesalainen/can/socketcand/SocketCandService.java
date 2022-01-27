@@ -25,10 +25,10 @@ import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.DefaultMessageFactory;
-import org.vesalainen.can.Frame;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
+import org.vesalainen.nio.PrintBuffer;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.parser.util.InputReader;
 import org.vesalainen.xml.SimpleXMLParser;
@@ -46,6 +46,7 @@ public class SocketCandService extends AbstractCanService
     private int dataRef;
     private String canBus;
     private final byte[] array = new byte[8];
+    private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(ByteBuffer.allocateDirect(64)));
     
     public SocketCandService(String canBus, ExecutorService executor, SignalCompiler compiler)
     {
@@ -103,6 +104,22 @@ public class SocketCandService extends AbstractCanService
     void setInput(InputReader input)
     {
         this.input = input;
+    }
+
+    @Override
+    public void send(int canId, int length, byte[] data) throws IOException
+    {
+        PrintBuffer p = buffer.get();
+        p.clear();
+        p.format("< send %X %d ", canId, length);
+        for (int ii=0;ii<length;ii++)
+        {
+            p.format("%X ", data[ii]);
+        }
+        p.print('>');
+        ByteBuffer bb = p.getByteBuffer();
+        bb.flip();
+        channel.write(bb);
     }
     
     void openBus()

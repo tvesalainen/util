@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
-import org.vesalainen.can.Frame;
 import org.vesalainen.can.SignalCompiler;
 
 /**
@@ -91,6 +90,12 @@ public class CanDumpService extends AbstractCanService
         {
             log(SEVERE, ex, "%s", ex.getMessage());
         }
+    }
+
+    @Override
+    public void send(int canId, int length, byte[] data) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

@@ -39,14 +39,14 @@ BU_: MFD Steering Power Propulsion Navigation Ais Unknown Environmental General_
 
 
 BO_ 16701694 Pgn065240_Iso_Commanded_Address: 9 General_Or_Mandatory
- SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Unique_Number : 0|21@1+ (1,0) [0|0] "" MFD
  SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
- SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1,0) [0|0] "" MFD
- SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1,0) [0|0] "" MFD
- SG_ Device_Function_Iso_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function : 40|8@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Bits : 48|1@1+ (1,0) [0|0] "" MFD
  SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
- SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance : 56|4@1+ (1,0) [0|0] "" MFD
  SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
  SG_ New_Source_Address : 64|8@1+ (1,0) [0|0] "" MFD
@@ -764,14 +764,14 @@ BO_ 32578302 Pgn127258_Magnetic_Variation: 6 Steering
  SG_ Variation : 32|16@1- (0.005729577951308232,0) [0|0] "deg" MFD
 
 BO_ 15597822 Pgn060928_Iso_Address_Claim: 8 General_Or_Mandatory
- SG_ Unique_Number_Iso_Identity_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Unique_Number : 0|21@1+ (1,0) [0|0] "" MFD
  SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
- SG_ Device_Instance_Lower_Iso_Ecu_Instance : 32|3@1+ (1,0) [0|0] "" MFD
- SG_ Device_Instance_Upper_Iso_Function_Instance : 35|5@1+ (1,0) [0|0] "" MFD
- SG_ Device_Function_Iso_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function : 40|8@1+ (1,0) [0|0] "" MFD
  SG_ Reserved : 48|1@1+ (1,0) [0|0] "" MFD
  SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
- SG_ System_Instance_Iso_Device_Class_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance : 56|4@1+ (1,0) [0|0] "" MFD
  SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
 
@@ -957,7 +957,7 @@ BA_ "ProtocolType" "N2K";
 BA_ "RepeatStartBit" 0;
 BA_ "MessageType" "";
 BA_ "MessageType" BO_ 16701694 "ISO";
-BA_ "SignalType" SG_ 16701694 Unique_Number_Iso_Identity_Number "BINARY";
+BA_ "SignalType" SG_ 16701694 Unique_Number "BINARY";
 BA_ "SignalType" SG_ 16701694 Reserved_Bits "BINARY";
 BA_ "SignalType" SG_ 16701694 Device_Class "LOOKUP";
 BA_ "SignalType" SG_ 16701694 Industry_Group "LOOKUP";
@@ -1331,7 +1331,7 @@ BA_ "SignalType" SG_ 32578302 Variation_Source "LOOKUP";
 BA_ "SignalType" SG_ 32578302 Reserved_Bits "BINARY";
 BA_ "SignalType" SG_ 32578302 Age_Of_Service_Date "INT";
 BA_ "MessageType" BO_ 15597822 "Single";
-BA_ "SignalType" SG_ 15597822 Unique_Number_Iso_Identity_Number "BINARY";
+BA_ "SignalType" SG_ 15597822 Unique_Number "BINARY";
 BA_ "SignalType" SG_ 15597822 Manufacturer_Code "BINARY";
 BA_ "SignalType" SG_ 15597822 Reserved "BINARY";
 BA_ "SignalType" SG_ 15597822 Device_Class "LOOKUP";

@@ -79,14 +79,29 @@ public class PGN
     {
         return pgn(canId1) == pgn(canId2);
     }
+    /**
+     * SA
+     * @param canId
+     * @return 
+     */
     public static final int sourceAddress(int canId)
     {
         return canId & 0xff;
     }
+    /**
+     * PS
+     * @param canId
+     * @return 
+     */
     public static final int pduSpecific(int canId)
     {
         return (canId>>8) & 0xff;
     }
+    /**
+     * PF
+     * @param canId
+     * @return 
+     */
     public static final int pduFormat(int canId)
     {
         return (canId>>16) & 0xff;
