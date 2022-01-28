@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.concurrent.ExecutorService;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
@@ -46,7 +47,7 @@ public class SocketCandService extends AbstractCanService
     private int dataRef;
     private String canBus;
     private final byte[] array = new byte[8];
-    private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(ByteBuffer.allocateDirect(64)));
+    private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(US_ASCII, ByteBuffer.allocateDirect(64)));
     
     public SocketCandService(String canBus, ExecutorService executor, SignalCompiler compiler)
     {

@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
@@ -25,6 +26,7 @@ import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
+import static org.vesalainen.can.dbc.ValueType.SIGNED;
 
 /**
  *
@@ -36,6 +38,57 @@ public interface SignalCompiler
     {
         return true;
     }
+    default Runnable compile(MessageClass mc, SignalClass sc, int off, byte[] buf, IntSupplier limitSupplier, FuncsFactory factory) 
+    {
+            double factor = sc.getFactor();
+            double offset = sc.getOffset();
+            switch (sc.getSignalType())
+            {
+                case INT:
+                    return compile(mc, sc, 
+                            compileIntBoundCheck(mc, sc, 
+                                factorInt(mc, sc, factor, offset, 
+                                    ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
+                case LONG:
+                    return compile(mc, sc, 
+                            compileLongBoundCheck(mc, sc, 
+                                factorLong(mc, sc, factor, offset, 
+                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
+                case DOUBLE:
+                    return compile(mc, sc, 
+                            compileDoubleBoundCheck(mc, sc, 
+                                factorDouble(mc, sc, factor, offset, 
+                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                            )));
+                case LOOKUP:
+                    IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
+                    IntFunction<String> f = sc.getMapper();
+                    if (f == null)
+                    {
+                        return compile(mc, sc, is);
+                    }
+                    return compile(mc, sc, is, f);
+
+                case BINARY:
+                    return compileBinary(mc, sc, buf, sc.getStartBit()+off, sc.getSize());
+                case ASCIIZ:
+                    return compile(mc, sc, 
+                            ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf)
+                    );
+                case AISSTRING:
+                    return compile(mc, sc, 
+                            ArrayFuncs.getAisStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf, limitSupplier)
+                    );
+                case AISSTRING2:
+                    return compile(mc, sc, 
+                            ArrayFuncs.getAisStringSupplier2((sc.getStartBit()+off)/8, buf)
+                    );
+                default:
+                    throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
+            }
+    };
     default Runnable compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
     default Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier) {return null;};
     default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier intSupplier) {return null;};
@@ -51,5 +104,61 @@ public interface SignalCompiler
     default Consumer<Throwable> compileEnd(MessageClass mc) {return null;};
     default Runnable compileBeginRepeat(MessageClass mc) {return null;};
     default Runnable compileEndRepeat(MessageClass mc) {return null;};
+
+    default boolean isFactored(double factor, double offset)
+    {
+        return factor != 1.0 || offset != 0.0;
+    }
+
+    default IntSupplier factorInt(MessageClass mc, SignalClass sc, double factor, double offset, IntSupplier intSupplier)
+    {
+        if (isFactored(factor, offset))
+        {
+            return ()->(int) (factor*intSupplier.getAsInt()+offset);
+        }
+        else
+        {
+            return intSupplier;
+        }
+    }
+
+    default LongSupplier factorLong(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+    {
+        if (isFactored(factor, offset))
+        {
+            return ()->(long) (factor*longSupplier.getAsLong()+offset);
+        }
+        else
+        {
+            return longSupplier;
+        }
+    }
+
+    default DoubleSupplier factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+    {
+        LongToDoubleFunction check = compileDoubleBoundCheck(mc, sc, longSupplier);
+        if (check != null)
+        {
+            if (isFactored(factor, offset))
+            {
+                return ()-> (factor*check.applyAsDouble(longSupplier.getAsLong())+offset);
+            }
+            else
+            {
+                return ()-> check.applyAsDouble(longSupplier.getAsLong());
+            }
+        }
+        else
+        {
+            if (isFactored(factor, offset))
+            {
+                return ()-> (factor*longSupplier.getAsLong()+offset);
+            }
+            else
+            {
+                return (DoubleSupplier) longSupplier;
+            }
+        }
+    }
 
 }

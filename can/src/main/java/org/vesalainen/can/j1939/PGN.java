@@ -19,6 +19,7 @@ package org.vesalainen.can.j1939;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * @see <a href="https://cdn.vector.com/cms/content/know-how/_application-notes/AN-ION-1-3100_Introduction_to_J1939.pdf">Introduction to J1939</a>
  */
 public class PGN
 {
@@ -57,17 +58,62 @@ public class PGN
      */
     public static final int canId(int pgn)
     {
+        return canId(pgn, 0xfe);
+    }
+    public static final int canId(int pgn, int sa)
+    {
         int pf = (pgn>>8) & 0xff;
         int dp = (pgn>>16) & 0x1;
         if (pf < 0xf0)
         {
-            return (dp<<24)|(pf<<16)|0xfe;
+            return (dp<<24)|(pf<<16)|sa;
         }
         else
         {
             int ps = pgn & 0xff;
-            return (dp<<24)|(pf<<16)|(ps<<8)|0xfe;
+            return (dp<<24)|(pf<<16)|(ps<<8)|sa;
         }
+    }
+    public static final int canId(int pri, int pgn, int da, int sa)
+    {
+        int pf = (pgn>>8) & 0xff;
+        int dp = (pgn>>16) & 0x1;
+        if (pf < 0xf0)
+        {
+            return canId(pri, 0, dp, pf, da, sa);
+        }
+        else
+        {
+            throw new IllegalArgumentException("pgn is not peer-to-peer");
+        }
+    }
+    public static final int canId(int pri, int edp, int dp, int pf, int ps, int sa)
+    {
+        if ((pri|7) != 7)
+        {
+            throw new IllegalArgumentException("priority out of bounds");
+        }
+        if ((edp|1) != 1)
+        {
+            throw new IllegalArgumentException("edp out of bounds");
+        }
+        if ((dp|1) != 1)
+        {
+            throw new IllegalArgumentException("dp out of bounds");
+        }
+        if ((pf|0xff) != 0xff)
+        {
+            throw new IllegalArgumentException("pf out of bounds");
+        }
+        if ((ps|0xff) != 0xff)
+        {
+            throw new IllegalArgumentException("ps out of bounds");
+        }
+        if ((sa|0xff) != 0xff)
+        {
+            throw new IllegalArgumentException("sa out of bounds");
+        }
+        return (pri<<26)|(edp<<25)|(dp<<24)|(pf<<16)|(ps<<8)|sa;
     }
     /**
      * Returns true if both canid's have same PGN

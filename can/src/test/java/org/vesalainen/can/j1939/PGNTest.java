@@ -51,4 +51,24 @@ public class PGNTest
         int canId = PGN.canId(pgn);
         assertTrue(PGN.samePGN(pgn, PGN.pgn(canId)));
     }
+    @Test
+    public void testCanId2()
+    {
+        int canId = PGN.canId(2, 1, 1, 238, 5, 4);
+        assertEquals(2, PGN.messagePriority(canId));
+        assertEquals(1, PGN.extendedDataPage(canId));
+        assertEquals(1, PGN.dataPage(canId));
+        assertEquals(238, PGN.pduFormat(canId));
+        assertEquals(5, PGN.pduSpecific(canId));
+        assertEquals(4, PGN.sourceAddress(canId));
+    }
+    @Test
+    public void testCanId3()
+    {
+        int canId = PGN.canId(2, 60928, 5, 4);
+        assertEquals(2, PGN.messagePriority(canId));
+        assertEquals(60928, PGN.pgn(canId));
+        assertEquals(5, PGN.pduSpecific(canId));
+        assertEquals(4, PGN.sourceAddress(canId));
+    }
 }

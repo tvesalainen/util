@@ -16,17 +16,23 @@
  */
 package org.vesalainen.can.j1939;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.ArrayFuncs;
 import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.FastMessage;
 import org.vesalainen.can.Frame;
 import org.vesalainen.can.PgnHandler;
+import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -35,12 +41,24 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AddressManager extends JavaLogging implements PgnHandler
 {
-    private Map<Name,Byte> nameMap = new HashMap<>();
-    private Map<Byte,Name> saMap = new HashMap<>();
+    private Map<Long,Byte> nameMap = new HashMap<>();
+    private Map<Byte,Long> saMap = new HashMap<>();
+    private Map<Long,Name> names = new HashMap<>();
     private byte[] data = new byte[8];
     private AbstractCanService service;
     private ExecutorService executor;
     private IntSupplier pgnBeingRequested;
+
+    private int ownUniqueNumber = 123;
+    private int ownManufacturerCode;
+    private int ownDeviceInstanceLower;
+    private int ownDeviceInstanceUpper;
+    private int ownDeviceFunction;
+    private int ownDeviceClass;
+    private int ownSystemInstance;
+    private int ownIndustryGroup = 4;
+    private int ownAddressCapable = 1;
+
     private IntSupplier uniqueNumber;
     private IntSupplier manufacturerCode;
     private IntSupplier deviceInstanceLower;
@@ -49,9 +67,12 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private IntSupplier deviceClass;
     private IntSupplier systemInstance;
     private IntSupplier industryGroup;
+    private IntSupplier addressCapable;
     private int pf;
     private int ps;
     private int sa;
+    private int ownSA = 254;
+    private byte[] ownName;
     private MessageClass productInformationClass;
 
     public AddressManager()
@@ -92,6 +113,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     @Override
     public void frame(long time, int canId, int dataLength, long data)
     {
+        info("%s", PGN.toString(canId));
         DataUtil.fromLong(data, this.data, 0, dataLength);
         this.pf = PGN.pduFormat(canId);
         this.ps = PGN.pduSpecific(canId);
@@ -102,7 +124,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 handleRequestForAddressClaimed();
                 break;
             case 60928:
-                handleAddressClaimed();
+                handleAddressClaimed(data);
                 break;
             case 126996:
                 handleProductInformation(time, canId, dataLength, data);
@@ -112,36 +134,48 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void compileAddressClaimed(MessageClass mc)
     {
+        ownName = new byte[8];
         mc.forEach((s)->
         {
             switch (s.getName())
             {
                 case "Unique_Number":
                     uniqueNumber = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownUniqueNumber, ownName).run();
                     break;
                 case "Manufacturer_Code":
                     manufacturerCode = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownManufacturerCode, ownName).run();
                     break;
                 case "Device_Instance_Lower":
                     deviceInstanceLower = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownDeviceInstanceLower, ownName).run();
                     break;
                 case "Device_Instance_Upper":
                     deviceInstanceUpper = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownDeviceInstanceUpper, ownName).run();
                     break;
                 case "Device_Function":
                     deviceFunction = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownDeviceFunction, ownName).run();
                     break;
                 case "Device_Class":
                     deviceClass = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownDeviceClass, ownName).run();
                     break;
                 case "System_Instance":
                     systemInstance = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownSystemInstance, ownName).run();
                     break;
                 case "Industry_Group":
                     industryGroup = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownIndustryGroup, ownName).run();
+                    break;
+                case "Reserved_Iso_Self_Configurable":
+                    addressCapable = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    ArrayFuncs.getIntWriter(s.getStartBit(), s.getSize(), false, false, ()->ownAddressCapable, ownName).run();
                     break;
                 case "Reserved":
-                case "Reserved_Iso_Self_Configurable":
                     break;
                 default:
                     throw new UnsupportedOperationException(s.getName()+" not supported");
@@ -167,32 +201,37 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void handleRequestForAddressClaimed()
     {
         int pgn = pgnBeingRequested.getAsInt();
-        switch (pgn)
+        info("RequestForAddressClaimed pgn=%d pf=%d ps=%d sa=%d", pgn, pf, ps, sa);
+        if (ps == ownSA || ps == 255)
         {
-            case 60928:
-                break;
-            default:
-                throw new UnsupportedOperationException(pgn+" not supported");
+            switch (pgn)
+            {
+                case 60928:
+                    sendAddressClaimed(sa);
+                    break;
+                default:
+                    throw new UnsupportedOperationException(pgn+" not supported");
+            }
         }
     }
 
-    private void handleAddressClaimed()
+    private void handleAddressClaimed(long data)
     {
-        Name name = new Name();
-        info("address claim %s", name);
-        Byte a = nameMap.get(name);
+        info("AddressClaimed pf=%d ps=%d sa=%d", pf, ps, sa);
+        Byte a = nameMap.get(data);
         if (a == null)
         {
-            nameMap.put(name, (byte)sa);
-            saMap.put((byte)sa, name);
+            nameMap.put(data, (byte)sa);
+            saMap.put((byte)sa, data);
+            names.put(data, new Name());
         }
         else
         {
             if (a != (byte)sa)
             {
                 warning("SA %d -> %d", a, sa);
-                nameMap.put(name, (byte)sa);
-                saMap.put((byte)sa, name);
+                nameMap.put(data, (byte)sa);
+                saMap.put((byte)sa, data);
                 saMap.remove(a);
             }
         }
@@ -200,16 +239,30 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void handleProductInformation(long time, int canId, int dataLength, long data)
     {
-        Name name = saMap.get((byte)sa);
-        if (name != null)
+        Long n = saMap.get((byte)sa);
+        if (n != null)
         {
+            Name name = names.get(n);
             name.frame(time, canId, dataLength, data);
         }
     }
-    
-    private class Name implements Frame
+
+    private void sendAddressClaimed(int da)
     {
-        private FastMessage fast = new FastMessage(executor, productInformationClass, PGN.canId(126996), 134, "");
+        int canId = PGN.canId(2, 60928, 255, ownSA);
+        try
+        {
+            service.send(canId, ownName);
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    private class Name implements Frame, SignalCompiler
+    {
+        private FastMessage fast;
         private int id;
         private int manufacturer;
         private int instanceLower;
@@ -218,7 +271,16 @@ public class AddressManager extends JavaLogging implements PgnHandler
         private int cls;
         private int system;
         private int industry;
+        private int capable;
         private final int hash;
+        private int databaseVersion;
+        private int productCode;
+        private int certificationLevel;
+        private int loadEquivalency;
+        private String modelId;
+        private String softwareVersionCode;
+        private String modelVersion;
+        private String modelSerialCode;
 
         public Name()
         {
@@ -230,6 +292,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             this.cls = deviceClass.getAsInt();
             this.system = systemInstance.getAsInt();
             this.industry = industryGroup.getAsInt();
+            this.capable = addressCapable.getAsInt();
             int h = 3;
             h = 73 * h + this.id;
             h = 73 * h + this.manufacturer;
@@ -240,12 +303,74 @@ public class AddressManager extends JavaLogging implements PgnHandler
             h = 73 * h + this.system;
             h = 73 * h + this.industry;
             this.hash = h;
+            this.fast = new FastMessage(executor, productInformationClass, PGN.canId(126996), 134, "");
+            fast.addSignals(this);
         }
 
         @Override
         public void frame(long time, int canId, int dataLength, long data)
         {
             fast.frame(time, canId, dataLength, data);
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier intSupplier)
+        {
+            switch (sc.getName())
+            {
+                case "Nmea_2000_Database_Version":
+                return ()->
+                {
+                    databaseVersion = intSupplier.getAsInt();
+                };
+                case "Nmea_Manufacturer_S_Product_Code":
+                return ()->
+                {
+                    productCode = intSupplier.getAsInt();
+                };
+                case "Nmea_2000_Certification_Level":
+                return ()->
+                {
+                    certificationLevel = intSupplier.getAsInt();
+                };
+                case "Load_Equivalency":
+                return ()->
+                {
+                    loadEquivalency = intSupplier.getAsInt();
+                };
+                default:
+                    throw new UnsupportedOperationException(sc.getName()+" not supported");
+            }
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss)
+        {
+            switch (sc.getName())
+            {
+                case "Manufacturer_S_Model_Id":
+                return ()->
+                {
+                    modelId = ss.get();
+                };
+                case "Manufacturer_S_Software_Version_Code":
+                return ()->
+                {
+                    softwareVersionCode = ss.get();
+                };
+                case "Manufacturer_S_Model_Version":
+                return ()->
+                {
+                    modelVersion = ss.get();
+                };
+                case "Manufacturer_S_Model_Serial_Code":
+                return ()->
+                {
+                    modelSerialCode = ss.get();
+                };
+                default:
+                    throw new UnsupportedOperationException(sc.getName()+" not supported");
+            }
         }
         
         @Override
@@ -308,7 +433,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         @Override
         public String toString()
         {
-            return "Name{" + "id=" + id + ", manufacturer=" + manufacturer + ", instance=" + instanceUpper + "." + instanceLower + ", function=" + function + ", cls=" + cls + ", system=" + system + ", industry=" + industry + '}';
+            return "Name{" + "id=" + id + ", manufacturer=" + manufacturer + ", instance=" + instanceUpper + "." + instanceLower + ", function=" + function + ", cls=" + cls + ", system=" + system + ", industry=" + industry + "capable=" + capable +'}';
         }
 
     }

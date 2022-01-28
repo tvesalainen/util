@@ -102,6 +102,20 @@ public final class ArrayFuncs
             }
         };
     }
+    public static final Runnable getStringWriter(int offset, int length, byte ender, Supplier<String> stringSupplier, byte... buf)
+    {
+        checkBitsString(offset, length, buf);
+        return ()->
+        {
+            String string = stringSupplier.get();
+            int len = min(length, string.length())-1;
+            for (int ii=0;ii<len;ii++)
+            {
+                buf[offset+ii] = (byte) string.charAt(ii);
+            }
+            buf[offset+len] = ender;
+        };
+    }
     public static final Runnable getIntWriter(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i, byte... buf)
     {
         checkBitsInt(offset, length, buf);

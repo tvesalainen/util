@@ -30,7 +30,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -309,14 +308,14 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     protected abstract boolean update(long time, int canId, int dataLength, long data);
     protected abstract long getMillis();
 
-    void addSignals(SignalCompiler compiler)
+    public void addSignals(SignalCompiler compiler)
     {
         if (messageClass != null)
         {
             action = compileSignals(compiler);
         }
     }
-    Action compileSignals(SignalCompiler compiler)
+    protected Action compileSignals(SignalCompiler compiler)
     {
         Objects.requireNonNull(messageClass, "MessageClass null");
         IntRange repeatRange = messageClass.getRepeatRange();
@@ -520,54 +519,8 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
         private Runnable createSignal(MessageClass mc, SignalClass sc, int off)
         {
-            IntSupplier is;
-            LongSupplier ls;
-            DoubleSupplier ds;
-            Supplier<String> ss;
-            double factor = sc.getFactor();
-            double offset = sc.getOffset();
-            switch (sc.getSignalType())
-            {
-                case INT:
-                    return compiler.compile(mc, sc, 
-                            compiler.compileIntBoundCheck(mc, sc, 
-                                factorInt(mc, sc, factor, offset, 
-                                    ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
-                            )));
-                case LONG:
-                    return compiler.compile(mc, sc, 
-                            compiler.compileLongBoundCheck(mc, sc, 
-                                factorLong(mc, sc, factor, offset, 
-                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
-                            )));
-                case DOUBLE:
-                    return compiler.compile(mc, sc, 
-                            compiler.compileDoubleBoundCheck(mc, sc, 
-                                factorDouble(mc, sc, factor, offset, 
-                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
-                            )));
-                case LOOKUP:
-                    is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                    IntFunction<String> f = sc.getMapper();
-                    if (f == null)
-                    {
-                        return compiler.compile(mc, sc, is);
-                    }
-                    return compiler.compile(mc, sc, is, f);
-                case BINARY:
-                    return compiler.compileBinary(mc, sc, buf, sc.getStartBit()+off, sc.getSize());
-                case ASCIIZ:
-                    ss = ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf);
-                    return compiler.compile(mc, sc, ss);
-                case AISSTRING:
-                    ss = ArrayFuncs.getAisStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf, AbstractMessage.this::getCurrentBytes);
-                    return compiler.compile(mc, sc, ss);
-                case AISSTRING2:
-                    ss = ArrayFuncs.getAisStringSupplier2((sc.getStartBit()+off)/8, buf);
-                    return compiler.compile(mc, sc, ss);
-                default:
-                    throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
-            }
+            FuncsFactory factory = ArrayFuncsFactory.getInstance(mc, sc, compiler, off, AbstractMessage.this::getMillis, AbstractMessage.this::getCurrentBytes, buf);
+            return compiler.compile(mc, sc, off, buf, AbstractMessage.this::getCurrentBytes, factory);
         }
         private void addAction(Runnable act)
         {
@@ -604,62 +557,6 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
                 mpxMap.put(multiplexor, ml);
             }
             return ml;
-        }
-
-        private boolean isFactored(double factor, double offset)
-        {
-            return factor != 1.0 || offset != 0.0;
-        }
-
-        private IntSupplier factorInt(MessageClass mc, SignalClass sc, double factor, double offset, IntSupplier intSupplier)
-        {
-            if (isFactored(factor, offset))
-            {
-                return ()->(int) (factor*intSupplier.getAsInt()+offset);
-            }
-            else
-            {
-                return intSupplier;
-            }
-        }
-
-        private LongSupplier factorLong(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
-        {
-            if (isFactored(factor, offset))
-            {
-                return ()->(long) (factor*longSupplier.getAsLong()+offset);
-            }
-            else
-            {
-                return longSupplier;
-            }
-        }
-
-        private DoubleSupplier factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
-        {
-            LongToDoubleFunction check = compiler.compileDoubleBoundCheck(mc, sc, longSupplier);
-            if (check != null)
-            {
-                if (isFactored(factor, offset))
-                {
-                    return ()-> (factor*check.applyAsDouble(longSupplier.getAsLong())+offset);
-                }
-                else
-                {
-                    return ()-> check.applyAsDouble(longSupplier.getAsLong());
-                }
-            }
-            else
-            {
-                if (isFactored(factor, offset))
-                {
-                    return ()-> (factor*longSupplier.getAsLong()+offset);
-                }
-                else
-                {
-                    return (DoubleSupplier) longSupplier;
-                }
-            }
         }
 
     }

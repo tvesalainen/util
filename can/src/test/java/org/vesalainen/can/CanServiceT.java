@@ -42,7 +42,7 @@ public class CanServiceT
     public void test() throws IOException, InterruptedException, ExecutionException
     {
         //AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
-        AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new PrintCompiler());
+        AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new TCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
         canSvc.adPgnHandler(new AddressManager());
