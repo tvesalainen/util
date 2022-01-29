@@ -44,16 +44,16 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final Map<Integer,PgnHandler> pgnHandlers = new HashMap<>();
-    protected final ExecutorService executor;
+    protected final CachedScheduledThreadPool executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
 
-    protected AbstractCanService(ExecutorService executor, SignalCompiler compiler)
+    protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         this(executor, new DefaultMessageFactory(compiler));
     }
 
-    public AbstractCanService(ExecutorService executor, AbstractMessageFactory messageFactory)
+    public AbstractCanService(CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(AbstractCanService.class);
         this.executor = executor;
@@ -65,11 +65,11 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     {
         return openSocketCand(canBus, new CachedScheduledThreadPool(), compiler);
     }
-    public static AbstractCanService openSocketCand(String canBus, ExecutorService executor, SignalCompiler compiler) throws IOException
+    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
         return new SocketCandService(canBus, executor, compiler);
     }
-    public static AbstractCanService openSocketCand(String canBus, ExecutorService executor, AbstractMessageFactory messsageFactory) throws IOException
+    public static AbstractCanService openSocketCand(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
     {
         return new SocketCandService(canBus, executor, messsageFactory);
     }
@@ -269,7 +269,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
                 throw new UnsupportedOperationException(protocolType+" not supported");
         }
     }
-    public void adPgnHandler(PgnHandler pgnHandler)
+    public void addPgnHandler(PgnHandler pgnHandler)
     {
         pgnHandler.init(this, executor);
         for (int pgn : pgnHandler.pgnsToHandle())
@@ -285,6 +285,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             }
             pgnHandlers.put(pgn, pgnHandler);
         }
+        pgnHandler.start();
     }
     @Override
     public void close() throws Exception

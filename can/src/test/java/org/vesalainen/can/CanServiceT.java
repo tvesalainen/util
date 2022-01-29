@@ -34,7 +34,7 @@ public class CanServiceT
     
     public CanServiceT()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINER);
+        JavaLogging.setConsoleHandler("org.vesalainen.can.j1939", Level.FINER);
         SimpleJMX.start();
     }
 
@@ -45,12 +45,18 @@ public class CanServiceT
         AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new TCompiler());
         canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         canSvc.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
-        canSvc.adPgnHandler(new AddressManager());
+        canSvc.addPgnHandler(new AddressManager());
         canSvc.startAndWait();
     }
     
     private static class TCompiler implements SignalCompiler
     {
+
+        @Override
+        public boolean needCompilation(int canId)
+        {
+            return false;
+        }
         
     }
 }

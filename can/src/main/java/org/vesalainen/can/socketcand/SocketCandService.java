@@ -32,6 +32,7 @@ import org.vesalainen.nio.ByteBufferInputStream;
 import org.vesalainen.nio.PrintBuffer;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.parser.util.InputReader;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.xml.SimpleXMLParser;
 
 /**
@@ -49,12 +50,12 @@ public class SocketCandService extends AbstractCanService
     private final byte[] array = new byte[8];
     private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(US_ASCII, ByteBuffer.allocateDirect(64)));
     
-    public SocketCandService(String canBus, ExecutorService executor, SignalCompiler compiler)
+    public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         this(canBus, executor, new DefaultMessageFactory(compiler));
     }
 
-    public SocketCandService(String canBus, ExecutorService executor, AbstractMessageFactory messageFactory)
+    public SocketCandService(String canBus, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(executor, messageFactory);
         this.canBus = canBus;
@@ -112,7 +113,7 @@ public class SocketCandService extends AbstractCanService
     {
         PrintBuffer p = buffer.get();
         p.clear();
-        p.format("< send %X %d ", canId, length);
+        p.format("< send %08X %d ", canId, length);
         for (int ii=0;ii<length;ii++)
         {
             p.format("%X ", data[ii]);

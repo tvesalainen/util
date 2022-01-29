@@ -156,7 +156,7 @@ public interface SignalCompiler
             }
             else
             {
-                return (DoubleSupplier) longSupplier;
+                return ()->longSupplier.getAsLong();
             }
         }
     }

@@ -156,14 +156,17 @@ public final class ArrayFuncs
             int v = i.getAsInt();
             for (int ii=0;ii<len;ii++)
             {
+                int ix = (int)arr[3*ii]&0xff;
                 byte sh = arr[3*ii+2];
+                byte ms = arr[3*ii+1];
+                buf[ix] &= ~ms;
                 if (sh > 0)
                 {
-                    buf[(int)arr[3*ii]&0xff] = (byte) ((v>>sh)&arr[3*ii+1]);
+                    buf[ix] |= (byte) ((v>>sh)&ms);
                 }
                 else
                 {
-                    buf[(int)arr[3*ii]&0xff] = (byte) ((v<<-sh)&arr[3*ii+1]);
+                    buf[ix] |= (byte) ((v<<-sh)&ms);
                 }
             }
         };
@@ -176,14 +179,17 @@ public final class ArrayFuncs
             long v = l.getAsLong();
             for (int ii=0;ii<len;ii++)
             {
+                int ix = (int)arr[3*ii]&0xff;
                 byte sh = arr[3*ii+2];
+                byte ms = arr[3*ii+1];
+                buf[ix] &= ~ms;
                 if (sh > 0)
                 {
-                    buf[(int)arr[3*ii]&0xff] = (byte) ((v>>sh)&arr[3*ii+1]);
+                    buf[ix] |= (byte) ((v>>sh)&ms);
                 }
                 else
                 {
-                    buf[(int)arr[3*ii]&0xff] = (byte) ((v<<-sh)&arr[3*ii+1]);
+                    buf[ix] |= (byte) ((v<<-sh)&ms);
                 }
             }
         };

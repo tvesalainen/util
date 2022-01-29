@@ -26,6 +26,7 @@ import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.SignalCompiler;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
  *
@@ -36,22 +37,22 @@ public class CanDumpService extends AbstractCanService
     private final ReadableByteChannel channel;
     private String bus;
 
-    public CanDumpService(String bus, Path path, ExecutorService executor, SignalCompiler compiler) throws IOException
+    public CanDumpService(String bus, Path path, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
         this(bus, Files.newByteChannel(path, READ), executor, compiler);
     }
-    public CanDumpService(String bus, Path path, ExecutorService executor, AbstractMessageFactory messageFactory) throws IOException
+    public CanDumpService(String bus, Path path, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory) throws IOException
     {
         this(bus, Files.newByteChannel(path, READ), executor, messageFactory);
     }
-    public CanDumpService(String bus, ReadableByteChannel channel, ExecutorService executor, SignalCompiler compiler)
+    public CanDumpService(String bus, ReadableByteChannel channel, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
         super(executor, compiler);
         this.channel = channel;
         this.bus = bus;
     }
     
-    public CanDumpService(String bus, ReadableByteChannel channel, ExecutorService executor, AbstractMessageFactory messageFactory)
+    public CanDumpService(String bus, ReadableByteChannel channel, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(executor, messageFactory);
         this.bus = bus;

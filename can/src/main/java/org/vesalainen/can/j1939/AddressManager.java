@@ -19,11 +19,10 @@ package org.vesalainen.can.j1939;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.ArrayFuncs;
 import org.vesalainen.can.DataUtil;
@@ -33,6 +32,8 @@ import org.vesalainen.can.PgnHandler;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
+import org.vesalainen.util.HexUtil;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -46,7 +47,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private Map<Long,Name> names = new HashMap<>();
     private byte[] data = new byte[8];
     private AbstractCanService service;
-    private ExecutorService executor;
+    private CachedScheduledThreadPool executor;
     private IntSupplier pgnBeingRequested;
 
     private int ownUniqueNumber = 123;
@@ -54,7 +55,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private int ownDeviceInstanceLower;
     private int ownDeviceInstanceUpper;
     private int ownDeviceFunction;
-    private int ownDeviceClass;
+    private int ownDeviceClass = 70;
     private int ownSystemInstance;
     private int ownIndustryGroup = 4;
     private int ownAddressCapable = 1;
@@ -68,12 +69,15 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private IntSupplier systemInstance;
     private IntSupplier industryGroup;
     private IntSupplier addressCapable;
+    private int canId;
     private int pf;
     private int ps;
     private int sa;
     private int ownSA = 254;
     private byte[] ownName;
     private MessageClass productInformationClass;
+    private LongSupplier numericName;
+    private long ownNumericName;
 
     public AddressManager()
     {
@@ -87,7 +91,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     }
 
     @Override
-    public void init(AbstractCanService service, ExecutorService executor)
+    public void init(AbstractCanService service, CachedScheduledThreadPool executor)
     {
         this.service = service;
         this.executor = executor;
@@ -111,8 +115,15 @@ public class AddressManager extends JavaLogging implements PgnHandler
     }
 
     @Override
+    public void start()
+    {
+        executor.submit(this::requestAddresses);
+    }
+
+    @Override
     public void frame(long time, int canId, int dataLength, long data)
     {
+        this.canId = canId;
         info("%s", PGN.toString(canId));
         DataUtil.fromLong(data, this.data, 0, dataLength);
         this.pf = PGN.pduFormat(canId);
@@ -135,6 +146,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void compileAddressClaimed(MessageClass mc)
     {
         ownName = new byte[8];
+        numericName = ArrayFuncs.getLongSupplier(0, 64, false, false, data);
         mc.forEach((s)->
         {
             switch (s.getName())
@@ -181,6 +193,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     throw new UnsupportedOperationException(s.getName()+" not supported");
             }
         });
+        ownNumericName = ArrayFuncs.getLongSupplier(0, 64, false, false, ownName).getAsLong();
     }
 
     private void compileRequestForAddressClaimed(MessageClass mc)
@@ -201,13 +214,15 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void handleRequestForAddressClaimed()
     {
         int pgn = pgnBeingRequested.getAsInt();
-        info("RequestForAddressClaimed pgn=%d pf=%d ps=%d sa=%d", pgn, pf, ps, sa);
+        info("RequestForAddressClaimed pgn=%d %s", pgn, PGN.toString(canId));
         if (ps == ownSA || ps == 255)
         {
             switch (pgn)
             {
                 case 60928:
-                    sendAddressClaimed(sa);
+                    sendAddressClaimed(ownSA);
+                    break;
+                case 126996:
                     break;
                 default:
                     throw new UnsupportedOperationException(pgn+" not supported");
@@ -217,13 +232,29 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void handleAddressClaimed(long data)
     {
-        info("AddressClaimed pf=%d ps=%d sa=%d", pf, ps, sa);
+        info("AddressClaimed %s", PGN.toString(canId));
+        if (sa < 254 && sa == ownSA)    // conflict
+        {
+            Name n = new Name();
+            if (ownNumericName < n.numeric)
+            {
+                info("minor name claimed %d", sa);
+                executor.submit(()->sendAddressClaimed(ownSA));
+            }
+            else
+            {
+                ownSA = 254;
+                warning("conflicting SA=%d", sa);
+                executor.submit(this::claimOwnAddress);
+            }
+        }
         Byte a = nameMap.get(data);
         if (a == null)
         {
             nameMap.put(data, (byte)sa);
             saMap.put((byte)sa, data);
             names.put(data, new Name());
+            requestProductInformation(sa);
         }
         else
         {
@@ -247,12 +278,55 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
 
-    private void sendAddressClaimed(int da)
+    private void sendAddressClaimed(int sa)
     {
-        int canId = PGN.canId(2, 60928, 255, ownSA);
+        int canId = PGN.canId(2, 60928, 255, sa);
+        info("send %X %s %s", canId, PGN.toString(canId), HexUtil.toString(ownName));
         try
         {
             service.send(canId, ownName);
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void requestAddresses()
+    {
+        int canId = PGN.canId(2, 59904, 255, 254);
+        info("send %X %s 00 ee oo", canId, PGN.toString(canId));
+        try
+        {
+            service.send(canId, (byte)0x00, (byte)0xee, (byte)0x00);
+            executor.schedule(this::claimOwnAddress, 1, TimeUnit.SECONDS);
+        }
+        catch (IOException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    private void claimOwnAddress()
+    {
+        for (int ii=0;ii<254;ii++)
+        {
+            if (!saMap.containsKey((byte)ii))
+            {
+                ownSA = ii;
+                sendAddressClaimed(ownSA);
+                info("claimed %d", ownSA);
+                return;
+            }
+        }
+    }
+    private void requestProductInformation(int da)
+    {
+        int canId = PGN.canId(2, 59904, da, 254);
+        info("send %X %s 14 f0 01", canId, PGN.toString(canId));
+        try
+        {
+            service.send(canId, (byte)0x14, (byte)0xf0, (byte)0x01);
         }
         catch (IOException ex)
         {
@@ -263,6 +337,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private class Name implements Frame, SignalCompiler
     {
         private FastMessage fast;
+        private long numeric;
         private int id;
         private int manufacturer;
         private int instanceLower;
@@ -284,6 +359,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
         public Name()
         {
+            this.numeric = numericName.getAsLong();
             this.id = uniqueNumber.getAsInt();
             this.manufacturer = manufacturerCode.getAsInt();
             this.instanceLower = deviceInstanceLower.getAsInt();

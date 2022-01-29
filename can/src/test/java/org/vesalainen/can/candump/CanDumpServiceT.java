@@ -26,6 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.can.PrintCompiler;
 import org.vesalainen.can.SignalCompiler;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -44,7 +45,7 @@ public class CanDumpServiceT
     public void test1() throws IOException, InterruptedException, ExecutionException
     {
         Path path = Paths.get("C:\\Users\\tkv\\share", "candump.txt");
-        CanDumpService svc = new CanDumpService("can1", path, Executors.newCachedThreadPool(), new PrintCompiler());
+        CanDumpService svc = new CanDumpService("can1", path, new CachedScheduledThreadPool(), new PrintCompiler());
         svc.addN2K();
         svc.startAndWait();
     }
@@ -52,7 +53,7 @@ public class CanDumpServiceT
     public void test2() throws IOException, InterruptedException, ExecutionException
     {
         Path path = Paths.get("C:\\Users\\tkv\\Documents\\NetBeansProjects\\canboat\\samples", "candumpSample2.txt");
-        CanDumpService svc = new CanDumpService("can0", path, Executors.newCachedThreadPool(), new PrintCompiler());
+        CanDumpService svc = new CanDumpService("can0", path, new CachedScheduledThreadPool(), new PrintCompiler());
         svc.addN2K();
         svc.startAndWait();
     }

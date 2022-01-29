@@ -18,6 +18,7 @@ package org.vesalainen.can;
 
 import java.util.concurrent.ExecutorService;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
  *
@@ -30,6 +31,7 @@ public interface PgnHandler extends Frame
      * @return 
      */
     int[] pgnsToHandle();
-    void init(AbstractCanService service, ExecutorService executor);
+    void init(AbstractCanService service, CachedScheduledThreadPool executor);
     void init(int pgn, MessageClass mc);
+    void start();
 }
