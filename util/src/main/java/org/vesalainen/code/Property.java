@@ -31,4 +31,5 @@ public @interface Property
 {
     String value() default "";
     int ordinal() default 0;
+    String[] aliases() default {};
 }
