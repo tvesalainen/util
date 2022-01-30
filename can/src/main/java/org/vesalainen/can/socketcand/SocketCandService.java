@@ -49,6 +49,7 @@ public class SocketCandService extends AbstractCanService
     private String canBus;
     private final byte[] array = new byte[8];
     private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(US_ASCII, ByteBuffer.allocateDirect(64)));
+    private boolean started;
     
     public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
@@ -63,15 +64,26 @@ public class SocketCandService extends AbstractCanService
     }
 
     @Override
+    protected void started()
+    {
+        started = true;
+        super.started();
+    }
+
+    @Override
     public void run()
     {
         while (true)
         {
             try
             {
+                started = false;
                 SocketCandInfo info = waitForBeacon();
-                channel = SocketChannel.open(info.getAddress());
-                readSocketCand(channel);
+                try (SocketChannel ch = SocketChannel.open(info.getAddress()))
+                {
+                    channel = ch;
+                    readSocketCand(channel);
+                }
             }
             catch (ClosedByInterruptException ex)
             {
@@ -111,17 +123,24 @@ public class SocketCandService extends AbstractCanService
     @Override
     public void send(int canId, int length, byte[] data) throws IOException
     {
-        PrintBuffer p = buffer.get();
-        p.clear();
-        p.format("< send %08X %d ", canId, length);
-        for (int ii=0;ii<length;ii++)
+        if (started)
         {
-            p.format("%X ", data[ii]);
+            PrintBuffer p = buffer.get();
+            p.clear();
+            p.format("< send %08X %d ", canId, length);
+            for (int ii=0;ii<length;ii++)
+            {
+                p.format("%X ", data[ii]);
+            }
+            p.print('>');
+            ByteBuffer bb = p.getByteBuffer();
+            bb.flip();
+            channel.write(bb);
         }
-        p.print('>');
-        ByteBuffer bb = p.getByteBuffer();
-        bb.flip();
-        channel.write(bb);
+        else
+        {
+            warning("not sending because not started");
+        }
     }
     
     void openBus()

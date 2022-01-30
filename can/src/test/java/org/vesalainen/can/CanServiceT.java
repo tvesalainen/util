@@ -34,7 +34,7 @@ public class CanServiceT
     
     public CanServiceT()
     {
-        JavaLogging.setConsoleHandler("org.vesalainen.can.j1939", Level.FINER);
+        JavaLogging.setConsoleHandler("org.vesalainen", Level.FINER);
         SimpleJMX.start();
     }
 

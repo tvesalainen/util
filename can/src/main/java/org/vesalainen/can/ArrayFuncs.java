@@ -91,7 +91,7 @@ public final class ArrayFuncs
         return ()->
         {
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
-            int idx = CharSequences.indexOf(seq, (char)0);
+            int idx = CharSequences.indexOf(seq, (cc)->cc<' '|| cc>127);
             if (idx != -1)
             {
                 return seq.subSequence(0, idx).toString();

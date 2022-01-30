@@ -58,5 +58,6 @@ public class DataUtilTest
     {
         assertEquals(0x12, DataUtil.get(0x1234567890abcdefL, 0));
         assertEquals(0x34, DataUtil.get(0x1234567890abcdefL, 1));
+        assertEquals(255, DataUtil.get(0xffffffffffffffffL, 0));
     }    
 }

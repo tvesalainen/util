@@ -60,10 +60,10 @@ public final class DataUtil
             buf[ii+off] = (byte) ((v & (0xffL<<sht))>>>sht);
         }
     }
-    public static byte get(long v, int index)
+    public static int get(long v, int index)
     {
         int sht = (7-index)*8;
-        return (byte) (((v & (0xffL<<sht))>>>sht) & 0xffL);
+        return (int) (((v & (0xffL<<sht))>>>sht) & 0xff);
     }
     private static int fromHex(char cc)
     {

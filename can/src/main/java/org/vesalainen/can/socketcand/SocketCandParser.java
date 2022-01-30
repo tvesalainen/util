@@ -54,6 +54,7 @@ public abstract class SocketCandParser extends AbstractParser implements ParserI
     @Rule("'<' 'ok' '>'")
     protected void rawOk(@ParserContext("SocketCandService") SocketCandService svc)
     {
+        svc.started();
     }
     @Rule("'<' 'frame' hex time data '>'")
     protected void frame(int canId, long time, int dataLength, @ParserContext(ParserConstants.INPUTREADER) InputReader input, @ParserContext("SocketCandService") SocketCandService svc)

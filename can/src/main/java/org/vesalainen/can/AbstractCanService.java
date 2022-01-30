@@ -17,12 +17,14 @@
 package org.vesalainen.can;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
@@ -47,6 +49,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final CachedScheduledThreadPool executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
+    private List<Runnable> startables = new ArrayList<>();
 
     protected AbstractCanService(CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
@@ -80,6 +83,10 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             throw new IllegalStateException("started already");
         }
         future = executor.submit(this);
+    }
+    protected void started()
+    {
+        startables.forEach((r)->executor.submit(r));
     }
     public void stop()
     {
@@ -285,7 +292,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             }
             pgnHandlers.put(pgn, pgnHandler);
         }
-        pgnHandler.start();
+        startables.add(pgnHandler::start);
     }
     @Override
     public void close() throws Exception

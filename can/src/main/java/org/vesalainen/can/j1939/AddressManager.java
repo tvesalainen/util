@@ -23,6 +23,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.ArrayFuncs;
 import org.vesalainen.can.DataUtil;
@@ -32,6 +37,7 @@ import org.vesalainen.can.PgnHandler;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
+import org.vesalainen.management.AbstractDynamicMBean;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
@@ -235,8 +241,8 @@ public class AddressManager extends JavaLogging implements PgnHandler
         info("AddressClaimed %s", PGN.toString(canId));
         if (sa < 254 && sa == ownSA)    // conflict
         {
-            Name n = new Name();
-            if (ownNumericName < n.numeric)
+            Name n = new Name(data);
+            if (Long.compareUnsigned(ownNumericName, n.numeric) < 0)
             {
                 info("minor name claimed %d", sa);
                 executor.submit(()->sendAddressClaimed(ownSA));
@@ -253,7 +259,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         {
             nameMap.put(data, (byte)sa);
             saMap.put((byte)sa, data);
-            names.put(data, new Name());
+            names.put(data, new Name(data));
             requestProductInformation(sa);
         }
         else
@@ -264,6 +270,11 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 nameMap.put(data, (byte)sa);
                 saMap.put((byte)sa, data);
                 saMap.remove(a);
+            }
+            Name name = names.get(data);
+            if (!name.ready)
+            {
+                requestProductInformation(sa);
             }
         }
     }
@@ -301,14 +312,15 @@ public class AddressManager extends JavaLogging implements PgnHandler
             service.send(canId, (byte)0x00, (byte)0xee, (byte)0x00);
             executor.schedule(this::claimOwnAddress, 1, TimeUnit.SECONDS);
         }
-        catch (IOException ex)
+        catch (Throwable ex)
         {
-            throw new RuntimeException(ex);
+            log(SEVERE, ex, "%s", ex.getMessage());
         }
     }
     
     private void claimOwnAddress()
     {
+        info("claiming own address");
         for (int ii=0;ii<254;ii++)
         {
             if (!saMap.containsKey((byte)ii))
@@ -322,19 +334,19 @@ public class AddressManager extends JavaLogging implements PgnHandler
     }
     private void requestProductInformation(int da)
     {
-        int canId = PGN.canId(2, 59904, da, 254);
+        int canId = PGN.canId(2, 59904, da, ownSA);
         info("send %X %s 14 f0 01", canId, PGN.toString(canId));
         try
         {
             service.send(canId, (byte)0x14, (byte)0xf0, (byte)0x01);
         }
-        catch (IOException ex)
+        catch (Throwable ex)
         {
-            throw new RuntimeException(ex);
+            log(SEVERE, ex, "%s", ex.getMessage());
         }
     }
     
-    private class Name implements Frame, SignalCompiler
+    public class Name extends AbstractDynamicMBean implements Frame, SignalCompiler
     {
         private FastMessage fast;
         private long numeric;
@@ -356,9 +368,14 @@ public class AddressManager extends JavaLogging implements PgnHandler
         private String softwareVersionCode;
         private String modelVersion;
         private String modelSerialCode;
+        private boolean ready;
+        private ObjectName objectName;
+        private final long name;
 
-        public Name()
+        public Name(long name)
         {
+            super("Name");
+            this.name = name;
             this.numeric = numericName.getAsLong();
             this.id = uniqueNumber.getAsInt();
             this.manufacturer = manufacturerCode.getAsInt();
@@ -381,12 +398,26 @@ public class AddressManager extends JavaLogging implements PgnHandler
             this.hash = h;
             this.fast = new FastMessage(executor, productInformationClass, PGN.canId(126996), 134, "");
             fast.addSignals(this);
+            addAttributes(this);
         }
 
         @Override
         public void frame(long time, int canId, int dataLength, long data)
         {
             fast.frame(time, canId, dataLength, data);
+            if (!ready && modelId != null)
+            {
+                try
+                {
+                    this.objectName = ObjectName.getInstance(Name.class.getName()+":Type="+modelId.replace(' ', '_')+",Model="+function+",Id="+id);
+                }
+                catch (MalformedObjectNameException | NullPointerException ex)
+                {
+                    log(Level.SEVERE, null, ex);
+                }
+                register();
+                ready = true;
+            }
         }
 
         @Override
@@ -510,6 +541,114 @@ public class AddressManager extends JavaLogging implements PgnHandler
         public String toString()
         {
             return "Name{" + "id=" + id + ", manufacturer=" + manufacturer + ", instance=" + instanceUpper + "." + instanceLower + ", function=" + function + ", cls=" + cls + ", system=" + system + ", industry=" + industry + "capable=" + capable +'}';
+        }
+
+        @Override
+        protected ObjectName createObjectName() throws MalformedObjectNameException
+        {
+            return objectName;
+        }
+
+        public int getSource()
+        {
+            Byte sa = nameMap.get(name);
+            if (sa != null)
+            {
+                return sa & 0xff;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        public long getNumeric()
+        {
+            return numeric;
+        }
+
+        public int getId()
+        {
+            return id;
+        }
+
+        public int getManufacturer()
+        {
+            return manufacturer;
+        }
+
+        public int getInstanceLower()
+        {
+            return instanceLower;
+        }
+
+        public int getInstanceUpper()
+        {
+            return instanceUpper;
+        }
+
+        public int getFunction()
+        {
+            return function;
+        }
+
+        public int getCls()
+        {
+            return cls;
+        }
+
+        public int getSystem()
+        {
+            return system;
+        }
+
+        public int getIndustry()
+        {
+            return industry;
+        }
+
+        public int getCapable()
+        {
+            return capable;
+        }
+
+        public int getDatabaseVersion()
+        {
+            return databaseVersion;
+        }
+
+        public int getProductCode()
+        {
+            return productCode;
+        }
+
+        public int getCertificationLevel()
+        {
+            return certificationLevel;
+        }
+
+        public int getLoadEquivalency()
+        {
+            return loadEquivalency;
+        }
+
+        public String getModelId()
+        {
+            return modelId;
+        }
+
+        public String getSoftwareVersionCode()
+        {
+            return softwareVersionCode;
+        }
+
+        public String getModelVersion()
+        {
+            return modelVersion;
+        }
+
+        public String getModelSerialCode()
+        {
+            return modelSerialCode;
         }
 
     }

@@ -58,7 +58,7 @@ public class FastMessage extends PgnMessage
             if (action != null || jmxAction != null)
             {
                 int header;
-                byte b = DataUtil.get(data, 0);
+                int b = DataUtil.get(data, 0);
                 byte id = (byte) (b & 0xe0);
                 if (id != packetId)
                 {
