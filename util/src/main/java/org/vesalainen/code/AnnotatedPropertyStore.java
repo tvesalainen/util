@@ -135,6 +135,13 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                         }
                         C c = new C();
                         cMap.put(name, c);
+                        for (String alias : property.aliases())
+                        {
+                            if (cMap.put(alias, c) != null)
+                            {
+                                throw new IllegalArgumentException(alias+" is not unique alias");
+                            }
+                        }
                         props.add(new Prop(property, name));
                         c.type = field.getType();
                         MethodHandle mhg = lookup.unreflectGetter(field);
@@ -162,6 +169,13 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                         {
                             c = new C();
                             cMap.put(name, c);
+                            for (String alias : property.aliases())
+                            {
+                                if (cMap.put(alias, c) != null)
+                                {
+                                    throw new IllegalArgumentException(alias+" is not unique alias");
+                                }
+                            }
                         }
                         props.add(new Prop(property, name));
                         if (BeanHelper.isGetter(method))
