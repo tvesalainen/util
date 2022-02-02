@@ -17,6 +17,7 @@
 package org.vesalainen.can;
 
 import java.util.Arrays;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.util.HexUtil;
@@ -36,9 +37,10 @@ public class DataUtilTest
     public void testAsLong()
     {
         assertEquals(8, DataUtil.length("1234567890abcdef"));
-        assertEquals(0x1234567890abcdefL, DataUtil.asLong("1234567890abcdef"));
-        assertEquals(0x1234567890ab0000L, DataUtil.asLong("1234567890ab"));
-        assertEquals(0x1234567890abcdefL, DataUtil.asLong("1234567890ABCDEF"));
+        long asLong = DataUtil.asLong("1234567890abcdef");
+        assertEquals(0xefcdab9078563412L, DataUtil.asLong("1234567890abcdef"));
+        assertEquals(0xab9078563412L, DataUtil.asLong("1234567890ab"));
+        assertEquals(0xefcdab9078563412L, DataUtil.asLong("1234567890ABCDEF"));
         assertEquals(0xffffffffffffffffL, DataUtil.asLong("ffffffffffffffff"));
     }
     @Test
@@ -46,18 +48,37 @@ public class DataUtilTest
     {
         byte[] buf = new byte[8];
         DataUtil.fromLong(0x1234567890abcdefL, buf, 0, 8);
-        assertEquals("1234567890ABCDEF", HexUtil.toString(buf));
+        assertEquals("EFCDAB9078563412", HexUtil.toString(buf));
         DataUtil.fromLong(0x12345678cdefL, buf, 0, 8);
-        assertEquals("000012345678CDEF", HexUtil.toString(buf));
+        assertEquals("EFCD785634120000", HexUtil.toString(buf));
         Arrays.fill(buf, (byte)0);
         DataUtil.fromLong(0x1234567890abcdefL, 1, buf, 0, 7);
-        assertEquals("34567890ABCDEF00", HexUtil.toString(buf));
+        assertEquals("CDAB907856341200", HexUtil.toString(buf));
     }
     @Test
     public void testGet()
     {
-        assertEquals(0x12, DataUtil.get(0x1234567890abcdefL, 0));
-        assertEquals(0x34, DataUtil.get(0x1234567890abcdefL, 1));
+        assertEquals(0xEF, DataUtil.get(0x1234567890abcdefL, 0));
+        assertEquals(0xCD, DataUtil.get(0x1234567890abcdefL, 1));
         assertEquals(255, DataUtil.get(0xffffffffffffffffL, 0));
     }    
+    //@Test
+    public void testRegression()
+    {
+        Random r = new Random(1234567L);
+        byte[] buf = new byte[8];
+        for (int ii=0;ii<10000;ii++)
+        {
+            long nextLong = r.nextLong();
+            String hexString = Long.toHexString(nextLong);
+            if (hexString.length()==8)
+            {
+                long asLong = DataUtil.asLong(hexString);
+                DataUtil.fromLong(asLong, buf, 0, 8);
+                String toString = HexUtil.toString(buf);
+                int c = hexString.compareToIgnoreCase(toString);
+                assertTrue(hexString.compareToIgnoreCase(toString)==0);
+            }
+        }
+    }
 }

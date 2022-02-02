@@ -18,10 +18,14 @@ package org.vesalainen.can;
 
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
 
@@ -29,7 +33,7 @@ import org.vesalainen.can.dbc.SignalClass;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PrintCompiler implements SignalCompiler
+public class PrintCompiler implements SignalCompiler<System>
 {
     
     @Override
@@ -39,29 +43,32 @@ public class PrintCompiler implements SignalCompiler
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
     {
-        return () -> System.err.print(" " + sc.getName() + " = " + supplier.getAsInt() + " " + sc.getUnit());
+        return (ctx,buf) ->
+                {
+                    System.err.print(" " + sc.getName() + " = " + toIntFunction.applyAsInt(buf) + " " + sc.getUnit());
+                };
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
     {
-        return () -> System.err.print(" " + sc.getName() + " = " + supplier.getAsLong() + " " + sc.getUnit());
+        return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toLongFunction.applyAsLong(buf) + " " + sc.getUnit());
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
     {
-        return () -> System.err.print(" " + sc.getName() + " = " + supplier.getAsDouble() + " " + sc.getUnit());
+        return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toDoubleFunction.applyAsDouble(buf) + " " + sc.getUnit());
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
     {
-        return () ->
+        return (ctx,buf) ->
         {
-            int ii = supplier.getAsInt();
+            int ii = toIntFunction.applyAsInt(buf);
             String ss = map.apply(ii);
             ss = ss == null ? ii + "???" : ss;
             System.err.print(" " + sc.getName() + " = " + ss);
@@ -69,13 +76,14 @@ public class PrintCompiler implements SignalCompiler
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringSupplier)
     {
-        return () ->
+        return (ctx,buf) ->
         {
-            System.err.print(" " + sc.getName() + " = '" + supplier.get() + "'");
+            System.err.print(" " + sc.getName() + " = '" + stringSupplier.apply(buf) + "'");
         };
     }
+
 
     @Override
     public Consumer<Throwable> compileEnd(MessageClass mc)
@@ -84,15 +92,15 @@ public class PrintCompiler implements SignalCompiler
     }
 
     @Override
-    public Runnable compileBeginRepeat(MessageClass mc)
+    public ArrayAction<System> compileBeginRepeat(MessageClass mc)
     {
-        return () -> System.err.print("\n(");
+        return (ctx, buf) -> System.err.print("\n(");
     }
 
     @Override
-    public Runnable compileEndRepeat(MessageClass mc)
+    public ArrayAction<System> compileEndRepeat(MessageClass mc)
     {
-        return () -> System.err.print(")");
+        return (ctx, buf) -> System.err.print(")");
     }
     
 }

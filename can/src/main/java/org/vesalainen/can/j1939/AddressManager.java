@@ -82,7 +82,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private int ownSA = 254;
     private byte[] ownName;
     private MessageClass productInformationClass;
-    private LongSupplier numericName;
     private long ownNumericName;
 
     public AddressManager()
@@ -130,7 +129,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     public void frame(long time, int canId, int dataLength, long data)
     {
         this.canId = canId;
-        info("%s", PGN.toString(canId));
+        finest("%s", PGN.toString(canId));
         DataUtil.fromLong(data, this.data, 0, dataLength);
         this.pf = PGN.pduFormat(canId);
         this.ps = PGN.pduSpecific(canId);
@@ -152,7 +151,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void compileAddressClaimed(MessageClass mc)
     {
         ownName = new byte[8];
-        numericName = ArrayFuncs.getLongSupplier(0, 64, false, false, data);
+        /*
         mc.forEach((s)->
         {
             switch (s.getName())
@@ -200,6 +199,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
         });
         ownNumericName = ArrayFuncs.getLongSupplier(0, 64, false, false, ownName).getAsLong();
+*/
     }
 
     private void compileRequestForAddressClaimed(MessageClass mc)
@@ -209,7 +209,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             switch (s.getName())
             {
                 case "Pgn_Being_Requested":
-                    pgnBeingRequested = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
+                    //pgnBeingRequested = ArrayFuncs.getIntSupplier(s.getStartBit(), s.getSize(), false, false, data);
                     break;
                 default:
                     throw new UnsupportedOperationException(s.getName()+" not supported");
@@ -242,7 +242,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         if (sa < 254 && sa == ownSA)    // conflict
         {
             Name n = new Name(data);
-            if (Long.compareUnsigned(ownNumericName, n.numeric) < 0)
+            if (Long.compareUnsigned(ownNumericName, n.name) < 0)
             {
                 info("minor name claimed %d", sa);
                 executor.submit(()->sendAddressClaimed(ownSA));
@@ -346,10 +346,9 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
     
-    public class Name extends AbstractDynamicMBean implements Frame, SignalCompiler
+    public class Name extends AbstractDynamicMBean implements Frame, SignalCompiler<Object>
     {
         private FastMessage fast;
-        private long numeric;
         private int id;
         private int manufacturer;
         private int instanceLower;
@@ -376,7 +375,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
         {
             super("Name");
             this.name = name;
-            this.numeric = numericName.getAsLong();
             this.id = uniqueNumber.getAsInt();
             this.manufacturer = manufacturerCode.getAsInt();
             this.instanceLower = deviceInstanceLower.getAsInt();
@@ -420,7 +418,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
         }
 
-        @Override
+        //@Override
         public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier intSupplier)
         {
             switch (sc.getName())
@@ -450,7 +448,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
         }
 
-        @Override
+        //@Override
         public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss)
         {
             switch (sc.getName())
@@ -561,9 +559,9 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 return -1;
             }
         }
-        public long getNumeric()
+        public long getName()
         {
-            return numeric;
+            return name;
         }
 
         public int getId()

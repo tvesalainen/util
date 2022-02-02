@@ -53,12 +53,6 @@ public class SingleMessage extends AbstractMessage
     }
 
     @Override
-    public int getRepeatCount()
-    {
-        return (getCurrentBits() - repeatStart) / repeatSize;
-    }
-
-    @Override
     protected ObjectName getObjectName() throws MalformedObjectNameException
     {
         return new ObjectName("org.vesalainen.can:type=std,canId="+canId);

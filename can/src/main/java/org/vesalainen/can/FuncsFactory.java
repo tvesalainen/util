@@ -16,11 +16,16 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 /**
  *
@@ -28,14 +33,13 @@ import java.util.function.Supplier;
  */
 public interface FuncsFactory
 {
-    Supplier<byte[]> rawSupplier();
     LongSupplier millisSupplier();
-    IntSupplier intSupplier();
-    LongSupplier longSupplier();
-    DoubleSupplier doubleSupplier();
+    ToIntFunction<byte[]> toIntFunction();
+    ToLongFunction<byte[]> toLongFunction();
+    ToDoubleFunction<byte[]> toDoubleFunction();
     IntFunction<String> lookupMap();
-    Supplier<String> stringSupplier();
-    Runnable getIntWriter(IntSupplier intSupplier);
-    Runnable getLongWriter(LongSupplier longSupplier);
-    Runnable getStringWriter(Supplier<String> stringSupplier);
+    Function<byte[],String> toStringFunction();
+    Consumer<byte[]> getIntWriter(IntSupplier intSupplier);
+    Consumer<byte[]> getLongWriter(LongSupplier longSupplier);
+    Consumer<byte[]> getStringWriter(Supplier<String> stringSupplier);
 }

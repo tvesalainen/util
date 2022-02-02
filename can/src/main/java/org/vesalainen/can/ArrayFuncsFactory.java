@@ -17,11 +17,16 @@
 package org.vesalainen.can;
 
 import java.nio.ByteOrder;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.dbc.ValueType;
@@ -40,61 +45,58 @@ public class ArrayFuncsFactory implements FuncsFactory
     
     private MessageClass mc;
     private SignalClass sc;
-    private byte[] buf;
-    private LongSupplier millisSupplier;
     private SignalCompiler compiler;
     private int off;
-    private IntSupplier limitSupplier;
 
     private ArrayFuncsFactory()
     {
     }
 
-    public static FuncsFactory getInstance(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off, LongSupplier millisSupplier, IntSupplier limitSupplier, byte[] buf)
+    public static FuncsFactory getInstance(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off)
     {
         ArrayFuncsFactory factory = FACTORY.get();
-        factory.set(mc, sc, compiler, off, millisSupplier, limitSupplier, buf);
+        factory.set(mc, sc, compiler, off);
         return factory;
     }
-    private void set(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off, LongSupplier millisSupplier, IntSupplier limitSupplier, byte[] buf)
+    private void set(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off)
     {
         this.mc = mc;
         this.sc = sc;
         this.compiler = compiler;
         this.off = off;
-        this.millisSupplier = millisSupplier;
-        this.limitSupplier = limitSupplier;
-        this.buf = buf;
-    }
-
-    @Override
-    public Supplier<byte[]> rawSupplier()
-    {
-        return () -> buf;
     }
 
     @Override
     public LongSupplier millisSupplier()
     {
-        return millisSupplier;
+        return compiler.millisSupplier();
     }
 
     @Override
-    public IntSupplier intSupplier()
+    public ToIntFunction<byte[]> toIntFunction()
     {
-        return compiler.compileIntBoundCheck(mc, sc, compiler.factorInt(mc, sc, sc.getFactor(), sc.getOffset(), ArrayFuncs.getIntSupplier(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, buf)));
+        return compiler.compileIntBoundCheck(mc, sc, 
+                                compiler.factorInt(mc, sc, sc.getFactor(), sc.getOffset(), 
+                                    ArrayFuncs.getIntFunction(sc, off)
+                            ));
     }
 
     @Override
-    public LongSupplier longSupplier()
+    public ToLongFunction<byte[]> toLongFunction()
     {
-        return compiler.compileLongBoundCheck(mc, sc, compiler.factorLong(mc, sc, sc.getFactor(), sc.getOffset(), ArrayFuncs.getLongSupplier(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, buf)));
+        return compiler.compileLongBoundCheck(mc, sc, 
+                                compiler.factorLong(mc, sc, sc.getFactor(), sc.getOffset(), 
+                                    ArrayFuncs.getLongFunction(sc, off)
+                            ));
     }
 
     @Override
-    public DoubleSupplier doubleSupplier()
+    public ToDoubleFunction<byte[]> toDoubleFunction()
     {
-        return compiler.compileDoubleBoundCheck(mc, sc, compiler.factorDouble(mc, sc, sc.getFactor(), sc.getOffset(), ArrayFuncs.getLongSupplier(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, buf)));
+        return compiler.compileDoubleBoundCheck(mc, sc, 
+                                compiler.factorDouble(mc, sc, sc.getFactor(), sc.getOffset(),
+                                    ArrayFuncs.getLongFunction(sc, off)
+                            ));
     }
 
     @Override
@@ -104,46 +106,46 @@ public class ArrayFuncsFactory implements FuncsFactory
     }
 
     @Override
-    public Supplier<String> stringSupplier()
+    public Function<byte[],String> toStringFunction()
     {
         switch (sc.getSignalType())
         {
             case ASCIIZ:
-                return ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit() + off) / 8, sc.getSize() / 8, buf);
+                return ArrayFuncs.getZeroTerminatingStringFunction((sc.getStartBit() + off) / 8, sc.getSize() / 8);
             case AISSTRING:
-                return ArrayFuncs.getAisStringSupplier((sc.getStartBit() + off) / 8, sc.getSize() / 8, buf, limitSupplier);
+                return ArrayFuncs.getAisStringFunction((sc.getStartBit() + off) / 8, sc.getSize() / 8, compiler.currentBytesSupplier());
             case AISSTRING2:
-                return ArrayFuncs.getAisStringSupplier2((sc.getStartBit() + off) / 8, buf);
+                return ArrayFuncs.getAisStringFunction2((sc.getStartBit() + off) / 8);
             default:
                 throw new UnsupportedOperationException(sc.getSignalType() + " not supported");
         }
     }
 
     @Override
-    public Runnable getStringWriter(Supplier<String> stringSupplier)
+    public Consumer<byte[]> getStringWriter(Supplier<String> stringSupplier)
     {
         switch (sc.getSignalType())
         {
             case ASCIIZ:
-                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)0, stringSupplier, buf);
+                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)0, stringSupplier);
             case AISSTRING:
             case AISSTRING2:
-                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)'@', stringSupplier, buf);
+                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)'@', stringSupplier);
             default:
                 throw new UnsupportedOperationException(sc.getSignalType() + " not supported");
         }
     }
 
     @Override
-    public Runnable getIntWriter(IntSupplier intSupplier)
+    public Consumer<byte[]> getIntWriter(IntSupplier intSupplier)
     {
-        return ArrayFuncs.getIntWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, intSupplier, buf);
+        return ArrayFuncs.getIntWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, intSupplier);
     }
 
     @Override
-    public Runnable getLongWriter(LongSupplier longSupplier)
+    public Consumer<byte[]> getLongWriter(LongSupplier longSupplier)
     {
-        return ArrayFuncs.getLongWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, longSupplier, buf);
+        return ArrayFuncs.getLongWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, longSupplier);
     }
     
 }

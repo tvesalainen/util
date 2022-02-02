@@ -16,29 +16,38 @@
  */
 package org.vesalainen.can;
 
-import static java.nio.ByteOrder.BIG_ENDIAN;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.function.LongToDoubleFunction;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
-import static org.vesalainen.can.dbc.ValueType.SIGNED;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface SignalCompiler
+public interface SignalCompiler<T>
 {
+    default T target()
+    {
+        return null;
+    }
     default boolean needCompilation(int canId)
     {
         return true;
     }
-    default Runnable compile(MessageClass mc, SignalClass sc, int off, byte[] buf, IntSupplier limitSupplier, FuncsFactory factory) 
+    default Runnable compile(MessageClass mc, SignalClass sc, int off, byte[] buf) 
+    {
+        ArrayAction<T> arrayAction = compile(mc, sc, off);
+        return ()->arrayAction.run((T) this, buf);
+    }
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, int off) 
     {
             double factor = sc.getFactor();
             double offset = sc.getOffset();
@@ -48,115 +57,126 @@ public interface SignalCompiler
                     return compile(mc, sc, 
                             compileIntBoundCheck(mc, sc, 
                                 factorInt(mc, sc, factor, offset, 
-                                    ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                                    ArrayFuncs.getIntFunction(sc, off)
                             )));
                 case LONG:
                     return compile(mc, sc, 
                             compileLongBoundCheck(mc, sc, 
                                 factorLong(mc, sc, factor, offset, 
-                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                                    ArrayFuncs.getLongFunction(sc, off)
                             )));
                 case DOUBLE:
                     return compile(mc, sc, 
                             compileDoubleBoundCheck(mc, sc, 
                                 factorDouble(mc, sc, factor, offset, 
-                                    ArrayFuncs.getLongSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf)
+                                    ArrayFuncs.getLongFunction(sc, off)
                             )));
                 case LOOKUP:
-                    IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
                     IntFunction<String> f = sc.getMapper();
                     if (f == null)
                     {
-                        return compile(mc, sc, is);
+                        return (ctx, buf)->compile(mc, sc, 
+                                ArrayFuncs.getIntFunction(sc, off)
+                        );
                     }
-                    return compile(mc, sc, is, f);
+                    return compile(mc, sc, 
+                            ArrayFuncs.getIntFunction(sc, off), 
+                            f);
 
                 case BINARY:
-                    return compileBinary(mc, sc, buf, sc.getStartBit()+off, sc.getSize());
+                    return compileBinary(mc, sc);
                 case ASCIIZ:
                     return compile(mc, sc, 
-                            ArrayFuncs.getZeroTerminatingStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf)
+                            ArrayFuncs.getZeroTerminatingStringFunction(sc, off)
                     );
                 case AISSTRING:
                     return compile(mc, sc, 
-                            ArrayFuncs.getAisStringSupplier((sc.getStartBit()+off)/8, sc.getSize()/8, buf, limitSupplier)
+                            ArrayFuncs.getAisStringFunction(sc, off, currentBytesSupplier())
                     );
                 case AISSTRING2:
                     return compile(mc, sc, 
-                            ArrayFuncs.getAisStringSupplier2((sc.getStartBit()+off)/8, buf)
+                            ArrayFuncs.getAisStringFunction2(sc, off)
                     );
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }
     };
-    default Runnable compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
+    default ArrayAction<T> compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
     default Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier) {return null;};
-    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier intSupplier) {return null;};
-    default IntSupplier compileIntBoundCheck(MessageClass mc, SignalClass sc, IntSupplier intSupplier) {return intSupplier;};
-    default Runnable compile(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return null;};
-    default LongSupplier compileLongBoundCheck(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return longSupplier;};
-    default Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier doubleSupplier) {return null;};
-    default DoubleSupplier compileDoubleBoundCheck(MessageClass mc, SignalClass sc, DoubleSupplier doubleSupplier) {return doubleSupplier;};
-    default LongToDoubleFunction compileDoubleBoundCheck(MessageClass mc, SignalClass sc, LongSupplier longSupplier) {return null;};
-    default Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map) {return null;};
-    default Runnable compileBinary(MessageClass mc, SignalClass sc, byte[] buf, int offset, int length) {return null;}
-    default Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss) {return null;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction) {return null;};
+    default ToIntFunction<byte[]> compileIntBoundCheck(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction) {return toIntFunction;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return null;};
+    default ToLongFunction<byte[]> compileLongBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return toLongFunction;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction) {return null;};
+    default ToDoubleFunction<byte[]> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction) {return toDoubleFunction;};
+    default ToDoubleFunction<byte[]> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return null;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map) {return null;};
+    default ArrayAction<T> compileBinary(MessageClass mc, SignalClass sc) {return null;}
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, Function<byte[],String> stringFunction) {return null;};
     default Consumer<Throwable> compileEnd(MessageClass mc) {return null;};
-    default Runnable compileBeginRepeat(MessageClass mc) {return null;};
-    default Runnable compileEndRepeat(MessageClass mc) {return null;};
+    default ArrayAction<T> compileBeginRepeat(MessageClass mc) {return null;};
+    default ArrayAction<T> compileEndRepeat(MessageClass mc) {return null;};
+    default LongSupplier millisSupplier()
+    {
+        throw new UnsupportedOperationException("not supported yet");
+    }
+    default IntSupplier currentBytesSupplier()
+    {
+        throw new UnsupportedOperationException("not supported yet");
+    }
 
     default boolean isFactored(double factor, double offset)
     {
         return factor != 1.0 || offset != 0.0;
     }
 
-    default IntSupplier factorInt(MessageClass mc, SignalClass sc, double factor, double offset, IntSupplier intSupplier)
+    default ToIntFunction<byte[]> factorInt(MessageClass mc, SignalClass sc, double factor, double offset, ToIntFunction<byte[]> toIntFunction)
     {
         if (isFactored(factor, offset))
         {
-            return ()->(int) (factor*intSupplier.getAsInt()+offset);
+            return (buf)->(int) (factor*toIntFunction.applyAsInt(buf)+offset);
         }
         else
         {
-            return intSupplier;
+            return toIntFunction;
         }
     }
 
-    default LongSupplier factorLong(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+    default ToLongFunction<byte[]> factorLong(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<byte[]> toLongFunction)
     {
         if (isFactored(factor, offset))
         {
-            return ()->(long) (factor*longSupplier.getAsLong()+offset);
+            return (buf)->(long) (factor*toLongFunction.applyAsLong(buf)+offset);
         }
         else
         {
-            return longSupplier;
+            return toLongFunction;
         }
     }
 
-    default DoubleSupplier factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, LongSupplier longSupplier)
+    default ToDoubleFunction<byte[]> factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<byte[]> toLongFunction)
     {
-        LongToDoubleFunction check = compileDoubleBoundCheck(mc, sc, longSupplier);
+        ToDoubleFunction<byte[]> check = compileDoubleBoundCheck(mc, sc, toLongFunction);
         if (check != null)
         {
             if (isFactored(factor, offset))
             {
-                return ()-> (factor*check.applyAsDouble(longSupplier.getAsLong())+offset);
+                return (buf)-> (factor*check.applyAsDouble(buf)+offset);
             }
             else
             {
-                return ()-> check.applyAsDouble(longSupplier.getAsLong());
+                return (buf)-> check.applyAsDouble(buf);
             }
         }
         else
         {
             if (isFactored(factor, offset))
             {
-                return ()-> (factor*longSupplier.getAsLong()+offset);
+                return (buf)-> (factor*toLongFunction.applyAsLong(buf)+offset);
             }
             else
             {
-                return ()->longSupplier.getAsLong();
+                return (buf)->toLongFunction.applyAsLong(buf);
             }
         }
     }

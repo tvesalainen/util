@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2022 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,17 +20,7 @@ package org.vesalainen.can;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface CanMXBean
+public interface ArrayAction<T>
 {
-    int getCanId();
-    String getComment();
-    int getPgn();
-    String getPgnName();
-    int getSource();
-    int getPriority();
-    int getUpdateCount();
-    int getExecuteCount();
-    float getFrequency();
-    int getCurrentBytes();
-    int getMaxBytes();
+    void run(T ctx, byte[] buf);
 }

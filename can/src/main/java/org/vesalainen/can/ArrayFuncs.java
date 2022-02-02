@@ -17,9 +17,16 @@
 package org.vesalainen.can;
 
 import static java.lang.Integer.min;
+import static java.nio.ByteOrder.BIG_ENDIAN;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
+import org.vesalainen.can.dbc.SignalClass;
+import static org.vesalainen.can.dbc.ValueType.SIGNED;
 import org.vesalainen.util.CharSequences;
 
 /**
@@ -31,12 +38,11 @@ public final class ArrayFuncs
     /**
      * Returns String supplier for AIS @ terminated string.
      * @param offset
-     * @param buf
      * @return 
      */
-    public static final Supplier<String> getAisStringSupplier2(int offset, byte[] buf)
+    public static final Function<byte[],String> getAisStringFunction2(int offset)
     {
-        return ()->
+        return (buf)->
         {
             int len = buf[offset] & 0xff; // max length
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, len);
@@ -55,14 +61,13 @@ public final class ArrayFuncs
      * Returns String supplier for AIS @ terminated string.
      * @param offset bytes
      * @param length bytes
-     * @param buf
      * @param limitSupplier Message length
      * @return 
      */
-    public static final Supplier<String> getAisStringSupplier(int offset, int length, byte[] buf, IntSupplier limitSupplier)
+    public static final Function<byte[],String> getAisStringFunction(int offset, int length, IntSupplier limitSupplier)
     {
-        checkBitsString(offset, length, buf);
-        return ()->
+        checkBitsString(offset, length);
+        return (buf)->
         {
             int limit = limitSupplier.getAsInt();
             int len = min(length, limit-offset);
@@ -82,13 +87,12 @@ public final class ArrayFuncs
      * 
      * @param offset    in bytes
      * @param length    in bytes
-     * @param buf
      * @return 
      */
-    public static final Supplier<String> getZeroTerminatingStringSupplier(int offset, int length, byte... buf)
+    public static final Function<byte[],String> getZeroTerminatingStringFunction(int offset, int length)
     {
-        checkBitsString(offset, length, buf);
-        return ()->
+        checkBitsString(offset, length);
+        return (buf)->
         {
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
             int idx = CharSequences.indexOf(seq, (cc)->cc<' '|| cc>127);
@@ -102,10 +106,10 @@ public final class ArrayFuncs
             }
         };
     }
-    public static final Runnable getStringWriter(int offset, int length, byte ender, Supplier<String> stringSupplier, byte... buf)
+    public static final Consumer<byte[]> getStringWriter(int offset, int length, byte ender, Supplier<String> stringSupplier)
     {
-        checkBitsString(offset, length, buf);
-        return ()->
+        checkBitsString(offset, length);
+        return (buf)->
         {
             String string = stringSupplier.get();
             int len = min(length, string.length())-1;
@@ -116,42 +120,42 @@ public final class ArrayFuncs
             buf[offset+len] = ender;
         };
     }
-    public static final Runnable getIntWriter(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i, byte... buf)
+    public static final Consumer<byte[]> getIntWriter(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i)
     {
-        checkBitsInt(offset, length, buf);
-        Runnable r;
+        checkBitsInt(offset, length);
+        Consumer<byte[]> r;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            r = getIntWriter(arr, i, buf);
+            r = getIntWriter(arr, i);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            r = getIntWriter(arr, i, buf);
+            r = getIntWriter(arr, i);
         }
         return r;
     }
-    public static final Runnable getLongWriter(int offset, int length, boolean bigEndian, boolean signed, LongSupplier l, byte... buf)
+    public static final Consumer<byte[]> getLongWriter(int offset, int length, boolean bigEndian, boolean signed, LongSupplier l)
     {
-        checkBitsLong(offset, length, buf);
-        Runnable r;
+        checkBitsLong(offset, length);
+        Consumer<byte[]> r;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            r = getLongWriter(arr, l, buf);
+            r = getLongWriter(arr, l);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            r = getLongWriter(arr, l, buf);
+            r = getLongWriter(arr, l);
         }
         return r;
     }
-    public static final Runnable getIntWriter(byte[] arr, IntSupplier i, byte... buf)
+    public static final Consumer<byte[]> getIntWriter(byte[] arr, IntSupplier i)
     {
         int len = arr.length/3;
-        return ()->
+        return (buf)->
         {
             int v = i.getAsInt();
             for (int ii=0;ii<len;ii++)
@@ -171,10 +175,10 @@ public final class ArrayFuncs
             }
         };
     }
-    public static final Runnable getLongWriter(byte[] arr, LongSupplier l, byte... buf)
+    public static final Consumer<byte[]> getLongWriter(byte[] arr, LongSupplier l)
     {
         int len = arr.length/3;
-        return ()->
+        return (buf)->
         {
             long v = l.getAsLong();
             for (int ii=0;ii<len;ii++)
@@ -194,6 +198,34 @@ public final class ArrayFuncs
             }
         };
     }
+    public static final ToIntFunction<byte[]> getIntFunction(SignalClass sc, int off)
+    {
+        return getIntFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
+    }
+    public static final ToLongFunction<byte[]> getLongFunction(SignalClass sc, int off)
+    {
+        return getLongFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
+    }
+    public static final Function<byte[],String> getZeroTerminatingStringFunction(SignalClass sc, int off)
+    {
+        return ArrayFuncs.getZeroTerminatingStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8);
+    }
+    public static final Function<byte[],String> getAisStringFunction(SignalClass sc, int off, IntSupplier currentBytesSupplier, Supplier<byte[]> arraySupplier)
+    {
+        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8, currentBytesSupplier);
+    }
+    public static final Function<byte[],String> getAisStringFunction2(SignalClass sc, int off)
+    {
+        return ArrayFuncs.getAisStringFunction2((sc.getStartBit()+off)/8);
+    }
+    public static final ToIntFunction<byte[]> getIntSupplier(SignalClass sc, int off, Supplier<byte[]> arraySupplier)
+    {
+        return getIntFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
+    }
+    public static final Function<byte[],String> getAisStringFunction(SignalClass sc, int off, IntSupplier currentBytesSupplier)
+    {
+        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8, currentBytesSupplier);
+    }
     /**
      * Returns IntSupplier which constructs long from byte array
      * @param offset    In bits
@@ -203,25 +235,25 @@ public final class ArrayFuncs
      * @param buf
      * @return 
      */
-    public static final IntSupplier getIntSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    public static final ToIntFunction<byte[]> getIntFunction(int offset, int length, boolean bigEndian, boolean signed)
     {
-        checkBitsInt(offset, length, buf);
-        IntSupplier is;
+        checkBitsInt(offset, length);
+        ToIntFunction<byte[]> is;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            is = getIntSupplier(arr, buf);
+            is = getIntFunction(arr);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            is = getIntSupplier(arr, buf);
+            is = getIntFunction(arr);
         }
         if (signed)
         {
             int shf = 32 - length;
-            IntSupplier is2 = is;
-            is = ()->(is2.getAsInt()<<shf)>>shf;
+            ToIntFunction<byte[]> is2 = is;
+            is = (buf)->(is2.applyAsInt(buf)<<shf)>>shf;
         }
         return is;
     }
@@ -234,32 +266,32 @@ public final class ArrayFuncs
      * @param buf
      * @return 
      */
-    public static final LongSupplier getLongSupplier(int offset, int length, boolean bigEndian, boolean signed, byte... buf)
+    public static final ToLongFunction<byte[]> getLongFunction(int offset, int length, boolean bigEndian, boolean signed)
     {
-        checkBitsLong(offset, length, buf);
-        LongSupplier ls;
+        checkBitsLong(offset, length);
+        ToLongFunction<byte[]>  ls;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            ls = getLongSupplier(arr, buf);
+            ls = getLongFunction(arr);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            ls = getLongSupplier(arr, buf);
+            ls = getLongFunction(arr);
         }
         if (signed)
         {
             int shf = 64 - length;
-            LongSupplier ls2 = ls;
-            ls = ()->(ls2.getAsLong()<<shf)>>shf;
+            ToLongFunction<byte[]>  ls2 = ls;
+            ls = (buf)->(ls2.applyAsLong(buf)<<shf)>>shf;
         }
         return ls;
     }
-    public static final IntSupplier getIntSupplier(byte[] arr, byte... buf)
+    private static final ToIntFunction<byte[]> getIntFunction(byte[] arr)
     {
         int len = arr.length/3;
-        return ()->
+        return (buf)->
         {
             int res = 0;
             for (int ii=0;ii<len;ii++)
@@ -277,10 +309,10 @@ public final class ArrayFuncs
             return res;
         };
     }
-    public static final LongSupplier getLongSupplier(byte[] arr, byte... buf)
+    private static final ToLongFunction<byte[]> getLongFunction(byte[] arr)
     {
         int len = arr.length/3;
-        return ()->
+        return (buf)->
         {
             long res = 0;
             for (int ii=0;ii<len;ii++)
@@ -298,7 +330,7 @@ public final class ArrayFuncs
             return res;
         };
     }
-    static byte[] createBigEndian(int offset, int length)
+    private static byte[] createBigEndian(int offset, int length)
     {
         byte[] arr = new byte[dim(offset, length)*3];
         int idx = 0;
@@ -321,7 +353,7 @@ public final class ArrayFuncs
         }
         return arr;
     }
-    static byte[] createLittleEndian(int offset, int length)
+    private static byte[] createLittleEndian(int offset, int length)
     {
         byte[] arr = new byte[dim(offset, length)*3];
         int idx = 0;
@@ -344,7 +376,7 @@ public final class ArrayFuncs
         }
         return arr;
     }
-    static int dim(int offset, int length)
+    private static int dim(int offset, int length)
     {
         int dim = 0;
         int off = offset;
@@ -359,7 +391,7 @@ public final class ArrayFuncs
         }
         return dim;
     }
-    private static void checkBitsString(int offset, int length, byte[] buf)
+    private static void checkBitsString(int offset, int length)
     {
         if (offset < 0) 
         {
@@ -369,12 +401,8 @@ public final class ArrayFuncs
         {
             throw new IllegalArgumentException("negative length");
         }
-        if ((offset + length) > buf.length) 
-        {
-            throw new IllegalArgumentException("buffer overflow");
-        }
     }
-    private static void checkBitsInt(int offset, int length, byte[] buf)
+    private static void checkBitsInt(int offset, int length)
     {
         if (offset < 0) 
         {
@@ -388,12 +416,8 @@ public final class ArrayFuncs
         {
             throw new IllegalArgumentException("length > 32");
         }
-        if ((offset + length) / 8 > buf.length) 
-        {
-            throw new IllegalArgumentException("buffer overflow");
-        }
     }
-    private static void checkBitsLong(int offset, int length, byte[] buf)
+    private static void checkBitsLong(int offset, int length)
     {
         if (offset < 0) 
         {
@@ -406,10 +430,6 @@ public final class ArrayFuncs
         if (length > 64) 
         {
             throw new IllegalArgumentException("length > 64");
-        }
-        if ((offset + length) / 8 > buf.length) 
-        {
-            throw new IllegalArgumentException("buffer overflow");
         }
     }
     

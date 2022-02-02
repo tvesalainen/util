@@ -43,7 +43,7 @@ public final class DataUtil
         for (int ii=0;ii<len;ii++)
         {
             long h = fromHex(data.charAt(ii));
-            res |= h<<(4*(15-ii));
+            res |= h<<(4*(ii+1-2*(ii%2)));
             
         }
         return res;
@@ -56,13 +56,13 @@ public final class DataUtil
     {
         for (int ii=0;ii<len;ii++)
         {
-            int sht = (7-(ii+sof))*8;
+            int sht = (ii+sof)*8;
             buf[ii+off] = (byte) ((v & (0xffL<<sht))>>>sht);
         }
     }
     public static int get(long v, int index)
     {
-        int sht = (7-index)*8;
+        int sht = index*8;
         return (int) (((v & (0xffL<<sht))>>>sht) & 0xff);
     }
     private static int fromHex(char cc)

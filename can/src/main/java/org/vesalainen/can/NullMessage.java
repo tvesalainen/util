@@ -46,7 +46,7 @@ public class NullMessage extends SingleMessage
     }
 
     @Override
-    protected Action compileSignals(SignalCompiler compiler)
+    protected Transaction compileSignals(SignalCompiler compiler)
     {
         return null;
     }

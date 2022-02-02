@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.io.AppendablePrinter;
 import org.vesalainen.util.IntRange;
 import org.vesalainen.util.LinkedMap;
@@ -309,7 +310,26 @@ public class DBCFile extends DBCBase
     {
         valueTables.put(name, valueDescriptions);
     }
-
+    /**
+     * Returns MessageClass for pgn
+     * @param pgn
+     * @return 
+     * @see org.vesalainen.can.j1939.PGN#canId(int) 
+     */
+    public MessageClass getMessageForPgn(int pgn)
+    {
+        return getMessage(PGN.canId(pgn));
+    }
+    /**
+     * Returns MessageClass
+     * @param id As in DBC file
+     * @return 
+     */
+    public MessageClass getMessage(int id)
+    {
+        return messages.get(id);
+    }
+    
     public void forEach(Consumer<? super MessageClass> action)
     {
         messages.values().forEach(action);

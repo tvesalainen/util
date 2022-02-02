@@ -18,11 +18,11 @@ package org.vesalainen.can;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.j1939.PGN;
@@ -37,7 +37,7 @@ import org.vesalainen.util.logging.JavaLogging;
 /**
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements SignalCompiler
+public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements SignalCompiler<AnnotatedPropertyStore>
 {
     protected final AnnotatedPropertyStore store;
     protected final Map<Integer,Msg> canIdMap = new HashMap<>();
@@ -89,7 +89,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -102,13 +102,13 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
             finer("compiled %s -> %s int", name, target);
-            return ()->setter.set(supplier.getAsInt());
+            return (ctx, buf)->setter.set(toIntFunction.applyAsInt(buf));
         }
         return null;
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -121,13 +121,13 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
             finer("compiled %s -> %s long", name, target);
-            return ()->setter.set(supplier.getAsLong());
+            return (ctx, buf)->setter.set(toLongFunction.applyAsLong(buf));
         }
         return null;
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -143,7 +143,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
                     throw new IllegalArgumentException(target+" no setter");
                 }
                 finer("compiled %s -> %s double", name, target);
-                return ()->setter.set(supplier.getAsDouble());
+                return (ctx, buf)->setter.set(toDoubleFunction.applyAsDouble(buf));
             }
             else
             {
@@ -155,7 +155,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
                         throw new IllegalArgumentException(target+" no setter");
                     }
                     finer("compiled %s -> %s double/float", name, target);
-                    return ()->setter.set(supplier.getAsDouble());
+                    return (ctx, buf)->setter.set(toDoubleFunction.applyAsDouble(buf));
                 }
                 else
                 {
@@ -167,7 +167,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> supplier)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -180,15 +180,15 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
                 throw new IllegalArgumentException(target+" no setter or wrong type");
             }
             finer("compiled %s -> %s String", name, target);
-            return ()->setter.set(supplier.get());
+            return (ctx, buf)->setter.set(stringFunction.apply(buf));
         }
         return null;
     }
 
     @Override
-    public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
     {
-        return compile(mc, sc, supplier);
+        return SignalCompiler.super.compile(mc, sc, toIntFunction);
     }
 
     protected static class Msg

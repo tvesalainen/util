@@ -17,21 +17,15 @@
 package org.vesalainen.can;
 
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Array;
-import static java.nio.ByteOrder.BIG_ENDIAN;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
-import static java.util.logging.Level.SEVERE;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 import static java.util.logging.Level.WARNING;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.ListenerNotFoundException;
@@ -46,17 +40,11 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import org.vesalainen.can.dbc.MessageClass;
-import org.vesalainen.can.dbc.MultiplexerIndicator;
 import org.vesalainen.can.dbc.SignalClass;
-import static org.vesalainen.can.dbc.ValueType.SIGNED;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.n2k.N2KPgns;
 import org.vesalainen.management.SimpleNotificationEmitter;
-import org.vesalainen.util.HashMapList;
 import org.vesalainen.util.HexUtil;
-import org.vesalainen.util.IndexMap;
-import org.vesalainen.util.IntRange;
-import org.vesalainen.util.MapList;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
@@ -71,11 +59,8 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     protected final int canId;
     protected byte[] buf;
     protected String name;
-    protected Action action;
-    protected Action jmxAction;
-    protected int maxRepeatCount;
-    protected int repeatSize;
-    protected int repeatStart;
+    protected Transaction action;
+    protected Transaction jmxAction;
     private int currentBytes;
     protected SimpleNotificationEmitter emitter;
     protected ObjectName objectName;
@@ -160,7 +145,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         jmxAction = compileSignals(new JmxCompiler());
         if (action == null)
         {
-            action = new Action();
+            action = new Transaction();
         }
         info("attach JMX %s", name);
     }
@@ -243,18 +228,6 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     }
 
     @Override
-    public int getRepeatSize()
-    {
-        return repeatSize;
-    }
-
-    @Override
-    public int getRepeatStart()
-    {
-        return repeatStart;
-    }
-
-    @Override
     public int getCurrentBytes()
     {
         return currentBytes;
@@ -315,334 +288,21 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
             action = compileSignals(compiler);
         }
     }
-    protected Action compileSignals(SignalCompiler compiler)
+    protected <T> Transaction compileSignals(SignalCompiler<T> compiler)
     {
         Objects.requireNonNull(messageClass, "MessageClass null");
-        IntRange repeatRange = messageClass.getRepeatRange();
-        ActionBuilder actionBuilder = new ActionBuilder(messageClass, compiler, repeatRange);
+        ActionBuilder<T> actionBuilder = new ActionBuilder<>(messageClass, compiler);
         Runnable begin = compiler.compileBegin(messageClass, canId, ()->getMillis());
-        Runnable act = actionBuilder.build();
+        Runnable act = actionBuilder.build(buf);
         Consumer<Throwable> end = compiler.compileEnd(messageClass);
-        return new Action(begin, act, end);
+        return new Transaction(begin, act, end);
     }
 
-    private class ActionBuilder
-    {
-        private MessageClass mc;
-        private SignalCompiler compiler;
-        private IntRange repeatRange;
-        private List<Runnable> signals = new ArrayList<>();
-        private Map<SignalClass,MapList<Integer,Runnable>> mpxMap = new HashMap<>();
-        private RtMultiplexor rootMultiplexor;
-        private Map<SignalClass,RtMultiplexor> extendedMultiplexors = new HashMap<>();
-
-        public ActionBuilder(MessageClass mc, SignalCompiler compiler, IntRange repeatRange)
-        {
-            this.mc = mc;
-            this.compiler = compiler;
-            this.repeatRange = repeatRange;
-        }
-        
-        private Runnable build()
-        {
-            List<SignalClass> repeatingSignals = new ArrayList<>();
-            String repeatCountSignalName = (String) mc.getAttributeValue("RepeatCount");
-            addAction(compiler.compileRaw(mc, ()->buf));
-            SignalClass repeatCountSignal = mc.getSignal(repeatCountSignalName);
-            mc.forEach((sc)->
-            {
-                finer("add signal %s", sc);
-                MultiplexerIndicator multiplexerIndicator = sc.getMultiplexerIndicator();
-                if (multiplexerIndicator != null)
-                {
-                    if (multiplexerIndicator.isMultiplexor())
-                    {
-                        IntSupplier is = ArrayFuncs.getIntSupplier(sc.getStartBit(), sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED, buf);
-                        if (multiplexerIndicator.isExtended())
-                        {
-                            RtMultiplexor multiplexor = new RtMultiplexor(is);
-                            extendedMultiplexors.put(sc, multiplexor);
-                        }
-                        else
-                        {
-                            rootMultiplexor = new RtMultiplexor(is);
-                            addAction(rootMultiplexor);
-                        }
-                    }
-                    else
-                    {
-                        Runnable act = createSignal(mc, sc);
-                        if (act != null)
-                        {
-                            SignalClass multiplexor = multiplexerIndicator.getMultiplexor();
-                            MapList<Integer, Runnable> ml = getMpx(multiplexor);
-                            multiplexerIndicator.getValues().forEach((i)->ml.add(i, act));
-                        }
-                    }
-                }
-                else
-                {
-                    if (repeatRange.accept(sc.getStartBit()))
-                    {
-                        repeatingSignals.add(sc);
-                    }
-                    else
-                    {
-                        addAction(createSignal(mc, sc));
-                    }
-                }
-            });
-            if (!repeatingSignals.isEmpty())
-            {
-                addAction(createRepeatingSignals(mc, repeatingSignals, repeatCountSignal));
-            }
-            if (rootMultiplexor != null)
-            {
-                if (!mpxMap.isEmpty())
-                {
-                    mpxMap.forEach((sc,map)->
-                    {
-                        RtMultiplexor em = extendedMultiplexors.get(sc);
-                        if (em != null)
-                        {
-                            map.forEach((i, l)->l.add(i, em));
-                        }
-                        IndexMap.Builder<Runnable> mpxBuilder = new IndexMap.Builder<>();
-                        map.forEach((i,l)->mpxBuilder.put(i, createAction(l)));
-                        IndexMap<Runnable> indexMap = mpxBuilder.build();
-                        if (em != null)
-                        {
-                            em.setMap(indexMap);
-                        }
-                        else
-                        {
-                            rootMultiplexor.setMap(indexMap);
-                        }
-                    });
-                }
-                else
-                {
-                    if (signals.size() == 1)    // multiplexor is the only signal
-                    {
-                        signals.clear();
-                    }
-                }
-            }
-            return combineRunnables(signals);
-        }
-        private Runnable combineRunnables(List<Runnable> sigs)
-        {
-            if (!sigs.isEmpty())
-            {
-                Runnable[] array = createArray(sigs);
-                int length = array.length;
-                return ()->
-                {
-                    for (int ii=0;ii<length;ii++)
-                    {
-                        Runnable c = array[ii];
-                        c.run();
-                    }
-                };
-            }
-            else
-            {
-                return null;
-            }
-        }
-        private Runnable createRepeatingSignals(MessageClass mc, List<SignalClass> repeatingSignals, SignalClass repeatCountSignal)
-        {
-            Runnable startRepeat = compiler.compileBeginRepeat(mc);
-            Runnable endRepeat = compiler.compileEndRepeat(mc);
-            List<Runnable> list = new ArrayList<>();
-            repeatSize = repeatRange.getSize();
-            repeatStart = repeatRange.getFrom();
-            maxRepeatCount = (getMaxBits() - repeatStart) / repeatSize;
-            if (maxRepeatCount < 2)
-            {
-                throw new UnsupportedOperationException("should not happen");
-            }
-            for (int ii=0;ii<maxRepeatCount;ii++)
-            {
-                list.add(createRepeat(mc, repeatingSignals, ii * repeatSize));
-            }
-            Runnable[] repeatables = createArray(list);
-            IntSupplier repeatCountSupplier = getRepeatCountSupplier(repeatCountSignal);
-            return ()->
-            {
-                int repeatCount = repeatCountSupplier.getAsInt();
-                for (int ii=0;ii<repeatCount;ii++)
-                {
-                    if (startRepeat != null)
-                    {
-                        startRepeat.run();
-                    }
-                    Runnable repeatable = repeatables[ii];
-                    if (repeatable != null)
-                    {
-                        repeatable.run();
-                    }
-                    if (endRepeat != null)
-                    {
-                        endRepeat.run();
-                    }
-                }
-            };
-        }
-        private IntSupplier getRepeatCountSupplier(SignalClass repeatCountSignal)
-        {
-            if (repeatCountSignal != null)
-            {
-                return ArrayFuncs.getIntSupplier(repeatCountSignal.getStartBit(), repeatCountSignal.getSize(), repeatCountSignal.getByteOrder()==BIG_ENDIAN, repeatCountSignal.getValueType()==SIGNED, buf);
-            }
-            else
-            {
-                return ()->getRepeatCount();
-            }
-        }
-        private Runnable createRepeat(MessageClass mc, List<SignalClass> repeatingSignals, int off)
-        {
-            List<Runnable> list = new ArrayList<>();
-            repeatingSignals.forEach((s)->
-            {
-                Runnable r = createSignal(mc, s, off);
-                if (r != null)
-                {
-                    list.add(r);
-                }
-            });
-            return combineRunnables(list);
-        }
-        private Runnable createSignal(MessageClass mc, SignalClass sc)
-        {
-            return createSignal(mc, sc, 0);
-        }
-        private Runnable createSignal(MessageClass mc, SignalClass sc, int off)
-        {
-            FuncsFactory factory = ArrayFuncsFactory.getInstance(mc, sc, compiler, off, AbstractMessage.this::getMillis, AbstractMessage.this::getCurrentBytes, buf);
-            return compiler.compile(mc, sc, off, buf, AbstractMessage.this::getCurrentBytes, factory);
-        }
-        private void addAction(Runnable act)
-        {
-            if (act != null)
-            {
-                signals.add(act);
-            }
-        }
-
-        private Runnable[] createArray(List<Runnable> list)
-        {
-            return list.toArray((Runnable[]) Array.newInstance(Runnable.class, list.size()));
-        }
-
-        private Runnable createAction(List<Runnable> l)
-        {
-            Runnable[] arr = createArray(l);
-            return ()->
-            {
-                for (Runnable r : arr)
-                {
-                    r.run();
-                };
-                
-            };
-        }
-
-        private MapList<Integer, Runnable> getMpx(SignalClass multiplexor)
-        {
-            MapList<Integer, Runnable> ml = mpxMap.get(multiplexor);
-            if (ml == null)
-            {
-                ml = new HashMapList<>();
-                mpxMap.put(multiplexor, ml);
-            }
-            return ml;
-        }
-
-    }
-    protected class Action implements Runnable
-    {
-        private Runnable begin;
-        private Runnable action;
-        private Consumer<Throwable> end;
-
-        public Action()
-        {
-            this(null, null, null);
-        }
-
-        public Action(Runnable action)
-        {
-            this(null, action, null);
-        }
-
-        public Action(Runnable begin, Runnable action, Consumer<Throwable> end)
-        {
-            this.begin = begin != null ? begin : ()->{};
-            this.action = action != null ? action : ()->{};
-            this.end = end != null ? end : (e)->{};
-        }
-
-        @Override
-        public void run()
-        {
-            try
-            {
-                Throwable thr = null;
-                begin.run();
-                try
-                {
-                    action.run();
-                }
-                catch (Throwable ex)
-                {
-                    thr = ex;
-                    log(SEVERE, ex, "%s %s", name, ex.getMessage());
-                }
-                finally
-                {
-                    end.accept(thr);
-                }
-            }
-            catch (Exception ex)
-            {
-                log(WARNING, ex, "execute %s", name);
-            }
-        }
-        
-    }
-    private class RtMultiplexor implements Runnable
-    {
-        private final IntSupplier supplier;
-        private IndexMap<Runnable> map;
-
-        private RtMultiplexor(IntSupplier supplier)
-        {
-            this.supplier = supplier;
-        }
-
-        private void setMap(IndexMap<Runnable> map)
-        {
-            this.map = map;
-        }
-        
-        @Override
-        public void run()
-        {
-            int index = supplier.getAsInt();
-            Runnable act = map.get(index);
-            if (act != null)
-            {
-                act.run();
-            }
-        }
-        
-    }
     public static NullMessage getNullMessage(Executor executor, int canId)
     {
         return new NullMessage(executor, canId);
     }
-    private class JmxCompiler implements SignalCompiler
+    private class JmxCompiler implements SignalCompiler<Object>
     {
 
         private LongSupplier millisSupplier;
@@ -662,52 +322,47 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
         {
             this.millisSupplier = millisSupplier;
-            return SignalCompiler.super.compileBegin(mc, canId, millisSupplier);
+            return compileBegin(mc, canId, millisSupplier);
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->supplier.getAsInt()+unit;
-            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->toIntFunction.applyAsInt(buf)+unit, this::getMillis);
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, LongSupplier supplier)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->supplier.getAsLong()+unit;
-            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->toLongFunction.applyAsLong(buf)+unit, this::getMillis);
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, DoubleSupplier supplier)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->supplier.getAsDouble()+unit;
-            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->toDoubleFunction.applyAsDouble(buf)+unit, this::getMillis);
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, IntSupplier supplier, IntFunction<String> map)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->map.apply(supplier.getAsInt())+unit;
-            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->map.apply(toIntFunction.applyAsInt(buf))+unit, this::getMillis);
         }
 
         @Override
-        public Runnable compile(MessageClass mc, SignalClass sc, Supplier<String> ss)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            Supplier<String> text = ()->ss.get()+unit;
-            return ()->emitter.sendNotification2(()->NOTIF_PREFIX+name, text, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->stringFunction.apply(buf)+unit, this::getMillis);
         }
 
     }
