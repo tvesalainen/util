@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.junit.Test;
+import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.can.j1939.AddressManager;
 import org.vesalainen.jmx.SimpleJMX;
 import org.vesalainen.util.logging.JavaLogging;
@@ -43,8 +44,8 @@ public class CanServiceT
     {
         //AbstractCanService canSvc = AbstractCanService.openSocketCan2Udp("224.0.0.3", 10111, new TestCompiler());
         AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new PrintCompiler());
-        canSvc.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
-        canSvc.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
+        DBC.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
+        DBC.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
         canSvc.addPgnHandler(new AddressManager());
         canSvc.startAndWait();
     }

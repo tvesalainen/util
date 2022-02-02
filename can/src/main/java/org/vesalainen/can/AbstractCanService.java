@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import static java.util.logging.Level.SEVERE;
+import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.can.dbc.DBCFile;
 import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
@@ -43,8 +43,6 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final Map<Integer,Frame> queueMap = new HashMap<>();
     protected final FrameQueue defaultQueue = new FrameQueue(8192, 0, this, "Default");
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
-    protected final Map<Integer,MessageClass> canIdMap = new HashMap<>();
-    protected final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     protected final Map<Integer,PgnHandler> pgnHandlers = new HashMap<>();
     protected final CachedScheduledThreadPool executor;
     protected final AbstractMessageFactory messageFactory;
@@ -182,7 +180,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         AbstractMessage msg = null;
         try
         {
-            MessageClass msgCls = canIdMap.get(canId);
+            MessageClass msgCls = DBC.getMessage(canId);
             if (msgCls != null)
             {
                 msg = compile(canId, msgCls);
@@ -191,7 +189,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             else
             {
                 int pgn = PGN.pgn(canId);
-                msgCls = pgnMap.get(pgn);
+                msgCls = DBC.getPgnMessage(pgn);
                 if (msgCls != null)
                 {
                     msg = compilePgn(canId, (MessageClass) msgCls);
@@ -243,45 +241,12 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     {
         return messageFactory.createPgnMessage(executor, canId, mc);
     }
-    public void addN2K()
-    {
-        addDBCFile(AbstractCanService.class.getResourceAsStream("/n2k.dbc"));
-    }
-    public <T> void addDBCFile(T path)
-    {
-        DBCFile dbcFile = new DBCFile();
-        DBCParser parser = DBCParser.getInstance();
-        parser.parse(path, dbcFile);
-        String protocolType = (String)dbcFile.getAttributeValue("ProtocolType");
-        if (protocolType == null)
-        {
-            protocolType = "";
-        }
-        switch (protocolType)
-        {
-            case "":
-            case "StandardDBC":
-                dbcFile.forEach((mc)->
-                {
-                    canIdMap.put(mc.getId(), mc);
-                });
-                break;
-            case "N2K":
-                dbcFile.forEach((mc)->
-                {
-                    pgnMap.put(PGN.pgn(mc.getId()), mc);
-                });
-                break;
-            default:
-                throw new UnsupportedOperationException(protocolType+" not supported");
-        }
-    }
     public void addPgnHandler(PgnHandler pgnHandler)
     {
         pgnHandler.init(this, executor);
         for (int pgn : pgnHandler.pgnsToHandle())
         {
-            MessageClass mc = pgnMap.get(pgn);
+            MessageClass mc = DBC.getPgnMessage(pgn);
             if (mc != null)
             {
                 pgnHandler.init(pgn, mc);

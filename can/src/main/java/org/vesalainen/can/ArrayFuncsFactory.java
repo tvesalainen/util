@@ -35,7 +35,7 @@ import org.vesalainen.can.dbc.ValueType;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ArrayFuncsFactory implements FuncsFactory
+public class ArrayFuncsFactory<T> implements FuncsFactory<T>
 {
     private static ThreadLocal<ArrayFuncsFactory> FACTORY;
     static
@@ -52,7 +52,7 @@ public class ArrayFuncsFactory implements FuncsFactory
     {
     }
 
-    public static FuncsFactory getInstance(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off)
+    public static <T> FuncsFactory<T> getInstance(MessageClass mc, SignalClass sc, SignalCompiler compiler, int off)
     {
         ArrayFuncsFactory factory = FACTORY.get();
         factory.set(mc, sc, compiler, off);
@@ -122,30 +122,30 @@ public class ArrayFuncsFactory implements FuncsFactory
     }
 
     @Override
-    public Consumer<byte[]> getStringWriter(Supplier<String> stringSupplier)
+    public ArrayAction<T> getStringWriter(Function<T,String> stringFunction)
     {
         switch (sc.getSignalType())
         {
             case ASCIIZ:
-                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)0, stringSupplier);
+                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)0, stringFunction);
             case AISSTRING:
             case AISSTRING2:
-                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)'@', stringSupplier);
+                return ArrayFuncs.getStringWriter((sc.getStartBit() + off) / 8, sc.getSize() / 8, (byte)'@', stringFunction);
             default:
                 throw new UnsupportedOperationException(sc.getSignalType() + " not supported");
         }
     }
 
     @Override
-    public Consumer<byte[]> getIntWriter(IntSupplier intSupplier)
+    public ArrayAction<T> getIntWriter(ToIntFunction<T> toIntFunction)
     {
-        return ArrayFuncs.getIntWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, intSupplier);
+        return ArrayFuncs.getIntWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, toIntFunction);
     }
 
     @Override
-    public Consumer<byte[]> getLongWriter(LongSupplier longSupplier)
+    public ArrayAction<T> getLongWriter(ToLongFunction<T> toLongFunction)
     {
-        return ArrayFuncs.getLongWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, longSupplier);
+        return ArrayFuncs.getLongWriter(sc.getStartBit() + off, sc.getSize(), sc.getByteOrder() == ByteOrder.BIG_ENDIAN, sc.getValueType() == ValueType.SIGNED, toLongFunction);
     }
     
 }

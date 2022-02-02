@@ -21,6 +21,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -40,20 +42,22 @@ public class AbstractMessageData extends AnnotatedPropertyStore
     private static final Map<Class<? extends AnnotatedPropertyStore>,Inner> INNERS = new WeakHashMap<>();
 
     private MessageClass mc;
+    private final Inner inner;
     
     protected AbstractMessageData(MethodHandles.Lookup lookup, MessageClass mc)
     {
         super(lookup);
         this.mc = mc;
+        this.inner = inner();
     }
     
     public void read(byte[] buf)
     {
-        inner().reader.run(this, buf);
+        inner.reader.run(this, buf);
     }
     public void write(byte[] buf)
     {
-        inner().writer.run(this, buf);
+        inner.writer.run(this, buf);
     }
     private Inner inner()
     {
@@ -76,11 +80,11 @@ public class AbstractMessageData extends AnnotatedPropertyStore
         inner.writer = writerBuilder.build();
         return inner;
     }
-    private class ReaderCompiler implements SignalCompiler
+    private class ReaderCompiler implements SignalCompiler<AnnotatedPropertyStore>
     {
 
         @Override
-        public ArrayAction compile(MessageClass mc, SignalClass sc, int off)
+        public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, int off)
         {
             FuncsFactory factory = ArrayFuncsFactory.getInstance(mc, sc, this, off);
             String name = sc.getName();
@@ -92,7 +96,7 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                 case BINARY:
                 case INT:
                     ToIntFunction<byte[]> ti = factory.toIntFunction();
-                    MethodHandle asInt = setter.asType(MethodType.methodType(void.class, int.class));
+                    MethodHandle asInt = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, int.class));
                     return (ctx, buf)->
                     {
                         try
@@ -107,7 +111,7 @@ public class AbstractMessageData extends AnnotatedPropertyStore
 
                 case LONG:
                     ToLongFunction<byte[]> tl = factory.toLongFunction();
-                    MethodHandle asLong = setter.asType(MethodType.methodType(void.class, long.class));
+                    MethodHandle asLong = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, long.class));
                     return (ctx, buf)->
                     {
                         try
@@ -120,13 +124,13 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                         }
                     };
                 case DOUBLE:
-                    ToDoubleFunction<byte[]> tl = factory.toDoubleFunction();
-                    MethodHandle asDouble = setter.asType(MethodType.methodType(void.class, double.class));
+                    ToDoubleFunction<byte[]> td = factory.toDoubleFunction();
+                    MethodHandle asDouble = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, double.class));
                     return (ctx, buf)->
                     {
                         try
                         {
-                            asDouble.invokeExact(ctx, tl.applyAsDouble(buf));
+                            asDouble.invokeExact(ctx, td.applyAsDouble(buf));
                         }
                         catch (Throwable ex)
                         {
@@ -136,8 +140,20 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                 case ASCIIZ:
                 case AISSTRING:
                 case AISSTRING2:
-                    System.err.print("String ");
-                    break;
+                    Function<byte[], String> ts = factory.toStringFunction();
+                    MethodHandle asString = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, String.class));
+                    return (ctx, buf)->
+                    {
+                        try
+                        {
+                            asString.invokeExact(ctx, ts.apply(buf));
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    };
+
                 default:
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }
@@ -146,7 +162,63 @@ public class AbstractMessageData extends AnnotatedPropertyStore
     }
     private class WriterCompiler implements SignalCompiler
     {
-        
+        @Override
+        public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, int off)
+        {
+            FuncsFactory<AnnotatedPropertyStore> factory = ArrayFuncsFactory.getInstance(mc, sc, this, off);
+            String name = sc.getName();
+            C c = c(name);
+            MethodHandle getter = c.getGetter();
+            switch (sc.getSignalType())
+            {
+                case LOOKUP:
+                case BINARY:
+                case INT:
+                    MethodHandle asInt = getter.asType(MethodType.methodType(int.class, AnnotatedPropertyStore.class));
+                    return factory.getIntWriter((AnnotatedPropertyStore ctx)->
+                    {
+                        try
+                        {
+                            return (int)asInt.invokeExact(ctx);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                case LONG:
+                    MethodHandle asLong = getter.asType(MethodType.methodType(long.class, AnnotatedPropertyStore.class));
+                    return factory.getLongWriter((AnnotatedPropertyStore ctx)->
+                    {
+                        try
+                        {
+                            return (long)asLong.invokeExact(ctx);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                case ASCIIZ:
+                case AISSTRING:
+                case AISSTRING2:
+                    MethodHandle asString = getter.asType(MethodType.methodType(String.class, AnnotatedPropertyStore.class));
+                    return factory.getStringWriter((AnnotatedPropertyStore ctx)->
+                    {
+                        try
+                        {
+                            return (String)asString.invokeExact(ctx);
+                        }
+                        catch (Throwable ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                case DOUBLE:
+                default:
+                    throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
+            }
+        }
     }
     private static class Inner
     {

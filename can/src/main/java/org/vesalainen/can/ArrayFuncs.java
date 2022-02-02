@@ -106,13 +106,13 @@ public final class ArrayFuncs
             }
         };
     }
-    public static final Consumer<byte[]> getStringWriter(int offset, int length, byte ender, Supplier<String> stringSupplier)
+    public static final <T> ArrayAction<T> getStringWriter(int offset, int length, byte ender, Function<T,String> stringFunction)
     {
         checkBitsString(offset, length);
-        return (buf)->
+        return (ctx, buf)->
         {
-            String string = stringSupplier.get();
-            int len = min(length, string.length())-1;
+            String string = stringFunction.apply(ctx);
+            int len = min(length, string.length());
             for (int ii=0;ii<len;ii++)
             {
                 buf[offset+ii] = (byte) string.charAt(ii);
@@ -120,44 +120,44 @@ public final class ArrayFuncs
             buf[offset+len] = ender;
         };
     }
-    public static final Consumer<byte[]> getIntWriter(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i)
+    public static final <T> ArrayAction<T> getIntWriter(int offset, int length, boolean bigEndian, boolean signed, ToIntFunction<T> toIntFunction)
     {
         checkBitsInt(offset, length);
-        Consumer<byte[]> r;
+        ArrayAction<T> r;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            r = getIntWriter(arr, i);
+            r = getIntWriter(arr, toIntFunction);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            r = getIntWriter(arr, i);
+            r = getIntWriter(arr, toIntFunction);
         }
         return r;
     }
-    public static final Consumer<byte[]> getLongWriter(int offset, int length, boolean bigEndian, boolean signed, LongSupplier l)
+    public static final <T> ArrayAction<T> getLongWriter(int offset, int length, boolean bigEndian, boolean signed, ToLongFunction<T> toLongFunction)
     {
         checkBitsLong(offset, length);
-        Consumer<byte[]> r;
+        ArrayAction<T> r;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
-            r = getLongWriter(arr, l);
+            r = getLongWriter(arr, toLongFunction);
         }
         else
         {
             byte[] arr = createLittleEndian(offset, length);
-            r = getLongWriter(arr, l);
+            r = getLongWriter(arr, toLongFunction);
         }
         return r;
     }
-    public static final Consumer<byte[]> getIntWriter(byte[] arr, IntSupplier i)
+    public static final <T> ArrayAction<T> getIntWriter(byte[] arr, ToIntFunction<T> toIntFunction)
     {
         int len = arr.length/3;
-        return (buf)->
+        return (ctx, buf)->
         {
-            int v = i.getAsInt();
+            int v = toIntFunction.applyAsInt(ctx);
             for (int ii=0;ii<len;ii++)
             {
                 int ix = (int)arr[3*ii]&0xff;
@@ -175,12 +175,12 @@ public final class ArrayFuncs
             }
         };
     }
-    public static final Consumer<byte[]> getLongWriter(byte[] arr, LongSupplier l)
+    public static final <T> ArrayAction<T> getLongWriter(byte[] arr, ToLongFunction<T> toLongFunction)
     {
         int len = arr.length/3;
-        return (buf)->
+        return (ctx, buf)->
         {
-            long v = l.getAsLong();
+            long v = toLongFunction.applyAsLong(ctx);
             for (int ii=0;ii<len;ii++)
             {
                 int ix = (int)arr[3*ii]&0xff;

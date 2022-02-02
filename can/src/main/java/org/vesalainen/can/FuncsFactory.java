@@ -16,13 +16,9 @@
  */
 package org.vesalainen.can;
 
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -31,7 +27,7 @@ import java.util.function.ToLongFunction;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface FuncsFactory
+public interface FuncsFactory<T>
 {
     LongSupplier millisSupplier();
     ToIntFunction<byte[]> toIntFunction();
@@ -39,7 +35,7 @@ public interface FuncsFactory
     ToDoubleFunction<byte[]> toDoubleFunction();
     IntFunction<String> lookupMap();
     Function<byte[],String> toStringFunction();
-    Consumer<byte[]> getIntWriter(IntSupplier intSupplier);
-    Consumer<byte[]> getLongWriter(LongSupplier longSupplier);
-    Consumer<byte[]> getStringWriter(Supplier<String> stringSupplier);
+    ArrayAction<T> getIntWriter(ToIntFunction<T> toIntFunction);
+    ArrayAction<T> getLongWriter(ToLongFunction<T> toLongFunction);
+    ArrayAction<T> getStringWriter(Function<T,String> stringFunction);
 }

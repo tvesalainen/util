@@ -65,20 +65,20 @@ public class ArrayFuncsTest
         LongReference i = new LongReference(123);
         boolean bigEndian=false;
         boolean signed=false;
-        testWriteLong(0, 8, bigEndian, signed, i::getValue, buf);
-        testWriteLong(8, 8, bigEndian, signed, i::getValue, buf);
-        testWriteLong(16, 8, bigEndian, signed, i::getValue, buf);
-        testWriteLong(8, 15, bigEndian, signed, i::getValue, buf);
-        testWriteLong(11, 15, bigEndian, signed, i::getValue, buf);
-        testWriteLong(23, 27, bigEndian, signed, i::getValue, buf);
+        testWriteLong(0, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteLong(8, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteLong(16, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteLong(8, 15, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteLong(11, 15, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteLong(23, 27, bigEndian, signed, (x)->i.getValue(), buf);
     }
-    private void testWriteLong(int offset, int length, boolean bigEndian, boolean signed, LongSupplier i, byte[] buf)
+    private <T> void testWriteLong(int offset, int length, boolean bigEndian, boolean signed, ToLongFunction<T> toLongFunction, byte[] buf)
     {
         Arrays.fill(buf, (byte)0x0);
-        Consumer<byte[]> longWriter = ArrayFuncs.getLongWriter(offset, length, bigEndian, signed, i);
+        ArrayAction longWriter = ArrayFuncs.getLongWriter(offset, length, bigEndian, signed, toLongFunction);
         ToLongFunction<byte[]> longSupplier = ArrayFuncs.getLongFunction(offset, length, bigEndian, signed);
-        longWriter.accept(buf);
-        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, i.getAsLong(), longSupplier.applyAsLong(buf));
+        longWriter.run(buf, buf);
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toLongFunction.applyAsLong(null), longSupplier.applyAsLong(buf));
     }
     @Test
     public void testWriteInt()
@@ -87,20 +87,20 @@ public class ArrayFuncsTest
         IntReference i = new IntReference(123);
         boolean bigEndian=false;
         boolean signed=true;
-        testWriteInt(0, 8, bigEndian, signed, i::getValue, buf);
-        testWriteInt(8, 8, bigEndian, signed, i::getValue, buf);
-        testWriteInt(16, 8, bigEndian, signed, i::getValue, buf);
-        testWriteInt(8, 15, bigEndian, signed, i::getValue, buf);
-        testWriteInt(11, 15, bigEndian, signed, i::getValue, buf);
-        testWriteInt(23, 27, bigEndian, signed, i::getValue, buf);
+        testWriteInt(0, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteInt(8, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteInt(16, 8, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteInt(8, 15, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteInt(11, 15, bigEndian, signed, (x)->i.getValue(), buf);
+        testWriteInt(23, 27, bigEndian, signed, (x)->i.getValue(), buf);
     }
-    private void testWriteInt(int offset, int length, boolean bigEndian, boolean signed, IntSupplier i, byte[] buf)
+    private <T> void testWriteInt(int offset, int length, boolean bigEndian, boolean signed, ToIntFunction<T> toIntFunction, byte[] buf)
     {
         Arrays.fill(buf, (byte)0x0);
-        Consumer<byte[]> intWriter = ArrayFuncs.getIntWriter(offset, length, bigEndian, signed, i);
+        ArrayAction intWriter = ArrayFuncs.getIntWriter(offset, length, bigEndian, signed, toIntFunction);
         ToIntFunction<byte[]> intSupplier = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
-        intWriter.accept(buf);
-        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, i.getAsInt(), intSupplier.applyAsInt(buf));
+        intWriter.run(buf, buf);
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toIntFunction.applyAsInt(null), intSupplier.applyAsInt(buf));
     }
     @Test
     public void testIIRIS()

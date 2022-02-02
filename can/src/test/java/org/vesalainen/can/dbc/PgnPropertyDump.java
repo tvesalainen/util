@@ -55,7 +55,7 @@ public class PgnPropertyDump
         {
             String name = sc.getName();
             String property = CamelCase.property(name);
-            System.err.print("@Property(aliases={\""+name+"\"} ");
+            System.err.print("@Property(aliases={\""+name+"\"}) ");
             switch (sc.getSignalType())
             {
                 case LOOKUP:
