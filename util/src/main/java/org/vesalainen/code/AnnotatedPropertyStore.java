@@ -1206,7 +1206,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     {
     }
 
-    private C c(String property)
+    protected C c(String property)
     {
         C c = cMap.get(property);
         if (c == null)
@@ -1218,9 +1218,6 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     private static class Inner
     {
         private Map<String,C> cMap;
-        private Map<String,MethodHandle> setters;
-        private Map<String,MethodHandle> getters;
-        private Map<String,MethodHandle> copiers;
         private String[] properties;
 
         public Inner(AnnotatedPropertyStore aps)
@@ -1235,13 +1232,23 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             aps.properties = this.properties;
         }
     }
-    private static class C
+    protected static class C
     {
 
-        private Class<?> type;
-        private MethodHandle getter;
-        private MethodHandle setter;
-        private MethodHandle copier;
+        protected Class<?> type;
+        protected MethodHandle getter;
+        protected MethodHandle setter;
+        protected MethodHandle copier;
+
+        public MethodHandle getGetter()
+        {
+            return getter;
+        }
+
+        public MethodHandle getSetter()
+        {
+            return setter;
+        }
         
     }
     private static class Prop implements Comparable<Prop>
