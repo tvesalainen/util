@@ -28,6 +28,7 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.code.AnnotatedPropertyStore;
@@ -44,6 +45,10 @@ public class AbstractMessageData extends AnnotatedPropertyStore
     private MessageClass mc;
     private final Inner inner;
     
+    protected AbstractMessageData(MethodHandles.Lookup lookup, int pgn)
+    {
+        this(lookup, DBC.getPgnMessage(pgn));
+    }
     protected AbstractMessageData(MethodHandles.Lookup lookup, MessageClass mc)
     {
         super(lookup);

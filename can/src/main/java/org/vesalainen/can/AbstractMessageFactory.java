@@ -16,6 +16,7 @@
  */
 package org.vesalainen.can;
 
+import org.vesalainen.can.n2k.FastMessage;
 import java.util.concurrent.Executor;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.util.logging.JavaLogging;

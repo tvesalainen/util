@@ -18,10 +18,8 @@ package org.vesalainen.can;
 
 import static java.lang.Integer.min;
 import static java.nio.ByteOrder.BIG_ENDIAN;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -112,7 +110,7 @@ public final class ArrayFuncs
         return (ctx, buf)->
         {
             String string = stringFunction.apply(ctx);
-            int len = min(length, string.length());
+            int len = string!=null?min(length, string.length()):0;
             for (int ii=0;ii<len;ii++)
             {
                 buf[offset+ii] = (byte) string.charAt(ii);

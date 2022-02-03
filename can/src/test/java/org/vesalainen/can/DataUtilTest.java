@@ -34,7 +34,7 @@ public class DataUtilTest
     }
 
     @Test
-    public void testAsLong()
+    public void testAsLongString()
     {
         assertEquals(8, DataUtil.length("1234567890abcdef"));
         long asLong = DataUtil.asLong("1234567890abcdef");
@@ -42,6 +42,12 @@ public class DataUtilTest
         assertEquals(0xab9078563412L, DataUtil.asLong("1234567890ab"));
         assertEquals(0xefcdab9078563412L, DataUtil.asLong("1234567890ABCDEF"));
         assertEquals(0xffffffffffffffffL, DataUtil.asLong("ffffffffffffffff"));
+    }
+    @Test
+    public void testAsLongArray()
+    {
+        byte[] fromString = HexUtil.fromString("1234567890abcdef");
+        assertEquals(0xefcdab9078563412L, DataUtil.asLong(fromString));
     }
     @Test
     public void testFromLong()
@@ -62,6 +68,16 @@ public class DataUtilTest
         assertEquals(0xCD, DataUtil.get(0x1234567890abcdefL, 1));
         assertEquals(255, DataUtil.get(0xffffffffffffffffL, 0));
     }    
+    @Test
+    public void testSet()
+    {
+        long l = 0;
+        l = DataUtil.set(l, 0, 12);
+        assertEquals(12, DataUtil.get(l, 0));
+        assertEquals(0, DataUtil.get(l, 1));
+        l = DataUtil.set(l, 5, 56);
+        assertEquals(56, DataUtil.get(l, 5));
+    }
     //@Test
     public void testRegression()
     {

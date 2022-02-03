@@ -39,7 +39,7 @@ public class ProductInformation extends AbstractMessageData
     
     public ProductInformation()
     {
-        super(MethodHandles.lookup(), DBC.getPgnMessage(126996));
+        super(MethodHandles.lookup(), 126996);
     }
 
     public int getNmea2000DatabaseVersion()

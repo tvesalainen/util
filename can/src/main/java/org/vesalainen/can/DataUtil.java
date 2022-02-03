@@ -48,6 +48,22 @@ public final class DataUtil
         }
         return res;
     }
+    public static long asLong(byte... data)
+    {
+        int length = data.length;
+        if (length > 8)
+        {
+            throw new IllegalArgumentException("data doesn't fit in long");
+        }
+        long res = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            long h = data[ii]&0xff;
+            res |= h<<(8*ii);
+            
+        }
+        return res;
+    }
     public static void fromLong(long v, byte[] buf, int off, int len)
     {
         fromLong(v, 0, buf, off, len);
@@ -64,6 +80,12 @@ public final class DataUtil
     {
         int sht = index*8;
         return (int) (((v & (0xffL<<sht))>>>sht) & 0xff);
+    }
+    public static long set(long v, int index, long i)
+    {
+        int sht = index*8;
+        v |= ((i & 0xff)<<sht);
+        return v;
     }
     private static int fromHex(char cc)
     {

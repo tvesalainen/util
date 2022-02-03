@@ -44,7 +44,7 @@ public class PgnPropertyDump
         try (InputStream is = DBCParser.class.getResourceAsStream("/n2k.dbc"))
         {
             parser.parse(is, dbcFile);
-            MessageClass msg = dbcFile.getMessageForPgn(126996);
+            MessageClass msg = dbcFile.getMessageForPgn(60928);
             print(msg);
         }
     }
