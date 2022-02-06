@@ -34,6 +34,7 @@ public class FastReader extends JavaLogging
     private byte packetId;
     private int byteMax;
     private int byteCount;
+    private int fastMessageFails;
 
     public FastReader(String name, byte[] buf)
     {
@@ -51,6 +52,11 @@ public class FastReader extends JavaLogging
             byte id = (byte) (b & 0xe0);
             if (id != packetId)
             {
+                if (byteMax != byteCount)
+                {
+                    warning("fast message failure");
+                    fastMessageFails++;
+                }
                 packetId = id;
                 byteMax = buf.length;
                 byteCount = 0;
@@ -86,6 +92,16 @@ public class FastReader extends JavaLogging
             log(WARNING, ex, "update %s", name);
         }
         return false;
+    }
+
+    public int getFastMessageFails()
+    {
+        return fastMessageFails;
+    }
+
+    public int getByteMax()
+    {
+        return byteMax;
     }
     
 }

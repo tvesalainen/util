@@ -19,7 +19,6 @@ package org.vesalainen.can;
 import java.lang.management.ManagementFactory;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
-import java.util.logging.Logger;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;

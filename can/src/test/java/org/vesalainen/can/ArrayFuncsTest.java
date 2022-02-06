@@ -17,7 +17,6 @@
 package org.vesalainen.can;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.ToIntFunction;
@@ -53,7 +52,8 @@ public class ArrayFuncsTest
         (byte) 0xfe,
         (byte) 0xff
     };
-
+    private CanSource canSource = new SimpleCanSource(buf);
+    
     public ArrayFuncsTest()
     {
     }
@@ -61,7 +61,7 @@ public class ArrayFuncsTest
     @Test
     public void testWriteLong()
     {
-        byte[] buf = new byte[8];
+        CanSource buf = new SimpleCanSource(8);
         LongReference i = new LongReference(123);
         boolean bigEndian=false;
         boolean signed=false;
@@ -72,18 +72,19 @@ public class ArrayFuncsTest
         testWriteLong(11, 15, bigEndian, signed, (x)->i.getValue(), buf);
         testWriteLong(23, 27, bigEndian, signed, (x)->i.getValue(), buf);
     }
-    private <T> void testWriteLong(int offset, int length, boolean bigEndian, boolean signed, ToLongFunction<T> toLongFunction, byte[] buf)
+    private <T> void testWriteLong(int offset, int length, boolean bigEndian, boolean signed, ToLongFunction<T> toLongFunction, CanSource src)
     {
+        byte[] buf = src.data();
         Arrays.fill(buf, (byte)0x0);
         ArrayAction longWriter = ArrayFuncs.getLongWriter(offset, length, bigEndian, signed, toLongFunction);
-        ToLongFunction<byte[]> longSupplier = ArrayFuncs.getLongFunction(offset, length, bigEndian, signed);
-        longWriter.run(buf, buf);
-        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toLongFunction.applyAsLong(null), longSupplier.applyAsLong(buf));
+        ToLongFunction<CanSource> longSupplier = ArrayFuncs.getLongFunction(offset, length, bigEndian, signed);
+        longWriter.run(buf, src);
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toLongFunction.applyAsLong(null), longSupplier.applyAsLong(src));
     }
     @Test
     public void testWriteInt()
     {
-        byte[] buf = new byte[8];
+        CanSource buf = new SimpleCanSource(8);
         IntReference i = new IntReference(123);
         boolean bigEndian=false;
         boolean signed=true;
@@ -94,13 +95,14 @@ public class ArrayFuncsTest
         testWriteInt(11, 15, bigEndian, signed, (x)->i.getValue(), buf);
         testWriteInt(23, 27, bigEndian, signed, (x)->i.getValue(), buf);
     }
-    private <T> void testWriteInt(int offset, int length, boolean bigEndian, boolean signed, ToIntFunction<T> toIntFunction, byte[] buf)
+    private <T> void testWriteInt(int offset, int length, boolean bigEndian, boolean signed, ToIntFunction<T> toIntFunction, CanSource src)
     {
+        byte[] buf = src.data();
         Arrays.fill(buf, (byte)0x0);
         ArrayAction intWriter = ArrayFuncs.getIntWriter(offset, length, bigEndian, signed, toIntFunction);
-        ToIntFunction<byte[]> intSupplier = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
-        intWriter.run(buf, buf);
-        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toIntFunction.applyAsInt(null), intSupplier.applyAsInt(buf));
+        ToIntFunction<CanSource> intSupplier = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
+        intWriter.run(buf, src);
+        assertEquals("o="+offset+" l="+length+" e="+bigEndian+" s="+signed, toIntFunction.applyAsInt(null), intSupplier.applyAsInt(src));
     }
     @Test
     public void testIIRIS()
@@ -138,23 +140,23 @@ public class ArrayFuncsTest
     @Test
     public void testWETA()
     {
-        byte[] arr = HexUtil.fromString("48435B51");
+        CanSource arr = new SimpleCanSource(HexUtil.fromString("48435B51"));
         find(14033, false, false, arr);
     }
     @Test
     public void test00()
     {
-        byte[] arr = HexUtil.fromString("4652434C");
+        CanSource arr = new SimpleCanSource(HexUtil.fromString("4652434C"));
         find(598220, false, false, arr);
     }
-    public int find(int val, boolean bigEndian, boolean signed, byte[] arr)
+    public int find(int val, boolean bigEndian, boolean signed, CanSource arr)
     {
         int bits = 32-Integer.numberOfLeadingZeros(val);
-        int len = arr.length*8;
+        int len = arr.messageLength().getAsInt()*8;
         int max = len-bits;
         for (int ii=0;ii<max;ii++)
         {
-            ToIntFunction<byte[]> is1 = ArrayFuncs.getIntFunction(ii, bits, bigEndian, signed);
+            ToIntFunction<CanSource> is1 = ArrayFuncs.getIntFunction(ii, bits, bigEndian, signed);
             int asInt = is1.applyAsInt(arr);
             if (asInt == val)
             {
@@ -166,26 +168,26 @@ public class ArrayFuncsTest
     @Test
     public void testGNSSPositionData()
     {
-        byte[] arr = HexUtil.fromString("4A7949B069932F0040AAC50EAA0AFB00005D9BF7983118000000000000000023FC0C45008A00120C0000010000000000000000");
-        ToIntFunction<byte[]> is1 = ArrayFuncs.getIntFunction(248, 4, false, false);
+        CanSource arr = new SimpleCanSource(HexUtil.fromString("4A7949B069932F0040AAC50EAA0AFB00005D9BF7983118000000000000000023FC0C45008A00120C0000010000000000000000"));
+        ToIntFunction<CanSource> is1 = ArrayFuncs.getIntFunction(248, 4, false, false);
         assertEquals(3, is1.applyAsInt(arr));
-        ToIntFunction<byte[]> is2 = ArrayFuncs.getIntFunction(252, 4, false, false);
+        ToIntFunction<CanSource> is2 = ArrayFuncs.getIntFunction(252, 4, false, false);
         assertEquals(2, is2.applyAsInt(arr));
     }
 
     @Test
     public void testVesselHeading()
     {
-        byte[] arr = HexUtil.fromString("b2b7dd0000110dfc");
-        ToIntFunction<byte[]> is = ArrayFuncs.getIntFunction(56, 2, false, false);
+        CanSource arr = new SimpleCanSource(HexUtil.fromString("b2b7dd0000110dfc"));
+        ToIntFunction<CanSource> is = ArrayFuncs.getIntFunction(56, 2, false, false);
         assertEquals(0, is.applyAsInt(arr));
     }
 
     @Test
     public void testWindData()
     {
-        byte[] arr = HexUtil.fromString("4c 99 01 2e 96 fa ff ff".replace(" ", ""));
-        ToIntFunction<byte[]> is = ArrayFuncs.getIntFunction(40, 3, false, false);
+        CanSource arr = new SimpleCanSource(HexUtil.fromString("4c 99 01 2e 96 fa ff ff".replace(" ", "")));
+        ToIntFunction<CanSource> is = ArrayFuncs.getIntFunction(40, 3, false, false);
         assertEquals(2, is.applyAsInt(arr));
     }
 
@@ -203,9 +205,9 @@ public class ArrayFuncsTest
 
     private void testInt(int offset, int length, boolean bigEndian, boolean signed)
     {
-        ToIntFunction<byte[]> lsb = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
+        ToIntFunction<CanSource> lsb = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
         IntSupplier exp = ArrayFuncs0.getAlignedIntSupplier(offset, length, bigEndian, signed, buf);
-        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsInt(), lsb.applyAsInt(buf));
+        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsInt(), lsb.applyAsInt(canSource));
     }
 
     @Test
@@ -222,9 +224,9 @@ public class ArrayFuncsTest
 
     private void testLong(int offset, int length, boolean bigEndian, boolean signed)
     {
-        ToLongFunction<byte[]> lsb = ArrayFuncs.getLongFunction(offset, length, bigEndian, signed);
+        ToLongFunction<CanSource> lsb = ArrayFuncs.getLongFunction(offset, length, bigEndian, signed);
         LongSupplier exp = ArrayFuncs0.getAlignedLongSupplier(offset, length, bigEndian, signed, buf);
-        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsLong(), lsb.applyAsLong(buf));
+        assertEquals("o=" + offset + " l=" + length + " be=" + bigEndian + " s=" + signed, exp.getAsLong(), lsb.applyAsLong(canSource));
     }
 
     @Test

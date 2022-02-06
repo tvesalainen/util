@@ -94,9 +94,9 @@ public class CanDumpService extends AbstractCanService
     }
 
     @Override
-    public void send(int canId, int length, byte[] data) throws IOException
+    public void send(int canId, int length, long data) throws IOException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

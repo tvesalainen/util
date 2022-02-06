@@ -17,13 +17,9 @@
 package org.vesalainen.can;
 
 import java.nio.ByteOrder;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -67,13 +63,7 @@ public class ArrayFuncsFactory<T> implements FuncsFactory<T>
     }
 
     @Override
-    public LongSupplier millisSupplier()
-    {
-        return compiler.millisSupplier();
-    }
-
-    @Override
-    public ToIntFunction<byte[]> toIntFunction()
+    public ToIntFunction<CanSource> toIntFunction()
     {
         return compiler.compileIntBoundCheck(mc, sc, 
                                 compiler.factorInt(mc, sc, sc.getFactor(), sc.getOffset(), 
@@ -82,7 +72,7 @@ public class ArrayFuncsFactory<T> implements FuncsFactory<T>
     }
 
     @Override
-    public ToLongFunction<byte[]> toLongFunction()
+    public ToLongFunction<CanSource> toLongFunction()
     {
         return compiler.compileLongBoundCheck(mc, sc, 
                                 compiler.factorLong(mc, sc, sc.getFactor(), sc.getOffset(), 
@@ -91,7 +81,7 @@ public class ArrayFuncsFactory<T> implements FuncsFactory<T>
     }
 
     @Override
-    public ToDoubleFunction<byte[]> toDoubleFunction()
+    public ToDoubleFunction<CanSource> toDoubleFunction()
     {
         return compiler.compileDoubleBoundCheck(mc, sc, 
                                 compiler.factorDouble(mc, sc, sc.getFactor(), sc.getOffset(),
@@ -106,14 +96,14 @@ public class ArrayFuncsFactory<T> implements FuncsFactory<T>
     }
 
     @Override
-    public Function<byte[],String> toStringFunction()
+    public Function<CanSource,String> toStringFunction()
     {
         switch (sc.getSignalType())
         {
             case ASCIIZ:
                 return ArrayFuncs.getZeroTerminatingStringFunction((sc.getStartBit() + off) / 8, sc.getSize() / 8);
             case AISSTRING:
-                return ArrayFuncs.getAisStringFunction((sc.getStartBit() + off) / 8, sc.getSize() / 8, compiler.currentBytesSupplier());
+                return ArrayFuncs.getAisStringFunction((sc.getStartBit() + off) / 8, sc.getSize() / 8);
             case AISSTRING2:
                 return ArrayFuncs.getAisStringFunction2((sc.getStartBit() + off) / 8);
             default:

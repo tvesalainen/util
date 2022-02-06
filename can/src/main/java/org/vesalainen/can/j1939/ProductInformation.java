@@ -18,8 +18,6 @@ package org.vesalainen.can.j1939;
 
 import java.lang.invoke.MethodHandles;
 import org.vesalainen.can.AbstractMessageData;
-import org.vesalainen.can.dbc.DBC;
-import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.code.Property;
 
 /**

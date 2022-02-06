@@ -16,11 +16,43 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface ArrayAction<T>
+public class SimpleCanSource implements CanSource
 {
-    void run(T ctx, CanSource src);
+    private byte[] data;
+
+    public SimpleCanSource(int size)
+    {
+        this(new byte[size]);
+    }
+
+    public SimpleCanSource(byte[] data)
+    {
+        this.data = data;
+    }
+    
+    @Override
+    public byte[] data()
+    {
+        return data;
+    }
+
+    @Override
+    public LongSupplier millis()
+    {
+        return System::currentTimeMillis;
+    }
+
+    @Override
+    public IntSupplier messageLength()
+    {
+        return ()->data.length;
+    }
+    
 }

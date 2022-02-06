@@ -22,6 +22,7 @@ import java.util.function.IntUnaryOperator;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
+@FunctionalInterface
 public interface Frame
 {
     void frame(long time, int canId, int dataLength, long data);

@@ -29,12 +29,11 @@ import java.util.function.ToLongFunction;
  */
 public interface FuncsFactory<T>
 {
-    LongSupplier millisSupplier();
-    ToIntFunction<byte[]> toIntFunction();
-    ToLongFunction<byte[]> toLongFunction();
-    ToDoubleFunction<byte[]> toDoubleFunction();
+    ToIntFunction<CanSource> toIntFunction();
+    ToLongFunction<CanSource> toLongFunction();
+    ToDoubleFunction<CanSource> toDoubleFunction();
     IntFunction<String> lookupMap();
-    Function<byte[],String> toStringFunction();
+    Function<CanSource,String> toStringFunction();
     ArrayAction<T> getIntWriter(ToIntFunction<T> toIntFunction);
     ArrayAction<T> getLongWriter(ToLongFunction<T> toLongFunction);
     ArrayAction<T> getStringWriter(Function<T,String> stringFunction);

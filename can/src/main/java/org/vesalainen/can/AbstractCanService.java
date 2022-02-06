@@ -134,9 +134,9 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     
     public void send(int canId, byte... data) throws IOException
     {
-        send(canId, data.length, data);
+        send(canId, data.length, DataUtil.asLong(data));
     }
-    public abstract void send(int canId, int length, byte[] data) throws IOException;
+    public abstract void send(int canId, int length, long data) throws IOException;
     @Override
     public void frame(long time, int canId, int dataLength, long data)
     {
@@ -174,7 +174,14 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             }
         }
     }
-
+    public void addN2K()
+    {
+        DBC.addN2K();
+    }
+    public <T> void addDBCFile(T path)
+    {
+        DBC.addDBCFile(path);
+    }
     protected void compile(int canId)
     {
         AbstractMessage msg = null;

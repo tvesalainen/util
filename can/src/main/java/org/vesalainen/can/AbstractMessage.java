@@ -22,7 +22,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
@@ -51,7 +53,7 @@ import org.vesalainen.util.logging.JavaLogging;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public abstract class AbstractMessage extends JavaLogging implements Frame, CanMXBean, NotificationEmitter
+public abstract class AbstractMessage extends JavaLogging implements Frame, CanMXBean, NotificationEmitter, CanSource
 {
     protected final String NOTIF_PREFIX = "org.vesalainen.can.notif.";
     protected final String NOTIF_HEX_TYPE = NOTIF_PREFIX+"HEX";
@@ -70,6 +72,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     protected MBeanNotificationInfo[] mBeanNotificationInfos;
     private final long startMillis;
     private boolean hasSignals;
+    private CompilerWrapper compilerWrapper = new CompilerWrapper();
 
     protected AbstractMessage(Executor executor, MessageClass messageClass, int canId)
     {
@@ -256,6 +259,24 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         return hasSignals;
     }
 
+    @Override
+    public byte[] data()
+    {
+        return buf;
+    }
+
+    @Override
+    public LongSupplier millis()
+    {
+        return this::getMillis;
+    }
+
+    @Override
+    public IntSupplier messageLength()
+    {
+        return this::getCurrentBytes;
+    }
+
     public void setSignals(boolean hasSignals)
     {
         this.hasSignals = hasSignals;
@@ -269,7 +290,10 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         updateCount++;
         if (update(time, canId, dataLength, data))
         {
-            action.run();
+            if (action != null)
+            {
+                action.run();
+            }
             executeCount++;
             if (jmxAction != null)
             {
@@ -285,7 +309,8 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     {
         if (messageClass != null)
         {
-            action = compileSignals(compiler);
+            compilerWrapper.setCompiler(compiler);
+            action = compileSignals(compilerWrapper);
         }
     }
     protected <T> Transaction compileSignals(SignalCompiler<T> compiler)
@@ -293,7 +318,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         Objects.requireNonNull(messageClass, "MessageClass null");
         ActionBuilder<T> actionBuilder = new ActionBuilder<>(messageClass, compiler);
         Runnable begin = compiler.compileBegin(messageClass, canId, ()->getMillis());
-        Runnable act = actionBuilder.build(buf);
+        Runnable act = actionBuilder.build(this);
         Consumer<Throwable> end = compiler.compileEnd(messageClass);
         return new Transaction(begin, act, end);
     }
@@ -326,15 +351,15 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
 
         @Override
-        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
-            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->toIntFunction.applyAsInt(buf)+unit, this::getMillis);
+            return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->toIntFunction.applyAsInt(AbstractMessage.this)+unit, this::getMillis);
         }
 
         @Override
-        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
@@ -342,7 +367,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
 
         @Override
-        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
@@ -350,7 +375,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
 
         @Override
-        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction, IntFunction<String> map)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
@@ -358,12 +383,160 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
 
         @Override
-        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringFunction)
+        public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, Function<CanSource, String> stringFunction)
         {
             String name = sc.getName();
             String unit = sc.getUnit();
             return (ctx, buf)->emitter.sendNotification2(()->NOTIF_PREFIX+name, ()->stringFunction.apply(buf)+unit, this::getMillis);
         }
 
+    }
+    private class CompilerWrapper implements SignalCompiler
+    {
+        private SignalCompiler compiler;
+
+        public void setCompiler(SignalCompiler compiler)
+        {
+            this.compiler = compiler;
+        }
+
+        @Override
+        public Object target()
+        {
+            return compiler.target();
+        }
+
+        @Override
+        public boolean needCompilation(int canId)
+        {
+            return compiler.needCompilation(canId);
+        }
+
+        @Override
+        public Runnable compile(MessageClass mc, SignalClass sc, int off, CanSource buf)
+        {
+            return compiler.compile(mc, sc, off, buf);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, int off)
+        {
+            return compiler.compile(mc, sc, off);
+        }
+
+        @Override
+        public ArrayAction compileRaw(MessageClass mc, Supplier rawSupplier)
+        {
+            return compiler.compileRaw(mc, rawSupplier);
+        }
+
+        @Override
+        public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
+        {
+            return compiler.compileBegin(mc, canId, millisSupplier);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, ToIntFunction toIntFunction)
+        {
+            return compiler.compile(mc, sc, toIntFunction);
+        }
+
+        @Override
+        public ToIntFunction compileIntBoundCheck(MessageClass mc, SignalClass sc, ToIntFunction toIntFunction)
+        {
+            return compiler.compileIntBoundCheck(mc, sc, toIntFunction);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, ToLongFunction toLongFunction)
+        {
+            return compiler.compile(mc, sc, toLongFunction);
+        }
+
+        @Override
+        public ToLongFunction compileLongBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction toLongFunction)
+        {
+            return compiler.compileLongBoundCheck(mc, sc, toLongFunction);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, ToDoubleFunction toDoubleFunction)
+        {
+            return compiler.compile(mc, sc, toDoubleFunction);
+        }
+
+        @Override
+        public ToDoubleFunction compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToDoubleFunction toDoubleFunction)
+        {
+            return compiler.compileDoubleBoundCheck(mc, sc, toDoubleFunction);
+        }
+
+        @Override
+        public ToDoubleFunction compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction toLongFunction)
+        {
+            return compiler.compileDoubleBoundCheck(mc, sc, toLongFunction);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, ToIntFunction toIntFunction, IntFunction map)
+        {
+            return compiler.compile(mc, sc, toIntFunction, map);
+        }
+
+        @Override
+        public ArrayAction compileBinary(MessageClass mc, SignalClass sc)
+        {
+            return compiler.compileBinary(mc, sc);
+        }
+
+        @Override
+        public ArrayAction compile(MessageClass mc, SignalClass sc, Function stringFunction)
+        {
+            return compiler.compile(mc, sc, stringFunction);
+        }
+
+        @Override
+        public Consumer compileEnd(MessageClass mc)
+        {
+            return compiler.compileEnd(mc);
+        }
+
+        @Override
+        public ArrayAction compileBeginRepeat(MessageClass mc)
+        {
+            return compiler.compileBeginRepeat(mc);
+        }
+
+        @Override
+        public ArrayAction compileEndRepeat(MessageClass mc)
+        {
+            return compiler.compileEndRepeat(mc);
+        }
+
+        @Override
+        public boolean isFactored(double factor, double offset)
+        {
+            return compiler.isFactored(factor, offset);
+        }
+
+        @Override
+        public ToIntFunction factorInt(MessageClass mc, SignalClass sc, double factor, double offset, ToIntFunction toIntFunction)
+        {
+            return compiler.factorInt(mc, sc, factor, offset, toIntFunction);
+        }
+
+        @Override
+        public ToLongFunction factorLong(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction toLongFunction)
+        {
+            return compiler.factorLong(mc, sc, factor, offset, toLongFunction);
+        }
+
+        @Override
+        public ToDoubleFunction factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction toLongFunction)
+        {
+            return compiler.factorDouble(mc, sc, factor, offset, toLongFunction);
+        }
+        
     }
 }

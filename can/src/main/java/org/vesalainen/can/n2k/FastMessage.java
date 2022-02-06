@@ -28,9 +28,6 @@ public class FastMessage extends PgnMessage
 {
     private final static int MAX_FAST_SIZE = 223*8; // bits
     private FastReader reader;
-    private byte packetId;
-    private int byteCount;
-    private int byteMax;
     
     public FastMessage(Executor executor, MessageClass mc, int canId, int len, String comment)
     {
@@ -54,7 +51,9 @@ public class FastMessage extends PgnMessage
     protected boolean update(long time, int canId, int dataLength, long data)
     {
         millisSupplier = ()->time;
-        return reader.update(time, canId, dataLength, data);
+        boolean ok = reader.update(time, canId, dataLength, data);
+        setCurrentBytes(reader.getByteMax());
+        return ok;
     }
     
 }

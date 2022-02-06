@@ -38,10 +38,11 @@ public final class ArrayFuncs
      * @param offset
      * @return 
      */
-    public static final Function<byte[],String> getAisStringFunction2(int offset)
+    public static final Function<CanSource,String> getAisStringFunction2(int offset)
     {
-        return (buf)->
+        return (src)->
         {
+            byte[] buf = src.data();
             int len = buf[offset] & 0xff; // max length
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, len);
             int idx = CharSequences.indexOf(seq, '@');
@@ -62,12 +63,13 @@ public final class ArrayFuncs
      * @param limitSupplier Message length
      * @return 
      */
-    public static final Function<byte[],String> getAisStringFunction(int offset, int length, IntSupplier limitSupplier)
+    public static final Function<CanSource,String> getAisStringFunction(int offset, int length)
     {
         checkBitsString(offset, length);
-        return (buf)->
+        return (src)->
         {
-            int limit = limitSupplier.getAsInt();
+            byte[] buf = src.data();
+            int limit = src.messageLength().getAsInt();
             int len = min(length, limit-offset);
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, len);
             int idx = CharSequences.indexOf(seq, '@');
@@ -87,11 +89,12 @@ public final class ArrayFuncs
      * @param length    in bytes
      * @return 
      */
-    public static final Function<byte[],String> getZeroTerminatingStringFunction(int offset, int length)
+    public static final Function<CanSource,String> getZeroTerminatingStringFunction(int offset, int length)
     {
         checkBitsString(offset, length);
-        return (buf)->
+        return (src)->
         {
+            byte[] buf = src.data();
             CharSequence seq = CharSequences.getAsciiCharSequence(buf, offset, length);
             int idx = CharSequences.indexOf(seq, (cc)->cc<' '|| cc>127);
             if (idx != -1)
@@ -107,8 +110,9 @@ public final class ArrayFuncs
     public static final <T> ArrayAction<T> getStringWriter(int offset, int length, byte ender, Function<T,String> stringFunction)
     {
         checkBitsString(offset, length);
-        return (ctx, buf)->
+        return (ctx, src)->
         {
+            byte[] buf = src.data();
             String string = stringFunction.apply(ctx);
             int len = string!=null?min(length, string.length()):0;
             for (int ii=0;ii<len;ii++)
@@ -153,8 +157,9 @@ public final class ArrayFuncs
     public static final <T> ArrayAction<T> getIntWriter(byte[] arr, ToIntFunction<T> toIntFunction)
     {
         int len = arr.length/3;
-        return (ctx, buf)->
+        return (ctx, src)->
         {
+            byte[] buf = src.data();
             int v = toIntFunction.applyAsInt(ctx);
             for (int ii=0;ii<len;ii++)
             {
@@ -176,8 +181,9 @@ public final class ArrayFuncs
     public static final <T> ArrayAction<T> getLongWriter(byte[] arr, ToLongFunction<T> toLongFunction)
     {
         int len = arr.length/3;
-        return (ctx, buf)->
+        return (ctx, src)->
         {
+            byte[] buf = src.data();
             long v = toLongFunction.applyAsLong(ctx);
             for (int ii=0;ii<len;ii++)
             {
@@ -196,33 +202,33 @@ public final class ArrayFuncs
             }
         };
     }
-    public static final ToIntFunction<byte[]> getIntFunction(SignalClass sc, int off)
+    public static final ToIntFunction<CanSource> getIntFunction(SignalClass sc, int off)
     {
         return getIntFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
     }
-    public static final ToLongFunction<byte[]> getLongFunction(SignalClass sc, int off)
+    public static final ToLongFunction<CanSource> getLongFunction(SignalClass sc, int off)
     {
         return getLongFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
     }
-    public static final Function<byte[],String> getZeroTerminatingStringFunction(SignalClass sc, int off)
+    public static final Function<CanSource,String> getZeroTerminatingStringFunction(SignalClass sc, int off)
     {
         return ArrayFuncs.getZeroTerminatingStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8);
     }
-    public static final Function<byte[],String> getAisStringFunction(SignalClass sc, int off, IntSupplier currentBytesSupplier, Supplier<byte[]> arraySupplier)
+    public static final Function<CanSource,String> getAisStringFunction(SignalClass sc, int off, IntSupplier currentBytesSupplier, Supplier<CanSource> arraySupplier)
     {
-        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8, currentBytesSupplier);
+        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8);
     }
-    public static final Function<byte[],String> getAisStringFunction2(SignalClass sc, int off)
+    public static final Function<CanSource,String> getAisStringFunction2(SignalClass sc, int off)
     {
         return ArrayFuncs.getAisStringFunction2((sc.getStartBit()+off)/8);
     }
-    public static final ToIntFunction<byte[]> getIntSupplier(SignalClass sc, int off, Supplier<byte[]> arraySupplier)
+    public static final ToIntFunction<CanSource> getIntSupplier(SignalClass sc, int off, Supplier<CanSource> arraySupplier)
     {
         return getIntFunction(sc.getStartBit()+off, sc.getSize(), sc.getByteOrder()==BIG_ENDIAN, sc.getValueType()==SIGNED);
     }
-    public static final Function<byte[],String> getAisStringFunction(SignalClass sc, int off, IntSupplier currentBytesSupplier)
+    public static final Function<CanSource,String> getAisStringFunction(SignalClass sc, int off)
     {
-        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8, currentBytesSupplier);
+        return ArrayFuncs.getAisStringFunction((sc.getStartBit()+off)/8, sc.getSize()/8);
     }
     /**
      * Returns IntSupplier which constructs long from byte array
@@ -233,10 +239,10 @@ public final class ArrayFuncs
      * @param buf
      * @return 
      */
-    public static final ToIntFunction<byte[]> getIntFunction(int offset, int length, boolean bigEndian, boolean signed)
+    public static final ToIntFunction<CanSource> getIntFunction(int offset, int length, boolean bigEndian, boolean signed)
     {
         checkBitsInt(offset, length);
-        ToIntFunction<byte[]> is;
+        ToIntFunction<CanSource> is;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
@@ -250,7 +256,7 @@ public final class ArrayFuncs
         if (signed)
         {
             int shf = 32 - length;
-            ToIntFunction<byte[]> is2 = is;
+            ToIntFunction<CanSource> is2 = is;
             is = (buf)->(is2.applyAsInt(buf)<<shf)>>shf;
         }
         return is;
@@ -264,10 +270,10 @@ public final class ArrayFuncs
      * @param buf
      * @return 
      */
-    public static final ToLongFunction<byte[]> getLongFunction(int offset, int length, boolean bigEndian, boolean signed)
+    public static final ToLongFunction<CanSource> getLongFunction(int offset, int length, boolean bigEndian, boolean signed)
     {
         checkBitsLong(offset, length);
-        ToLongFunction<byte[]>  ls;
+        ToLongFunction<CanSource>  ls;
         if (bigEndian)
         {
             byte[] arr = createBigEndian(offset, length);
@@ -281,16 +287,17 @@ public final class ArrayFuncs
         if (signed)
         {
             int shf = 64 - length;
-            ToLongFunction<byte[]>  ls2 = ls;
+            ToLongFunction<CanSource>  ls2 = ls;
             ls = (buf)->(ls2.applyAsLong(buf)<<shf)>>shf;
         }
         return ls;
     }
-    private static final ToIntFunction<byte[]> getIntFunction(byte[] arr)
+    private static final ToIntFunction<CanSource> getIntFunction(byte[] arr)
     {
         int len = arr.length/3;
-        return (buf)->
+        return (src)->
         {
+            byte[] buf = src.data();
             int res = 0;
             for (int ii=0;ii<len;ii++)
             {
@@ -307,11 +314,12 @@ public final class ArrayFuncs
             return res;
         };
     }
-    private static final ToLongFunction<byte[]> getLongFunction(byte[] arr)
+    private static final ToLongFunction<CanSource> getLongFunction(byte[] arr)
     {
         int len = arr.length/3;
-        return (buf)->
+        return (src)->
         {
+            byte[] buf = src.data();
             long res = 0;
             for (int ii=0;ii<len;ii++)
             {

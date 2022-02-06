@@ -58,9 +58,17 @@ public class AbstractMessageData extends AnnotatedPropertyStore
     
     public void read(byte[] buf)
     {
-        inner.reader.run(this, buf);
+        inner.reader.run(this, new SimpleCanSource(buf));
     }
     public void write(byte[] buf)
+    {
+        inner.writer.run(this, new SimpleCanSource(buf));
+    }
+    public void read(CanSource buf)
+    {
+        inner.reader.run(this, buf);
+    }
+    public void write(CanSource buf)
     {
         inner.writer.run(this, buf);
     }
@@ -100,13 +108,13 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                 case LOOKUP:
                 case BINARY:
                 case INT:
-                    ToIntFunction<byte[]> ti = factory.toIntFunction();
+                    ToIntFunction<CanSource> ti = factory.toIntFunction();
                     MethodHandle asInt = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, int.class));
-                    return (ctx, buf)->
+                    return (ctx, src)->
                     {
                         try
                         {
-                            asInt.invokeExact(ctx, ti.applyAsInt(buf));
+                            asInt.invokeExact(ctx, ti.applyAsInt(src));
                         }
                         catch (Throwable ex)
                         {
@@ -115,13 +123,13 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                     };
 
                 case LONG:
-                    ToLongFunction<byte[]> tl = factory.toLongFunction();
+                    ToLongFunction<CanSource> tl = factory.toLongFunction();
                     MethodHandle asLong = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, long.class));
-                    return (ctx, buf)->
+                    return (ctx, src)->
                     {
                         try
                         {
-                            asLong.invokeExact(ctx, tl.applyAsLong(buf));
+                            asLong.invokeExact(ctx, tl.applyAsLong(src));
                         }
                         catch (Throwable ex)
                         {
@@ -129,13 +137,13 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                         }
                     };
                 case DOUBLE:
-                    ToDoubleFunction<byte[]> td = factory.toDoubleFunction();
+                    ToDoubleFunction<CanSource> td = factory.toDoubleFunction();
                     MethodHandle asDouble = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, double.class));
-                    return (ctx, buf)->
+                    return (ctx, src)->
                     {
                         try
                         {
-                            asDouble.invokeExact(ctx, td.applyAsDouble(buf));
+                            asDouble.invokeExact(ctx, td.applyAsDouble(src));
                         }
                         catch (Throwable ex)
                         {
@@ -145,13 +153,13 @@ public class AbstractMessageData extends AnnotatedPropertyStore
                 case ASCIIZ:
                 case AISSTRING:
                 case AISSTRING2:
-                    Function<byte[], String> ts = factory.toStringFunction();
+                    Function<CanSource, String> ts = factory.toStringFunction();
                     MethodHandle asString = setter.asType(MethodType.methodType(void.class, AnnotatedPropertyStore.class, String.class));
-                    return (ctx, buf)->
+                    return (ctx, src)->
                     {
                         try
                         {
-                            asString.invokeExact(ctx, ts.apply(buf));
+                            asString.invokeExact(ctx, ts.apply(src));
                         }
                         catch (Throwable ex)
                         {

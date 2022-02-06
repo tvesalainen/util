@@ -89,7 +89,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -108,7 +108,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -127,7 +127,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -167,7 +167,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringFunction)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, Function<CanSource, String> stringFunction)
     {
         String name = sc.getName();
         Msg msg = ctx.get();
@@ -186,7 +186,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     }
 
     @Override
-    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
+    public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction, IntFunction<String> map)
     {
         return SignalCompiler.super.compile(mc, sc, toIntFunction);
     }

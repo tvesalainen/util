@@ -42,7 +42,7 @@ public interface SignalCompiler<T>
     {
         return true;
     }
-    default Runnable compile(MessageClass mc, SignalClass sc, int off, byte[] buf) 
+    default Runnable compile(MessageClass mc, SignalClass sc, int off, CanSource buf) 
     {
         ArrayAction<T> arrayAction = compile(mc, sc, off);
         return ()->arrayAction.run((T) this, buf);
@@ -91,7 +91,7 @@ public interface SignalCompiler<T>
                     );
                 case AISSTRING:
                     return compile(mc, sc, 
-                            ArrayFuncs.getAisStringFunction(sc, off, currentBytesSupplier())
+                            ArrayFuncs.getAisStringFunction(sc, off)
                     );
                 case AISSTRING2:
                     return compile(mc, sc, 
@@ -101,36 +101,28 @@ public interface SignalCompiler<T>
                     throw new UnsupportedOperationException(sc.getSignalType()+" not supported");
             }
     };
-    default ArrayAction<T> compileRaw(MessageClass mc, Supplier<byte[]> rawSupplier) {return null;};
+    default ArrayAction<T> compileRaw(MessageClass mc, Supplier<CanSource> rawSupplier) {return null;};
     default Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier) {return null;};
-    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction) {return null;};
-    default ToIntFunction<byte[]> compileIntBoundCheck(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction) {return toIntFunction;};
-    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return null;};
-    default ToLongFunction<byte[]> compileLongBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return toLongFunction;};
-    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction) {return null;};
-    default ToDoubleFunction<byte[]> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction) {return toDoubleFunction;};
-    default ToDoubleFunction<byte[]> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction) {return null;};
-    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map) {return null;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction) {return null;};
+    default ToIntFunction<CanSource> compileIntBoundCheck(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction) {return toIntFunction;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction) {return null;};
+    default ToLongFunction<CanSource> compileLongBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction) {return toLongFunction;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction) {return null;};
+    default ToDoubleFunction<CanSource> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction) {return toDoubleFunction;};
+    default ToDoubleFunction<CanSource> compileDoubleBoundCheck(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction) {return null;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction, IntFunction<String> map) {return null;};
     default ArrayAction<T> compileBinary(MessageClass mc, SignalClass sc) {return null;}
-    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, Function<byte[],String> stringFunction) {return null;};
+    default ArrayAction<T> compile(MessageClass mc, SignalClass sc, Function<CanSource,String> stringFunction) {return null;};
     default Consumer<Throwable> compileEnd(MessageClass mc) {return null;};
     default ArrayAction<T> compileBeginRepeat(MessageClass mc) {return null;};
     default ArrayAction<T> compileEndRepeat(MessageClass mc) {return null;};
-    default LongSupplier millisSupplier()
-    {
-        throw new UnsupportedOperationException("not supported yet");
-    }
-    default IntSupplier currentBytesSupplier()
-    {
-        throw new UnsupportedOperationException("not supported yet");
-    }
 
     default boolean isFactored(double factor, double offset)
     {
         return factor != 1.0 || offset != 0.0;
     }
 
-    default ToIntFunction<byte[]> factorInt(MessageClass mc, SignalClass sc, double factor, double offset, ToIntFunction<byte[]> toIntFunction)
+    default ToIntFunction<CanSource> factorInt(MessageClass mc, SignalClass sc, double factor, double offset, ToIntFunction<CanSource> toIntFunction)
     {
         if (isFactored(factor, offset))
         {
@@ -142,7 +134,7 @@ public interface SignalCompiler<T>
         }
     }
 
-    default ToLongFunction<byte[]> factorLong(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<byte[]> toLongFunction)
+    default ToLongFunction<CanSource> factorLong(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<CanSource> toLongFunction)
     {
         if (isFactored(factor, offset))
         {
@@ -154,9 +146,9 @@ public interface SignalCompiler<T>
         }
     }
 
-    default ToDoubleFunction<byte[]> factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<byte[]> toLongFunction)
+    default ToDoubleFunction<CanSource> factorDouble(MessageClass mc, SignalClass sc, double factor, double offset, ToLongFunction<CanSource> toLongFunction)
     {
-        ToDoubleFunction<byte[]> check = compileDoubleBoundCheck(mc, sc, toLongFunction);
+        ToDoubleFunction<CanSource> check = compileDoubleBoundCheck(mc, sc, toLongFunction);
         if (check != null)
         {
             if (isFactored(factor, offset))

@@ -43,7 +43,7 @@ public class PrintCompiler implements SignalCompiler<System>
     }
 
     @Override
-    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction)
     {
         return (ctx,buf) ->
                 {
@@ -52,19 +52,19 @@ public class PrintCompiler implements SignalCompiler<System>
     }
 
     @Override
-    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToLongFunction<byte[]> toLongFunction)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction)
     {
         return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toLongFunction.applyAsLong(buf) + " " + sc.getUnit());
     }
 
     @Override
-    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<byte[]> toDoubleFunction)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction)
     {
         return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toDoubleFunction.applyAsDouble(buf) + " " + sc.getUnit());
     }
 
     @Override
-    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<byte[]> toIntFunction, IntFunction<String> map)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction, IntFunction<String> map)
     {
         return (ctx,buf) ->
         {
@@ -76,7 +76,7 @@ public class PrintCompiler implements SignalCompiler<System>
     }
 
     @Override
-    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, Function<byte[], String> stringSupplier)
+    public ArrayAction<System> compile(MessageClass mc, SignalClass sc, Function<CanSource, String> stringSupplier)
     {
         return (ctx,buf) ->
         {

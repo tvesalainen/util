@@ -18,6 +18,8 @@ package org.vesalainen.can.j1939;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.vesalainen.can.CanSource;
+import org.vesalainen.can.SimpleCanSource;
 import org.vesalainen.can.dbc.DBC;
 
 /**
@@ -35,7 +37,7 @@ public class ProductInformationTest
     @Test
     public void test()
     {
-        byte[] buf = new byte[134];
+        CanSource buf = new SimpleCanSource(134);
         ProductInformation p1 = new ProductInformation();
         p1.setLoadEquivalency(3);
         p1.setManufacturerSModelId("model");

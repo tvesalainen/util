@@ -16,11 +16,16 @@
  */
 package org.vesalainen.can;
 
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public interface ArrayAction<T>
+public interface CanSource
 {
-    void run(T ctx, CanSource src);
+    byte[] data();
+    LongSupplier millis();
+    IntSupplier messageLength();
 }

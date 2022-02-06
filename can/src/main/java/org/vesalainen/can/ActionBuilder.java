@@ -55,7 +55,7 @@ public class ActionBuilder<T> extends JavaLogging
         this.compiler = compiler;
     }
 
-    public Runnable build(byte[] buf)
+    public Runnable build(CanSource buf)
     {
         ArrayAction<T> act = build();
         return ()->act.run(compiler.target(), buf);
@@ -304,14 +304,14 @@ public class ActionBuilder<T> extends JavaLogging
         }
         
         @Override
-        public void run(T ctx, byte[] buf)
+        public void run(T ctx, CanSource src)
         {
-            ToIntFunction<byte[]> is = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
-            int index = is.applyAsInt(buf);
+            ToIntFunction<CanSource> is = ArrayFuncs.getIntFunction(offset, length, bigEndian, signed);
+            int index = is.applyAsInt(src);
             ArrayAction<T> act = map.get(index);
             if (act != null)
             {
-                act.run(ctx, buf);
+                act.run(ctx, src);
             }
         }
         
