@@ -107,9 +107,18 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Net
         InetAddress ia = InetAddress.getByName(host);
         return open(new InetSocketAddress(ia, port), maxDatagramSize, direct, loop);
     }
+    public static UnconnectedDatagramChannel open(String host, int local, int remote, int maxDatagramSize, boolean direct, boolean loop) throws IOException
+    {
+        InetAddress ia = InetAddress.getByName(host);
+        return open(new InetSocketAddress(ia, local), new InetSocketAddress(ia, remote), maxDatagramSize, direct, loop);
+    }
     public static UnconnectedDatagramChannel open(InetSocketAddress address, int maxDatagramSize, boolean direct, boolean loop) throws IOException
     {
-        InetAddress ia = address.getAddress();
+        return open(address, address, maxDatagramSize, direct, loop);
+    }
+    public static UnconnectedDatagramChannel open(InetSocketAddress local, InetSocketAddress remote, int maxDatagramSize, boolean direct, boolean loop) throws IOException
+    {
+        InetAddress ia = local.getAddress();
         ProtocolFamily family = StandardProtocolFamily.INET;
         if (ia instanceof Inet6Address)
         {
@@ -121,7 +130,11 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Net
             channel.setOption(SO_BROADCAST, true);
         }
         channel.setOption(SO_REUSEADDR, true);
-        channel.bind(new InetSocketAddress(address.getPort()));
+        channel.bind(new InetSocketAddress(local.getPort()));
+        if (!local.equals(remote))
+        {
+            channel.connect(remote);
+        }
         if (ia.isMulticastAddress())
         {
             channel.setOption(IP_MULTICAST_LOOP, loop);
@@ -135,7 +148,7 @@ public class UnconnectedDatagramChannel extends SelectableChannel implements Net
                 }
             }
         }
-        return new UnconnectedDatagramChannel(channel, address, maxDatagramSize, direct, loop);
+        return new UnconnectedDatagramChannel(channel, local, maxDatagramSize, direct, loop);
     }
     @Override
     public int read(ByteBuffer dst) throws IOException
