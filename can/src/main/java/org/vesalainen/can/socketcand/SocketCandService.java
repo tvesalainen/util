@@ -23,9 +23,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
-import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.DataUtil;
@@ -220,10 +218,4 @@ public class SocketCandService extends AbstractCanService
         }
         return m;
     }
-    @Override
-    protected String getHexData()
-    {
-        return input.getString(dataRef);
-    }
-
 }

@@ -49,24 +49,24 @@ public class FastReader extends JavaLogging
         {
             int header;
             int b = DataUtil.get(data, 0);
+            int seq = b & 0x1f;
             byte id = (byte) (b & 0xe0);
             if (id != packetId)
             {
                 if (byteMax != byteCount)
                 {
-                    warning("fast message failure");
+                    warning("fast message failure %x->%x: seq=%d max=%d cnt=%d", packetId, id, seq, byteMax, byteCount);
                     fastMessageFails++;
                 }
                 packetId = id;
                 byteMax = buf.length;
                 byteCount = 0;
             }
-            int seq = b & 0x1f;
             if (seq == 0)
             {   // new message
                 byteMax = DataUtil.get(data, 1);
                 header = 2;
-                finest("new fast %s: %d max=%d buf=%d", name, id, byteMax, buf.length);
+                finest("new fast %s: %x max=%d buf=%d", name, id, byteMax, buf.length);
             }
             else
             {
@@ -75,7 +75,7 @@ public class FastReader extends JavaLogging
             int off = seq == 0 ? 0 : 6 + (seq-1)*7;
             int remaining = min(dataLength-header, byteMax - off);
             byteCount += remaining;
-            finest("seq=%d max=%d cnt=%d rem=%d", seq, byteMax, byteCount, remaining);
+            finest("%x: seq=%d max=%d cnt=%d rem=%d", id, seq, byteMax, byteCount, remaining);
             try
             {
                 DataUtil.fromLong(data, header, buf, off, remaining);

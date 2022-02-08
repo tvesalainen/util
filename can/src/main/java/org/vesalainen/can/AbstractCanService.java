@@ -25,9 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
+import org.vesalainen.can.cannelloni.CannelloniService;
 import org.vesalainen.can.dbc.DBC;
-import org.vesalainen.can.dbc.DBCFile;
-import org.vesalainen.can.dbc.DBCParser;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.socketcand.SocketCandService;
@@ -40,6 +39,15 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public abstract class AbstractCanService extends JavaLogging implements Frame, Runnable, AutoCloseable
 {
+    protected final static int CAN_EFF_FLAG = 0x80000000; /* EFF/SFF is set in the MSB */
+    protected final static int CAN_RTR_FLAG = 0x40000000; /* remote transmission request */
+    protected final static int CAN_ERR_FLAG = 0x20000000; /* error frame */
+
+    /* valid bits in CAN ID for frame formats */
+    protected final static int CAN_SFF_MASK = 0x000007FF; /* standard frame format (SFF) */
+    protected final static int CAN_EFF_MASK = 0x1FFFFFFF; /* extended frame format (EFF) */
+    protected final static int CAN_ERR_MASK = 0x1FFFFFFF; /* omit EFF, RTR, ERR flags */
+    
     protected final Map<Integer,Frame> queueMap = new HashMap<>();
     protected final FrameQueue defaultQueue = new FrameQueue(8192, 0, this, "Default");
     protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
@@ -62,6 +70,18 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         executor.execute(defaultQueue);
     }
 
+    public static AbstractCanService openCannelloni(String address, int local, int remote, int bufferSize, SignalCompiler compiler) throws IOException
+    {
+        return openCannelloni(address, local, remote, bufferSize, new CachedScheduledThreadPool(), compiler);
+    }
+    public static AbstractCanService openCannelloni(String address, int local, int remote, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    {
+        return new CannelloniService(address, local, remote, bufferSize, executor, compiler);
+    }
+    public static AbstractCanService openCannelloni(String address, int local, int remote, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
+    {
+        return new CannelloniService(address, local, remote, bufferSize, executor, messsageFactory);
+    }
     public static AbstractCanService openSocketCand(String canBus, SignalCompiler compiler) throws IOException
     {
         return openSocketCand(canBus, new CachedScheduledThreadPool(), compiler);
@@ -104,7 +124,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     {
         if ((rawId & 0b1100000000000000000000000000000) != 0)
         {
-            throw new RuntimeException("\nEFF/SFF is set in the MSB "+getHexData());
+            throw new RuntimeException("\nEFF/SFF is set in the MSB ");
         }
         else
         {
@@ -275,5 +295,4 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         }
     }
 
-    protected abstract String getHexData();
 }

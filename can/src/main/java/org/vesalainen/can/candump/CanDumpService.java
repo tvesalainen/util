@@ -21,7 +21,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
-import java.util.concurrent.ExecutorService;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
@@ -73,12 +72,6 @@ public class CanDumpService extends AbstractCanService
     {
         return bus == null || bus.equals(canBus);
     }
-    @Override
-    protected String getHexData()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     @Override
     public void run()
     {

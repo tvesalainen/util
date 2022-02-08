@@ -16,8 +16,6 @@
  */
 package org.vesalainen.can;
 
-import java.util.function.IntUnaryOperator;
-
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>

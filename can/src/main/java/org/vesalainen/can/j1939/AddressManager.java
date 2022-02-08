@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -50,7 +51,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 {
     private Map<Long,Byte> nameMap = new HashMap<>();
     private Map<Byte,Long> saMap = new HashMap<>();
-    private Map<Long,Name> names = new HashMap<>();
+    private Map<Long,Name> names = new ConcurrentHashMap<>();
     private byte[] data = new byte[8];
     private AbstractCanService service;
     private CachedScheduledThreadPool executor;
@@ -195,39 +196,43 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void handleAddressClaimed(long data)
     {
         fine("AddressClaimed %s", PGN.toString(canId));
-        if (sa < 254 && sa == ownSA)    // conflict
+        if (sa < 254)
         {
-            Name n = new Name(data);
-            if (Long.compareUnsigned(ownNumericName, n.name) < 0)
+            if (sa == ownSA)    // conflict
             {
-                info("minor name claimed %d", sa);
-                executor.submit(()->sendAddressClaimed(ownSA));
+                Name n = new Name(data);
+                if (Long.compareUnsigned(ownNumericName, n.name) < 0)
+                {
+                    info("minor name claimed %d", sa);
+                    executor.submit(()->sendAddressClaimed(ownSA));
+                }
+                else
+                {
+                    ownSA = 254;
+                    warning("conflicting SA=%d", sa);
+                    executor.submit(this::claimOwnAddress);
+                }
+            }
+            Byte oldAddr = nameMap.get(data);
+            if (oldAddr == null)
+            {
+                info("SA %d Name %d", sa, data);
+                nameMap.put(data, (byte)sa);
+                saMap.put((byte)sa, data);
+                names.put(data, new Name(data));
+                startPollingProductInformation();
             }
             else
             {
-                ownSA = 254;
-                warning("conflicting SA=%d", sa);
-                executor.submit(this::claimOwnAddress);
-            }
-        }
-        Byte oldAddr = nameMap.get(data);
-        if (oldAddr == null)
-        {
-            nameMap.put(data, (byte)sa);
-            saMap.put((byte)sa, data);
-            names.put(data, new Name(data));
-            startPollingProductInformation();
-        }
-        else
-        {
-            if (oldAddr != (byte)sa)
-            {
-                warning("SA %d -> %d", oldAddr, sa);
-                nameMap.put(data, (byte)sa);
-                saMap.put((byte)sa, data);
-                saMap.remove(oldAddr);
-                Name name = names.get(data);
-                nameObservers.forEach((o)->o.accept(name));
+                if (oldAddr != (byte)sa)
+                {
+                    warning("SA %x %x -> %x %x", (int)(oldAddr&0xff), saMap.get(oldAddr), sa, data);
+                    nameMap.put(data, (byte)sa);
+                    saMap.put((byte)sa, data);
+                    saMap.remove(oldAddr);
+                    Name name = names.get(data);
+                    nameObservers.forEach((o)->o.accept(name));
+                }
             }
         }
     }
@@ -387,6 +392,37 @@ public class AddressManager extends JavaLogging implements PgnHandler
         protected ObjectName createObjectName() throws MalformedObjectNameException
         {
             return objectName;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 5;
+            hash = 37 * hash + (int) (this.name ^ (this.name >>> 32));
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null)
+            {
+                return false;
+            }
+            if (getClass() != obj.getClass())
+            {
+                return false;
+            }
+            final Name other = (Name) obj;
+            if (this.name != other.name)
+            {
+                return false;
+            }
+            return true;
         }
 
         public int getSource()

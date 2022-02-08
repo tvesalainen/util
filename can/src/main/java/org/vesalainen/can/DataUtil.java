@@ -16,6 +16,8 @@
  */
 package org.vesalainen.can;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
@@ -59,6 +61,21 @@ public final class DataUtil
         for (int ii=0;ii<length;ii++)
         {
             long h = data[ii]&0xff;
+            res |= h<<(8*ii);
+            
+        }
+        return res;
+    }
+    public static long asLong(byte length, ByteBuffer bb)
+    {
+        if (length > 8)
+        {
+            throw new IllegalArgumentException("data doesn't fit in long");
+        }
+        long res = 0;
+        for (int ii=0;ii<length;ii++)
+        {
+            long h = bb.get()&0xff;
             res |= h<<(8*ii);
             
         }
@@ -133,4 +150,5 @@ public final class DataUtil
                 throw new IllegalArgumentException(cc+" not hex");
         }
     }
+
 }
