@@ -177,7 +177,7 @@ public class ActionBuilder<T> extends JavaLogging
         IntRange repeatRange = mc.getRepeatRange();
         int repeatSize = repeatRange.getSize();
         int repeatStart = repeatRange.getFrom();
-        int maxRepeatCount = (mc.getSize()*8- repeatStart) / repeatSize;
+        int maxRepeatCount = (223*8- repeatStart) / repeatSize;
         if (maxRepeatCount < 2)
         {
             throw new UnsupportedOperationException("should not happen");

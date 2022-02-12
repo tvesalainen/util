@@ -38,6 +38,7 @@ import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.n2k.FastWriter;
 import org.vesalainen.can.n2k.FastReader;
 import org.vesalainen.management.AbstractDynamicMBean;
+import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.IntReference;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -76,7 +77,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         
         IsoAddressClaim ownClaim = new IsoAddressClaim();
         ownClaim.setIndustryGroup(4);
-        ownClaim.setUniqueNumber(123456);
+        ownClaim.setUniqueNumber((int)System.currentTimeMillis());
         ownClaim.setReservedIsoSelfConfigurable(1);
         ownName = new byte[8];
         ownClaim.write(ownName);
@@ -149,6 +150,26 @@ public class AddressManager extends JavaLogging implements PgnHandler
     {
         nameObservers.remove(observer);
     }
+
+    @Override
+    public void frame(long time, int canId, ReadBuffer data)
+    {
+        int len = data.remaining();
+        if (len <= 8)
+        {
+            long v = 0;
+            for (int ii=0;ii<len;ii++)
+            {
+                v = DataUtil.set(v, ii, data.get());
+            }
+            frame(time, canId, len, v);
+        }
+        else
+        {
+            handleProductInformation(time, canId, data);
+        }
+    }
+    
     @Override
     public void frame(long time, int canId, int dataLength, long data)
     {
@@ -165,9 +186,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 break;
             case 60928:
                 handleAddressClaimed(data);
-                break;
-            case 126996:
-                handleProductInformation(time, canId, dataLength, data);
                 break;
         }
     }
@@ -252,13 +270,13 @@ public class AddressManager extends JavaLogging implements PgnHandler
             stopPollingProductInformation();
         }
     }
-    private void handleProductInformation(long time, int canId, int dataLength, long data)
+    private void handleProductInformation(long time, int canId, ReadBuffer data)
     {
         Long n = saMap.get((byte)sa);
         if (n != null)
         {
             Name name = names.get(n);
-            name.frame(time, canId, dataLength, data);
+            name.frame(time, canId, data);
         }
     }
 
@@ -344,7 +362,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
         private IsoAddressClaim isoAddressClaim = new IsoAddressClaim();
         private ProductInformation productInformation = new ProductInformation();
         private byte[] info = new byte[134];
-        private FastReader fastReader = new FastReader("ProductInformation", info);
 
         public Name(long name)
         {
@@ -360,31 +377,29 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
             catch (MalformedObjectNameException | NullPointerException ex)
             {
-                log(Level.SEVERE, null, ex);
+                log(Level.SEVERE, ex, "");
             }
         }
 
         @Override
-        public void frame(long time, int canId, int dataLength, long data)
+        public void frame(long time, int canId, ReadBuffer data)
         {
-            if (fastReader.update(time, canId, dataLength, data))
+            data.get(info);
+            productInformation.read(info);
+            if (!ready)
             {
-                productInformation.read(info);
-                if (!ready)
+                try
                 {
-                    try
-                    {
-                        unregister();
-                        this.objectName = ObjectName.getInstance(Name.class.getName()+":Type="+productInformation.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
-                    }
-                    catch (MalformedObjectNameException | NullPointerException ex)
-                    {
-                        log(Level.SEVERE, null, ex);
-                    }
-                    register();
-                    nameObservers.forEach((o)->o.accept(this));
-                    ready = true;
+                    unregister();
+                    this.objectName = ObjectName.getInstance(Name.class.getName()+":Type="+productInformation.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
                 }
+                catch (MalformedObjectNameException | NullPointerException ex)
+                {
+                    log(Level.SEVERE, ex, "");
+                }
+                register();
+                nameObservers.forEach((o)->o.accept(this));
+                ready = true;
             }
         }
 
@@ -525,11 +540,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
         public int getLoadEquivalency()
         {
             return productInformation.getLoadEquivalency();
-        }
-
-        public int getFastMessageFails()
-        {
-            return fastReader.getFastMessageFails();
         }
 
     }

@@ -19,6 +19,7 @@ package org.vesalainen.can;
 import java.lang.management.ManagementFactory;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
@@ -27,6 +28,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import org.vesalainen.can.j1939.PGN;
+import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.AbstractFunctionQueue;
 
 /**
@@ -48,19 +50,23 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     }
     
     @Override
-    public void frame(long millis, int canId, int dataLength, long data)
+    public void frame(long millis, int canId, ReadBuffer data)
     {
         try
         {
             putLong(millis);
             putInt(canId);
-            put((byte) dataLength);
-            putLong(data);
+            int len = data.remaining();
+            put((byte)len);
+            for (int ii=0;ii<len;ii++)
+            {
+                put(data.get());
+            }
             hasMoreData();
         }
         catch (InterruptedException ex)
         {
-            log(Level.SEVERE, null, ex);
+            log(Level.SEVERE, ex, "");
         }        
     }
 
@@ -69,6 +75,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     {
         ObjectName objectName = null;
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        Buffer buffer = new Buffer();
         try
         {
             objectName = new ObjectName("org.vesalainen.can:type=queue,src="+getSource()+",name="+name);
@@ -79,14 +86,14 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
                 {
                     long millis = getLong();
                     int canId = getInt();
-                    int dataLength = getByte();
-                    long data = getLong();
+                    buffer.setRemaining(getByte());
+                    forwarder.frame(millis, canId, buffer);
+                    buffer.finish();
                     hasMoreRoom();
-                    forwarder.frame(millis, canId, dataLength, data);
                 }
                 catch (InterruptedException ex)
                 {
-                    log(Level.SEVERE, null, ex);
+                    log(Level.SEVERE, ex, "");
                     return;
                 }        
                 catch (Exception ex)
@@ -97,7 +104,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
         }
         catch (MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException ex)
         {
-            log(Level.SEVERE, null, ex);
+            log(Level.SEVERE, ex, "");
         }
         finally
         {
@@ -107,7 +114,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
             }
             catch (InstanceNotFoundException | MBeanRegistrationException ex)
             {
-                log(Level.SEVERE, null, ex);
+                log(Level.SEVERE, ex, "");
             }
         }
     }
@@ -124,4 +131,49 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
         return PGN.sourceAddress(canId);
     }
     
+    private class Buffer implements ReadBuffer
+    {
+        private int remaining;
+
+        public void setRemaining(int remaining)
+        {
+            this.remaining = remaining;
+        }
+        
+        public void finish()
+        {
+            while (remaining > 0)
+            {
+                try
+                {
+                    getByte();
+                }
+                catch (InterruptedException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        @Override
+        public int remaining()
+        {
+            return remaining;
+        }
+
+        @Override
+        public byte get()
+        {
+            try
+            {
+                byte b = getByte();
+                remaining--;
+                return b;
+            }
+            catch (InterruptedException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        
+    }
 }

@@ -14,26 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can.cannelloni;
+package org.vesalainen.can.can2udp;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.ByteChannel;
-import static java.nio.charset.StandardCharsets.US_ASCII;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
 import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.DefaultMessageFactory;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.j1939.PGN;
-import org.vesalainen.nio.PrintBuffer;
+import org.vesalainen.nio.ReadBuffer;
+import org.vesalainen.nio.ReadByteBuffer;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
@@ -41,7 +37,7 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CannelloniService extends AbstractCanService
+public class Can2UdpService extends AbstractCanService
 {
     private String address;
     private int local;
@@ -49,22 +45,19 @@ public class CannelloniService extends AbstractCanService
     private final int bufferSize;
     private final ThreadLocal<ByteBuffer> sendBuffer = ThreadLocal.withInitial(()->ByteBuffer.allocateDirect(32).order(ByteOrder.BIG_ENDIAN));
     private UnconnectedDatagramChannel channel;
-    private AtomicInteger seq = new AtomicInteger();
-    private byte nextSeq;
-    private int packetCount;
 
-    public CannelloniService(String address, int local, int remote, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler)
+    public Can2UdpService(String address, int local, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        this(address, local, remote, bufferSize, executor, new DefaultMessageFactory(compiler));
+        this(address, local, bufferSize, executor, new DefaultMessageFactory(compiler));
     }
 
-    public CannelloniService(String address, int local, int remote, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
+    public Can2UdpService(String address, int local, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(executor, messageFactory);
         this.address = address;
         this.local = local;
-        this.remote = new InetSocketAddress(address, remote);
         this.bufferSize = bufferSize;
+        this.remote = new InetSocketAddress(address, local);
     }
     
     @Override
@@ -72,10 +65,7 @@ public class CannelloniService extends AbstractCanService
     {
         ByteBuffer bb = sendBuffer.get();
         bb.clear();
-        bb.put((byte)2);
         bb.put((byte)0);
-        bb.put((byte)seq.getAndIncrement());
-        bb.putShort((byte)1);
         bb.putInt(canId|CAN_EFF_FLAG);
         bb.put((byte)length);
         for (int ii=0;ii<length;ii++)
@@ -84,14 +74,6 @@ public class CannelloniService extends AbstractCanService
         }
         bb.flip();
         channel.send(bb, remote);
-        try
-        {
-            Thread.sleep(100);
-        }
-        catch (InterruptedException ex)
-        {
-            log(Level.SEVERE, ex, "");
-        }
     }
 
     @Override
@@ -100,6 +82,7 @@ public class CannelloniService extends AbstractCanService
         try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, bufferSize, true, false))
         {
             ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.BIG_ENDIAN);
+            ReadBuffer buffer = new ReadByteBuffer(bb);
             channel = ch;
             started();
             while (true)
@@ -108,7 +91,8 @@ public class CannelloniService extends AbstractCanService
                 {
                     bb.clear();
                     int rc = channel.read(bb);
-                    handlePacket(bb);
+                    bb.flip();
+                    handlePacket(bb, buffer);
                 }
                 catch (Throwable ex)
                 {
@@ -123,43 +107,21 @@ public class CannelloniService extends AbstractCanService
         }
     }
 
-    private void handlePacket(ByteBuffer bb)
+    private void handlePacket(ByteBuffer bb, ReadBuffer rbb)
     {
-        bb.flip();
         byte version = bb.get();
-        if (version != 2)
+        if (version != 0 && version != 0xf)
         {
             throw new UnsupportedOperationException(version+" version not supported");
         }
-        byte opCode = bb.get();
-        if (opCode != 0)
-        {
-            throw new UnsupportedOperationException(opCode+" opCode not supported");
-        }
-        byte seqNo = bb.get();
-        if (packetCount > 0)
-        {
-            if (nextSeq != seqNo)
-            {
-                warning("packet loss %x %x", nextSeq, seqNo);
-            }
-        }
-        packetCount++;
-        nextSeq = ++seqNo;
-        short count = bb.getShort();
-        for (int ii=0;ii<count;ii++)
-        {
-            handleFrame(bb);
-        }
-    }
-
-    private void handleFrame(ByteBuffer bb)
-    {
         int canId = bb.getInt();
         finest("ID %s", PGN.toString(canId));
-        byte len = bb.get();
-        long data = DataUtil.asLong(len, bb);
-        frame(System.currentTimeMillis(), canId&CAN_EFF_MASK, len, data);
+        int len = bb.get() & 0xff;
+        if (len != bb.remaining())
+        {
+            throw new IllegalArgumentException();
+        }
+        frame(System.currentTimeMillis(), canId&CAN_EFF_MASK, rbb);
     }
     
 }

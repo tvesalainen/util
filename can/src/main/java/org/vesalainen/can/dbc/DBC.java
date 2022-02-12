@@ -18,6 +18,7 @@ package org.vesalainen.can.dbc;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntConsumer;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.j1939.PGN;
 
@@ -71,5 +72,15 @@ public class DBC
                 throw new UnsupportedOperationException(protocolType+" not supported");
         }
     }
-    
+    public static void forEachFastMessage(IntConsumer act)
+    {
+        pgnMap.forEach((pgn, mc)->
+        {
+            String type = (String) mc.getAttributeValue("MessageType");
+            if ("Fast".equals(type))
+            {
+                act.accept(pgn);
+            }
+        });
+    }
 }

@@ -19,6 +19,7 @@ package org.vesalainen.can.n2k;
 import java.util.concurrent.Executor;
 import org.vesalainen.can.PgnMessage;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.nio.ReadBuffer;
 
 /**
  *
@@ -27,12 +28,10 @@ import org.vesalainen.can.dbc.MessageClass;
 public class FastMessage extends PgnMessage
 {
     private final static int MAX_FAST_SIZE = 223*8; // bits
-    private FastReader reader;
     
     public FastMessage(Executor executor, MessageClass mc, int canId, int len, String comment)
     {
         super(executor, mc, canId, mc.isRepeating()?223:len, comment);
-        this.reader = new FastReader(name, buf);
     }
 
     @Override
@@ -48,12 +47,12 @@ public class FastMessage extends PgnMessage
     }
 
     @Override
-    protected boolean update(long time, int canId, int dataLength, long data)
+    protected boolean update(long time, int canId, ReadBuffer data)
     {
         millisSupplier = ()->time;
-        boolean ok = reader.update(time, canId, dataLength, data);
-        setCurrentBytes(reader.getByteMax());
-        return ok;
+        setCurrentBytes(data.remaining());
+        data.get(buf);
+        return true;
     }
     
 }

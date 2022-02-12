@@ -25,11 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
+import org.vesalainen.can.can2udp.Can2UdpService;
 import org.vesalainen.can.cannelloni.CannelloniService;
 import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.socketcand.SocketCandService;
+import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -70,6 +72,18 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         executor.execute(defaultQueue);
     }
 
+    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, SignalCompiler compiler) throws IOException
+    {
+        return openCan2Udp(address, local, bufferSize, new CachedScheduledThreadPool(), compiler);
+    }
+    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    {
+        return new Can2UdpService(address, local, bufferSize, executor, compiler);
+    }
+    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
+    {
+        return new Can2UdpService(address, local, bufferSize, executor, messsageFactory);
+    }
     public static AbstractCanService openCannelloni(String address, int local, int remote, int bufferSize, SignalCompiler compiler) throws IOException
     {
         return openCannelloni(address, local, remote, bufferSize, new CachedScheduledThreadPool(), compiler);
@@ -157,20 +171,21 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         send(canId, data.length, DataUtil.asLong(data));
     }
     public abstract void send(int canId, int length, long data) throws IOException;
+
     @Override
-    public void frame(long time, int canId, int dataLength, long data)
+    public void frame(long time, int canId, ReadBuffer data)
     {
         PgnHandler pgnHandler = pgnHandlers.get(PGN.pgn(canId));
         if (pgnHandler != null)
         {
-            pgnHandler.frame(time, canId, dataLength, data);
+            pgnHandler.frame(time, canId, data);
         }
         else
         {
             Frame frame = queueMap.get(PGN.addressedPgn(canId));
             if (frame != null)
             {
-                frame.frame(time, canId, dataLength, data);
+                frame.frame(time, canId, data);
             }
             else
             {
@@ -190,7 +205,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
                         finest("had it compiled %d", canId);
                     }
                 }
-                proc.frame(time, canId, dataLength, data);
+                proc.frame(time, canId, data);
             }
         }
     }
@@ -211,7 +226,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             if (msgCls != null)
             {
                 msg = compile(canId, msgCls);
-                info("compiled canId %d", canId);
+                fine("compiled canId %d", canId);
             }
             else
             {
@@ -220,7 +235,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
                 if (msgCls != null)
                 {
                     msg = compilePgn(canId, (MessageClass) msgCls);
-                    info("compiled canId %d %s", canId, msgCls.getName());
+                    fine("compiled canId %d %s", canId, msgCls.getName());
                 }
             }
         }

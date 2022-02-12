@@ -17,18 +17,15 @@
 package org.vesalainen.can.socketcand;
 
 import java.io.IOException;
-import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
 import static java.util.logging.Level.SEVERE;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
-import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.DefaultMessageFactory;
-import org.vesalainen.can.FrameQueue;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.nio.ByteBufferCharSequence;
 import org.vesalainen.nio.ByteBufferInputStream;
@@ -53,8 +50,6 @@ public class SocketCandService extends AbstractCanService
     private final byte[] array = new byte[8];
     private final ThreadLocal<PrintBuffer> buffer = ThreadLocal.withInitial(()->new PrintBuffer(US_ASCII, ByteBuffer.allocateDirect(64)));
     private boolean started;
-    private FrameQueue sendQueue = new FrameQueue(4096, 0, this::send, "send queue");
-    private Future<?> sendFuture;
     
     public SocketCandService(String canBus, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
@@ -73,7 +68,6 @@ public class SocketCandService extends AbstractCanService
     {
         started = true;
         super.started();
-        sendFuture = executor.submit(sendQueue);
     }
 
     @Override
@@ -84,22 +78,16 @@ public class SocketCandService extends AbstractCanService
             try
             {
                 started = false;
-                if (sendFuture != null)
-                {
-                    sendFuture.cancel(true);
-                }
                 SocketCandInfo info = waitForBeacon();
-                config("SocketCand found at %s", info.getAddress());
                 try (SocketChannel ch = SocketChannel.open(info.getAddress()))
                 {
                     channel = ch;
-                    ch.setOption(StandardSocketOptions.TCP_NODELAY, true);
                     readSocketCand(channel);
                 }
             }
             catch (ClosedByInterruptException ex)
             {
-                log(SEVERE, "SocketCandService interrupted");
+                log(SEVERE, ex, "SocketCandService interrupted");
                 return;
             }
             catch (Exception ex)
@@ -135,28 +123,29 @@ public class SocketCandService extends AbstractCanService
     @Override
     public void send(int canId, int length, long data) throws IOException
     {
-        sendQueue.frame(0, canId, length, data);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    public void send(long time, int canId, int length, long data)
+
+    //@Override
+    public void send(int canId, int length, byte[] data) throws IOException
     {
-        try 
+        if (started)
         {
             PrintBuffer p = buffer.get();
             p.clear();
             p.format("< send %08X %d ", canId, length);
             for (int ii=0;ii<length;ii++)
             {
-                p.format("%X ", DataUtil.get(data, ii));
+                p.format("%X ", data[ii]);
             }
             p.print('>');
             ByteBuffer bb = p.getByteBuffer();
             bb.flip();
             channel.write(bb);
-            Thread.sleep(100);  // socketcand crashes if it get messages too fast!!!
         }
-        catch (IOException | InterruptedException ex)
+        else
         {
-            throw new RuntimeException(ex);
+            warning("not sending because not started");
         }
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Timo Vesalainen <timo.vesalainen@iki.fi>
+ * Copyright (C) 2022 Timo Vesalainen <timo.vesalainen@iki.fi>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,28 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.vesalainen.can;
+package org.vesalainen.can.dbc;
 
-import org.vesalainen.can.DataUtil.LongBuffer;
-import org.vesalainen.nio.ReadBuffer;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-@FunctionalInterface
-public interface Frame
+public class DBCTest
 {
-    /**
-     * @deprecated 
-     * @param time
-     * @param canId
-     * @param dataLength
-     * @param data 
-     */
-    default void frame(long time, int canId, int dataLength, long data)
+    
+    public DBCTest()
     {
-        frame(time, canId, new LongBuffer(data, dataLength));
     }
-    void frame(long time, int canId, ReadBuffer data);
+
+    @Test
+    public void testFast()
+    {
+        DBC.addN2K();
+        DBC.forEachFastMessage((p)->System.err.println("\t\tcase "+p+":"));
+    }
+    
 }

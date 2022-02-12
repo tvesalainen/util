@@ -23,6 +23,7 @@ import static java.util.logging.Level.*;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.nio.ReadBuffer;
 
 /**
  *
@@ -59,14 +60,14 @@ public class SingleMessage extends AbstractMessage
     }
     
     @Override
-    protected boolean update(long time, int canId, int dataLength, long data)
+    protected boolean update(long time, int canId, ReadBuffer data)
     {
         try
         {
             if (action != null || jmxAction != null)
             {
-                setCurrentBytes(dataLength);
-                DataUtil.fromLong(data, buf, 0, min(buf.length, dataLength));
+                setCurrentBytes(data.remaining());
+                data.get(buf);
                 millisSupplier = ()->time;
                 return true;
             }

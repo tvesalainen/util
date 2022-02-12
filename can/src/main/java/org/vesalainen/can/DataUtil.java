@@ -16,7 +16,9 @@
  */
 package org.vesalainen.can;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.vesalainen.nio.ReadBuffer;
 
 /**
  *
@@ -104,6 +106,27 @@ public final class DataUtil
         v |= ((i & 0xff)<<sht);
         return v;
     }
+    public static String toString(long v, int len)
+    {
+        StringBuilder sb = new StringBuilder();
+        append(v, len, sb);
+        return sb.toString();
+    }
+    public static void append(long v, int len, Appendable o)
+    {
+        for (int ii=0;ii<len;ii++)
+        {
+            try
+            {
+                int sht = (ii)*8;
+                o.append(String.format("%x ", (v & (0xffL<<sht))>>>sht));
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
     private static int fromHex(char cc)
     {
         switch (cc)
@@ -151,4 +174,33 @@ public final class DataUtil
         }
     }
 
+    public static class LongBuffer implements ReadBuffer
+    {
+        private long data;
+        private int length;
+        private int index;
+
+        public LongBuffer(long data, int length)
+        {
+            if (length > 8 || length < 0)
+            {
+                throw new UnsupportedOperationException(length+" length not supported");
+            }
+            this.data = data;
+            this.length = length;
+        }
+        
+        @Override
+        public int remaining()
+        {
+            return length - index;
+        }
+
+        @Override
+        public byte get()
+        {
+            return (byte) DataUtil.get(data, index++);
+        }
+        
+    }
 }

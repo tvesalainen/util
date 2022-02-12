@@ -20,6 +20,7 @@ import static java.lang.Integer.min;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import org.vesalainen.can.DataUtil;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -35,6 +36,7 @@ public class FastReader extends JavaLogging
     private int byteMax;
     private int byteCount;
     private int fastMessageFails;
+    private StringBuilder sb = new StringBuilder();
 
     public FastReader(String name, byte[] buf)
     {
@@ -45,6 +47,7 @@ public class FastReader extends JavaLogging
     
     public boolean update(long time, int canId, int dataLength, long data)
     {
+        int sa = PGN.sourceAddress(canId);
         try
         {
             int header;
@@ -55,18 +58,21 @@ public class FastReader extends JavaLogging
             {
                 if (byteMax != byteCount)
                 {
-                    warning("fast message failure %x->%x: seq=%d max=%d cnt=%d", packetId, id, seq, byteMax, byteCount);
+                    info("fast message failure %d: %x->%x: seq=%d max=%d cnt=%d \n%s", sa, packetId, id, seq, byteMax, byteCount, sb.toString());
                     fastMessageFails++;
                 }
                 packetId = id;
                 byteMax = buf.length;
                 byteCount = 0;
+                sb.setLength(0);
             }
+            DataUtil.append(data, dataLength, sb);
+            sb.append('\n');
             if (seq == 0)
             {   // new message
                 byteMax = DataUtil.get(data, 1);
                 header = 2;
-                finest("new fast %s: %x max=%d buf=%d", name, id, byteMax, buf.length);
+                fine("new fast %s: %d %x max=%d buf=%d", name, sa, id, byteMax, buf.length);
             }
             else
             {
@@ -75,11 +81,11 @@ public class FastReader extends JavaLogging
             int off = seq == 0 ? 0 : 6 + (seq-1)*7;
             int remaining = min(dataLength-header, byteMax - off);
             byteCount += remaining;
-            finest("%x: seq=%d max=%d cnt=%d rem=%d", id, seq, byteMax, byteCount, remaining);
+            fine("%d %x: seq=%d max=%d cnt=%d rem=%d", sa, id, seq, byteMax, byteCount, remaining);
             try
             {
                 DataUtil.fromLong(data, header, buf, off, remaining);
-                finest("%s", HexUtil.toString(buf));
+                fine("%s", HexUtil.toString(buf));
             }
             catch (ArrayIndexOutOfBoundsException ex)
             {

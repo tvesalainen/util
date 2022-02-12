@@ -46,6 +46,7 @@ import org.vesalainen.can.dbc.SignalClass;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.n2k.N2KPgns;
 import org.vesalainen.management.SimpleNotificationEmitter;
+import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.HexUtil;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -285,10 +286,10 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
     protected abstract ObjectName getObjectName() throws MalformedObjectNameException;
 
     @Override
-    public void frame(long time, int canId, int dataLength, long data)
+    public void frame(long time, int canId, ReadBuffer data)
     {
         updateCount++;
-        if (update(time, canId, dataLength, data))
+        if (update(time, canId, data))
         {
             if (action != null)
             {
@@ -302,7 +303,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
             }
         }
     }
-    protected abstract boolean update(long time, int canId, int dataLength, long data);
+    protected abstract boolean update(long time, int canId, ReadBuffer data);
     protected abstract long getMillis();
 
     public void addSignals(SignalCompiler compiler)
