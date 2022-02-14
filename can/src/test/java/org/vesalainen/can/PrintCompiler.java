@@ -28,18 +28,24 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.can.dbc.SignalClass;
+import org.vesalainen.util.logging.JavaLogging;
 
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class PrintCompiler implements SignalCompiler<System>
+public class PrintCompiler extends JavaLogging implements SignalCompiler<System>
 {
+
+    public PrintCompiler()
+    {
+        super(PrintCompiler.class);
+    }
     
     @Override
     public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
     {
-        return () -> System.err.print(mc.getName() + ":");
+        return () -> info(mc.getName() + ":");
     }
 
     @Override
@@ -47,20 +53,20 @@ public class PrintCompiler implements SignalCompiler<System>
     {
         return (ctx,buf) ->
                 {
-                    System.err.print(" " + sc.getName() + " = " + toIntFunction.applyAsInt(buf) + " " + sc.getUnit());
+                    info(" " + sc.getName() + " = " + toIntFunction.applyAsInt(buf) + " " + sc.getUnit());
                 };
     }
 
     @Override
     public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToLongFunction<CanSource> toLongFunction)
     {
-        return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toLongFunction.applyAsLong(buf) + " " + sc.getUnit());
+        return (ctx,buf) -> info(" " + sc.getName() + " = " + toLongFunction.applyAsLong(buf) + " " + sc.getUnit());
     }
 
     @Override
     public ArrayAction<System> compile(MessageClass mc, SignalClass sc, ToDoubleFunction<CanSource> toDoubleFunction)
     {
-        return (ctx,buf) -> System.err.print(" " + sc.getName() + " = " + toDoubleFunction.applyAsDouble(buf) + " " + sc.getUnit());
+        return (ctx,buf) -> info(" " + sc.getName() + " = " + toDoubleFunction.applyAsDouble(buf) + " " + sc.getUnit());
     }
 
     @Override
@@ -71,7 +77,7 @@ public class PrintCompiler implements SignalCompiler<System>
             int ii = toIntFunction.applyAsInt(buf);
             String ss = map.apply(ii);
             ss = ss == null ? ii + "???" : ss;
-            System.err.print(" " + sc.getName() + " = " + ss);
+            info(" " + sc.getName() + " = " + ss);
         };
     }
 
@@ -80,7 +86,7 @@ public class PrintCompiler implements SignalCompiler<System>
     {
         return (ctx,buf) ->
         {
-            System.err.print(" " + sc.getName() + " = '" + stringSupplier.apply(buf) + "'");
+            info(" " + sc.getName() + " = '" + stringSupplier.apply(buf) + "'");
         };
     }
 
@@ -88,19 +94,19 @@ public class PrintCompiler implements SignalCompiler<System>
     @Override
     public Consumer<Throwable> compileEnd(MessageClass mc)
     {
-        return (ex) -> System.err.println();
+        return (ex) -> info("");
     }
 
     @Override
     public ArrayAction<System> compileBeginRepeat(MessageClass mc)
     {
-        return (ctx, buf) -> System.err.print("\n(");
+        return (ctx, buf) -> info("(");
     }
 
     @Override
     public ArrayAction<System> compileEndRepeat(MessageClass mc)
     {
-        return (ctx, buf) -> System.err.print(")");
+        return (ctx, buf) -> info(")");
     }
     
 }

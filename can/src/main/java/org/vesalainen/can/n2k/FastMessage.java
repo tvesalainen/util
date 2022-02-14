@@ -19,7 +19,9 @@ package org.vesalainen.can.n2k;
 import java.util.concurrent.Executor;
 import org.vesalainen.can.PgnMessage;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.ReadBuffer;
+import org.vesalainen.util.HexUtil;
 
 /**
  *
@@ -52,6 +54,11 @@ public class FastMessage extends PgnMessage
         millisSupplier = ()->time;
         setCurrentBytes(data.remaining());
         data.get(buf);
+        if (PGN.pgn(canId) != getPgn())
+        {
+            warning("pgn %d != %d", PGN.pgn(canId), getPgn());
+        }
+        info("%s: %x %s", name, canId, HexUtil.toString(buf).toLowerCase());
         return true;
     }
     

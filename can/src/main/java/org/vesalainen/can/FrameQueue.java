@@ -40,6 +40,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     private final int canId;
     private final Frame forwarder;
     private final String name;
+    private byte seq;
     
     public FrameQueue(int size, int canId, Frame forwarder, String name)
     {
@@ -54,6 +55,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     {
         try
         {
+            put(seq++);
             putLong(millis);
             putInt(canId);
             int len = data.remaining();
@@ -73,6 +75,7 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
     @Override
     public void run()
     {
+        byte seq2 = 0;
         ObjectName objectName = null;
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         Buffer buffer = new Buffer();
@@ -84,9 +87,17 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
             {
                 try
                 {
+                    byte b = getByte();
+                    if (seq2 != b)
+                    {
+                        int queueLength = getQueueLength();
+                        int maxQueueLength = getMaxQueueLength();
+                        throw new IllegalArgumentException("out of seq");
+                    }
+                    seq2++;
                     long millis = getLong();
                     int canId = getInt();
-                    buffer.setRemaining(getByte());
+                    buffer.setRemaining(getByte()&0xff);
                     forwarder.frame(millis, canId, buffer);
                     buffer.finish();
                     hasMoreRoom();
@@ -142,16 +153,9 @@ public class FrameQueue extends AbstractFunctionQueue implements Frame, Runnable
         
         public void finish()
         {
-            while (remaining > 0)
+            while (remaining != 0)
             {
-                try
-                {
-                    getByte();
-                }
-                catch (InterruptedException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
+                get();
             }
         }
         @Override

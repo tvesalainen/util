@@ -774,6 +774,7 @@ BO_ 15597822 Pgn060928_Iso_Address_Claim: 8 General_Or_Mandatory
  SG_ System_Instance : 56|4@1+ (1,0) [0|0] "" MFD
  SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
  SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
+ SG_ Name : 0|64@1+ (1,0) [0|0] "" MFD
 
 BO_ 32375038 Pgn126464_Pgn_List_Transmit_Reveived_Pgn_S_Group_Function: 8 General_Or_Mandatory
  SG_ Transmitted_Pgn_Group_Function_Code : 0|8@1+ (1,0) [0|0] "" MFD
