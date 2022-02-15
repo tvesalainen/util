@@ -66,8 +66,13 @@ public class CannelloniService extends AbstractCanService
         this.remote = new InetSocketAddress(address, remote);
         this.bufferSize = bufferSize;
     }
-    
+
     @Override
+    public void send(int canId, int length, byte[] data) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     public void send(int canId, int length, long data) throws IOException
     {
         ByteBuffer bb = sendBuffer.get();

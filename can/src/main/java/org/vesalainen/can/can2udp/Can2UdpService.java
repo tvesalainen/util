@@ -43,7 +43,7 @@ public class Can2UdpService extends AbstractCanService
     private int local;
     private SocketAddress remote;
     private final int bufferSize;
-    private final ThreadLocal<ByteBuffer> sendBuffer = ThreadLocal.withInitial(()->ByteBuffer.allocateDirect(32).order(ByteOrder.BIG_ENDIAN));
+    private final ThreadLocal<ByteBuffer> sendBuffer = ThreadLocal.withInitial(()->ByteBuffer.allocateDirect(256).order(ByteOrder.BIG_ENDIAN));
     private UnconnectedDatagramChannel channel;
 
     public Can2UdpService(String address, int local, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler)
@@ -61,16 +61,23 @@ public class Can2UdpService extends AbstractCanService
     }
     
     @Override
-    public void send(int canId, int length, long data) throws IOException
+    public void send(int canId, int length, byte[] data) throws IOException
     {
         ByteBuffer bb = sendBuffer.get();
         bb.clear();
-        bb.put((byte)0);
+        if (length <= 8)
+        {
+            bb.put((byte)0);
+        }
+        else
+        {
+            bb.put((byte)0xf);
+        }
         bb.putInt(canId|CAN_EFF_FLAG);
         bb.put((byte)length);
         for (int ii=0;ii<length;ii++)
         {
-            bb.put((byte)DataUtil.get(data, ii));
+            bb.put(data, 0, length);
         }
         bb.flip();
         channel.send(bb, remote);

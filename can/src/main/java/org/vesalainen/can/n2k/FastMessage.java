@@ -58,7 +58,7 @@ public class FastMessage extends PgnMessage
         {
             warning("pgn %d != %d", PGN.pgn(canId), getPgn());
         }
-        info("%s: %x %s", name, canId, HexUtil.toString(buf).toLowerCase());
+        finest("%s: %x %s", name, canId, HexUtil.toString(buf).toLowerCase());
         return true;
     }
     

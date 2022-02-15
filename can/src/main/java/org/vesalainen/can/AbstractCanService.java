@@ -168,9 +168,9 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     
     public void send(int canId, byte... data) throws IOException
     {
-        send(canId, data.length, DataUtil.asLong(data));
+        send(canId, data.length, data);
     }
-    public abstract void send(int canId, int length, long data) throws IOException;
+    public abstract void send(int canId, int length, byte[] data) throws IOException;
 
     @Override
     public void frame(long time, int canId, ReadBuffer data)
@@ -192,7 +192,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
                 AbstractMessage proc = getProc(canId);
                 if (proc == null)
                 {
-                    info("needs compiling %d pgn %d", canId, PGN.pgn(canId));
+                    finest("needs compiling %d pgn %d", canId, PGN.pgn(canId));
                     proc = getProc(canId);
                     if (proc == null)
                     {

@@ -36,16 +36,10 @@ public class IsoAddressClaim extends AbstractMessageData
     @Property(aliases={"System_Instance"}) int systemInstance;
     @Property(aliases={"Industry_Group"}) int industryGroup;
     @Property(aliases={"Reserved_Iso_Self_Configurable"}) int reservedIsoSelfConfigurable;
-    @Property(aliases={"Name"}) long name;
     
     public IsoAddressClaim()
     {
         super(MethodHandles.lookup(), 60928);
-    }
-
-    public long getName()
-    {
-        return name;
     }
 
     public int getUniqueNumber()
