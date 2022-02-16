@@ -39,24 +39,23 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  */
 public class Can2UdpService extends AbstractCanService
 {
+    private static final int BUFFER_SIZE = 256;
     private String address;
     private int local;
     private SocketAddress remote;
-    private final int bufferSize;
     private final ThreadLocal<ByteBuffer> sendBuffer = ThreadLocal.withInitial(()->ByteBuffer.allocateDirect(256).order(ByteOrder.BIG_ENDIAN));
     private UnconnectedDatagramChannel channel;
 
-    public Can2UdpService(String address, int local, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler)
+    public Can2UdpService(String address, int local, CachedScheduledThreadPool executor, SignalCompiler compiler)
     {
-        this(address, local, bufferSize, executor, new DefaultMessageFactory(compiler));
+        this(address, local, executor, new DefaultMessageFactory(compiler));
     }
 
-    public Can2UdpService(String address, int local, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
+    public Can2UdpService(String address, int local, CachedScheduledThreadPool executor, AbstractMessageFactory messageFactory)
     {
         super(executor, messageFactory);
         this.address = address;
         this.local = local;
-        this.bufferSize = bufferSize;
         this.remote = new InetSocketAddress(address, local);
     }
     
@@ -75,10 +74,7 @@ public class Can2UdpService extends AbstractCanService
         }
         bb.putInt(canId|CAN_EFF_FLAG);
         bb.put((byte)length);
-        for (int ii=0;ii<length;ii++)
-        {
-            bb.put(data, 0, length);
-        }
+        bb.put(data, 0, length);
         bb.flip();
         channel.send(bb, remote);
     }
@@ -86,9 +82,9 @@ public class Can2UdpService extends AbstractCanService
     @Override
     public void run()
     {
-        try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, bufferSize, true, false))
+        try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, BUFFER_SIZE, true, false))
         {
-            ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.BIG_ENDIAN);
+            ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE).order(ByteOrder.BIG_ENDIAN);
             ReadBuffer buffer = new ReadByteBuffer(bb);
             channel = ch;
             started();
@@ -126,7 +122,8 @@ public class Can2UdpService extends AbstractCanService
         int len = bb.get() & 0xff;
         if (len != bb.remaining())
         {
-            throw new IllegalArgumentException();
+            severe("len=%d remaining=%d pgn=%d", len, bb.remaining(), PGN.pgn(canId));
+            throw new IllegalArgumentException("len != remaining");
         }
         frame(System.currentTimeMillis(), canId&CAN_EFF_MASK, rbb);
     }

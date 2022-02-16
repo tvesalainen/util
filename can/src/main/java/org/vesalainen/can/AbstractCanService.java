@@ -72,17 +72,17 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         executor.execute(defaultQueue);
     }
 
-    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, SignalCompiler compiler) throws IOException
+    public static AbstractCanService openCan2Udp(String address, int local, SignalCompiler compiler) throws IOException
     {
-        return openCan2Udp(address, local, bufferSize, new CachedScheduledThreadPool(), compiler);
+        return openCan2Udp(address, local, new CachedScheduledThreadPool(), compiler);
     }
-    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
+    public static AbstractCanService openCan2Udp(String address, int local, CachedScheduledThreadPool executor, SignalCompiler compiler) throws IOException
     {
-        return new Can2UdpService(address, local, bufferSize, executor, compiler);
+        return new Can2UdpService(address, local, executor, compiler);
     }
-    public static AbstractCanService openCan2Udp(String address, int local, int bufferSize, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
+    public static AbstractCanService openCan2Udp(String address, int local, CachedScheduledThreadPool executor, AbstractMessageFactory messsageFactory) throws IOException
     {
-        return new Can2UdpService(address, local, bufferSize, executor, messsageFactory);
+        return new Can2UdpService(address, local, executor, messsageFactory);
     }
     public static AbstractCanService openCannelloni(String address, int local, int remote, int bufferSize, SignalCompiler compiler) throws IOException
     {
