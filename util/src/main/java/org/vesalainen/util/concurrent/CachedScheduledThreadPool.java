@@ -23,10 +23,8 @@ import static java.time.temporal.ChronoUnit.NANOS;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.Executors;
@@ -315,8 +313,12 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             }
             catch (InterruptedException ex)
             {
-                log(logLevel, "waiter interrupted");
+                warning("waiter interrupted");
                 return;
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "waiter %s", ex.getMessage());
             }
         }
     }
