@@ -24,7 +24,6 @@ import java.nio.ByteOrder;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
-import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.DefaultMessageFactory;
 import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.can.j1939.PGN;

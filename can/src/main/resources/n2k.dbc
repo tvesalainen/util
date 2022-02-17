@@ -868,7 +868,7 @@ BO_ 15204606 Pgn059392_Iso_Acknowledgment: 8 General_Or_Mandatory
  SG_ Pgn_Of_Requested_Information : 40|24@1+ (1,0) [0|0] "" MFD
 
 
-CM_ "This DBC is based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn" ;
+CM_ "This DBC is mostly based on https://github.com/canboat/canboat and https://github.com/TwoCanPlugIn" ;
 
 
 CM_ BO_ 16701694 "ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set." ;

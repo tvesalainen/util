@@ -58,20 +58,24 @@ public class PGN
      */
     public static final int canId(int pgn)
     {
-        return canId(pgn, 0xfe);
+        return canId(0, pgn);
     }
-    public static final int canId(int pgn, int sa)
+    public static final int canId(int pri, int pgn)
+    {
+        return canId(pri, pgn, 0xfe);
+    }
+    public static final int canId(int pri, int pgn, int sa)
     {
         int pf = (pgn>>8) & 0xff;
         int dp = (pgn>>16) & 0x1;
         if (pf < 0xf0)
         {
-            return (dp<<24)|(pf<<16)|sa;
+            return ((pri<<26)|dp<<24)|(pf<<16)|sa;
         }
         else
         {
             int ps = pgn & 0xff;
-            return (dp<<24)|(pf<<16)|(ps<<8)|sa;
+            return ((pri<<26)|dp<<24)|(pf<<16)|(ps<<8)|sa;
         }
     }
     public static final int canId(int pri, int pgn, int da, int sa)
@@ -172,12 +176,14 @@ public class PGN
         int pf = pduFormat(canId);
         int ps = pduSpecific(canId);
         int sa = sourceAddress(canId);
+        int pgn = pgn(canId);
         return "P="+hex(p)+
                 " edp="+hex(edp)+
                 " dp="+hex(dp)+
                 " pf="+hex(pf)+
                 " ps="+hex(ps)+
-                " sa="+hex(sa);
+                " sa="+hex(sa)+
+                " pgn="+hex(pgn);
     }
 
     private static String hex(int p)
