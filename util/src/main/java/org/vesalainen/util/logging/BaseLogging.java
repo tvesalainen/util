@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
+import org.vesalainen.net.ExceptionParser;
 import org.vesalainen.text.MillisDuration;
 import org.vesalainen.util.RepeatSuppressor;
 
@@ -296,6 +297,37 @@ public abstract class BaseLogging
                 logIt(level, String.format("%s format == null", level));
             }
         }
+    }
+    /**
+     * Write to log. If cause is normal end-of-connection writes warning without
+     * stack-trace otherwise stack-trace with SEVERE level.
+     * @param thrown
+     * @param format
+     * @param args 
+     */
+    public void warnBrokenConnection(Throwable thrown, String format, Object... args)
+    {
+        Level level = ExceptionParser.brokenConnection(WARNING, thrown);
+        if (level == WARNING)
+        {
+            warning(format, args);
+        }
+        else
+        {
+            log(SEVERE, thrown, format, args);
+        }
+    }
+    /**
+     * Write to log. Level is level if cause is normal end-of-connection otherwise
+     * SEVERE.
+     * @param level
+     * @param thrown
+     * @param format
+     * @param args 
+     */
+    public void logBrokenConnection(Level level, Throwable thrown, String format, Object... args)
+    {
+        log(ExceptionParser.brokenConnection(level, thrown), thrown, format, args);
     }
     /**
      * Write to log
