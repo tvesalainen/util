@@ -24,10 +24,10 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class ServiceModbusTest
+public class ServiceModbusT
 {
     
-    public ServiceModbusTest()
+    public ServiceModbusT()
     {
     }
 

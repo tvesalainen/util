@@ -16,17 +16,11 @@
  */
 package org.vesalainen.modbus;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.BufferUnderflowException;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
-import java.util.logging.Level;
 
 /**
  * ModbusTcpClient handles modbus tcp protocol client part.
