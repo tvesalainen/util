@@ -169,9 +169,9 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
     {
+        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, initialDelay, period, unit, false);
         ensureWaiterRunning();
         log(logLevel, "scheduleAtFixedRate(%s, %d, %d, %s)", command, initialDelay, period, unit);
-        RunnableScheduledFutureImpl future = new RunnableScheduledFutureImpl(command, initialDelay, period, unit, false);
         delayQueue.add(future);
         return future;
     }

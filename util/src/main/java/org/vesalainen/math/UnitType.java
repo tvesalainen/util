@@ -37,7 +37,7 @@ public enum UnitType
     /**
      * m/s<sup>2</sup>
      */
-    MSS(UnitCategory.ACCELERATION, 1.0, "g"),
+    MSS(UnitCategory.ACCELERATION, 1.0, "m/s2"),    // TODO
     /**
      * <i>g</i>0 Standard acceleration
      */

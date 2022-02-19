@@ -29,7 +29,7 @@ import static java.lang.Math.*;
  * </code>
  * <p>For ground referenced true wind:
  * <code>
- * setZeroAngle(trueHeading);
+ * setZeroAngle(trueHeading); ??? TODO
  * setTrueHeading(trueHeading);
  * setSpeed(sog);
  * setSpeedAngle(trackMadeGoode);
