@@ -19,7 +19,7 @@ package org.vesalainen.util.concurrent;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import static java.time.temporal.ChronoUnit.NANOS;
+import static java.time.temporal.ChronoUnit.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collection;
 import java.util.Iterator;
@@ -442,21 +442,21 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         public RunnableScheduledFutureImpl(Runnable command, long delay, TimeUnit unit)
         {
             super(command, null);
-            this.expires = clock.instant().plus(Duration.ofNanos(unit.toNanos(delay)));
+            this.expires = clock.instant().plus(Duration.ofMillis(unit.toMillis(delay)));
         }
 
         public RunnableScheduledFutureImpl(Callable<V> callable, long delay, TimeUnit unit)
         {
             super(callable);
-            this.expires = clock.instant().plus(Duration.ofNanos(unit.toNanos(delay)));
+            this.expires = clock.instant().plus(Duration.ofMillis(unit.toMillis(delay)));
         }
 
         public RunnableScheduledFutureImpl(Runnable command, long initialDelay, long period, TimeUnit unit, boolean fixedDelay)
         {
             this(
                     command, 
-                    clock.instant().plus(Duration.ofNanos(unit.toNanos(initialDelay))), 
-                    Duration.ofNanos(unit.toNanos(period)), fixedDelay
+                    clock.instant().plus(Duration.ofMillis(unit.toMillis(initialDelay))), 
+                    Duration.ofMillis(unit.toMillis(period)), fixedDelay
             );
         }
 
@@ -485,7 +485,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         @Override
         public long getDelay(TimeUnit unit)
         {
-            return unit.convert(clock.instant().until(expires, NANOS), TimeUnit.NANOSECONDS);
+            return unit.convert(clock.instant().until(expires, MILLIS), TimeUnit.MILLISECONDS);
         }
 
         @Override
