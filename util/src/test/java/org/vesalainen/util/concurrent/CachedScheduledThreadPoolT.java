@@ -61,7 +61,7 @@ public class CachedScheduledThreadPoolT
         pool.shutdown();
         pool.awaitTermination(10, TimeUnit.MILLISECONDS);
     }
-    //@Test
+    @Test
     public void testSchedule() throws InterruptedException, ExecutionException
     {
         times.add(clock.millis());
@@ -82,7 +82,7 @@ public class CachedScheduledThreadPoolT
         long gap = times.get(1)-times.get(0);
         assertTrue("gap="+gap,  gap >= 5000);
     }
-    //@Test
+    @Test
     public void testScheduleAtInstant() throws InterruptedException, ExecutionException
     {
         times.add(clock.millis());
@@ -92,7 +92,7 @@ public class CachedScheduledThreadPoolT
         assertEquals(2, times.size());
         assertTrue("times="+times.size(), times.get(1)-times.get(0) >= 10);
     }
-    //@Test
+    @Test
     public void testScheduleAtFixedRate() throws InterruptedException, ExecutionException
     {
         times.add(clock.millis());
@@ -101,7 +101,7 @@ public class CachedScheduledThreadPoolT
         future.cancel(false);
         assertTrue("times="+times.size(), times.size()>15);
     }
-    //@Test
+    @Test
     public void testScheduleWithFixedDelay() throws InterruptedException, ExecutionException
     {
         times.add(clock.millis());
@@ -110,7 +110,7 @@ public class CachedScheduledThreadPoolT
         future.cancel(false);
         assertTrue("times="+times.size(), times.size()>10 && times.size()<20);
     }
-    //@Test
+    @Test
     public void testSubmitCascading() throws InterruptedException, ExecutionException
     {
         final List<Integer> l = new ArrayList<>();
@@ -128,7 +128,7 @@ public class CachedScheduledThreadPoolT
         assertEquals(3, (int)l.get(2));
         assertEquals(4, (int)l.get(3));
     }
-    //@Test
+    @Test
     public void testSubmitAfter1() throws InterruptedException, ExecutionException
     {
         Future<?> future = pool.submit(this::command);
@@ -138,7 +138,7 @@ public class CachedScheduledThreadPoolT
         after.get();
         assertEquals(1, ref.getValue());
     }
-    //@Test
+    @Test
     public void testSubmitAfter2() throws InterruptedException, ExecutionException
     {
         Future<?> future = pool.submit(this::intrpt);
@@ -147,7 +147,7 @@ public class CachedScheduledThreadPoolT
         after.get();
         assertEquals(1, ref.getValue());
     }
-    //@Test
+    @Test
     public void testSubmitAfter3() throws InterruptedException, ExecutionException
     {
         Future<?> future = pool.submit(this::excp);
@@ -156,7 +156,7 @@ public class CachedScheduledThreadPoolT
         after.get();
         assertEquals(1, ref.getValue());
     }
-    //@Test
+    @Test
     public void testSubmitAfter4() throws InterruptedException, ExecutionException
     {
         long m1 = System.currentTimeMillis();
@@ -169,7 +169,7 @@ public class CachedScheduledThreadPoolT
         assertTrue(elapsed+"<10", elapsed >= 10);
         assertEquals(1, ref.getValue());
     }
-    //@Test
+    @Test
     public void testIterateAtFixedDelay() throws InterruptedException, ExecutionException
     {
         final List<Integer> l = new ArrayList<>();
