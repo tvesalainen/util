@@ -39,8 +39,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.*;
 import org.vesalainen.util.ArrayIterator;
 import org.vesalainen.util.logging.AttachedLogger;
 import static org.vesalainen.util.logging.BaseLogging.DEBUG;
@@ -298,7 +297,7 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
         if (waiterFuture == null || waiterFuture.isDone())
         {
             waiterFuture = submit(this::waiter);
-            log(logLevel, "waiter started");
+            log(INFO, "waiter started");
         }
     }
     private void waiter()
@@ -530,6 +529,10 @@ public class CachedScheduledThreadPool extends ThreadPoolExecutor implements Sch
             else
             {
                 super.run();
+                if (throwable != null && !(throwable instanceof CancelMeException))
+                {
+                    log(SEVERE, throwable, "run failed %s", throwable.getMessage());
+                }
             }
         }
 
