@@ -37,13 +37,22 @@ public class DoubleTimeoutSlidingAverageTest
     public void test1()
     {
         AtomicInteger time = new AtomicInteger();
-        DoubleTimeoutSlidingAverage ave = new DoubleTimeoutSlidingAverage(time::longValue, 8, 3);
+        DoubleTimeoutSlidingAverage ave = new DoubleTimeoutSlidingAverage(8, 3);
         Random random = new Random(12345678L);
         for (int ii=0;ii<1000000;ii++)
         {
-            ave.accept(random.nextDouble());
+            double d = random.nextDouble();
+            ave.accept(d);
             time.addAndGet(1);
-            assertEquals(ave.average(), ave.fast(), 1e-10);
+            if (Math.abs(ave.average()-ave.fast())>1e-10)
+            {
+                System.err.println();
+                double average = ave.average();
+                double fast = ave.fast();
+                System.err.println();
+            }
+            //System.err.println("II="+ii+" D="+d);
+            assertEquals("ii="+ii, ave.average(), ave.fast(), 1e-10);
         }
     }
     
