@@ -16,6 +16,7 @@
  */
 package org.vesalainen.math.sliding;
 
+import java.lang.reflect.Array;
 import java.util.PrimitiveIterator;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -143,14 +144,10 @@ public abstract class AbstractSliding
     {
         int sb = Math.floorMod(begin, oldLen);
         int se = Math.floorMod(end, oldLen);
-        if (sb < se)
+        int newLen = Array.getLength(arr);
+        for (int ii=begin;ii<end;ii++)
         {
-            System.arraycopy(old, sb, arr, sb, se - sb);
-        }
-        else
-        {
-            System.arraycopy(old, sb, arr, sb, oldLen - sb);
-            System.arraycopy(old, 0, arr, 0, se);
+            Array.set(arr, Math.floorMod(ii, newLen), Array.get(old, Math.floorMod(ii, oldLen)));
         }
         return arr;
     }
