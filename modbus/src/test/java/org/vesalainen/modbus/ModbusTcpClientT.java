@@ -36,7 +36,9 @@ public class ModbusTcpClientT
     {
         int i = 0;
         ModbusTcpClient cli = ModbusTcpClient.open("pi3dashboard");
-        cli.getInt(1, 123);
+        cli.setInt(123, 3, 2);
+        int res = cli.getInt(123, 3);
+        assertEquals(2, res);
     }
     
 }

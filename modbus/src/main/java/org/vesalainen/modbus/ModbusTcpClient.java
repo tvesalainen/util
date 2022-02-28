@@ -53,14 +53,14 @@ public class ModbusTcpClient extends AbstractModbusClient implements AutoCloseab
     }
 
     @Override
-    protected short startTransaction(byte unitId, int bytes)
+    protected short startTransaction(byte unitId)
     {
         short transaction = (short) transactionIdentifier.getAndIncrement();
         fine("start transaction %d", transaction);
         sendBuffer.clear();
         sendBuffer.putShort(transaction);
         sendBuffer.putShort((short) 0);
-        sendBuffer.putShort((short) (bytes+1));
+        sendBuffer.putShort((short) 0); // will be set later
         sendBuffer.put(unitId);
         return transaction;
     }

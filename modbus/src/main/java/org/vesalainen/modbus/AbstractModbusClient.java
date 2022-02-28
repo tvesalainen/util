@@ -96,7 +96,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
 
     private short putWriteMultipleRegistersRequestHeader(int unitId, int address, int words) throws IOException
     {
-        short transaction = startTransaction((byte) unitId, 8);
+        short transaction = startTransaction((byte) unitId);
         sendBuffer.put(WRITE_MULTIPLE_REGISTERS.code());
         sendBuffer.putShort((short) address);
         sendBuffer.putShort((short) words);
@@ -105,7 +105,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
     }
     private short putReadRegistersRequestHeader(int unitId, int address, int words) throws IOException
     {
-        short transaction = startTransaction((byte) unitId, 5);
+        short transaction = startTransaction((byte) unitId);
         sendBuffer.put(READ_HOLDING_REGISTERS.code());
         sendBuffer.putShort((short) address);
         sendBuffer.putShort((short) words);
@@ -114,6 +114,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
     private void send(short transaction, short dataLength, byte unit) throws IOException
     {
         sendBuffer.flip();
+        sendBuffer.putShort(4, (short) (sendBuffer.remaining()-6));
         channel.write(sendBuffer);
         receiveBuffer.clear();
         TcpUtil.readModbusMessage(channel, receiveBuffer);
@@ -178,7 +179,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
             }
         }
     }
-    protected abstract short startTransaction(byte unitId, int bytes);
+    protected abstract short startTransaction(byte unitId);
 
 
 
