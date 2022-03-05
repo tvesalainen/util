@@ -81,31 +81,34 @@ public class Can2UdpService extends AbstractCanService
     @Override
     public void run()
     {
-        try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, BUFFER_SIZE, true, false))
+        while (true)
         {
-            ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE).order(ByteOrder.BIG_ENDIAN);
-            ReadBuffer buffer = new ReadByteBuffer(bb);
-            channel = ch;
-            started();
-            while (true)
+            try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, BUFFER_SIZE, true, false))
             {
-                try
+                ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE).order(ByteOrder.BIG_ENDIAN);
+                ReadBuffer buffer = new ReadByteBuffer(bb);
+                channel = ch;
+                started();
+                while (channel.isOpen())
                 {
-                    bb.clear();
-                    int rc = channel.read(bb);
-                    bb.flip();
-                    handlePacket(bb, buffer);
+                    try
+                    {
+                        bb.clear();
+                        int rc = channel.read(bb);
+                        bb.flip();
+                        handlePacket(bb, buffer);
+                    }
+                    catch (Throwable ex)
+                    {
+                        log(Level.SEVERE, ex, "");
+                    }
                 }
-                catch (Throwable ex)
-                {
-                    log(Level.SEVERE, ex, "");
-                }
+
             }
-            
-        }
-        catch (IOException ex)
-        {
-            log(Level.SEVERE, ex, "");
+            catch (IOException ex)
+            {
+                log(Level.SEVERE, ex, "");
+            }
         }
     }
 
