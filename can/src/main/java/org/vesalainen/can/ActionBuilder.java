@@ -58,7 +58,14 @@ public class ActionBuilder<T> extends JavaLogging
     public Runnable build(CanSource buf)
     {
         ArrayAction<T> act = build();
-        return ()->act.run(compiler.target(), buf);
+        if (act != null)
+        {
+            return ()->act.run(compiler.target(), buf);
+        }
+        else
+        {
+            return null;
+        }
     }
     public ArrayAction<T> build()
     {
