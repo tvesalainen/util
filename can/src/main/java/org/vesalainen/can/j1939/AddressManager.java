@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -34,10 +33,8 @@ import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.Frame;
 import org.vesalainen.can.PgnHandler;
 import org.vesalainen.can.SignalCompiler;
-import org.vesalainen.can.dbc.MessageClass;
 import org.vesalainen.management.AbstractDynamicMBean;
 import org.vesalainen.nio.ReadBuffer;
-import org.vesalainen.util.IntReference;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 import org.vesalainen.util.logging.JavaLogging;
 
@@ -47,8 +44,8 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AddressManager extends JavaLogging implements PgnHandler
 {
-    private static final int ALL = 255;
-    private static final int NULL = 254;
+    private static final byte ALL = (byte) 255;
+    private static final byte NULL = (byte) 254;
     private static final int REQUEST_MESSAGE = 59904;
     private static final int ADDRESS_CLAIM = 60928;
     private static final int PRODUCT_INFO = 126996;
@@ -61,10 +58,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private CachedScheduledThreadPool executor;
 
     private int canId;
-    private int pf;
-    private int ps;
-    private int sa;
-    private int ownSA = NULL;
+    private byte pf;
+    private byte ps;
+    private byte sa;
+    private byte ownSA = NULL;
     private byte[] ownName;
     private IsoRequest isoRequest = new IsoRequest();
     private byte[] requestForAddressClaimed = new byte[3];
@@ -72,8 +69,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private long ownNumericName;
     private ProductInformation ownProductInformation;
     private byte[] ownProductInformationBuf = new byte[134];
-    private ScheduledFuture<?> productInformationPollFuture;
+    private Poller<Byte> namePoller;
+    private Poller<Byte> infoPoller;
     private List<Consumer<Name>> nameObservers = new ArrayList<>();
+    private int pgn;
 
     public AddressManager()
     {
@@ -97,43 +96,19 @@ public class AddressManager extends JavaLogging implements PgnHandler
     }
 
     @Override
-    public int[] pgnsToHandle()
-    {
-        return new int[]{REQUEST_MESSAGE, ADDRESS_CLAIM, PRODUCT_INFO};
-    }
-
-    @Override
     public void init(AbstractCanService service, CachedScheduledThreadPool executor)
     {
         this.service = service;
         this.executor = executor;
-    }
-
-    @Override
-    public void init(int pgn, MessageClass mc)
-    {
+        namePoller = new Poller<>(executor, this::requestAddress, 10, 1, TimeUnit.SECONDS);
+        infoPoller = new Poller<>(executor, this::requestProductInformation, 10, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void start()
     {
-        executor.submit(this::requestAddresses);
     }
 
-    private synchronized void startPollingProductInformation()
-    {
-        if (productInformationPollFuture == null)
-        {
-            config("startPollingProductInformation");
-            productInformationPollFuture = executor.scheduleAtFixedRate(this::pollProductInformation, 1, 1, TimeUnit.SECONDS);
-        }
-    }
-    private synchronized void stopPollingProductInformation()
-    {
-        productInformationPollFuture.cancel(true);
-        productInformationPollFuture = null;
-        config("stopPollingProductInformation");
-    }
     public void addNameObserver(Consumer<Name> observer)
     {
         nameObservers.add(observer);
@@ -148,9 +123,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
     {
         this.canId = canId;
         finest("%s", PGN.toString(canId));
-        this.pf = PGN.pduFormat(canId);
-        this.ps = PGN.pduSpecific(canId);
-        this.sa = PGN.sourceAddress(canId);
+        this.pgn = PGN.pgn(canId);
+        this.pf = (byte) PGN.pduFormat(canId);
+        this.ps = (byte) PGN.pduSpecific(canId);
+        this.sa = (byte) PGN.sourceAddress(canId);
         switch (PGN.pgn(canId))
         {
             case REQUEST_MESSAGE:
@@ -162,8 +138,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
             case PRODUCT_INFO:
                 handleProductInformation(time, canId, data);
                 break;
-            default:
-                throw new UnsupportedOperationException(PGN.pgn(canId)+" not supported");
+        }
+        if (pgn > 0 && !saMap.containsKey((byte)sa))
+        {
+            namePoller.enable((byte)sa);
         }
     }
 
@@ -191,7 +169,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void handleAddressClaimed(long time, int canId, ReadBuffer  data)
     {
-        fine("AddressClaimed %x name=%x", sa, data);
+        info("AddressClaimed %x", sa);
         if (sa < NULL)
         {
             data.get(buf);
@@ -217,7 +195,8 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 nameMap.put(name, (byte)sa);
                 saMap.put((byte)sa, name);
                 names.put(name, new Name(buf));
-                startPollingProductInformation();
+                namePoller.disable((byte)sa);
+                infoPoller.enable((byte)sa);
             }
             else
             {
@@ -237,22 +216,6 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
         }
     }
-    private void pollProductInformation()
-    {
-        IntReference count = new IntReference(0);
-        names.forEach((d,n)->
-        {
-            if (!n.ready)
-            {
-                requestProductInformation(n.getSource());
-                count.add(1);
-            }
-        });
-        if (count.getValue() == 0)
-        {
-            stopPollingProductInformation();
-        }
-    }
     private void handleProductInformation(long time, int canId, ReadBuffer data)
     {
         Long n = saMap.get((byte)sa);
@@ -264,10 +227,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
 
-    private void requestAddresses()
+    private void requestAddress(byte from)
     {
-        int canId = PGN.canId(2, REQUEST_MESSAGE, ALL, NULL);
-        fine("requestAddresses from all");
+        int canId = PGN.canId(2, REQUEST_MESSAGE, from, ownSA);
+        info("requestAddress from %d", from);
         try
         {
             service.send(canId, requestForAddressClaimed);
@@ -287,7 +250,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             {
                 if (!saMap.containsKey((byte)ii))
                 {
-                    ownSA = ii;
+                    ownSA = (byte) ii;
                     config("claimed own address %d", ownSA);
                     break;
                 }
@@ -305,10 +268,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
 
-    private void requestProductInformation(int da)
+    private void requestProductInformation(byte da)
     {
         int canId = PGN.canId(2, REQUEST_MESSAGE, da, ownSA);
-        fine("requestProductInformation to %x %s", da, PGN.toString(canId));
+        info("requestProductInformation to %x %s", da, PGN.toString(canId));
         try
         {
             service.send(canId, requestForProductInformation);
@@ -322,7 +285,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void sendProductInformation(int da)
     {
         int canId = PGN.canId(2, PRODUCT_INFO, ownSA);
-        fine("sendProductInformation to %x", da);
+        info("sendProductInformation to %x", da);
         try
         {
             ownProductInformation.write(ownProductInformationBuf);
@@ -395,6 +358,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     register();
                     nameObservers.forEach((o)->o.accept(this));
                     ready = true;
+                    infoPoller.disable((byte)getSource());
                 }
             }
             catch (Throwable ex)

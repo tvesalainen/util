@@ -65,7 +65,7 @@ public class PGNTest
     @Test
     public void testCanId3()
     {
-        int canId = PGN.canId(2, 60928, 5, 4);
+        int canId = PGN.canId(2, 60928, (byte)5, (byte)4);
         assertEquals(2, PGN.messagePriority(canId));
         assertEquals(60928, PGN.pgn(canId));
         assertEquals(5, PGN.pduSpecific(canId));

@@ -26,12 +26,6 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  */
 public interface PgnHandler extends Frame
 {
-    /**
-     * Returns a list of handled pgns.
-     * @return 
-     */
-    int[] pgnsToHandle();
     void init(AbstractCanService service, CachedScheduledThreadPool executor);
-    void init(int pgn, MessageClass mc);
     void start();
 }
