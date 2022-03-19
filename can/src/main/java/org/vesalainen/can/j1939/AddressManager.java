@@ -58,7 +58,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private CachedScheduledThreadPool executor;
 
     private int canId;
-    private byte pf;
+    private int pf;
     private byte ps;
     private byte sa;
     private byte ownSA = NULL;
@@ -100,8 +100,8 @@ public class AddressManager extends JavaLogging implements PgnHandler
     {
         this.service = service;
         this.executor = executor;
-        namePoller = new Poller<>(executor, this::requestAddress, 10, 1, TimeUnit.SECONDS);
-        infoPoller = new Poller<>(executor, this::requestProductInformation, 10, 1, TimeUnit.SECONDS);
+        namePoller = new Poller<>(executor, this::requestAddress, 100, 1, TimeUnit.SECONDS);
+        infoPoller = new Poller<>(executor, this::requestProductInformation, 100, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -169,8 +169,8 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void handleAddressClaimed(long time, int canId, ReadBuffer  data)
     {
-        info("AddressClaimed %x", sa);
-        if (sa < NULL)
+        fine("AddressClaimed %x", sa);
+        if (sa != NULL && sa != ALL)
         {
             data.get(buf);
             long name = DataUtil.asLong(buf);
@@ -179,7 +179,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 Name n = new Name(buf);
                 if (Long.compareUnsigned(ownNumericName, n.getName()) < 0)
                 {
-                    fine("minor name claimed %x", sa);
+                    warning("minor name claimed %x", sa);
                     claimOwnAddress();
                 }
                 else
@@ -192,19 +192,19 @@ public class AddressManager extends JavaLogging implements PgnHandler
             if (oldAddr == null)
             {
                 fine("SA %x Name %x", sa, name);
-                nameMap.put(name, (byte)sa);
-                saMap.put((byte)sa, name);
+                nameMap.put(name, sa);
+                saMap.put(sa, name);
                 names.put(name, new Name(buf));
-                namePoller.disable((byte)sa);
-                infoPoller.enable((byte)sa);
+                namePoller.disable(sa);
+                infoPoller.enable(sa);
             }
             else
             {
-                if (oldAddr != (byte)sa)
+                if (!oldAddr.equals(sa))
                 {
                     warning("SA %x %x -> %x %x", (int)(oldAddr&0xff), saMap.get(oldAddr), sa, name);
-                    nameMap.put(name, (byte)sa);
-                    saMap.put((byte)sa, name);
+                    nameMap.put(name, sa);
+                    saMap.put(sa, name);
                     saMap.remove(oldAddr);
                     Name n = names.get(name);
                     nameObservers.forEach((o)->o.accept(n));
@@ -214,6 +214,10 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     claimOwnAddress();
                 }
             }
+        }
+        if (!saMap.containsKey(sa))
+        {
+            fine("sa %x not found", sa);
         }
     }
     private void handleProductInformation(long time, int canId, ReadBuffer data)
@@ -230,7 +234,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     private void requestAddress(byte from)
     {
         int canId = PGN.canId(2, REQUEST_MESSAGE, from, ownSA);
-        info("requestAddress from %d", from);
+        fine("requestAddress from %x", from);
         try
         {
             service.send(canId, requestForAddressClaimed);
@@ -246,7 +250,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         fine("claiming own address");
         if (ownSA == NULL)
         {
-            for (int ii=0;ii<NULL;ii++)
+            for (int ii=0;ii<254;ii++)
             {
                 if (!saMap.containsKey((byte)ii))
                 {
@@ -256,22 +260,29 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 }
             }
         }
-        int canId = PGN.canId(2, ADDRESS_CLAIM, ALL, ownSA);
-        fine("sendAddressClaimed to all");
-        try
+        if (ownSA != NULL)
         {
-            service.send(canId, ownName);
+            int canId = PGN.canId(2, ADDRESS_CLAIM, ALL, ownSA);
+            fine("sendAddressClaimed to all");
+            try
+            {
+                service.send(canId, ownName);
+            }
+            catch (IOException ex)
+            {
+                throw new RuntimeException(ex);
+            }
         }
-        catch (IOException ex)
+        else
         {
-            throw new RuntimeException(ex);
+            warning("couldn't get own address");
         }
     }
 
     private void requestProductInformation(byte da)
     {
         int canId = PGN.canId(2, REQUEST_MESSAGE, da, ownSA);
-        info("requestProductInformation to %x %s", da, PGN.toString(canId));
+        fine("requestProductInformation to %x %s", da, PGN.toString(canId));
         try
         {
             service.send(canId, requestForProductInformation);
@@ -282,18 +293,21 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
 
-    private void sendProductInformation(int da)
+    private void sendProductInformation(byte da)
     {
-        int canId = PGN.canId(2, PRODUCT_INFO, ownSA);
-        info("sendProductInformation to %x", da);
-        try
+        if (da < NULL)
         {
-            ownProductInformation.write(ownProductInformationBuf);
-            service.send(canId, ownProductInformationBuf);
-        }
-        catch (Throwable ex)
-        {
-            log(SEVERE, ex, "%s", ex.getMessage());
+            int canId = PGN.canId(2, PRODUCT_INFO, ownSA);
+            fine("sendProductInformation to %x", da);
+            try
+            {
+                ownProductInformation.write(ownProductInformationBuf);
+                service.send(canId, ownProductInformationBuf);
+            }
+            catch (Throwable ex)
+            {
+                log(SEVERE, ex, "%s", ex.getMessage());
+            }
         }
     }
     /**
@@ -358,7 +372,8 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     register();
                     nameObservers.forEach((o)->o.accept(this));
                     ready = true;
-                    infoPoller.disable((byte)getSource());
+                    infoPoller.disable(sa);
+                    fine("got info from %x", sa);
                 }
             }
             catch (Throwable ex)
@@ -404,12 +419,12 @@ public class AddressManager extends JavaLogging implements PgnHandler
             return true;
         }
 
-        public int getSource()
+        public byte getSource()
         {
             Byte sa = nameMap.get(name);
             if (sa != null)
             {
-                return sa & 0xff;
+                return sa;
             }
             else
             {

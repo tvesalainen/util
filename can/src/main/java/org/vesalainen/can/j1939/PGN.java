@@ -70,15 +70,15 @@ public class PGN
         int dp = (pgn>>16) & 0x1;
         if (pf < 0xf0)
         {
-            return ((pri<<26)|dp<<24)|(pf<<16)|sa;
+            return (((pri&0xf)<<26)|(dp&0x1)<<24)|((pf&0xff)<<16)|(sa&0xff);
         }
         else
         {
             int ps = pgn & 0xff;
-            return ((pri<<26)|dp<<24)|(pf<<16)|(ps<<8)|sa;
+            return (((pri&0x7)<<26)|(dp&0x1)<<24)|((pf&0xff)<<16)|((ps&0xff)<<8)|(sa&0xff);
         }
     }
-    public static final int canId(int pri, int pgn, int da, int sa)
+    public static final int canId(int pri, int pgn, byte da, byte sa)
     {
         int pf = (pgn>>8) & 0xff;
         int dp = (pgn>>16) & 0x1;
@@ -91,7 +91,7 @@ public class PGN
             throw new IllegalArgumentException("pgn is not peer-to-peer");
         }
     }
-    public static final int canId(int pri, int edp, int dp, int pf, int ps, int sa)
+    public static final int canId(int pri, int edp, int dp, int pf, byte ps, byte sa)
     {
         if ((pri|7) != 7)
         {
@@ -109,15 +109,7 @@ public class PGN
         {
             throw new IllegalArgumentException("pf out of bounds");
         }
-        if ((ps|0xff) != 0xff)
-        {
-            throw new IllegalArgumentException("ps out of bounds");
-        }
-        if ((sa|0xff) != 0xff)
-        {
-            throw new IllegalArgumentException("sa out of bounds");
-        }
-        return (pri<<26)|(edp<<25)|(dp<<24)|(pf<<16)|(ps<<8)|sa;
+        return ((pri&0xf)<<26)|((edp&0x1)<<25)|((dp&0x1)<<24)|((pf&0xff)<<16)|((ps&0xff)<<8)|(sa&0xff);
     }
     /**
      * Returns true if both canid's have same PGN
@@ -183,7 +175,7 @@ public class PGN
                 " pf="+hex(pf)+
                 " ps="+hex(ps)+
                 " sa="+hex(sa)+
-                " pgn="+hex(pgn);
+                " pgn="+pgn;
     }
 
     private static String hex(int p)
