@@ -62,7 +62,7 @@ public class Can2UdpService extends AbstractCanService
     @Override
     public void send(int canId, int length, byte[] data) throws IOException
     {
-        info("send %s\n%s", PGN.toString(canId), HexDump.toHex(data, 0, length));
+        //info("send %s\n%s", PGN.toString(canId), HexDump.toHex(data, 0, length));
         ByteBuffer bb = sendBuffer.get();
         bb.clear();
         if (length <= 8)

@@ -86,6 +86,10 @@ public class Poller<T> extends JavaLogging implements Runnable
             ai.set(limit);
         }
     }
+    public void remove(T item)
+    {
+        map.remove(item);
+    }
     @Override
     public void run()
     {

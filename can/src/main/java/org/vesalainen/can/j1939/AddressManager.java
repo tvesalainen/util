@@ -176,11 +176,11 @@ public class AddressManager extends JavaLogging implements PgnHandler
             long name = DataUtil.asLong(buf);
             if (sa == ownSA)    // conflict
             {
-                Name n = new Name(buf);
-                if (Long.compareUnsigned(ownNumericName, n.getName()) < 0)
+                if (Long.compareUnsigned(ownNumericName, name) < 0)
                 {
                     warning("minor name claimed %x", sa);
                     claimOwnAddress();
+                    return;
                 }
                 else
                 {
@@ -191,16 +191,26 @@ public class AddressManager extends JavaLogging implements PgnHandler
             Byte oldAddr = nameMap.get(name);
             if (oldAddr == null)
             {
-                fine("SA %x Name %x", sa, name);
+                info("SA %x Name %x", sa, name);
                 nameMap.put(name, sa);
-                saMap.put(sa, name);
-                names.put(name, new Name(buf));
+                Long old1 = saMap.put(sa, name);
+                if (old1 != null)
+                {
+                    infoPoller.remove(sa);
+                    infoPoller.enable(sa);
+                }
+                Name old2 = names.put(name, new Name(buf));
+                if (old2 != null)
+                {
+                    config("unregister %s", old2.objectName);
+                    old2.unregister();
+                }
                 namePoller.disable(sa);
                 infoPoller.enable(sa);
             }
             else
             {
-                if (!oldAddr.equals(sa))
+                if (!oldAddr.equals(sa))    // name has changed address
                 {
                     warning("SA %x %x -> %x %x", (int)(oldAddr&0xff), saMap.get(oldAddr), sa, name);
                     nameMap.put(name, sa);
@@ -209,6 +219,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     Name n = names.get(name);
                     nameObservers.forEach((o)->o.accept(n));
                 }
+                // most addresses are gathered now
                 if (ownSA == NULL)
                 {
                     claimOwnAddress();
@@ -217,7 +228,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
         if (!saMap.containsKey(sa))
         {
-            fine("sa %x not found", sa);
+            warning("sa %x not found", sa);
         }
     }
     private void handleProductInformation(long time, int canId, ReadBuffer data)
@@ -295,7 +306,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void sendProductInformation(byte da)
     {
-        if (da < NULL)
+        if (da != NULL && da != ALL)
         {
             int canId = PGN.canId(2, PRODUCT_INFO, ownSA);
             fine("sendProductInformation to %x", da);
@@ -338,6 +349,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             try
             {
                 this.objectName = ObjectName.getInstance(Name.class.getName()+":Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
+                config("register %s", objectName);
                 register();
                 nameObservers.forEach((o)->o.accept(this));
             }
@@ -362,6 +374,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                 {
                     try
                     {
+                        config("unregister %s", objectName);
                         unregister();
                         this.objectName = ObjectName.getInstance(Name.class.getName()+":Type="+productInformation.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
                     }
@@ -369,6 +382,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     {
                         log(Level.SEVERE, ex, "");
                     }
+                    config("register %s", objectName);
                     register();
                     nameObservers.forEach((o)->o.accept(this));
                     ready = true;
