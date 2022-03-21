@@ -303,6 +303,10 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
         try
         {
             MBeanServer pbs = ManagementFactory.getPlatformMBeanServer();
+            if (objectName != null)
+            {
+                unregister();
+            }
             pbs.registerMBean(this, name);
         }
         catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException ex)
@@ -355,6 +359,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
     public void postDeregister()
     {
         this.server = null;
+        this.objectName = null;
     }
 
     private MBeanAttributeInfo[] getAttributeInfo()
