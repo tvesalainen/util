@@ -21,18 +21,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.DataUtil;
-import org.vesalainen.can.Frame;
 import org.vesalainen.can.PgnHandler;
-import org.vesalainen.can.SignalCompiler;
 import org.vesalainen.management.AbstractDynamicMBean;
 import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -44,15 +40,17 @@ import org.vesalainen.util.logging.JavaLogging;
  */
 public class AddressManager extends JavaLogging implements PgnHandler
 {
+    private static final int UNKNOWN = 1;
+    private static final int NAME = 2;
+    private static final int INFO = 4;
     private static final byte ALL = (byte) 255;
     private static final byte NULL = (byte) 254;
     private static final int REQUEST_MESSAGE = 59904;
     private static final int ADDRESS_CLAIM = 60928;
     private static final int PRODUCT_INFO = 126996;
     
-    private Map<Long,Byte> nameMap = new HashMap<>();
-    private Map<Byte,Long> saMap = new HashMap<>();
-    private Map<Long,Name> names = new ConcurrentHashMap<>();
+    private Map<Long,Name> nameMap = new HashMap<>();
+    private Map<Byte,Name> saMap = new HashMap<>();
     private byte[] buf = new byte[8];
     private AbstractCanService service;
     private CachedScheduledThreadPool executor;
@@ -127,22 +125,25 @@ public class AddressManager extends JavaLogging implements PgnHandler
         this.pf = (byte) PGN.pduFormat(canId);
         this.ps = (byte) PGN.pduSpecific(canId);
         this.sa = (byte) PGN.sourceAddress(canId);
+        Name name = saMap.get(sa);
+        if (name == null)
+        {
+            name = new Name(sa);
+            saMap.put(sa, name);
+        }
         switch (PGN.pgn(canId))
         {
             case REQUEST_MESSAGE:
                 handleIsoRequest(time, canId, data);
                 break;
             case ADDRESS_CLAIM:
-                handleAddressClaimed(time, canId, data);
+                handleAddressClaimed(name, data);
                 break;
             case PRODUCT_INFO:
-                handleProductInformation(time, canId, data);
+                name.setInfo(data);
                 break;
         }
-        if (pgn > 0 && !saMap.containsKey((byte)sa))
-        {
-            namePoller.enable((byte)sa);
-        }
+        name.update();
     }
 
     private void handleIsoRequest(long time, int canId, ReadBuffer  data)
@@ -156,7 +157,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
             switch (pgn)
             {
                 case ADDRESS_CLAIM:
-                    claimOwnAddress();
+                    ensureOwnAddress();
                     break;
                 case PRODUCT_INFO:
                     sendProductInformation(ps);
@@ -167,19 +168,20 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
 
-    private void handleAddressClaimed(long time, int canId, ReadBuffer  data)
+    private void handleAddressClaimed(Name name, ReadBuffer  data)
     {
         fine("AddressClaimed %x", sa);
         if (sa != NULL && sa != ALL)
         {
             data.get(buf);
-            long name = DataUtil.asLong(buf);
+            name.setName(buf);
+            long n = name.getName();
             if (sa == ownSA)    // conflict
             {
-                if (Long.compareUnsigned(ownNumericName, name) < 0)
+                if (Long.compareUnsigned(ownNumericName, n) < 0)
                 {
                     warning("minor name claimed %x", sa);
-                    claimOwnAddress();
+                    ensureOwnAddress();
                     return;
                 }
                 else
@@ -188,62 +190,11 @@ public class AddressManager extends JavaLogging implements PgnHandler
                     warning("conflicting SA=%x", sa);
                 }
             }
-            Byte oldAddr = nameMap.get(name);
-            if (oldAddr == null)
-            {
-                info("SA %x Name %x", sa, name);
-                nameMap.put(name, sa);
-                Long old1 = saMap.put(sa, name);
-                if (old1 != null)
-                {
-                    infoPoller.remove(sa);
-                    infoPoller.enable(sa);
-                }
-                Name old2 = names.put(name, new Name(buf));
-                if (old2 != null)
-                {
-                    config("unregister %s", old2.objectName);
-                    old2.unregister();
-                }
-                namePoller.disable(sa);
-                infoPoller.enable(sa);
-            }
-            else
-            {
-                if (!oldAddr.equals(sa))    // name has changed address
-                {
-                    warning("SA %x %x -> %x %x", (int)(oldAddr&0xff), saMap.get(oldAddr), sa, name);
-                    nameMap.put(name, sa);
-                    saMap.put(sa, name);
-                    saMap.remove(oldAddr);
-                    Name n = names.get(name);
-                    nameObservers.forEach((o)->o.accept(n));
-                }
-                // most addresses are gathered now
-                if (ownSA == NULL)
-                {
-                    claimOwnAddress();
-                }
-            }
-        }
-        if (!saMap.containsKey(sa))
-        {
-            warning("sa %x not found", sa);
         }
     }
-    private void handleProductInformation(long time, int canId, ReadBuffer data)
-    {
-        Long n = saMap.get((byte)sa);
-        if (n != null)
-        {
-            Name name = names.get(n);
-            fine("got info %x from %x", name.name, sa);
-            name.frame(time, canId, data);
-        }
-    }
-
     private void requestAddress(byte from)
     {
+        ensureOwnAddress();
         int canId = PGN.canId(2, REQUEST_MESSAGE, from, ownSA);
         fine("requestAddress from %x", from);
         try
@@ -256,7 +207,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
     }
     
-    private void claimOwnAddress()
+    private void ensureOwnAddress()
     {
         fine("claiming own address");
         if (ownSA == NULL)
@@ -292,6 +243,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void requestProductInformation(byte da)
     {
+        ensureOwnAddress();
         int canId = PGN.canId(2, REQUEST_MESSAGE, da, ownSA);
         fine("requestProductInformation to %x %s", da, PGN.toString(canId));
         try
@@ -306,6 +258,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
     private void sendProductInformation(byte da)
     {
+        ensureOwnAddress();
         if (da != NULL && da != ALL)
         {
             int canId = PGN.canId(2, PRODUCT_INFO, ownSA);
@@ -331,64 +284,57 @@ public class AddressManager extends JavaLogging implements PgnHandler
         return ownProductInformation;
     }
     
-    public class Name extends AbstractDynamicMBean implements Frame, SignalCompiler<Object>
+    public class Name extends AbstractDynamicMBean
     {
-        private boolean ready;
-        private ObjectName objectName;
-        private IsoAddressClaim isoAddressClaim = new IsoAddressClaim();
-        private final long name;
-        private ProductInformation productInformation = new ProductInformation();
-        private byte[] info = new byte[134];
+        private int state = UNKNOWN;
+        private int regState = 0;
+        private byte sa;
+        private IsoAddressClaim isoAddress;
+        private long name;
+        private ProductInformation info;
 
-        public Name(byte[] buf)
+        public Name(byte sa)
         {
             super("Name");
-            isoAddressClaim.read(buf);
-            this.name = DataUtil.asLong(buf);
+            this.sa = sa;
             addAttributes(this);
-            try
+        }
+        public void setName(byte[] buf)
+        {
+            isoAddress = new IsoAddressClaim();
+            isoAddress.read(buf);
+            long n = DataUtil.asLong(buf);
+            if (n != name)
             {
-                this.objectName = ObjectName.getInstance(Name.class.getName()+":Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
-                config("register %s", objectName);
-                register();
-                nameObservers.forEach((o)->o.accept(this));
-            }
-            catch (MalformedObjectNameException | NullPointerException ex)
-            {
-                log(Level.SEVERE, ex, "");
+                Name on = nameMap.get(name);
+                if (on != null)
+                {
+                    on.reset();
+                }
+                name = n;
+                isoAddress.read(buf);
+                info = null;
+                namePoller.disable(sa);
+                nameMap.put(name, this);
+                state |= NAME;
             }
         }
 
-        @Override
-        public void frame(long time, int canId, ReadBuffer data)
+        public void setInfo(ReadBuffer data)
         {
+            byte[] buf = new byte[134];
+            info = new ProductInformation();
             try
             {
                 if (sa != getSource())
                 {
                     throw new IllegalArgumentException();
                 }
-                data.get(info);
-                productInformation.read(info);
-                if (!ready)
-                {
-                    try
-                    {
-                        config("unregister %s", objectName);
-                        unregister();
-                        this.objectName = ObjectName.getInstance(Name.class.getName()+":Type="+productInformation.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddressClaim.getDeviceFunction()+",Id="+isoAddressClaim.getUniqueNumber());
-                    }
-                    catch (MalformedObjectNameException | NullPointerException ex)
-                    {
-                        log(Level.SEVERE, ex, "");
-                    }
-                    config("register %s", objectName);
-                    register();
-                    nameObservers.forEach((o)->o.accept(this));
-                    ready = true;
-                    infoPoller.disable(sa);
-                    fine("got info from %x", sa);
-                }
+                data.get(buf);
+                info.read(buf);
+                nameObservers.forEach((o)->o.accept(this));
+                infoPoller.disable(sa);
+                state |= INFO;
             }
             catch (Throwable ex)
             {
@@ -396,10 +342,53 @@ public class AddressManager extends JavaLogging implements PgnHandler
             }
         }
 
+        public void update()
+        {
+            if (isoAddress == null)
+            {
+                namePoller.enable(sa);
+            }
+            if (info == null)
+            {
+                infoPoller.enable(sa);
+            }
+            if (state != regState)
+            {
+                register();
+                regState = state;
+            }
+        }
+        private void reset()
+        {
+            isoAddress = null;
+            info = null;
+            state = UNKNOWN;
+            if (state != regState)
+            {
+                register();
+                regState = state;
+            }
+        }
+
         @Override
         protected ObjectName createObjectName() throws MalformedObjectNameException
         {
-            return objectName;
+            if (info != null)
+            {
+                if (isoAddress != null)
+                {
+                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Type="+info.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
+                }
+                else
+                {
+                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Type="+info.getManufacturerSModelId().replace(' ', '_'));
+                }
+            }
+            if (isoAddress != null)
+            {
+                return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Model="+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
+            }
+            return ObjectName.getInstance(Name.class.getName()+":Src="+sa);
         }
 
         @Override
@@ -435,15 +424,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
         public byte getSource()
         {
-            Byte sa = nameMap.get(name);
-            if (sa != null)
-            {
-                return sa;
-            }
-            else
-            {
-                return -1;
-            }
+            return sa;
         }
         public long getName()
         {
@@ -452,87 +433,87 @@ public class AddressManager extends JavaLogging implements PgnHandler
 
         public int getUniqueNumber()
         {
-            return isoAddressClaim.getUniqueNumber();
+            return isoAddress.getUniqueNumber();
         }
 
         public int getManufacturerCode()
         {
-            return isoAddressClaim.getManufacturerCode();
+            return isoAddress.getManufacturerCode();
         }
 
         public int getDeviceInstanceLower()
         {
-            return isoAddressClaim.getDeviceInstanceLower();
+            return isoAddress.getDeviceInstanceLower();
         }
 
         public int getDeviceInstanceUpper()
         {
-            return isoAddressClaim.getDeviceInstanceUpper();
+            return isoAddress.getDeviceInstanceUpper();
         }
 
         public int getDeviceFunction()
         {
-            return isoAddressClaim.getDeviceFunction();
+            return isoAddress.getDeviceFunction();
         }
 
         public int getReserved()
         {
-            return isoAddressClaim.getReserved();
+            return isoAddress.getReserved();
         }
 
         public int getDeviceClass()
         {
-            return isoAddressClaim.getDeviceClass();
+            return isoAddress.getDeviceClass();
         }
 
         public int getSystemInstance()
         {
-            return isoAddressClaim.getSystemInstance();
+            return isoAddress.getSystemInstance();
         }
 
         public int getIndustryGroup()
         {
-            return isoAddressClaim.getIndustryGroup();
+            return isoAddress.getIndustryGroup();
         }
 
         public int getReservedIsoSelfConfigurable()
         {
-            return isoAddressClaim.getReservedIsoSelfConfigurable();
+            return isoAddress.getReservedIsoSelfConfigurable();
         }
 
         public int getNmea2000DatabaseVersion()
         {
-            return productInformation.getNmea2000DatabaseVersion();
+            return info.getNmea2000DatabaseVersion();
         }
 
         public int getNmeaManufacturerSProductCode()
         {
-            return productInformation.getNmeaManufacturerSProductCode();
+            return info.getNmeaManufacturerSProductCode();
         }
 
         public String getManufacturerSModelId()
         {
-            return productInformation.getManufacturerSModelId();
+            return info.getManufacturerSModelId();
         }
 
         public String getManufacturerSSoftwareVersionCode()
         {
-            return productInformation.getManufacturerSSoftwareVersionCode();
+            return info.getManufacturerSSoftwareVersionCode();
         }
 
         public String getManufacturerSModelVersion()
         {
-            return productInformation.getManufacturerSModelVersion();
+            return info.getManufacturerSModelVersion();
         }
 
         public String getManufacturerSModelSerialCode()
         {
-            return productInformation.getManufacturerSModelSerialCode();
+            return info.getManufacturerSModelSerialCode();
         }
 
         public int getLoadEquivalency()
         {
-            return productInformation.getLoadEquivalency();
+            return info.getLoadEquivalency();
         }
 
     }
