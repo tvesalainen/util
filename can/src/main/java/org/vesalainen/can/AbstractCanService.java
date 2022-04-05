@@ -153,19 +153,6 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         }
     }
 
-    public void queue(long time, int canId, int dataLength, long data)
-    {
-        Frame frame = queueMap.get(PGN.addressedPgn(canId));
-        if (frame != null)
-        {
-            frame.frame(time, canId, dataLength, data);
-        }
-        else
-        {
-            defaultQueue.frame(time, canId, dataLength, data);
-        }
-    }
-    
     public void send(int canId, byte... data) throws IOException
     {
         send(canId, data.length, data);

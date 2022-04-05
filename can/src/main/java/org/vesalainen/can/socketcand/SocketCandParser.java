@@ -63,7 +63,7 @@ public abstract class SocketCandParser extends AbstractParser implements ParserI
         {
             throw new IllegalArgumentException(dataLength+" illegal");
         }
-        svc.queue(time, canId, dataLength, data);
+        svc.frame(time, canId, dataLength, data);
     }
     
     @Terminal(expression="[0-9a-fA-F]+")
