@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.ClosedChannelException;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
@@ -93,21 +94,13 @@ public class Can2UdpService extends AbstractCanService
                 started();
                 while (channel.isOpen())
                 {
-                    try
-                    {
-                        bb.clear();
-                        int rc = channel.read(bb);
-                        bb.flip();
-                        handlePacket(bb, buffer);
-                    }
-                    catch (Throwable ex)
-                    {
-                        log(Level.SEVERE, ex, "");
-                    }
+                    bb.clear();
+                    int rc = channel.read(bb);
+                    bb.flip();
+                    handlePacket(bb, buffer);
                 }
-
             }
-            catch (IOException ex)
+            catch (Throwable ex)
             {
                 log(Level.SEVERE, ex, "");
             }
