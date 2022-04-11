@@ -14,7 +14,7 @@
         <module>util</module>
         <module>security</module>
         <module>installer</module>
-        <module>rpm</module>
+        <!-- <module>rpm</module> -->
         <module>vfs</module>
         <module>ham</module>
         <module>radiorecorder</module>
