@@ -32,13 +32,28 @@ public class ModbusTcpClientT
     }
 
     @Test
+    public void testMcp342x() throws IOException
+    {
+        int out = 2;
+        int pga = 1;
+        int bits = 18;
+        int unit = 0;
+        int addr = out<<9|pga<<7|(bits/2-6)<<5;
+        short v = 1;
+        ModbusTcpClient cli = ModbusTcpClient.open("testipi");
+        int res = cli.getInt(unit, addr);
+        assertEquals(3325000, res);
+    }
+    /*
+    //@Test
     public void test1() throws IOException
     {
         int i = 0;
-        ModbusTcpClient cli = ModbusTcpClient.open("pi3dashboard");
-        cli.setInt(123, 3, 2);
-        int res = cli.getInt(123, 3);
-        assertEquals(2, res);
+        int unit = 0;
+        int addr = 0;
+        short v = 1;
+        ModbusTcpClient cli = ModbusTcpClient.open("testipi");
+        int res = cli.getShort(unit, addr);
     }
-    
+    */
 }

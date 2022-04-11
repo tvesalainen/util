@@ -70,7 +70,7 @@ public class PreferencesBindingsTest
         assertEquals("bar", sp.getValue());
         assertEquals("bar", ssp.getValue());
     }
-    @Test
+    //@Test
     public void testEnum()
     {
         ObjectBinding<Category> enumBinding = bindings.createEnumBinding("enum", DISPLAY);

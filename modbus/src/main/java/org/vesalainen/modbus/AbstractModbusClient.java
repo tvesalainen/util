@@ -133,7 +133,7 @@ public abstract class AbstractModbusClient<T extends ReadableByteChannel & Writa
         short length = receiveBuffer.getShort();
         if (length != dataLength)
         {
-            throw new IOException("waited length "+dataLength+" got "+length);
+            //throw new IOException("waited length "+dataLength+" got "+length);
         }
         byte unitId = receiveBuffer.get();
         if (unitId != unit)
