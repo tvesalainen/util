@@ -439,6 +439,30 @@ public class DEBBuilder implements PackageBuilder
         }
         return dir;
     }
+
+    @Override
+    public ComponentBuilder addFile(Path source, Path target) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ComponentBuilder addFile(ByteBuffer content, Path target) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ComponentBuilder addDirectory(Path target) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ComponentBuilder addSymbolicLink(Path target, Path linkTarget) throws IOException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     public class FileBuilder implements ComponentBuilder
     {

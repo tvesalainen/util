@@ -220,7 +220,7 @@ class HeaderStructure
         }
         int addItem(T item)
         {
-            if (type == STRING && !list.isEmpty())
+            if (type == IndexType.STRING && !list.isEmpty())
             {
                 throw new IllegalArgumentException("more that one item in STRING");
             }
@@ -259,9 +259,9 @@ class HeaderStructure
         }
         public byte[] getBin()
         {
-            if (type != BIN)
+            if (type != IndexType.BIN)
             {
-                throw new IllegalArgumentException("tag data is "+type+" not "+BIN);
+                throw new IllegalArgumentException("tag data is "+type+" not "+IndexType.BIN);
             }
             return bin;
         }
