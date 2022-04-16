@@ -20,8 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -48,6 +52,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class SimpleXMLParser
 {
     private Element root;
+
+    public SimpleXMLParser(Path path) throws IOException
+    {
+        this(Files.newBufferedReader(path));
+    }
     
     public SimpleXMLParser(String input) throws IOException
     {
@@ -92,12 +101,67 @@ public class SimpleXMLParser
         private Map<String,String> attributes;
         private String text;
         private StringBuilder sb = new StringBuilder();
-        private List<Element> childs = new ArrayList<>();
+        private Map<String,Element> childMap = new HashMap<>();
+        private List<Element> childList = new ArrayList<>();
+        private boolean ambiquous;
 
         private Element(String qName, Map<String, String> attributes)
         {
             this.qName = qName;
             this.attributes = attributes;
+        }
+        /**
+         * Returns elements at path
+         * @param tags
+         * @return 
+         */
+        public Collection<Element> getElements(String... tags)
+        {
+            Element element = getElement(0, Arrays.copyOf(tags, tags.length-1));
+            if (element != null)
+            {
+                String tag = tags[tags.length-1];
+                List<Element> list = new ArrayList<>();
+                element.forEachChild((e)->
+                {
+                    if (tag.equals(e.getTag()))
+                    {
+                        list.add(e);
+                    }
+                });
+                return list;
+            }
+            else
+            {
+                return Collections.EMPTY_LIST;
+            }
+        }
+        /**
+         * Returns element at path tags[0]/... or null if not found.
+         * @param tags
+         * @return 
+         * @throws IllegalArgumentException if path contains several enries.
+         */
+        public Element getElement(String... tags)
+        {
+            return getElement(0, tags);
+        }
+        private Element getElement(int offset, String[] tags)
+        {
+            if (offset == tags.length)
+            {
+                return this;
+            }
+            Element element = childMap.get(tags[offset]);
+            if (element == null)
+            {
+                return null;
+            }
+            if (element.ambiquous)
+            {
+                throw new IllegalArgumentException(tags[offset]+" ambiguous");
+            }
+            return element.getElement(offset+1, tags);
         }
         /**
          * Returns QName
@@ -146,7 +210,7 @@ public class SimpleXMLParser
          */
         public void forEachChild(Consumer<? super Element> action)
         {
-            childs.forEach(action);
+            childList.forEach((e)->action.accept(e));
         }
         /**
          * Executes action for all elements in hierarchy.
@@ -155,7 +219,7 @@ public class SimpleXMLParser
         public void walk(Consumer<? super Element> action)
         {
             action.accept(this);
-            childs.forEach((e)->
+            childList.forEach((e)->
             {
                 e.walk(action);
             });
@@ -192,12 +256,18 @@ public class SimpleXMLParser
          */
         public List<Element> getChilds()
         {
-            return childs;
+            return childList;
         }
 
         private void addChild(Element element)
         {
-            childs.add(element);
+            Element old = childMap.put(element.getTag(), element);
+            if (old != null)
+            {
+                element.ambiquous = true;
+                old.ambiquous = true;
+            }
+            childList.add(element);
         }
         private void addText(char[] ch, int start, int length)
         {
@@ -208,7 +278,8 @@ public class SimpleXMLParser
             text = sb.toString();
             sb = null;
             attributes = Collections.unmodifiableMap(attributes);
-            childs = Collections.unmodifiableList(childs);
+            childMap = Collections.unmodifiableMap(childMap);
+            childList = Collections.unmodifiableList(childList);
         }
     }
     private class Handler extends DefaultHandler
