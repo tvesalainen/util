@@ -17,6 +17,8 @@
 package org.vesalainen.xml;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -58,5 +60,17 @@ public class SimpleXMLParserTest
         assertEquals("can://127.0.0.1:29536", url.getText());
         assertEquals("vcan0", vcan0.getAttributeValue("name"));
         assertEquals("vcan1", vcan1.getAttributeValue("name"));
+        Element u2 = root.getElement("URL");
+        assertEquals("can://127.0.0.1:29536", u2.getText());
+        Collection<Element> bs = root.getElements("Bus");
+        assertEquals(2, bs.size());
     }
+    @Test
+    public void testPOM() throws IOException
+    {
+        SimpleXMLParser parser = new SimpleXMLParser(Paths.get("pom.xml"));
+        Element root = parser.getRoot();
+        Element a = root.getElement("parent", "artifactId");
+        assertEquals("utilities", a.getText());
+    }    
 }
