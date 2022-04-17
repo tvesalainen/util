@@ -19,6 +19,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelSource;
 import org.apache.maven.model.composition.DefaultDependencyManagementImporter;
 import org.apache.maven.model.inheritance.DefaultInheritanceAssembler;
+import org.apache.maven.model.interpolation.DefaultModelVersionProcessor;
 import org.apache.maven.model.interpolation.StringSearchModelInterpolator;
 import org.apache.maven.model.io.DefaultModelReader;
 import org.apache.maven.model.management.DefaultDependencyManagementInjector;
@@ -177,7 +178,7 @@ public class ModelFactory
                 .setModelPathTranslator(modelPathTranslator)
                 .setModelProcessor(modelProcessor)
                 .setModelUrlNormalizer(modelUrlNormalizer)
-                .setModelValidator(new DefaultModelValidator())
+                .setModelValidator(new DefaultModelValidator(new DefaultModelVersionProcessor()))
                 .setPluginConfigurationExpander(new DefaultPluginConfigurationExpander())
                 .setPluginManagementInjector(new DefaultPluginManagementInjector())
                 .setProfileInjector(new DefaultProfileInjector())

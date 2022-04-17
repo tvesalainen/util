@@ -10,6 +10,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.FileModelSource;
@@ -157,5 +158,11 @@ public class FileModelResolver extends AbstractModelResolver implements ModelRes
     @Override
     public void addRepository(Repository rpstr, boolean bln) throws InvalidRepositoryException
     {
+    }
+
+    @Override
+    public ModelSource resolveModel(Dependency dependency) throws UnresolvableModelException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

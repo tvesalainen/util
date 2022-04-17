@@ -7,6 +7,7 @@ package org.vesalainen.maven.help;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.ModelSource;
@@ -62,6 +63,12 @@ public class UrlModelResolver extends AbstractModelResolver
 
     @Override
     public void addRepository(Repository rpstr, boolean bln) throws InvalidRepositoryException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ModelSource resolveModel(Dependency dependency) throws UnresolvableModelException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
