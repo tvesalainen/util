@@ -136,6 +136,15 @@ public class SimpleXMLParser
                 return Collections.EMPTY_LIST;
             }
         }
+        public String getText(String... tags)
+        {
+            Element element = getElement(tags);
+            if (element != null)
+            {
+                return element.getText();
+            }
+            return null;
+        }
         /**
          * Returns element at path tags[0]/... or null if not found.
          * @param tags

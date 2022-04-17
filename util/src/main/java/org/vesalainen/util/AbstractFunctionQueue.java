@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.vesalainen.util.logging.JavaLogging;
 
 /**
+ * @deprecated doesn't work???
  * AbstractFunctionQueue provides put/get methods to queue parameter transfer
  * between threads.
  * <p>It is meant to replace object creation just for queuing.
