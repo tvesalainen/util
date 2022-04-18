@@ -12,7 +12,7 @@ import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
 
 /**
- *
+ * @deprecated Use POM
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public abstract class AbstractModelResolver implements ModelResolver

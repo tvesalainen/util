@@ -21,7 +21,7 @@ import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.vesalainen.regex.SyntaxErrorException;
 
 /**
- *
+ * @deprecated Use POM
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class FileModelResolver extends AbstractModelResolver implements ModelResolver

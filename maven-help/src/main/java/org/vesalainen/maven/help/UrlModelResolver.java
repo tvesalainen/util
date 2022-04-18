@@ -17,7 +17,7 @@ import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 
 /**
- *
+ * @deprecated Use POM
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class UrlModelResolver extends AbstractModelResolver

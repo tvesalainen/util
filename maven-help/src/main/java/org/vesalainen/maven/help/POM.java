@@ -22,17 +22,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
-import org.apache.maven.model.Model;
 import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.regex.SyntaxErrorException;
 import org.vesalainen.xml.SimpleXMLParser;
@@ -46,6 +44,8 @@ public class POM
 {
     private static Path base;
     private static Map<Path,POM> pomCache = new HashMap<>();
+    private static Map<ArtifactKey,POM> artifactCache = new HashMap<>();
+    private static Map<ArtifactKey,VersionResolver> modelVersionMap = new HashMap<>();
 
     private final Element element;
     private final POM parent;
@@ -99,14 +99,11 @@ public class POM
                 {
                     Dependency dependency = createDependency(e);
                     Dependency managementDependency = getManagementDependency(dependency.getManagementKey());
-                    if (managementDependency != null)
+                    if (managementDependency != null && dependency.getVersion() == null)
                     {
-                        dependencies.add(managementDependency);
+                        dependency.setVersion(managementDependency.getVersion());
                     }
-                    else
-                    {
-                        dependencies.add(dependency);
-                    }
+                    dependencies.add(dependency);
                 });
         element.getElements("licenses", "license")
                 .forEach((e)->
@@ -130,6 +127,25 @@ public class POM
                 });
     }
 
+    public String getMainClass()
+    {
+        Collection<Element> elements = element.getElements("build", "plugins", "plugin", "configuration", "archive", "manifest", "mainClass");
+        if (elements.size() == 1)
+        {
+            return elements.iterator().next().getText();
+        }
+        else
+        {
+            if (elements.size() == 0)
+            {
+                throw new IllegalArgumentException("mainClass not defined");
+            }
+            else
+            {
+                throw new IllegalArgumentException("more than one mainClass defined");
+            }
+        }
+    }
     public List<Dependency> getDependencies()
     {
         return dependencies;
@@ -156,13 +172,20 @@ public class POM
     private Dependency createDependency(Element element)
     {
         Dependency dependency = new Dependency();
+        if (element.getElement("exclusions") != null)
+        {
+            //throw new UnsupportedOperationException("exclusions not supported");
+        }
         dependency.setArtifactId(expressionParser.replace(element.getText("artifactId")));
         dependency.setGroupId(expressionParser.replace(element.getText("groupId")));
         dependency.setClassifier(expressionParser.replace(element.getText("classifier")));
-        dependency.setOptional(expressionParser.replace(element.getText("optional")));
-        dependency.setScope(expressionParser.replace(element.getText("scope")));
+        String optional = element.getText("optional");
+        dependency.setOptional(expressionParser.replace(optional!=null?optional:"false"));
+        String scope = element.getText("scope");
+        dependency.setScope(expressionParser.replace(scope!=null?scope:"compile"));
         dependency.setSystemPath(expressionParser.replace(element.getText("systemPath")));
-        dependency.setType(expressionParser.replace(element.getText("type")));
+        String type = element.getText("type");
+        dependency.setType(expressionParser.replace(type!=null?type:"jar"));
         dependency.setVersion(expressionParser.replace(element.getText("version")));
         return dependency;
     }
@@ -173,12 +196,26 @@ public class POM
 
     public List<Developer> getDevelopers()
     {
-        return developers;
+        if (!developers.isEmpty() || parent == null)
+        {
+            return developers;
+        }
+        else
+        {
+            return parent.getDevelopers();
+        }
     }
     
     public List<License> getLicenses()
     {
-        return licenses;
+        if (!licenses.isEmpty() || parent == null)
+        {
+            return licenses;
+        }
+        else
+        {
+            return parent.getLicenses();
+        }
     }
     
     public String getVersion()
@@ -213,7 +250,7 @@ public class POM
 
     public String getDescription()
     {
-        return getText("decription");
+        return getText("description");
     }
 
     public String getArtifactId()
@@ -231,13 +268,33 @@ public class POM
         return expressionParser.replace(text);
     }
     
+    public static VersionResolver getVersionResolver(Dependency dependency)
+    {
+        return getVersionResolver(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(), dependency.getType());
+    }
+    public static VersionResolver getVersionResolver(String groupId, String artifactId, String version, String type)
+    {
+        VersionRange versionRange = VersionParser.VERSION_PARSER.parseVersionRange(version);
+        ArtifactKey key = new ArtifactKey(groupId, artifactId, type);
+        VersionResolver versionResolver = modelVersionMap.get(key);
+        if (versionResolver == null)
+        {
+            versionResolver = new VersionResolver(key, versionRange, POM.getVersions(groupId, artifactId));
+            modelVersionMap.put(key, versionResolver);
+        }
+        versionResolver.addRange(versionRange);
+        return versionResolver;
+    }
+    
     public static POM getInstance(MavenKey key)
     {
         return getInstance(key.getGroupId(), key.getArtifactId(), key.getVersion());
     }
     public static POM getInstance(String groupId, String artifactId, String version)
     {
-        Path path = base.resolve(getFilename(groupId, artifactId, version, "pom"));
+        VersionResolver versionResolver = getVersionResolver(groupId, artifactId, version, "pom");
+        MavenKey key = versionResolver.resolv();
+        Path path = base.resolve(getFilename(key.getGroupId(), key.getArtifactId(), key.getVersion(), key.getType()));
         POM pom = pomCache.get(path);
         if (pom == null)
         {
@@ -246,6 +303,12 @@ public class POM
                 SimpleXMLParser parser = new SimpleXMLParser(path);
                 pom = new POM(parser.getRoot());
                 pomCache.put(path, pom);
+                ArtifactKey artifactKey = new ArtifactKey(groupId, artifactId, "pom");
+                POM old = artifactCache.put(artifactKey, pom);
+                if (old != null)
+                {
+                    throw new UnsupportedOperationException("conflict between "+old+" <> "+pom);
+                }
             }
             catch (IOException ex) 
             {
@@ -306,4 +369,11 @@ public class POM
     {
         return String.format("%s/%s", groupId.replace('.', '/'), artifactId);
     }
+
+    @Override
+    public String toString()
+    {
+        return "POM{" + getGroupId()+'-'+getArtifactId()+"-"+getVersion();
+    }
+    
 }

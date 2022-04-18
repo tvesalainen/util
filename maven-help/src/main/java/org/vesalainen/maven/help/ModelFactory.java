@@ -40,7 +40,7 @@ import org.apache.maven.model.superpom.DefaultSuperPomProvider;
 import org.apache.maven.model.validation.DefaultModelValidator;
 
 /**
- *
+ * @deprecated Use POM
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
 public class ModelFactory
@@ -80,7 +80,7 @@ public class ModelFactory
         VersionResolver versionResolver = modelVersionMap.get(key);
         if (versionResolver == null)
         {
-            versionResolver = new VersionResolver(key, versionRange, fileModelResolver.getVersions(dependency.getGroupId(), dependency.getArtifactId()));
+            versionResolver = new VersionResolver(key, versionRange, POM.getVersions(dependency.getGroupId(), dependency.getArtifactId()));
             modelVersionMap.put(key, versionResolver);
         }
         versionResolver.addRange(versionRange);
