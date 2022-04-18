@@ -32,8 +32,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
-import org.vesalainen.maven.help.FileModelResolver;
-import org.vesalainen.maven.help.ModelFactory;
+import org.vesalainen.maven.help.POM;
 import org.vesalainen.vfs.VirtualFileSystems;
 import org.vesalainen.vfs.pm.Dependency;
 import org.vesalainen.vfs.pm.FileUse;
@@ -52,11 +51,9 @@ public class Packager
     private static final String DEFAULT_TEMPLATE = "/etc/default/default.tmpl";
     private static final String INIT_D_TEMPLATE = "/etc/init.d/init.tmpl";
     private static final String LOG_CONFIG_TEMPLATE = "/etc/opt/log-config.tmpl";
-    private ModelFactory factory;
-    private Model root;
+    private POM root;
     private Path localRepository;
     private Path packageDirectory;
-    private FileModelResolver fileModelResolver;
     private String classpath;
     private ExpressionParser expressionParser;
     private FileSystem fileSystem;
@@ -104,14 +101,12 @@ public class Packager
             localRepository = Paths.get(userHome, ".m2/repository");    // TODO!!!!!!
             log.info("localRepository="+localRepository);
             log.info("packageDirectory="+packageDir);
-            factory = new ModelFactory(localRepository.toFile(), null);
-            fileModelResolver = factory.getFileModelResolver();
             log.info("packageType="+packageType);
             log.info("groupId="+groupId);
             log.info("artifactId="+artifactId);
             log.info("version="+version);
             log.info("shortName="+shortName);
-            root = factory.getLocalModel(groupId, artifactId, version);
+            root = POM.getInstance(groupId, artifactId, version);
             log.info("got factory");
             expressionParser = new ExpressionParser(root)
                     .addMapper((s)->root.getProperties().getProperty(s))
@@ -219,14 +214,14 @@ public class Packager
     {
         Path jarDir = optPackage.resolve("jar");
         List<Path> jars = new ArrayList<>();
-        List<Model> models = getDependencies().collect(Collectors.toList());
-        for (Model model : models)
+        List<POM> models = getDependencies().collect(Collectors.toList());
+        for (POM model : models)
         {
             String grp = model.getGroupId();
             String art = model.getArtifactId();
             String ver = model.getVersion();
             String packaging = model.getPackaging();
-            String filename = fileModelResolver.getFilename(grp, art, ver, "jar");
+            String filename = POM.getFilename(grp, art, ver, "jar");
             Path source = localRepository.resolve(filename);
             Path target = jarDir.resolve(localRepository.relativize(source));
             Files.createDirectories(target.getParent());
@@ -248,11 +243,11 @@ public class Packager
         }
         classpath = jars.stream().map((p)->p.toString()).collect(Collectors.joining(":"));
     }
-    private String getDevelopers(Model model)
+    private String getDevelopers(POM model)
     {
         return model.getDevelopers().stream().filter((d)->!d.getName().isEmpty()).map((d)->d.getName()+" <"+d.getEmail()+">").collect(Collectors.joining(", "));
     }
-    private String getLicense(Model model)
+    private String getLicense(POM model)
     {
         return model.getLicenses().stream().map((l)->l.getName()).collect(Collectors.joining(", "));
     }
@@ -295,58 +290,33 @@ public class Packager
             String art = m.getArtifactId();
             String ver = m.getVersion();
             String packaging = m.getPackaging();
-            return fileModelResolver.getFilename(grp, art, ver, "jar");
+            return POM.getFilename(grp, art, ver, "jar");
         });
 }
-    private Stream<Model> getDependencies()
+    private Stream<POM> getDependencies()
     {
         return Graphs.breadthFirst(root, 
                 (y)->y.getDependencies()
                 .stream()
                 .filter((d)->!"true".equals(d.getOptional()))
                 .filter((d)->"compile".equals(d.getScope()) || "runtime".equals(d.getScope()))
-                .map(factory::getVersionResolver)
+                .map(POM::getVersionResolver)
                 .map((v)->v.resolv())
-                .map(factory::getLocalModel)
+                .map(POM::getInstance)
                 );
     }
     public String getMainJar()
     {
         Path appDir = appDir();
         Path jarDir = appDir.resolve("jar");
-        String filename = fileModelResolver.getFilename(groupId, artifactId, version, "jar");
+        String filename = POM.getFilename(groupId, artifactId, version, "jar");
         
         Path target = jarDir.resolve(filename);
         return target.toString();
     }
     public String getMainClass()
     {
-        Build build = root.getBuild();
-        for (Plugin plugin : build.getPlugins())
-        {
-            Xpp3Dom pluginConfigurations = (Xpp3Dom) plugin.getConfiguration();
-            if (pluginConfigurations != null)
-            {
-                String found = Xpp3DomSearch.find(pluginConfigurations, "mainClass");
-                if (found != null)
-                {
-                    return found;
-                }
-            }
-            for (PluginExecution executions : plugin.getExecutions())
-            {
-                Xpp3Dom executionConfigurations = (Xpp3Dom) executions.getConfiguration();
-                if (executionConfigurations != null)
-                {
-                    String found = Xpp3DomSearch.find(executionConfigurations, "mainClass");
-                    if (found != null)
-                    {
-                        return found;
-                    }
-                }
-            }
-        }
-        return null;
+        return root.getMainClass();
     }
 
     public String getClasspath()

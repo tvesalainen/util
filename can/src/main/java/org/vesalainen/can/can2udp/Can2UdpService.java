@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.ClosedChannelException;
 import java.util.logging.Level;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.AbstractMessageFactory;
@@ -31,7 +30,6 @@ import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.nio.ReadByteBuffer;
 import org.vesalainen.nio.channels.UnconnectedDatagramChannel;
-import org.vesalainen.util.HexDump;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
 
 /**
@@ -84,7 +82,7 @@ public class Can2UdpService extends AbstractCanService
     @Override
     public void run()
     {
-        while (true)
+        for (int ii=0;ii<10;ii++)
         {
             try (UnconnectedDatagramChannel ch = UnconnectedDatagramChannel.open(address, local, BUFFER_SIZE, true, false))
             {

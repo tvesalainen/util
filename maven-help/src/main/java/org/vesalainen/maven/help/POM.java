@@ -58,8 +58,8 @@ public class POM
  
     static
     {
-        String repository = System.getProperty("localRepository");
-        base = Paths.get(repository);
+        String userHome = System.getProperty("user.home");
+        base = Paths.get(userHome, ".m2/repository");    // TODO!!!!!!
     }
     
     private POM(Element element)
@@ -77,16 +77,16 @@ public class POM
             parent = null;
         }
         properties = new Properties(parent != null ? parent.properties : null);
+        expressionParser = new ExpressionParser(this)
+                .addMapper((s)->properties.getProperty(s));
         Element props = element.getElement("properties");
         if (props != null)
         {
             props.forEachChild((e)->
             {
-                properties.setProperty(e.getTag(), e.getText());
+                properties.setProperty(e.getTag(), expressionParser.replace(e.getText()));
             });
         }
-        expressionParser = new ExpressionParser(this)
-                .addMapper((s)->properties.getProperty(s));
         
         element.getElements("dependencyManagement", "dependencies", "dependency")
                 .forEach((e)->
@@ -294,7 +294,7 @@ public class POM
     {
         VersionResolver versionResolver = getVersionResolver(groupId, artifactId, version, "pom");
         MavenKey key = versionResolver.resolv();
-        Path path = base.resolve(getFilename(key.getGroupId(), key.getArtifactId(), key.getVersion(), key.getType()));
+        Path path = base.resolve(getFilename(key.getGroupId(), key.getArtifactId(), key.getVersion(), "pom"));
         POM pom = pomCache.get(path);
         if (pom == null)
         {

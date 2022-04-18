@@ -24,15 +24,6 @@ package org.vesalainen.can.j1939;
 public class PGN
 {
     /**
-     * Returns PGN and source address. Can be used as unique combination.
-     * @param canId
-     * @return 
-     */
-    public static final int addressedPgn(int canId)
-    {
-        return (pgn(canId)<<8)|sourceAddress(canId);
-    }
-    /**
      * Returns PGN of canId
      * @param canId
      * @return 

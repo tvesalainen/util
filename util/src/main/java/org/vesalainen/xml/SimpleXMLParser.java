@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
@@ -117,23 +116,26 @@ public class SimpleXMLParser
          */
         public Collection<Element> getElements(String... tags)
         {
-            Element element = getElement(0, Arrays.copyOf(tags, tags.length-1));
-            if (element != null)
+            List<Element> list = new ArrayList<>();
+            getElements(list, 0, tags);
+            return list;
+        }
+        private void getElements(List<Element> list, int index, String[] tags)
+        {
+            if (index == tags.length)
             {
-                String tag = tags[tags.length-1];
-                List<Element> list = new ArrayList<>();
-                element.forEachChild((e)->
-                {
-                    if (tag.equals(e.getTag()))
-                    {
-                        list.add(e);
-                    }
-                });
-                return list;
+                list.add(this);
             }
             else
             {
-                return Collections.EMPTY_LIST;
+                String tag = tags[index];
+                forEachChild((e)->
+                {
+                    if (tag.equals(e.getTag()))
+                    {
+                        e.getElements(list, index+1, tags);
+                    }
+                });
             }
         }
         public String getText(String... tags)
@@ -141,7 +143,12 @@ public class SimpleXMLParser
             Element element = getElement(tags);
             if (element != null)
             {
-                return element.getText();
+                String txt = element.getText();
+                if (txt != null)
+                {
+                    txt = txt.trim();
+                }
+                return txt;
             }
             return null;
         }

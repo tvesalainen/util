@@ -32,6 +32,7 @@ import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.AbstractFunctionQueue;
 
 /**
+ * @deprecated doesn't work???
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */

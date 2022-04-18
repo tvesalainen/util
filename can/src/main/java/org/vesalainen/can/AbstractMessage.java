@@ -345,13 +345,6 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
 
         @Override
-        public Runnable compileBegin(MessageClass mc, int canId, LongSupplier millisSupplier)
-        {
-            this.millisSupplier = millisSupplier;
-            return compileBegin(mc, canId, millisSupplier);
-        }
-
-        @Override
         public ArrayAction<Object> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction)
         {
             String name = sc.getName();
