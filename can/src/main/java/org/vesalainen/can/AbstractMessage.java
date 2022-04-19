@@ -335,7 +335,7 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
 
         public long getMillis()
         {
-            return millisSupplier.getAsLong();
+            return System.currentTimeMillis();  
         }
 
         @Override

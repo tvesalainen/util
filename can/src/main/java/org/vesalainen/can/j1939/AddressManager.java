@@ -377,16 +377,16 @@ public class AddressManager extends JavaLogging implements PgnHandler
             {
                 if (isoAddress != null)
                 {
-                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Type="+info.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
+                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+"-"+info.getManufacturerSModelId().replace(' ', '_')+",Model="+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
                 }
                 else
                 {
-                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Type="+info.getManufacturerSModelId().replace(' ', '_'));
+                    return ObjectName.getInstance(Name.class.getName()+":Src="+sa+"-"+info.getManufacturerSModelId().replace(' ', '_'));
                 }
             }
             if (isoAddress != null)
             {
-                return ObjectName.getInstance(Name.class.getName()+":Src="+sa+",Model="+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
+                return ObjectName.getInstance(Name.class.getName()+":Src="+sa+"-"+isoAddress.getDeviceFunction()+",Id="+isoAddress.getUniqueNumber());
             }
             return ObjectName.getInstance(Name.class.getName()+":Src="+sa);
         }

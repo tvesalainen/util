@@ -18,7 +18,6 @@ package org.vesalainen.can;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -223,7 +222,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     {
         if (msg != null)
         {
-            AbstractMessage old = procMap.put(PGN.pgn(canId), msg);
+            AbstractMessage old = procMap.put(canId, msg);
             if (old != null)
             {
                 old.unregisterMBean();
@@ -234,7 +233,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
 
     private AbstractMessage getProc(int canId)
     {
-        return procMap.get(PGN.pgn(canId));
+        return procMap.get(canId);
     }
 
     protected AbstractMessage compile(int canId, MessageClass mc)
