@@ -1,0 +1,329 @@
+VERSION ""
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_ :
+
+BU_: MFD General_Or_Mandatory
+
+
+
+BO_ 16701694 Pgn065240_Iso_Commanded_Address: 9 General_Or_Mandatory
+ SG_ Unique_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 48|1@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
+ SG_ New_Source_Address : 64|8@1+ (1,0) [0|0] "" MFD
+
+BO_ 33428222 Pgn130578_Vessel_Speed_Components: 12 General_Or_Mandatory
+ SG_ Longitudinal_Speed_Water_Referenced : 0|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Transverse_Speed_Water_Referenced : 16|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Longitudinal_Speed_Ground_Referenced : 32|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Transverse_Speed_Ground_Referenced : 48|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Stern_Speed_Water_Referenced : 64|16@1- (0.001,0) [0|0] "m/s" MFD
+ SG_ Stern_Speed_Ground_Referenced : 80|16@1- (0.001,0) [0|0] "m/s" MFD
+
+BO_ 32641534 Pgn127505_Fluid_Level: 8 General_Or_Mandatory
+ SG_ Fluid_Instance : 0|4@1+ (1,0) [0|0] "" MFD
+ SG_ Fluid_Type : 4|4@1+ (1,0) [0|0] "" MFD
+ SG_ Fluid_Level : 8|16@1+ (0.004,0) [0|0] "%" MFD
+ SG_ Tank_Capacity : 24|32@1+ (0.1,0) [0|0] "L" MFD
+ SG_ Reserved_Bits : 56|8@1+ (1,0) [0|0] "" MFD
+
+BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Source : 8|4@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 12|4@1+ (1,0) [0|0] "" MFD
+ SG_ Date : 16|16@1+ (1,0) [0|0] "days" MFD
+ SG_ Time : 32|32@1+ (100,0) [0|0] "us" MFD
+
+BO_ 32510462 Pgn126993Heartbeat: 8 General_Or_Mandatory
+ SG_ Data_Transmit_Offset : 0|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
+ SG_ Sequence_Counter : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
+ SG_ Reserved : 24|24@1+ (1.0,0.0) [0.0|0.0] "" MFD
+
+BO_ 32511230 Pgn126996_Product_Information: 134 General_Or_Mandatory
+ SG_ Nmea_2000_Database_Version : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_Manufacturer_S_Product_Code : 16|16@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Id : 32|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Software_Version_Code : 288|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Version : 544|256@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_S_Model_Serial_Code : 800|256@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_2000_Certification_Level : 1056|8@1+ (1,0) [0|0] "" MFD
+ SG_ Load_Equivalency : 1064|8@1+ (1,0) [0|0] "" MFD
+
+BO_ 32511742 Pgn126998_Configuration_Information: 42 General_Or_Mandatory
+ SG_ Installation_Description_Field_1 : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Installation_Description_Field_2 : 0|16@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Information_Field_3 : 0|16@1+ (1,0) [0|0] "" MFD
+
+BO_ 15597822 Pgn060928_Iso_Address_Claim: 8 General_Or_Mandatory
+ SG_ Unique_Number : 0|21@1+ (1,0) [0|0] "" MFD
+ SG_ Manufacturer_Code : 21|11@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Lower : 32|3@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Instance_Upper : 35|5@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Function : 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved : 48|1@1+ (1,0) [0|0] "" MFD
+ SG_ Device_Class : 49|7@1+ (1,0) [0|0] "" MFD
+ SG_ System_Instance : 56|4@1+ (1,0) [0|0] "" MFD
+ SG_ Industry_Group : 60|3@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Iso_Self_Configurable : 63|1@1+ (1,0) [0|0] "" MFD
+
+BO_ 32375038 Pgn126464_Pgn_List_Transmit_Reveived_Pgn_S_Group_Function: 8 General_Or_Mandatory
+ SG_ Transmitted_Pgn_Group_Function_Code : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ First_Pgn_Supported : 8|24@1+ (1,0) [0|0] "" MFD
+
+BO_ 15466750 Pgn060416_Iso_Transport_Protocol_Connection_Management_Rts_Group_Function: 8 General_Or_Mandatory
+ SG_ Rts_Group_Function_Code M: 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Total_Message_Size_Bytes m16: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Total_Number_Of_Frames_To_Be_Transmitted m16: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Reserved_Bits m16: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M16_Pgn_Of_Multi_Packet_Message m16: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Number_Of_Frames_That_Can_Be_Sent m17: 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Number_Of_Next_Frame_To_Be_Transmitted m17: 16|8@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Reserved_Bits m17: 24|16@1+ (1,0) [0|0] "" MFD
+ SG_ M17_Pgn_Of_Multi_Packet_Message m17: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Total_Message_Size_Bytes m19: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Total_Number_Of_Frames_Received m19: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Reserved_Bits m19: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M19_Pgn_Of_Multi_Packet_Message m19: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Total_Message_Size_Bytes m32: 8|16@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Total_Number_Of_Frames_To_Be_Transmitted m32: 24|8@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Reserved_Bits m32: 32|8@1+ (1,0) [0|0] "" MFD
+ SG_ M32_Pgn_Of_Multi_Packet_Message m32: 40|24@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Reason m255: 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Reserved_Bits m255: 16|16@1+ (1,0) [0|0] "" MFD
+ SG_ M255_Pgn_Of_Multi_Packet_Message m255: 32|24@1+ (1,0) [0|0] "" MFD
+
+BO_ 32309502 Pgn126208_Nmea_Request_Group_Function: 223 General_Or_Mandatory
+ SG_ Complex_Request_Group_Function_Code M: 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Requested_Pgn m0: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Transmission_Interval m0: 32|32@1+ (0.001,0) [0|0] "s" MFD
+ SG_ M0_Transmission_Interval_Offset m0: 64|16@1+ (0.01,0) [0|0] "s" MFD
+ SG_ M0_Number_Of_Pairs_Of_Request_Parameters_To_Follow m0: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Field_Number_Of_First_Requested_Parameter m0: 88|8@1+ (1,0) [0|0] "" MFD
+ SG_ M0_Value_Of_First_Requested_Parameter m0: 96|0@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Commanded_Pgn m1: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Priority_Setting m1: 32|4@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Reserved_Bits m1: 36|4@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Number_Of_Pairs_Of_Commanded_Parameters_To_Follow m1: 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Field_Number_Of_First_Commanded_Parameter m1: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M1_Value_Of_First_Command_Parameter m1: 56|0@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Requested_Or_Commanded_Pgn_Being_Acknowledged m2: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Pgn_Error_Code m2: 32|4@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Transmission_Interval_Priority_Error_Code m2: 36|4@1+ (1,0) [0|0] "" MFD
+ SG_ M2_Number_Of_Requested_Or_Commanded_Parameters m2: 40|8@1+ (1,0) [0|0] "" MFD
+ SG_ M2_First_Parameter_Error_Code m2: 48|4@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Pgn_Number m4: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Manufacturer_S_Code m4: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Reserve_Bits m4: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M4_Industry_Group m4: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Unique_Id m4: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Commanded_Parameters_Fields m4: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Number_Of_Pairs_Of_Fields_To_Read m4: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Field_Number_Of_First_Commanded_Parameter m4: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Value_Of_First_Commanded_Parameter m4: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_9_Repeated m4: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M4_Variable_Number_Of_Fields_Field_10_Repeated m4: 88|0@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Pgn_Number m5: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Manufacturer_S_Code m5: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Reserve_Bits m5: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M5_Industry_Group m5: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Unique_Id m5: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Commanded_Parameters_Fields m5: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Number_Of_Pairs_Of_Fields_To_Written m5: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Field_Number_Of_First_Commanded_Parameter m5: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Value_Of_First_Commanded_Parameter m5: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_9_Repeated m5: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M5_Variable_Number_Of_Fields_Field_10_Repeated m5: 88|0@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Pgn_Number m6: 8|24@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Manufacturer_S_Code m6: 32|11@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Reserve_Bits m6: 43|2@1+ (0.0,0) [0|0] "" MFD
+ SG_ M6_Industry_Group m6: 45|3@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Unique_Id m6: 48|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Commanded_Parameters_Fields m6: 56|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Number_Of_Pairs_Of_Fields_To_Written m6: 64|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Field_Number_Of_First_Commanded_Parameter m6: 72|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Value_Of_First_Commanded_Parameter m6: 80|0@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_9_Repeated m6: 80|8@1+ (1,0) [0|0] "" MFD
+ SG_ M6_Variable_Number_Of_Fields_Field_10_Repeated m6: 88|0@1+ (1,0) [0|0] "" MFD
+
+BO_ 15335678 Pgn059904_Iso_Request: 3 General_Or_Mandatory
+ SG_ Pgn_Being_Requested : 0|24@1+ (1,0) [0|0] "" MFD
+
+BO_ 15401214 Pgn060160_Iso_Transport_Protocol_Data_Transfer: 8 General_Or_Mandatory
+ SG_ Sequence_Number_Of_Multi_Packet_Frame : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Multi_Packet_Packetized_Data : 8|56@1+ (1,0) [0|0] "" MFD
+
+BO_ 15204606 Pgn059392_Iso_Acknowledgment: 8 General_Or_Mandatory
+ SG_ Control_Byte : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Group_Function_Value : 8|8@1+ (1,0) [0|0] "" MFD
+ SG_ Reserved_Bits : 16|24@1+ (1,0) [0|0] "" MFD
+ SG_ Pgn_Of_Requested_Information : 40|24@1+ (1,0) [0|0] "" MFD
+
+CM_ "This DBC is extracted from n2k.dbc" ;
+
+CM_ BO_ 16701694 "ISO 11783 defined this message to provide a mechanism for assigning a network address to a node. The NAME information in the data portion of the message must match the name information of the node whose network address is to be set." ;
+CM_ BO_ 33428222 "This PGN provides a single transmission that accurately describes the speed of a vessel by component vectors." ;
+CM_ BO_ 32641534 "Fluid Level contains an instance number, type of fluid, level of fluid, and tank capacity. For example the fluid instance may be the level of fuel in a tank or the level of water in the bilge. Used primarily by display or instrumentation devices." ;
+CM_ BO_ 32510206 "The purpose of this PGN is twofold: To provide a regular transmission of UTC time and date. To provide synchronism for measurement data." ;
+CM_ BO_ 32511230 "Provides product information onto the network that could be important for determining quality of data coming from this product." ;
+CM_ BO_ 32511742 "Free-form alphanumeric fields describing the installation (e.g., starboard engine room location) of the device and installation notes (e.g., calibration data)." ;
+CM_ BO_ 15597822 "This network management message is used to claim network address, reply to devices requesting the claimed address, and to respond with device information (NAME) requested by the ISO Request or Complex Request Group Function. This PGN contains several fields that are requestable, either independently or in any combination." ;
+CM_ BO_ 32375038 "The Transmit / Receive PGN List Group type of function is defined by first field. The message will be a Transmit or Receive PGN List group function." ;
+CM_ BO_ 15466750 "ISO 11783 defines this group function PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN���s role in the transport process is determined by the group function value found in the first data byte of the PGN." ;
+CM_ BO_ 32309502 "The Request / Command / Acknowledge Group type of function is defined by first field. The message will be a Request, Command, or Acknowledge Group Function." ;
+CM_ BO_ 15335678 "As defined by ISO, this message has a data length of 3 bytes with no padding added to complete the single frame. The appropriate response to this message is based on the PGN being requested, and whether the receiver supports the requested PGN." ;
+CM_ BO_ 15401214 "ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message." ;
+CM_ BO_ 15204606 "This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a ���normal broadcast��� message or the response to a specific command to indicate compliance or failure." ;
+
+BA_DEF_ "RepeatSize" INT 0 0;
+BA_DEF_ "SignalType" STRING;
+BA_DEF_ "RepeatStartBit" INT 0 0;
+BA_DEF_ "MessageType" STRING;
+BA_DEF_DEF_ "RepeatSize" 0;
+BA_DEF_DEF_ "SignalType" "UNKNOWN";
+BA_DEF_DEF_ "RepeatStartBit" 0;
+BA_DEF_DEF_ "MessageType" "Single";
+BA_ "RepeatSize" 0;
+BA_ "SignalType" "";
+BA_ "RepeatStartBit" 0;
+BA_ "MessageType" "";
+BA_ "MessageType" BO_ 16701694 "ISO";
+BA_ "SignalType" SG_ 16701694 Unique_Number "BINARY";
+BA_ "SignalType" SG_ 16701694 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 16701694 Device_Class "LOOKUP";
+BA_ "SignalType" SG_ 16701694 Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 16701694 Reserved_Iso_Self_Configurable "BINARY";
+BA_ "MessageType" BO_ 33428222 "Fast";
+BA_ "MessageType" BO_ 32641534 "Single";
+BA_ "SignalType" SG_ 32641534 Fluid_Type "LOOKUP";
+BA_ "SignalType" SG_ 32641534 Reserved_Bits "BINARY";
+BA_ "MessageType" BO_ 32510206 "Single";
+BA_ "SignalType" SG_ 32510206 Source "LOOKUP";
+BA_ "SignalType" SG_ 32510206 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32510206 Date "INT";
+BA_ "SignalType" SG_ 32510206 Time "DOUBLE";
+BA_ "MessageType" BO_ 32511230 "Fast";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Id "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Software_Version_Code "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Version "ASCIIZ";
+BA_ "SignalType" SG_ 32511230 Manufacturer_S_Model_Serial_Code "ASCIIZ";
+BA_ "MessageType" BO_ 32511742 "Fast";
+BA_ "SignalType" SG_ 32511742 Installation_Description_Field_1 "STRINGLAU";
+BA_ "SignalType" SG_ 32511742 Installation_Description_Field_2 "STRINGLAU";
+BA_ "SignalType" SG_ 32511742 Manufacturer_Information_Field_3 "STRINGLAU";
+BA_ "MessageType" BO_ 15597822 "Single";
+BA_ "SignalType" SG_ 15597822 Unique_Number "BINARY";
+BA_ "SignalType" SG_ 15597822 Manufacturer_Code "BINARY";
+BA_ "SignalType" SG_ 15597822 Reserved "BINARY";
+BA_ "SignalType" SG_ 15597822 Device_Class "LOOKUP";
+BA_ "SignalType" SG_ 15597822 Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 15597822 Reserved_Iso_Self_Configurable "BINARY";
+BA_ "RepeatSize" BO_ 32375038 24;
+BA_ "RepeatStartBit" BO_ 32375038 8;
+BA_ "MessageType" BO_ 32375038 "Fast";
+BA_ "SignalType" SG_ 32375038 Transmitted_Pgn_Group_Function_Code "LOOKUP";
+BA_ "SignalType" SG_ 32375038 First_Pgn_Supported "INT";
+BA_ "MessageType" BO_ 15466750 "Single";
+BA_ "SignalType" SG_ 15466750 M16_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M17_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M17_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M19_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M19_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M32_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M32_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "SignalType" SG_ 15466750 M255_Reason "BINARY";
+BA_ "SignalType" SG_ 15466750 M255_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15466750 M255_Pgn_Of_Multi_Packet_Message "INT";
+BA_ "MessageType" BO_ 32309502 "Fast";
+BA_ "SignalType" SG_ 32309502 Complex_Request_Group_Function_Code "INT";
+BA_ "SignalType" SG_ 32309502 M0_Requested_Pgn "INT";
+BA_ "SignalType" SG_ 32309502 M0_Field_Number_Of_First_Requested_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M1_Commanded_Pgn "INT";
+BA_ "SignalType" SG_ 32309502 M1_Priority_Setting "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M1_Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 32309502 M1_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M2_Requested_Or_Commanded_Pgn_Being_Acknowledged "INT";
+BA_ "SignalType" SG_ 32309502 M2_Pgn_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M2_Transmission_Interval_Priority_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M2_First_Parameter_Error_Code "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M4_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M4_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M4_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M4_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M4_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M4_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "SignalType" SG_ 32309502 M5_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M5_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M5_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M5_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M5_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M5_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "SignalType" SG_ 32309502 M6_Pgn_Number "INT";
+BA_ "SignalType" SG_ 32309502 M6_Manufacturer_S_Code "BINARY";
+BA_ "SignalType" SG_ 32309502 M6_Industry_Group "LOOKUP";
+BA_ "SignalType" SG_ 32309502 M6_Unique_Id "INT";
+BA_ "SignalType" SG_ 32309502 M6_Field_Number_Of_First_Commanded_Parameter "INT";
+BA_ "SignalType" SG_ 32309502 M6_Variable_Number_Of_Fields_Field_9_Repeated "INT";
+BA_ "MessageType" BO_ 15335678 "Single";
+BA_ "SignalType" SG_ 15335678 Pgn_Being_Requested "INT";
+BA_ "RepeatSize" BO_ 15401214 56;
+BA_ "RepeatStartBit" BO_ 15401214 8;
+BA_ "MessageType" BO_ 15401214 "Single";
+BA_ "MessageType" BO_ 15204606 "Single";
+BA_ "SignalType" SG_ 15204606 Control_Byte "LOOKUP";
+BA_ "SignalType" SG_ 15204606 Reserved_Bits "BINARY";
+BA_ "SignalType" SG_ 15204606 Pgn_Of_Requested_Information "INT";
+
+VAL_ 16701694 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
+VAL_ 16701694 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32641534 Fluid_Type  0 "Fuel" 1 "Water" 2 "Gray water" 3 "Live well" 4 "Oil" 5 "Black water";
+VAL_ 32510206 Source  0 "GPS" 1 "GLONASS" 2 "Radio Station" 3 "Local Cesium clock" 4 "Local Rubidium clock" 5 "Local Crystal clock";
+VAL_ 15597822 Device_Class  0 "Reserved for 2000 Use" 10 "System tools" 20 "Safety systems" 25 "Internetwork device" 30 "Electrical Distribution" 35 "Electrical Generation" 40 "Steering and Control surfaces" 50 "Propulsion" 60 "Navigation" 70 "Communication" 75 "Sensor Communication Interface" 80 "Instrumentation/general systems" 85 "External Environment" 90 "Internal Environment" 100 "Deck + cargo + fishing equipment systems" 120 "Display" 125 "Entertainment";
+VAL_ 15597822 Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32375038 Transmitted_Pgn_Group_Function_Code  0 "Transmit PGN list" 1 "Receive PGN list";
+VAL_ 32309502 M1_Priority_Setting  8 "Leave priority unchanged" 9 "Reset to default";
+VAL_ 32309502 M2_Pgn_Error_Code  0 "Acknowledge" 1 "PGN not supported" 2 "PGN not available" 3 "Access denied" 4 "Not supported" 5 "Tag not supported" 6 "Read or Write not supported";
+VAL_ 32309502 M2_Transmission_Interval_Priority_Error_Code  0 "Acknowledge" 1 "Transmit Interval/Priority not supported" 2 "Transmit Interval to low" 3 "Access denied" 4 "Not supported";
+VAL_ 32309502 M2_First_Parameter_Error_Code  0 "Acknowledge" 1 "Invalid parameter field" 2 "Temporary error" 3 "Parameter out of range" 4 "Access denied" 5 "Not supported" 6 "Read or Write not supported";
+VAL_ 32309502 M4_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32309502 M5_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 32309502 M6_Industry_Group  0 "Global" 1 "Highway" 2 "Agriculture" 3 "Construction" 4 "Marine" 5 "Industrial";
+VAL_ 15204606 Control_Byte  0 "ACK" 1 "NAK" 2 "Access Denied" 3 "Address Busy";
