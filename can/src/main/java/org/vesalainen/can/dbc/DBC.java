@@ -31,6 +31,10 @@ public class DBC
     protected static final Map<Integer,MessageClass> canIdMap = new HashMap<>();
     protected static final Map<Integer,MessageClass> pgnMap = new HashMap<>();
     
+    public static void addJ1939()
+    {
+        addDBCFile(AbstractCanService.class.getResourceAsStream("/j1939.dbc"));
+    }
     public static void addN2K()
     {
         addDBCFile(AbstractCanService.class.getResourceAsStream("/n2k.dbc"));

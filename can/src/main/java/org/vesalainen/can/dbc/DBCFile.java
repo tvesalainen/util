@@ -232,6 +232,10 @@ public class DBCFile extends DBCBase
     public void setMessageComment(int id, String comment)
     {
         MessageClass message = messages.get(id);
+        if (message == null)
+        {
+            throw new IllegalArgumentException(id+" message not found");
+        }
         message.setComment(comment);
     }
 

@@ -33,6 +33,7 @@ public class DBCTest
     @Test
     public void testFast()
     {
+        DBC.addJ1939();
         DBC.addN2K();
         DBC.forEachFastMessage((p)->System.err.println("\t\tcase "+p+":"));
     }

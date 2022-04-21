@@ -29,6 +29,7 @@ import javax.management.ObjectName;
 import org.vesalainen.can.AbstractCanService;
 import org.vesalainen.can.DataUtil;
 import org.vesalainen.can.PgnHandler;
+import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.management.AbstractDynamicMBean;
 import org.vesalainen.nio.ReadBuffer;
 import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
@@ -98,6 +99,7 @@ public class AddressManager extends JavaLogging implements PgnHandler
     {
         this.service = service;
         this.executor = executor;
+        DBC.addJ1939();
         namePoller = new Poller<>(executor, this::requestAddress, 100, 1, TimeUnit.SECONDS);
         infoPoller = new Poller<>(executor, this::requestProductInformation, 100, 1, TimeUnit.SECONDS);
     }
