@@ -24,12 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
 import org.vesalainen.maven.help.POM;
@@ -48,8 +42,8 @@ import org.vesalainen.vfs.pm.deb.DEBDependency;
 public class Packager
     extends AbstractMojo
 {
-    private static final String DEFAULT_TEMPLATE = "/etc/default/default.tmpl";
-    private static final String INIT_D_TEMPLATE = "/etc/init.d/init.tmpl";
+    private static final String SERVICE_TEMPLATE = "/etc/systemd/system/service.tmpl";
+    private static final String OVERRIDE_TEMPLATE = "/etc/systemd/system/service.d/override.conf";
     private static final String LOG_CONFIG_TEMPLATE = "/etc/opt/log-config.tmpl";
     private POM root;
     private Path localRepository;
@@ -92,76 +86,74 @@ public class Packager
     public void execute()
         throws MojoExecutionException
     {
-        Log log = getLog();
-        log.info("packager starting...");
+        getLog().info("packager starting...");
         try
         {
             packageDirectory = packageDir.toPath();
             String userHome = System.getProperty("user.home");
             localRepository = Paths.get(userHome, ".m2/repository");    // TODO!!!!!!
-            log.info("localRepository="+localRepository);
-            log.info("packageDirectory="+packageDir);
-            log.info("packageType="+packageType);
-            log.info("groupId="+groupId);
-            log.info("artifactId="+artifactId);
-            log.info("version="+version);
-            log.info("shortName="+shortName);
+            getLog().info("localRepository="+localRepository);
+            getLog().info("packageDirectory="+packageDir);
+            getLog().info("packageType="+packageType);
+            getLog().info("groupId="+groupId);
+            getLog().info("artifactId="+artifactId);
+            getLog().info("version="+version);
+            getLog().info("shortName="+shortName);
             root = POM.getInstance(groupId, artifactId, version);
-            log.info("got factory");
+            getLog().info("got factory");
             expressionParser = new ExpressionParser(root)
                     .addMapper((s)->root.getProperties().getProperty(s))
                     .addMapper(this);
-            log.info("got expressionParser");
+            getLog().info("got expressionParser");
             createPackage();
         }
         catch (Throwable ex)
         {
-            log.error(ex);
+            getLog().error(ex);
         }
     }
     private void createPackage() throws IOException
     {
-        Log log = getLog();
         Path path = PackageFilenameFactory.getPath(packageDirectory, packageType, getPackage(), version, null);
-        log.info("package="+path);
+        getLog().info("package="+path);
         Files.createFile(path);
         try (FileSystem pkgFS = VirtualFileSystems.debianFileSystem(path, Collections.EMPTY_MAP))
         {
             fileSystem = pkgFS;
             PackageManagerAttributeView view = PackageManagerAttributeView.from(pkgFS);
             view.setSummary(root.getName());
-            log.info("summary="+root.getName());
+            getLog().info("summary="+root.getName());
             view.setDescription(root.getDescription());
-            log.info("description="+root.getDescription());
+            getLog().info("description="+root.getDescription());
             String javaReq = getJavaReq();
             if (javaReq != null)
             {
                 view.addRequire(javaReq);
-                log.info("require="+javaReq);
+                getLog().info("require="+javaReq);
             }
             String license = getLicense(root);
             view.setLicense(license);
-            log.info("license="+license);
+            getLog().info("license="+license);
             String developers = getDevelopers(root);
             view.setCopyright(developers);
-            log.info("copyright="+developers);
+            getLog().info("copyright="+developers);
             if (maintainer != null)
             {
                 view.setMaintainer(maintainer);
-                log.info("maintainer="+maintainer);
+                getLog().info("maintainer="+maintainer);
             }
             else
             {
                 view.setMaintainer(developers);
             }
             view.setUrl(root.getUrl());
-            log.info("url="+root.getUrl());
+            getLog().info("url="+root.getUrl());
             copyJarsEtc(appDir(), view);
-            Path etcInitDPath = initPath();
-            createEtcInit(etcInitDPath);
-            view.setPostInstallation("update-rc.d "+getPackage()+" defaults\nservice "+getPackage()+" start\n");
-            view.setPreUnInstallation("service "+getPackage()+" stop\nupdate-rc.d "+getPackage()+" remove\n");
-            createEtcDefault(etcDefaultPath());
+            Path systemdPath = systemdPath();
+            Path overridePath = overridePath();
+            createSystemdService(systemdPath, overridePath);
+            view.setPostInstallation("systemctl enable "+getPackage()+"\nsystemctl start "+getPackage()+"\n");
+            view.setPreUnInstallation("systemctl stop "+getPackage()+"\nsystemctl disable "+getPackage()+"\n");
             createLogConfig(getLogConfigPath());
             Files.createDirectories(getVarPath());
             fileSystem = null;
@@ -171,13 +163,13 @@ public class Packager
     {
         return fileSystem.getPath("/opt/"+groupId+"/"+artifactId);
     }
-    private Path initPath()
+    private Path systemdPath()
     {
-        return fileSystem.getPath("/etc/init.d/"+getPackage());
+        return fileSystem.getPath("/etc/systemd/system/"+getPackage()+".service");
     }
-    public Path etcDefaultPath()
+    private Path overridePath()
     {
-        return fileSystem.getPath("/etc/default/"+getPackage());
+        return fileSystem.getPath("/etc/systemd/system/"+getPackage()+".service.d/override.conf");
     }
     public Path getLogConfigPath()
     {
@@ -226,6 +218,7 @@ public class Packager
             Path target = jarDir.resolve(localRepository.relativize(source));
             Files.createDirectories(target.getParent());
             Files.copy(source, target);
+            getLog().info(target.toString());
             jars.add(target);
             Files.setPosixFilePermissions(target, PosixFilePermissions.fromString("rw-r--r--"));
             String license = getLicense(model);
@@ -251,13 +244,10 @@ public class Packager
     {
         return model.getLicenses().stream().map((l)->l.getName()).collect(Collectors.joining(", "));
     }
-    private void createEtcInit(Path etcInitD) throws IOException
+    private void createSystemdService(Path systemdPath, Path overridePath) throws IOException
     {
-        createFromResource(etcInitD, INIT_D_TEMPLATE, "rwxr-xr-x");
-    }
-    private void createEtcDefault(Path etcDefault) throws IOException
-    {
-        createFromResource(etcDefault, DEFAULT_TEMPLATE, "rw-r--r--");
+        createFromResource(systemdPath, SERVICE_TEMPLATE, "rw-r--r--");
+        createFromResource(overridePath, OVERRIDE_TEMPLATE, "rw-r--r--");
     }
     private void createLogConfig(Path logConfPath) throws IOException
     {
@@ -300,8 +290,6 @@ public class Packager
                 .stream()
                 .filter((d)->!"true".equals(d.getOptional()))
                 .filter((d)->"compile".equals(d.getScope()) || "runtime".equals(d.getScope()))
-                .map(POM::getVersionResolver)
-                .map((v)->v.resolv())
                 .map(POM::getInstance)
                 );
     }

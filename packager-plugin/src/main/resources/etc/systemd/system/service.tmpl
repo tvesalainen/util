@@ -1,0 +1,16 @@
+# ${generatedText}
+[Unit]
+Description=${description}
+After=network.target
+
+[Service]
+Environment=VERSION=${version}
+Environment=MAIN=${mainClass}
+Environment=CLASSPATH=${classpath}
+Environment=LOGSETTING="-lx ${logConfigPath}"
+Environment=CONFIG=${configPath}
+Environment=LDPATH=-Djava.library.path=/opt/org.vesalainen/lib
+ExecStart=/usr/bin/java -server -classpath $CLASSPATH $JMX $LDPATH $MAIN $LOGSETTING $CONFIG
+
+[Install]
+WantedBy=multi-user.target
