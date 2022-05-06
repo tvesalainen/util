@@ -47,17 +47,10 @@ public class ExceptionParser
         }
         if ((thr instanceof IOException) && (
                 "Connection timed out".equals(thr.getMessage()) ||
+                "Connection refused".equals(thr.getMessage()) ||
                 "No route to host".equals(thr.getMessage()) ||
                 "Broken pipe".equals(thr.getMessage()) ||
                 "Connection reset by peer".equals(thr.getMessage())
-                )
-            )
-        {
-            return level;
-        }
-        if ((thr instanceof ConnectException) && (
-                "Connection timed out".equals(thr.getMessage()) ||
-                "Connection refused".equals(thr.getMessage())
                 )
             )
         {
