@@ -18,9 +18,9 @@ package org.vesalainen.can;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import static java.util.logging.Level.SEVERE;
@@ -49,7 +49,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final static int CAN_EFF_MASK = 0x1FFFFFFF; /* extended frame format (EFF) */
     protected final static int CAN_ERR_MASK = 0x1FFFFFFF; /* omit EFF, RTR, ERR flags */
     
-    protected final Map<Integer,AbstractMessage> procMap = new ConcurrentHashMap<>();
+    protected final Map<Integer,AbstractMessage> procMap = new HashMap<>();
     protected final List<PgnHandler> pgnHandlers = new ArrayList<>();
     protected final CachedScheduledThreadPool executor;
     protected final AbstractMessageFactory messageFactory;
