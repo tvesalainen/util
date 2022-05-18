@@ -213,14 +213,17 @@ CM_ BO_ 15335678 "As defined by ISO, this message has a data length of 3 bytes w
 CM_ BO_ 15401214 "ISO 11783 defines this PGN as part of the transport protocol method used for transmitting messages that have 9 or more data bytes. This PGN represents a single packet of a multipacket message." ;
 CM_ BO_ 15204606 "This message is provided by ISO 11783 for a handshake mechanism between transmitting and receiving devices. This message is the possible response to acknowledge the reception of a ���normal broadcast��� message or the response to a specific command to indicate compliance or failure." ;
 
+BA_DEF_ "ProtocolType" STRING;
 BA_DEF_ "RepeatSize" INT 0 0;
 BA_DEF_ "SignalType" STRING;
 BA_DEF_ "RepeatStartBit" INT 0 0;
 BA_DEF_ "MessageType" STRING;
+BA_DEF_DEF_ "ProtocolType" "";
 BA_DEF_DEF_ "RepeatSize" 0;
 BA_DEF_DEF_ "SignalType" "UNKNOWN";
 BA_DEF_DEF_ "RepeatStartBit" 0;
 BA_DEF_DEF_ "MessageType" "Single";
+BA_ "ProtocolType" "J1939";
 BA_ "RepeatSize" 0;
 BA_ "SignalType" "";
 BA_ "RepeatStartBit" 0;
