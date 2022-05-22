@@ -67,7 +67,7 @@ public abstract class AbstractDynamicMBean implements DynamicMBean, Notification
 {
     private final Map<String,AttributeImpl> attributes = new TreeMap<>();
     private final Map<String,OperationImpl> operations = new TreeMap<>();
-    private final String description;
+    protected final String description;
     private final NotificationBroadcasterSupport notificationBroadcasterSupport;
     private Descriptor descriptor = new DescriptorSupport();
     private long sequence;

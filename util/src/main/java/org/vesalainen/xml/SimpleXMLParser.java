@@ -143,12 +143,7 @@ public class SimpleXMLParser
             Element element = getElement(tags);
             if (element != null)
             {
-                String txt = element.getText();
-                if (txt != null)
-                {
-                    txt = txt.trim();
-                }
-                return txt;
+                return element.getText();
             }
             return null;
         }
@@ -291,7 +286,7 @@ public class SimpleXMLParser
         }
         private void finish()
         {
-            text = sb.toString();
+            text = sb.toString().trim();
             sb = null;
             attributes = Collections.unmodifiableMap(attributes);
             childMap = Collections.unmodifiableMap(childMap);
