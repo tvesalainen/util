@@ -121,7 +121,7 @@ public class SocketCandService extends AbstractCanService
     }
 
     @Override
-    public void send(int canId, int length, byte[] data) throws IOException
+    public void sendRaw(int canId, int length, byte[] data) throws IOException
     {
         if (started)
         {

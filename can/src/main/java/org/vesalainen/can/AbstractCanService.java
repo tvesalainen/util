@@ -28,6 +28,7 @@ import org.vesalainen.can.can2udp.Can2UdpService;
 import org.vesalainen.can.cannelloni.CannelloniService;
 import org.vesalainen.can.dbc.DBC;
 import org.vesalainen.can.dbc.MessageClass;
+import org.vesalainen.can.j1939.AddressManager;
 import org.vesalainen.can.j1939.PGN;
 import org.vesalainen.can.socketcand.SocketCandService;
 import org.vesalainen.nio.ReadBuffer;
@@ -50,7 +51,7 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     protected final static int CAN_ERR_MASK = 0x1FFFFFFF; /* omit EFF, RTR, ERR flags */
     
     protected final Map<Integer,AbstractMessage> procMap = new HashMap<>();
-    protected final List<PgnHandler> pgnHandlers = new ArrayList<>();
+    protected AddressManager addressManager;
     protected final CachedScheduledThreadPool executor;
     protected final AbstractMessageFactory messageFactory;
     private Future<?> future;
@@ -149,16 +150,83 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         }
     }
 
-    public void send(int canId, byte... data) throws IOException
+    public void sendPgn(int pgn, int priority, byte... data) throws IOException
     {
-        send(canId, data.length, data);
+        sendPgn(pgn, priority, data.length, data);
     }
-    public abstract void send(int canId, int length, byte[] data) throws IOException;
+    public void sendPgn(int pgn, byte to, int priority, byte... data) throws IOException
+    {
+        sendPgn(pgn, to, priority, data.length, data);
+    }
+    public void sendPgn(int pgn, byte to, int priority, int length, byte[] data) throws IOException
+    {
+        if (addressManager != null)
+        {
+            byte ownSA = addressManager.getOwnSA();
+            if (AddressManager.isPeer(ownSA))
+            {
+                int pf = PGN.pduFormat(pgn);
+                if (pf < 0xf0)
+                {
+                    int canId = PGN.canId(priority, pgn, to, ownSA);
+                    sendRaw(canId, length, data);
+                }
+                else
+                {
+                    throw new IllegalArgumentException("pgn is not peer-to-peer");
+                }
+            }
+            else
+            {
+                throw new IllegalArgumentException("no own address");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("no addressManager");
+        }
+    }
+    public void sendPgn(int pgn, int priority, int length, byte[] data) throws IOException
+    {
+        if (addressManager != null)
+        {
+            byte ownSA = addressManager.getOwnSA();
+            if (AddressManager.isPeer(ownSA))
+            {
+                int pf = PGN.pduFormat(pgn);
+                if (pf >= 0xf0)
+                {
+                    int canId = PGN.canId(priority, pgn, ownSA);
+                    sendRaw(canId, length, data);
+                }
+                else
+                {
+                    throw new IllegalArgumentException("pgn is peer-to-peer");
+                }
+            }
+            else
+            {
+                throw new IllegalArgumentException("no own address");
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("no addressManager");
+        }
+    }
+    public void sendRaw(int canId, byte... data) throws IOException
+    {
+        sendRaw(canId, data.length, data);
+    }
+    public abstract void sendRaw(int canId, int length, byte[] data) throws IOException;
 
     @Override
     public void frame(long time, int canId, ReadBuffer data)
     {
-        pgnHandlers.forEach((h)->h.frame(time, canId, data));
+        if (addressManager != null)
+        {
+            addressManager.frame(time, canId, data);
+        }
         AbstractMessage proc = getProc(canId);
         if (proc == null)
         {
@@ -244,11 +312,15 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
     {
         return messageFactory.createPgnMessage(executor, canId, mc);
     }
-    public void addPgnHandler(PgnHandler pgnHandler)
+    public void setAddressManager(AddressManager addressManager)
     {
-        pgnHandler.init(this, executor);
-        pgnHandlers.add(pgnHandler);
-        startables.add(pgnHandler::start);
+        if (future != null)
+        {
+            throw new IllegalStateException("Started already. Add AddressManager before started!");
+        }
+        addressManager.init(this, executor);
+        this.addressManager = addressManager;
+        startables.add(addressManager::start);
     }
     @Override
     public void close() throws Exception

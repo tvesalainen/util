@@ -59,7 +59,7 @@ public class Can2UdpService extends AbstractCanService
     }
     
     @Override
-    public void send(int canId, int length, byte[] data) throws IOException
+    public void sendRaw(int canId, int length, byte[] data) throws IOException
     {
         //info("send %s\n%s", PGN.toString(canId), HexDump.toHex(data, 0, length));
         ByteBuffer bb = sendBuffer.get();
@@ -100,9 +100,10 @@ public class Can2UdpService extends AbstractCanService
             }
             catch (Throwable ex)
             {
-                log(Level.SEVERE, ex, "");
+                log(Level.SEVERE, ex, "can2udp loop");
             }
         }
+        severe("can2udp stops!");
     }
 
     private void handlePacket(ByteBuffer bb, ReadBuffer rbb)
