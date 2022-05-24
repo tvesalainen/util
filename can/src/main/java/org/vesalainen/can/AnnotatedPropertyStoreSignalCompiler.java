@@ -188,7 +188,7 @@ public class AnnotatedPropertyStoreSignalCompiler extends JavaLogging implements
     @Override
     public ArrayAction<AnnotatedPropertyStore> compile(MessageClass mc, SignalClass sc, ToIntFunction<CanSource> toIntFunction, IntFunction<String> map)
     {
-        return SignalCompiler.super.compile(mc, sc, toIntFunction);
+        return compile(mc, sc, toIntFunction);
     }
 
     protected static class Msg
