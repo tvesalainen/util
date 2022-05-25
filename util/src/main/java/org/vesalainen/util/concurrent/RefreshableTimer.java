@@ -52,7 +52,7 @@ public class RefreshableTimer extends JavaLogging
         this.nanos = unit.NANOSECONDS.convert(timeout, unit);
         this.start = System.nanoTime();
         this.thread = Thread.currentThread();
-        long sleep = nanos-(System.nanoTime()-start);
+        long sleep = nanos;
         while (sleep > 0 || (condition != null && condition.getAsBoolean()))
         {
             finest("waiting for %d nanos", sleep);
