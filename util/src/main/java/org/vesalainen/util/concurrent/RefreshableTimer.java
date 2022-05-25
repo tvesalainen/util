@@ -49,22 +49,33 @@ public class RefreshableTimer extends JavaLogging
         {
             throw new IllegalStateException("already waiting");
         }
-        this.nanos = unit.NANOSECONDS.convert(timeout, unit);
-        this.start = System.nanoTime();
-        this.thread = Thread.currentThread();
+        nanos = TimeUnit.NANOSECONDS.convert(timeout, unit);
+        start = System.nanoTime();
+        thread = Thread.currentThread();
         long sleep = nanos;
-        while (sleep > 0 || (condition != null && condition.getAsBoolean()))
+        while (true)
         {
-            finest("waiting for %d nanos", sleep);
-            LockSupport.parkNanos(this, sleep);
-            if (thread.isInterrupted())
+            while (sleep > 0)
             {
-                info("interrupted");
-                return false;
+                finest("waiting for %d nanos", sleep);
+                LockSupport.parkNanos(this, sleep);
+                if (thread.isInterrupted())
+                {
+                    info("interrupted");
+                    return false;
+                }
+                sleep = nanos-(System.nanoTime()-start);
             }
-            sleep = nanos-(System.nanoTime()-start);
+            if (condition != null && condition.getAsBoolean())
+            {
+                start = System.nanoTime();
+                sleep = nanos;
+            }
+            else
+            {
+                return true;
+            }
         }
-        return true;
     }
     /**
      * Starts waiting from beginning.
