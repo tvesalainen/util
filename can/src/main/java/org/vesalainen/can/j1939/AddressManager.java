@@ -326,43 +326,49 @@ public class AddressManager extends JavaLogging implements PgnHandler
         }
         public void setName(byte[] buf)
         {
-            isoAddress = new IsoAddressClaim();
-            isoAddress.read(buf);
-            long n = DataUtil.asLong(buf);
-            if (n != name)
+            if ((state & NAME) == 0)
             {
-                Name on = nameMap.get(name);
-                if (on != null)
+                isoAddress = new IsoAddressClaim();
+                isoAddress.read(buf);
+                long n = DataUtil.asLong(buf);
+                if (n != name)
                 {
-                    on.reset();
+                    Name on = nameMap.get(name);
+                    if (on != null)
+                    {
+                        on.reset();
+                    }
+                    name = n;
+                    info = null;
+                    namePoller.disable(sa);
+                    nameMap.put(name, this);
+                    state |= NAME;
                 }
-                name = n;
-                info = null;
-                namePoller.disable(sa);
-                nameMap.put(name, this);
-                state |= NAME;
             }
         }
 
         public void setInfo(ReadBuffer data)
         {
-            byte[] buf = new byte[134];
-            info = new ProductInformation();
-            try
+            if ((state & INFO) == 0)
             {
-                if (sa != getSource())
+                byte[] buf = new byte[134];
+                info = new ProductInformation();
+                try
                 {
-                    throw new IllegalArgumentException();
+                    if (sa != getSource())
+                    {
+                        throw new IllegalArgumentException();
+                    }
+                    data.get(buf);
+                    info.read(buf);
+                    nameObservers.forEach((o)->o.accept(this));
+                    infoPoller.disable(sa);
+                    state |= INFO;
                 }
-                data.get(buf);
-                info.read(buf);
-                nameObservers.forEach((o)->o.accept(this));
-                infoPoller.disable(sa);
-                state |= INFO;
-            }
-            catch (Throwable ex)
-            {
-                log(SEVERE, ex, "%s", ex.getMessage());
+                catch (Throwable ex)
+                {
+                    log(SEVERE, ex, "%s", ex.getMessage());
+                }
             }
         }
 
