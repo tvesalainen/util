@@ -230,7 +230,7 @@ BO_ 33227518 Pgn129794_Ais_Class_A_Static_And_Voyage_Related_Data: 24 Ais
  SG_ Spare : 591|1@1+ (1,0) [0|0] "" MFD
  SG_ Ais_Transceiver_Information : 592|5@1+ (1,0) [0|0] "" MFD
 
-BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 13 Ais
+BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 233 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
  SG_ Source_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
@@ -241,7 +241,7 @@ BO_ 33227774 Pgn129795_Ais_Addressed_Binary_Message: 13 Ais
  SG_ Retransmit_Flag : 86|1@1+ (1,0) [0|0] "" MFD
  SG_ Spare : 87|1@1+ (1,0) [0|0] "" MFD
  SG_ Number_Of_Bits_In_Binary_Data_Field : 88|16@1+ (1,0) [0|0] "" MFD
- SG_ Binary_Data : 104|64@1+ (1,0) [0|0] "" MFD
+ SG_ Binary_Data : 104|1094@1+ (1,0) [0|0] "" MFD
 
 BO_ 33228030 Pgn129796_Ais_Acknowledge: 12 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
@@ -262,7 +262,7 @@ BO_ 33228286 Pgn129797_Ais_Binary_Broadcast_Message: 233 Ais
  SG_ Ais_Transceiver_Information : 41|5@1+ (1,0) [0|0] "" MFD
  SG_ Spare : 46|2@1+ (1,0) [0|0] "" MFD
  SG_ Number_Of_Bits_In_Binary_Data_Field : 48|16@1+ (1,0) [0|0] "" MFD
- SG_ Binary_Data : 64|2040@1+ (1,0) [0|0] "" MFD
+ SG_ Binary_Data : 64|1134@1+ (1,0) [0|0] "" MFD
 
 BO_ 33231358 Pgn129809_Ais_Class_B_Cs_Static_Data_Report_Part_A: 27 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
