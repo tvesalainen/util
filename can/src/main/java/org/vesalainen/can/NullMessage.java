@@ -19,7 +19,6 @@ package org.vesalainen.can;
 import java.util.concurrent.Executor;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import org.vesalainen.util.HexUtil;
 
 /**
  *

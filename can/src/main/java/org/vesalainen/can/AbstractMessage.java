@@ -138,6 +138,10 @@ public abstract class AbstractMessage extends JavaLogging implements Frame, CanM
         }
     }
 
+    public String getLastData()
+    {
+        return HexUtil.toString(buf);
+    }
     @Override
     public float getFrequency()
     {

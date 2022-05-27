@@ -33,4 +33,5 @@ public interface CanMXBean
     float getFrequency();
     int getCurrentBytes();
     int getMaxBytes();
+    String getLastData();
 }

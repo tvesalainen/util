@@ -64,10 +64,10 @@ public class SingleMessage extends AbstractMessage
     {
         try
         {
+            setCurrentBytes(data.remaining());
+            data.get(buf);
             if (action != null || jmxAction != null)
             {
-                setCurrentBytes(data.remaining());
-                data.get(buf);
                 millisSupplier = ()->time;
                 return true;
             }

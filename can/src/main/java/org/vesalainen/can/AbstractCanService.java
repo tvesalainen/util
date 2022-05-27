@@ -231,7 +231,6 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         if (proc == null)
         {
             finest("needs compiling %d pgn %d", canId, PGN.pgn(canId));
-            proc = getProc(canId);
             if (proc == null)
             {
                 finest("compiling %d", canId);
