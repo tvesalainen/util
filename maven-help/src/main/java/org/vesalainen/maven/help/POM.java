@@ -286,7 +286,7 @@ public class POM
         return versionResolver;
     }
     
-    public static POM getInstance(MavenKey key)
+    public static POM getInstance(Dependency key)
     {
         return getInstance(key.getGroupId(), key.getArtifactId(), key.getVersion());
     }

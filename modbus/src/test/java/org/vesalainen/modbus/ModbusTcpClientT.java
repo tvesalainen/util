@@ -31,7 +31,7 @@ public class ModbusTcpClientT
     {
     }
 
-    @Test
+    //@Test
     public void testMcp342x() throws IOException
     {
         int out = 2;
@@ -44,16 +44,15 @@ public class ModbusTcpClientT
         int res = cli.getInt(unit, addr);
         assertEquals(3325000, res);
     }
-    /*
-    //@Test
+    @Test
     public void test1() throws IOException
     {
         int i = 0;
-        int unit = 0;
-        int addr = 0;
+        int unit = 4;
+        int addr = 3422;
         short v = 1;
-        ModbusTcpClient cli = ModbusTcpClient.open("testipi");
+        ModbusTcpClient cli = ModbusTcpClient.open("cerbo");
         int res = cli.getShort(unit, addr);
+        System.err.println(res);
     }
-    */
 }

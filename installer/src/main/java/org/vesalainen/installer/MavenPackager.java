@@ -35,10 +35,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.vesalainen.bean.ExpressionParser;
 import org.vesalainen.graph.Graphs;
 import org.vesalainen.maven.help.ModelFactory;
@@ -74,7 +70,6 @@ public class MavenPackager extends LoggingCommandLine
     private ExpressionParser expressionParser;
     private String maintainer;
     private FileSystem fileSystem;
-    private ModelFactory factory;
 
     public MavenPackager()
     {
@@ -107,7 +102,6 @@ public class MavenPackager extends LoggingCommandLine
         config("localRepository=%s", localRepository);
         packageDirectory = getOption("-pd");
         config("packageDirectory=%s", packageDirectory);
-        factory = new ModelFactory(localRepository.toFile(), null);
         packageType = getOption("-pt");
         config("packageType=%s", packageType);
         groupId = getOption("-g");
@@ -144,7 +138,6 @@ public class MavenPackager extends LoggingCommandLine
             PackageManagerAttributeView view = PackageManagerAttributeView.from(pkgFS);
             view.setSummary(root.getName());
             config("summary=%s", root.getName());
-            String description = root.getDescription().trim();
             view.setDescription(root.getDescription());
             config("description=%s", root.getDescription());
             String javaReq = getJavaReq();
@@ -337,8 +330,6 @@ public class MavenPackager extends LoggingCommandLine
                 .filter((d)->!"true".equals(d.getOptional()))
                 .filter((d)->"compile".equals(d.getScope()) || "runtime".equals(d.getScope()))
                 .peek((d)->fine("%s", d))
-                .map(POM::getVersionResolver)
-                .map((v)->v.resolv())
                 .map(POM::getInstance)
                 );
     }
