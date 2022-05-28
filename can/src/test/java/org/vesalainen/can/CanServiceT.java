@@ -46,7 +46,7 @@ public class CanServiceT
         //AbstractCanService canSvc = AbstractCanService.openSocketCand("can1", new PrintCompiler());
         DBC.addDBCFile(Paths.get("src", "test", "resources", "Orion_CANBUS.dbc"));
         DBC.addDBCFile(Paths.get("src", "main", "resources", "n2k.dbc"));
-        canSvc.addPgnHandler(new AddressManager());
+        canSvc.setAddressManager(new AddressManager());
         canSvc.startAndWait();
     }
     

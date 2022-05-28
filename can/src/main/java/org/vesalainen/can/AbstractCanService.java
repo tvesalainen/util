@@ -303,11 +303,11 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
         return procMap.get(canId);
     }
 
-    protected AbstractMessage compile(int canId, MessageClass mc)
+    public AbstractMessage compile(int canId, MessageClass mc)
     {
         return messageFactory.createMessage(executor, canId, mc);
     }
-    protected AbstractMessage compilePgn(int canId, MessageClass mc)
+    public AbstractMessage compilePgn(int canId, MessageClass mc)
     {
         return messageFactory.createPgnMessage(executor, canId, mc);
     }
