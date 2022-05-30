@@ -19,6 +19,8 @@ package org.vesalainen.jmx;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerBuilder;
 import javax.management.MBeanServerDelegate;
+import org.eclipse.jetty.util.log.JavaUtilLog;
+import org.eclipse.jetty.util.log.Log;
 
 /**
  *
@@ -27,6 +29,12 @@ import javax.management.MBeanServerDelegate;
 public class SimpleMBeanServerBuilder extends MBeanServerBuilder
 {
 
+    static
+    {
+        JavaUtilLog log = new JavaUtilLog();
+        Log.setLog(log);    // make jetty use java.util.logger
+    }
+    
     public SimpleMBeanServerBuilder()
     {
     }
@@ -34,7 +42,7 @@ public class SimpleMBeanServerBuilder extends MBeanServerBuilder
     @Override
     public MBeanServer newMBeanServer(String defaultDomain, MBeanServer outer, MBeanServerDelegate delegate)
     {
-        return new SimpleMBeanServer(defaultDomain, outer, delegate); //To change body of generated methods, choose Tools | Templates.
+        return new SimpleMBeanServer(defaultDomain, outer, delegate);
     }
 
     @Override
