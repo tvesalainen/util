@@ -294,7 +294,14 @@ public abstract class AbstractCanService extends JavaLogging implements Frame, R
             {
                 old.unregisterMBean();
             }
-            msg.registerMBean();
+            try
+            {
+                msg.registerMBean();
+            }
+            catch (RuntimeException ex)
+            {
+                
+            }
         }
     }
 
