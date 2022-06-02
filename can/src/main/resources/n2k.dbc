@@ -297,12 +297,17 @@ BO_ 33032702 Pgn129033_Time_Date: 8 Navigation
  SG_ Time : 16|32@1+ (100,0) [0|0] "us" MFD
  SG_ Local_Offset_Minutes : 48|16@1- (1,0) [0|0] "minutes" MFD
 
-BO_ 33031166 pgn129027_Position_Delta_Rapid_Update: 8 Navigation
+BO_ 33031166 Pgn129027_Position_Delta_Rapid_Update: 8 Navigation
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
  SG_ Delta_Position_Time : 9|7@1+ (10000,0) [0|0] "us" MFD
  SG_ Delta_Latitude : 16|24@1- (1.0E-9,0) [0|0] "deg" MFD
  SG_ Delta_Longitude : 40|24@1- (1.0E-9,0) [0|0] "deg" MFD
 
+BO_ 33031422 Pgn129028_Altitude_Delta_Rapid_Update: 8 Navigation
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+ SG_ Delta_Position_Time : 9|7@1+ (10000,0) [0|0] "us" MFD
+ SG_ Delta_Altitude : 16|48@1- (1.0E-10,0) [0|0] "deg" MFD
+ 
 BO_ 33030654 Pgn129025_Position_Rapid_Update: 8 Navigation
  SG_ Latitude : 0|32@1- (1.0E-7,0) [0|0] "deg" MFD
  SG_ Longitude : 32|32@1- (1.0E-7,0) [0|0] "deg" MFD
@@ -736,6 +741,7 @@ CM_ BO_ 33231358 "This parameter group is used by Class B 'CS' shipborne mobile 
 CM_ BO_ 33231614 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received." ;
 CM_ BO_ 33032702 "This parameter group has a single transmission that provides: UTC time, UTC Date and Local Offset Datum Local geodetic datum and datum offsets from a reference datum." ;
 CM_ BO_ 33031166 "Delta time and location referenced to Pgn129029_Gnss_Position_Data. Sid connects the two. Current time is time+deltatime. Delta position calculation is still unclear???";
+CM_ BO_ 33031422 "Delta time and altitude referenced to Pgn129029_Gnss_Position_Data. Sid connects the two. Current time is time+deltatime.";
 CM_ BO_ 33030654 "This PGN provides latitude and longitude referenced to WGS84. Being defined as single frame message, as opposed to other PGNs that include latitude and longitude and are defined as fast or multi-packet, this PGN lends itself to being transmitted more frequently without using up excessive bandwidth on the bus for the benefit of receiving equipment that may require rapid position updates." ;
 CM_ BO_ 33030910 "This parameter group is a single frame parameter group that provides Course Over Ground (COG) and Speed Over Ground (SOG)." ;
 CM_ BO_ 33031678 "This parameter group conveys a comprehensive set of Global Navigation Satellite System (GNSS) parameters, including position information." ;
@@ -904,12 +910,13 @@ BA_ "SignalType" SG_ 33030654 Latitude "DOUBLE";
 BA_ "SignalType" SG_ 33030654 Longitude "DOUBLE";
 BA_ "MessageType" BO_ 33030910 "Single";
 BA_ "SignalType" SG_ 33030910 Reserved_Bits "BINARY";
-
 BA_ "MessageType" BO_ 33031166 "Single";
 BA_ "SignalType" SG_ 33031166 Delta_Position_Time "LONG";
 BA_ "SignalType" SG_ 33031166 Delta_Latitude "DOUBLE";
 BA_ "SignalType" SG_ 33031166 Delta_Longitude "DOUBLE";
-
+BA_ "MessageType" BO_ 33031422 "Single";
+BA_ "SignalType" SG_ 33031422 Delta_Position_Time "LONG";
+BA_ "SignalType" SG_ 33031422 Delta_Altitude "DOUBLE";
 BA_ "RepeatSize" BO_ 33031678 32;
 BA_ "RepeatStartBit" BO_ 33031678 344;
 BA_ "RepeatCount" BO_ 33031678 "Number_Of_Reference_Stations";
