@@ -73,7 +73,7 @@ BO_ 32510206 Pgn126992_System_Time: 8 General_Or_Mandatory
  SG_ Date : 16|16@1+ (1,0) [0|0] "days" MFD
  SG_ Time : 32|32@1+ (100,0) [0|0] "us" MFD
 
-BO_ 32510462 Pgn126993Heartbeat: 8 General_Or_Mandatory
+BO_ 32510462 Pgn126993_Heartbeat: 8 General_Or_Mandatory
  SG_ Data_Transmit_Offset : 0|16@1+ (0.01,0.0) [0.0|0.0] "s" MFD
  SG_ Sequence_Counter : 16|8@1+ (1.0,0.0) [0.0|0.0] "" MFD
  SG_ Reserved : 24|24@1+ (1.0,0.0) [0.0|0.0] "" MFD

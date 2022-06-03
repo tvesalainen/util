@@ -264,6 +264,18 @@ BO_ 33228286 Pgn129797_Ais_Binary_Broadcast_Message: 233 Ais
  SG_ Number_Of_Bits_In_Binary_Data_Field : 48|16@1+ (1,0) [0|0] "" MFD
  SG_ Binary_Data : 64|1134@1+ (1,0) [0|0] "" MFD
 
+BO_ 33228542 Pgn129798_Ais_SAR_Aircraft_Position_Report: 27 Ais
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ User_Id : 8|32@1+ (1,0) [0|0] "MMSI" MFD
+
+BO_ 33229566 Pgn129802_Ais_Safety_Related_Broadcast_Message: 233 Ais
+ SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
+ SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
+ SG_ Source_Id : 8|32@1+ (1,0) [0|0] "" MFD
+ SG_ Nmea_2000_Reserved : 40|1@1+ (1,0) [0|0] "" MFD
+ SG_ Ais_Transceiver_Information : 41|5@1+ (1,0) [0|0] "" MFD
+
 BO_ 33231358 Pgn129809_Ais_Class_B_Cs_Static_Data_Report_Part_A: 27 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
@@ -737,6 +749,8 @@ CM_ BO_ 33227518 "This parameter group provides data associated with the ITU-R M
 CM_ BO_ 33227774 "This parameter group provides data associated with the ITU-R M.1371 Message 6 Addressed Binary Message supporting address communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 6, or upon receipt of an ISO or NMEA request PGN." ;
 CM_ BO_ 33228030 "This parameter group provides data associated with the ITU-R M.1371 Messages 7 Binary Acknowledge Message and 13 Safety Related Acknowledge Message. Message 7 acknowledges receipt of message 6 while message 13 acknowledges receipt of message 14. An AIS device may generate this parameter group either upon receiving a VHF data link message 7 or 13, or upon receipt of an ISO or NMEA request PGN." ;
 CM_ BO_ 33228286 "This parameter group provides data associated with the ITU-R M.1371 Message 8 Binary Broadcast Message supporting broadcast communication of binary data. An AIS device may generate this parameter group either upon receiving a VHF data link message 8, or upon receipt of an ISO or NMEA request PGN." ;
+CM_ BO_ 33228542 "This parameter group provides data associated with the ITU-R M.1371 Message 9 Standard SAR Aircraft Position Report. Not Complete!!!" ;
+CM_ BO_ 33229566 "Not Complete!!!" ;
 CM_ BO_ 33231358 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part A of ITU-R M.1372 Message 24 is received." ;
 CM_ BO_ 33231614 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received." ;
 CM_ BO_ 33032702 "This parameter group has a single transmission that provides: UTC time, UTC Date and Local Offset Datum Local geodetic datum and datum offsets from a reference datum." ;
@@ -880,6 +894,17 @@ BA_ "SignalType" SG_ 33228286 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33228286 Source_Id "INT";
 BA_ "SignalType" SG_ 33228286 Nmea_2000_Reserved "BINARY";
 BA_ "SignalType" SG_ 33228286 Ais_Transceiver_Information "LOOKUP";
+
+BA_ "MessageType" BO_ 33228542 "Fast";
+BA_ "SignalType" SG_ 33228542 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33228542 User_Id "INT";
+
+BA_ "MessageType" BO_ 33229566 "Fast";
+BA_ "SignalType" SG_ 33229566 Repeat_Indicator "LOOKUP";
+BA_ "SignalType" SG_ 33229566 Source_Id "INT";
+BA_ "SignalType" SG_ 33229566 Nmea_2000_Reserved "BINARY";
+BA_ "SignalType" SG_ 33229566 Ais_Transceiver_Information "LOOKUP";
+
 BA_ "SignalType" SG_ 33228286 Spare "BINARY";
 BA_ "SignalType" SG_ 33228286 Binary_Data "BINARY";
 BA_ "MessageType" BO_ 33231358 "Fast";
