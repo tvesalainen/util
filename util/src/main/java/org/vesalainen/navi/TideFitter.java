@@ -16,7 +16,7 @@
  */
 package org.vesalainen.navi;
 
-import static java.lang.Math.sin;
+import static java.lang.Math.*;
 import java.util.function.LongSupplier;
 import org.vesalainen.math.CosineFitter;
 import org.vesalainen.math.MathFunction;
@@ -31,6 +31,7 @@ import org.vesalainen.math.sliding.DoubleAbstractTimeoutSliding;
 public class TideFitter
 {
     private static final double EPSILON = 0.1;
+    private final LongSupplier clock;
     private final Data data;
     private final CosineFitter cosineFitter;
     private final Points points;
@@ -41,6 +42,7 @@ public class TideFitter
      */
     public TideFitter(LongSupplier clock)
     {
+        this.clock = clock;
         this.data = new Data(clock, 1024, Tide.PERIOD);
         this.points = new Points(data);
         this.result = new Result(data);
@@ -70,6 +72,21 @@ public class TideFitter
         return (t)->getTide((long) t);
     }
     /**
+     * Returns tide in meters now. Using given clock.
+     * @return 
+     */
+    public double getTide()
+    {
+        if (isValid())
+        {
+            return getTide(clock.getAsLong());
+        }
+        else
+        {
+            return Double.NaN;
+        }
+    }
+    /**
      * Returns tide in meters for time in millis.
      * @param time
      * @return 
@@ -78,6 +95,22 @@ public class TideFitter
     {
         double[] p = cosineFitter.getParams();
         return p[0]*sin(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
+    }
+    public double getDerivative()
+    {
+        if (isValid())
+        {
+            return getDerivative(clock.getAsLong());
+        }
+        else
+        {
+            return Double.NaN;
+        }
+    }
+    public double getDerivative(long time)    
+    {
+        double[] p = cosineFitter.getParams();
+        return p[0]*cos(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
     }
     /**
      * Returns function that returns tide for time in milliseconds using current
@@ -89,13 +122,19 @@ public class TideFitter
         MathFunction ad = cosineFitter.getAntiderivative();
         return (t)->ad.applyAsDouble(Tide.TIME_TO_RAD.applyAsDouble((long) t));
     }
-
-    public double getParamA()
+    /**
+     * Coeff*sin = tide in meters
+     * @return 
+     */
+    public double getCoefficient()
     {
         return cosineFitter.getParamA();
     }
-
-    public double getParamB()
+    /**
+     * Phase in radians.
+     * @return 
+     */
+    public double getPhase()
     {
         return cosineFitter.getParamB();
     }
@@ -117,7 +156,14 @@ public class TideFitter
 
     public double getFinalCost()
     {
-        return cosineFitter.getFinalCost();
+        if (isValid())
+        {
+            return cosineFitter.getFinalCost();
+        }
+        else
+        {
+            return Double.NaN;
+        }
     }
     
     private class Data extends DoubleAbstractTimeoutSliding
