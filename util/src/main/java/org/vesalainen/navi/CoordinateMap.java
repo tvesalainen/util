@@ -204,9 +204,9 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
         forEachCoordinate((double lon, double lat, V v)->
         {
             sb.append('\n');
-            sb.append(CoordinateFormat.formatLongitude(lon, COORDINATE_DEGREES_AND_MINUTES_LONGITUDE));
+            sb.append(CoordinateFormat.format(lon, COORDINATE_DEGREES_AND_MINUTES_LONGITUDE));
             sb.append(", ");
-            sb.append(CoordinateFormat.formatLatitude(lat, COORDINATE_DEGREES_AND_MINUTES_LATITUDE));
+            sb.append(CoordinateFormat.format(lat, COORDINATE_DEGREES_AND_MINUTES_LATITUDE));
             sb.append(", ");
             sb.append(v);
         });
