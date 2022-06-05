@@ -31,6 +31,10 @@ public class CoordinateFormat
     private static final char[] NS = new char[] {'N', 'S'};
     private static final char[] EW = new char[] {'E', 'W'};
     
+    public static String format(double coordinate, UnitType unit)
+    {
+        return format(Locale.getDefault(), coordinate, unit);
+    }
     public static String format(Locale locale, double coordinate, UnitType unit)
     {
         StringBuilder out = new StringBuilder();
