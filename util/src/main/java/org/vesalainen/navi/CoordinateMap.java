@@ -23,7 +23,6 @@ import java.util.function.DoubleToIntFunction;
 import java.util.function.Supplier;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.*;
-import org.vesalainen.util.Map2D;
 import org.vesalainen.util.Merger;
 import org.vesalainen.util.TreeMap2D;
 
@@ -48,7 +47,7 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
         super(squareCreator);
         this.departure = cos(toRadians(latitude));
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
-        this.boxSize2 = boxSize/2;
+        this.boxSize2 = this.boxSize/2;
         this.lon = (lo)->(int) floor((lo*departure)/this.boxSize);
         this.lat = (la)->(int) floor(la/this.boxSize);
     }
@@ -205,9 +204,9 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
         forEachCoordinate((double lon, double lat, V v)->
         {
             sb.append('\n');
-            sb.append(CoordinateFormat.formatLongitude(lon, COORDINATE_DEGREES_AND_MINUTES));
+            sb.append(CoordinateFormat.formatLongitude(lon, COORDINATE_DEGREES_AND_MINUTES_LONGITUDE));
             sb.append(", ");
-            sb.append(CoordinateFormat.formatLatitude(lat, COORDINATE_DEGREES_AND_MINUTES));
+            sb.append(CoordinateFormat.formatLatitude(lat, COORDINATE_DEGREES_AND_MINUTES_LATITUDE));
             sb.append(", ");
             sb.append(v);
         });
