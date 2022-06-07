@@ -153,7 +153,14 @@ public class TideFitter
      */
     public double getCoefficient()
     {
-        return cosineFitter.getParamA();
+        if (isValid())
+        {
+            return cosineFitter.getParamA();
+        }
+        else
+        {
+            return Double.NaN;
+        }
     }
     /**
      * Phase in radians.
@@ -161,7 +168,14 @@ public class TideFitter
      */
     public double getPhase()
     {
-        return cosineFitter.getParamB();
+        if (isValid())
+        {
+            return cosineFitter.getParamB();
+        }
+        else
+        {
+            return Double.NaN;
+        }
     }
 
     public double fit()
