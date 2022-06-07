@@ -130,7 +130,7 @@ public class TideFitter
         if (isValid())
         {
             double[] p = cosineFitter.getParams();
-            return toDegrees(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
+            return toDegrees(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1])%360;
         }
         else
         {
