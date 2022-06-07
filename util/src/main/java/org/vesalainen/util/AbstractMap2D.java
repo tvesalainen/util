@@ -159,6 +159,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         return size;
     }
 
+    @Override
     public void forEach(Consumer2D<K,L,V> act)
     {
         map.forEach((k,m)->

@@ -87,7 +87,7 @@ public class TideFitter
         }
     }
     /**
-     * Returns tide in meters for time in millis.
+     * Returns half tide in meters for time in millis.
      * @param time
      * @return 
      */
@@ -111,6 +111,31 @@ public class TideFitter
     {
         double[] p = cosineFitter.getParams();
         return p[0]*cos(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
+    }
+    /**
+     * Return tide phase in degrees now
+     * @return 
+     */
+    public double getPhaseInDegrees()
+    {
+        return getPhaseInDegrees(clock.getAsLong());
+    }
+    /**
+     * Return tide phase in degrees at time
+     * @param time
+     * @return 
+     */
+    public double getPhaseInDegrees(long time)
+    {
+        if (isValid())
+        {
+            double[] p = cosineFitter.getParams();
+            return toDegrees(Tide.TIME_TO_RAD.applyAsDouble((long) time)+p[1]);
+        }
+        else
+        {
+            return Double.NaN;
+        }
     }
     /**
      * Returns function that returns tide for time in milliseconds using current
