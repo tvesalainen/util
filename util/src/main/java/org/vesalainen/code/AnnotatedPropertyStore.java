@@ -18,7 +18,9 @@ package org.vesalainen.code;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleProxies;
 import java.lang.invoke.MethodHandles;
@@ -28,6 +30,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.*;
@@ -42,6 +47,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.vesalainen.bean.BeanHelper;
 import org.vesalainen.code.getter.BooleanGetter;
@@ -616,6 +623,13 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             load(br, reportMissingProperties);
         }
     }
+    public final void load(URL url, boolean reportMissingProperties) throws IOException
+    {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), UTF_8)))
+        {
+            load(br, reportMissingProperties);
+        }
+    }
     public final void load(BufferedReader br, boolean reportMissingProperties) throws IOException
     {
         String line = br.readLine();
@@ -650,6 +664,17 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
                 }
             }
             line = br.readLine();
+        }
+    }
+    public void store(URL url) throws IOException
+    {
+        try
+        {
+            store(new File(url.toURI()).toPath());
+        }
+        catch (URISyntaxException ex)
+        {
+            throw new IOException(ex);
         }
     }
     public void store(Path path) throws IOException
