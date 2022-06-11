@@ -114,6 +114,15 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         this(lookup);
         load(path, reportMissingProperties);
     }    
+    public AnnotatedPropertyStore(Lookup lookup, URL url) throws IOException
+    {
+        this(lookup, url, true);
+    }
+    public AnnotatedPropertyStore(Lookup lookup, URL url, boolean reportMissingProperties) throws IOException
+    {
+        this(lookup);
+        load(url, reportMissingProperties);
+    }    
     public AnnotatedPropertyStore(Lookup lookup)
     {
         super(AnnotatedPropertyStore.class);
