@@ -27,6 +27,38 @@ import org.vesalainen.util.CharSequences;
  */
 public enum UnitType
 {
+    MULTIPLIER_10_ONE(UnitCategory.POWER_OF_10_MULTIPLIER, 1, ""),
+    MULTIPLIER_10_YOCTO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-24, "y"),
+    MULTIPLIER_10_ZEPTO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-21, "z"),
+    MULTIPLIER_10_ATTO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-18, "a"),
+    MULTIPLIER_10_FEMTO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-15, "f"),
+    MULTIPLIER_10_PICO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-12, "p"),
+    MULTIPLIER_10_NANO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-9, "n"),
+    MULTIPLIER_10_MICRO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-6, "μ"),
+    MULTIPLIER_10_MILLI(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-3, "m"),
+    MULTIPLIER_10_CENTI(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-2, "c"),
+    MULTIPLIER_10_DECI(UnitCategory.POWER_OF_10_MULTIPLIER, 1e-1, "d"),
+    MULTIPLIER_10_DECA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e1, "da"),
+    MULTIPLIER_10_HECTO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e2, "h"),
+    MULTIPLIER_10_KILO(UnitCategory.POWER_OF_10_MULTIPLIER, 1e3, "k"),
+    MULTIPLIER_10_MEGA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e6, "M"),
+    MULTIPLIER_10_GIGA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e9, "G"),
+    MULTIPLIER_10_TERA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e12, "T"),
+    MULTIPLIER_10_PETA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e15, "P"),
+    MULTIPLIER_10_EXA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e18, "E"),
+    MULTIPLIER_10_ZETTA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e21, "Z"),
+    MULTIPLIER_10_YOTTA(UnitCategory.POWER_OF_10_MULTIPLIER, 1e24, "Y"),
+    
+    MULTIPLIER_2_ONE(UnitCategory.POWER_OF_2_MULTIPLIER, 1, ""),
+    MULTIPLIER_2_KILO(UnitCategory.POWER_OF_2_MULTIPLIER, 1024, "k"),
+    MULTIPLIER_2_MEGA(UnitCategory.POWER_OF_2_MULTIPLIER, 1048576, "M"),
+    MULTIPLIER_2_GIGA(UnitCategory.POWER_OF_2_MULTIPLIER, 1073741824, "G"),
+    MULTIPLIER_2_TERA(UnitCategory.POWER_OF_2_MULTIPLIER, Math.pow(2, 40), "T"),
+    MULTIPLIER_2_PETA(UnitCategory.POWER_OF_2_MULTIPLIER, Math.pow(2, 50), "P"),
+    MULTIPLIER_2_EXA(UnitCategory.POWER_OF_2_MULTIPLIER, Math.pow(2, 60), "E"),
+    MULTIPLIER_2_ZETTA(UnitCategory.POWER_OF_2_MULTIPLIER, Math.pow(2, 70), "Z"),
+    MULTIPLIER_2_YOTTA(UnitCategory.POWER_OF_2_MULTIPLIER, Math.pow(2, 80), "Y"),
+    
     DURATION_DAYS(UnitCategory.DURATION, TimeUnit.DAYS.toSeconds(1), "d"),
     DURATION_HOURS(UnitCategory.DURATION, TimeUnit.HOURS.toSeconds(1), "h"),
     DURATION_MINUTES(UnitCategory.DURATION, TimeUnit.MINUTES.toSeconds(1), "m"),
@@ -318,6 +350,7 @@ public enum UnitType
      * Parses text.
      * <p>If text contains unit string of one of same category UnitTypes it is
      * used to convert value to this UnitType.
+     * <p>Example: DURATION_MILLI_SECONDS.parse("2 s") returns 2000
      * @param text
      * @return 
      */
