@@ -17,19 +17,17 @@
 package org.vesalainen.net;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -37,6 +35,27 @@ import java.util.logging.Logger;
  */
 public final class Nets
 {
+    /**
+     * Returns Path for given url.
+     * @param url
+     * @return
+     * @throws URISyntaxException
+     * @throws MalformedURLException 
+     */
+    public static Path getPath(String url) throws URISyntaxException, MalformedURLException
+    {
+        return getPath(new URL(url));
+    }
+    /**
+     * Returns Path for given url.
+     * @param url
+     * @return
+     * @throws URISyntaxException 
+     */
+    public static Path getPath(URL url) throws URISyntaxException
+    {
+        return new File(url.toURI()).toPath();
+    }
     /**
      * Returns true if given url is file: and is writable.
      * @param url

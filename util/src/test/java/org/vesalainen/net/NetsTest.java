@@ -17,6 +17,7 @@
 package org.vesalainen.net;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -31,6 +32,11 @@ public class NetsTest
     {
     }
 
+    @Test
+    public void testGetPath() throws MalformedURLException, URISyntaxException
+    {
+        Nets.getPath("https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html");
+    }
     //@Test
     public void testExists() throws MalformedURLException
     {

@@ -78,6 +78,7 @@ import org.vesalainen.code.setter.ObjectSingleSetter;
 import org.vesalainen.code.setter.ShortSetter;
 import org.vesalainen.code.setter.ShortSingleSetter;
 import org.vesalainen.lang.Bytes;
+import org.vesalainen.net.Nets;
 import org.vesalainen.util.ConvertUtility;
 import org.vesalainen.util.Transactional;
 import org.vesalainen.util.logging.JavaLogging;
@@ -114,11 +115,11 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         this(lookup);
         load(path, reportMissingProperties);
     }    
-    public AnnotatedPropertyStore(Lookup lookup, URL url) throws IOException
+    public AnnotatedPropertyStore(Lookup lookup, URL url) throws IOException, URISyntaxException
     {
         this(lookup, url, true);
     }
-    public AnnotatedPropertyStore(Lookup lookup, URL url, boolean reportMissingProperties) throws IOException
+    public AnnotatedPropertyStore(Lookup lookup, URL url, boolean reportMissingProperties) throws IOException, URISyntaxException
     {
         this(lookup);
         load(url, reportMissingProperties);
@@ -632,12 +633,9 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             load(br, reportMissingProperties);
         }
     }
-    public final void load(URL url, boolean reportMissingProperties) throws IOException
+    public final void load(URL url, boolean reportMissingProperties) throws IOException, URISyntaxException
     {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), UTF_8)))
-        {
-            load(br, reportMissingProperties);
-        }
+        load(Nets.createReader(url), reportMissingProperties);
     }
     public final void load(BufferedReader br, boolean reportMissingProperties) throws IOException
     {
@@ -679,7 +677,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     {
         try
         {
-            store(new File(url.toURI()).toPath());
+            store(Nets.getPath(url));
         }
         catch (URISyntaxException ex)
         {
