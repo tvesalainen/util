@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -115,11 +116,11 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
         this(lookup);
         load(path, reportMissingProperties);
     }    
-    public AnnotatedPropertyStore(Lookup lookup, URL url) throws IOException, URISyntaxException
+    public AnnotatedPropertyStore(Lookup lookup, URL url) throws IOException
     {
         this(lookup, url, true);
     }
-    public AnnotatedPropertyStore(Lookup lookup, URL url, boolean reportMissingProperties) throws IOException, URISyntaxException
+    public AnnotatedPropertyStore(Lookup lookup, URL url, boolean reportMissingProperties) throws IOException
     {
         this(lookup);
         load(url, reportMissingProperties);
@@ -591,6 +592,21 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             }
         });
     }
+    public final void forEach(BiConsumer<String,Object> act)
+    {
+        cMap.entrySet().forEach((entry) ->
+        {
+            MethodHandle getter = entry.getValue().getter;
+            try
+            {
+                act.accept(entry.getKey(), getter.invoke(this));
+            }
+            catch (Throwable ex)
+            {
+                throw new IllegalArgumentException("with "+entry.getKey(), ex);
+            }
+        });
+    }
     public static <T extends AnnotatedPropertyStore> T getInstance(Path path) throws IOException
     {
         return getInstance(path, true);
@@ -633,7 +649,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
             load(br, reportMissingProperties);
         }
     }
-    public final void load(URL url, boolean reportMissingProperties) throws IOException, URISyntaxException
+    public final void load(URL url, boolean reportMissingProperties) throws IOException
     {
         load(Nets.createReader(url), reportMissingProperties);
     }

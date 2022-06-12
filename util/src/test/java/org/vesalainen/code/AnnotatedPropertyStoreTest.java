@@ -98,6 +98,8 @@ public class AnnotatedPropertyStoreTest
 
         aps.set("goo", 123);
         assertEquals(123, aps.i);
+        
+        aps.forEach((n, v)->System.err.println(n+" = "+v));
 
         try
         {
