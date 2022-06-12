@@ -675,14 +675,7 @@ public class AnnotatedPropertyStore extends JavaLogging implements PropertyGette
     }
     public void store(URL url) throws IOException
     {
-        try
-        {
-            store(Nets.getPath(url));
-        }
-        catch (URISyntaxException ex)
-        {
-            throw new IOException(ex);
-        }
+        store(Nets.getPath(url));
     }
     public void store(Path path) throws IOException
     {
