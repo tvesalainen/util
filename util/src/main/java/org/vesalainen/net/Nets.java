@@ -29,6 +29,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -43,129 +45,172 @@ public final class Nets
      * @throws URISyntaxException
      * @throws MalformedURLException 
      */
-    public static Path getPath(String url) throws URISyntaxException, MalformedURLException
+    public static Path getPath(String url)
     {
-        return getPath(new URL(url));
-    }
-    /**
-     * Returns true if given url is file: and is writable.
-     * @param url
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException 
-     */
-    public static boolean isWritable(String url) throws IOException, URISyntaxException
-    {
-        return isWritable(new URL(url));
-    }
-    /**
-     * Returns true if it is possible to read the contents of the url
-     * @param url
-     * @return
-     * @throws MalformedURLException 
-     */
-    public static boolean exists(String url) throws MalformedURLException
-    {
-        return exists(new URL(url));
-    }
-    /**
-     * Creates a BufferedReader for url.
-     * @param url
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException 
-     */
-    public static BufferedReader createReader(String url) throws IOException, URISyntaxException
-    {
-        return createReader(new URL(url));
-    }
-    /**
-     * Returns Path for given url.
-     * @param uri
-     * @return
-     * @throws URISyntaxException
-     * @throws MalformedURLException 
-     */
-    public static Path getPath(URI uri) throws URISyntaxException, MalformedURLException
-    {
-        return getPath(uri.toURL());
-    }
-    /**
-     * Returns true if given url is file: and is writable.
-     * @param url
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException 
-     */
-    public static boolean isWritable(URI uri) throws IOException, URISyntaxException
-    {
-        return isWritable(uri.toURL());
-    }
-    /**
-     * Returns true if it is possible to read the contents of the url
-     * @param url
-     * @return
-     * @throws MalformedURLException 
-     */
-    public static boolean exists(URI uri) throws MalformedURLException
-    {
-        return exists(uri.toURL());
-    }
-    /**
-     * Creates a BufferedReader for url.
-     * @param url
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException 
-     */
-    public static BufferedReader createReader(URI uri) throws IOException, URISyntaxException
-    {
-        return createReader(uri.toURL());
-    }
-    /**
-     * Returns Path for given url.
-     * @param url
-     * @return
-     * @throws URISyntaxException 
-     */
-    public static Path getPath(URL url) throws URISyntaxException
-    {
-        return new File(url.toURI()).toPath();
-    }
-    /**
-     * Returns true if given url is file: and is writable.
-     * @param url
-     * @return
-     * @throws URISyntaxException 
-     */
-    public static boolean isWritable(URL url) throws URISyntaxException
-    {
-        switch (url.getProtocol())
+        try
         {
-            case "file":
-                return Files.isWritable(Paths.get(url.toURI()));
-            default:
-                return false;
+            return getPath(new URL(url));
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Returns true if given url is file: and is writable.
+     * @param url
+     * @return 
+     */
+    public static boolean isWritable(String url)
+    {
+        try
+        {
+            return isWritable(new URL(url));
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Returns true if it is possible to read the contents of the url
+     * @param url
+     * @return 
+     */
+    public static boolean exists(String url)
+    {
+        try
+        {
+            return exists(new URL(url));
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new IllegalArgumentException(ex);
         }
     }
     /**
      * Creates a BufferedReader for url.
      * @param url
      * @return
-     * @throws IOException
-     * @throws URISyntaxException 
+     * @throws IOException 
      */
-    public static BufferedReader createReader(URL url) throws IOException, URISyntaxException
+    public static BufferedReader createReader(String url) throws IOException
     {
-        switch (url.getProtocol())
+        return createReader(new URL(url));
+    }
+    /**
+     * Returns Path for given url.
+     * @param uri
+     * @return 
+     */
+    public static Path getPath(URI uri)
+    {
+        return Paths.get(uri);
+    }
+    /**
+     * Returns true if given url is file: and is writable.
+     * @param uri
+     * @return 
+     */
+    public static boolean isWritable(URI uri)
+    {
+        try
         {
-            case "file":
-                return Files.newBufferedReader(Paths.get(url.toURI()), UTF_8);
-            case "http":
-            case "https":
-                return createReader((HttpURLConnection)url.openConnection());
-            default:
-                throw new UnsupportedOperationException(url+" not supported");
+            return isWritable(uri.toURL());
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Returns true if it is possible to read the contents of the url
+     * @param uri
+     * @return 
+     */
+    public static boolean exists(URI uri)
+    {
+        try
+        {
+            return exists(uri.toURL());
+        }
+        catch (MalformedURLException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Creates a BufferedReader for url.
+     * @param uri
+     * @return
+     * @throws IOException 
+     */
+    public static BufferedReader createReader(URI uri) throws IOException
+    {
+        return createReader(uri.toURL());
+    }
+    /**
+     * Returns Path for given url.
+     * @param url
+     * @return 
+     */
+    public static Path getPath(URL url)
+    {
+        try
+        {
+            return new File(url.toURI()).toPath();
+        }
+        catch (URISyntaxException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Returns true if given url is file: and is writable.
+     * @param url
+     * @return 
+     */
+    public static boolean isWritable(URL url)
+    {
+        try
+        {
+            switch (url.getProtocol())
+            {
+                case "file":
+                    return Files.isWritable(Paths.get(url.toURI()));
+                default:
+                    return false;
+            }
+        }
+        catch (URISyntaxException ex)
+        {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    /**
+     * Creates a BufferedReader for url.
+     * @param url
+     * @return
+     * @throws IOException 
+     */
+    public static BufferedReader createReader(URL url) throws IOException
+    {
+        try
+        {
+            switch (url.getProtocol())
+            {
+                case "file":
+                    return Files.newBufferedReader(Paths.get(url.toURI()), UTF_8);
+                case "http":
+                case "https":
+                    return createReader((HttpURLConnection)url.openConnection());
+                default:
+                    throw new UnsupportedOperationException(url+" not supported");
+            }
+        }
+        catch (URISyntaxException ex)
+        {
+            throw new IllegalArgumentException(ex);
         }
     }
     private static BufferedReader createReader(HttpURLConnection con) throws IOException
