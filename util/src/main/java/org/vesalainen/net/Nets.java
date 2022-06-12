@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -47,16 +48,6 @@ public final class Nets
         return getPath(new URL(url));
     }
     /**
-     * Returns Path for given url.
-     * @param url
-     * @return
-     * @throws URISyntaxException 
-     */
-    public static Path getPath(URL url) throws URISyntaxException
-    {
-        return new File(url.toURI()).toPath();
-    }
-    /**
      * Returns true if given url is file: and is writable.
      * @param url
      * @return
@@ -66,6 +57,80 @@ public final class Nets
     public static boolean isWritable(String url) throws IOException, URISyntaxException
     {
         return isWritable(new URL(url));
+    }
+    /**
+     * Returns true if it is possible to read the contents of the url
+     * @param url
+     * @return
+     * @throws MalformedURLException 
+     */
+    public static boolean exists(String url) throws MalformedURLException
+    {
+        return exists(new URL(url));
+    }
+    /**
+     * Creates a BufferedReader for url.
+     * @param url
+     * @return
+     * @throws IOException
+     * @throws URISyntaxException 
+     */
+    public static BufferedReader createReader(String url) throws IOException, URISyntaxException
+    {
+        return createReader(new URL(url));
+    }
+    /**
+     * Returns Path for given url.
+     * @param uri
+     * @return
+     * @throws URISyntaxException
+     * @throws MalformedURLException 
+     */
+    public static Path getPath(URI uri) throws URISyntaxException, MalformedURLException
+    {
+        return getPath(uri.toURL());
+    }
+    /**
+     * Returns true if given url is file: and is writable.
+     * @param url
+     * @return
+     * @throws IOException
+     * @throws URISyntaxException 
+     */
+    public static boolean isWritable(URI uri) throws IOException, URISyntaxException
+    {
+        return isWritable(uri.toURL());
+    }
+    /**
+     * Returns true if it is possible to read the contents of the url
+     * @param url
+     * @return
+     * @throws MalformedURLException 
+     */
+    public static boolean exists(URI uri) throws MalformedURLException
+    {
+        return exists(uri.toURL());
+    }
+    /**
+     * Creates a BufferedReader for url.
+     * @param url
+     * @return
+     * @throws IOException
+     * @throws URISyntaxException 
+     */
+    public static BufferedReader createReader(URI uri) throws IOException, URISyntaxException
+    {
+        return createReader(uri.toURL());
+    }
+    /**
+     * Returns Path for given url.
+     * @param url
+     * @return
+     * @throws URISyntaxException 
+     */
+    public static Path getPath(URL url) throws URISyntaxException
+    {
+        return new File(url.toURI()).toPath();
     }
     /**
      * Returns true if given url is file: and is writable.
@@ -90,17 +155,6 @@ public final class Nets
      * @throws IOException
      * @throws URISyntaxException 
      */
-    public static BufferedReader createReader(String url) throws IOException, URISyntaxException
-    {
-        return createReader(new URL(url));
-    }
-    /**
-     * Creates a BufferedReader for url.
-     * @param url
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException 
-     */
     public static BufferedReader createReader(URL url) throws IOException, URISyntaxException
     {
         switch (url.getProtocol())
@@ -117,16 +171,6 @@ public final class Nets
     private static BufferedReader createReader(HttpURLConnection con) throws IOException
     {
         return new BufferedReader(new InputStreamReader(con.getInputStream(), UTF_8));  // TODO detect charset
-    }
-    /**
-     * Returns true if it is possible to read the contents of the url
-     * @param url
-     * @return
-     * @throws MalformedURLException 
-     */
-    public static boolean exists(String url) throws MalformedURLException
-    {
-        return exists(new URL(url));
     }
     /**
      * Returns true if it is possible to read the contents of the url
