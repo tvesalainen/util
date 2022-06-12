@@ -32,10 +32,18 @@ public class NetsTest
     {
     }
 
-    @Test
+    //@Test
     public void testGetPath() throws MalformedURLException, URISyntaxException
     {
-        Nets.getPath("https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html");
+        try
+        {
+            Nets.getPath("https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html");
+            fail();
+        }
+        catch (IllegalArgumentException ex)
+        {
+            
+        }
     }
     //@Test
     public void testExists() throws MalformedURLException
