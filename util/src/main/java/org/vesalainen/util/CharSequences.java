@@ -284,6 +284,10 @@ public final class CharSequences
     }
     public static int indexOf(CharSequence seq, CharSequence pattern, IntBiPredicate p, int fromIndex)
     {
+        if (pattern.length() == 0)
+        {
+            return 0;
+        }
         int len = seq.length();
         int pi=0;
         int pl=pattern.length();
