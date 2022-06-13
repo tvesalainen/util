@@ -361,7 +361,7 @@ public enum UnitType
         {
             if (u.category == category)
             {
-                if (CharSequences.indexOf(text, u.unit) != -1)
+                if (CharSequences.indexOf(text, u.unit) > 0)
                 {
                     return u.convertTo(d, this);
                 }
