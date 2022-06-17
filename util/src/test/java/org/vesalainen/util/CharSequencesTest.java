@@ -41,6 +41,14 @@ public class CharSequencesTest
         assertEquals(0, CharSequences.commonPrefixLength(new String[]{"abcdef", "sbcdjke", "abcqwe"}));
     }
     @Test
+    public void test0()
+    {
+        String s1 = "qw\rerty\r\n\r\ncontent";
+        int exp = s1.indexOf("");
+        assertEquals(exp, CharSequences.indexOf(s1, ""));
+    }
+    
+    @Test
     public void test1()
     {
         String s1 = "qw\rerty\r\n\r\ncontent";
