@@ -120,6 +120,9 @@ public class NavisTest
     @Test
     public void testDistance()
     {
+        Location l1 = Location.getInstance("35 50.2281S", "174 28.1470E");
+        Location l2 = Location.getInstance("35 56.1176S", "174 34.0360E");
+        assertEquals(7.57, Navis.distance(l1.getLatitude(), l1.getLongitude(), l2.getLatitude(), l2.getLongitude()), 0.1);
         assertEquals(120, Navis.distance(0, 179, 0, -179), 0.1);
     }
     @Test
