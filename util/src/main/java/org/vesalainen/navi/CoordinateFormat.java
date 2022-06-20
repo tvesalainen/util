@@ -183,7 +183,7 @@ public class CoordinateFormat
             min = min-deg;
             Formatter formatter = ThreadLocalFormatter.getFormatter();
             formatter.format(locale,
-                    "%d\u00b0%.2f'%c",
+                    "%d\u00b0%.4f'%c",
                     deg,
                     min*60,
                     ns
