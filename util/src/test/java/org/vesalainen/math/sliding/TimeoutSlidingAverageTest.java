@@ -27,11 +27,11 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeSlidingAverageTest
+public class TimeoutSlidingAverageTest
 {
     private static final double Epsilon = 1e-10;
     
-    public TimeSlidingAverageTest()
+    public TimeoutSlidingAverageTest()
     {
     }
 
