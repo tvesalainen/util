@@ -796,7 +796,7 @@ public class DoubleMatrix extends AbstractMatrix implements ReadableDoubleMatrix
 
             if (maxA < Tol)
             {
-                throw new IllegalArgumentException("failure, matrix is degenerate");
+                throw new ArithmeticException("failure, matrix is degenerate");
             }
             if (imax != i)
             {
