@@ -39,30 +39,30 @@ import org.vesalainen.util.concurrent.CachedScheduledThreadPool;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class DeltaT
+public class DeltaLatitudeT
 {
     @Test
     public void test2() throws IOException, InterruptedException, ExecutionException
     {
-        int canId = PGN.canId(129027);
+        int canId = PGN.canId(129542);
         AbstractCanService svc = AbstractCanService.openCan2Udp("224.0.0.3", 11111, new DeltaCompiler());
         DBC.addN2K();
         svc.startAndWait();
     }
     private class DeltaCompiler implements SignalCompiler
     {
-        private double lat;
+        private double alt;
         private double lon;
-        private double rlat;
+        private double ralt;
         private double rlon;
         private long time;
         private long deltatime;
-        private double dlat;
+        private double dalt;
         private double dlon;
         private double difr;
         private double div;
         private double sum;
-        private double olat;
+        private double oalt;
         private double ld;
 
         @Override
@@ -71,8 +71,7 @@ public class DeltaT
             switch (canId)
             {
                 case 0x0DF8054F:
-                case 0x09F8034F:
-                case 0x09F8014F:
+                case 0x09F8044F:
                     return true;
                 default:
                     return false;
@@ -110,16 +109,16 @@ public class DeltaT
             int pgn = PGN.pgn(mc.getId());
             switch (sc.getName())
             {
-                case "Latitude":
+                case "Altitude":
                     if (pgn == 129029)
                     {
                         return (ctx,buf) ->
                         {
-                            olat = lat;
-                            lat = toDoubleFunction.applyAsDouble(buf);
-                            difr = lat-olat;
+                            oalt = alt;
+                            alt = toDoubleFunction.applyAsDouble(buf);
+                            difr = alt-oalt;
                             div = difr/ld;
-                            System.err.println(lat+"= "+difr+" D "+div);
+                            System.err.println(alt);
                             sum = 0;
                         };
                     }
@@ -127,23 +126,17 @@ public class DeltaT
                     {
                         return (ctx,buf) ->
                         {
-                            rlat = toDoubleFunction.applyAsDouble(buf);
+                            ralt = toDoubleFunction.applyAsDouble(buf);
                             //System.err.println(rlat+"R");
                         };
                     }
-                case "Delta_Latitude":
+                case "Delta_Altitude":
                     return (ctx,buf) ->
                     {
                         ld = toDoubleFunction.applyAsDouble(buf);
-                        dlat = lat+ld;
+                        dalt = alt+ld;
                         sum += ld;
-                        System.err.println(ld+"D");
-                    };
-                case "Delta_Longitude":
-                    return (ctx,buf) ->
-                    {
-                        double d = toDoubleFunction.applyAsDouble(buf);
-                        //System.err.println(d+"D");
+                        System.err.println(dalt);
                     };
                 default:
                     return null;
