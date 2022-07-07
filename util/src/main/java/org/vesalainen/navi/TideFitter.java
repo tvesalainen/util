@@ -160,14 +160,7 @@ public class TideFitter
      */
     public double getCoefficient()
     {
-        if (isValid())
-        {
-            return cosineFitter.getParamA();
-        }
-        else
-        {
-            return Double.NaN;
-        }
+        return cosineFitter.getParamA();
     }
     /**
      * Phase in radians.
@@ -175,14 +168,7 @@ public class TideFitter
      */
     public double getPhase()
     {
-        if (isValid())
-        {
-            return cosineFitter.getParamB();
-        }
-        else
-        {
-            return Double.NaN;
-        }
+        return cosineFitter.getParamB();
     }
 
     public double fit()
@@ -202,14 +188,7 @@ public class TideFitter
 
     public double getFinalCost()
     {
-        if (isValid())
-        {
-            return cosineFitter.getFinalCost();
-        }
-        else
-        {
-            return Double.NaN;
-        }
+        return cosineFitter.getFinalCost();
     }
     
     private class Data extends DoubleAbstractTimeoutSliding
