@@ -354,6 +354,9 @@ BO_ 33031678 Pgn129029_Gnss_Position_Data: 51 Navigation
  SG_ Reference_Station_Id : 348|12@1+ (1,0) [0|0] "" MFD
  SG_ Age_Of_Dgnss_Corrections : 360|16@1+ (0.01,0) [0|0] "s" MFD
 
+BO_ 33163006 Pgn129542_GNSS_Pseudorange_Noise_Statistics: 233 Navigation
+ SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
+
 BO_ 33033982 Pgn129038_Ais_Class_A_Position_Report: 28 Ais
  SG_ Message_Id : 0|6@1+ (1,0) [0|0] "" MFD
  SG_ Repeat_Indicator : 6|2@1+ (1,0) [0|0] "" MFD
@@ -629,7 +632,7 @@ BO_ 32641278 Pgn127504_Ac_Output_Status: 56 Power
  SG_ Reactive_Power : 120|32@1+ (1,0) [0|0] "VAR" MFD
  SG_ Power_Factor : 152|8@1+ (0.01,0) [0|0] "Cos Phi" MFD
 
-BO_ 32641790 Pgn127506_Dc_Detailed_Status: 9 Power
+BO_ 32641790 Pgn127506_Dc_Detailed_Status: 11 Power
  SG_ Sid : 0|8@1+ (1,0) [0|0] "" MFD
  SG_ Dc_Instance : 8|8@1+ (1,0) [0|0] "" MFD
  SG_ Dc_Type : 16|8@1+ (1,0) [0|0] "" MFD
@@ -755,10 +758,11 @@ CM_ BO_ 33231358 "This parameter group is used by Class B 'CS' shipborne mobile 
 CM_ BO_ 33231614 "This parameter group is used by Class B 'CS' shipborne mobile equipment each time Part B of ITU-R M.1372 Message 24 is received." ;
 CM_ BO_ 33032702 "This parameter group has a single transmission that provides: UTC time, UTC Date and Local Offset Datum Local geodetic datum and datum offsets from a reference datum." ;
 CM_ BO_ 33031166 "Delta time and location referenced to Pgn129029_Gnss_Position_Data. Sid connects the two. Current time is time+deltatime. Delta position calculation is still unclear???";
-CM_ BO_ 33031422 "Delta time and altitude referenced to Pgn129029_Gnss_Position_Data. Sid connects the two. Current time is time+deltatime.";
+CM_ BO_ 33031422 "Delta time and altitude referenced to Pgn129029_Gnss_Position_Data. Sid connects the two. Current time is time+deltatime. Altitude is alt+delta.";
 CM_ BO_ 33030654 "This PGN provides latitude and longitude referenced to WGS84. Being defined as single frame message, as opposed to other PGNs that include latitude and longitude and are defined as fast or multi-packet, this PGN lends itself to being transmitted more frequently without using up excessive bandwidth on the bus for the benefit of receiving equipment that may require rapid position updates." ;
 CM_ BO_ 33030910 "This parameter group is a single frame parameter group that provides Course Over Ground (COG) and Speed Over Ground (SOG)." ;
 CM_ BO_ 33031678 "This parameter group conveys a comprehensive set of Global Navigation Satellite System (GNSS) parameters, including position information." ;
+CM_ BO_ 33163006 "Not complete!" ;
 CM_ BO_ 33033982 "This parameter group provides data associated with the ITU-R M.1371 Messages 1, 2, and 3 Position Reports, autonomous, assigned, and response to interrogation, respectively. An AIS device may generate this parameter group either upon receiving a VHF data link message 1,2 or 3, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information)." ;
 CM_ BO_ 33034238 "This parameter group provides data associated with the ITU-R M.1371 Message 18 Standard Class B Equipment Position Report. An AIS device may generate this parameter group either upon receiving a VHF data link message 18, or upon receipt of an ISO or NMEA request PGN (see ITU-R M.1371-1 for additional information)." ;
 CM_ BO_ 33034494 "This parameter group provides data associated with the ITU-R M.1371 Message 19 Extended Class B Equipment Position Report containing position and static information. An AIS device may generate this parameter group either upon receiving a VHF data link message 19, or upon receipt of an ISO or NMEA request PGN." ;
@@ -955,6 +959,7 @@ BA_ "SignalType" SG_ 33031678 Method_Gnss "LOOKUP";
 BA_ "SignalType" SG_ 33031678 Integrity "LOOKUP";
 BA_ "SignalType" SG_ 33031678 Reserved_Bits "BINARY";
 BA_ "SignalType" SG_ 33031678 Reference_Station_Type "LOOKUP";
+BA_ "MessageType" BO_ 33163006 "Fast";
 BA_ "MessageType" BO_ 33033982 "Fast";
 BA_ "SignalType" SG_ 33033982 Repeat_Indicator "LOOKUP";
 BA_ "SignalType" SG_ 33033982 User_Id "INT";
@@ -1140,7 +1145,7 @@ BA_ "SignalType" SG_ 32641278 Waveform "LOOKUP";
 BA_ "SignalType" SG_ 32641278 Reserve_Bits "BINARY";
 BA_ "SignalType" SG_ 32641278 Real_Power "INT";
 BA_ "SignalType" SG_ 32641278 Reactive_Power "INT";
-BA_ "MessageType" BO_ 32641790 "Single";
+BA_ "MessageType" BO_ 32641790 "Fast";
 BA_ "SignalType" SG_ 32641790 Dc_Type "LOOKUP";
 BA_ "MessageType" BO_ 32642302 "Single";
 BA_ "SignalType" SG_ 32642302 Battery_Case_Temperature "DOUBLE";
