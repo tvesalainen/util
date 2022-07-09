@@ -190,6 +190,11 @@ public class TideFitter
     {
         return cosineFitter.getFinalCost();
     }
+
+    public String getPoints()
+    {
+        return points.toString();
+    }
     
     private class Data extends DoubleAbstractTimeoutSliding
     {
