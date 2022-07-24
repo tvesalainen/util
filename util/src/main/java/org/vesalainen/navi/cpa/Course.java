@@ -21,6 +21,7 @@ import static java.util.concurrent.TimeUnit.HOURS;
 /**
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
+ * <a href="doc-files/cpa.html">Collision Point Analyses</a>
  */
 public interface Course
 {
