@@ -16,6 +16,7 @@
  */
 package org.vesalainen.navi.cpa;
 
+import static java.lang.Math.*;
 import static java.util.concurrent.TimeUnit.HOURS;
 
 /**
@@ -88,11 +89,11 @@ public interface Course
     }
     default double deltaLatitude()
     {
-        return Math.cos(Math.toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60);
+        return cos(toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60);
     }
     default double deltaLongitude()
     {
-        return Math.cos(Math.toRadians(getLatitude()))*Math.sin(Math.toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60);
+        return sin(toRadians(getCourse()))*getSpeed()/HOURS.toMillis(60)/cos(toRadians(getLatitude()));
     }
     double getLatitude();
     double getLongitude();
