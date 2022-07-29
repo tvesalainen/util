@@ -39,9 +39,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <p>
         Boats position at time t is:
         <p>
-            p(t) = (φ+cos(α)st, λ+cos(φ)sin(α)st)
+            p(t) = (λ+cos(φ)<sup>-1</sup>sin(α)st, φ+cos(α)st) = (a+bt, c+dt)
         </p>
-        <p>Minimum distance can be calculated by creating distance function which will be 2nd grade polynom and resolving
-        it's minimum points.</p>
+        <p>Distance can be calculated as:
+        <p>d(t)<sup>2</sup> = (a<sub>0</sub>+b<sub>0</sub>t-a<sub>1</sub>-b<sub>1</sub>t)<sup>2</sup>+(c<sub>0</sub>+d<sub>0</sub>t-c<sub>1</sub>-d<sub>1</sub>t)<sup>2</sup>
     </body>
 </html>
