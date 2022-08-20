@@ -193,6 +193,7 @@ public final class Navis
         checkLongitude(lon1);
         checkLatitude(lat2);
         checkLongitude(lon2);
+        lon1 = safeAntimeridianLongitude(lon1, lon2);
         double dep = departure(lat1, lat2);
         double aa = dep*(lon2-lon1);
         double bb = lat2-lat1;
@@ -231,6 +232,7 @@ public final class Navis
         checkLongitude(lon1);
         checkLatitude(lat2);
         checkLongitude(lon2);
+        lon1 = safeAntimeridianLongitude(lon1, lon2);
         if (
                 (Math.abs(lat1 - lat2) > 100) ||
                 (Math.abs(lon1 - lon2) > 100)
@@ -285,6 +287,31 @@ public final class Navis
         }
         double speed = distance/hours;
         return speed;
+    }
+    /**
+     * Returns longitude modified to be same sign as longitude2 and suitable for 
+     * calculations.
+     * @param longitude
+     * @param longitude2
+     * @return 
+     */
+    public static final double safeAntimeridianLongitude(double longitude, double longitude2)
+    {
+        if (longitude > 0 && longitude2 < 0)
+        {
+            return longitude - 360;
+        }
+        else
+        {
+            if (longitude < 0 && longitude2 > 0)
+            {
+                return longitude + 360;
+            }
+            else
+            {
+                return longitude;
+            }
+        }
     }
     /**
      * Adds delta to longitude. Positive delta is to east
