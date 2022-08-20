@@ -32,6 +32,14 @@ public class NavisTest
     }
 
     @Test
+    public void testSafeAntimeridianLongitude()
+    {
+        assertEquals(20, Navis.safeAntimeridianLongitude(20, 30), 1e-10);
+        assertEquals(-20, Navis.safeAntimeridianLongitude(-20, -30), 1e-10);
+        assertEquals(190, Navis.safeAntimeridianLongitude(-170, 170), 1e-10);
+        assertEquals(-190, Navis.safeAntimeridianLongitude(170, -170), 1e-10);
+    }
+    @Test
     public void testCartesianToDegrees()
     {
         assertEquals(0, Navis.cartesianToDegrees(90), Epsilon);
