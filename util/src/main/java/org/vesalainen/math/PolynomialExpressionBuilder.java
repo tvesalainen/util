@@ -17,7 +17,15 @@
 package org.vesalainen.math;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import org.vesalainen.lang.Primitives;
+import org.vesalainen.text.Unicodes;
+import org.vesalainen.util.CharSequences;
+import org.vesalainen.util.CollectionHelp;
 
 /**
  *
@@ -26,171 +34,450 @@ import java.util.List;
 public class PolynomialExpressionBuilder
 {
     private String var;
-    private String tmp;
-    private List<String> expr = new ArrayList<>();
 
-    public PolynomialExpressionBuilder(String var, String tmp)
+    public PolynomialExpressionBuilder(String var)
     {
         this.var = var;
-        this.tmp = tmp;
     }
     
-    public Polynom mul(String coef, Polynom p)
+    public Polynom create(String expr)
     {
-        int len = p.length();
-        String[] r = new String[len];
-        for (int ii=0;ii<len;ii++)
-        {
-            String ff = p.coef(ii);
-            r[ii] = expr(coef, '+', ff);
-        }
-        return new Polynom(r);
+        return new Polynom(expr);
+    }
+    public Polynom mul(String c, Polynom p)
+    {
+        Polynom cp = new Polynom(c);
+        return mul(cp, p);
     }
     public Polynom mul(Polynom p1, Polynom p2)
     {
-        int l1 = p1.length();
-        int l2 = p2.length();
-        String[] r = new String[(l1-1)+(l2-1)+1];
-        for (int ii=0;ii<l1;ii++)
-        {
-            String f1 = p1.coef(ii);
-            for (int jj=0;jj<l2;jj++)
-            {
-                String f2 = p2.coef(jj);
-                String ds = expr(f1, '*', f2);
-                int g = ii+jj;
-                String ff = r[g];
-                if (ff == null)
-                { 
-                    r[g] = ds;
-                }
-                else
-                {
-                    r[g] = expr(ff, '+', ds);
-                }
-            }
-        }
-        return new Polynom(r);
+        return new Polynom(p1.asSum().mul(p2.asSum()));
     }
     public Polynom plus(Polynom p1, Polynom p2)
     {
-        int l1 = p1.length();
-        int l2 = p2.length();
-        int l = Math.max(l1, l2);
-        String[] r = new String[l];
-        for (int ii=0;ii<l;ii++)
-        {
-            if (ii < l1)
-            {
-                String f1 = p1.coef(ii);
-                if (ii < l2)
-                { 
-                    String f2 = p2.coef(ii);
-                    r[ii] = expr(f1, '+', f2);
-                }
-                else
-                {
-                    r[ii] = f1;
-                }
-            }
-            else
-            {
-                if (ii < l2)
-                { 
-                    String f2 = p2.coef(ii);
-                    r[ii] = f2;
-                }
-            }
-        }
-        return new Polynom(r);
+        return new Polynom(p1.asSum().add(p2.asSum()));
     }
     public Polynom minus(Polynom p1, Polynom p2)
     {
-        int l1 = p1.length();
-        int l2 = p2.length();
-        int l = Math.max(l1, l2);
-        String[] r = new String[l];
-        for (int ii=0;ii<l;ii++)
+        return new Polynom(p1.asSum().add(p2.asSum().negative()));
+    }
+
+    public static Sum parseSum(String expr)
+    {
+        String[] mulExprs = splitTerms(expr);
+        Mul[] muls = new Mul[mulExprs.length];
+        for (int ii=0;ii<muls.length;ii++)
         {
-            if (ii < l1)
+            muls[ii] = parseMul(mulExprs[ii]);
+        }
+        return new Sum(muls);
+    }
+    private static String[] splitTerms(String expr)
+    {
+        List<String> list = new ArrayList<>();
+        int from = 1;
+        int idx = CharSequences.indexOf(expr, (c)->c=='+'||c=='-');
+        while (idx != -1)
+        {
+            list.add(expr.subSequence(from-1, idx).toString());
+            from = idx+1;
+            idx = CharSequences.indexOf(expr, (c)->c=='+'||c=='-', from);
+        }
+        list.add(expr.substring(from-1));
+        return list.toArray(new String[list.size()]);
+    }
+    private static Mul parseMul(String expr)
+    {
+        if (expr.length() > 1 && ((expr.startsWith("+") || expr.startsWith("-")) && !Character.isDigit(expr.charAt(1))))
+        {
+            expr = expr.charAt(0)+"1*"+expr.substring(1);
+        }
+        String[] terms = expr.split("\\*");
+        try
+        {
+            int multiplier = Primitives.parseInt(terms[0]);
+            return new Mul(multiplier, Arrays.copyOfRange(terms, 1, terms.length));
+        }
+        catch (NumberFormatException ex)
+        {
+            return new Mul(terms);
+        }
+    }
+    private static void checkMul(String... terms)
+    {
+        for (String term : terms)
+        {
+            checkMul(term);
+        }
+    }
+    private static void checkMul(String term)
+    {
+        if (term.isEmpty())
+        {
+            throw new IllegalArgumentException("empty");
+        }
+        if (Character.isDigit(term.codePointAt(0)))
+        {
+            throw new IllegalArgumentException("not proper start");
+        }
+        for (int ii=1;ii<term.length();ii++)
+        {
+            switch (term.charAt(ii))
             {
-                String f1 = p1.coef(ii);
-                if (ii < l2)
-                { 
-                    String f2 = p2.coef(ii);
-                    r[ii] = expr(f1, '-', f2);
+                case '*':
+                case '+':
+                case '-':
+                    throw new IllegalArgumentException(term+" not proper");
+            }
+        }
+    }
+    public static class Mul
+    {
+        private int multiplier;
+        private String[] terms;
+
+        public Mul(int multiplier)
+        {
+            this(multiplier, new String[]{});
+        }
+
+        public Mul(String... terms)
+        {
+            this(1, terms);
+        }
+
+        public Mul(int multiplier, String... terms)
+        {
+            this.multiplier = multiplier;
+            this.terms = terms;
+            checkMul(this.terms);
+            Arrays.sort(this.terms);
+        }
+        
+        public Mul(Mul... muls)
+        {
+            this.multiplier = 1;
+            List<String> list = new ArrayList<>();
+            for (Mul m : muls)
+            {
+                this.multiplier *= m.multiplier;
+                CollectionHelp.addAll(list, m.terms);
+            }
+            this.terms = list.toArray(new String[list.size()]);
+            checkMul(this.terms);
+            Arrays.sort(this.terms);
+        }
+
+        public int getMultiplier()
+        {
+            return multiplier;
+        }
+
+        public void forEach(Consumer<String> act)
+        {
+            for (String term : terms)
+            {
+                act.accept(term);
+            }
+        }
+        
+        public Mul negative()
+        {
+            return new Mul(-multiplier, terms);
+        }
+        
+        public Mul mul(int coef)
+        {
+            return new Mul(coef*multiplier, terms);
+        }
+        public boolean sameBase(Mul o)
+        {
+            return Arrays.equals(terms, o.terms);
+        }
+        
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (multiplier)
+            {
+                case 1:
+                    sb.append('+');
+                    break;
+                case -1:
+                    sb.append('-');
+                    break;
+                default:
+                    if (multiplier > 0)
+                    {
+                        sb.append('+');
+                    }
+                    sb.append(multiplier);
+                    break;
+            }
+            String prev = null;
+            int pow = 1;
+            for (String m : terms)
+            {
+                if (!m.equals(prev))
+                {
+                    if (pow > 1)
+                    {
+                        Unicodes.toSuperScript(String.valueOf(pow), sb);
+                    }
+                    sb.append(m);
+                    pow = 1;
+                    prev = m;
                 }
                 else
                 {
-                    r[ii] = f1;
+                    pow++;
+                }
+            }
+            if (pow > 1)
+            {
+                Unicodes.toSuperScript(String.valueOf(pow), sb);
+            }
+            return sb.toString();
+        }
+        public String toCode()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (multiplier)
+            {
+                case 1:
+                    sb.append('+');
+                    break;
+                case -1:
+                    sb.append('-');
+                    break;
+                default:
+                    if (multiplier > 0)
+                    {
+                        sb.append('+');
+                    }
+                    sb.append(multiplier);
+                    sb.append('*');
+                    break;
+            }
+            boolean star = false;
+            for (String m : terms)
+            {
+                if (star)
+                {
+                    sb.append('*');
+                }
+                star = true;
+                sb.append(m);
+            }
+            return sb.toString();
+        }
+
+    }
+    public static class Sum
+    {
+        private Mul[] terms;
+
+        public Sum(Mul... terms)
+        {
+            List<Mul> list = new ArrayList<>();
+            for (Mul m : terms)
+            {
+                boolean found = false;
+                for (int ii=0;ii<list.size();ii++)
+                {
+                    Mul l = list.get(ii);
+                    if (m.sameBase(l))
+                    {
+                        int s = m.multiplier+l.multiplier;
+                        list.remove(ii);
+                        if (s != 0)
+                        {
+                            list.add(ii, new Mul(s, m.terms));
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    list.add(m);
+                }
+            }
+            this.terms = list.toArray(new Mul[list.size()]);
+        }
+        public void forEach(Consumer<Mul> act)
+        {
+            for (Mul mul : terms)
+            {
+                act.accept(mul);
+            }
+        }
+        public Sum add(Mul o)
+        {
+            List<Mul> list = new ArrayList<>();
+            CollectionHelp.addAll(list, terms);
+            list.add(o);
+            return new Sum(list.toArray(new Mul[list.size()]));
+        }
+        public Sum add(Sum o)
+        {
+            List<Mul> list = new ArrayList<>();
+            CollectionHelp.addAll(list, terms);
+            CollectionHelp.addAll(list, o.terms);
+            return new Sum(list.toArray(new Mul[list.size()]));
+        }
+        public Sum mul(Sum o)
+        {
+            List<Mul> list = new ArrayList<>();
+            for (Mul m : terms)
+            {
+                for (Mul l : o.terms)
+                {
+                    list.add(new Mul(m, l));
+                }
+            }
+            return new Sum(list.toArray(new Mul[list.size()]));
+        }
+        public Sum negative()
+        {
+            return mul(-1);
+        }
+        public Sum mul(int coef)
+        {
+            Mul[] t = new Mul[terms.length];
+            for (int ii=0;ii<terms.length;ii++)
+            {
+                t[ii] = terms[ii].mul(coef);
+            }
+            return new Sum(t);
+        }
+        public boolean zero()
+        {
+            return terms.length == 0;
+        }
+        @Override
+        public String toString()
+        {
+            if (!zero())
+            {
+                StringBuilder sb = new StringBuilder();
+                for (Mul m : terms)
+                {
+                    sb.append(m);
+                }
+                if (terms.length > 1)
+                {
+                    return "+("+sb.toString().substring(1)+')';
+                }
+                else
+                {
+                    return sb.toString();
                 }
             }
             else
             {
-                if (ii < l2)
-                { 
-                    String f2 = p2.coef(ii);
-                    r[ii] = expr('-', f2);
-                }
+                return "0";
             }
         }
-        return new Polynom(r);
-    }
-    public Polynom derivative(Polynom p)
-    {
-        int len = p.length()-1;
-        String[] r = new String[len];
-        for (int ii=0;ii<len;ii++)
+        public String toCode()
         {
-            int g = ii+1;
-            String ff = p.coef(g);
-            r[ii] = expr(String.valueOf(g), '*', ff);
+            if (!zero())
+            {
+                StringBuilder sb = new StringBuilder();
+                for (Mul m : terms)
+                {
+                    sb.append(m.toCode());
+                }
+                if (terms.length > 1)
+                {
+                    return "+("+sb.toString().substring(1)+')';
+                }
+                else
+                {
+                    return sb.toString();
+                }
+            }
+            else
+            {
+                return "0";
+            }
         }
-        return new Polynom(r);
-    }
 
-    public Polynom create(String... coef)
-    {
-        return new Polynom(coef);
-    }
-    public String subVars(String type)
-    {
-        StringBuilder sb = new StringBuilder();
-        int size = expr.size();
-        for (int ii=0;ii<size;ii++)
-        {
-            sb.append(type)
-                    .append(' ')
-                    .append(tmp)
-                    .append(ii)
-                    .append(" = ")
-                    .append(expr.get(ii))
-                    .append(";\n");
-        }
-        return sb.toString();
-    }
-    private String expr(String e1, char op, String e2)
-    {
-        String sub = tmp+expr.size();
-        expr.add(e1+op+e2);
-        return sub;
-    }
-    private String expr(char op, String e2)
-    {
-        String sub = tmp+expr.size();
-        expr.add(op+e2);
-        return sub;
     }
     public class Polynom
     {
-        private String[] coef;
+        private Sum[] coef;
 
-        private Polynom(String... coef)
+        public Polynom(String expr)
         {
-            this.coef = coef;
+            this(parseSum(expr));
         }
 
-        public String coef(int index)
+        public Polynom(Sum expr)
+        {
+            if (!expr.zero())
+            {
+                int max = 0;
+                Map<Integer,Sum> map = new HashMap<>();
+                for (Mul m : expr.terms)
+                {
+                    List<String> terms = new ArrayList<>();
+                    int pow = 0;
+                    for (String t : m.terms)
+                    {
+                        if (var.equals(t))
+                        {
+                            pow++;
+                        }
+                        else
+                        {
+                            terms.add(t);
+                        }
+                    }
+                    Mul mul = new Mul(m.multiplier, terms.toArray(new String[terms.size()]));
+                    Sum sum = map.get(pow);
+                    if (sum == null)
+                    {
+                        map.put(pow, new Sum(mul));
+                    }
+                    else
+                    {
+                        map.put(pow, sum.add(mul));
+                    }
+                    max = Math.max(max, pow);
+                }
+                this.coef = new Sum[max+1];
+                map.forEach((p,s)->this.coef[p] = s);
+            }
+            else
+            {
+                this.coef = new Sum[0];
+            }
+        }
+
+        public Polynom derivative()
+        {
+            Sum sum = new Sum();
+            for (int ii=1;ii<coef.length;ii++)
+            {
+                sum = sum.add(coef[ii].mul(new Sum(grade(ii-1).mul(ii))));
+            }
+            return new Polynom(sum);
+        }
+        public Sum asSum()
+        {
+            Sum sum = new Sum();
+            for (int ii=0;ii<coef.length;ii++)
+            {
+                if (coef[ii] != null)
+                {
+                    sum = sum.add(coef[ii].mul(new Sum(grade(ii))));
+                }
+            }
+            return sum;
+        }
+        public Sum coef(int index)
         {
             return coef[index];
         }
@@ -198,24 +485,93 @@ public class PolynomialExpressionBuilder
         {
             return coef.length;
         }
+        public boolean zero()
+        {
+            return coef.length == 0;
+        }
         @Override
         public String toString()
         {
-            int length = coef.length;
-            if (length == 0)
+            if (!zero())
             {
-                return "";
+                StringBuilder sb = new StringBuilder();
+                int length = coef.length;
+                for (int ii=length-1;ii>=0;ii--)
+                {
+                    if (coef[ii] != null)
+                    {
+                        sb.append(coef[ii]);
+                        if (ii>0)
+                        {
+                            sb.append(var);
+                        }
+                        if (ii > 1)
+                        {
+                            Unicodes.toSuperScript(String.valueOf(ii), sb);
+                        }
+                    }
+                }
+                switch (sb.charAt(sb.length()-1))
+                {
+                    case '+':
+                    case '-':
+                        sb.append('1');
+                }
+                if (sb.charAt(0) != '+')
+                {
+                    return sb.toString();
+                }
+                else
+                {
+                    return sb.toString().substring(1);
+                }
             }
-            String sum = coef[length-1]+"*"+var;
-            for (int ii=length-2;ii>0;ii--)
+            else
             {
-                sum += "+"+coef[ii];
-                sum = "("+sum+")*"+var;
+                return "0";
             }
-            sum += "+"+coef[0];
-            return sum;
         }
-        
+        public String toCode()
+        {
+            if (!zero())
+            {
+                StringBuilder sb = new StringBuilder();
+                int length = coef.length;
+                for (int ii=length-1;ii>=0;ii--)
+                {
+                    sb.append(coef[ii].toCode());
+                    for (int jj=0;jj<ii;jj++)
+                    {
+                        sb.append('*');
+                        sb.append(var);
+                    }
+                }
+                switch (sb.charAt(sb.length()-1))
+                {
+                    case '+':
+                    case '-':
+                        sb.append('1');
+                }
+                if (sb.charAt(0) != '+')
+                {
+                    return sb.toString();
+                }
+                else
+                {
+                    return sb.toString().substring(1);
+                }
+            }
+            else
+            {
+                return "0";
+            }
+        }
+    }
+    private Mul grade(int pow)
+    {
+        String[] terms = new String[pow];
+        Arrays.fill(terms, var);
+        return new Mul(terms);
     }
             
 }

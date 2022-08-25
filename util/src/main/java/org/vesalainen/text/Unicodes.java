@@ -48,6 +48,12 @@ public final class Unicodes
             }
         }
     }
+    public static String toSuperScript(CharSequence txt)
+    {
+        StringBuilder sb = new StringBuilder();
+        toSuperScript(txt, sb);
+        return sb.toString();
+    }
     public static void toSuperScript(CharSequence txt, StringBuilder out)
     {
         int length = txt.length();
@@ -110,6 +116,12 @@ public final class Unicodes
                     throw new UnsupportedOperationException(txt.charAt(ii)+" not supported");
             }
         }
+    }
+    public static String toSubScript(CharSequence txt)
+    {
+        StringBuilder sb = new StringBuilder();
+        toSubScript(txt, sb);
+        return sb.toString();
     }
     public static void toSubScript(CharSequence txt, StringBuilder out)
     {

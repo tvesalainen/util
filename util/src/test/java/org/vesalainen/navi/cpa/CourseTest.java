@@ -21,6 +21,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.vesalainen.math.PolynomialExpressionBuilder;
 import org.vesalainen.math.PolynomialExpressionBuilder.Polynom;
+//import org.vesalainen.math.PolynomialExpressionBuilder.Polynom;
+import org.vesalainen.text.Unicodes;
 
 /**
  *
@@ -36,20 +38,20 @@ public class CourseTest
     @Test
     public void testGenerate()
     {
-        PolynomialExpressionBuilder b = new PolynomialExpressionBuilder("t", "x");
-        Polynom x1 = b.create("c1.getLatitude()", "c1.deltaLatitude()");
-        Polynom y1 = b.create("c1.getLongitude()", "c1.deltaLongitude()");
-        Polynom x2 = b.create("c2.getLatitude()", "c2.deltaLatitude()");
-        Polynom y2 = b.create("c2.getLongitude()", "c2.deltaLongitude()");
+        String inv1 = Unicodes.toSuperScript("-1");
+        String sub0 = Unicodes.toSubScript("0");
+        String sub1 = Unicodes.toSubScript("1");
+        PolynomialExpressionBuilder b = new PolynomialExpressionBuilder("t");
+        Polynom x1 = b.create("λ"+sub0+"+"+"cos(φ"+sub0+")"+inv1+"sin(α"+sub0+")*s*t");
+        Polynom y1 = b.create("φ"+sub0+"+"+"cos(α"+sub0+")*s*t");
+        Polynom x2 = b.create("λ"+sub1+"+"+"cos(φ"+sub1+")"+inv1+"sin(α"+sub1+")*s*t");
+        Polynom y2 = b.create("φ"+sub1+"+"+"cos(α"+sub1+")*s*t");
         Polynom dx = b.minus(x1, x2);
         Polynom dy = b.minus(y1, y2);
         Polynom dx2 = b.mul(dx, dx);
         Polynom dy2 = b.mul(dy, dy);
         Polynom plus = b.plus(dx2, dy2);
-        Polynom der = b.derivative(plus);
-        System.err.println(b.subVars("double"));
-        System.err.println("double sum = "+plus+";");
-        System.err.println("double der = "+der+";");
+        Polynom der = plus.derivative();
     }
     @Test
     public void testCPA1()
