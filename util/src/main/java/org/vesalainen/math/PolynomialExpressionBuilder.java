@@ -131,7 +131,7 @@ public class PolynomialExpressionBuilder
             }
         }
     }
-    public static class Mul
+    public static class Mul implements Comparable<Mul>
     {
         private int multiplier;
         private String[] terms;
@@ -193,6 +193,61 @@ public class PolynomialExpressionBuilder
         public boolean sameBase(Mul o)
         {
             return Arrays.equals(terms, o.terms);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 7;
+            hash = 97 * hash + this.multiplier;
+            hash = 97 * hash + Arrays.deepHashCode(this.terms);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null)
+            {
+                return false;
+            }
+            if (getClass() != obj.getClass())
+            {
+                return false;
+            }
+            final Mul other = (Mul) obj;
+            if (this.multiplier != other.multiplier)
+            {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.terms, other.terms))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(Mul o)
+        {
+            if (multiplier != o.multiplier)
+            {
+                return multiplier - o.multiplier;
+            }
+            int min = Math.min(terms.length, o.terms.length);
+            for (int ii=0;ii<min;ii++)
+            {
+                int c = terms[ii].compareTo(o.terms[ii]);
+                if (c != 0)
+                {
+                    return c;
+                }
+            }
+            return terms.length - o.terms.length;
         }
         
         @Override
@@ -304,6 +359,7 @@ public class PolynomialExpressionBuilder
                     list.add(m);
                 }
             }
+            list.sort(null);
             this.terms = list.toArray(new Mul[list.size()]);
         }
         public void forEach(Consumer<Mul> act)
@@ -356,6 +412,38 @@ public class PolynomialExpressionBuilder
         {
             return terms.length == 0;
         }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 7;
+            hash = 37 * hash + Arrays.deepHashCode(this.terms);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null)
+            {
+                return false;
+            }
+            if (getClass() != obj.getClass())
+            {
+                return false;
+            }
+            final Sum other = (Sum) obj;
+            if (!Arrays.deepEquals(this.terms, other.terms))
+            {
+                return false;
+            }
+            return true;
+        }
+        
         @Override
         public String toString()
         {

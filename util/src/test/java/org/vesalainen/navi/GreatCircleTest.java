@@ -18,6 +18,7 @@ package org.vesalainen.navi;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.vesalainen.math.UnitType.*;
 
 /**
  *
@@ -46,5 +47,31 @@ public class GreatCircleTest
         assertEquals(23.35256231948781, GreatCircle.initialBearing(50.1, -005.42, 53.38, -003.03), Epsilon);
         assertEquals(90, GreatCircle.initialBearing(0, 179, 0, -179), Epsilon);
         assertEquals(180, GreatCircle.initialBearing(60, 25, 59, 25), Epsilon);
+    }
+    @Test
+    public void testPrecision()
+    {
+        double distance = METER.convertTo(1, NAUTICAL_DEGREE);
+        double coef = Math.sqrt(0.5);
+        for (int ii=0;ii<24;ii++)
+        {
+            double delta = distance*coef;
+            double exp = NAUTICAL_DEGREE.convertTo(distance, METER);
+            double d1 = Navis.distance(0, 0, delta, delta);
+            double g1 = NAUTICAL_MILE.convertTo(d1, METER);
+            double d2 = GreatCircle.distance(0, 0, delta, delta);
+            double g2 = NAUTICAL_MILE.convertTo(d2, METER);
+            System.err.print(exp);
+            System.err.print(", ");
+            System.err.print(deltaPercent(exp, g1));
+            System.err.print(", ");
+            System.err.print(deltaPercent(exp, g2));
+            System.err.println();
+            distance *= 2;
+        }
+    }
+    private double deltaPercent(double exp, double got)
+    {
+        return 100.0*(exp-got)/exp;
     }
 }

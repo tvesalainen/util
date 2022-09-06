@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </head>
     <body>
         <h1>Collision Point Analyses</h1>
-        We can analyse collision point when we know two boats:
+        We can analyze collision point when we know two boats:
         
         <dl>
             <dt>Latitude</dt>
@@ -39,10 +39,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <p>
         Boats position at time t is:
         <p>
-            p(t) = (λ+cos(φ)<sup>-1</sup>sin(α)st, φ+cos(α)st) = (a+bt, c+dt)
+            p(t) = (cos(φ)⁻¹sin(α)st+λ, cos(α)st+φ)
         </p>
         <p>Distance can be calculated as:
-        <p>d(t)<sup>2</sup> = (((cos(φ₀)⁻¹sin(α₀)s-cos(φ₁)⁻¹sin(α₁)s)*(cos(φ₀)⁻¹sin(α₀)s-cos(φ₁)⁻¹sin(α₁)s))+((cos(α₀)s-cos(α₁)s)*(cos(α₀)s-cos(α₁)s)))*t²+((((λ₀-λ₁)*(cos(φ₀)⁻¹sin(α₀)s-cos(φ₁)⁻¹sin(α₁)s))+((cos(φ₀)⁻¹sin(α₀)s-cos(φ₁)⁻¹sin(α₁)s)*(λ₀-λ₁)))+(((φ₀-φ₁)*(cos(α₀)s-cos(α₁)s))+((cos(α₀)s-cos(α₁)s)*(φ₀-φ₁))))*t+(((λ₀-λ₁)*(λ₀-λ₁))+((φ₀-φ₁)*(φ₀-φ₁)))
-        <p>d(t)<sup>2</sup> = (a<sub>0</sub>+b<sub>0</sub>t-a<sub>1</sub>-b<sub>1</sub>t)<sup>2</sup>+(c<sub>0</sub>+d<sub>0</sub>t-c<sub>1</sub>-d<sub>1</sub>t)<sup>2</sup>
+        <p>d(t)<sup>2</sup> = (cos(φ)sin(α₀)²s₀²-2sin(α₀)sin(α₁)s₀s₁+cos(φ)sin(α₁)²s₁²+cos(α₀)²s₀²-2cos(α₀)cos(α₁)s₀s₁+cos(α₁)²s₁²)t²+(2cos(φ)sin(α₀)s₀λ₀-2cos(φ)sin(α₁)s₁λ₀-2cos(φ)sin(α₀)s₀λ₁+2cos(φ)sin(α₁)s₁λ₁+2cos(α₀)s₀φ₀-2cos(α₁)s₁φ₀-2cos(α₀)s₀φ₁+2cos(α₁)s₁φ₁)t+(cos(φ)²λ₀²-2cos(φ)²λ₀λ₁+cos(φ)²λ₁²+φ₀²-2φ₀φ₁+φ₁²)
+        <p>d(t)<sup>2</sup>' = (2cos(φ)sin(α₀)²s₀²-4sin(α₀)sin(α₁)s₀s₁+2cos(φ)sin(α₁)²s₁²+2cos(α₀)²s₀²-4cos(α₀)cos(α₁)s₀s₁+2cos(α₁)²s₁²)t+(2cos(φ)sin(α₀)s₀λ₀-2cos(φ)sin(α₁)s₁λ₀-2cos(φ)sin(α₀)s₀λ₁+2cos(φ)sin(α₁)s₁λ₁+2cos(α₀)s₀φ₀-2cos(α₁)s₁φ₀-2cos(α₀)s₀φ₁+2cos(α₁)s₁φ₁)
+        <p>Shortest distance at:
+        <p>-(2cos(φ)sin(α₀)s₀λ₀-2cos(φ)sin(α₁)s₁λ₀-2cos(φ)sin(α₀)s₀λ₁+2cos(φ)sin(α₁)s₁λ₁+2cos(α₀)s₀φ₀-2cos(α₁)s₁φ₀-2cos(α₀)s₀φ₁+2cos(α₁)s₁φ₁) / 
+        <p>(2cos(φ)sin(α₀)²s₀²-4sin(α₀)sin(α₁)s₀s₁+2cos(φ)sin(α₁)²s₁²+2cos(α₀)²s₀²-4cos(α₀)cos(α₁)s₀s₁+2cos(α₁)²s₁²)
     </body>
 </html>
