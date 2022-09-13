@@ -36,9 +36,10 @@ public class GreatCircleTest
     public void testDistance()
     {
         assertEquals(216.0205897735579, GreatCircle.distance(50.1, -005.42, 53.38, -003.03), Epsilon);
-        assertEquals(120, GreatCircle.distance(0, 25, 0, 27), Epsilon*120);
+        assertEquals(120, GreatCircle.distance(0, 25, 0, 27), Epsilon*30);
         assertEquals(30, GreatCircle.distance(60, 25, 60, 24), Epsilon*30);
         assertEquals(60, GreatCircle.distance(60, 179, 60, -179), Epsilon*30);
+        assertEquals(60, GreatCircle.distance(60, -179, 60, 179), Epsilon*30);
     }
     
     @Test
@@ -46,6 +47,7 @@ public class GreatCircleTest
     {
         assertEquals(23.35256231948781, GreatCircle.initialBearing(50.1, -005.42, 53.38, -003.03), Epsilon);
         assertEquals(90, GreatCircle.initialBearing(0, 179, 0, -179), Epsilon);
+        assertEquals(270, GreatCircle.initialBearing(0, -179, 0, 179), Epsilon);
         assertEquals(180, GreatCircle.initialBearing(60, 25, 59, 25), Epsilon);
     }
     @Test
