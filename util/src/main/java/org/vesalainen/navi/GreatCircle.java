@@ -45,9 +45,9 @@ public class GreatCircle
         double Δφ = φ2 - φ1;
         double Δλ = λ2 - λ1;
 
-        double a = Math.sin(Δφ/2) * Math.sin(Δφ/2)
+        double a = square(Math.sin(Δφ/2))
           + Math.cos(φ1) * Math.cos(φ2)
-          * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+          * square(Math.sin(Δλ/2));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
         return METER.convertTo(R * c, NAUTICAL_MILE);        
@@ -71,7 +71,11 @@ public class GreatCircle
         double y = Math.sin(λ2-λ1) * Math.cos(φ2);
         double x = Math.cos(φ1)*Math.sin(φ2) -
                 Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1);
-        return Math.toDegrees(Math.atan2(y, x));
+        return Navis.normalizeAngle(Math.toDegrees(Math.atan2(y, x)));
     }
 
+    private static double square(double x)
+    {
+        return x*x;
+    }
 }
