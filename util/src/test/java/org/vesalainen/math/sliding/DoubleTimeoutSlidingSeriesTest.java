@@ -33,10 +33,11 @@ public class DoubleTimeoutSlidingSeriesTest
     @Test
     public void test1()
     {
-        DoubleTimeoutSlidingSeries s = new DoubleTimeoutSlidingSeries(16, Long.MAX_VALUE);
+        DoubleTimeoutSlidingSeries s = new DoubleTimeoutSlidingSeries(System::currentTimeMillis, 16, Long.MAX_VALUE, (l)->l, (v1,v2)->Math.abs(v1-v2)<0.1);
         s.accept(123, 0);
+        s.accept(123, 5);
         s.accept(123, 10);
-        assertEquals(1, s.count());
+        assertEquals(2, s.count());
         assertEquals(10, s.lastTime());
     }
     

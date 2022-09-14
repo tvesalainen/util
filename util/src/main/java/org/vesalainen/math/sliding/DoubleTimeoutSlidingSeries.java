@@ -26,14 +26,16 @@ import java.util.function.LongToDoubleFunction;
  */
 public class DoubleTimeoutSlidingSeries extends DoubleAbstractTimeoutSliding
 {
+    private final EnterPredicate enterPredicate;
 
     public DoubleTimeoutSlidingSeries(int initialSize, long timeout)
     {
-        this(System::currentTimeMillis, initialSize, timeout, (l)->l);
+        this(System::currentTimeMillis, initialSize, timeout, (l)->l, (v1,v2)->true);
     }
-    public DoubleTimeoutSlidingSeries(LongSupplier clock, int initialSize, long timeout, LongToDoubleFunction timeConv)
+    public DoubleTimeoutSlidingSeries(LongSupplier clock, int initialSize, long timeout, LongToDoubleFunction timeConv, EnterPredicate enterPredicate)
     {
         super(clock, initialSize, timeout, timeConv);
+        this.enterPredicate = enterPredicate;
     }
 
     @Override
@@ -42,8 +44,9 @@ public class DoubleTimeoutSlidingSeries extends DoubleAbstractTimeoutSliding
         writeLock.lock();
         try
         {
+            int prevIndex = (endMod() + size - 2) % size;
             int lastIndex = (endMod() + size - 1) % size;
-            if (count() > 0 && value == ring[lastIndex])
+            if (count() > 1 && enterPredicate.test(value, ring[lastIndex]) && enterPredicate.test(value, ring[prevIndex]))
             {
                 times[lastIndex] = time;
             }
@@ -68,4 +71,9 @@ public class DoubleTimeoutSlidingSeries extends DoubleAbstractTimeoutSliding
     {
     }
     
+    @FunctionalInterface
+    public interface EnterPredicate
+    {
+        boolean test(double v1, double v2);
+    }
 }
