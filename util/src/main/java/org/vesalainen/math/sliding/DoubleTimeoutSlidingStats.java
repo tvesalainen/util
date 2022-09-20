@@ -44,14 +44,14 @@ public class DoubleTimeoutSlidingStats extends DoubleTimeoutSlidingAverage imple
     }
 
     @Override
-    public void accept(double value)
+    public void accept(double value, long time)
     {
         writeLock.lock();
         try
         {
-            min.accept(value);
-            max.accept(value);
-            super.accept(value);
+            min.accept(value, time);
+            max.accept(value, time);
+            super.accept(value, time);
         }
         finally
         {
