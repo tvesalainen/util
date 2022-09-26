@@ -110,7 +110,7 @@ public class TimeoutStatsService implements PropertySetter
                 }
                 else
                 {
-                    ts = new TimeoutSlidingStats(clock, seconds, seconds*1000);
+                    ts = new DoubleTimeoutSlidingStats(clock, seconds, seconds*1000);
                 }
                 statsMap.put(seconds, ts);
             }

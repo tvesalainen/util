@@ -58,6 +58,12 @@ public class DoubleTimeoutSlidingMin extends DoubleAbstractTimeoutSlidingBound
     {
         return getBound();
     }
+
+    @Override
+    public String toString()
+    {
+        return "DoubleTimeoutSlidingMin{" + getBound() + '}';
+    }
     
    
 }

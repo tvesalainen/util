@@ -83,5 +83,11 @@ public class DoubleTimeoutSlidingStats extends DoubleTimeoutSlidingAverage imple
     {
         return max.getBound();
     }
+
+    @Override
+    public String toString()
+    {
+        return "DoubleTimeoutSlidingStats{ave=" + fast() + ", min=" + getMin() + ", max=" + getMax() + '}';
+    }
     
 }

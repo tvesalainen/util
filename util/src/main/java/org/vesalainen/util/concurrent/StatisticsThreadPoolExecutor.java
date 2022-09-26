@@ -23,7 +23,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
-import org.vesalainen.math.sliding.TimeoutSlidingStats;
+import org.vesalainen.math.sliding.DoubleTimeoutSlidingStats;
 
 /**
  * StatisticsThreadPoolExecutorgather statistics from TaggabeThread's
@@ -33,7 +33,7 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
 {
     protected long slideMillis;
     protected long startMillis;
-    protected Map<Object,Map<Object,TimeoutSlidingStats>> map = new ConcurrentHashMap<>();
+    protected Map<Object,Map<Object,DoubleTimeoutSlidingStats>> map = new ConcurrentHashMap<>();
     
     public StatisticsThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, long slideTime, TimeUnit slidingUnit)
     {
@@ -56,16 +56,16 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
         {
             Object key = e.getKey();
             Object value = e.getValue();
-            Map<Object,TimeoutSlidingStats> statsMap = map.get(key);
+            Map<Object,DoubleTimeoutSlidingStats> statsMap = map.get(key);
             if (statsMap == null)
             {
                 statsMap = new ConcurrentHashMap<>();
                 map.put(key, statsMap);
             }
-            TimeoutSlidingStats stats = statsMap.get(value);
+            DoubleTimeoutSlidingStats stats = statsMap.get(value);
             if (stats == null)
             {
-                stats = new TimeoutSlidingStats((int) (slideMillis/1000), slideMillis);
+                stats = new DoubleTimeoutSlidingStats((int) (slideMillis/1000), slideMillis);
                 statsMap.put(value, stats);
             }
             stats.accept(elapsed/1000);
@@ -95,16 +95,16 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
         sb.append('\n');
         sb.append("Tags\n");
         sb.append("-----------------\n");
-        for (Entry<Object,Map<Object,TimeoutSlidingStats>> e1 : map.entrySet())
+        for (Entry<Object,Map<Object,DoubleTimeoutSlidingStats>> e1 : map.entrySet())
         {
             Object key = e1.getKey();
             sb.append("Tag : ").append(key).append('\n');
-            Map<Object, TimeoutSlidingStats> statsMap = e1.getValue();
+            Map<Object, DoubleTimeoutSlidingStats> statsMap = e1.getValue();
             double sum = statsMap.values().stream().mapToDouble((s)->{return s.count();}).sum();
             sb.append("Value                   %    Count      Ave      Max      Min\n");
-            for (Entry<Object, TimeoutSlidingStats> e2 : statsMap.entrySet())
+            for (Entry<Object, DoubleTimeoutSlidingStats> e2 : statsMap.entrySet())
             {
-                TimeoutSlidingStats stats = e2.getValue();
+                DoubleTimeoutSlidingStats stats = e2.getValue();
                 sb.append(String.format("%-20.20s %4.1f %d %8.3f %8.3f %8.3f\n", 
                         e2.getKey(),
                         100*stats.count()/sum,

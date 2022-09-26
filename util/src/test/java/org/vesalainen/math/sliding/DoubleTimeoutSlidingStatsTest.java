@@ -27,10 +27,27 @@ import static org.junit.Assert.*;
  *
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class TimeoutSlidingStatsTest
+public class DoubleTimeoutSlidingStatsTest
 {
     private static final double Epsilon = 1e-10;
     
+    @Test
+    public void test0()
+    {
+        DoubleTimeoutSlidingStats st = new DoubleTimeoutSlidingStats(8, 100000);
+        st.accept(10);
+        assertEquals(10, st.fast(), Epsilon);
+        assertEquals(10, st.getMin(), Epsilon);
+        assertEquals(10, st.getMax(), Epsilon);
+        st.accept(8);
+        assertEquals(9, st.fast(), Epsilon);
+        assertEquals(8, st.getMin(), Epsilon);
+        assertEquals(10, st.getMax(), Epsilon);
+        st.accept(12);
+        assertEquals(10, st.fast(), Epsilon);
+        assertEquals(8, st.getMin(), Epsilon);
+        assertEquals(12, st.getMax(), Epsilon);
+    }
     @Test
     public void testTimedSlidingMax()
     {
@@ -43,7 +60,7 @@ public class TimeoutSlidingStatsTest
         //            ---------
         //              ----------
         Clock clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"));
-        TimeoutSlidingStats sm = new TimeoutSlidingStats(clock, 3, 1000);
+        DoubleTimeoutSlidingStats sm = new DoubleTimeoutSlidingStats(clock, 3, 1000);
         sm.accept(10);  // 0
         long t1 = clock.millis();
         assertEquals(10, sm.last(), Epsilon);
@@ -112,7 +129,7 @@ public class TimeoutSlidingStatsTest
         //            --------- 2400-2700
         //              ---------- 2700-3000
         Clock clock = Clock.fixed(Instant.EPOCH, ZoneId.of("Z"));
-        TimeoutSlidingStats sm = new TimeoutSlidingStats(clock, 3, 1000);
+        DoubleTimeoutSlidingStats sm = new DoubleTimeoutSlidingStats(clock, 3, 1000);
         sm.accept(10); // 0
         assertEquals(10, sm.getMin(), Epsilon);
 

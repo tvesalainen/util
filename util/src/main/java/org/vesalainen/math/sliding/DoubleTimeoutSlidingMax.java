@@ -59,5 +59,11 @@ public class DoubleTimeoutSlidingMax extends DoubleAbstractTimeoutSlidingBound
         return getBound();
     }
     
+    @Override
+    public String toString()
+    {
+        return "DoubleTimeoutSlidingMax{" + getBound() + '}';
+    }
+    
    
 }
