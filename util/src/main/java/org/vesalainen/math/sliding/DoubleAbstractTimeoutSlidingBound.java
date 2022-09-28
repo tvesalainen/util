@@ -102,6 +102,7 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
                 if (exceedsBounds(e, value))
                 {
                     assign(e, value, time);
+                    endDecr();
                 }
                 else
                 {

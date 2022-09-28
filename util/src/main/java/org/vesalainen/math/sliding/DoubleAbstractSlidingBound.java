@@ -72,6 +72,7 @@ public abstract class DoubleAbstractSlidingBound extends DoubleAbstractSliding i
                 if (exceedsBounds(e, value))
                 {
                     assign(e, value);
+                    endDecr();
                 }
                 else
                 {

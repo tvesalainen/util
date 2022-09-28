@@ -97,6 +97,14 @@ public abstract class AbstractSliding
     }
 
     /**
+     * Decrements end by 1
+     */
+    protected void endDecr()
+    {
+        end--;
+    }
+
+    /**
      * Remove item at index
      * @param index Mod index
      */
