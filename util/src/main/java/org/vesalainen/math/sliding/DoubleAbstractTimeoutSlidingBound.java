@@ -29,7 +29,6 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
 {
     private final long timeout;
     private long[] times;
-    Timeouting parent;
     private LongSupplier clock;
     /**
      * Creates DoubleAbstractTimeoutSlidingBound
@@ -54,19 +53,6 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
         this.timeout = timeout;
         this.times = new long[size];
     }
-    /**
-     * 
-     * @param parent
-     */
-    DoubleAbstractTimeoutSlidingBound(Timeouting parent)
-    {
-        super(parent.getSize());
-        this.clock = parent.clock();
-        this.parent = parent;
-        this.timeout = parent.getTimeout();
-        this.times = parent.getTimes();
-    }
-
     @Override
     public long maxDuration()
     {
@@ -88,7 +74,7 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
         try
         {
             eliminate();
-            if (parent == null && count() >= size)
+            if (count() >= size)
             {
                 grow();
             }
@@ -121,14 +107,7 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
     {
         int newSize = newSize();
         ring = (double[]) newArray(ring, size, new double[newSize]);
-        if (parent == null)
-        {
-            times = (long[]) newArray(times, times.length, new long[newSize]);
-        }
-        else
-        {
-            times = parent.getTimes();
-        }
+        times = (long[]) newArray(times, times.length, new long[newSize]);
         size = newSize;
     }
 
@@ -140,10 +119,7 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
     protected void assign(int index, double value, long time)
     {
         ring[index] = value;
-        if (parent == null)
-        {
-            times[index] = time;
-        }
+        times[index] = time;
     }
 
     @Override
@@ -251,10 +227,6 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
     @Override
     public LongSupplier clock()
     {
-        if (parent != null)
-        {
-            return parent.clock();
-        }
         return clock;
     }
 
