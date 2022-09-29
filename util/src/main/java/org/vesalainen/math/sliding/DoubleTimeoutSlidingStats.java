@@ -39,8 +39,8 @@ public class DoubleTimeoutSlidingStats extends DoubleTimeoutSlidingAverage imple
     public DoubleTimeoutSlidingStats(LongSupplier clock, int initialSize, long timeout)
     {
         super(clock, initialSize, timeout);
-        min = new DoubleTimeoutSlidingMin(this);
-        max = new DoubleTimeoutSlidingMax(this);
+        min = new DoubleTimeoutSlidingMin(clock, size, timeout);
+        max = new DoubleTimeoutSlidingMax(clock, size, timeout);
     }
 
     @Override
@@ -65,6 +65,14 @@ public class DoubleTimeoutSlidingStats extends DoubleTimeoutSlidingAverage imple
         super.grow();
         min.grow();
         max.grow();
+    }
+
+    @Override
+    public void clock(LongSupplier clock)
+    {
+        min.clock(clock);
+        max.clock(clock);
+        super.clock(clock);
     }
     
     /**
