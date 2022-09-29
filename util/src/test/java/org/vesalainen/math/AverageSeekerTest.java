@@ -42,7 +42,7 @@ public class AverageSeekerTest
             as.add(rand.nextGaussian());
             count++;
         }
-        assertEquals(3359, count);
+        assertEquals(20967, count);
     }
     
 }

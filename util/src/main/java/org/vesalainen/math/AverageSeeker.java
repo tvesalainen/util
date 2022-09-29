@@ -16,11 +16,11 @@
  */
 package org.vesalainen.math;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.vesalainen.math.sliding.DoubleSlidingMax;
 import org.vesalainen.math.sliding.DoubleSlidingMin;
 
 /**
+ * @deprecated Not very efficient
  * AverageSeeker is used to seek average value until values precision is within
  * given range.
  * 

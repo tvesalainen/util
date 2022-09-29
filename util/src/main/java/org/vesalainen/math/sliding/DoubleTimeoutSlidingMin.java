@@ -43,11 +43,6 @@ public class DoubleTimeoutSlidingMin extends DoubleAbstractTimeoutSlidingBound
         super(clock, size, timeout);
     }
 
-    public DoubleTimeoutSlidingMin(Timeouting parent)
-    {
-        super(parent);
-    }
-
     @Override
     protected boolean exceedsBounds(int index, double value)
     {
