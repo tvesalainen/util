@@ -81,13 +81,13 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
             endIncr();
             PrimitiveIterator.OfInt rev = modReverseIterator();
             int e = rev.nextInt();
-            assign(e, value, time);
+            int f = e;
             while (rev.hasNext())
             {
                 e = rev.nextInt();
                 if (exceedsBounds(e, value))
                 {
-                    assign(e, value, time);
+                    f = e;
                     endDecr();
                 }
                 else
@@ -95,6 +95,7 @@ public abstract class DoubleAbstractTimeoutSlidingBound extends DoubleAbstractSl
                     break;
                 }
             }
+            assign(f, value, time);
         }
         finally
         {

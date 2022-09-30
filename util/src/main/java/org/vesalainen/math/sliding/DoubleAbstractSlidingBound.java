@@ -65,13 +65,13 @@ public abstract class DoubleAbstractSlidingBound extends DoubleAbstractSliding i
             endIncr();
             PrimitiveIterator.OfInt rev = modReverseIterator();
             int e = rev.nextInt();
-            assign(e, value);
+            int f = e;
             while (rev.hasNext())
             {
                 e = rev.nextInt();
                 if (exceedsBounds(e, value))
                 {
-                    assign(e, value);
+                    f = e;
                     endDecr();
                 }
                 else
@@ -79,6 +79,7 @@ public abstract class DoubleAbstractSlidingBound extends DoubleAbstractSliding i
                     break;
                 }
             }
+            assign(f, value);
         }
         finally
         {
