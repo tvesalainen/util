@@ -19,6 +19,7 @@ package org.vesalainen.util;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -28,21 +29,20 @@ import java.util.function.Supplier;
  * @param <L>
  * @param <V>
  */
-public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
+public abstract class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
 {
     protected NavigableMap<K,NavigableMap<L,V>> map;
     protected Supplier<NavigableMap<L,V>> mapCreator;
-    protected Supplier<V> itemCreator;
 
     protected AbstractMap2D(Supplier<NavigableMap<L, V>> mapCreator)
     {
-        this(mapCreator, null);
-    }
-    protected AbstractMap2D(Supplier<NavigableMap<L, V>> mapCreator, Supplier<V> itemCreator)
-    {
         this.map = (NavigableMap<K, NavigableMap<L, V>>) mapCreator.get();
         this.mapCreator = mapCreator;
-        this.itemCreator = itemCreator;
+    }
+    
+    protected V itemCreator(K key1, L key2)
+    {
+        throw new UnsupportedOperationException("itemCreator not supported");
     }
     
     @Override
@@ -86,7 +86,7 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         return null;
     }
     /**
-     * Returns item or creates it.
+     * Returns item or creates it. Note itemCreator has to be implemented!
      * @param key1
      * @param key2
      * @return 
@@ -101,16 +101,9 @@ public class AbstractMap2D<K,L,V> implements Map2D<K,L,V>
         }
         else
         {
-            if (itemCreator != null)
-            {
-                V item = itemCreator.get();
-                put(key1, key2, item);
-                return item;
-            }
-            else
-            {
-                throw new UnsupportedOperationException("itemCreator not supported on init");
-            }
+            V item = itemCreator(key1, key2);
+            put(key1, key2, item);
+            return item;
         }
     }
 

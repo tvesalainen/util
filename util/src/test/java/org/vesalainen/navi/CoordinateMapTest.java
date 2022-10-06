@@ -47,5 +47,4 @@ public class CoordinateMapTest
         assertEquals("25,60", m.nearest(25.1, 60.1));
         assertEquals("24,60", m.nearest(24.1, 60.1));
     }
-    
 }

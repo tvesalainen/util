@@ -17,7 +17,7 @@
 package org.vesalainen.util;
 
 import java.util.TreeMap;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 
 /**
  *
@@ -31,9 +31,4 @@ public class TreeMap2D<K,L,V> extends AbstractMap2D<K,L,V>
         super(TreeMap::new);
     }
 
-    public TreeMap2D(Supplier<V> itemCreator)
-    {
-        super(TreeMap::new, itemCreator);
-    }
-    
 }

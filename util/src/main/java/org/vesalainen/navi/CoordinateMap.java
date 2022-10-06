@@ -20,7 +20,7 @@ import static java.lang.Math.*;
 import java.util.Iterator;
 import java.util.NavigableMap;
 import java.util.function.DoubleToIntFunction;
-import java.util.function.Supplier;
+import java.util.function.IntToDoubleFunction;
 import org.vesalainen.math.UnitType;
 import static org.vesalainen.math.UnitType.*;
 import org.vesalainen.util.Merger;
@@ -37,19 +37,29 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
     private final double boxSize2;
     private final DoubleToIntFunction lon;
     private final DoubleToIntFunction lat;
+    private IntToDoubleFunction invlon;
+    private IntToDoubleFunction invlat;
     
     public CoordinateMap(double latitude, double boxSize, UnitType unit)
     {
-        this(latitude, boxSize, unit, null);
-    }
-    public CoordinateMap(double latitude, double boxSize, UnitType unit, Supplier<V> squareCreator)
-    {
-        super(squareCreator);
         this.departure = cos(toRadians(latitude));
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
         this.boxSize2 = this.boxSize/2;
         this.lon = (lo)->(int) floor((lo*departure)/this.boxSize);
         this.lat = (la)->(int) floor(la/this.boxSize);
+        this.invlon = (lo)->((lo+boxSize2)/departure)*boxSize;
+        this.invlat = (la)->(la+boxSize2)*boxSize;
+    }
+
+    protected V itemCreator(double k1, double k2)
+    {
+        throw new UnsupportedOperationException("itemCreator not supported");
+    }
+    
+    @Override
+    protected V itemCreator(Integer lo, Integer la)
+    {
+        return itemCreator(invLongitude(lo), invLatitude(la));
     }
 
     public V put(double longitude, double latitude, V value)
@@ -101,7 +111,7 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
     {
         super.forEach((lon,lat,v)->
         {
-            act.accept(((lon+boxSize2)/departure)*boxSize, (lat+boxSize2)*boxSize, v);
+            act.accept(invlon.applyAsDouble(lon), invlat.applyAsDouble(lat), v);
         });
     }
     public V nearest(double longitude, double latitude)
@@ -196,6 +206,14 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
     private long sq(long x)
     {
         return x*x;
+    }
+    private double invLongitude(int i)
+    {
+        return invlon.applyAsDouble(i);
+    }
+    private double invLatitude(int i)
+    {
+        return invlat.applyAsDouble(i);
     }
     @Override
     public String toString()
