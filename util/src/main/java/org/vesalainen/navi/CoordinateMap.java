@@ -57,7 +57,12 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
         this.invlat = (la)->(la+boxSize2)*boxSize;
         this.squareCreator = squareCreator;
     }
-
+    /**
+     * Muist be implemented if getOrCreate is used.
+     * @param k1
+     * @param k2
+     * @return 
+     */
     protected V itemCreator(double k1, double k2)
     {
         return squareCreator.apply(k1, k2);
