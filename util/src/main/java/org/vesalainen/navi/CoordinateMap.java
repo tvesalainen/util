@@ -58,7 +58,7 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
         this.squareCreator = squareCreator;
     }
     /**
-     * Muist be implemented if getOrCreate is used.
+     * Must be implemented if getOrCreate is used.
      * @param k1
      * @param k2
      * @return 
