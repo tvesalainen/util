@@ -19,7 +19,6 @@ package org.vesalainen.navi;
 import static java.lang.Math.*;
 import java.util.Iterator;
 import java.util.NavigableMap;
-import java.util.function.BiFunction;
 import java.util.function.DoubleToIntFunction;
 import java.util.function.IntToDoubleFunction;
 import org.vesalainen.math.UnitType;
@@ -40,13 +39,13 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
     private final DoubleToIntFunction lat;
     private final IntToDoubleFunction invlon;
     private final IntToDoubleFunction invlat;
-    private final BiFunction<Double,Double,V> squareCreator;
+    private final ItemCreator<V> squareCreator;
     
     public CoordinateMap(double latitude, double boxSize, UnitType unit)
     {
         this(latitude, boxSize, unit, null);
     }
-    public CoordinateMap(double latitude, double boxSize, UnitType unit, BiFunction<Double,Double,V> squareCreator)
+    public CoordinateMap(double latitude, double boxSize, UnitType unit, ItemCreator<V> squareCreator)
     {
         this.departure = cos(toRadians(latitude));
         this.boxSize = unit.convertTo(boxSize, NAUTICAL_DEGREE);
@@ -246,5 +245,10 @@ public class CoordinateMap<V> extends TreeMap2D<Integer,Integer,V>
     public interface CoordinateConsumer<V>
     {
         void accept(double longitude, double latitude, V value);
+    }
+    @FunctionalInterface
+    public interface ItemCreator<V>
+    {
+        V apply(double longitude, double latitude);
     }
 }
