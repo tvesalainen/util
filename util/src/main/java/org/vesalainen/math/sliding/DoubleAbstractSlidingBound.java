@@ -44,7 +44,14 @@ public abstract class DoubleAbstractSlidingBound extends DoubleAbstractSliding i
         readLock.lock();
         try
         {
-            return ring[beginMod()];
+            if (count() > 0)
+            {
+                return ring[beginMod()];
+            }
+            else
+            {
+                return Double.NaN;
+            }
         }
         finally
         {
