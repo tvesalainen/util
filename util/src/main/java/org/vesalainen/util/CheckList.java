@@ -24,18 +24,18 @@ import org.vesalainen.util.logging.JavaLogging;
  * task is done. Enum acts as a list of tasks.
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
-public class CheckList<E extends Enum<E>> extends JavaLogging
+public class CheckList<E extends Enum<E>>
 {
     private final EnumSet<E> all;
     private EnumSet<E> work;
-    private final String name;
+    private final Runnable action;
     /**
      * 
      * @param cls Enum class
      */
     public CheckList(Class<E> cls)
     {
-        this(cls, "CheckList");
+        this(cls, ()->{});
     }
     
     /**
@@ -43,12 +43,11 @@ public class CheckList<E extends Enum<E>> extends JavaLogging
      * @param cls Enum class
      * @param name Used only for logging.
      */
-    public CheckList(Class<E> cls, String name)
+    public CheckList(Class<E> cls, Runnable action)
     {
-        super(CheckList.class);
         this.all = EnumSet.allOf(cls);
         this.work = EnumSet.noneOf(cls);
-        this.name = name;
+        this.action = action;
     }
     /**
      * Called to register that given task is done.
@@ -59,14 +58,10 @@ public class CheckList<E extends Enum<E>> extends JavaLogging
     {
         boolean done = isDone(deed);
         boolean ready = ready();
-        if (!done)
-        {
-            info("%s %s done", name, deed);
-        }
         work.add(deed);
         if (ready() && !ready)
         {
-            info("%s %s done and ready!", name, deed);
+            action.run();
         }
         return !done;
     }
