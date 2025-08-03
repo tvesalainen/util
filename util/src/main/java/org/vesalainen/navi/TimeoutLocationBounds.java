@@ -78,6 +78,16 @@ public class TimeoutLocationBounds
         return maxLat.getBound()+margin;
     }
     
+    public double getLatitudeRange()
+    {
+        return (maxLat.getBound()-minLat.getBound())+2*margin;
+    }
+    
+    public double getLongitudeRange()
+    {
+        return (maxLon.getBound()-minLon.getBound())+2*margin;
+    }
+    
     public double getCenterLatitude()
     {
         return (maxLat.getBound()+minLat.getBound())/2;

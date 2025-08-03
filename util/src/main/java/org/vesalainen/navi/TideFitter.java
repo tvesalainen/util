@@ -60,7 +60,7 @@ public class TideFitter
     }
     public boolean isValid()
     {
-        return cosineFitter.getPointCount() > 2 && cosineFitter.getFinalCost() < EPSILON;
+        return cosineFitter.getPointCount() > 2;
     }
     /**
      * Returns function that returns tide for time in milliseconds using latest
