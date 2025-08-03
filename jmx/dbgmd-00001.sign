@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.vesalainen</groupId>
+        <artifactId>utilities</artifactId>
+        <version>1.8.1</version>
+    </parent>
+    <artifactId>jmx</artifactId>
+    <packaging>jar</packaging>
+    <name>Simple JMX implementation</name>
+    <description>
+        Simple JMX implementation
+    </description>
+    <dependencies>
+        <dependency>
+            <groupId>org.vesalainen</groupId>
+            <artifactId>web-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.vesalainen</groupId>
+            <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

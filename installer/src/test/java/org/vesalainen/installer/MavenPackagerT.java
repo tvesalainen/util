@@ -33,7 +33,7 @@ public class MavenPackagerT
     @Test
     public void testDeb()
     {
-        MavenPackager.main("-pd", "C:\\Users\\tkv\\share", "-short", "true", "-g", "org.vesalainen.nmea", "-a", "nmea-router");
+        MavenPackager.main("-pd", "C:\\Users\\tkv\\share", "-short", "true", "-g", "org.vesalainen.home", "-a", "home");
     }
     
 }

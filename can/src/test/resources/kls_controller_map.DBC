@@ -1,0 +1,63 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+VAL_TABLE_ SWITCH_SIGNALS 128 "Boost Switch" 64 "Foot Switch" 32 "Forward Switch" 16 "Backward Switch" 8 "12V Brake Switch" 4 "Hall C" 2 "Hall B" 1 "Hall A" ;
+VAL_TABLE_ DRIVE_DIRECTION 2 "Backward" 1 "Forward" 0 "Stationary" ;
+VAL_TABLE_ DRIVE_STATES 2 "Backwards" 1 "Forward" 0 "Neutral" ;
+VAL_TABLE_ ERROR_CODE 32768 "Hall Galvanometer Sensor Error" 16384 "Motor Over-temp" 8192 "Reserved" 4096 "Reserved" 2048 "Angle Sensor Error" 1024 "Hall throttle is open" 512 "Internal Reset" 256 "Reserved" 128 "Throttle Error at Power-up" 64 "Over Temperature" 32 "Internal Volts Fault" 16 "Stall" 8 "Reserved" 4 "Low Voltage" 2 "Over Voltage" 1 "Identification Error" ;
+
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ STATUS_CONTROLLER : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 2364612357 Motor_B: 6 Vector__XXX
+ SG_ STATUS_OF_FEEDBACK : 34|2@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ STATUS_OF_COMMAND : 32|2@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SWITCH_SIGNALS : 40|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ MOTOR_TEMPERATURE : 16|8@1- (1,-30) [-300|300] "C" Vector__XXX
+ SG_ CONTROLLER_TEMPERATURE : 8|8@1- (1,-40) [-300|300] "C" Vector__XXX
+ SG_ THROTTLE : 0|8@1+ (1,0) [0|500] "V" Vector__XXX
+
+BO_ 2364612101 Motor_A: 8 Vector__XXX
+ SG_ ERROR_CODE : 48|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ BATTERY_VOLTAGE : 32|16@1+ (0.1,0) [0|65535] "V" Vector__XXX
+ SG_ MOTOR_CURRENT : 16|16@1- (0.1,0) [-32768|32767] "A" Vector__XXX
+ SG_ MOTOR_SPEED : 0|16@1+ (1,0) [0|10000] "RPM" Vector__XXX
+
+
+
+CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
+

@@ -1,0 +1,62 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+VAL_TABLE_ error_lilst 93 "Encoder LOS" 76 "Insul Resist Low" 69 "External Supply Range" 68 "VCL Run Time Error" 66 "Diagnostic Mode" 65 "Program Mode" 64 "No CAN from Primary" 62 "Fault from Primary" 61 "Motor Type Changed" 59 "Low Cell Fault" 58 "Charge Plugged In" 57 "Motor Over Temp" 56 "E7 Comm Error" 55 "Program Mode" 54 "No CAN from Secondary" 53 "Software Violation" 52 "Fault from Secondary" 51 "BMS CAN Communication Fault" 49 "Parameter Change Fault" 46 "EEPROM Failure" 45 "Pot Low Overcurrent" 44 "Pot2 Wiper Low" 43 "Pot2 Wiper High" 42 "Throttle Wiper Low" 41 "Throttle Wiper High" 39 "Main Contactor Not Closed" 38 "Main Contactor Welded" 37 "Motor Open" 36 "Encoder Fault" 31 "Main Open/Short" 29 "Motor Temp Sensor Fault" 28 "Motor Temp Hot Cutback" 25 "5V Supply Failure" 24 "Overvoltage Cutback" 23 "Undervoltage Cutback" 22 "Controller Overtemp Cutback" 18 "Severe Overvoltage" 17 "Severe Undervoltage" 14 "Precharge Failed" 13 "Current Sensor Fault" 12 "Controller Overcurrent" ;
+VAL_TABLE_ amps_data 33 "Description for the value '0x21'" 32 "Description for the value '0x20'" 31 "Description for the value '0x1F'" 30 "Description for the value '0x1E'" 29 "Description for the value '0x1D'" 28 "Description for the value '0x1C'" 27 "Description for the value '0x1B'" 26 "Description for the value '0x1A'" 25 "Description for the value '0x19'" 24 "Description for the value '0x18'" 23 "Description for the value '0x17'" 22 "Description for the value '0x16'" 21 "Description for the value '0x15'" 20 "Description for the value '0x14'" 19 "Description for the value '0x13'" 18 "Description for the value '0x12'" 17 "Description for the value '0x11'" 16 "Description for the value '0x10'" 15 "Description for the value '0xF'" 14 "Description for the value '0xE'" 13 "Description for the value '0xD'" 12 "Description for the value '0xC'" 11 "Description for the value '0xB'" 10 "Description for the value '0xA'" 9 "Description for the value '0x9'" 8 "Description for the value '0x8'" 7 "Description for the value '0x7'" 6 "Description for the value '0x6'" 5 "Description for the value '0x5'" 4 "Description for the value '0x4'" 3 "Description for the value '0x3'" 2 "Description for the value '0x2'" 1 "Description for the value '0x1'" 0 "Description for the value '0x0'" ;
+
+
+BO_ 1537 AC1239_Status_1: 8 Vector__XXX
+ SG_ motor_amps : 39|16@0- (0.1,0) [-500|500] "A" Vector__XXX
+ SG_ motor_volt : 55|16@0+ (0.1,0) [0|1000] "v" Vector__XXX
+ SG_ motor_temp : 23|8@0- (1,0) [-200|200] "C" Vector__XXX
+ SG_ motor_rpm : 7|16@0+ (1,0) [0|8000] "" Vector__XXX
+ SG_ motor_controller_temp : 31|8@0- (1,0) [-200|200] "C" Vector__XXX
+
+BO_ 1538 AC1239_Status_2: 7 Vector__XXX
+ SG_ brake_light_bit : 51|1@0+ (1,0) [0|10] "" Vector__XXX
+ SG_ reverse_bit : 50|1@0+ (1,0) [0|10] "" Vector__XXX
+ SG_ regen_bit : 49|1@0+ (1,0) [0|10] "" Vector__XXX
+ SG_ economy_bit : 48|1@0+ (1,0) [0|10] "" Vector__XXX
+ SG_ brake_input : 47|8@0+ (1,0) [0|10] "%" Vector__XXX
+ SG_ throttle_input : 39|8@0+ (1,0) [0|100] "%" Vector__XXX
+ SG_ controller_fault_secondary : 31|8@0+ (1,0) [0|1000] "" Vector__XXX
+ SG_ controller_fault_primary : 23|8@0+ (1,0) [0|1000] "" Vector__XXX
+ SG_ motor_stator_frequency : 7|16@0+ (1,0) [0|50000] "Hz" Vector__XXX
+
+
+
+VAL_ 1538 controller_fault_primary 93 "Encoder LOS" 76 "Insul Resist Low" 69 "External Supply Range" 68 "VCL Run Time Error" 66 "Diagnostic Mode" 65 "Program Mode" 64 "No CAN from Primary" 62 "Fault from Primary" 61 "Motor Type Changed" 59 "Low Cell Fault" 58 "Charge Plugged In" 57 "Motor Over Temp" 56 "E7 Comm Error" 55 "Program Mode" 54 "No CAN from Secondary" 53 "Software Violation" 52 "Fault from Secondary" 51 "BMS CAN Communication Fault" 49 "Parameter Change Fault" 46 "EEPROM Failure" 45 "Pot Low Overcurrent" 44 "Pot2 Wiper Low" 43 "Pot2 Wiper High" 42 "Throttle Wiper Low" 41 "Throttle Wiper High" 39 "Main Contactor Not Closed" 38 "Main Contactor Welded" 37 "Motor Open" 36 "Encoder Fault" 31 "Main Open/Short" 29 "Motor Temp Sensor Fault" 28 "Motor Temp Hot Cutback" 25 "5V Supply Failure" 24 "Overvoltage Cutback" 23 "Undervoltage Cutback" 22 "Controller Overtemp Cutback" 18 "Severe Overvoltage" 17 "Severe Undervoltage" 14 "Precharge Failed" 13 "Current Sensor Fault" 12 "Controller Overcurrent" ;
+

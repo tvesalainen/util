@@ -354,6 +354,7 @@ public class MavenPackager extends LoggingCommandLine
 
     private String getJavaReq()
     {
+        /* no java req because there are no java 8 debian package for rpi 5 64 bit
         if ("deb".equals(packageType))
         {
             String target = root.getProperties().getProperty("maven.compiler.target", "1.5");
@@ -373,7 +374,7 @@ public class MavenPackager extends LoggingCommandLine
                     warning("java version %s dependency name unknown");
                     return null;
             }
-        }
+        } */
         return null;
     }
 
