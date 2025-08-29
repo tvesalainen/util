@@ -100,15 +100,15 @@ public class StatisticsThreadPoolExecutor extends TaggableThreadPoolExecutor
             Object key = e1.getKey();
             sb.append("Tag : ").append(key).append('\n');
             Map<Object, DoubleTimeoutSlidingStats> statsMap = e1.getValue();
-            double sum = statsMap.values().stream().mapToDouble((s)->{return s.count();}).sum();
+            double sum = statsMap.values().stream().mapToDouble((s)->{return s.size();}).sum();
             sb.append("Value                   %    Count      Ave      Max      Min\n");
             for (Entry<Object, DoubleTimeoutSlidingStats> e2 : statsMap.entrySet())
             {
                 DoubleTimeoutSlidingStats stats = e2.getValue();
                 sb.append(String.format("%-20.20s %4.1f %d %8.3f %8.3f %8.3f\n", 
                         e2.getKey(),
-                        100*stats.count()/sum,
-                        stats.count(),
+                        100*stats.size()/sum,
+                        stats.size(),
                         stats.average(),
                         stats.getMax(),
                         stats.getMin()

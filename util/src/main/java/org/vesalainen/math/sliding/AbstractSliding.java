@@ -57,7 +57,20 @@ public abstract class AbstractSliding
      * Returns number of active items. (end-begin)
      * @return
      */
-    public int count()
+    public int size()
+    {
+        readLock.lock();
+        try
+        {
+            eliminate();
+            return count();
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+    protected int count()
     {
         readLock.lock();
         try

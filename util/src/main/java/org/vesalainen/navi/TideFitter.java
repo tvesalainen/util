@@ -233,7 +233,7 @@ public class TideFitter
         @Override
         public int rows()
         {
-            return data.count();
+            return data.size();
         }
 
         @Override
@@ -261,7 +261,7 @@ public class TideFitter
         @Override
         public int rows()
         {
-            return data.count();
+            return data.size();
         }
 
         @Override
