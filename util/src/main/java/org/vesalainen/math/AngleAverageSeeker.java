@@ -26,6 +26,7 @@ import org.vesalainen.navi.Navis;
  * <p>This class is thread-safe
  * @author Timo Vesalainen <timo.vesalainen@iki.fi>
  */
+@Deprecated
 public class AngleAverageSeeker extends AbstractSeeker
 {
     private AngleAverage average;
@@ -121,7 +122,7 @@ public class AngleAverageSeeker extends AbstractSeeker
         readLock.lock();
         try
         {
-            if (stats.count() >= stats.getInitialSize())
+            if (stats.size() >= stats.getInitialSize())
             {
                 return (Navis.angleDiff(stats.getMin(), stats.getMax()) < delta);
             }
